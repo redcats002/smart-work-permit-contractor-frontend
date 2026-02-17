@@ -1,5 +1,5 @@
+import { computed, type ComputedRef, ref } from 'vue'
 import { defineStore } from 'pinia'
-import { computed, ref, type ComputedRef } from 'vue'
 
 export interface ILoadingStore {
   isLoading: ComputedRef<boolean>
@@ -7,7 +7,7 @@ export interface ILoadingStore {
   removeLoading(): void
 }
 
-export const useLoadingStore = defineStore<'Loading', ILoadingStore>('Loading', (): ILoadingStore => {
+export const useLoadingStore = defineStore('Loading', (): ILoadingStore => {
   const loadingCount = ref<number>(0)
   const isLoading = computed<boolean>((): boolean => !!loadingCount.value)
 

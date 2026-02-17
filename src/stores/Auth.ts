@@ -1,5 +1,5 @@
+import { ref, type Ref } from 'vue'
 import { defineStore } from 'pinia'
-import { type Ref, ref } from 'vue'
 import { accessTokenStorage } from '@/utils/Storage'
 
 interface IUser {
@@ -21,7 +21,7 @@ interface IAuthStore {
   logout (): void
 }
 
-export const useAuthStore = defineStore<'Auth', IAuthStore>('Auth', (): IAuthStore => {
+export const useAuthStore = defineStore('Auth', (): IAuthStore => {
   const user = ref<IUser>({
     id: null,
     firstName: '',
