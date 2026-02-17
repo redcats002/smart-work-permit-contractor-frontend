@@ -1,0 +1,56 @@
+{
+  "eslint.validate": [
+    "vue",
+    "html",
+    "javascript",
+    "typescript",
+    "javascriptreact",
+    "typescriptreact"
+  ],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
+  "cSpell.ignoreRegExpList": [
+    "/[\\u0E00-\\u0E7F]/g"
+  ],
+  "cSpell.words": [
+    "Cqrs",
+    "DONT",
+    "Elysia",
+    "Pinia",
+    "Strapi",
+    "Tiktok",
+    "VITE",
+    "Vite",
+    "bunx",
+    "composables",
+    "datepicker",
+    "decamelize",
+    "elysiajs",
+    "liff",
+    "linebreak",
+    "makewebbkk",
+    "materialdesignicons",
+    "nestjs",
+    "nuxt",
+    "nuxtjs",
+    "persistedstate",
+    "perspiciatis",
+    "postcss",
+    "primevue",
+    "skus",
+    "softnova",
+    "tailwindcss",
+    "typeorm",
+    "vetur",
+    "vuejs",
+    "vuetify",
+    "vueuse",
+    "vuex"
+  ]
+}
