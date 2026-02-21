@@ -52,6 +52,6 @@ const menuItems = [
   { label: 'การจัดเก็บ', icon: '/menuicon/storage.svg', key: 'storage', to: '/storage' }
 ]
 const buttomMenuItems = [
-  { label: 'ตั่งค่า', icon: 'pi pi-file', key: 'setting', to: '/setting' }
+  { label: 'ตั่งค่า', icon: '/menuicon/setting.svg', key: 'setting', to: '/setting' }
 ]
 </script>
