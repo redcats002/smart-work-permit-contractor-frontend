@@ -7,7 +7,10 @@
         'flex items-center p-2 rounded duration-200 hover:bg-(--p-gray-5) gap-2',
         (isActive || isExactActive) && 'bg-(--p-red)! text-white!'
       ]">
-      <Icon :name="getIconName(isActive, isExactActive)" />
+      <img
+        :class="(isActive || isExactActive) && 'brightness-0 invert'"
+        :src="icon"
+        class="w-5 h-5">
       <span class="grow">
         {{ label }}
       </span>
@@ -26,11 +29,12 @@ interface IProps {
   to: RouteLocationRaw
 }
 
-const props = defineProps<IProps>()
+// const props = defineProps<IProps>()
+defineProps<IProps>()
 
-function getIconName (isActive: boolean, isExactActive: boolean): string {
-  return isActive || isExactActive
-    ? props.activeIcon || props.icon
-    : props.icon
-}
+// function getIconName (isActive: boolean, isExactActive: boolean): string {
+//   return isActive || isExactActive
+//     ? props.activeIcon || props.icon
+//     : props.icon
+// }
 </script>
