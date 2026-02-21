@@ -1,3 +1,45 @@
 @import "tailwindcss";
 @import "tailwindcss-primeui";
 @import "./primevue.css";
+
+@theme {
+	--font-sans: 'LINE_Seed_Sans_TH', 'sans-serif';
+
+	--color-secondary-50: #eceff8;
+	--color-secondary-100: #d9dff2;
+	--color-secondary-200: #b3c0e5;
+	--color-secondary-300: #8da0d8;
+	--color-secondary-400: #6780cb;
+	--color-secondary-500: #4160be;
+	--color-secondary-600: #344d98;
+	--color-secondary-700: #273a72;
+	--color-secondary-800: #1a274c;
+	--color-secondary-900: #0d1326;
+	--color-secondary-950: #090d1b;
+
+	--color-secondary: var(--color-secondary-500);
+	--color-secondary-contrast: var(--p-surface-0);
+	--color-secondary-emphasis: var(--color-secondary-600);
+	--color-secondary-emphasis-alt: var(--color-secondary-700);
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+	interpolate-size: allow-keywords;
+}
+
+@layer base {
+	html {
+		color: #333333;
+	}
+}
+
+/* override primevue */
+[data-pc-section='columntitle'],
+[data-pc-name='bodycell'] {
+	white-space: nowrap;
+}
+[data-p-sortable-column='true'][data-p-sorted='true'] {
+	background-color: var(--p-primary-color);
+}

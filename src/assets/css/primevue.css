@@ -25,6 +25,16 @@
     --p-surface-900: #18181b;
     --p-surface-950: #09090b;
     --p-content-border-radius: 6px;
+
+    /* Custom color */
+	--p-green-light: #cfffe3;
+	--p-green: #219653;
+	--p-gray-5: #e0e0e0;
+	--p-gray-2: #4f4f4f;
+	--p-orange: #ffecd6;
+	--p-orange-2: #f2994a;
+	--p-red: #bd0102;
+	--p-red-2: #eb5757;
 }
 
 /* Light */
