@@ -26,7 +26,8 @@ export default [
   js.configs.recommended,
   {
     rules: {
-      'default-case': ['error', { commentPattern: '^skip\\sdefault' }]
+      'default-case': ['error', { commentPattern: '^skip\\sdefault' }],
+      'no-console': ['warn', { allow: ['error', 'info'] }]
     }
   },
   ...ts.configs.recommended,

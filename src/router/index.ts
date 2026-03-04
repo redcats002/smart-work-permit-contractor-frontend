@@ -1,7 +1,8 @@
 import type { ComponentOptions } from 'vue'
 import type { RouteLocationNormalized, Router, RouteRecordRaw } from 'vue-router'
 import { createRouter, createWebHistory } from 'vue-router'
-import Customer from './modules/customer/Customer.router'
+import CustomerRouter from './modules/customer/Customer.router'
+
 // import { useAuthStore } from '@/stores/Auth'
 
 // import AuthRouter from './modules/Auth.router'
@@ -17,7 +18,7 @@ const routes: RouteRecordRaw[] = [
     component: (): ComponentOptions => import('@/pages/HomePage.vue')
   },
   // AuthRouter
-  Customer
+  CustomerRouter
 ]
 
 const router: Router = createRouter({
@@ -25,7 +26,7 @@ const router: Router = createRouter({
   routes
 })
 
-const DEFAULT_TITLE: string = 'Title Website' // TODO: Change this
+const DEFAULT_TITLE: string = 'Mittae Siam Management'
 
 router.afterEach((to: RouteLocationNormalized): void => {
   document.title = to?.meta?.title ? `${DEFAULT_TITLE} | ${to.meta.title}` : DEFAULT_TITLE

@@ -1,5 +1,5 @@
 {
-  "name": "vue3-template",
+  "name": "mittae-siam-management-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -29,18 +29,21 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
+    "@iconify/vue": "^5.0.0",
     "@stylistic/eslint-plugin": "^3.1.0",
     "@types/humps": "^2.0.6",
     "@types/js-cookie": "^3.0.6",
     "@types/node": "^25.2.3",
     "@vitejs/plugin-vue": "^5.2.4",
     "@vue/tsconfig": "^0.7.0",
+    "dayjs": "^1.11.19",
     "eslint": "^9.39.2",
     "eslint-plugin-vue": "^9.33.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.5.2",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.0",
+    "unplugin-vue-components": "^31.0.0",
     "vite": "^7.3.1",
     "vite-plugin-eslint2": "^5.0.5",
     "vue-tsc": "^2.2.12"

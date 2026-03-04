@@ -1,16 +1,20 @@
-import { defineConfig } from 'vite'
-import { fileURLToPath, URL } from 'node:url'
-
+import Tailwindcss from '@tailwindcss/vite'
 import Vue from '@vitejs/plugin-vue'
+import { fileURLToPath, URL } from 'node:url'
+import Components from 'unplugin-vue-components/vite'
+import { defineConfig } from 'vite'
 import ESLint from 'vite-plugin-eslint2'
-import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     Vue(),
     ESLint(),
-    tailwindcss()
+    Tailwindcss(),
+        Components({
+      dirs: ['src/volt'],
+      dts: true,
+    }),
   ],
 
   resolve: {

@@ -1,11 +1,17 @@
 import type { App } from 'vue'
+import { ToastService } from 'primevue'
+import PrimeVue from 'primevue/config'
 import router from '../router'
 import pinia from './Pinia.plugin'
-import PrimeVue from 'primevue/config'
+import { primeVueConfig as PrimeVueConfig } from './primevue.plugin'
+import { registerToastService } from './toast'
 
 export default function registerPlugins (app: App<Element>): App<Element> {
-  return app
+  const configured = app
     .use(router)
     .use(pinia)
-    .use(PrimeVue, { unstyled: true })
+    .use(PrimeVue, PrimeVueConfig)
+    .use(ToastService)
+  registerToastService(configured)
+  return configured
 }

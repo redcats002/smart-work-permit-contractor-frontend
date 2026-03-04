@@ -1,9 +1,11 @@
 <template>
-  customer list
+  <div />
 </template>
 
 <script setup lang="ts">
+
 </script>
 
-<style>
+<style scoped>
+
 </style>
