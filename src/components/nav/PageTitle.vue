@@ -1,6 +1,7 @@
 <template>
   <BaseTopSticky>
-    <Breadcrumb :items="breadcrumbItems" />
+    <Breadcrumb
+      :items="breadcrumbItems" />
     <div>
       <slot />
     </div>

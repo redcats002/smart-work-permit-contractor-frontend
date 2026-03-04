@@ -1,20 +1,20 @@
 <template>
-  <div class="flex justify-center gap-2.5">
-    <CancelButton
-      :to="cancelTo"
-      @click="emits('cancel')" />
+  <div class="flex justify-start gap-2.5">
     <ConfirmButton
       :label="confirmLabel"
       :mode="mode"
       type="submit"
       @click="emits('confirm')" />
+    <CancelButton
+      :to="cancelTo"
+      @click="emits('cancel')" />
   </div>
 </template>
 
 <script setup lang="ts">
+import type { RouteLocationRaw } from 'vue-router'
 import CancelButton from './CancelButton.vue'
 import ConfirmButton from './ConfirmButton.vue'
-import type { RouteLocationRaw } from 'vue-router'
 
 interface IProps {
   cancelTo?: RouteLocationRaw
@@ -29,7 +29,11 @@ interface IEmits {
 
 const emits = defineEmits<IEmits>()
 
-defineProps<IProps>()
+withDefaults(defineProps<IProps>(), {
+  cancelTo: undefined,
+  confirmLabel: 'ยืนยัน',
+  mode: ''
+})
 </script>
 
 <style scoped>

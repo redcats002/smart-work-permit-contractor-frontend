@@ -16,8 +16,12 @@ export interface IEntity {
 
 
 export interface IBaseOption<T = string | number> {
-  title: string
+  label: string
   value: T | null | boolean
 }
-
 export type TBaseOption<T = string | number> = IBaseOption<T>
+export interface IBaseModel<T = string | number> {
+  id: T | null | boolean
+  name: string
+}
+export type TBaseModel<T = string | number> = IBaseModel<T>
