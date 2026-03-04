@@ -10,9 +10,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-
-import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import BlankLayout from '@/layouts/BlankLayout.vue'
+import DefaultLayout from '@/layouts/DefaultLayout.vue'
 
 const route = useRoute()
 

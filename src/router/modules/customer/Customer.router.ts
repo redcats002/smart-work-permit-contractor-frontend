@@ -1,61 +1,60 @@
+import type { ComponentOptions } from 'vue'
+import type { RouteRecordRaw } from 'vue-router'
+
+const prefix = '/customer'
+
 export default {
-  path: '/customer',
-  component: (): any => import('@/pages/customer/CustomerPage.vue'),
+  history: prefix,
+  path: prefix,
+  name: 'CustomerPage',
+  redirect: { name: 'CustomerList' },
+  component: (): ComponentOptions => import('@/pages/customer/Customer.vue'),
   meta: {
     title: 'ลูกค้า',
     auth: true,
     icon: 'mdi-account-cog-outline'
-    // allowedRoles: ['SUPER_ADMIN', 'ADMIN']
   },
   children: [
     {
       path: 'list',
-      name: 'CustomerList',
-      component: (): any => import('@/pages/customer/pages/CustomerList.vue'),
+      name: 'CustomerListPage',
+      component: (): ComponentOptions => import('@/pages/customer/pages/list/pages/CustomerListPage.vue'),
       meta: {
         auth: true,
-        isMenu: true,
+        menu: true,
         title: 'รายการลูกค้า',
         icon: 'mdi-account'
-        // allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'SALE'],
-        // allowedPermissions: ['customer.read']
+      }
+    },
+    {
+      path: 'create',
+      name: 'CustomerCreatePage',
+      component: (): ComponentOptions => import('@/pages/customer/pages/create/pages/CustomerCreatePage.vue'),
+      meta: {
+        auth: true,
+        title: 'เพิ่มลูกค้า',
+        icon: 'mdi-account'
+      }
+    },
+    {
+      path: ':id',
+      name: 'CustomerDetailPage',
+      component: (): ComponentOptions => import('@/pages/customer/pages/detail/pages/CustomerDetailPage.vue'),
+      meta: {
+        auth: true,
+        title: 'รายละเอียดลูกค้า',
+        icon: 'mdi-account'
+      }
+    },
+    {
+      path: 'edit/:id',
+      name: 'CustomerEditPage',
+      component: (): ComponentOptions => import('@/pages/customer/pages/edit/pages/CustomerEditPage.vue'),
+      meta: {
+        auth: true,
+        title: 'แก้ไขลูกค้า',
+        icon: 'mdi-account'
       }
     }
-    // {
-    //   path: 'create',
-    //   name: 'CustomerCreate',
-    //   component: (): any => import('@/views/customer/pages/CustomerCreatePage.vue'),
-    //   meta: {
-    //     auth: true,
-    //     // isMenu: true,
-    //     title: 'เพิ่มสมาชิก',
-    //     icon: 'mdi-account',
-    //     allowedPermissions: ['customer.create']
-    //   }
-    // },
-    // {
-    //   path: ':id',
-    //   name: 'CustomerDetail',
-    //   component: (): any => import('@/views/customer/pages/CustomerDetail.vue'),
-    //   meta: {
-    //     auth: true,
-    //     // isMenu: true,
-    //     title: 'รายละเอียดสมาชิก',
-    //     icon: 'mdi-account',
-    //     allowedPermissions: ['customer.read']
-    //   }
-    // },
-    // {
-    //   path: 'edit/:id',
-    //   name: 'CustomerEdit',
-    //   component: (): any => import('@/views/customer/pages/CustomerEdit.vue'),
-    //   meta: {
-    //     auth: true,
-    //     // isMenu: true,
-    //     title: 'แก้ไขสมาชิก',
-    //     icon: 'mdi-account',
-    //     allowedPermissions: ['customer.edit']
-    //   }
-    // }
   ]
-}
+} as RouteRecordRaw
