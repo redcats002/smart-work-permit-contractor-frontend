@@ -1,7 +1,7 @@
 import type { ComponentOptions } from 'vue'
 import type { RouteLocationNormalized, Router, RouteRecordRaw } from 'vue-router'
 import { createRouter, createWebHistory } from 'vue-router'
-
+import Customer from './modules/customer/Customer.router'
 // import { useAuthStore } from '@/stores/Auth'
 
 // import AuthRouter from './modules/Auth.router'
@@ -15,8 +15,9 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     name: 'HomePage',
     component: (): ComponentOptions => import('@/pages/HomePage.vue')
-  }
+  },
   // AuthRouter
+  Customer
 ]
 
 const router: Router = createRouter({
