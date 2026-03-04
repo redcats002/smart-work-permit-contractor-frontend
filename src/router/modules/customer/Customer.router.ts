@@ -33,7 +33,8 @@ export default {
       meta: {
         auth: true,
         title: 'เพิ่มลูกค้า',
-        icon: 'mdi-account'
+        icon: 'mdi-account',
+        back: { name: 'CustomerListPage' }
       }
     },
     {
@@ -43,7 +44,8 @@ export default {
       meta: {
         auth: true,
         title: 'รายละเอียดลูกค้า',
-        icon: 'mdi-account'
+        icon: 'mdi-account',
+        back: { name: 'CustomerListPage' }
       }
     },
     {
@@ -53,7 +55,8 @@ export default {
       meta: {
         auth: true,
         title: 'แก้ไขลูกค้า',
-        icon: 'mdi-account'
+        icon: 'mdi-account',
+        back: { name: 'CustomerDetailPage' }
       }
     }
   ]

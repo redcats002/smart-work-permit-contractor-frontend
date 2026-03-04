@@ -1,41 +1,40 @@
 <template>
-  <div>
-    <div class="flex gap-2.5">
-      <div>
-        <SearchInput
-          v-model="model"
-          @search="onSearch()" />
-      </div>
-      <div>
-        <BaseModal
-          class="md:w-250!"
-          label="ตัวกรอง">
-          <template #activator="{ open }">
-            <FilterButton @click="open()" />
-          </template>
-          <!-- <div class="flex flex-col gap-5">
+  <BaseTop>
+    <div>
+      <SearchInput
+        v-model="model"
+        @search="onSearch()" />
+    </div>
+    <div>
+      <BaseModal
+        class="md:w-250!"
+        label="ตัวกรอง">
+        <template #activator="{ open }">
+          <FilterButton @click="open()" />
+        </template>
+        <!-- <div class="flex flex-col gap-5">
             <div class="w-fit">
               <LabelField
                 label="สถานะ" />
             </div>
           </div> -->
-          <template #footer="{ close }">
-            <FormActionFilter
-              @clear="onClear(close)"
-              @search="onModalSearch(close)" />
-          </template>
-        </BaseModal>
-      </div>
-      <Spacer />
-      <div>
-        <slot />
-      </div>
+        <template #footer="{ close }">
+          <FormActionFilter
+            @clear="onClear(close)"
+            @search="onModalSearch(close)" />
+        </template>
+      </BaseModal>
     </div>
-  </div>
+    <Spacer />
+    <div>
+      <slot />
+    </div>
+  </BaseTop>
 </template>
 
 <script setup lang="ts">
 import type { ICustomerFilter } from '@/models/modules/customer/Filter.model'
+import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
 import Spacer from '@/components/flex/Spacer.vue'

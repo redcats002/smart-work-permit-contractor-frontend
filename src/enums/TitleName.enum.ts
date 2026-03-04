@@ -16,7 +16,7 @@ const titleMap: Record <TTitleName, string> = {
 
 export const TitleNameItems: TBaseOption[] = Object.values(ETitleName).map(
   (e: TTitleName): TBaseOption => ({
-    title: formatTitle(e),
+    label: formatTitle(e),
     value: e as string
   })
 )

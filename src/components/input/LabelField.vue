@@ -8,7 +8,7 @@
       <slot name="append-actions" />
       <span
         :class="{ required }"
-        class="text-sm">
+        class="text-sm font-bold">
         {{ label }}
       </span>
 

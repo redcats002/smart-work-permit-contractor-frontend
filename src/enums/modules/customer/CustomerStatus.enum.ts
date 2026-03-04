@@ -14,7 +14,7 @@ const titleMap: Record <TCustomerStatus, string> = {
 
 export const CustomerStatusItems: TBaseOption[] = Object.values(CustomerStatusEnum).map(
   (e: TCustomerStatus): TBaseOption => ({
-    title: formatTitle(e),
+    label: formatTitle(e),
     value: e
   })
 )

@@ -11,17 +11,22 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AutoComplete: typeof import('./src/volt/AutoComplete.vue')['default']
     Button: typeof import('./src/volt/Button.vue')['default']
     Card: typeof import('./src/volt/Card.vue')['default']
+    Checkbox: typeof import('./src/volt/Checkbox.vue')['default']
     ContrastButton: typeof import('./src/volt/ContrastButton.vue')['default']
     DangerButton: typeof import('./src/volt/DangerButton.vue')['default']
     DataTable: typeof import('./src/volt/DataTable.vue')['default']
+    DatePicker: typeof import('./src/volt/DatePicker.vue')['default']
     Dialog: typeof import('./src/volt/Dialog.vue')['default']
     Divider: typeof import('./src/volt/Divider.vue')['default']
+    InputMask: typeof import('./src/volt/InputMask.vue')['default']
     InputText: typeof import('./src/volt/InputText.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SecondaryButton: typeof import('./src/volt/SecondaryButton.vue')['default']
     Select: typeof import('./src/volt/Select.vue')['default']
+    ToggleSwitch: typeof import('./src/volt/ToggleSwitch.vue')['default']
   }
 }
