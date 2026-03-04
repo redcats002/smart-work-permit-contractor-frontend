@@ -52,7 +52,7 @@ const columns = ref<IColumn<ICustomerList>[]>([
   { field: 'idNo', header: 'เลขที่ลูกค้า', sortable: true, align: 'left' },
   { field: 'firstName', header: 'ชื่อลูกค้า', align: 'left', value: (e: ICustomerList): string => formatter.fullName(e) },
   { field: 'phoneNumber', header: 'เบอร์โทรศัพท์', align: 'left', value: (e: ICustomerList): string => formatter.fullPhoneNumber(e) },
-  { field: 'customerGroup', header: 'กลุ่มลูกค้า', align: 'left', value: (e: ICustomerList): string => e?.customerGroup?.title || 'ไม่ระบุ' },
+  { field: 'customerGroup', header: 'กลุ่มลูกค้า', align: 'left', value: (e: ICustomerList): string => e?.customerGroup?.label || 'ไม่ระบุ' },
   { field: 'customerStatus', header: 'สถานะ', sortable: true, align: 'left' }
   // {
   //   field: 'action',

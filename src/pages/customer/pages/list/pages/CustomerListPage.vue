@@ -65,7 +65,7 @@ async function useFetchPaginate (): Promise<void> {
         id: 1,
         phoneNumber: '0888888888',
         phoneNumber2: '0888888889',
-        customerGroup: { title: 'ลูกค้าใหม่', value: 0 },
+        customerGroup: { label: 'ลูกค้าใหม่', value: 0 },
         customerStatus: 'ACTIVE',
         firstName: 'จันทร์',
         lastName: 'พงษ์พัฒนโยธิน',
@@ -75,7 +75,7 @@ async function useFetchPaginate (): Promise<void> {
       {
         id: 2,
         phoneNumber: '0888888888',
-        customerGroup: { title: 'กลุ่มชำระล่าช้า', value: 0 },
+        customerGroup: { label: 'กลุ่มชำระล่าช้า', value: 0 },
         customerStatus: 'IN_ACTIVE',
         firstName: 'จันทร์',
         lastName: 'พงษ์พัฒนโยธิน',
