@@ -52,7 +52,7 @@ import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { IAddress } from '@/models/request/AddressReq.model'
-import type { IActionCustomerPayload, ICreateCustomerPayload } from '@/models/request/customer/CustomerReq.model'
+import type { IActionCustomerPayload, IUpdateCustomerPayload } from '@/models/request/customer/CustomerReq.model'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import type { ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import CustomerProvider from '@/resources/provider/customer/Customer.provider'
@@ -157,7 +157,8 @@ async function useFetch (): Promise<void> {
 }
 
 async function useSubmit (): Promise<void> {
-  await CustomerService.createCustomer(form.value as ICreateCustomerPayload)
+  if (!customerId.value) throw new Error('Customer ID is required')
+  await CustomerService.updateCustomer(customerId.value, form.value as IUpdateCustomerPayload)
   toast.success('ดำเนินการสำเร็จ')
   router.push({ name: 'CustomerListPage' })
 }
