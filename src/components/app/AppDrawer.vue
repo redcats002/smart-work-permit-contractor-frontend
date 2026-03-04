@@ -11,7 +11,6 @@
         สาขา : <span>ขอนแก่น</span>
       </p>
     </div>
-    <Divider />
 
     <nav class="flex flex-col flex-1 overflow-y-auto">
       <!-- Top Menu -->
