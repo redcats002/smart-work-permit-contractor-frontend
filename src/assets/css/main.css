@@ -2,6 +2,14 @@
 @import "tailwindcss-primeui";
 @import "./primevue.css";
 
+@font-face {
+  font-family: 'LINE_Seed_Sans_TH';
+  src: url('/assets/fonts/LINESeedSansTH_W_Rg.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+
 @theme {
 	--font-sans: 'LINE_Seed_Sans_TH', 'sans-serif';
 
