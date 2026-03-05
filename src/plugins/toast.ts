@@ -21,6 +21,14 @@ export const toast = {
       life: 3000
     })
   },
+  warn (message: string, summary: string = 'Warning'): void {
+    toastService?.add({
+      severity: 'warn',
+      summary,
+      detail: message,
+      life: 3000
+    })
+  },
   error (message: string, summary: string = 'Error'): void {
     toastService?.add({
       severity: 'error',
