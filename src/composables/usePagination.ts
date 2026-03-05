@@ -44,7 +44,7 @@ export function useInitPagination (): IPagination {
     limit: route?.query?.limit ? Number(route.query.limit) : 20
   }
 }
-interface IUsePagination {
+export interface IUsePagination {
   search: Ref<string>
   sortBy: Ref<string>
   sortOrder: Ref<TSortOrder>

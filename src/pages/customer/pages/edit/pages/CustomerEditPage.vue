@@ -146,8 +146,8 @@ const workAddress = computed({
 function useInitForm (data: ICustomerById): void {
   form.value = {
     ...data,
-    customerGroupId: data.customerGroup?.id || undefined,
-    jobId: data.job?.id || undefined
+    customerGroupId: data?.customerGroup?.id || undefined,
+    jobId: data?.job?.id || undefined
   }
 }
 

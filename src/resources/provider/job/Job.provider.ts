@@ -25,7 +25,7 @@ class JobProvider extends HttpRequest implements IJobProvider {
   }
 
   public async updateJob (id: TBaseParamsId, payload: IUpdateJobPayload): Promise<TActionJob> {
-    const response = await this.post(`${this.urlPrefix}/${id}`, payload)
+    const response = await this.put(`${this.urlPrefix}/${id}`, payload)
     return response
   }
 

@@ -4,10 +4,48 @@
    Font: LINE Seed Sans TH
    Weights: 200 Thin | 400 Regular | 700 Bold | 800 ExtraBold | 900 Heavy
    ───────────────────────────────────────── */
+
+/* 200 – Thin */
+@font-face {
+  font-family: 'LINE_Seed_Sans_TH';
+  src: url('/assets/fonts/LINESeedSansTH_W_Th.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 400 – Regular */
 @font-face {
   font-family: 'LINE_Seed_Sans_TH';
   src: url('/assets/fonts/LINESeedSansTH_W_Rg.woff2') format('woff2');
   font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 700 – Bold */
+@font-face {
+  font-family: 'LINE_Seed_Sans_TH';
+  src: url('/assets/fonts/LINESeedSansTH_W_Bd.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 800 – ExtraBold */
+@font-face {
+  font-family: 'LINE_Seed_Sans_TH';
+  src: url('/assets/fonts/LINESeedSansTH_W_XBd.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 900 – Heavy */
+@font-face {
+  font-family: 'LINE_Seed_Sans_TH';
+  src: url('/assets/fonts/LINESeedSansTH_W_He.woff2') format('woff2');
+  font-weight: 900;
   font-style: normal;
   font-display: swap;
 }

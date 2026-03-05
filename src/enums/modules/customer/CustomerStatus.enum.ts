@@ -42,6 +42,6 @@ export function getIcon (value?: TCustomerStatus): string {
     case CustomerStatusEnum.IN_ACTIVE:
       return 'material-symbols:close-rounded'
     default:
-      return ''
+      return 'mdi:help-circle-outline'
   }
 }
