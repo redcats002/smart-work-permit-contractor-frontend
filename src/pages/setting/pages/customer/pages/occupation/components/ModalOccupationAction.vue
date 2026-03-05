@@ -41,7 +41,7 @@ import LabelField from '@/components/input/LabelField.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import { CustomerOccupationSchema, useFormInitialValues } from '../composables/customer-occupation.schema'
+import { CustomerOccupationSchema, useFormInitialValues } from '../schema/customer-occupation.schema'
 
 interface IProps {
   type?: 'CREATE' | 'EDIT'
