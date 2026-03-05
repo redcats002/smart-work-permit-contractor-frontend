@@ -23,10 +23,12 @@ declare module 'vue' {
     Divider: typeof import('./src/volt/Divider.vue')['default']
     InputMask: typeof import('./src/volt/InputMask.vue')['default']
     InputText: typeof import('./src/volt/InputText.vue')['default']
+    Menu: typeof import('./src/volt/Menu.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SecondaryButton: typeof import('./src/volt/SecondaryButton.vue')['default']
     Select: typeof import('./src/volt/Select.vue')['default']
+    Toast: typeof import('./src/volt/Toast.vue')['default']
     ToggleSwitch: typeof import('./src/volt/ToggleSwitch.vue')['default']
   }
 }
