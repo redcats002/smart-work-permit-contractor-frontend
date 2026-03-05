@@ -1,7 +1,7 @@
 <template>
   <div
     :class="wrapperClass"
-    class="w-fit h-8 border rounded-md flex items-center gap-1 p-2 py-1.25">
+    class="w-fit h-6 border rounded-md flex items-center gap-1 p-2 py-1.25">
     <icon :icon="appendIcon" />
     <p
       :class="textClass"

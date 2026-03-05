@@ -222,7 +222,7 @@ const theme = ref<DataTablePassThroughOptions>({
       ${!props.selectable && !props.disableAutoLeftPadding ? 'pl-[40px]' : ''}
     `,
     columnHeaderContent: 'datatable-header-content flex items-center gap-2',
-    columnTitle: 'font-bold',
+    columnTitle: 'font-medium',
     bodyCell: `
       py-[22px] px-2.5
       border-b border-surface-100
