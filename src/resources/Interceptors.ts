@@ -1,4 +1,5 @@
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
+import { useAuthStore } from '@/stores/Auth'
 import humps from 'humps'
 
 export function onRequest (config: AxiosRequestConfig): AxiosRequestConfig {
@@ -31,6 +32,7 @@ export function onResponse (response: AxiosResponse): Promise<any> {
 }
 
 export async function onResponseError (error: AxiosError): Promise<any> {
+  const AuthStore = useAuthStore()
   const newError = error
   if (
     error.request.responseType === 'blob'
@@ -57,6 +59,12 @@ export async function onResponseError (error: AxiosError): Promise<any> {
   }
   if (newError?.response?.data) {
     return Promise.reject(newError.response.data)
+  }
+  if (newError.response?.status === 401) {
+    const baseUrl = window.location.origin
+    AuthStore.logout()
+    window.location.href = `${baseUrl}/auth/login`
+    return Promise.reject(newError.response?.data)
   }
 
   return Promise.reject(newError)

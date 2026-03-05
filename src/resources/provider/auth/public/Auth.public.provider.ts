@@ -1,6 +1,7 @@
 import type {
   ICheckTokenResetPasswordPayload,
   ILoginPayload,
+  IPreLoginPayload,
   IRegisterPayload,
   IRequestResetPasswordPayload,
   IResetPasswordPayload
@@ -8,6 +9,7 @@ import type {
 import type {
   TActionCheckTokenResetPasswordResponse,
   TActionLoginResponse,
+  TActionPreLoginResponse,
   TActionRegisterResponse,
   TActionRequestResetPasswordResponse,
   TActionResetPasswordResponse
@@ -15,6 +17,7 @@ import type {
 import HttpRequest from '@/resources/HttpRequest'
 
 export interface IAuthPublicProvider {
+  preLogin (payload: IPreLoginPayload): Promise<TActionPreLoginResponse>
   login (payload: ILoginPayload): Promise<TActionLoginResponse>
   register (payload: IRegisterPayload): Promise<TActionRegisterResponse>
   requestPasswordReset (payload: IRequestResetPasswordPayload): Promise<TActionRequestResetPasswordResponse>
@@ -24,6 +27,11 @@ export interface IAuthPublicProvider {
 
 class AuthPublicProvider extends HttpRequest implements IAuthPublicProvider {
   private urlPrefix: string = '/api/v1/auth/public'
+
+  public async preLogin (payload: IPreLoginPayload): Promise<TActionPreLoginResponse> {
+    const response = await this.post(`${this.urlPrefix}/pre-login`, payload)
+    return response
+  }
 
   public async login (payload: ILoginPayload): Promise<TActionLoginResponse> {
     const response = await this.post(`${this.urlPrefix}/login`, payload)
