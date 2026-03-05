@@ -40,7 +40,7 @@ import PageTitle from '@/components/nav/PageTitle.vue'
 import ModalOccupationAction from '../components/ModalOccupationAction.vue'
 import OccupationTable from '../components/OccupationTable.vue'
 import usePagination from '@/composables/usePagination'
-import { useFormInitialValues } from '../composables/customer-occupation.schema'
+import { useFormInitialValues } from '../schema/customer-occupation.schema'
 
 const CustomerOccupationService: ICustomerOccupationProvider = new CustomerOccupationProvider()
 

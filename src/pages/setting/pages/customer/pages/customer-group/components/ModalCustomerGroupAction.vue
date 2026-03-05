@@ -1,14 +1,14 @@
 <template>
   <BaseModal
     v-model="visible"
-    :label="type==='CREATE' ? 'เพิ่มอาชีพใหม่' : 'แก้ไขอาชีพ'"
+    :label="type==='CREATE' ? 'เพิ่มกลุ่มลูกค้าใหม่' : 'แก้ไขกลุ่มลูกค้า'"
     class="md:w-200!"
     @open="clear()">
     <template
       v-if="type === 'CREATE'"
       #activator="{ open }">
       <CreateButton
-        label="เพิ่มอาชีพใหม่"
+        label="เพิ่มกลุ่มลูกค้าใหม่"
         @click="open()" />
     </template>
     <template #default="{ close }">
@@ -21,7 +21,7 @@
         <LabelField
           v-model="form.name"
           :form="$form"
-          label="อาชีพ"
+          label="กลุ่มลูกค้า"
           name="name"
           required />
         <FormAction
@@ -34,14 +34,14 @@
 
 <script setup lang="ts">
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { IActionCustomerOccupationPayload } from '@/models/request/customer-occupation/CustomerOccupationReq.model'
+import type { IActionCustomerGroupPayload } from '@/models/request/customer-group/CustomerGroupReq.model'
 import CreateButton from '@/components/button/CreateButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import { CustomerOccupationSchema, useFormInitialValues } from '../schema/customer-occupation.schema'
+import { CustomerGroupSchema, useFormInitialValues } from '../schema/customer-group.schema'
 
 interface IProps {
   type?: 'CREATE' | 'EDIT'
@@ -58,9 +58,9 @@ const props = withDefaults(defineProps<IProps>(), {
 })
 const emits = defineEmits<IEmits>()
 
-const form = defineModel<IActionCustomerOccupationPayload>({ required: true })
+const form = defineModel<IActionCustomerGroupPayload>({ required: true })
 const visible = defineModel<boolean>('visible', { default: false })
-const resolver = zodResolver(CustomerOccupationSchema)
+const resolver = zodResolver(CustomerGroupSchema)
 
 async function onSubmit (event: FormSubmitEvent, close: () => void): Promise<void> {
   if (!event.valid) {
