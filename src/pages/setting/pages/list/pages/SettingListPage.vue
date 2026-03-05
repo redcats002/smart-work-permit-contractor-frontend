@@ -1,31 +1,35 @@
 <template>
-  <section id="setting-list-page">
-    <BaseContainer>
-      <div
-        v-for="(item, i) in items"
-        :key="`setting-${i}`">
-        <div class="flex items-center gap-2 mb-2">
-          <Icon
-            v-if="item?.icon"
-            :icon="item.icon"
-            color="#BD0102"
-            width="30" />
-          <span class="font-bold">{{ item.name }}</span>
-        </div>
-        <template v-if="item?.children?.length">
-          <div class="flex flex-col gap-2 ml-10">
-            <router-link
-              v-for="(child, j) in item?.children"
-              :key="`setting-child-${j}`"
-              :to="child.to"
-              class="hover:text-primary transition-all">
-              {{ child.name }}
-            </router-link>
+  <section
+    id="setting-list-page">
+    <PageTitle />
+    <div class="grid place-content-center">
+      <BaseContainer class="w-140!">
+        <div
+          v-for="(item, i) in items"
+          :key="`setting-${i}`">
+          <div class="flex items-center gap-2 mb-2">
+            <Icon
+              v-if="item?.icon"
+              :icon="item.icon"
+              color="#BD0102"
+              width="30" />
+            <span class="font-bold">{{ item.name }}</span>
           </div>
-        </template>
-        <Divider />
-      </div>
-    </BaseContainer>
+          <template v-if="item?.children?.length">
+            <div class="flex flex-col gap-2 ml-10">
+              <router-link
+                v-for="(child, j) in item?.children"
+                :key="`setting-child-${j}`"
+                :to="child.to"
+                class="hover:text-primary transition-all">
+                {{ child.name }}
+              </router-link>
+            </div>
+          </template>
+          <Divider />
+        </div>
+      </BaseContainer>
+    </div>
   </section>
 </template>
 
@@ -33,6 +37,7 @@
 import { ref } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
 import BaseContainer from '@/components/base/BaseContainer.vue'
+import PageTitle from '@/components/nav/PageTitle.vue'
 import { routes } from '@/router/index'
 import { Icon } from '@iconify/vue'
 

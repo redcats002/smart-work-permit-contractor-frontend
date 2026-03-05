@@ -1,12 +1,12 @@
 import type { ComponentOptions } from 'vue'
 import type { RouteLocationNormalized, Router, RouteRecordRaw } from 'vue-router'
 import { createRouter, createWebHistory } from 'vue-router'
+import AuthRouter from './modules/Auth.router'
 import CustomerRouter from './modules/customer'
 import SettingRouter from './modules/setting'
 
 // import { useAuthStore } from '@/stores/Auth'
 
-// import AuthRouter from './modules/Auth.router'
 
 export interface IRouteRedirect {
   name: string
@@ -18,7 +18,7 @@ export const routes: RouteRecordRaw[] = [
     name: 'HomePage',
     component: (): ComponentOptions => import('@/pages/HomePage.vue')
   },
-  // AuthRouter
+  AuthRouter,
   CustomerRouter,
   SettingRouter
 ]

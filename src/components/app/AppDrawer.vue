@@ -7,8 +7,12 @@
           class="h-12"
           src="/logo.svg">
       </div>
-      <p class="text-sm text-(--p-red) flex justify-center my-2">
+      <p class="text-sm text-(--p-red) flex justify-center items-center gap-2 my-2">
         สาขา : <span>ขอนแก่น</span>
+        <Icon
+          class="text-font-gray cursor-pointer hover:text-black transition-all duration-200"
+          icon="iconamoon:exit"
+          @click="logout()" />
       </p>
     </div>
 
@@ -37,7 +41,11 @@
 </template>
 
 <script setup lang="ts">
+import useLogout from '@/pages/auth/composables/useLogout'
+import { Icon } from '@iconify/vue'
 import AppDrawerMenu from './AppDrawerMenu.vue'
+
+const { logout } = useLogout()
 
 const menuItems = [
   { label: 'ข่าวสาร', icon: '/menuicon/news.svg', key: 'news', to: '/news' },
@@ -53,4 +61,5 @@ const menuItems = [
 const buttomMenuItems = [
   { label: 'ตั่งค่า', icon: '/menuicon/setting.svg', key: 'setting', to: '/setting' }
 ]
+
 </script>

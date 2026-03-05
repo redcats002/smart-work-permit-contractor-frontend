@@ -60,20 +60,6 @@ const paginateQuery = computed((): IGetCustomerOccupationList => {
 })
 
 async function useFetch (): Promise<void> {
-  const mock = true
-  if (mock) {
-    items.value = [
-      { id: 1, name: 'นักเรียน/นักศึกษา' },
-      { id: 2, name: 'รับจ้างทั่วไป' },
-      { id: 3, name: 'พนักงานบริษัทเอกชน' },
-      { id: 4, name: 'ข้าราชการ/รัฐวิสาหกิจ' },
-      { id: 5, name: 'เจ้าของกิจการ/ธุรกิจส่วนตัว' },
-      { id: 6, name: 'เกษตรกร' },
-      { id: 7, name: 'ว่างงาน' },
-      { id: 8, name: 'อื่นๆ' }
-    ]
-    return
-  }
   const response = await CustomerOccupationService.getCustomerOccupationPaginate(paginateQuery.value)
   items.value = response?.data || []
   pagination.value = extractPagination(response)

@@ -24,6 +24,7 @@ declare module 'vue' {
     InputMask: typeof import('./src/volt/InputMask.vue')['default']
     InputText: typeof import('./src/volt/InputText.vue')['default']
     Menu: typeof import('./src/volt/Menu.vue')['default']
+    Password: typeof import('./src/volt/Password.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SecondaryButton: typeof import('./src/volt/SecondaryButton.vue')['default']

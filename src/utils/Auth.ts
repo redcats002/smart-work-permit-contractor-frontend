@@ -5,19 +5,30 @@ interface IToken {
   value: string
 }
 
-const authStore = useAuthStore()
+export type TAuthType = 'USER' | 'BRANCH'
 
-export const getAccessToken = (): string | null => authStore?.userToken?.accessToken || null
+export const getAuthToken = (type: TAuthType = 'USER'): IToken | null => {
+  const authStore = useAuthStore()
 
-export const getAuthToken = (): IToken | null => {
-  const accessToken = getAccessToken()
-
-  if (accessToken) {
-    return {
-      key: 'Authorization',
-      value: `Bearer ${accessToken}`
+  const getUserAccessToken = (): string | null => authStore?.userToken?.accessToken || null
+  const getBranchAccessToken = (): string | null => authStore?.branchToken?.accessToken || null
+  if (type === 'USER') {
+    const accessToken = getUserAccessToken()
+    if (accessToken) {
+      return {
+        key: 'Authorization',
+        value: `Bearer ${accessToken}`
+      }
     }
   }
-
+  if (type === 'BRANCH') {
+    const accessToken = getBranchAccessToken()
+    if (accessToken) {
+      return {
+        key: 'Authorization',
+        value: `Bearer ${accessToken}`
+      }
+    }
+  }
   return null
 }
