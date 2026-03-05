@@ -60,7 +60,7 @@
         :form="form"
         label="อาชีพ"
         name="jobId">
-        <JobSelection
+        <CustomerOccupationSelection
           v-model="model.jobId"
           :invalid="invalid" />
       </LabelField>
@@ -105,7 +105,7 @@ import LabelField from '@/components/input/LabelField.vue'
 import PhoneNumberInput from '@/components/input/PhoneNumberInput.vue'
 import Switch from '@/components/input/Switch.vue'
 import CustomerGroupSelection from '@/components/selection/modules/customer-group/CustomerGroupSelection.vue'
-import JobSelection from '@/components/selection/modules/job/JobSelection.vue'
+import CustomerOccupationSelection from '@/components/selection/modules/customer-occupation/CustomerOccupationSelection.vue'
 import TitleNameSelection from '@/components/selection/TitleNameSelection.vue'
 import { useFormInitialValues } from '../schema/customer.schema'
 
