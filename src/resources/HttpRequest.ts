@@ -1,6 +1,6 @@
 import axios, { type AxiosInstance } from 'axios'
-import { onRequest, onRequestError, onResponse, onResponseError } from './Interceptors'
 import { getAuthToken } from '@/utils/Auth'
+import { onRequest, onRequestError, onResponse, onResponseError } from './Interceptors'
 
 interface IHttpRequest {
   axiosInstance: AxiosInstance
@@ -71,7 +71,7 @@ class HttpRequest implements IHttpRequest {
     })
   }
 
-  public post (endPoint: string, data: object, config?: object): Promise<any> {
+  public post (endPoint: string, data?: object, config?: object): Promise<any> {
     return this.axiosInstance.post(endPoint, data, config)
   }
 
