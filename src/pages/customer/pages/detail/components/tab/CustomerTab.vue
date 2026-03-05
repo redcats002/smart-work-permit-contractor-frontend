@@ -18,7 +18,7 @@
 <script setup lang="ts">
 import BaseTab from '@/components/base/BaseTab.vue'
 import BaseTabWindow from '@/components/base/BaseTabWindow.vue'
-import { useInitTabDetail } from '../../composables/UseInitDetail'
+import { useInitTabDetail } from '../../composables/_useInitDetail'
 
 interface IProps {}
 
