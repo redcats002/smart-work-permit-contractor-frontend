@@ -7,7 +7,7 @@ export default {
   history: prefix,
   path: prefix,
   name: 'CustomerPage',
-  redirect: { name: 'CustomerList' },
+  redirect: { name: 'CustomerListPage' },
   component: (): ComponentOptions => import('@/pages/customer/Customer.vue'),
   meta: {
     title: 'ลูกค้า',
