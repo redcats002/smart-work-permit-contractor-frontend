@@ -20,3 +20,7 @@ export interface ICreateCustomerPayload extends ICurrentAddressRequest, IAddress
 export interface IUpdateCustomerPayload extends ICreateCustomerPayload {}
 
 export interface IGetCustomerList extends IBasePaginationRequest {}
+export interface IGetCustomerContractList extends IBasePaginationRequest {}
+export interface IGetCustomerPaymentHistoryList extends IBasePaginationRequest {}
+export interface IGetCustomerContactHistoryList extends IBasePaginationRequest {}
+export interface IGetCustomerEstateList extends IBasePaginationRequest {}
