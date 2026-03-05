@@ -1,4 +1,5 @@
 <template>
+  <AppToast />
   <OverlayLoader />
   <DefaultLayout
     v-if="pageReady && layoutName === 'default'"
@@ -14,6 +15,7 @@ import { useRoute } from 'vue-router'
 import OverlayLoader from './components/loader/OverlayLoader.vue'
 import BlankLayout from '@/layouts/BlankLayout.vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
+import AppToast from '@/volt/Toast.vue'
 
 const route = useRoute()
 

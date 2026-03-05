@@ -1,6 +1,6 @@
 <template>
   <BaseModal
-    v-model:visible="visible"
+    v-model="visible"
     class="md:w-fit!"
     header-align="center"
     label="คุณต้องการลบ ?"
@@ -32,6 +32,7 @@ interface IEmits {
 }
 
 const emits = defineEmits<IEmits>()
+
 </script>
 
 <style scoped>

@@ -1,14 +1,10 @@
 <template>
-  <slot
-    :close="close"
-    :open="open"
-    :visible="visible"
-    name="activator" />
   <Dialog
     v-bind="$attrs"
     v-model:visible="visible"
     class="md:w-220 w-9/10"
     dismissable-mask
+    modal
     @update:model-value="onUpdateModelValue($event)">
     <template #container="{ closeCallback }">
       <div class="bg-white rounded-lg w-full max-h-[80vh] flex flex-col overflow-hidden">
@@ -30,7 +26,9 @@
             @click="closeCallback()" />
         </div>
         <div class="px-10 pb-6 overflow-y-auto flex-1">
-          <slot />
+          <slot
+            :close="close"
+            :open="open" />
         </div>
         <div
           v-if="$slots.footer"
@@ -44,6 +42,12 @@
       </div>
     </template>
   </Dialog>
+  <slot
+    v-if="$slots.activator"
+    :close="close"
+    :open="open"
+    :visible="visible"
+    name="activator" />
 </template>
 
 <script setup lang="ts">

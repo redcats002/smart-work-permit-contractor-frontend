@@ -41,7 +41,7 @@ export function useInitPagination (): IPagination {
     page: route?.query?.page ? Number(route.query.page) : 1,
     totalPage: 1,
     count: 0,
-    limit: route?.query?.limit ? Number(route.query.limit) : 20
+    limit: route?.query?.limit ? Number(route.query.limit) : 10
   }
 }
 export interface IUsePagination {

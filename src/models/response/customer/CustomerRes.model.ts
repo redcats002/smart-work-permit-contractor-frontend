@@ -5,7 +5,7 @@ import type { TCustomerStatus } from '@/enums/modules/customer/CustomerStatus.en
 import type { TEstateStatus } from '@/enums/modules/estate/EstateStatus.enum'
 import type { TTitleName } from '@/enums/TitleName.enum'
 import type { ICustomerGroupList } from '../customer-group/CustomerGroupRes.model'
-import type { IJobList } from '../job/JobRes.model'
+import type { ICustomerOccupationList } from '../customer-occupation/CustomerOccupationRes.model'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 
 export interface ICustomerList extends IEntity {
@@ -27,7 +27,7 @@ export interface ICustomerById extends ICurrentAddressRequest, IAddressRequest, 
   phoneNumber2?: string
   birthDate: string
   customerGroup?: ICustomerGroupList
-  job?: IJobList
+  job?: ICustomerOccupationList
   email?: string
 }
 
