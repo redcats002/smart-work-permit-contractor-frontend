@@ -8,7 +8,6 @@ export default {
   path: prefix,
   name: 'CustomerSettingPage',
   redirect: { name: 'CustomerGroupListPage' },
-  component: (): ComponentOptions => import('@/pages/customer/Customer.vue'),
   meta: {
     title: 'ลูกค้า',
     auth: true,

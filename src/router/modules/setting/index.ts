@@ -1,6 +1,9 @@
 import type { ComponentOptions } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
+import ContractSettingRouter from './ContractSetting.router'
 import CustomerSettingRouter from './CustomerSetting.router'
+import FinancialSettingRouter from './FinancialSetting.router'
+import OtherSettingRouter from './OtherSetting.router'
 
 const prefix = '/setting'
 
@@ -25,6 +28,9 @@ export default {
         title: 'ตั้งค่า'
       }
     },
-    CustomerSettingRouter
+    CustomerSettingRouter,
+    ContractSettingRouter,
+    FinancialSettingRouter,
+    OtherSettingRouter
   ]
 } as RouteRecordRaw
