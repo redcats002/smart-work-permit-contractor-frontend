@@ -41,8 +41,11 @@
 </template>
 
 <script setup lang="ts">
+import useLogout from '@/pages/auth/composables/useLogout'
 import { Icon } from '@iconify/vue'
 import AppDrawerMenu from './AppDrawerMenu.vue'
+
+const { logout } = useLogout()
 
 const menuItems = [
   { label: 'ข่าวสาร', icon: '/menuicon/news.svg', key: 'news', to: '/news' },
@@ -59,5 +62,4 @@ const buttomMenuItems = [
   { label: 'ตั่งค่า', icon: '/menuicon/setting.svg', key: 'setting', to: '/setting' }
 ]
 
-function logout (): void {}
 </script>

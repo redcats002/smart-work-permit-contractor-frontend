@@ -47,7 +47,7 @@
         v-else
         :class="[
           'inline-flex items-center text-[12px] justify-center min-w-7 h-7 px-2 rounded-lg text-surface-500 hover:bg-surface-50 cursor-pointer',
-          currentPage === page ? 'bg-[#FFF6E5] text-orange-400' : ''
+          currentPage === page ? 'bg-primary-100 text-primary-400' : ''
         ]"
         @click="goToPage(Number(page))">
         {{ page }}
