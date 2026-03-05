@@ -29,7 +29,7 @@ class CustomerGroupProvider extends HttpRequest implements ICustomerGroupProvide
   }
 
   public async updateCustomerGroup (id: TBaseParamsId, payload: IUpdateCustomerGroupPayload): Promise<TActionCustomerGroup> {
-    const response = await this.post(`${this.urlPrefix}/${id}`, payload)
+    const response = await this.put(`${this.urlPrefix}/${id}`, payload)
     return response
   }
 
