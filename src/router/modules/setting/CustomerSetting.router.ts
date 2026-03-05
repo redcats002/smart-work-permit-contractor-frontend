@@ -22,16 +22,18 @@ export default {
       component: (): ComponentOptions => import('@/pages/setting/pages/customer/pages/customer-group/pages/CustomerGroupListPage.vue'),
       meta: {
         auth: true,
-        title: 'กลุ่มลูกค้า'
+        title: 'กลุ่มลูกค้า',
+        back: { name: 'SettingListPage' }
       }
     },
     {
-      path: 'job/list',
-      name: 'JobListPage',
-      component: (): ComponentOptions => import('@/pages/setting/pages/customer/pages/job/pages/JobListPage.vue'),
+      path: 'occupation/list',
+      name: 'OccupationListPage',
+      component: (): ComponentOptions => import('@/pages/setting/pages/customer/pages/occupation/pages/OccupationListPage.vue'),
       meta: {
         auth: true,
-        title: 'อาชีพ'
+        title: 'อาชีพ',
+        back: { name: 'SettingListPage' }
       }
     }
   ]

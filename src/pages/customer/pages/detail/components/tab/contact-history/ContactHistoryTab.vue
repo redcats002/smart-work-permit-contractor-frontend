@@ -17,6 +17,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IGetCustomerContactHistoryList, IGetCustomerList } from '@/models/request/customer/CustomerReq.model'
@@ -28,11 +29,13 @@ import ContactHistoryTable from './ContactHistoryTable.vue'
 
 const CustomerService: ICustomerProvider = new CustomerProvider()
 
+const route = useRoute()
 const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
 
 const filters = ref<IGetCustomerContactHistoryList>({})
 const items = ref<ICustomerContactHistoryList[]>([])
 
+const customerId = computed((): number => route?.params?.id ? Number(route.params.id) : 0)
 const paginateQuery = computed((): IGetCustomerContactHistoryList => {
   const normalizedFilters = normalizeFilters(filters.value)
   return {
@@ -51,7 +54,7 @@ async function useFetch (): Promise<void> {
     items.value = []
     return
   }
-  const response = await CustomerService.getCustomerPaginate(paginateQuery.value)
+  const response = await CustomerService.getCustomerContactHistory(customerId.value, paginateQuery.value)
   items.value = response?.data || []
   pagination.value = extractPagination(response)
   syncQuery({ ...normalizeFilters(filters.value) })

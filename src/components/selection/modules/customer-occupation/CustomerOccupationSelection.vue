@@ -12,11 +12,11 @@
 import { onMounted, ref, watch } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel } from '@/models/Global.model'
-import JobProvider, { type IJobProvider } from '@/resources/provider/job/Job.provider'
+import CustomerOccupationProvider, { type ICustomerOccupationProvider } from '@/resources/provider/customer-occupation/CustomerOccupation.provider'
 import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
 import usePagination from '@/composables/usePagination'
 
-const JobService: IJobProvider = new JobProvider()
+const CustomerOccupationService: ICustomerOccupationProvider = new CustomerOccupationProvider()
 
 const model = defineModel<number | null>()
 const selectedName = defineModel<string | null>('selectedName', { default: null })
@@ -28,7 +28,7 @@ const { pagination } = usePagination()
 const suggestions = ref<TBaseModel[]>([])
 
 async function useFetch (): Promise<void> {
-  const response = await JobService.getJobPaginate({
+  const response = await CustomerOccupationService.getCustomerOccupationPaginate({
     page: pagination.value.page,
     limit: 9999
   })
