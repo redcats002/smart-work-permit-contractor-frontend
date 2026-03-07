@@ -4,73 +4,100 @@
       <div>
         <LabelField
           :label="labelType"
+          hide-error
           required>
-          <div v-if="type!=='CITIZEN'">
+          <div v-if="type!=='MAIN'">
             <CheckboxInput
               v-model="model.isSameCitizenAddress"
               label="ใช้ที่อยู่เดียวกับตามบัตรประจำตัวประชาชน"
-              variant="primary" />
+              variant="primary"
+              @update:model-value="onUseSameCitizenAddress($event)" />
             <CheckboxInput
               v-if="type==='WORK'"
               v-model="model.isSameCurrentAddress"
               label="ใช้ที่อยู่เดียวกับที่อยู่ปัจจุบัน"
-              variant="primary" />
+              variant="primary"
+              @update:model-value="onUseSameCurrentAddress($event)" />
           </div>
           <div v-else />
         </LabelField>
         <LabelField
           v-model="model.address"
+          :form="form"
           :name="address"
-          placeholder="กรอกที่อยู่" />
+          placeholder="กรอกที่อยู่"
+          hide-error />
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <LabelField
+          v-slot="{invalid}"
+          :form="form"
+          :name="subDistrict"
           label="แขวง/ตำบล"
+          hide-error
           required>
           <AddressFieldInput
             v-model="model.subDistrict"
+            :invalid="invalid"
             :name="subDistrict"
             address-type="sub-district"
             placeholder="เลือกแขวง/ตำบล"
             @select="onAddressSelect($event)" />
         </LabelField>
         <LabelField
+          v-slot="{invalid}"
+          :form="form"
+          :name="district"
           label="เขต/อำเภอ"
+          hide-error
           required>
           <AddressFieldInput
             v-model="model.district"
+            :invalid="invalid"
             :name="district"
             address-type="district"
             placeholder="เลือกเขต/อำเภอ"
             @select="onAddressSelect($event)" />
         </LabelField>
         <LabelField
+          v-slot="{invalid}"
+          :form="form"
+          :name="province"
           label="จังหวัด"
+          hide-error
           required>
           <AddressFieldInput
             v-model="model.province"
+            :invalid="invalid"
             :name="province"
             address-type="province"
             placeholder="เลือกจังหวัด"
             @select="onAddressSelect($event)" />
         </LabelField>
         <LabelField
+          v-slot="{invalid}"
+          :form="form"
+          :name="postalCode"
           label="รหัสไปรษณีย์"
+          hide-error
           required>
           <AddressFieldInput
             v-model="model.postalCode"
+            :invalid="invalid"
             :name="postalCode"
             address-type="zipcode"
             placeholder="รหัสไปรษณีย์"
             @select="onAddressSelect($event)" />
         </LabelField>
         <LabelField
-          v-if="type!=='CITIZEN'"
+          v-if="type!=='MAIN'"
+          v-model="model.urlGoogleMap"
+          :form="form"
           :name="googleMapUrl"
           class="md:col-span-2"
           label="URL Google Map"
           placeholder="https://maps.app.goo.gl/"
-          required />
+          hide-error />
       </div>
     </div>
   </div>
@@ -79,22 +106,29 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { IFormState } from '@/models/Form.model'
-import type { IAddress } from '@/models/request/AddressReq.model'
+import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import AddressFieldInput from '@/components/input/AddressFieldInput.vue'
 import CheckboxInput from '@/components/input/CheckboxInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 
 interface IProps {
   form?: IFormState
-  type?: 'CITIZEN' | 'CURRENT' | 'WORK'
+  type?: 'MAIN' | 'CURRENT' | 'WORK'
+  hideError?: boolean
+}
+interface IEmits {
+  useSameCitizenAddress: []
+  useSameCurrentAddress: []
 }
 
 const props = withDefaults(defineProps<IProps>(), {
   form: undefined,
-  type: 'CURRENT'
+  type: 'CURRENT',
+  hideError: false
 })
+const emits = defineEmits<IEmits>()
 
-const model = defineModel<IAddress>({ default: (): IAddress => ({
+const model = defineModel<IAddressRequest>({ default: (): IAddressRequest => ({
   address: '',
   subDistrict: '',
   district: '',
@@ -106,45 +140,52 @@ const model = defineModel<IAddress>({ default: (): IAddress => ({
 
 const labelType = computed((): string => {
   if (props.type === 'CURRENT') return 'ที่อยู่ปัจจุบัน'
-  if (props.type === 'CITIZEN') return 'ที่อยู่ตามบัตรประชาชน'
+  if (props.type === 'MAIN') return 'ที่อยู่ตามบัตรประชาชน'
   return 'ที่อยู่ที่ทำงาน'
 })
 const address = computed((): string => {
-  if (props.type === 'CURRENT') return 'currentAddress'
-  if (props.type === 'CITIZEN') return 'citizenAddress'
-  return 'workAddress'
+  if (props.type === 'CURRENT') return 'currentAddress.address'
+  if (props.type === 'MAIN') return 'mainAddress.address'
+  return 'workAddress.address'
 })
 const subDistrict = computed((): string => {
-  if (props.type === 'CURRENT') return 'currentSubDistrict'
-  if (props.type === 'CITIZEN') return 'subDistrict'
-  return 'workSubDistrict'
+  if (props.type === 'CURRENT') return 'currentAddress.subDistrict'
+  if (props.type === 'MAIN') return 'mainAddress.subDistrict'
+  return 'workAddress.subDistrict'
 })
 const district = computed((): string => {
-  if (props.type === 'CURRENT') return 'currentDistrict'
-  if (props.type === 'CITIZEN') return 'district'
-  return 'workDistrict'
+  if (props.type === 'CURRENT') return 'currentAddress.district'
+  if (props.type === 'MAIN') return 'mainAddress.district'
+  return 'workAddress.district'
 })
 const province = computed((): string => {
-  if (props.type === 'CURRENT') return 'currentProvince'
-  if (props.type === 'CITIZEN') return 'province'
-  return 'workProvince'
+  if (props.type === 'CURRENT') return 'currentAddress.province'
+  if (props.type === 'MAIN') return 'mainAddress.province'
+  return 'workAddress.province'
 })
 const postalCode = computed((): string => {
-  if (props.type === 'CURRENT') return 'currentPostalCode'
-  if (props.type === 'CITIZEN') return 'postalCode'
-  return 'workPostalCode'
+  if (props.type === 'CURRENT') return 'currentAddress.postalCode'
+  if (props.type === 'MAIN') return 'mainAddress.postalCode'
+  return 'workAddress.postalCode'
 })
 const googleMapUrl = computed((): string => {
-  if (props.type === 'CURRENT') return 'currentUrl'
-  if (props.type === 'CITIZEN') return 'citizenUrl'
-  return 'workUrl'
+  if (props.type === 'CURRENT') return 'currentAddress.urlGoogleMap'
+  if (props.type === 'MAIN') return 'mainAddress.urlGoogleMap'
+  return 'workAddress.urlGoogleMap'
 })
 
-function onAddressSelect (address: Partial<IAddress>): void {
-  model.value.subDistrict = address?.subDistrict || ''
-  model.value.district = address?.district || ''
-  model.value.province = address?.province || ''
-  model.value.postalCode = address?.postalCode || ''
+function onAddressSelect (address: Partial<IAddressRequest>): void {
+  model.value = {
+    ...model.value,
+    ...address
+  }
+}
+
+function onUseSameCitizenAddress (isChecked: boolean): void {
+  if (isChecked) emits('useSameCitizenAddress')
+}
+function onUseSameCurrentAddress (isChecked: boolean): void {
+  if (isChecked) emits('useSameCurrentAddress')
 }
 </script>
 
