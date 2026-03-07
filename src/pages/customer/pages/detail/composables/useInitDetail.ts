@@ -11,30 +11,46 @@ import useTabItems, {
   type IUseTabItems
 } from '@/composables/useTabItems'
 
-export function useInitDetail (): Ref<ICustomerById> {
+export function useInitDetail (data?: Partial<ICustomerById>): Ref<ICustomerById> {
   return ref<ICustomerById>({
-    customerStatus: 'ACTIVE',
-    citizenId: '',
-    titleName: 'MR',
-    firstName: '',
-    lastName: '',
-    phoneNumber: '',
-    birthDate: '',
-    currentAddress: '',
-    currentSubDistrict: '',
-    currentDistrict: '',
-    currentProvince: '',
-    currentPostalCode: '',
-    address: '',
-    subDistrict: '',
-    district: '',
-    province: '',
-    postalCode: '',
-    workAddress: '',
-    workSubDistrict: '',
-    workDistrict: '',
-    workProvince: '',
-    workPostalCode: ''
+    status: data?.status ?? 'ACTIVE',
+    idCard: data?.idCard ?? '',
+    titleName: data?.titleName ?? 'MR',
+    firstName: data?.firstName ?? '',
+    lastName: data?.lastName ?? '',
+    phoneNumber: data?.phoneNumber ?? '',
+    birthDate: data?.birthDate ?? '',
+    email: data?.email ?? '',
+    mainAddress: {
+      address: data?.mainAddress?.address ?? '',
+      subDistrict: data?.mainAddress?.subDistrict ?? '',
+      district: data?.mainAddress?.district ?? '',
+      province: data?.mainAddress?.province ?? '',
+      postalCode: data?.mainAddress?.postalCode ?? '',
+      urlGoogleMap: data?.mainAddress?.urlGoogleMap ?? '',
+      isSameCitizenAddress: data?.mainAddress?.isSameCitizenAddress ?? false,
+      isSameCurrentAddress: data?.mainAddress?.isSameCurrentAddress ?? false
+    },
+    currentAddress: {
+      address: data?.currentAddress?.address ?? '',
+      subDistrict: data?.currentAddress?.subDistrict ?? '',
+      district: data?.currentAddress?.district ?? '',
+      province: data?.currentAddress?.province ?? '',
+      postalCode: data?.currentAddress?.postalCode ?? '',
+      urlGoogleMap: data?.currentAddress?.urlGoogleMap ?? '',
+      isSameCitizenAddress: data?.currentAddress?.isSameCitizenAddress ?? false,
+      isSameCurrentAddress: data?.currentAddress?.isSameCurrentAddress ?? false
+    },
+    workAddress: {
+      address: data?.workAddress?.address ?? '',
+      subDistrict: data?.workAddress?.subDistrict ?? '',
+      district: data?.workAddress?.district ?? '',
+      province: data?.workAddress?.province ?? '',
+      postalCode: data?.workAddress?.postalCode ?? '',
+      urlGoogleMap: data?.workAddress?.urlGoogleMap ?? '',
+      isSameCitizenAddress: data?.workAddress?.isSameCitizenAddress ?? false,
+      isSameCurrentAddress: data?.workAddress?.isSameCurrentAddress ?? false
+    }
   })
 }
 
