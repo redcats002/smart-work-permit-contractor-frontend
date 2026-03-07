@@ -8,9 +8,9 @@ export function onRequest (config: AxiosRequestConfig): AxiosRequestConfig {
     return config
   }
   return {
-    ...config,
-    data: config.data ? humps.decamelizeKeys(config.data) : config.data,
-    params: config.params ? humps.decamelizeKeys(config.params) : config.params
+    ...config
+    // data: config.data ? humps.decamelizeKeys(config.data) : config.data,
+    // params: config.params ? humps.decamelizeKeys(config.params) : config.params
   }
 }
 

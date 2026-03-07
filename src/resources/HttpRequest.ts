@@ -34,6 +34,7 @@ class HttpRequest implements IHttpRequest {
     this.axiosInstance = axios.create({
       baseURL: this.url,
       timeout: 120000,
+      withCredentials: true,
       headers: {
         'Content-Type': 'application/json'
       }
