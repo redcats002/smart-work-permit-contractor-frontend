@@ -10,8 +10,7 @@
         @delete="onDelete($event)"
         @update="onUpdate($event)" />
     </BaseTop>
-    <div
-      class="mx-auto max-w-6xl pt-4">
+    <BasePage>
       <ContractLoanPurposeTable
         v-model:form="form"
         v-model:pagination="pagination"
@@ -21,7 +20,7 @@
         @delete="onDelete($event)"
         @edit="onUpdate($event)"
         @update="fetch()" />
-    </div>
+    </BasePage>
   </section>
 </template>
 
@@ -32,6 +31,7 @@ import { handleLoading } from '@/utils/HandleLoading'
 import type { IActionContractLoanPurposePayload, IGetContractLoanPurposeList } from '@/models/request/contract-loan-purpose/ContractLoanPurposeReq.model'
 import type { IContractLoanPurposeList } from '@/models/response/contract-loan-purpose/ContractLoanPurposeRes.model'
 import ContractLoanPurposeProvider, { type IContractLoanPurposeProvider } from '@/resources/provider/contract-loan-purpose/ContractLoanPurpose.provider'
+import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import Spacer from '@/components/flex/Spacer.vue'
@@ -68,27 +68,27 @@ async function useFetch (): Promise<void> {
 async function useCreate (): Promise<void> {
   await ContractLoanPurposeService.createContractLoanPurpose(form.value)
   toast.success('ดำเนินการสำเร็จ')
+  await useFetch()
 }
 async function useUpdate (id: number): Promise<void> {
   await ContractLoanPurposeService.updateContractLoanPurpose(id, form.value)
   toast.success('ดำเนินการสำเร็จ')
+  await useFetch()
 }
 async function useDelete (id: number): Promise<void> {
   await ContractLoanPurposeService.deleteContractLoanPurpose(id)
   toast.success('ดำเนินการสำเร็จ')
+  await useFetch()
 }
 
 function onCreate (): void {
   handleLoading(useCreate)
-  fetch()
 }
 function onUpdate (id: number): void {
   handleLoading((): Promise<void> => useUpdate(id))
-  fetch()
 }
 function onDelete (id: number): void {
   handleLoading((): Promise<void> => useDelete(id))
-  fetch()
 }
 function fetch (): void {
   handleLoading(useFetch)

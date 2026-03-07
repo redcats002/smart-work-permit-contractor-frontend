@@ -2,8 +2,8 @@
   <section
     id="setting-list-page">
     <PageTitle />
-    <div class="grid place-content-center">
-      <BaseContainer class="w-140!">
+    <BasePage>
+      <BaseContainer>
         <div
           v-for="(item, i) in items"
           :key="`setting-${i}`">
@@ -29,7 +29,7 @@
           <Divider />
         </div>
       </BaseContainer>
-    </div>
+    </BasePage>
   </section>
 </template>
 
@@ -37,6 +37,7 @@
 import { ref } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
 import BaseContainer from '@/components/base/BaseContainer.vue'
+import BasePage from '@/components/base/BasePage.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import { routes } from '@/router/index'
 import { Icon } from '@iconify/vue'
