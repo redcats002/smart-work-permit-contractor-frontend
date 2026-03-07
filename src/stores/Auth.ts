@@ -1,5 +1,4 @@
 import { ref, type Ref } from 'vue'
-import { accessTokenStorage, branchAccessTokenStorage } from '@/utils/Storage'
 import { defineStore } from 'pinia'
 
 export interface IUser {
@@ -21,11 +20,11 @@ export interface IToken {
 
 interface IAuthStore {
   user: Ref<IUser>
-  userToken: Ref<IToken>
+  // userToken: Ref<IToken>
   branch: Ref<IBranch>
-  branchToken: Ref<IToken>
-  userLogin(user: IUser, token: IToken): void
-  branchLogin(branch: IBranch, token: IToken): void
+  // branchToken: Ref<IToken>
+  userLogin(user: IUser): void
+  branchLogin(branch: IBranch): void
   logout (): void
 }
 
@@ -52,14 +51,14 @@ export const useAuthStore = defineStore('Auth', (): IAuthStore => {
     expireIn: null
   })
 
-  function userLogin (userValue: IUser, tokenValue: IToken): void {
+  function userLogin (userValue: IUser): void {
     user.value = userValue
-    userToken.value = tokenValue
+    // userToken.value = tokenValue
   }
 
-  function branchLogin (branchValue: IBranch, tokenValue: IToken): void {
+  function branchLogin (branchValue: IBranch): void {
     branch.value = branchValue
-    branchToken.value = tokenValue
+    // branchToken.value = tokenValue
   }
 
   function clearBranch (): void {
@@ -92,22 +91,22 @@ export const useAuthStore = defineStore('Auth', (): IAuthStore => {
 
   return {
     user,
-    userToken,
+    // userToken,
     userLogin,
     logout,
     branch,
-    branchToken,
+    // branchToken,
     branchLogin
   }
 }, {
   persist: [
     {
-      pick: ['userToken'],
-      storage: accessTokenStorage
+      pick: ['user']
+      // storage: accessTokenStorage
     },
     {
-      pick: ['branchToken'],
-      storage: branchAccessTokenStorage
+      pick: ['branch']
+      // storage: branchAccessTokenStorage
     }
   ]
 })

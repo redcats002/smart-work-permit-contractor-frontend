@@ -130,7 +130,7 @@ async function useSelectBranch (branchId: number): Promise<void> {
     toast.warn('select branch mock')
   } else {
     const response = await AuthPrivateService.selectBranch({ branchId })
-    authStore.branchLogin(response.data?.branch, response.data?.token)
+    authStore.branchLogin(response.data?.branch)
   }
   toast.success('ยินดีต้อนรับเข้าสู่ระบบ')
   router.push({ name: 'HomePage' })
@@ -148,7 +148,7 @@ async function useRejectBranch (branchId: number): Promise<void> {
 
 function setBranchState (data: ILoginResponse | IRegisterResponse): void {
   setState('SELECT_BRANCH')
-  authStore.userLogin(data.user, { accessToken: data?.token, expireIn: 3600 })
+  authStore.userLogin(data.user)
   branches.value = data.branches
 }
 

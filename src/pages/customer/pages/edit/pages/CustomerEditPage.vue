@@ -6,8 +6,7 @@
       <Spacer />
       <ReadIdentificationCardButton />
     </BaseTop>
-    <div
-      class="mx-auto max-w-6xl pt-4">
+    <BasePage>
       <div>
         <Form
           v-slot="$form"
@@ -24,7 +23,7 @@
             <AddressForm
               v-model="citizenAddress"
               :form="$form"
-              type="CITIZEN" />
+              type="MAIN" />
           </BaseContainer>
           <BaseContainer>
             <AddressForm
@@ -41,7 +40,7 @@
           <FormAction @cancel="onCancel()" />
         </Form>
       </div>
-    </div>
+    </BasePage>
   </section>
 </template>
 
@@ -51,12 +50,13 @@ import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { IAddress } from '@/models/request/AddressReq.model'
+import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import type { IActionCustomerPayload, IUpdateCustomerPayload } from '@/models/request/customer/CustomerReq.model'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import type { ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import CustomerProvider from '@/resources/provider/customer/Customer.provider'
 import BaseContainer from '@/components/base/BaseContainer.vue'
+import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
@@ -79,7 +79,7 @@ const resolver = zodResolver(CustomerSchema)
 
 const customerId = computed((): string => route?.params?.id as string ?? '')
 const citizenAddress = computed({
-  get (): IAddress {
+  get (): IAddressRequest {
     return {
       address: form.value.address,
       subDistrict: form.value.subDistrict,
@@ -88,7 +88,7 @@ const citizenAddress = computed({
       postalCode: form.value.postalCode
     }
   },
-  set (e: IAddress): void {
+  set (e: IAddressRequest): void {
     form.value.address = e.address
     form.value.subDistrict = e.subDistrict
     form.value.district = e.district
@@ -97,7 +97,7 @@ const citizenAddress = computed({
   }
 })
 const currentAddress = computed({
-  get (): IAddress {
+  get (): IAddressRequest {
     return {
       address: form.value.currentAddress,
       subDistrict: form.value.currentSubDistrict,
@@ -105,21 +105,21 @@ const currentAddress = computed({
       province: form.value.currentProvince,
       postalCode: form.value.currentPostalCode,
       isSameCitizenAddress: form.value.isSameCitizenAddress,
-      mapUrl: form.value.currentUrlMap
+      urlGoogleMap: form.value.currentUrlMap
     }
   },
-  set (e: IAddress): void {
+  set (e: IAddressRequest): void {
     form.value.currentAddress = e.address
     form.value.currentSubDistrict = e.subDistrict
     form.value.currentDistrict = e.district
     form.value.currentProvince = e.province
     form.value.currentPostalCode = e.postalCode
     form.value.isSameCitizenAddress = e.isSameCitizenAddress
-    form.value.currentUrlMap = e.mapUrl
+    form.value.currentUrlMap = e.urlGoogleMap
   }
 })
 const workAddress = computed({
-  get (): IAddress {
+  get (): IAddressRequest {
     return {
       address: form.value.workAddress,
       subDistrict: form.value.workSubDistrict,
@@ -128,10 +128,10 @@ const workAddress = computed({
       postalCode: form.value.workPostalCode,
       isSameCitizenAddress: form.value.isSameCitizenAddress,
       isSameCurrentAddress: form.value.isSameCurrentAddress,
-      mapUrl: form.value.workUrlMap
+      urlGoogleMap: form.value.workUrlMap
     }
   },
-  set (e: IAddress): void {
+  set (e: IAddressRequest): void {
     form.value.workAddress = e.address
     form.value.workSubDistrict = e.subDistrict
     form.value.workDistrict = e.district
@@ -139,7 +139,7 @@ const workAddress = computed({
     form.value.workPostalCode = e.postalCode
     form.value.isSameCitizenAddress = e.isSameCitizenAddress
     form.value.isSameCurrentAddress = e.isSameCurrentAddress
-    form.value.workUrlMap = e.mapUrl
+    form.value.workUrlMap = e.urlGoogleMap
   }
 })
 
@@ -147,7 +147,7 @@ function useInitForm (data: ICustomerById): void {
   form.value = {
     ...data,
     customerGroupId: data?.customerGroup?.id || undefined,
-    jobId: data?.job?.id || undefined
+    occupationId: data?.occupation?.id || undefined
   }
 }
 

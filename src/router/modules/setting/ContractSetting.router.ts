@@ -8,6 +8,7 @@ export default {
   path: prefix,
   name: 'ContractSettingPage',
   redirect: { name: 'ContractLoanTypeListPage' },
+  component: (): ComponentOptions => import('@/pages/setting/pages/contract/ContractSetting.vue'),
   meta: {
     title: 'สัญญา',
     auth: true,

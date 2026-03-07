@@ -32,7 +32,7 @@ export interface ICustomerProvider {
 }
 
 class CustomerProvider extends HttpRequest implements ICustomerProvider {
-  private urlPrefix: string = '/api/v1/customers'
+  private urlPrefix: string = '/api/v1/customer'
 
   public async getCustomerPaginate (query: IGetCustomerList): Promise<TGetCustomerListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)

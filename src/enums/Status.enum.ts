@@ -1,6 +1,6 @@
 export enum EntityStatusEnum {
   ACTIVE = 'ACTIVE',
-  IN_ACTIVE = 'IN_ACTIVE',
+  INACTIVE = 'INACTIVE',
   DELETED = 'DELETED'
 }
 

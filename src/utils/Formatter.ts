@@ -182,7 +182,9 @@ function fullName (e: { titleName?: TTitleName, firstName?: string, lastName?: s
   if (!e?.firstName && !e?.lastName) return 'ไม่ระบุ'
   if (e?.firstName && !e.lastName) return e.firstName
   if (!e?.firstName && e?.lastName) return e.lastName
-  return `${formatTitle(e.titleName)}${e.firstName} ${e.lastName}`
+  const isEng = (/[a-zA-Z]/).test(`${e.firstName} ${e.lastName}`)
+  const title = formatTitle(e.titleName, isEng)
+  return `${title} ${e.firstName} ${e.lastName}`
 }
 
 function fullPhoneNumber (e: { phoneNumber?: string, phoneNumber2?: string }): string {

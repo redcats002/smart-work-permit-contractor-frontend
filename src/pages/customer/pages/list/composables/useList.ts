@@ -34,33 +34,6 @@ export default function useList (): IUseList {
   })
 
   async function useFetch (): Promise<void> {
-    const mock = true // TODO: remove mock when api ready
-    if (mock) {
-      items.value = [
-        {
-          id: 1,
-          phoneNumber: '0888888888',
-          phoneNumber2: '0888888889',
-          customerGroup: { label: 'ลูกค้าใหม่', value: 0 },
-          customerStatus: 'ACTIVE',
-          firstName: 'จันทร์',
-          lastName: 'พงษ์พัฒนโยธิน',
-          idNo: 'CUS-00001',
-          titleName: 'MR'
-        },
-        {
-          id: 2,
-          phoneNumber: '0888888888',
-          customerGroup: { label: 'กลุ่มชำระล่าช้า', value: 0 },
-          customerStatus: 'IN_ACTIVE',
-          firstName: 'จันทร์',
-          lastName: 'พงษ์พัฒนโยธิน',
-          idNo: 'CUS-00002',
-          titleName: 'MR'
-        }
-      ]
-      return
-    }
     const response = await CustomerService.getCustomerPaginate(paginateQuery.value)
     items.value = response?.data || []
     pagination.value = extractPagination(response)

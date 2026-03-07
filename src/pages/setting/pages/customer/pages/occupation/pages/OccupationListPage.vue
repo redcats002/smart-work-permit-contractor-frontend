@@ -10,8 +10,7 @@
         @delete="onDelete($event)"
         @update="onUpdate($event)" />
     </BaseTop>
-    <div
-      class="mx-auto max-w-6xl pt-4">
+    <BasePage>
       <OccupationTable
         v-model:form="form"
         v-model:pagination="pagination"
@@ -21,7 +20,7 @@
         @delete="onDelete($event)"
         @edit="onUpdate($event)"
         @update="fetch()" />
-    </div>
+    </BasePage>
   </section>
 </template>
 
@@ -33,6 +32,7 @@ import type { IActionCustomerOccupationPayload, IGetCustomerOccupationList } fro
 import type { ICustomerOccupationList } from '@/models/response/customer-occupation/CustomerOccupationRes.model'
 import type { ICustomerOccupationProvider } from '@/resources/provider/customer-occupation/CustomerOccupation.provider'
 import CustomerOccupationProvider from '@/resources/provider/customer-occupation/CustomerOccupation.provider'
+import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import Spacer from '@/components/flex/Spacer.vue'
@@ -69,27 +69,27 @@ async function useFetch (): Promise<void> {
 async function useCreate (): Promise<void> {
   await CustomerOccupationService.createCustomerOccupation(form.value)
   toast.success('ดำเนินการสำเร็จ')
+  await useFetch()
 }
 async function useUpdate (id: number): Promise<void> {
   await CustomerOccupationService.updateCustomerOccupation(id, form.value)
   toast.success('ดำเนินการสำเร็จ')
+  await useFetch()
 }
 async function useDelete (id: number): Promise<void> {
   await CustomerOccupationService.deleteCustomerOccupation(id)
   toast.success('ดำเนินการสำเร็จ')
+  await useFetch()
 }
 
 function onCreate (): void {
   handleLoading(useCreate)
-  fetch()
 }
 function onUpdate (id: number): void {
   handleLoading((): Promise<void> => useUpdate(id))
-  fetch()
 }
 function onDelete (id: number): void {
   handleLoading((): Promise<void> => useDelete(id))
-  fetch()
 }
 function fetch (): void {
   handleLoading(useFetch)

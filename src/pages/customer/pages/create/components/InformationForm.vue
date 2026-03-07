@@ -7,17 +7,19 @@
         false-label="ปิดใช้งาน"
         true-label="ใช้งาน" />
       <LabelField
-        v-model="model.citizenId"
+        v-model="model.idCard"
         :form="form"
         label="เลขบัตรประชาชน"
-        name="citizenId"
+        name="idCard"
+        hide-error
         required />
       <div class="w-full grid grid-cols-2 gap-5">
         <LabelField
           v-slot="{ invalid }"
           :form="form"
           label="คำนำหน้า"
-          name="titleName">
+          name="titleName"
+          hide-error>
           <TitleNameSelection
             v-model="model.titleName"
             :invalid="invalid"
@@ -28,6 +30,7 @@
           :form="form"
           label="ชื่อ"
           name="firstName"
+          hide-error
           required />
       </div>
       <LabelField
@@ -35,22 +38,26 @@
         :form="form"
         label="นามสกุล"
         name="lastName"
+        hide-error
         required />
       <LabelField
         v-slot="{ invalid }"
         :form="form"
         label="วันเดือนปีเกิด"
         name="birthDate"
+        hide-error
         required>
         <DatePickerInput
           v-model="model.birthDate"
-          :invalid="invalid" />
+          :invalid="invalid"
+          name="birthDate" />
       </LabelField>
       <LabelField
         v-slot="{ invalid }"
         :form="form"
         label="กลุ่มลูกค้า"
-        name="customerGroupId">
+        name="customerGroupId"
+        hide-error>
         <CustomerGroupSelection
           v-model="model.customerGroupId"
           :invalid="invalid" />
@@ -59,9 +66,10 @@
         v-slot="{ invalid }"
         :form="form"
         label="อาชีพ"
-        name="jobId">
+        name="jobId"
+        hide-error>
         <CustomerOccupationSelection
-          v-model="model.jobId"
+          v-model="model.occupationId"
           :invalid="invalid" />
       </LabelField>
       <LabelField
@@ -69,6 +77,7 @@
         :form="form"
         label="เบอร์โทร"
         name="phoneNumber"
+        hide-error
         required>
         <PhoneNumberInput
           v-model="model.phoneNumber"
@@ -79,7 +88,8 @@
         v-slot="{ invalid }"
         :form="form"
         label="เบอร์โทร 2"
-        name="phoneNumber2">
+        name="phoneNumber2"
+        hide-error>
         <PhoneNumberInput
           v-model="model.phoneNumber2"
           :invalid="invalid"
@@ -90,6 +100,7 @@
         :form="form"
         label="อีเมล"
         name="email"
+        hide-error
         @keypress="keypress.emailNoThai($event)" />
     </div>
   </div>
@@ -121,10 +132,10 @@ const model = defineModel<ICreateCustomerPayload>({
 
 const isActive = computed({
   get (): boolean {
-    return model.value?.customerStatus === 'ACTIVE' ? true : false
+    return model.value?.status === 'ACTIVE' ? true : false
   },
   set (value: boolean): void {
-    model.value.customerStatus = value ? 'ACTIVE' : 'IN_ACTIVE'
+    model.value.status = value ? 'ACTIVE' : 'INACTIVE'
   }
 })
 </script>

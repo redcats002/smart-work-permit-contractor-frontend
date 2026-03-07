@@ -85,15 +85,28 @@ const props = withDefaults(defineProps<IProps>(), {
   invalid: undefined
 })
 
+function resolveFormField (form: IFormState, name: string): IFormState[string] | undefined {
+  // (e.g. form["mainAddress.address"]) as well as under a nested object tree.
+  if (form[name] !== undefined) return form[name]
+
+  const parts = name.split('.')
+  let node: any = form
+  for (const part of parts) {
+    if (node == null || typeof node !== 'object') return undefined
+    node = node[part]
+  }
+  return node as IFormState[string] | undefined
+}
+
 const isInvalid = computed((): boolean => {
   if (props.invalid !== undefined) return props.invalid
   if (!props.form || !props.name) return false
-  return props.form[props.name]?.invalid ?? false
+  return resolveFormField(props.form, props.name)?.invalid ?? false
 })
 
 const errorMessage = computed((): string => {
   if (!props.form || !props.name) return ''
-  const fieldState = props.form[props.name]
+  const fieldState = resolveFormField(props.form, props.name)
   return fieldState?.error?.message ?? fieldState?.errors?.[0]?.message ?? ''
 })
 </script>
@@ -111,6 +124,7 @@ const errorMessage = computed((): string => {
   left: 0;
   color: #ef4444;
   font-size: 12px;
+  margin-top: 4px;
   z-index: 50;
 }
 
