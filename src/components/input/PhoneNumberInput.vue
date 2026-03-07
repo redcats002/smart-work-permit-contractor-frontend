@@ -2,7 +2,7 @@
   <InputMask
     v-bind="$attrs"
     v-model="model"
-    class="w-full"
+    class="w-full h-9"
     mask="999-999-9999" />
 </template>
 
