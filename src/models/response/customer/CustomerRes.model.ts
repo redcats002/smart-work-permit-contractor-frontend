@@ -1,5 +1,5 @@
-import type { IEntity, TBaseModel, TBaseOption } from '@/models/Global.model'
-import type { IAddressRequest, ICurrentAddressRequest, IWorkAddressRequest } from '@/models/request/AddressReq.model'
+import type { IEntity, TBaseModel } from '@/models/Global.model'
+import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
 import type { TCustomerStatus } from '@/enums/modules/customer/CustomerStatus.enum'
 import type { TEstateStatus } from '@/enums/modules/estate/EstateStatus.enum'
@@ -14,20 +14,23 @@ export interface ICustomerList extends IEntity {
   lastName: string
   phoneNumber: string
   phoneNumber2?: string
-  customerGroup: TBaseOption
-  customerStatus: TCustomerStatus
+  customerGroup: TBaseModel
+  status: TCustomerStatus
 }
-export interface ICustomerById extends ICurrentAddressRequest, IAddressRequest, IWorkAddressRequest {
-  customerStatus: TCustomerStatus
-  citizenId: string
+export interface ICustomerById extends IEntity {
+  status: TCustomerStatus
+  idCard: string
   titleName: TTitleName
   firstName: string
   lastName: string
   phoneNumber: string
   phoneNumber2?: string
   birthDate: string
+  workAddress: IAddressRequest
+  mainAddress: IAddressRequest
+  currentAddress: IAddressRequest
   customerGroup?: ICustomerGroupList
-  job?: ICustomerOccupationList
+  occupation?: ICustomerOccupationList
   email?: string
 }
 

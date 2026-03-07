@@ -2,14 +2,14 @@ import type { TBaseOption } from '@/models/Global.model'
 
 export enum CustomerStatusEnum {
   ACTIVE = 'ACTIVE',
-  IN_ACTIVE = 'IN_ACTIVE'
+  INACTIVE = 'INACTIVE'
 }
 
 export type TCustomerStatus = keyof typeof CustomerStatusEnum
 
 const titleMap: Record <TCustomerStatus, string> = {
   [CustomerStatusEnum.ACTIVE]: 'ใช้งาน',
-  [CustomerStatusEnum.IN_ACTIVE]: 'ปิดใช้งาน'
+  [CustomerStatusEnum.INACTIVE]: 'ปิดใช้งาน'
 }
 
 export const CustomerStatusItems: TBaseOption[] = Object.values(CustomerStatusEnum).map(
@@ -28,7 +28,7 @@ export function getStatusClass (value?: TCustomerStatus): string {
   switch (value) {
     case CustomerStatusEnum.ACTIVE:
       return 'bg-green-brand-light text-green-brand border-none'
-    case CustomerStatusEnum.IN_ACTIVE:
+    case CustomerStatusEnum.INACTIVE:
       return 'bg-gray-100 text-gray-600 border-none'
     default:
       return 'bg-gray-100 text-gray-600 border-none'
@@ -39,7 +39,7 @@ export function getIcon (value?: TCustomerStatus): string {
   switch (value) {
     case CustomerStatusEnum.ACTIVE:
       return 'icon-park-outline:check-one'
-    case CustomerStatusEnum.IN_ACTIVE:
+    case CustomerStatusEnum.INACTIVE:
       return 'material-symbols:close-rounded'
     default:
       return 'mdi:help-circle-outline'

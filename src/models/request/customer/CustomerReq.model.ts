@@ -1,21 +1,24 @@
 import type { TCustomerStatus } from '@/enums/modules/customer/CustomerStatus.enum'
 import type { TTitleName } from '@/enums/TitleName.enum'
-import type { IAddressRequest, ICurrentAddressRequest, IWorkAddressRequest } from '../AddressReq.model'
+import type { IAddressRequest } from '../AddressReq.model'
 import type { IBasePaginationRequest } from '../Request.model'
 
 export interface IActionCustomerPayload extends ICreateCustomerPayload, IUpdateCustomerPayload {}
-export interface ICreateCustomerPayload extends ICurrentAddressRequest, IAddressRequest, IWorkAddressRequest {
-  customerStatus: TCustomerStatus
-  citizenId: string
+export interface ICreateCustomerPayload {
+  status: TCustomerStatus
+  idCard: string
   titleName: TTitleName
   firstName: string
   lastName: string
-  phoneNumber: string
-  phoneNumber2?: string
   birthDate: string
   customerGroupId?: number
-  jobId?: number
+  occupationId?: number
+  phoneNumber: string
+  phoneNumber2?: string
   email?: string
+  workAddress: IAddressRequest
+  mainAddress: IAddressRequest
+  currentAddress: IAddressRequest
 }
 export interface IUpdateCustomerPayload extends ICreateCustomerPayload {}
 
