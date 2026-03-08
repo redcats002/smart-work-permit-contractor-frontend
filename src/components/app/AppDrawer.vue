@@ -1,7 +1,25 @@
 <template>
-  <aside class="w-64 h-screen bg-white border-r border-r-(--p-gray-5) flex flex-col p-4">
+  <!-- Sidebar
+    Desktop : always visible, part of the normal flex flow (md:relative)
+    Mobile  : fixed overlay that slides in from the left via translate-x
+  -->
+  <aside
+    :class="isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
+    class="fixed md:relative inset-y-0 left-0 z-50
+           w-64 h-screen
+           bg-white border-r border-r-(--p-gray-5)
+           flex flex-col p-4
+           transition-transform duration-300 ease-in-out">
     <!-- Logo Section -->
     <div class="border-b border-b-(--p-red)">
+      <!-- Mobile close button -->
+      <div class="flex md:hidden justify-end mb-1">
+        <Icon
+          class="size-6 text-font-gray cursor-pointer hover:text-black transition-all duration-200"
+          icon="mdi:close"
+          @click="close()" />
+      </div>
+
       <div class="flex justify-center mb-2">
         <img
           class="h-12"
@@ -16,7 +34,9 @@
       </p>
     </div>
 
-    <nav class="flex flex-col flex-1 overflow-y-auto">
+    <nav
+      class="flex flex-col flex-1 overflow-y-auto"
+      @click="close()">
       <!-- Top Menu -->
       <div class="space-y-1">
         <AppDrawerMenu
@@ -42,8 +62,11 @@
 
 <script setup lang="ts">
 import useLogout from '@/pages/auth/composables/useLogout'
+import { useAppDrawer } from '@/composables/useAppDrawer'
 import { Icon } from '@iconify/vue'
 import AppDrawerMenu from './AppDrawerMenu.vue'
+
+const { isOpen, close } = useAppDrawer()
 
 const { logout } = useLogout()
 

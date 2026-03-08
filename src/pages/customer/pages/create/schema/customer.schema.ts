@@ -1,4 +1,5 @@
 import { useDayjs } from '@/utils/Dayjs'
+import { generator } from '@/utils/Generator'
 import type { IActionCustomerPayload } from '@/models/request/customer/CustomerReq.model'
 import { CustomerStatusEnum } from '@/enums/modules/customer/CustomerStatus.enum'
 import { ETitleName } from '@/enums/TitleName.enum'
@@ -39,11 +40,12 @@ export const CustomerSchema = z.object({
 
   // ── Citizen / Home Address ───────────────────────────────────────────────
   mainAddress: z.object({
+    id: z.number().optional(),
     address: z.string().min(1, 'กรุณากรอกที่อยู่'),
     subDistrict: z.string().min(1, 'กรุณากรอกตำบล/แขวง'),
     district: z.string().min(1, 'กรุณากรอกอำเภอ/เขต'),
     province: z.string().min(1, 'กรุณากรอกจังหวัด'),
-    postalCode: z.string().min(1, 'กรุณากรอกรหัสไปรษณีย์'),
+    postCode: z.string().min(1, 'กรุณากรอกรหัสไปรษณีย์'),
     urlGoogleMap: z.string().optional(),
     isSameCitizenAddress: z.boolean().optional(),
     isSameCurrentAddress: z.boolean().optional()
@@ -51,25 +53,27 @@ export const CustomerSchema = z.object({
 
   // ── Current / Mailing Address ────────────────────────────────────────────
   currentAddress: z.object({
+    id: z.number().optional(),
     isSameCitizenAddress: z.boolean().optional(), // true = copy from citizen address
     address: z.string().min(1, 'กรุณากรอกที่อยู่'),
     subDistrict: z.string().min(1, 'กรุณากรอกตำบล/แขวง'),
     district: z.string().min(1, 'กรุณากรอกอำเภอ/เขต'),
     province: z.string().min(1, 'กรุณากรอกจังหวัด'),
-    postalCode: z.string().min(1, 'กรุณากรอกรหัสไปรษณีย์'),
+    postCode: z.string().min(1, 'กรุณากรอกรหัสไปรษณีย์'),
     urlGoogleMap: z.string().optional(),
     isSameCurrentAddress: z.boolean().optional()
   }),
 
   // ── Work Address ─────────────────────────────────────────────────────────
   workAddress: z.object({
+    id: z.number().optional(),
     isSameCurrentAddress: z.boolean().optional(), // true = copy from current address
     isSameCitizenAddress: z.boolean().optional(), // true = copy from main address
     address: z.string().min(1, 'กรุณากรอกที่อยู่'),
     subDistrict: z.string().min(1, 'กรุณากรอกตำบล/แขวง'),
     district: z.string().min(1, 'กรุณากรอกอำเภอ/เขต'),
     province: z.string().min(1, 'กรุณากรอกจังหวัด'),
-    postalCode: z.string().min(1, 'กรุณากรอกรหัสไปรษณีย์'),
+    postCode: z.string().min(1, 'กรุณากรอกรหัสไปรษณีย์'),
     urlGoogleMap: z.string().optional()
   })
 
@@ -80,11 +84,11 @@ export type CustomerFormValues = z.infer<typeof CustomerSchema>
 export function useDev (): CustomerFormValues {
   return {
     // Personal
-    idCard: '5873621543566',
+    idCard: generator.generateRandomThaiCitizenId(),
     titleName: ETitleName['MR'],
     firstName: 'Nonthakorn',
     lastName: 'Inthong',
-    phoneNumber: '0812345678',
+    phoneNumber: generator.generateRandomPhoneNumber(),
     phoneNumber2: '',
     birthDate: '',
     email: '',
@@ -98,7 +102,7 @@ export function useDev (): CustomerFormValues {
       subDistrict: 'สายไหม',
       district: 'สายไหม',
       province: 'กรุงเทพมหานคร',
-      postalCode: '10220',
+      postCode: '10220',
       urlGoogleMap: '',
       isSameCitizenAddress: false,
       isSameCurrentAddress: false
@@ -109,7 +113,7 @@ export function useDev (): CustomerFormValues {
       subDistrict: 'สายไหม',
       district: 'สายไหม',
       province: 'กรุงเทพมหานคร',
-      postalCode: '10220',
+      postCode: '10220',
       urlGoogleMap: '',
       isSameCitizenAddress: false,
       isSameCurrentAddress: false
@@ -120,7 +124,7 @@ export function useDev (): CustomerFormValues {
       subDistrict: 'สายไหม',
       district: 'สายไหม',
       province: 'กรุงเทพมหานคร',
-      postalCode: '10220',
+      postCode: '10220',
       urlGoogleMap: '',
       isSameCurrentAddress: false,
       isSameCitizenAddress: false
@@ -149,7 +153,7 @@ export function useFormInitialValues (): CustomerFormValues {
       subDistrict: '',
       district: '',
       province: '',
-      postalCode: '',
+      postCode: '',
       urlGoogleMap: '',
       isSameCitizenAddress: false,
       isSameCurrentAddress: false
@@ -160,7 +164,7 @@ export function useFormInitialValues (): CustomerFormValues {
       subDistrict: '',
       district: '',
       province: '',
-      postalCode: '',
+      postCode: '',
       urlGoogleMap: '',
       isSameCitizenAddress: false,
       isSameCurrentAddress: false
@@ -171,7 +175,7 @@ export function useFormInitialValues (): CustomerFormValues {
       subDistrict: '',
       district: '',
       province: '',
-      postalCode: '',
+      postCode: '',
       urlGoogleMap: '',
       isSameCurrentAddress: false,
       isSameCitizenAddress: false

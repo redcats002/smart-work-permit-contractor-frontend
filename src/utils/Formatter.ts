@@ -1,5 +1,6 @@
 import { type App } from 'vue'
 import { type RouteRecordNameGeneric } from 'vue-router'
+import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import { formatTitle, type TTitleName } from '@/enums/TitleName.enum'
 
 export enum EPhoneNumberType {
@@ -30,6 +31,7 @@ export interface IFormatter {
   thaiBaht(value: number | string, prefix?: string): string
   fullName (e: { titleName?: TTitleName, firstName?: string, lastName?: string }): string
   fullPhoneNumber (e: { phoneNumber?: string, phoneNumber2?: string }): string
+  fullAddress (data?: Partial<IAddressRequest>): string
 }
 
 const numberParseFloat = (_number: string | number): number => {
@@ -194,6 +196,13 @@ function fullPhoneNumber (e: { phoneNumber?: string, phoneNumber2?: string }): s
   return `${phoneNumberFormat(e?.phoneNumber || '')} ${phoneNumberFormat(e?.phoneNumber2 || '')}`
 }
 
+function fullAddress (data?: Partial<IAddressRequest>): string {
+  return `${data?.address || ''}, ${data?.district || ''}, ${data?.subDistrict || ''}, ${data?.province || ''}, ${data?.postCode || ''}`
+    .replace(/(, )+/g, ', ')
+    .replace(/^(, )+|(, )+$/g, '')
+    .trim()
+}
+
 export const formatter: IFormatter = {
   numberFormat,
   numberFormat2Decimal,
@@ -215,7 +224,8 @@ export const formatter: IFormatter = {
   stringFormatCamelCaseToTitleCase,
   stringFormatTitleToCamelCase,
   stringFormatKebabCaseToTitleCase,
-  thaiBaht
+  thaiBaht,
+  fullAddress
 }
 
 export default {

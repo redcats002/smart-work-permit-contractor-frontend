@@ -13,6 +13,8 @@ import useTabItems, {
 
 export function useInitDetail (data?: Partial<ICustomerById>): Ref<ICustomerById> {
   return ref<ICustomerById>({
+    ...data,
+    id: data?.id ?? 0,
     status: data?.status ?? 'ACTIVE',
     idCard: data?.idCard ?? '',
     titleName: data?.titleName ?? 'MR',
@@ -26,7 +28,7 @@ export function useInitDetail (data?: Partial<ICustomerById>): Ref<ICustomerById
       subDistrict: data?.mainAddress?.subDistrict ?? '',
       district: data?.mainAddress?.district ?? '',
       province: data?.mainAddress?.province ?? '',
-      postalCode: data?.mainAddress?.postalCode ?? '',
+      postCode: data?.mainAddress?.postCode ?? '',
       urlGoogleMap: data?.mainAddress?.urlGoogleMap ?? '',
       isSameCitizenAddress: data?.mainAddress?.isSameCitizenAddress ?? false,
       isSameCurrentAddress: data?.mainAddress?.isSameCurrentAddress ?? false
@@ -36,7 +38,7 @@ export function useInitDetail (data?: Partial<ICustomerById>): Ref<ICustomerById
       subDistrict: data?.currentAddress?.subDistrict ?? '',
       district: data?.currentAddress?.district ?? '',
       province: data?.currentAddress?.province ?? '',
-      postalCode: data?.currentAddress?.postalCode ?? '',
+      postCode: data?.currentAddress?.postCode ?? '',
       urlGoogleMap: data?.currentAddress?.urlGoogleMap ?? '',
       isSameCitizenAddress: data?.currentAddress?.isSameCitizenAddress ?? false,
       isSameCurrentAddress: data?.currentAddress?.isSameCurrentAddress ?? false
@@ -46,7 +48,7 @@ export function useInitDetail (data?: Partial<ICustomerById>): Ref<ICustomerById
       subDistrict: data?.workAddress?.subDistrict ?? '',
       district: data?.workAddress?.district ?? '',
       province: data?.workAddress?.province ?? '',
-      postalCode: data?.workAddress?.postalCode ?? '',
+      postCode: data?.workAddress?.postCode ?? '',
       urlGoogleMap: data?.workAddress?.urlGoogleMap ?? '',
       isSameCitizenAddress: data?.workAddress?.isSameCitizenAddress ?? false,
       isSameCurrentAddress: data?.workAddress?.isSameCurrentAddress ?? false

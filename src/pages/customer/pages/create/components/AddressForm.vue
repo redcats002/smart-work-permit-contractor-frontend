@@ -77,14 +77,14 @@
         <LabelField
           v-slot="{invalid}"
           :form="form"
-          :name="postalCode"
+          :name="postCode"
           label="รหัสไปรษณีย์"
           hide-error
           required>
           <AddressFieldInput
-            v-model="model.postalCode"
+            v-model="model.postCode"
             :invalid="invalid"
-            :name="postalCode"
+            :name="postCode"
             address-type="zipcode"
             placeholder="รหัสไปรษณีย์"
             @select="onAddressSelect($event)" />
@@ -133,7 +133,7 @@ const model = defineModel<IAddressRequest>({ default: (): IAddressRequest => ({
   subDistrict: '',
   district: '',
   province: '',
-  postalCode: '',
+  postCode: '',
   isSameCitizenAddress: false,
   isSameCurrentAddress: false
 }) })
@@ -163,10 +163,10 @@ const province = computed((): string => {
   if (props.type === 'MAIN') return 'mainAddress.province'
   return 'workAddress.province'
 })
-const postalCode = computed((): string => {
-  if (props.type === 'CURRENT') return 'currentAddress.postalCode'
-  if (props.type === 'MAIN') return 'mainAddress.postalCode'
-  return 'workAddress.postalCode'
+const postCode = computed((): string => {
+  if (props.type === 'CURRENT') return 'currentAddress.postCode'
+  if (props.type === 'MAIN') return 'mainAddress.postCode'
+  return 'workAddress.postCode'
 })
 const googleMapUrl = computed((): string => {
   if (props.type === 'CURRENT') return 'currentAddress.urlGoogleMap'

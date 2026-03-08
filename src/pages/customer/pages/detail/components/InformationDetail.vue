@@ -1,5 +1,10 @@
 <template>
   <BaseContainer>
+    <template #topright>
+      <CustomerDetailMenuAction
+        @delete="emits('delete')"
+        @edit="emits('edit')" />
+    </template>
     <DisplayList :items="items">
       <template #[`value.status`]="{ value}">
         <ChipCustomerStatus :value="value" />
@@ -24,12 +29,18 @@ import BaseContainer from '@/components/base/BaseContainer.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
 import { Icon } from '@iconify/vue'
 import ChipCustomerStatus from '../../list/components/ChipCustomerStatus.vue'
+import CustomerDetailMenuAction from './CustomerDetailMenuAction.vue'
 
 interface IProps {
   data: ICustomerById
 }
+interface IEmits {
+  edit: []
+  delete: []
+}
 
 const props = defineProps<IProps>()
+const emits = defineEmits<IEmits>()
 
 const dayjs = useDayjs()
 const visibleCitizenId = ref<boolean>(true)
