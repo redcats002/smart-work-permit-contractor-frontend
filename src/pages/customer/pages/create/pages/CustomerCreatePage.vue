@@ -91,7 +91,7 @@ const mainAddress = computed({
       subDistrict: form.value.mainAddress?.subDistrict,
       district: form.value.mainAddress?.district,
       province: form.value.mainAddress?.province,
-      postalCode: form.value.mainAddress?.postalCode
+      postCode: form.value.mainAddress?.postCode
     }
   },
   set (e: IAddressRequest): void {
@@ -99,7 +99,7 @@ const mainAddress = computed({
     form.value.mainAddress.subDistrict = e.subDistrict
     form.value.mainAddress.district = e.district
     form.value.mainAddress.province = e.province
-    form.value.mainAddress.postalCode = e.postalCode
+    form.value.mainAddress.postCode = e.postCode
   }
 })
 const currentAddress = computed({
@@ -109,7 +109,7 @@ const currentAddress = computed({
       subDistrict: form.value.currentAddress?.subDistrict,
       district: form.value.currentAddress?.district,
       province: form.value.currentAddress?.province,
-      postalCode: form.value.currentAddress?.postalCode,
+      postCode: form.value.currentAddress?.postCode,
       isSameCitizenAddress: form.value.currentAddress?.isSameCitizenAddress,
       urlGoogleMap: form.value.currentAddress?.urlGoogleMap
     }
@@ -119,7 +119,7 @@ const currentAddress = computed({
     form.value.currentAddress.subDistrict = e.subDistrict
     form.value.currentAddress.district = e.district
     form.value.currentAddress.province = e.province
-    form.value.currentAddress.postalCode = e.postalCode
+    form.value.currentAddress.postCode = e.postCode
     form.value.currentAddress.isSameCitizenAddress = e.isSameCitizenAddress
     form.value.currentAddress.urlGoogleMap = e.urlGoogleMap
   }
@@ -131,7 +131,7 @@ const workAddress = computed({
       subDistrict: form.value.workAddress.subDistrict,
       district: form.value.workAddress.district,
       province: form.value.workAddress.province,
-      postalCode: form.value.workAddress.postalCode,
+      postCode: form.value.workAddress.postCode,
       isSameCitizenAddress: form.value.workAddress.isSameCitizenAddress,
       isSameCurrentAddress: form.value.workAddress.isSameCurrentAddress,
       urlGoogleMap: form.value.workAddress.urlGoogleMap
@@ -142,7 +142,7 @@ const workAddress = computed({
     form.value.workAddress.subDistrict = e.subDistrict
     form.value.workAddress.district = e.district
     form.value.workAddress.province = e.province
-    form.value.workAddress.postalCode = e.postalCode
+    form.value.workAddress.postCode = e.postCode
     form.value.workAddress.isSameCitizenAddress = e.isSameCitizenAddress
     form.value.workAddress.isSameCurrentAddress = e.isSameCurrentAddress
     form.value.workAddress.urlGoogleMap = e.urlGoogleMap
@@ -183,7 +183,7 @@ function onUseSameCurrentAddress (type: 'WORK'): void {
       subDistrict: currentAddress.value.subDistrict,
       district: currentAddress.value.district,
       province: currentAddress.value.province,
-      postalCode: currentAddress.value.postalCode
+      postCode: currentAddress.value.postCode
     }
   }
 }
@@ -198,7 +198,7 @@ function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
       subDistrict: mainAddress.value.subDistrict,
       district: mainAddress.value.district,
       province: mainAddress.value.province,
-      postalCode: mainAddress.value.postalCode
+      postCode: mainAddress.value.postCode
     }
   } else if (type === 'WORK') {
     workAddress.value = {
@@ -209,7 +209,7 @@ function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
       subDistrict: mainAddress.value.subDistrict,
       district: mainAddress.value.district,
       province: mainAddress.value.province,
-      postalCode: mainAddress.value.postalCode
+      postCode: mainAddress.value.postCode
     }
   }
 }
