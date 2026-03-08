@@ -12,7 +12,7 @@
         {{ item?.idNo }}
       </LinkText>
     </template>
-    <template #[`item.customerStatus`]="{ item }">
+    <template #[`item.status`]="{ item }">
       <ChipCustomerStatus :value="item.status" />
     </template>
   </BaseTable>
@@ -53,7 +53,7 @@ const columns = ref<IColumn<ICustomerList>[]>([
   { field: 'firstName', header: 'ชื่อลูกค้า', align: 'left', value: (e: ICustomerList): string => formatter.fullName(e) },
   { field: 'phoneNumber', header: 'เบอร์โทรศัพท์', align: 'left', value: (e: ICustomerList): string => formatter.fullPhoneNumber(e) },
   { field: 'customerGroup', header: 'กลุ่มลูกค้า', align: 'left', value: (e: ICustomerList): string => e?.customerGroup?.name || 'ไม่ระบุ' },
-  { field: 'customerStatus', header: 'สถานะ', sortable: true, align: 'left' }
+  { field: 'status', header: 'สถานะ', sortable: true, align: 'left' }
   // {
   //   field: 'action',
   //   header: 'จัดการ',
