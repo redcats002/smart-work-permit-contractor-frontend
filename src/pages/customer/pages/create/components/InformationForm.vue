@@ -115,6 +115,7 @@ import { useDayjs } from '@/utils/Dayjs'
 import keypress from '@/utils/Keypress'
 import type { IFormState } from '@/models/Form.model'
 import type { ICreateCustomerPayload } from '@/models/request/customer/CustomerReq.model'
+import { CustomerStatusEnum } from '@/enums/modules/customer/CustomerStatus.enum'
 import DatePickerInput from '@/components/input/DatePickerInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import PhoneNumberInput from '@/components/input/PhoneNumberInput.vue'
@@ -138,10 +139,10 @@ const model = defineModel<ICreateCustomerPayload>({
 
 const isActive = computed({
   get (): boolean {
-    return model.value?.status === 'ACTIVE' ? true : false
+    return model.value?.status === CustomerStatusEnum.ACTIVE ? true : false
   },
   set (value: boolean): void {
-    model.value.status = value ? 'ACTIVE' : 'INACTIVE'
+    model.value.status = value ? CustomerStatusEnum.ACTIVE : CustomerStatusEnum.INACTIVE
   }
 })
 </script>
