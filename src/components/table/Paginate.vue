@@ -1,5 +1,5 @@
 <template>
-  <div class="text-sm text-[#333333] flex items-center gap-2.5">
+  <div class="hidden lg:flex text-sm text-[#333333] items-center gap-2.5">
     <div>จำนวนรายการต่อหน้า</div>
     <div>
       <Select
@@ -10,8 +10,8 @@
     </div>
     <div>จาก {{ pagination.count }}</div>
   </div>
-  <div class="flex items-center gap-1">
-    <!-- First page -->
+
+  <div class="hidden lg:flex items-center gap-1">
     <button
       :disabled="currentPage === 1"
       class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-surface-200 text-surface-400 hover:bg-surface-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
@@ -21,7 +21,7 @@
         class="size-4 text-[#62748E]"
         icon="mdi:chevron-double-left" />
     </button>
-    <!-- Previous page -->
+
     <button
       :disabled="currentPage === 1"
       class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-surface-200 text-surface-400 hover:bg-surface-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
@@ -32,7 +32,6 @@
         icon="mdi:chevron-left" />
     </button>
 
-    <!-- Page numbers -->
     <template
       v-for="page in visiblePages"
       :key="page">
@@ -54,7 +53,6 @@
       </button>
     </template>
 
-    <!-- Next page -->
     <button
       :disabled="currentPage >= totalPages"
       class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-surface-200 text-surface-400 hover:bg-surface-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
@@ -64,7 +62,7 @@
         class="size-4 text-[#62748E]"
         icon="mdi:chevron-right" />
     </button>
-    <!-- Last page -->
+
     <button
       :disabled="currentPage >= totalPages"
       class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-surface-200 text-surface-400 hover:bg-surface-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
@@ -75,10 +73,43 @@
         icon="mdi:chevron-double-right" />
     </button>
   </div>
+
+  <div class="flex lg:hidden items-center gap-1">
+    <button
+      :disabled="currentPage === 1"
+      class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-surface-200 text-surface-400 hover:bg-surface-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+      @click="goToPage(currentPage - 1)">
+      <Icon
+        :stroke-width="2"
+        class="size-4 text-[#62748E]"
+        icon="mdi:chevron-left" />
+    </button>
+
+    <button
+      v-for="page in mobileVisiblePages"
+      :key="page"
+      :class="[
+        'inline-flex items-center text-[12px] justify-center min-w-7 h-7 px-2 rounded-lg text-surface-500 hover:bg-surface-50 cursor-pointer',
+        currentPage === page ? 'bg-primary-100 text-primary-400' : ''
+      ]"
+      @click="goToPage(page)">
+      {{ page }}
+    </button>
+
+    <button
+      :disabled="currentPage >= totalPages"
+      class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-surface-200 text-surface-400 hover:bg-surface-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+      @click="goToPage(currentPage + 1)">
+      <Icon
+        :stroke-width="2"
+        class="size-4 text-[#62748E]"
+        icon="mdi:chevron-right" />
+    </button>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { IPagination } from '@/composables/usePagination'
 import { Icon } from '@iconify/vue'
 
@@ -110,6 +141,23 @@ const currentPage = computed({
 
 const totalPages = computed((): number => pagination.value.totalPage)
 
+const isMobile = ref<boolean>(false)
+let mediaQuery: MediaQueryList | null = null
+
+function handleViewportChange (): void {
+  isMobile.value = window.innerWidth < 768
+}
+
+onMounted((): void => {
+  handleViewportChange()
+  mediaQuery = window.matchMedia('(max-width: 767px)')
+  mediaQuery.addEventListener('change', handleViewportChange)
+})
+
+onBeforeUnmount((): void => {
+  mediaQuery?.removeEventListener('change', handleViewportChange)
+})
+
 const visiblePages = computed((): (number | string)[] => {
   const pages: (number | string)[] = []
   const total = totalPages.value
@@ -129,7 +177,23 @@ const visiblePages = computed((): (number | string)[] => {
     if (current < total - 2) pages.push('...')
     pages.push(total)
   }
+
   return pages
+})
+
+const mobileVisiblePages = computed((): number[] => {
+  const total = totalPages.value
+  const current = currentPage.value
+
+  if (total <= 3) {
+    const pages: number[] = []
+    for (let page = 1; page <= total; page++) pages.push(page)
+    return pages
+  }
+
+  if (current <= 2) return [1, 2, 3]
+  if (current >= total - 1) return [total - 2, total - 1, total]
+  return [current - 1, current, current + 1]
 })
 
 function goToPage (page: number): void {
@@ -141,6 +205,18 @@ function goToPage (page: number): void {
 function onUpdatePagination (): void {
   emits('update')
 }
+
+function enforceMobileLimit (): void {
+  if (!isMobile.value) return
+  if (!pagination.value || pagination.value.limit === 10) return
+
+  pagination.value.limit = 10
+  emits('update')
+}
+
+watch(isMobile, (): void => {
+  enforceMobileLimit()
+}, { immediate: true })
 </script>
 
 <style scoped>
