@@ -2,8 +2,8 @@ import type { IActionLoginPayload } from '@/models/request/auth/public/AuthReq.p
 
 export function useInitForm (): IActionLoginPayload {
   return {
-    email: 'info@makewebbkk.com',
-    password: 'Admin1234',
+    email: 'systemuser@email.com',
+    password: 'password123',
     confirmPassword: ''
   }
 }

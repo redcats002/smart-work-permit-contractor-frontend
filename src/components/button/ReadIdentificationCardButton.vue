@@ -13,10 +13,30 @@
 
 <script setup lang="ts">
 import { ref, useAttrs } from 'vue'
+import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 
+interface IReadIdCardResult {
+  title: string
+  firstName: string
+  lastName: string
+  gender: string
+  nation: string
+  idCard: string
+  birthDay: string
+  address: {
+    houseNo: string
+    moo: string
+    soi: string
+    road: string
+    subDistrict: string
+    district: string
+    province: string
+  }
+}
+
 interface IEmits {
-  readSuccess: [data: any]
+  readSuccess: [data: IReadIdCardResult]
 }
 
 const attrs = useAttrs()
@@ -100,7 +120,7 @@ async function handleReadIdCard (): Promise<void> {
       const dataSplit = readResp.ID_Text.split('#')
       const gender = dataSplit[17] === '1' ? 'MALE' : 'FEMALE'
       const title = switchTitle(dataSplit[1])
-      const payload = {
+      const payload: IReadIdCardResult = {
         title: title,
         firstName: dataSplit[2],
         lastName: dataSplit[4],
@@ -119,8 +139,10 @@ async function handleReadIdCard (): Promise<void> {
         }
       }
       // NOTE: debugged here
+      toast.success('อ่านบัตรสำเร็จ')
       emits('readSuccess', payload)
     } catch (err: any) {
+      toast.error('อ่านบัตรไม่สำเร็จ: ' + (err?.message || 'เกิดข้อผิดพลาด'))
       console.error('❌ อ่านบัตรไม่สำเร็จ:', err?.message || err)
     } finally {
       isLoading.value = false

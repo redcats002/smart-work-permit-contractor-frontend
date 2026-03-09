@@ -58,7 +58,6 @@ import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
-import type { ICreateCustomerPayload } from '@/models/request/customer/CustomerReq.model'
 import type { ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import CustomerProvider from '@/resources/provider/customer/Customer.provider'
 import BaseContainer from '@/components/base/BaseContainer.vue'
@@ -74,14 +73,15 @@ import AddressForm from '../components/AddressForm.vue'
 import InformationForm from '../components/InformationForm.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import { CustomerSchema, useDev, useFormInitialValues } from '../schema/customer.schema'
+import { usePayload } from '../composables/usePayload'
+import { type CustomerFormValues, CustomerSchema, useDev, useFormInitialValues } from '../schema/customer.schema'
 
 const router = useRouter()
 
 const CustomerService: ICustomerProvider = new CustomerProvider()
 
 const formKey = ref<number>(0)
-const form = ref<ICreateCustomerPayload>(useFormInitialValues())
+const form = ref<CustomerFormValues>(useFormInitialValues())
 const resolver = zodResolver(CustomerSchema)
 
 const mainAddress = computed({
@@ -150,7 +150,7 @@ const workAddress = computed({
 })
 
 async function useSubmit (): Promise<void> {
-  await CustomerService.createCustomer(form.value as ICreateCustomerPayload)
+  await CustomerService.createCustomer(usePayload(form.value))
   toast.success('ดำเนินการสำเร็จ')
   router.push({ name: 'CustomerListPage' })
 }

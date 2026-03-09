@@ -73,7 +73,7 @@ async function usePreLogin (): Promise<void> {
   const mock = true // TODO: remove this after API ready
   if (mock) {
     toast.warn('pre-login mock')
-    if (form.value.email === 'info@makewebbkk.com') return setAuthState('LOGIN')
+    if (form.value.email === 'systemuser@email.com') return setAuthState('LOGIN')
     setAuthState('SET_PASSWORD')
   } else {
     const response = await AuthPublicService.preLogin(usePreLoginPayload(form.value))

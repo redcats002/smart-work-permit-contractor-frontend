@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-lg border border-surface-200 overflow-hidden">
+  <div class="rounded-lg bg-white border border-surface-200 overflow-hidden">
     <DataTable
       v-model:expanded-rows="expandedRows"
       v-model:selection="selectedItems"
@@ -11,6 +11,7 @@
       :pt="theme"
       :row-class="rowClass"
       :show-headers="showHeaders"
+      v-bind="$attrs"
       :table-class="resolvedTableClass"
       :table-style="tableStyle"
       :value="items"
@@ -39,6 +40,15 @@
         :header-style="mergeStyle(col.style, col.headerStyle)"
         :sortable="col.sortable"
         :style="col.style">
+        <template #header="headerProps">
+          <slot
+            v-if="$slots[`header.${String(col.field)}`]"
+            :column="headerProps.column.props"
+            :name="`header.${String(col.field)}`" />
+          <th
+            v-else
+            v-bind="headerProps" />
+        </template>
         <template #body="{ data, index: rowIndex }">
           <slot
             v-if="$slots[`item.${String(col.field)}`]"
@@ -48,7 +58,6 @@
             :item="(data as T)"
             :name="`item.${String(col.field)}`"
             :value="col.value ? col.value(data) : data?.[col.field]" />
-
           <span
             v-else
             class="text-[#333333] text-sm">
@@ -212,17 +221,18 @@ const theme = ref<DataTablePassThroughOptions>({
   table: 'border-spacing-0 border-separate',
   thead: 'bg-white border-b border-surface-200',
   tbody: '',
-  bodyRow: 'bg-white text-surface-700 hover:bg-surface-50',
+  bodyRow: 'bg-white text-surface-700 hover:bg-red-50',
   column: {
     headerCell: `
       border-b border-surface-200
-      py-2.5 px-2.5 font-medium
+      py-2.5 px-2.5
+      font-medium text-sm
       bg-white text-font-gray bg-white
        whitespace-nowrap overflow-hidden text-ellipsis
       ${!props.selectable && !props.disableAutoLeftPadding ? 'pl-[40px]' : ''}
     `,
     columnHeaderContent: 'datatable-header-content flex items-center gap-2',
-    columnTitle: 'font-medium',
+    columnTitle: 'font-bold',
     bodyCell: `
       py-[22px] px-2.5
       border-b border-surface-100

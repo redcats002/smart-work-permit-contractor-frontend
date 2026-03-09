@@ -55,7 +55,6 @@ import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
-import type { IUpdateCustomerPayload } from '@/models/request/customer/CustomerReq.model'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import type { ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import CustomerProvider from '@/resources/provider/customer/Customer.provider'
@@ -73,6 +72,7 @@ import AddressForm from '../../create/components/AddressForm.vue'
 import InformationForm from '../../create/components/InformationForm.vue'
 import { type CustomerFormValues, CustomerSchema, useFormInitialValues } from '../../create/schema/customer.schema'
 import { useInitForm } from '../composables/useInitForm'
+import { usePayload } from '../composables/usePayload'
 
 const route = useRoute()
 const router = useRouter()
@@ -175,7 +175,7 @@ async function useFetch (): Promise<void> {
 
 async function useSubmit (): Promise<void> {
   if (!customerId.value) throw new Error('Customer ID is required')
-  await CustomerService.updateCustomer(customerId.value, form.value as IUpdateCustomerPayload)
+  await CustomerService.updateCustomer(customerId.value, usePayload(form.value))
   toast.success('ดำเนินการสำเร็จ')
   router.push({ name: 'CustomerDetailPage', params: { id: customerId.value } })
 }

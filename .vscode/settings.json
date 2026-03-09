@@ -12,6 +12,7 @@
 	"cSpell.ignoreRegExpList": ["/[\\u0E00-\\u0E7F]/g"],
 	"cSpell.words": [
 		"bunx",
+		"clearicon",
 		"composables",
 		"Cqrs",
 		"datatable",
@@ -19,6 +20,7 @@
 		"decamelize",
 		"dismissable",
 		"DONT",
+		"dropdownicon",
 		"Elysia",
 		"elysiajs",
 		"famicons",
@@ -53,7 +55,8 @@
 		"vuejs",
 		"vuetify",
 		"vueuse",
-		"vuex"
+		"vuex",
+		"weui"
 	],
 	"tsImportSorter.configuration.autoFormat": "onSave",
 	"tsImportSorter.configuration.formatExports": true,

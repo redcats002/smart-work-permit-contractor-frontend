@@ -1,13 +1,18 @@
 <template>
   <Button
     :as="to ? RouterLink : 'button'"
+    :class="{
+      'h-10 w-10': !label
+    }"
     :to="to"
     class="flex items-center rounded-sm"
     outlined>
     <Icon
-      class="size-5"
-      icon="mdi:plus" />
-    <div class="text-sm font-medium">
+      :icon="icon"
+      class="size-5" />
+    <div
+      v-if="label"
+      class="text-sm font-medium">
       {{ label }}
     </div>
   </Button>
@@ -18,10 +23,15 @@ import { type RouteLocationRaw, RouterLink } from 'vue-router'
 import { Icon } from '@iconify/vue'
 
 interface IProps {
-  label: string
+  label?: string
   to?: RouteLocationRaw
+  icon?: string
 }
-defineProps<IProps>()
+withDefaults(defineProps<IProps>(), {
+  label: '',
+  to: undefined,
+  icon: 'mdi:plus'
+})
 </script>
 
 <style scoped>

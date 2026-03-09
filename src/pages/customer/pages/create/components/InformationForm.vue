@@ -50,6 +50,7 @@
         <DatePickerInput
           v-model="model.birthDate"
           :invalid="invalid"
+          :max-date="dayjs().toDate()"
           name="birthDate" />
       </LabelField>
       <LabelField
@@ -60,7 +61,8 @@
         hide-error>
         <CustomerGroupSelection
           v-model="model.customerGroupId"
-          :invalid="invalid" />
+          :invalid="invalid"
+          show-clear />
       </LabelField>
       <LabelField
         v-slot="{ invalid }"
@@ -70,7 +72,8 @@
         hide-error>
         <CustomerOccupationSelection
           v-model="model.occupationId"
-          :invalid="invalid" />
+          :invalid="invalid"
+          show-clear />
       </LabelField>
       <LabelField
         v-slot="{ invalid }"
@@ -108,9 +111,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useDayjs } from '@/utils/Dayjs'
 import keypress from '@/utils/Keypress'
 import type { IFormState } from '@/models/Form.model'
 import type { ICreateCustomerPayload } from '@/models/request/customer/CustomerReq.model'
+import { CustomerStatusEnum } from '@/enums/modules/customer/CustomerStatus.enum'
 import DatePickerInput from '@/components/input/DatePickerInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import PhoneNumberInput from '@/components/input/PhoneNumberInput.vue'
@@ -126,16 +131,18 @@ interface IProps {
 
 defineProps<IProps>()
 
+const dayjs = useDayjs()
+
 const model = defineModel<ICreateCustomerPayload>({
   default: useFormInitialValues()
 })
 
 const isActive = computed({
   get (): boolean {
-    return model.value?.status === 'ACTIVE' ? true : false
+    return model.value?.status === CustomerStatusEnum.ACTIVE ? true : false
   },
   set (value: boolean): void {
-    model.value.status = value ? 'ACTIVE' : 'INACTIVE'
+    model.value.status = value ? CustomerStatusEnum.ACTIVE : CustomerStatusEnum.INACTIVE
   }
 })
 </script>
