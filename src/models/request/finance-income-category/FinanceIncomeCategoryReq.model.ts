@@ -5,4 +5,6 @@ export interface IActionFinanceIncomeTypePayload extends ICreateFinanceIncomeTyp
 export interface ICreateFinanceIncomeTypePayload extends FinanceIncomeTypeFormValues {}
 export interface IUpdateFinanceIncomeTypePayload extends ICreateFinanceIncomeTypePayload {}
 
-export interface IGetFinanceIncomeTypeList extends IBasePaginationRequest {}
+export interface IGetFinanceIncomeTypeList extends IBasePaginationRequest {
+  incomeCategoryId?: number
+}
