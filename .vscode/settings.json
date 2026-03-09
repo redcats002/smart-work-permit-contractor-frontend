@@ -55,7 +55,8 @@
 		"vuejs",
 		"vuetify",
 		"vueuse",
-		"vuex"
+		"vuex",
+		"weui"
 	],
 	"tsImportSorter.configuration.autoFormat": "onSave",
 	"tsImportSorter.configuration.formatExports": true,
