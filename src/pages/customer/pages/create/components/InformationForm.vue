@@ -50,6 +50,7 @@
         <DatePickerInput
           v-model="model.birthDate"
           :invalid="invalid"
+          :max-date="dayjs().toDate()"
           name="birthDate" />
       </LabelField>
       <LabelField
@@ -60,7 +61,8 @@
         hide-error>
         <CustomerGroupSelection
           v-model="model.customerGroupId"
-          :invalid="invalid" />
+          :invalid="invalid"
+          show-clear />
       </LabelField>
       <LabelField
         v-slot="{ invalid }"
@@ -70,7 +72,8 @@
         hide-error>
         <CustomerOccupationSelection
           v-model="model.occupationId"
-          :invalid="invalid" />
+          :invalid="invalid"
+          show-clear />
       </LabelField>
       <LabelField
         v-slot="{ invalid }"
@@ -108,6 +111,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useDayjs } from '@/utils/Dayjs'
 import keypress from '@/utils/Keypress'
 import type { IFormState } from '@/models/Form.model'
 import type { ICreateCustomerPayload } from '@/models/request/customer/CustomerReq.model'
@@ -125,6 +129,8 @@ interface IProps {
 }
 
 defineProps<IProps>()
+
+const dayjs = useDayjs()
 
 const model = defineModel<ICreateCustomerPayload>({
   default: useFormInitialValues()
