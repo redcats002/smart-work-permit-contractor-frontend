@@ -6,5 +6,5 @@ export interface ICreateFinanceExpenseTypePayload extends FinanceExpenseTypeForm
 export interface IUpdateFinanceExpenseTypePayload extends ICreateFinanceExpenseTypePayload {}
 
 export interface IGetFinanceExpenseTypeList extends IBasePaginationRequest {
-  incomeCategoryId?: number
+  expenseCategoryId?: number
 }
