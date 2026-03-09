@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { IActionFinanceIncomeTypePayload } from '@/models/request/finance-income-category/FinanceIncomeCategoryReq.model'
+import type { IActionFinanceIncomeCategoryPayload } from '@/models/request/finance-income-category/FinanceIncomeCategoryReq.model'
 import type { IFinanceIncomeTypeList } from '@/models/response/finance-income-type/FinanceIncomeTypeRes.model'
 import BaseActionMenu, { type IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import ModalIncomeTypeAction from './ModalIncomeTypeAction.vue'
@@ -30,7 +30,7 @@ interface IEmits {
 const props = defineProps<IProps>()
 const emits = defineEmits<IEmits>()
 
-const form = defineModel<IActionFinanceIncomeTypePayload>({ required: true })
+const form = defineModel<IActionFinanceIncomeCategoryPayload>({ required: true })
 const editModalVisible = ref<boolean>(false)
 
 const items = ref<IMenuItemAction[]>([
