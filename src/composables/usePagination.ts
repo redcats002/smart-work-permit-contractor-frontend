@@ -23,6 +23,7 @@ export interface IUseSyncQueryPayload {
   search?: string
   sortBy?: string
   sortOrder?: TSortOrder
+  [key: string]: unknown
 }
 
 
