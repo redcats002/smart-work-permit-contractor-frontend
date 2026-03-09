@@ -4,7 +4,7 @@ import type { CustomerFormValues } from '../schema/customer.schema'
 export function usePayload (form: CustomerFormValues): ICreateCustomerPayload {
   return {
     ...form,
-    customerGroupId: form?.customerGroupId || undefined,
-    occupationId: form?.occupationId || undefined
+    customerGroupId: form?.customerGroupId,
+    occupationId: form?.occupationId
   }
 }
