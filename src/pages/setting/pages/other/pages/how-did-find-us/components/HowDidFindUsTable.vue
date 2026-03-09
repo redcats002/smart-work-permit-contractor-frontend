@@ -50,7 +50,7 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IHowDidFindUsList>[]>([
-  { field: 'name', header: 'อาชีพ', align: 'left', value: (e: IHowDidFindUsList): string => e?.name || '' },
+  { field: 'name', header: 'ช่องทาง', align: 'left', value: (e: IHowDidFindUsList): string => e?.name || '' },
   { field: 'action', header: 'จัดการ', align: 'right' }
 ])
 </script>

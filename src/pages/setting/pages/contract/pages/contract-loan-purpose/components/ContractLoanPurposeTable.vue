@@ -50,7 +50,7 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IContractLoanPurposeList>[]>([
-  { field: 'name', header: 'อาชีพ', align: 'left', value: (e: IContractLoanPurposeList): string => e?.name || '' },
+  { field: 'name', header: 'วัตถุประสงค์การกู้', align: 'left', value: (e: IContractLoanPurposeList): string => e?.name || '' },
   { field: 'action', header: 'จัดการ', align: 'right' }
 ])
 </script>
