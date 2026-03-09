@@ -1,21 +1,8 @@
 import { useDayjs } from '@/utils/Dayjs'
 import { generator } from '@/utils/Generator'
-import type { IActionCustomerPayload } from '@/models/request/customer/CustomerReq.model'
 import { CustomerStatusEnum } from '@/enums/modules/customer/CustomerStatus.enum'
 import { ETitleName } from '@/enums/TitleName.enum'
 import { z } from 'zod'
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ZodShape<T> — maps every key of an interface to a matching Zod type.
-// Use with `satisfies` on the shape object literal so TypeScript enforces that:
-//   • every required key from T is present in the schema
-//   • the Zod output type is assignable to T[K] for each key
-// Because `satisfies` doesn't widen the type, `z.infer<typeof Schema>` still
-// gives the precise inferred type instead of the broader interface type.
-// ─────────────────────────────────────────────────────────────────────────────
-type ZodShape<T extends object> = {
-  [K in keyof T]-?: z.ZodType<T[K]>
-}
 
 export const CustomerSchema = z.object({
 
@@ -76,8 +63,7 @@ export const CustomerSchema = z.object({
     postCode: z.string().min(1, 'กรุณากรอกรหัสไปรษณีย์'),
     urlGoogleMap: z.string().optional()
   })
-
-} satisfies ZodShape<IActionCustomerPayload>)
+})
 
 export type CustomerFormValues = z.infer<typeof CustomerSchema>
 
