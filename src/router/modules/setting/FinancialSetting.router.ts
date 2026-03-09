@@ -25,6 +25,16 @@ export default {
         title: 'หมวดหมู่รายได้',
         back: { name: 'SettingListPage' }
       }
+    },
+    {
+      path: 'finance-expense-category/list',
+      name: 'ExpenseCategoryListPage',
+      component: (): ComponentOptions => import('@/pages/setting/pages/financial/pages/expense-category/pages/ExpenseCategoryListPage.vue'),
+      meta: {
+        auth: true,
+        title: 'หมวดหมู่รายจ่าย',
+        back: { name: 'SettingListPage' }
+      }
     }
   ]
 } as RouteRecordRaw

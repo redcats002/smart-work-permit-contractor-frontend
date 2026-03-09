@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { IActionCustomerOccupationPayload } from '@/models/request/customer-occupation/CustomerOccupationReq.model'
+import type { IActionFinanceIncomeTypePayload } from '@/models/request/finance-income-type/FinanceIncomeTypeReq.model'
 import CreateButton from '@/components/button/CreateButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
 import LabelField from '@/components/input/LabelField.vue'
@@ -62,7 +62,7 @@ const props = withDefaults(defineProps<IProps>(), {
 })
 const emits = defineEmits<IEmits>()
 
-const form = defineModel<IActionCustomerOccupationPayload>({ required: true })
+const form = defineModel<IActionFinanceIncomeTypePayload>({ required: true })
 const visible = defineModel<boolean>('visible', { default: false })
 const resolver = zodResolver(FinanceIncomeTypeSchema)
 

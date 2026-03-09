@@ -1,8 +1,8 @@
 import type {
-  ICreateFinanceExpenseCategoryPayload,
-  IGetFinanceExpenseCategoryList,
-  IUpdateFinanceExpenseCategoryPayload
-} from '@/models/request/finance-expense-category/FinanceIncomeCategoryReq.model'
+  ICreateFinanceExpenseTypePayload,
+  IGetFinanceExpenseTypeList,
+  IUpdateFinanceExpenseTypePayload
+} from '@/models/request/finance-expense-type/FinanceExpenseTypeReq.model'
 import type {
   TActionFinanceExpenseType,
   TGetFinanceExpenseTypeByIdResponse,
@@ -12,9 +12,9 @@ import type { TBaseParamsId } from '@/models/response/Response.model'
 import HttpRequest from '@/resources/HttpRequest'
 
 export interface IFinanceExpenseTypeProvider {
-  getFinanceExpenseTypePaginate (query: IGetFinanceExpenseCategoryList): Promise<TGetFinanceExpenseTypeListResponse>
-  createFinanceExpenseType (payload: ICreateFinanceExpenseCategoryPayload): Promise<TActionFinanceExpenseType>
-  updateFinanceExpenseType (id: TBaseParamsId, payload: IUpdateFinanceExpenseCategoryPayload): Promise<TActionFinanceExpenseType>
+  getFinanceExpenseTypePaginate (query: IGetFinanceExpenseTypeList): Promise<TGetFinanceExpenseTypeListResponse>
+  createFinanceExpenseType (payload: ICreateFinanceExpenseTypePayload): Promise<TActionFinanceExpenseType>
+  updateFinanceExpenseType (id: TBaseParamsId, payload: IUpdateFinanceExpenseTypePayload): Promise<TActionFinanceExpenseType>
   deleteFinanceExpenseType (id: number): Promise<TActionFinanceExpenseType>
   getFinanceExpenseTypeFindOne (id: TBaseParamsId): Promise<TGetFinanceExpenseTypeByIdResponse>
 }
@@ -22,17 +22,17 @@ export interface IFinanceExpenseTypeProvider {
 class FinanceExpenseTypeProvider extends HttpRequest implements IFinanceExpenseTypeProvider {
   private urlPrefix: string = '/api/v1/finance-expense-type'
 
-  public async getFinanceExpenseTypePaginate (query: IGetFinanceExpenseCategoryList): Promise<TGetFinanceExpenseTypeListResponse> {
+  public async getFinanceExpenseTypePaginate (query: IGetFinanceExpenseTypeList): Promise<TGetFinanceExpenseTypeListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }
 
-  public async createFinanceExpenseType (payload: ICreateFinanceExpenseCategoryPayload): Promise<TActionFinanceExpenseType> {
+  public async createFinanceExpenseType (payload: ICreateFinanceExpenseTypePayload): Promise<TActionFinanceExpenseType> {
     const response = await this.post(`${this.urlPrefix}`, payload)
     return response
   }
 
-  public async updateFinanceExpenseType (id: TBaseParamsId, payload: IUpdateFinanceExpenseCategoryPayload): Promise<TActionFinanceExpenseType> {
+  public async updateFinanceExpenseType (id: TBaseParamsId, payload: IUpdateFinanceExpenseTypePayload): Promise<TActionFinanceExpenseType> {
     const response = await this.put(`${this.urlPrefix}/${id}`, payload)
     return response
   }
