@@ -1,0 +1,68 @@
+<template>
+  <BaseTable
+    v-model:pagination="pagination"
+    v-model:sort-by="sortBy"
+    v-model:sort-order="sortOrder"
+    :columns="columns"
+    :items="props.items"
+    disable-auto-left-padding
+    @update="emits('update')">
+    <template #[`item.idNo`]="{ item }">
+      <LinkText :to="{ name: 'EmployeeDetailPage', params: { id: item.id }}">
+        {{ item?.idNo }}
+      </LinkText>
+    </template>
+    <template #[`item.status`]="{ item }">
+      <ChipEmployeeStatus :value="item.status" />
+    </template>
+  </BaseTable>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { formatter } from '@/utils/Formatter'
+import type { IEmployeeList } from '@/models/response/employee/EmployeeRes.model'
+import type { IColumn } from '@/models/Table.model'
+import LinkText from '@/components/button/LinkText.vue'
+import BaseTable from '@/components/table/BaseTable.vue'
+import type { IPagination } from '@/composables/usePagination'
+import ChipEmployeeStatus from './ChipEmployeeStatus.vue'
+
+interface IProps {
+  items: IEmployeeList[]
+}
+
+const props = defineProps<IProps>()
+
+interface IEmits {
+  delete: [id: number]
+  update: []
+}
+
+const emits = defineEmits<IEmits>()
+
+const pagination = defineModel<IPagination>('pagination', {
+  required: true
+})
+
+const sortBy = defineModel<string>('sortBy', { default: '' })
+const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
+
+const columns = ref<IColumn<IEmployeeList>[]>([
+  { field: 'idNo', header: 'เลขที่ลูกค้า', sortable: true, align: 'left' },
+  { field: 'firstName', header: 'ชื่อลูกค้า', align: 'left', value: (e: IEmployeeList): string => formatter.fullName(e) },
+  { field: 'phoneNumber', header: 'เบอร์โทรศัพท์', align: 'left', value: (e: IEmployeeList): string => formatter.fullPhoneNumber(e) },
+  { field: 'status', header: 'สถานะ', sortable: true, align: 'left' }
+  // {
+  //   field: 'action',
+  //   header: 'จัดการ',
+  //   frozen: true,
+  //   alignFrozen: 'right',
+  //   style: { minWidth: '70px', width: '70px' },
+  //   headerStyle: { boxShadow: '-1px 0 0 #E5E7EB' },
+  //   bodyStyle: { boxShadow: '-1px 0 0 #E5E7EB' }
+  // }
+])
+</script>
+
+<style scoped></style>

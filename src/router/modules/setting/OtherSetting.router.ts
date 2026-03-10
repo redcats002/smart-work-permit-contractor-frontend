@@ -1,5 +1,6 @@
 import type { ComponentOptions } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
+import EmployeeRouter from './Employee.router'
 
 const prefix = 'other'
 
@@ -16,6 +17,7 @@ export default {
     icon: 'bitcoin-icons:sign-outline'
   },
   children: [
+    EmployeeRouter,
     {
       path: 'how-did-find-us/list',
       name: 'HowDidFindUsListPage',
