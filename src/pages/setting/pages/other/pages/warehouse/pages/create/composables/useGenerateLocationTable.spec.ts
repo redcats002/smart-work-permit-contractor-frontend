@@ -5,7 +5,7 @@ import { useGenerateLocationTable } from './useGenerateLocationTable'
 describe('useGenerateLocationTable', (): void => {
   it('generates WH-A1 and WH-A2 for one option with prefix', (): void => {
     const result = useGenerateLocationTable('WH', [
-      { isRequirePrefix: false, prefix: 'A', maxLimit: 2 }
+      { isRequirePrefix: true, prefix: 'A', maxLimit: 2 }
     ])
 
     expect(result).toEqual([
@@ -16,8 +16,8 @@ describe('useGenerateLocationTable', (): void => {
 
   it('generates cartesian combinations for two levels', (): void => {
     const result = useGenerateLocationTable('WH', [
-      { isRequirePrefix: false, prefix: 'A', maxLimit: 2 },
-      { isRequirePrefix: false, prefix: 'B', maxLimit: 2 }
+      { isRequirePrefix: true, prefix: 'A', maxLimit: 2 },
+      { isRequirePrefix: true, prefix: 'B', maxLimit: 2 }
     ])
 
     expect(result).toEqual([
@@ -28,10 +28,24 @@ describe('useGenerateLocationTable', (): void => {
     ])
   })
 
+  it('edge case test with invalid isRequiredPrefix payload', (): void => {
+    const result = useGenerateLocationTable('WH', [
+      { isRequirePrefix: true, prefix: 'A', maxLimit: 2 },
+      { isRequirePrefix: false, prefix: 'B', maxLimit: 2 }
+    ])
+
+    expect(result).toEqual([
+      { name: 'WH-A1-1', status: LocationStatusEnum.INACTIVE },
+      { name: 'WH-A1-2', status: LocationStatusEnum.INACTIVE },
+      { name: 'WH-A2-1', status: LocationStatusEnum.INACTIVE },
+      { name: 'WH-A2-2', status: LocationStatusEnum.INACTIVE }
+    ])
+  })
+
   it('uses plain index segment when option prefix is empty', (): void => {
     const result = useGenerateLocationTable('WH', [
-      { isRequirePrefix: false, prefix: 'A', maxLimit: 2 },
-      { isRequirePrefix: false, prefix: 'B', maxLimit: 2 },
+      { isRequirePrefix: true, prefix: 'A', maxLimit: 2 },
+      { isRequirePrefix: true, prefix: 'B', maxLimit: 2 },
       { isRequirePrefix: false, prefix: '', maxLimit: 3 }
     ])
 
