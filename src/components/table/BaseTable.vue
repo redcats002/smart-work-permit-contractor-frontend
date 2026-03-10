@@ -169,8 +169,8 @@ function getCellValue (col: IColumn, row: any): any {
 }
 
 function resolveAlignClass (align?: 'left' | 'center' | 'right'): string {
-  if (align === 'center') return 'text-center'
-  if (align === 'right') return 'text-right'
+  if (align === 'center') return 'text-center justify-center flex'
+  if (align === 'right') return 'text-right justify-end flex'
   return 'text-left'
 }
 
