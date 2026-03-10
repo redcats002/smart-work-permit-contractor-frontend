@@ -3,7 +3,7 @@ import type { RouteRecordRaw } from 'vue-router'
 import ContractSettingRouter from './ContractSetting.router'
 import CustomerSettingRouter from './CustomerSetting.router'
 import FinancialSettingRouter from './FinancialSetting.router'
-import OtherSettingRouter from './OtherSetting.router'
+import OtherSettingRouter from './other'
 
 const prefix = '/setting'
 
@@ -28,8 +28,8 @@ export default {
         title: 'ตั้งค่า'
       }
     },
-    CustomerSettingRouter,
     ContractSettingRouter,
+    CustomerSettingRouter,
     FinancialSettingRouter,
     OtherSettingRouter
   ]
