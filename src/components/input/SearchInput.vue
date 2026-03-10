@@ -9,6 +9,7 @@
       placeholder="ค้นหา"
       pt:root="flex-1 rounded-s-sm w-full rounded-none pl-11 border-0 border-b border-gray-400! bg-transparent"
       variant="outlined"
+      @keypress.enter="onEnterSearch()"
       @update:model-value="debounceSearch()" />
     <!-- <div class="flex items-center justify-center border-y border-e h-9! border-surface-300 dark:border-surface-700 rounded-e-sm overflow-hidden">
       <SecondaryButton
@@ -50,6 +51,11 @@ function emitSearch (): void {
 }
 
 const debounceSearch = useDebounce(emitSearch)
+
+function onEnterSearch (): void {
+  debounceSearch.cancel()
+  emitSearch()
+}
 
 onMounted((): void => {
   model.value = route.query?.search as string || ''
