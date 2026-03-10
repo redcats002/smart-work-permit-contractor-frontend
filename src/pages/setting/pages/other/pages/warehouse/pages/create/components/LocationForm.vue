@@ -1,0 +1,97 @@
+<template>
+  <div>
+    <div
+      v-for="(_, i) in model.options"
+      :key="`model-option-${i}`"
+      class="gap-5 mb-4 flex items-end">
+      <Switch
+        v-model="model.options[i].isRequirePrefix"
+        class="mb-2"
+        false-label="ไม่กำหนดตัวย่อ"
+        true-label="ไม่กำหนดตัวย่อ" />
+      <LabelField
+        v-model="model.options[i].prefix"
+        :disabled="!model.options[i].isRequirePrefix"
+        :form="form"
+        :name="`options.${i}.prefix`"
+        class="grow"
+        label="ตัวย่อจุดจัดเก็บ"
+        hide-error
+        required />
+      <LabelField
+        v-slot="{ invalid }"
+        :form="form"
+        :name="`options.${i}.maxLimit`"
+        class="grow"
+        label="จำนวนสูงสุด"
+        hide-error
+        required>
+        <InputNumber
+          v-model="model.options[i].maxLimit"
+          :invalid="invalid"
+          :name="`options.${i}.maxLimit`"
+          class="h-9 w-full" />
+      </LabelField>
+      <Button
+        class="w-14"
+        rounded
+        text
+        @click="onRemove(i)">
+        <Icon
+          icon="material-symbols:delete-outline" />
+      </Button>
+    </div>
+    <CreateButton
+      label="เพิ่มจุดจัดเก็บ"
+      @click="onAdd()" />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { watch } from 'vue'
+import type { IFormState } from '@/models/Form.model'
+import CreateButton from '@/components/button/CreateButton.vue'
+import LabelField from '@/components/input/LabelField.vue'
+import Switch from '@/components/input/Switch.vue'
+import { Icon } from '@iconify/vue'
+import { useGenerateLocationTable as buildLocationTable } from '../composables/useGenerateLocationTable'
+import { useFormInitialValues, type WarehouseFormValues } from '../schema/warehouse.schema'
+
+interface IProps {
+  form?: IFormState
+}
+
+defineProps<IProps>()
+
+
+const model = defineModel<WarehouseFormValues>({
+  default: useFormInitialValues()
+})
+
+function onAdd (): void {
+  model.value.options.push({
+    prefix: '',
+    maxLimit: 0,
+    isRequirePrefix: true
+  })
+}
+
+function onRemove (index: number): void {
+  model.value.options.splice(index, 1)
+}
+
+function generateLocationTable (): void {
+  model.value.locations = buildLocationTable(model.value.prefix, model.value.options)
+}
+
+watch((): string => model.value.prefix, (): void => {
+  generateLocationTable()
+})
+watch((): WarehouseFormValues['options'] => model.value.options, (): void => {
+  generateLocationTable()
+}, { deep: true })
+</script>
+
+<style scoped>
+
+</style>

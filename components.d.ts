@@ -22,6 +22,7 @@ declare module 'vue' {
     Dialog: typeof import('./src/volt/Dialog.vue')['default']
     Divider: typeof import('./src/volt/Divider.vue')['default']
     InputMask: typeof import('./src/volt/InputMask.vue')['default']
+    InputNumber: typeof import('./src/volt/InputNumber.vue')['default']
     InputText: typeof import('./src/volt/InputText.vue')['default']
     Menu: typeof import('./src/volt/Menu.vue')['default']
     Password: typeof import('./src/volt/Password.vue')['default']
