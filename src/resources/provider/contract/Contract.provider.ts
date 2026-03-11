@@ -9,6 +9,8 @@ export interface IContractProvider {
   updateContract (id: TBaseParamsId, payload: IUpdateContractPayload): Promise<TActionContract>
   deleteContract (id: number): Promise<TActionContract>
   getContractFindOne (id: TBaseParamsId): Promise<TGetContractByIdResponse>
+  saveCollateralDetail (contractId: TBaseParamsId, collateralId: TBaseParamsId, formData: FormData): Promise<TActionContract>
+  requestAssessmentPrice (id: TBaseParamsId): Promise<TActionContract>
 }
 
 class ContractProvider extends HttpRequest implements IContractProvider {
@@ -38,6 +40,23 @@ class ContractProvider extends HttpRequest implements IContractProvider {
     const response = await this.get(`${this.urlPrefix}/${id}`)
     return response
   }
-}
 
+  public async saveCollateralDetail (
+    contractId: TBaseParamsId,
+    collateralId: TBaseParamsId,
+    formData: FormData
+  ): Promise<TActionContract> {
+    this.setAuthHeader('BRANCH')
+    const response = await this.put(
+      `${this.urlPrefix}/${contractId}/collateral/${collateralId}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }
+    )
+    return response
+  }
+
+  public async requestAssessmentPrice (id: TBaseParamsId): Promise<TActionContract> {
+    this.setAuthHeader('BRANCH')
+    const response = await this.post(`${this.urlPrefix}/${id}/request-assessment`, {})
+    return response
+  }
+}
 export default ContractProvider

@@ -35,3 +35,21 @@ export const CollateralTypeItems: TBaseOption[] = Object.values(CollateralTypeEn
     value: e
   })
 )
+
+export const VehicleCollateralTypeItems: TBaseOption[] = CollateralTypeItems.filter(
+  (e: TBaseOption): boolean => String(e.value).startsWith('VEHICLE_')
+)
+
+export const LandCollateralTypeItems: TBaseOption[] = CollateralTypeItems.filter(
+  (e: TBaseOption): boolean => String(e.value).startsWith('LAND_')
+)
+
+export function isVehicleCollateral (type?: string | null): boolean {
+  if (!type) return false
+  return type.startsWith('VEHICLE_')
+}
+
+export function isLandCollateral (type?: string | null): boolean {
+  if (!type) return false
+  return type.startsWith('LAND_')
+}
