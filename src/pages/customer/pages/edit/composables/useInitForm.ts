@@ -1,8 +1,11 @@
 import type { Ref } from 'vue'
+import { useDayjs } from '@/utils/Dayjs'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import type { CustomerStatusEnum } from '@/enums/modules/customer/CustomerStatus.enum'
 import type { ETitleName } from '@/enums/TitleName.enum'
 import type { CustomerFormValues } from '../../create/schema/customer.schema'
+
+const dayjs = useDayjs()
 
 export function useInitForm (form: Ref<CustomerFormValues>, data: ICustomerById): void {
   form.value = {
@@ -13,7 +16,7 @@ export function useInitForm (form: Ref<CustomerFormValues>, data: ICustomerById)
     lastName: data.lastName,
     phoneNumber: data.phoneNumber,
     phoneNumber2: data.phoneNumber2 ?? '',
-    birthDate: (data.birthDate ? new Date(data.birthDate) : '') as unknown as string,
+    birthDate: (data.birthDate ? dayjs(data.birthDate).toDate() : '') as unknown as string,
     email: data.email ?? '',
     status: data.status as CustomerStatusEnum,
     customerGroupId: data.customerGroup?.id ?? undefined,

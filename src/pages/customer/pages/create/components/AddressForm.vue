@@ -107,7 +107,7 @@
 import { computed } from 'vue'
 import type { IFormState } from '@/models/Form.model'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
-import AddressFieldInput from '@/components/input/AddressFieldInput.vue'
+import AddressFieldInput, { type IAddressData } from '@/components/input/AddressFieldInput.vue'
 import CheckboxInput from '@/components/input/CheckboxInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 
@@ -174,10 +174,11 @@ const googleMapUrl = computed((): string => {
   return 'workAddress.urlGoogleMap'
 })
 
-function onAddressSelect (address: Partial<IAddressRequest>): void {
+function onAddressSelect (address: Partial<IAddressData>): void {
   model.value = {
     ...model.value,
-    ...address
+    ...address,
+    postCode: address?.postalCode || ''
   }
 }
 
