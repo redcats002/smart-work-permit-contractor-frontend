@@ -12,7 +12,6 @@ export interface IEmployeeList extends IEntity {
   lastName: string
   phoneNumber: string
   phoneNumber2?: string
-  employeeGroup: TBaseModel
   status: TEmployeeStatus
 }
 export interface IEmployeeById extends IEntity {

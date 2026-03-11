@@ -49,19 +49,9 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IEmployeeList>[]>([
-  { field: 'idNo', header: 'เลขที่ลูกค้า', sortable: true, align: 'left' },
-  { field: 'firstName', header: 'ชื่อลูกค้า', align: 'left', value: (e: IEmployeeList): string => formatter.fullName(e) },
-  { field: 'phoneNumber', header: 'เบอร์โทรศัพท์', align: 'left', value: (e: IEmployeeList): string => formatter.fullPhoneNumber(e) },
-  { field: 'status', header: 'สถานะ', sortable: true, align: 'left' }
-  // {
-  //   field: 'action',
-  //   header: 'จัดการ',
-  //   frozen: true,
-  //   alignFrozen: 'right',
-  //   style: { minWidth: '70px', width: '70px' },
-  //   headerStyle: { boxShadow: '-1px 0 0 #E5E7EB' },
-  //   bodyStyle: { boxShadow: '-1px 0 0 #E5E7EB' }
-  // }
+  { field: 'idNo', header: 'เลขที่พนักงาน', sortable: true, align: 'left' },
+  { field: 'firstName', header: 'ชื่อพนักงาน', align: 'left', value: (e: IEmployeeList): string => formatter.fullName(e) },
+  { field: 'status', header: 'สถานะ', sortable: true, align: 'right' }
 ])
 </script>
 

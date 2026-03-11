@@ -1,6 +1,5 @@
 import type { ComponentOptions } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
-import EmployeeRouter from './Employee.router'
 
 const prefix = 'how-did-find-us'
 
@@ -15,7 +14,6 @@ export default {
     auth: true
   },
   children: [
-    EmployeeRouter,
     {
       path: 'list',
       name: 'HowDidFindUsListPage',
