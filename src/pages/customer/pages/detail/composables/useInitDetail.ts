@@ -73,12 +73,12 @@ export function useInitTabDetail (): IUseTabItems {
   const Estate = markRaw(dac((): Promise<Component> => import('../components/tab/estate/EstateTab.vue')))
 
   const input = computed((): ITabItemComponent[] => [
-    { key: 'Address', title: 'ที่อยู่', instance: Address },
-    { key: 'PrivateDocument', title: 'เอกสารส่วนตัว', instance: PrivateDocument },
-    { key: 'Contract', title: 'สัญญา', instance: Contract },
-    { key: 'PaymentHistory', title: 'ประวัติการชำระเงิน', instance: PaymentHistory },
-    { key: 'ContactHistory', title: 'ประวัติการติดต่อ', instance: ContactHistory },
-    { key: 'Estate', title: 'หลักทรัพย์', instance: Estate }
+    { key: 'Address', label: 'ที่อยู่', instance: Address, value: 'address' },
+    { key: 'PrivateDocument', label: 'เอกสารส่วนตัว', instance: PrivateDocument, value: 'private-document' },
+    { key: 'Contract', label: 'สัญญา', instance: Contract, value: 'contract' },
+    { key: 'PaymentHistory', label: 'ประวัติการชำระเงิน', instance: PaymentHistory, value: 'payment-history' },
+    { key: 'ContactHistory', label: 'ประวัติการติดต่อ', instance: ContactHistory, value: 'contact-history' },
+    { key: 'Estate', label: 'หลักทรัพย์', instance: Estate, value: 'estate' }
   ])
 
   return useTabItems(input)
