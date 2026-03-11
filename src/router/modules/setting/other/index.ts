@@ -3,6 +3,7 @@ import type { RouteRecordRaw } from 'vue-router'
 import BranchRouter from './Branch.router'
 import HowDidFindUsRouter from './HowDidFindUs.router'
 import WarehouseRouter from './Warehouse.router'
+import EmployeeRouter from '../Employee.router'
 
 const prefix = 'other'
 
@@ -19,6 +20,7 @@ export default {
     icon: 'bitcoin-icons:sign-outline'
   },
   children: [
+    EmployeeRouter,
     WarehouseRouter,
     BranchRouter,
     HowDidFindUsRouter
