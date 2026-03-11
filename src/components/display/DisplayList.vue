@@ -2,22 +2,22 @@
   <div class="w-full grid grid-cols-1 gap-2.5">
     <div
       v-for="(item, i) in items"
-      :key="`item-${item.key}-${i}`"
+      :key="`item-${String(item.key)}-${i}`"
       class="grid grid-cols-3 gap-2.5">
       <div class="text-sm font-bold text-gray-500">
         <slot
-          v-if="$slots[`label.${item.key}`]"
+          v-if="$slots[`label.${String(item.key)}`]"
           :label="item.label"
-          :name="`label.${item.key}`"
+          :name="`label.${String(item.key)}`"
           :value="item.value" />
         <span v-else>{{ item.label }}</span>
       </div>
       <div class="text-sm col-span-2 flex items-center gap-2.5">
         <span v-if="!item?.hideColon">:</span>
         <slot
-          v-if="$slots[`value.${item.key}`]"
+          v-if="$slots[`value.${String(item.key)}`]"
           :label="item.label"
-          :name="`value.${item.key}`"
+          :name="`value.${String(item.key)}`"
           :value="item.value" />
         <template v-else>
           <span
@@ -33,9 +33,9 @@
   </div>
 </template>
 
-<script setup lang="ts">
-export interface IDisplayList {
-  key: string
+<script setup lang="ts" generic="T">
+export interface IDisplayList<T = any> {
+  key: keyof T | (string & {})
   label: string
   value: any
   encrypt?: boolean
@@ -43,8 +43,8 @@ export interface IDisplayList {
   extUrl?: string
 }
 
-interface IProps {
-  items?: IDisplayList[]
+interface IProps<T = any> {
+  items?: IDisplayList<T>[]
 }
 
 withDefaults(defineProps<IProps>(), {

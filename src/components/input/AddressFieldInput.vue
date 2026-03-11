@@ -42,7 +42,7 @@ import AutoCompleteInput from './AutoCompleteInput.vue'
 
 /* ================= types ================= */
 
-interface AddressData {
+export interface IAddressData {
   subDistrict: string
   district: string
   province: string
@@ -61,7 +61,7 @@ interface IProps {
 
 interface IEmits {
   (e: 'update:model-value', value: string): void
-  (e: 'select', value: AddressData): void
+  (e: 'select', value: IAddressData): void
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -175,7 +175,7 @@ function getDisplayString (val: any): string {
 }
 
 
-function formatAddressData (val: any): AddressData {
+function formatAddressData (val: any): IAddressData {
   return {
     subDistrict: val.sub_district,
     district: val.district,

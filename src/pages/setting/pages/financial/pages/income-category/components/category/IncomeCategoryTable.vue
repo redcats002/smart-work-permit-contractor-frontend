@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { IActionFinanceIncomeCategoryPayload } from '@/models/request/finance-income-type/FinanceIncomeTypeReq.model'
+import type { IActionFinanceIncomeTypePayload } from '@/models/request/finance-income-type/FinanceIncomeTypeReq.model'
 import type { IFinanceIncomeCategoryList } from '@/models/response/finance-income-category/FinanceIncomeCategoryRes.model'
 import type { IColumn } from '@/models/Table.model'
 import BaseTable from '@/components/table/BaseTable.vue'
@@ -53,7 +53,7 @@ interface IEmits {
 
 const emits = defineEmits<IEmits>()
 
-const form = defineModel<IActionFinanceIncomeCategoryPayload>('form', { required: true })
+const form = defineModel<IActionFinanceIncomeTypePayload>('form', { required: true })
 const pagination = defineModel<IPagination>('pagination', {
   required: true
 })

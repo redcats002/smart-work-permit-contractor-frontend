@@ -1,6 +1,8 @@
 <template>
   <div class="flex items-center gap-2.5">
-    <ToggleSwitch v-model="checked" />
+    <ToggleSwitch
+      v-model="checked"
+      :readonly="props.readonly" />
     <span
       v-if="trueLabel || falseLabel"
       class="duration-300 font-bold text-base">{{ checked ? trueLabel : falseLabel }}
@@ -12,11 +14,13 @@
 interface IProps {
   trueLabel?: string
   falseLabel?: string
+  readonly?: boolean
 }
 
-withDefaults(defineProps<IProps>(), {
+const props = withDefaults(defineProps<IProps>(), {
   trueLabel: '',
-  falseLabel: ''
+  falseLabel: '',
+  readonly: false
 })
 
 const checked = defineModel<boolean>({ default: false })

@@ -2,7 +2,9 @@ import type { ComponentOptions } from 'vue'
 import type { RouteLocationNormalized, Router, RouteRecordRaw } from 'vue-router'
 import { createRouter, createWebHistory } from 'vue-router'
 import AuthRouter from './modules/Auth.router'
+import ContractRouter from './modules/contract'
 import CustomerRouter from './modules/customer'
+import FinanceRouter from './modules/finance'
 import SettingRouter from './modules/setting'
 
 // import { useAuthStore } from '@/stores/Auth'
@@ -19,7 +21,9 @@ export const routes: RouteRecordRaw[] = [
     component: (): ComponentOptions => import('@/pages/HomePage.vue')
   },
   AuthRouter,
+  ContractRouter,
   CustomerRouter,
+  FinanceRouter,
   SettingRouter
 ]
 

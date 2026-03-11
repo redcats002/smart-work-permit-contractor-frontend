@@ -1,7 +1,7 @@
 import { computed, ref, type Ref } from 'vue'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IActionFinanceIncomeCategoryPayload, IGetFinanceIncomeCategoryList } from '@/models/request/finance-income-type/FinanceIncomeTypeReq.model'
+import type { IActionFinanceIncomeTypePayload, IGetFinanceIncomeTypeList } from '@/models/request/finance-income-type/FinanceIncomeTypeReq.model'
 import type { IFinanceIncomeCategoryList } from '@/models/response/finance-income-category/FinanceIncomeCategoryRes.model'
 import FinanceIncomeCategoryProvider, { type IFinanceIncomeCategoryProvider } from '@/resources/provider/finance-income-category/FinanceIncomeCategory.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
@@ -9,7 +9,7 @@ import { useFormInitialValues } from '../../schema/finance-income-category.schem
 
 interface IUseList extends IUsePagination {
   items: Ref<IFinanceIncomeCategoryList[]>
-  form: Ref<IActionFinanceIncomeCategoryPayload>
+  form: Ref<IActionFinanceIncomeTypePayload>
   useDelete: (id: number) => Promise<void>
   onCreate: () => void
   onUpdate: (id: number) => void
@@ -21,10 +21,10 @@ export default function useList (): IUseList {
   const FinanceIncomeCategoryService: IFinanceIncomeCategoryProvider = new FinanceIncomeCategoryProvider()
 
   const items = ref<IFinanceIncomeCategoryList[]>([])
-  const form = ref<IActionFinanceIncomeCategoryPayload>(useFormInitialValues())
+  const form = ref<IActionFinanceIncomeTypePayload>(useFormInitialValues())
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
 
-  const paginateQuery = computed((): IGetFinanceIncomeCategoryList => {
+  const paginateQuery = computed((): IGetFinanceIncomeTypeList => {
     return {
       search: search.value,
       page: pagination.value.page,

@@ -1,0 +1,590 @@
+# Mittae Esan Management — Copilot Instructions
+
+## Project Overview
+
+ระบบจัดการสินเชื่อและสาขา (Loan & Branch Management System) สำหรับบริษัทมิตรแท้สยาม เขียนด้วย Vue 3 + TypeScript ภาษา UI เป็นภาษาไทย
+
+**Domain modules:** Auth, Customer, Contract, Financial (Income/Expense), Warehouse/Collateral, Branch, Settings
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Vue 3.5 (Composition API + `<script setup>`) |
+| Language | TypeScript 5.9 (strict mode) |
+| Build | Vite 7 |
+| Package Manager | **bun** (ห้ามใช้ `npm` หรือ `yarn`) |
+| State | Pinia 3 + `pinia-plugin-persistedstate` |
+| Router | Vue Router 5 (HTML5 history mode) |
+| UI Library | PrimeVue 4 (unstyled / Volt pattern) |
+| Styling | Tailwind CSS v4 + `tailwindcss-primeui` tokens |
+| HTTP | Axios + humps (camelCase conversion) |
+| Forms | `@primevue/forms` + Zod |
+| Date | dayjs (Buddhist era, Thai locale, Asia/Bangkok) |
+| Icons | `@iconify/vue` |
+| Testing | Vitest + Playwright |
+
+---
+
+## Directory Structure Conventions
+
+```
+src/
+  assets/css/          # Global CSS: main.css, tailwind.css, primevue.css, fonts.css
+  components/
+    app/               # App-chrome: AppDrawer, AppDrawerMenu
+    base/              # Layout primitives: BasePage, BaseTop, BaseTopSticky, BaseContainer, BaseTab, BaseTabWindow
+    button/            # Action buttons by semantic intent
+    chip/              # Chip/badge components
+    display/           # Read-only display components
+    flex/              # Flex helpers (Spacer)
+    form/              # Form building blocks
+    input/             # Custom input components
+    loader/            # Skeleton/spinner states
+    modal/             # Dialog wrappers
+    nav/               # Navigation components
+    progress/          # Progress indicators
+    selection/         # Selection UI
+    table/             # Table helpers
+    transition/        # Vue transition wrappers
+  composables/         # Shared composables (useAppDrawer, usePagination, useTabItems, useCopy)
+  enums/               # Enums: Date.enum.ts, Status.enum.ts, TitleName.enum.ts, modules/
+  layouts/             # DefaultLayout.vue, BlankLayout.vue
+  models/              # TypeScript interfaces (Global, Form, Table, modules/, request/, response/)
+  pages/               # Feature pages (nested per-feature folder)
+  plugins/             # Vue plugin registrations (primevue, pinia, dayjs, toast)
+  resources/           # HTTP layer: HttpRequest.ts, Interceptors.ts, provider/
+  router/              # index.ts + modules/ (one file per feature)
+  stores/              # Pinia stores: Auth.ts, Loading.ts
+  utils/               # Pure utilities (Formatter, Dayjs, HandleLoading, HandleSubmit, etc.)
+  volt/                # PrimeVue Volt wrappers (auto-imported project-wide)
+```
+
+---
+
+## Naming Conventions
+
+### TypeScript Types
+- **Interfaces:** `I<Name>` — e.g., `ICustomer`, `IFormState`, `IBaseOption`
+- **Type aliases:** `T<Name>` — e.g., `TBaseParamsId`, `TEntityStatus`
+- **Enums:** `E<Name>` or `<Name>Enum` — e.g., `ETitleName`, `EntityStatusEnum`
+- **Type derived from enum keys:** `type T<Name> = keyof typeof <Name>Enum`
+
+### Component Prefixes
+| Prefix | Usage |
+|---|---|
+| `Base*` | Generic layout/structural primitives (`BasePage`, `BaseTop`, `BaseContainer`) |
+| `App*` | App-level chrome components (`AppDrawer`, `AppDrawerMenu`) |
+| `*Button` | Semantic action buttons (`CreateButton`, `EditButton`, `DeleteButton`, `ConfirmButton`, `CancelButton`, `BackButton`, `DownloadButton`, `FilterButton`) |
+| `Form*` | Form action bars (`FormAction`, `FormActionFilter`) |
+| `Display*` | Read-only display components |
+
+### Files
+- Components: `PascalCase.vue`
+- Composables: `use<Name>.ts` (camelCase)
+- Stores: `<Name>.ts` (PascalCase, no "Store" suffix in filename)
+- Utils: `<Name>.ts` (PascalCase)
+- Models: `<Name>.model.ts`
+- Enums: `<Name>.enum.ts`
+- Providers: `<Name>Provider.ts`
+- Router modules: `<featureName>.route.ts`
+
+---
+
+## Component Patterns
+
+### Script Setup
+All components use `<script setup lang="ts">`. No Options API. No `defineComponent`.
+
+```vue
+<script setup lang="ts">
+import type { IExample } from '@/models/modules/Example.model'
+
+// props
+const props = defineProps<{
+  item: IExample
+  loading?: boolean
+}>()
+
+// emits
+const emit = defineEmits<{
+  (e: 'submit', value: IExample): void
+  (e: 'cancel'): void
+}>()
+</script>
+```
+
+### Page Structure (Feature Folder)
+Each feature follows this nested structure:
+```
+src/pages/<feature>/
+  <Feature>.vue               ← route shell (usually just <router-view>)
+  pages/
+    list/pages/<Feature>ListPage.vue
+    create/pages/<Feature>CreatePage.vue
+    detail/pages/<Feature>DetailPage.vue
+    edit/pages/<Feature>EditPage.vue
+  composables/                ← feature-specific composables
+  components/                 ← feature-specific components
+  models/                     ← feature-specific model extensions (if needed)
+```
+
+### Layout Selection
+Route meta `layout` field drives layout in `App.vue`:
+- `layout: 'default'` → `DefaultLayout` (sidebar + content, authenticated)
+- `layout: 'blank'` → `BlankLayout` (bare `<router-view>`, auth pages)
+
+---
+
+## Router Conventions
+
+```typescript
+// src/router/modules/<feature>.route.ts
+import type { RouteRecordRaw } from 'vue-router'
+
+const routes: RouteRecordRaw[] = [
+  {
+    path: '/feature',
+    component: (): ComponentOptions => import('@/pages/feature/Feature.vue'),
+    meta: { layout: 'default', auth: true, title: 'Feature', menu: true, icon: 'solar:icon-bold' },
+    children: [
+      {
+        path: 'list',
+        name: 'FeatureList',
+        component: (): ComponentOptions => import('@/pages/feature/pages/list/pages/FeatureListPage.vue'),
+        meta: { title: 'รายการ Feature', back: { name: 'Home' } },
+      },
+    ],
+  },
+]
+
+export default routes
+```
+
+**Rules:**
+- All page components are **lazy-loaded** (dynamic import)
+- Name routes using PascalCase matching component name
+- Always add `meta.title` (Thai string used for `document.title`)
+- `meta.back` defines the route for `BackButton`
+- `meta.menu: true` makes route appear in `AppDrawerMenu`
+- `meta.icon` is an Iconify icon string
+
+---
+
+## State Management (Pinia)
+
+Use **setup store** pattern (function syntax):
+
+```typescript
+// src/stores/MyStore.ts
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+
+export const useMyStore = defineStore('my-store', () => {
+  const value = ref<string>('')
+  const isEmpty = computed(() => value.value === '')
+
+  function setValue(v: string): void {
+    value.value = v
+  }
+
+  return { value, isEmpty, setValue }
+}, { persist: false })
+```
+
+**Existing stores:**
+- `useAuthStore()` — `user`, `branch`, `userToken`, `branchToken`; actions: `userLogin`, `branchLogin`, `clearUser`, `clearBranch`, `logout`
+- `useLoadingStore()` — counter-based `loadingCount`; actions: `addLoading`, `removeLoading`; computed: `isLoading`
+
+---
+
+## API / HTTP Layer
+
+### Provider Pattern
+All API providers extend `HttpRequest`:
+
+```typescript
+// src/resources/provider/<Feature>Provider.ts
+import { HttpRequest } from '@/resources/HttpRequest'
+import type { IBaseSuccessResponse, IBasePaginationResponse } from '@/models/response/Response.model'
+import type { ICreateFeaturePayload, IGetFeatureList } from '@/models/request/Feature.request'
+import type { IFeature } from '@/models/modules/Feature.model'
+
+export interface IFeatureProvider {
+  getFeatureList(params: IGetFeatureList): Promise<IBasePaginationResponse<IFeature[]>>
+  createFeature(payload: ICreateFeaturePayload): Promise<IBaseSuccessResponse<IFeature>>
+  updateFeature(id: number, payload: IUpdateFeaturePayload): Promise<IBaseSuccessResponse<IFeature>>
+  deleteFeature(id: TBaseParamsId): Promise<IBaseSuccessResponse<null>>
+}
+
+export class FeatureProvider extends HttpRequest implements IFeatureProvider {
+  private urlPrefix = '/api/v1/feature'
+
+  async getFeatureList(params: IGetFeatureList): Promise<IBasePaginationResponse<IFeature[]>> {
+    this.setAuthHeader('BRANCH')
+    return this.get(this.urlPrefix, { params })
+  }
+
+  async createFeature(payload: ICreateFeaturePayload): Promise<IBaseSuccessResponse<IFeature>> {
+    this.setAuthHeader('BRANCH')
+    return this.post(this.urlPrefix, payload)
+  }
+}
+```
+
+**Key rules:**
+- Always call `this.setAuthHeader('USER' | 'BRANCH')` before each request
+- Use `'USER'` for auth endpoints, `'BRANCH'` for all business endpoints
+- Base URL from `import.meta.env.VITE_APP_API_URL`
+- `download()` method returns Blob for file downloads
+- 401 response automatically triggers logout + redirect to `/auth/login`
+- Responses are auto-camelized by Interceptors (humps)
+
+---
+
+## Model Conventions
+
+### Base Models (`src/models/Global.model.ts`)
+```typescript
+IEntity      // id, idNo, createdAt, deletedAt, updatedAt, createdBy, updatedBy
+IAuthor      // id, firstName, lastName
+IBaseOption  // label, value?, alt?  — use for dropdown options
+IBaseModel   // id, name             — use for simple reference entities
+```
+
+### Request Models (`src/models/request/`)
+```typescript
+// Always extend IBasePaginationRequest for list endpoints
+export interface IGetFeatureList extends IBasePaginationRequest {
+  status?: string
+  // ...additional filter fields
+}
+
+export interface ICreateFeaturePayload {
+  name: string
+  // ...
+}
+
+export interface IUpdateFeaturePayload extends Partial<ICreateFeaturePayload> {}
+```
+
+### Response Models (`src/models/response/`)
+```typescript
+IBaseSuccessResponse<T>     // { message: string, data: T }
+IBasePaginationResponse<T>  // extends above + IPagination
+IErrorResponse              // { code: number, message: string }
+TBaseParamsId               // number | string | string[]
+```
+
+### Domain Models (`src/models/modules/`)
+- One file per entity/feature: `Feature.model.ts`
+- Domain interfaces extend `IEntity` for resource models
+
+---
+
+## Form Patterns
+
+### Standard Form Submit Flow
+Use `handleLoading` from `src/utils/HandleLoading.ts`:
+
+```typescript
+import { handleLoading } from '@/utils/HandleLoading'
+import { handleSubmit } from '@/utils/HandleSubmit'
+
+const formRef = ref()
+
+async function onSubmit(): Promise<void> {
+  const { valid, errors } = await handleSubmit(formRef)
+  if (!valid) return
+
+  await handleLoading(async () => {
+    const res = await provider.createFeature(form.value)
+    // handle success
+  })
+}
+```
+
+### `handleLoading` Signature
+```typescript
+handleLoading(
+  callback: () => Promise<void>,
+  options?: { successMessage?: string },
+  errorCallback?: (error: IErrorResponse) => void
+): Promise<void>
+```
+- Adds/removes global loading automatically
+- Catches errors and shows toast automatically
+- No need to wrap in try/catch
+
+### Form State Model
+```typescript
+// src/models/Form.model.ts
+interface IFormState {
+  [fieldName: string]: {
+    invalid?: boolean
+    error?: { message?: string }
+    errors?: Array<{ message?: string }>
+  }
+}
+```
+
+---
+
+## Composables
+
+### `usePagination`
+```typescript
+const { pagination, search, sortBy, sortOrder } = usePagination()
+// syncs to URL query params automatically via router.replace
+```
+
+### `useAppDrawer`
+```typescript
+const { isOpen, open, close, toggle } = useAppDrawer()
+// Module-level singleton (no Pinia needed)
+```
+
+### `useTabItems`
+```typescript
+const { tab, tabItems } = useTabItems(
+  computed(() => [
+    { label: 'ข้อมูลลูกค้า', component: CustomerInfoTab },
+    { label: 'สัญญา', component: ContractsTab },
+  ])
+)
+```
+
+### `useCopy`
+```typescript
+const { isCopied, copy } = useCopy()
+await copy(textToCopy)
+```
+
+---
+
+## Utility Functions
+
+### Date Formatting (`src/utils/Dayjs.ts`)
+```typescript
+const { formatDate, formatDateTime, formatAge, formatDateRequest } = useDayjs()
+// formatDate(date)         → 'DD/MM/BBBB' (Buddhist era)
+// formatDateTime(date)     → 'DD/MM/BBBB HH:mm'
+// formatDateRequest(date)  → ISO string for API
+// formatAge(birthdate)     → 'XX ปี XX เดือน'
+```
+
+### Number/String Formatting (`src/utils/Formatter.ts`)
+```typescript
+formatter.number(1234567)          // '1,234,567'
+formatter.numberTwoDecimal(1234.5) // '1,234.50'
+formatter.baht(1234567)            // '1,234,567.00 บาท'
+formatter.thaiCitizenId('1234567890123') // '1-2345-67890-12-3'
+formatter.phone('0812345678')      // '081-234-5678'
+formatter.fullName(titleName, firstName, lastName) // 'นาย John Doe'
+```
+
+### Input Guards (`src/utils/Keypress.ts`)
+```typescript
+// Use on @keypress event to restrict input
+@keypress="number"           // numbers + decimal
+@keypress="numberNoDecimal"  // integers only
+@keypress="telInput"         // phone number characters
+@keypress="emailNoThai"      // no Thai characters in email
+```
+
+### Debounce (`src/utils/Debounce.ts`)
+```typescript
+const debouncedSearch = useDebounce((q: string) => fetchData(q), 1500)
+```
+
+---
+
+## Styling Rules
+
+### Tailwind CSS v4
+- No `tailwind.config.js` — configured via `@tailwindcss/vite` plugin
+- Use PrimeVue design tokens as Tailwind classes: `text-primary`, `bg-surface-0`, `border-surface-200`
+- Dark mode via `dark:` variant
+
+### PrimeVue Styling (Volt Pattern)
+- PrimeVue configured with `unstyled: true`
+- All component styling lives in `src/volt/` as PT (PassThrough) objects with Tailwind classes
+- **Never add `scoped` CSS** in components that use volt wrappers
+- `ptViewMerge` utility in `src/volt/utils.ts` merges PT props — use it in all volt components
+
+### CSS Files
+- `src/assets/css/tailwind.css` — Tailwind base import
+- `src/assets/css/primevue.css` — PrimeVue custom tokens/overrides
+- `src/assets/css/main.css` — Global app styles
+- `src/assets/css/fonts.css` — Font-face declarations
+
+---
+
+## Volt Components (Auto-imported)
+
+> **IMPORTANT — Before building any UI component**, always check https://volt.primevue.org/overview first to see if a Volt component already covers the use-case. Prefer Volt components over custom implementations.
+
+> **IMPORTANT — For reading PrimeVue component API** (props, events, slots, methods, PT tokens), always use the **MCP PrimeVue tool** instead of browsing the web. Examples:
+> - `mcp_primevue_get_component_props` — get all props for a component
+> - `mcp_primevue_get_component_events` — get all events
+> - `mcp_primevue_get_component_slots` — get all slots
+> - `mcp_primevue_get_component_pt` — get PassThrough tokens
+> - `mcp_primevue_search_components` — search for a component by name
+> - `mcp_primevue_suggest_component` — suggest the right component for a use-case
+
+Volt components live in `src/volt/` and are **auto-imported project-wide** (no explicit import needed in `<script setup>`).
+
+### Adding a new Volt component
+
+Use the project CLI (not the default Volt install command):
+
+```bash
+volt add [ComponentName]
+```
+
+Examples:
+```bash
+volt add Accordion
+volt add FileUpload
+volt add Timeline
+```
+
+This scaffolds the component into `src/volt/` with PT (PassThrough) wrappers and Tailwind classes, matching the existing project pattern.
+
+### Currently installed Volt components
+
+These are available globally without importing:
+
+| Component | PrimeVue Equivalent |
+|---|---|
+| `Button` | PrimeVue Button |
+| `SecondaryButton` | secondary variant |
+| `DangerButton` | danger/destructive variant |
+| `ContrastButton` | contrast variant |
+| `InputText` | InputText |
+| `InputNumber` | InputNumber |
+| `InputMask` | InputMask |
+| `Select` | Select/Dropdown |
+| `AutoComplete` | AutoComplete |
+| `DatePicker` | DatePicker/Calendar |
+| `Checkbox` | Checkbox |
+| `ToggleSwitch` | ToggleSwitch |
+| `Password` | Password |
+| `DataTable` | DataTable |
+| `Dialog` | Dialog |
+| `Card` | Card |
+| `Divider` | Divider |
+| `Menu` | Menu |
+| `Toast` | Toast |
+
+---
+
+## Icon System
+
+Use `@iconify/vue` with Solar or MDI icon sets:
+
+```vue
+<Icon icon="solar:user-bold" class="text-xl" />
+<Icon icon="mdi:chevron-right" />
+```
+
+Route meta icons use Solar set: `solar:<name>-<style>` (e.g., `solar:settings-bold`, `solar:users-group-rounded-bold`)
+
+---
+
+## TypeScript Rules (Strictly Enforced by ESLint)
+
+1. **Explicit return types on all functions** — `function foo(): void`, `const fn = (): string =>`
+2. **`import type`** for type-only imports — `import type { IFoo } from '@/models/Foo.model'`
+3. **No unused variables or parameters** — `noUnusedLocals`, `noUnusedParameters`
+4. **Typed arrow function parameters** — `const fn = (x: string): void =>`
+5. **`any` is allowed** — but prefer explicit types
+6. **No `console.log`** — use `console.error` or `console.info` only
+7. **Path alias** — always use `@/` for `src/` imports, never relative `../` paths beyond one level
+
+---
+
+## Environment Variables
+
+```
+VITE_APP_API_URL=    # Backend API base URL
+```
+
+Modes: `development` (default), `staging`, `production` (via `vite --mode staging`)
+
+---
+
+## Package Manager
+
+โปรเจคนี้ใช้ **bun** เป็น package manager เท่านั้น ห้ามใช้ `npm`, `yarn` หรือ `pnpm`
+
+```bash
+bun install           # Install dependencies
+bun add <package>     # Add a package
+bun remove <package>  # Remove a package
+```
+
+---
+
+## Build & Dev Commands
+
+```bash
+bun run dev        # Dev server on 0.0.0.0:8080
+bun run build      # Production build
+bun run build:dev  # Development build
+bun run build:stg  # Staging build
+bun run preview    # Preview production build
+bun run lint       # ESLint check
+bun run test       # Vitest
+```
+
+---
+
+## Key Patterns Summary (Quick Reference)
+
+| Task | Pattern/File |
+|---|---|
+| API call | Extend `HttpRequest` → create Provider class |
+| Global loading | `handleLoading()` from `src/utils/HandleLoading.ts` |
+| Form submit | `handleSubmit(formRef)` + `handleLoading()` |
+| Pagination | `usePagination()` composable (syncs to URL) |
+| Date format | `useDayjs()` from `src/utils/Dayjs.ts` |
+| Number format | `formatter.*` from `src/utils/Formatter.ts` |
+| Route auth | `meta.auth: true` (guard WIP) |
+| Toast | `useToast()` from PrimeVue — already registered globally |
+| Store access | `useAuthStore()`, `useLoadingStore()` |
+| Drawer state | `useAppDrawer()` composable |
+| Tab pages | `useTabItems()` composable |
+| Copy to clipboard | `useCopy()` composable |
+| Input validation | `@keypress` guards from `src/utils/Keypress.ts` |
+| Scroll to top | `scrollToTop()` from `src/utils/ScrollToTop.ts` |
+| Thai address | `thai-address-universal` package |
+
+---
+
+## Buddhist Era Date Convention
+
+All displayed dates use Buddhist Era (BE = AD + 543). Format: `DD/MM/BBBB`
+
+```typescript
+// Always use formatDate / formatDateTime from useDayjs()
+// Never format dates manually or use toLocaleDateString()
+const { formatDate } = useDayjs()
+const display = formatDate(record.createdAt) // '11/03/2569'
+```
+
+---
+
+## Auth Flow (Two-Step)
+
+1. User logs in with credentials → receives `userToken`
+2. User selects a branch → receives `branchToken`
+3. All business API calls use `branchToken` (`setAuthHeader('BRANCH')`)
+4. Auth management API calls use `userToken` (`setAuthHeader('USER')`)
+5. On 401 → `AuthStore.logout()` → redirect to `/auth/login`
+
+Tokens stored as base64-encoded JSON in cookies (`user_access_token`, `branch_access_token`).
+
+

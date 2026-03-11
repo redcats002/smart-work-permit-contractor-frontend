@@ -39,12 +39,20 @@
       @click="close()">
       <!-- Top Menu -->
       <div class="space-y-1">
-        <AppDrawerMenu
+        <template
           v-for="menu in menuItems"
-          :key="`top-${menu.label}`"
-          :icon="menu.icon"
-          :label="menu.label"
-          :to="menu.to" />
+          :key="`top-${menu.label}`">
+          <AppDrawerSubMenu
+            v-if="menu.children?.length"
+            :children="menu.children"
+            :icon="menu.icon"
+            :label="menu.label" />
+          <AppDrawerMenu
+            v-else
+            :icon="menu.icon"
+            :label="menu.label"
+            :to="menu.to!" />
+        </template>
       </div>
 
       <!-- Bottom Menu -->
@@ -54,7 +62,7 @@
           :key="`bottom-${menu.label}`"
           :icon="menu.icon"
           :label="menu.label"
-          :to="menu.to" />
+          :to="menu.to!" />
       </div>
     </nav>
   </aside>
@@ -65,23 +73,41 @@ import useLogout from '@/pages/auth/composables/useLogout'
 import { useAppDrawer } from '@/composables/useAppDrawer'
 import { Icon } from '@iconify/vue'
 import AppDrawerMenu from './AppDrawerMenu.vue'
+import AppDrawerSubMenu from './AppDrawerSubMenu.vue'
 
 const { isOpen, close } = useAppDrawer()
 
 const { logout } = useLogout()
 
-const menuItems = [
+interface IMenuItem {
+  label: string
+  icon: string
+  key: string
+  to?: string
+  children?: { label: string, to: string }[]
+}
+
+const menuItems: IMenuItem[] = [
   { label: 'ข่าวสาร', icon: '/menuicon/news.svg', key: 'news', to: '/news' },
   { label: 'งาน', icon: '/menuicon/box.svg', key: 'jobs', to: '/jobs' },
   { label: 'แดชบอร์ด', icon: '/menuicon/dashbord.svg', key: 'dashboard', to: '/' },
   { label: 'รายงาน', icon: '/menuicon/report.svg', key: 'reports', to: '/reports' },
-  { label: 'สัญญา', icon: '/menuicon/contract.svg', key: 'contracts', to: '/contracts' },
+  { label: 'สัญญา', icon: '/menuicon/contract.svg', key: 'contracts', to: '/contract/list' },
   { label: 'ลูกค้า', icon: '/menuicon/customer.svg', key: 'customers', to: '/customer/list' },
   { label: 'หลักทรัพย์', icon: '/menuicon/box.svg', key: 'assets', to: '/assets' },
-  { label: 'เอกสารและการเงิน', icon: '/menuicon/document.svg', key: 'finance', to: '/finance' },
+  {
+    label: 'เอกสารและการเงิน',
+    icon: '/menuicon/document.svg',
+    key: 'finance',
+    children: [
+      { label: 'ใบแจ้งหนี้', to: '/finance/invoice/list' },
+      { label: 'ใบเสร็จรับเงิน', to: '/finance/receipt/list' },
+      { label: 'บันทึกค่าใช้จ่าย', to: '/finance/expense/list' }
+    ]
+  },
   { label: 'การจัดเก็บ', icon: '/menuicon/storage.svg', key: 'storage', to: '/storage' }
 ]
-const buttomMenuItems = [
+const buttomMenuItems: IMenuItem[] = [
   { label: 'ตั่งค่า', icon: '/menuicon/setting.svg', key: 'setting', to: '/setting' }
 ]
 
