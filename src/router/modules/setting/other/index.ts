@@ -1,5 +1,6 @@
 import type { ComponentOptions } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
+import BranchRouter from './Branch.router'
 import HowDidFindUsRouter from './HowDidFindUs.router'
 import WarehouseRouter from './Warehouse.router'
 
@@ -18,7 +19,8 @@ export default {
     icon: 'bitcoin-icons:sign-outline'
   },
   children: [
-    HowDidFindUsRouter,
-    WarehouseRouter
+    WarehouseRouter,
+    BranchRouter,
+    HowDidFindUsRouter
   ]
 } as RouteRecordRaw
