@@ -7,41 +7,33 @@ import ESLint from 'vite-plugin-eslint2'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    Vue(),
-    ESLint(),
-    Tailwindcss(),
-        Components({
-      dirs: ['src/volt'],
-      dts: true,
-    }),
-  ],
+	plugins: [
+		Vue(),
+		ESLint(),
+		Tailwindcss(),
+		Components({
+			dirs: ['src/volt'],
+			dts: true
+		})
+	],
 
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
-    },
-    extensions: [
-      '.js',
-      '.json',
-      '.jsx',
-      '.mjs',
-      '.ts',
-      '.tsx',
-      '.vue',
-    ]
-  },
+	resolve: {
+		alias: {
+			'@': fileURLToPath(new URL('./src', import.meta.url))
+		},
+		extensions: ['.js', '.json', '.jsx', '.mjs', '.ts', '.tsx', '.vue']
+	},
 
-  define: {
-    'process.env': {}
-  },
+	define: {
+		'process.env': {}
+	},
 
-  server: {
-    host: '0.0.0.0',
-    port: 8080,
-    strictPort: false,
-    watch: {
-      usePolling: true
-    }
-  }
+	server: {
+		host: '0.0.0.0',
+		port: 8080,
+		strictPort: false,
+		watch: {
+			usePolling: true
+		}
+	}
 })
