@@ -15,6 +15,18 @@ export default {
       name: 'InvoiceListPage',
       component: (): ComponentOptions => import('@/pages/finance/pages/invoice/pages/InvoiceListPage.vue'),
       meta: { auth: true, menu: true, title: 'รายการใบแจ้งหนี้', icon: 'solar:bill-list-bold' }
+    },
+    {
+      path: 'receipt/list',
+      name: 'ReceiptListPage',
+      component: (): ComponentOptions => import('@/pages/finance/pages/receipt/pages/ReceiptListPage.vue'),
+      meta: { auth: true, menu: true, title: 'รายการใบเสร็จรับเงิน', icon: 'solar:bill-list-bold' }
+    },
+    {
+      path: 'expense/list',
+      name: 'ExpenseListPage',
+      component: (): ComponentOptions => import('@/pages/finance/pages/record/pages/RecordExpensesListPage.vue'),
+      meta: { auth: true, menu: true, title: 'รายการบันทึกค่าใช้จ่าย', icon: 'solar:bill-list-bold' }
     }
   ]
 } as RouteRecordRaw
