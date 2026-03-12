@@ -16,7 +16,7 @@
     </BaseTop>
     <BasePage>
       <div
-        v-if="contract"
+        v-if="contract && contract?.status"
         class="flex flex-col gap-5 pb-10">
         <PreContractInformation :data="contract" />
         <AssetSection
@@ -25,13 +25,21 @@
           :active-index="activeIndex"
           :asset-category="assetCategory"
           :assets="contract.assets"
+          :status="contract.status"
           @active="onActiveAsset($event)"
           @open="openModal($event)" />
+        <AppraisalSection
+          v-if="contract?.status === 'IN_ASSESSMENT'"
+          v-model:appraisal-price="formAppraisalPrice"
+          :appraisals="contract?.appraisals"
+          @submit="onAppraisalPrice()" />
         <PreContractAction
-          v-model:request-reappraisal="form"
+          v-model:request-reappraisal="formRequestReappraisal"
           :disabled="!filledAllRequired"
+          :status="contract.status"
           @cancel="onCancel()"
-          @confirm="onRequestPreContract()" />
+          @confirm-appraisal="onConfirmAppraisal()"
+          @request-reappraisal="onRequestReappraisal()" />
       </div>
     </BasePage>
   </section>
@@ -44,13 +52,14 @@ import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
+import AppraisalSection from '../components/AppraisalSection.vue'
 import AssetSection from '../components/AssetSection.vue'
 import ModalAssetDetail from '../components/ModalAssetDetail.vue'
 import PreContractAction from '../components/PreContractAction.vue'
 import PreContractDetailMenuAction from '../components/PreContractDetailMenuAction.vue'
 import PreContractInformation from '../components/PreContractInformation.vue'
+import { useAppraisal } from '../composables/useAppraisal'
 import { useInitDetail } from '../composables/useInitDetail'
-import { useRequestReappraisal } from '../composables/useRequestReappraisal'
 
 const {
   contract,
@@ -69,7 +78,7 @@ const {
   useFetch,
   fetch
 } = useInitDetail()
-const { form, onRequestPreContract } = useRequestReappraisal(useFetch)
+const { formRequestReappraisal, formAppraisalPrice, onAppraisalPrice, onRequestReappraisal, onConfirmAppraisal } = useAppraisal(useFetch)
 
 onMounted((): void => {
   fetch()

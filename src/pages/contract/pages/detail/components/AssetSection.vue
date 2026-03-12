@@ -45,6 +45,7 @@
             <DisplayList :items="items" />
           </div>
           <Button
+            v-if="isShowEdit"
             class="flex items-center gap-1.5 border border-surface-700! rounded-sm px-4 h-9 text-sm text-surface-700! hover:bg-surface-50! transition-colors w-fit"
             type="button"
             outlined
@@ -62,6 +63,7 @@ import { computed } from 'vue'
 import { formatter } from '@/utils/Formatter'
 import type { IAssetDetailInfo } from '@/models/response/pre-contract/PreContractRes.model'
 import { formatTitle } from '@/enums/modules/contract/AssetType.enum'
+import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BaseGalleria from '@/components/base/BaseGalleria.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
@@ -72,6 +74,7 @@ interface IProps {
   activeAsset?: IAssetDetailInfo | null
   assets?: IAssetDetailInfo[]
   assetCategory?: TAssetCategory
+  status?: TPreContractStatus
 }
 
 interface IEmits {
@@ -83,10 +86,16 @@ const props = withDefaults(defineProps<IProps>(), {
   assets: (): IAssetDetailInfo[] => [],
   activeAsset: undefined,
   activeIndex: undefined,
-  assetCategory: null
+  assetCategory: null,
+  status: undefined
 })
 
 const emits = defineEmits<IEmits>()
+
+const isShowEdit = computed((): boolean => {
+  const editableStatus: TPreContractStatus[] = ['DRAFT', 'PENDING']
+  return props.activeAsset !== undefined && props.status !== undefined && editableStatus.includes(props.status)
+})
 
 const items = computed((): IDisplayList[] => {
   if (isLand.value) {
