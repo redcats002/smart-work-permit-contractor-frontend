@@ -111,7 +111,7 @@ const menuItems: IMenuItem[] = [
     key: 'stock',
     children: [
       { label: 'รายการเอกสารหลักทรัพย์', to: '/stock/list' },
-      { label: 'ย้ายเอกสาร', to: '/stock/list2' }
+      { label: 'ย้ายเอกสาร', to: '/stock/docs/list' }
     ]
   }
 ]

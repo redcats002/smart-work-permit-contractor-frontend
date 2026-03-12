@@ -26,6 +26,17 @@ export default {
         icon: 'mdi-account'
       }
     },
+    {
+      path: 'docs/list',
+      name: 'StockDocsListPage',
+      component: (): ComponentOptions => import('@/pages/stock/pages/list/pages/StockDocsListPage.vue'),
+      meta: {
+        auth: true,
+        menu: true,
+        title: 'รายการย้ายเอกสาร',
+        icon: 'mdi-account'
+      }
+    },
     // {
     //   path: 'create',
     //   name: 'CustomerCreatePage',
@@ -43,7 +54,7 @@ export default {
       component: (): ComponentOptions => import('@/pages/stock/pages/list/pages/StockListPage.vue'),
       meta: {
         auth: true,
-        title: 'รายละเอียดลูกค้า',
+        title: '',
         icon: 'mdi-account',
         back: { name: 'CustomerListPage' }
       }
