@@ -1,29 +1,29 @@
 import { computed, ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IBaseOption } from '@/models/Global.model'
-import type { IGetPreContractList } from '@/models/request/pre-contract/PreContractReq.model'
-import type { IPreContractList } from '@/models/response/pre-contract/PreContractRes.model'
-import PreContractProvider, { type IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
+import type { IGetContractList } from '@/models/request/contract/ContractReq.model'
+import type { IContractList } from '@/models/response/contract/ContractRes.model'
+import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
 interface IUseContractList extends IUsePagination {
-  filters: Ref<IGetPreContractList>
-  items: Ref<IPreContractList[]>
+  filters: Ref<IGetContractList>
+  items: Ref<IContractList[]>
   loanTypeOptions: Ref<IBaseOption[]>
   fetch(): void
   onClearFilters(): void
 }
 
 export default function useContractList (): IUseContractList {
-  const contractService: IPreContractProvider = new PreContractProvider()
+  const contractService: IContractProvider = new ContractProvider()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
 
-  const filters = ref<IGetPreContractList>({})
-  const items = ref<IPreContractList[]>([])
+  const filters = ref<IGetContractList>({})
+  const items = ref<IContractList[]>([])
   const loanTypeOptions = ref<IBaseOption[]>([])
 
-  const paginateQuery = computed((): IGetPreContractList => ({
+  const paginateQuery = computed((): IGetContractList => ({
     search: search.value,
     page: pagination.value.page,
     limit: pagination.value.limit,
