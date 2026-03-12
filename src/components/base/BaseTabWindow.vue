@@ -14,23 +14,23 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import type { ITabItemComponent } from '@/composables/useTabItems'
 
-interface TabItem {
+interface ITabItem extends ITabItemComponent {
   value: string
   label: string
-  component: any
   props?: Record<string, any>
 }
 
 interface Props {
   modelValue: string
-  items: TabItem[]
+  items: ITabItem[]
 }
 
 const props = defineProps<Props>()
 
-const activeItem = computed((): TabItem | undefined => {
-  return props.items.find((i: TabItem): boolean => i.value === props.modelValue) ?? props.items[0]
+const activeItem = computed((): ITabItem | undefined => {
+  return props.items.find((i: ITabItem): boolean => i.value === props.modelValue) ?? props.items[0]
 })
 
 const activeComponent = computed((): any => {
