@@ -44,6 +44,16 @@ export default {
         title: 'รายละเอียดพนักงาน',
         back: { name: 'EmployeeListPage' }
       }
+    },
+    {
+      path: 'edit/:id',
+      name: 'EmployeeEditPage',
+      component: (): ComponentOptions => import('@/pages/employee/pages/edit/pages/EmployeeEditPage.vue'),
+      meta: {
+        auth: true,
+        title: 'แก้ไขพนักงาน',
+        back: { name: 'EmployeeDetailPage' }
+      }
     }
   ]
 } as RouteRecordRaw
