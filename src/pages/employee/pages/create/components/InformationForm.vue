@@ -1,0 +1,147 @@
+<template>
+  <div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <Switch
+        v-model="isActive"
+        class="col-span-3"
+        false-label="ปิดใช้งาน"
+        true-label="ใช้งาน" />
+      <LabelField
+        v-model="model.idCard"
+        :form="form"
+        label="เลขบัตรประชาชน"
+        name="idCard"
+        hide-error
+        required />
+      <div class="w-full grid grid-cols-2 gap-5">
+        <LabelField
+          v-slot="{ invalid }"
+          :form="form"
+          label="คำนำหน้า"
+          name="titleName"
+          hide-error>
+          <TitleNameSelection
+            v-model="model.titleName"
+            :invalid="invalid"
+            dropdown />
+        </LabelField>
+        <LabelField
+          v-model="model.firstName"
+          :form="form"
+          label="ชื่อ"
+          name="firstName"
+          hide-error
+          required />
+      </div>
+      <LabelField
+        v-model="model.lastName"
+        :form="form"
+        label="นามสกุล"
+        name="lastName"
+        hide-error
+        required />
+      <LabelField
+        v-slot="{ invalid }"
+        :form="form"
+        label="วันเดือนปีเกิด"
+        name="birthDate"
+        hide-error
+        required>
+        <DatePickerInput
+          v-model="model.birthDate"
+          :invalid="invalid"
+          :max-date="dayjs().toDate()"
+          name="birthDate" />
+      </LabelField>
+      <LabelField
+        v-model="model.email"
+        :form="form"
+        label="อีเมล"
+        name="email"
+        hide-error
+        @keypress="keypress.emailNoThai($event)" />
+      <LabelField
+        v-slot="{ invalid }"
+        :form="form"
+        label="เบอร์โทร"
+        name="phoneNumber"
+        hide-error
+        required>
+        <PhoneNumberInput
+          v-model="model.phoneNumber"
+          :invalid="invalid"
+          name="phoneNumber" />
+      </LabelField>
+      <LabelField
+        label="ตำแหน่ง"
+        tag="div"
+        required>
+        <SelectInput
+          v-model="model.role"
+          :options="EmployeeRoleItems"
+          option-label="label"
+          option-value="value"
+          placeholder="เลือกตำแหน่ง" />
+      </LabelField>
+      <LabelField
+        label="สาขา"
+        tag="div"
+        required>
+        <SelectInput
+          v-model="model.branchId"
+          :options="branchItems"
+          option-label="label"
+          option-value="value"
+          placeholder="เลือกสาขา" />
+      </LabelField>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useDayjs } from '@/utils/Dayjs'
+import keypress from '@/utils/Keypress'
+import type { IFormState } from '@/models/Form.model'
+import type { ICreateEmployeePayload } from '@/models/request/employee/EmployeeReq.model'
+import { EmployeeStatusEnum } from '@/enums/modules/employee/EmployeeStatus.enum'
+import DatePickerInput from '@/components/input/DatePickerInput.vue'
+import LabelField from '@/components/input/LabelField.vue'
+import PhoneNumberInput from '@/components/input/PhoneNumberInput.vue'
+import Switch from '@/components/input/Switch.vue'
+import TitleNameSelection from '@/components/selection/TitleNameSelection.vue'
+import { useFormInitialValues } from '../schema/employee.schema'
+import SelectInput from '@/components/input/SelectInput.vue'
+import { EmployeeRoleItems } from '@/enums/modules/employee/EmployeeRole.enum'
+
+interface IProps {
+  form?: IFormState
+}
+
+defineProps<IProps>()
+
+const dayjs = useDayjs()
+
+const model = defineModel<ICreateEmployeePayload>({
+  default: useFormInitialValues()
+})
+
+const isActive = computed({
+  get (): boolean {
+    return model.value.status === 'ACTIVE'
+  },
+  set (value: boolean): void {
+    model.value.status = value ? EmployeeStatusEnum.ACTIVE : EmployeeStatusEnum.INACTIVE
+  }
+})
+
+const branchItems = [
+  { label: 'ขอนแก่น', value: 1 },
+  { label: 'กรุงเทพ', value: 2 },
+  { label: 'เชียงใหม่', value: 3 }
+]
+</script>
+
+<style scoped>
+
+</style>

@@ -1,8 +1,8 @@
 import { useDayjs } from '@/utils/Dayjs'
 import { generator } from '@/utils/Generator'
-import { CustomerStatusEnum } from '@/enums/modules/customer/CustomerStatus.enum'
 import { ETitleName } from '@/enums/TitleName.enum'
 import { z } from 'zod'
+import { EmployeeStatusEnum } from '@/enums/modules/employee/EmployeeStatus.enum'
 
 export const EmployeeSchema = z.object({
 
@@ -21,9 +21,9 @@ export const EmployeeSchema = z.object({
   email: z.email('รูปแบบอีเมลไม่ถูกต้อง').or(z.literal('')).optional(),
 
   // ── Classification ───────────────────────────────────────────────────────
-  status: z.enum(CustomerStatusEnum, 'กรุณาเลือกสถานะลูกค้า'),
-  customerGroupId: z.number().optional(),
-  occupationId: z.number().optional(),
+  status: z.enum(EmployeeStatusEnum, 'กรุณาเลือกสถานะลูกค้า'),
+  role: z.string().min(1, 'กรุณาเลือกตำแหน่ง'),
+  branchId: z.number().min(1, 'กรุณาเลือกสาขา'),
 
   // ── Citizen / Home Address ───────────────────────────────────────────────
   mainAddress: z.object({
@@ -78,10 +78,10 @@ export function useDev (): EmployeeFormValues {
     phoneNumber2: '',
     birthDate: '',
     email: '',
+    role: '',
+    branchId: 0,
     // Classification
-    status: CustomerStatusEnum.INACTIVE,
-    customerGroupId: undefined,
-    occupationId: undefined,
+    status: EmployeeStatusEnum.INACTIVE,
     // Citizen / Home address
     mainAddress: {
       address: 'หลัก',
@@ -129,10 +129,10 @@ export function useFormInitialValues (): EmployeeFormValues {
     phoneNumber2: '',
     birthDate: '',
     email: '',
+    role: '',
+    branchId: 0,
     // Classification
-    status: CustomerStatusEnum.INACTIVE,
-    customerGroupId: undefined,
-    occupationId: undefined,
+    status: EmployeeStatusEnum.INACTIVE,
     // Citizen / Home address
     mainAddress: {
       address: '',
