@@ -1,4 +1,5 @@
 import type {
+  IAppraisalPricePayload,
   ICreatePreContractPayload,
   IGetPreContractList,
   IRequestReappraisalPayload,
@@ -6,6 +7,8 @@ import type {
 } from '@/models/request/pre-contract/PreContractReq.model'
 import type {
   TActionPreContract,
+  TAppraisalPricePreContract,
+  TConfirmAppraisalPreContract,
   TGetPreContractByIdResponse,
   TGetPreContractListResponse,
   TRequestReappraisalPreContract
@@ -20,6 +23,8 @@ export interface IPreContractProvider {
   deleteContract (id: number): Promise<TActionPreContract>
   getContractFindOne (id: TBaseParamsId): Promise<TGetPreContractByIdResponse>
   requestReappraisal (id: TBaseParamsId, payload: IRequestReappraisalPayload): Promise<TRequestReappraisalPreContract>
+  appraisalPrice (id: TBaseParamsId, payload: IAppraisalPricePayload): Promise<TAppraisalPricePreContract>
+  confirmAppraisal (id: TBaseParamsId): Promise<TConfirmAppraisalPreContract>
 }
 
 class PreContractProvider extends HttpRequest implements IPreContractProvider {
@@ -52,6 +57,16 @@ class PreContractProvider extends HttpRequest implements IPreContractProvider {
 
   public async requestReappraisal (id: TBaseParamsId, payload: IRequestReappraisalPayload): Promise<TRequestReappraisalPreContract> {
     const response = await this.post(`${this.urlPrefix}/request-reappraisal/${id}`, payload)
+    return response
+  }
+
+  public async confirmAppraisal (id: TBaseParamsId): Promise<TConfirmAppraisalPreContract> {
+    const response = await this.post(`${this.urlPrefix}/confirm-appraisal/${id}`)
+    return response
+  }
+
+  public async appraisalPrice (id: TBaseParamsId, payload: IAppraisalPricePayload): Promise<TAppraisalPricePreContract> {
+    const response = await this.post(`${this.urlPrefix}/appraisal-price/${id}`, payload)
     return response
   }
 }

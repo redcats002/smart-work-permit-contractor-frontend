@@ -1,6 +1,7 @@
 import type { IBaseModel, IEntity } from '@/models/Global.model'
 import type { TAssetType } from '@/enums/modules/contract/AssetType.enum'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
+import type { TEvaluatorLevel } from '@/enums/modules/contract/EvaluatorLevel.enum'
 import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import type { TTitleName } from '@/enums/TitleName.enum'
 import type { IMedia } from '@/resources/provider/Upload.provider'
@@ -66,6 +67,20 @@ export interface IPreContractLoanType {
   name: string
 }
 
+export interface IEvaluatorList extends IEntity {
+  titleName: TTitleName
+  firstName: string
+  lastName: string
+  evaluatorLevel: TEvaluatorLevel
+  loanAmount: number
+}
+
+export interface IAppraisalById extends IEntity {
+  evaluatorLevel: TEvaluatorLevel
+  detail: string
+  evaluators: IEvaluatorList[]
+}
+
 export interface IPreContractList extends IEntity {
   contractDate: string | null
   startDate: string | null
@@ -87,9 +102,12 @@ export interface IPreContractById extends IEntity {
   loanType: IPreContractLoanType | null
   staff?: IPreContractStaff
   assets: IAssetDetailInfo[]
+  appraisals: IAppraisalById[]
 }
 
 export type TGetPreContractListResponse = IBasePaginationResponse<IPreContractList>
 export type TGetPreContractByIdResponse = IBaseSuccessResponse<IPreContractById>
 export type TActionPreContract = IBaseSuccessResponse<boolean>
 export type TRequestReappraisalPreContract = IBaseSuccessResponse<boolean>
+export type TAppraisalPricePreContract = IBaseSuccessResponse<boolean>
+export type TConfirmAppraisalPreContract = IBaseSuccessResponse<boolean>

@@ -69,7 +69,7 @@ export function useInitDetail (): IUseInitDetail {
         id: 1,
         idNo: 'PC-20240001',
         contractDate: '2024-06-01',
-        status: 'DRAFT',
+        status: 'IN_ASSESSMENT', // TODO: change to see each state
         customer: {
           id: 1,
           titleName: 'MR',
@@ -154,7 +154,29 @@ export function useInitDetail (): IUseInitDetail {
         ],
         endDate: '',
         loanType: { id: 1, name: 'สินเชื่อทะเบียนรถ' },
-        startDate: ''
+        startDate: '',
+        appraisals: [
+          {
+            detail: '',
+            evaluators: [
+              { evaluatorLevel: 'DISTRICT_LEVEL', id: 1, firstName: 'ผู้ตีราคา', lastName: 'ระดับอำเภอ', titleName: 'MR', loanAmount: 45000 },
+              { evaluatorLevel: 'DISTRICT_LEVEL', id: 2, firstName: 'ผู้ตีราคา', lastName: 'ระดับจังหวัด', titleName: 'MS', loanAmount: 48000 },
+              { evaluatorLevel: 'DISTRICT_LEVEL', id: 3, firstName: 'ผู้ตีราคา', lastName: 'ระดับภายนอก', titleName: 'MR', loanAmount: 47000 }
+            ],
+            evaluatorLevel: 'DISTRICT_LEVEL',
+            id: 1
+          },
+          {
+            detail: 'ลูกค้าอยากได้ 200,000 บาท',
+            evaluators: [
+              { evaluatorLevel: 'CEO_LEVEL', id: 1, firstName: 'ผู้ตีราคา', lastName: 'ระดับอำเภอ', titleName: 'MR', loanAmount: 45000 },
+              { evaluatorLevel: 'CEO_LEVEL', id: 2, firstName: 'ผู้ตีราคา', lastName: 'ระดับจังหวัด', titleName: 'MS', loanAmount: 48000 },
+              { evaluatorLevel: 'CEO_LEVEL', id: 3, firstName: 'ผู้ตีราคา', lastName: 'ระดับภายนอก', titleName: 'MR', loanAmount: 47000 }
+            ],
+            evaluatorLevel: 'CEO_LEVEL',
+            id: 2
+          }
+        ]
       }
       return
     }
