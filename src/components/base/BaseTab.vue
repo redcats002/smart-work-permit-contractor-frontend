@@ -11,22 +11,22 @@
             : 'bg-transparent text-[#62748E] hover:text-gray-800 text-sm font-medium'
         ]"
         @click="emit('update:modelValue', tab.value)">
-        {{ tab.title }}
+        {{ tab.label }}
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-export interface TabItem {
-  value: string
+export interface ITabItem {
   label: string
+  value: string
   [key: string]: any
 }
 
 interface Props {
   modelValue: string
-  items: TabItem[]
+  items: ITabItem[]
 }
 
 defineProps<Props>()

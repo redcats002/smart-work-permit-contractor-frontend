@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "build:alpha": "vite build --mode development",
-    "build:staging": "vite build --mode staging",
+    "build": "vue-tsc --noEmit && vite build",
+    "build:alpha": "vue-tsc --noEmit && vite build --mode development",
+    "build:staging": "vue-tsc --noEmit && vite build --mode staging",
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

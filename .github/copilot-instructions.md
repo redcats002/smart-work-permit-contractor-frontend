@@ -46,7 +46,7 @@ src/
     modal/             # Dialog wrappers
     nav/               # Navigation components
     progress/          # Progress indicators
-    selection/         # Selection UI
+    selection/         # Selection UI: TitleNameSelection, modules/<feature>/<Name>Selection.vue
     table/             # Table helpers
     transition/        # Vue transition wrappers
   composables/         # Shared composables (useAppDrawer, usePagination, useTabItems, useCopy)
@@ -558,9 +558,111 @@ bun run test       # Vitest
 | Drawer state | `useAppDrawer()` composable |
 | Tab pages | `useTabItems()` composable |
 | Copy to clipboard | `useCopy()` composable |
+| Selection input (API-backed) | `src/components/selection/modules/<feature>/<Name>Selection.vue` |
 | Input validation | `@keypress` guards from `src/utils/Keypress.ts` |
 | Scroll to top | `scrollToTop()` from `src/utils/ScrollToTop.ts` |
 | Thai address | `thai-address-universal` package |
+
+---
+
+## Selection Components
+
+Selection components are **AutoComplete-based reusable inputs** that wrap a data source (API or static enum) and expose a simple `v-model` interface. Use them wherever a field needs to select an entity by search.
+
+### When to create one
+
+If a form needs to select an entity (e.g. loan type, staff, customer group) and a `Selection` component for that entity doesn't already exist in `src/components/selection/`, **create one** before wiring it into the form.
+
+### Location
+
+```
+src/components/selection/
+  TitleNameSelection.vue              ← enum-backed (no API)
+  modules/
+    <feature>/
+      <Name>Selection.vue             ← API-backed
+```
+
+### API-backed Selection pattern
+
+```vue
+<!-- src/components/selection/modules/loan-type/LoanTypeSelection.vue -->
+<template>
+  <AutoCompleteInput
+    v-model="innerModel"
+    :suggestions="suggestions"
+    option-label="name"
+    complete-on-focus
+    force-selection
+    @complete="search()" />
+</template>
+
+<script setup lang="ts">
+import { onMounted, ref, watch } from 'vue'
+import { handleLoading } from '@/utils/HandleLoading'
+import type { TBaseModel } from '@/models/Global.model'
+import LoanTypeProvider from '@/resources/provider/loan-type/LoanType.provider'
+import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
+import usePagination from '@/composables/usePagination'
+
+const service = new LoanTypeProvider()
+
+const model = defineModel<number | null>()
+const selectedName = defineModel<string | null>('selectedName', { default: null })
+
+const innerModel = ref<TBaseModel | null>(null)
+const { pagination } = usePagination()
+const suggestions = ref<TBaseModel[]>([])
+
+async function useFetch(): Promise<void> {
+  const response = await service.getLoanTypePaginate({ page: pagination.value.page, limit: 9999 })
+  suggestions.value = response.data ?? []
+}
+
+function fetch(): void { handleLoading(useFetch) }
+
+function search(): void {
+  pagination.value.page = 1
+  fetch()
+}
+
+function syncInnerFromId(): void {
+  if (model.value == null) { innerModel.value = null; selectedName.value = null; return }
+  innerModel.value = suggestions.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
+  selectedName.value = innerModel.value?.name ?? null
+}
+
+watch(innerModel, (val: TBaseModel | null): void => {
+  model.value = val?.id ? Number(val.id) : null
+  selectedName.value = val?.name ?? null
+})
+watch(model, (): void => { syncInnerFromId() })
+watch(suggestions, (): void => { syncInnerFromId() }, { immediate: true })
+
+onMounted((): void => { fetch() })
+</script>
+```
+
+### Models exposed
+
+| Model | Type | Purpose |
+|---|---|---|
+| `v-model` | `number \| null` | Selected entity ID |
+| `v-model:selected-name` | `string \| null` | Selected entity display name (read display without re-fetching) |
+
+### Enum-backed Selection (no API)
+
+For static enums, map enum items to `TBaseModel[]` inside `useFetch` instead of calling an API (see `TitleNameSelection.vue`).
+
+### Existing Selection components
+
+| Component | Path | Source |
+|---|---|---|
+| `TitleNameSelection` | `selection/TitleNameSelection.vue` | `TitleNameItems` enum |
+| `BranchSelection` | `selection/modules/branch/BranchSelection.vue` | `BranchProvider` |
+| `CustomerGroupSelection` | `selection/modules/customer-group/CustomerGroupSelection.vue` | API |
+| `CustomerOccupationSelection` | `selection/modules/customer-occupation/CustomerOccupationSelection.vue` | API |
+| `ExternalInternalExpenseSelection` | `selection/modules/external-internal-expense/` | API |
 
 ---
 

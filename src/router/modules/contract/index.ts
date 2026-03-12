@@ -27,6 +27,17 @@ export default {
         title: 'สร้างสัญญาใหม่',
         back: { name: 'ContractListPage' }
       }
+    },
+    {
+      path: ':id',
+      name: 'PreContractDetailPage',
+      component: (): ComponentOptions =>
+        import('@/pages/contract/pages/detail/pages/PreContractDetailPage.vue'),
+      meta: {
+        auth: true,
+        title: 'รายละเอียดสัญญา',
+        back: { name: 'ContractListPage' }
+      }
     }
   ]
 } as RouteRecordRaw

@@ -1,0 +1,97 @@
+import type { IBaseModel, IEntity } from '@/models/Global.model'
+import type { TAssetAssessmentStatus } from '@/enums/modules/contract/AssetAssessmentStatus.enum'
+import type { TAssetType } from '@/enums/modules/contract/AssetType.enum'
+import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
+import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
+
+export interface IPreContractCustomer {
+  id: number | null
+  titleName: string | null
+  firstName: string | null
+  lastName: string | null
+}
+
+export interface IPreContractCustomerDetail extends IPreContractCustomer {
+  idNo: string | null
+  idCard: string | null
+  birthDate: string | null
+  customerGroup: IBaseModel | null
+  occupation: IBaseModel | null
+  email: string | null
+  phoneNumber: string | null
+  phoneNumber2: string | null
+}
+
+export interface IPreContractStaff {
+  id: number | null
+  titleName: string | null
+  firstName: string | null
+  lastName: string | null
+}
+
+export interface IPreAssetImage {
+  id: number | null
+  url: string
+  name: string
+}
+
+export interface IAssetDetailInfo extends IEntity {
+  assetType: TAssetType
+  detail: string | null
+  address: string | null
+  subDistrict: string | null
+  district: string | null
+  province: string | null
+  postCode: string | null
+  urlGoogleMap: string | null
+  // vehicle-specific
+  licensePlate: string | null
+  vehicleProvince: string | null
+  yearManufactured: number | null
+  yearRegistered: number | null
+  chassisNumber: string | null
+  mileage: number | null
+  // land-specific
+  landNumber: string | null
+  surveyPageNumber: string | null
+  landLocation: string | null
+  aerialPhotoNumber: string | null
+  aerialPhotoSheet: string | null
+  areaRai: number | null
+  areaRgan: number | null
+  areaTarangWa: number | null
+  images: IPreAssetImage[]
+}
+
+export interface IPreContractLoanType {
+  id: number | null
+  name: string
+}
+
+export interface IPreContractList extends IEntity {
+  contractDate: string | null
+  startDate: string | null
+  endDate: string | null
+  amount: number | null
+  status: TContractStatus | null
+  assetStatus: TAssetAssessmentStatus | null
+  customer: IPreContractCustomer | null
+  loanType: IPreContractLoanType | null
+}
+
+export interface IPreContractById extends IEntity {
+  contractDate: string | null
+  startDate: string | null
+  endDate: string | null
+  amount: number | null
+  status: TContractStatus | null
+  assetStatus: TAssetAssessmentStatus | null
+  customer: IPreContractCustomerDetail | null
+  loanType: IPreContractLoanType | null
+  staff: IPreContractStaff | null
+  assets: IAssetDetailInfo[]
+}
+
+export type TGetPreContractListResponse = IBasePaginationResponse<IPreContractList>
+export type TGetPreContractByIdResponse = IBaseSuccessResponse<IPreContractById>
+export type TActionPreContract = IBaseSuccessResponse<boolean>

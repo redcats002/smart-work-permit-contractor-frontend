@@ -10,13 +10,18 @@
 
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
+import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { TBaseModel, TBaseOption } from '@/models/Global.model'
-import { ExternalInternalExpenseItems, type TExternalInternalExpense } from '@/enums/modules/finance/ExternalInternalExpense.enum'
+import type { TBaseModel } from '@/models/Global.model'
+import type { IEmployeeList } from '@/models/response/employee/EmployeeRes.model'
+import type { IEmployeeProvider } from '@/resources/provider/employee/Employee.provider'
+import EmployeeProvider from '@/resources/provider/employee/Employee.provider'
 import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
 import usePagination from '@/composables/usePagination'
 
-const model = defineModel<TExternalInternalExpense>()
+const EmployeeService: IEmployeeProvider = new EmployeeProvider()
+
+const model = defineModel<number | null>()
 const selectedName = defineModel<string | null>('selectedName', { default: null })
 
 const innerModel = ref<TBaseModel | null>(null)
@@ -26,11 +31,14 @@ const { pagination } = usePagination()
 const suggestions = ref<TBaseModel[]>([])
 
 async function useFetch (): Promise<void> {
-  const items = ExternalInternalExpenseItems
+  const response = await EmployeeService.getEmployeePaginate({
+    page: pagination.value.page,
+    limit: 9999
+  })
 
-  suggestions.value = (items ?? []).map((item: TBaseOption): TBaseModel => ({
-    id: item.value!,
-    name: item?.label
+  suggestions.value = (response.data ?? []).map((item: IEmployeeList): TBaseModel => ({
+    id: item.id,
+    name: formatter.fullName(item)
   }))
 }
 
@@ -44,7 +52,7 @@ function search (): void {
 }
 
 function syncInnerFromId (): void {
-  if (!model.value) {
+  if (model.value == null) {
     innerModel.value = null
     selectedName.value = null
     return
@@ -56,19 +64,7 @@ function syncInnerFromId (): void {
 }
 
 watch(innerModel, (val: TBaseModel | null): void => {
-  if (!val) {
-    model.value = ''
-    selectedName.value = null
-    return
-  }
-
-  if (typeof val === 'string') {
-    model.value = val as TExternalInternalExpense
-    selectedName.value = suggestions.value.find((i: TBaseModel): boolean => i.id === val)?.name ?? null
-    return
-  }
-
-  model.value = (val.id || '') as TExternalInternalExpense
+  model.value = val?.id ? Number(val.id) : null
   selectedName.value = val?.name ?? null
 })
 

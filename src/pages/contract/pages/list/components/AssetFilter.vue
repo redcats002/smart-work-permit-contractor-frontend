@@ -10,7 +10,7 @@
         <div>
           <label class="block text-sm font-medium text-surface-700 mb-1.5">สถานะ</label>
           <SelectInput
-            v-model="filters.collateralStatus"
+            v-model="filters.assetStatus"
             :options="statusOptions"
             option-label="label"
             option-value="value"
@@ -30,7 +30,7 @@
 <script setup lang="ts">
 import type { IBaseOption } from '@/models/Global.model'
 import type { IContractFilter } from '@/models/modules/contract/Filter.model'
-import { CollateralAssessmentStatusItems } from '@/enums/modules/contract/CollateralAssessmentStatus.enum'
+import { AssetAssessmentStatusItems } from '@/enums/modules/contract/AssetAssessmentStatus.enum'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
 import SelectInput from '@/components/input/SelectInput.vue'
@@ -48,7 +48,7 @@ const filters = defineModel<IContractFilter>('filters', {
 
 const statusOptions: IBaseOption[] = [
   { label: 'ทั้งหมด', value: null },
-  ...CollateralAssessmentStatusItems
+  ...AssetAssessmentStatusItems
 ]
 
 function onSearch (close: () => void): void {
