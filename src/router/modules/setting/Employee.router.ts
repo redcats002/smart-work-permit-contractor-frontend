@@ -24,17 +24,17 @@ export default {
         title: 'รายการพนักงาน',
         back: { name: 'SettingListPage' }
       }
+    },
+    {
+      path: 'create',
+      name: 'EmployeeCreatePage',
+      component: (): ComponentOptions => import('@/pages/employee/pages/create/pages/EmployeeCreatePage.vue'),
+      meta: {
+        auth: true,
+        title: 'เพิ่มพนักงานใหม่',
+        back: { name: 'EmployeeListPage' }
+      }
     }
-    // {
-    //   path: 'create',
-    //   name: 'EmployeeCreatePage',
-    //   component: (): ComponentOptions => import('@/pages/employee/pages/list/pages/'),
-    //   meta: {
-    //     auth: true,
-    //     title: 'เพิ่มพนักงานใหม่',
-    //     back: { name: 'EmployeeListPage' }
-    //   }
-    // },
     // {
     //   path: 'detail/:id',
     //   name: 'EmployeeDetailPage',

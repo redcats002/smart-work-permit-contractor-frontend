@@ -6,11 +6,11 @@
       v-model:search="search"
       @clear="onClearFilters()"
       @search="fetch()">
-      <!-- <CreateButton
+      <CreateButton
         :to="{
           name: 'EmployeeCreatePage'
         }"
-        label="เพิ่มพนักงานใหม่" /> -->
+        label="เพิ่มพนักงานใหม่" />
     </EmployeeFilter>
     <BasePage>
       <div class="mt-5">
@@ -29,7 +29,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import BasePage from '@/components/base/BasePage.vue'
-// import CreateButton from '@/components/button/CreateButton.vue'
+import CreateButton from '@/components/button/CreateButton.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import EmployeeFilter from '../components/EmployeeFilter.vue'
 import EmployeeTable from '../components/EmployeeTable.vue'
