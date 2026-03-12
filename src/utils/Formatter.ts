@@ -29,7 +29,7 @@ export interface IFormatter {
   getActionNameToast(_actionName: string): string
   thaiCitizenId(value: string): string
   thaiBaht(value: number | string, prefix?: string): string
-  fullName (e: { titleName?: TTitleName, firstName?: string, lastName?: string }): string
+  fullName (e?: { titleName?: TTitleName, firstName?: string, lastName?: string }): string
   fullPhoneNumber (e: { phoneNumber?: string, phoneNumber2?: string }): string
   fullAddress (data?: Partial<IAddressRequest>): string
 }
