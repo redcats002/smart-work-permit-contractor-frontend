@@ -32,7 +32,6 @@ export default function useContractList (): IUseContractList {
     limit: pagination.value.limit,
     sortBy: sortBy.value || undefined,
     sortOrder: sortOrder.value,
-    tab: 'CONTRACT',
     status: filters.value.status,
     loanTypeId: filters.value.loanTypeId
   }))

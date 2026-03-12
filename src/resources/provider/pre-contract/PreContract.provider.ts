@@ -46,7 +46,6 @@ class PreContractProvider extends HttpRequest implements IPreContractProvider {
     assetId: TBaseParamsId,
     formData: FormData
   ): Promise<TActionPreContract> {
-    this.setAuthHeader('BRANCH')
     const response = await this.put(
       `${this.urlPrefix}/${contractId}/asset/${assetId}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }
     )
@@ -54,7 +53,6 @@ class PreContractProvider extends HttpRequest implements IPreContractProvider {
   }
 
   public async requestAssessmentPrice (id: TBaseParamsId): Promise<TActionPreContract> {
-    this.setAuthHeader('BRANCH')
     const response = await this.post(`${this.urlPrefix}/${id}/request-assessment`, {})
     return response
   }

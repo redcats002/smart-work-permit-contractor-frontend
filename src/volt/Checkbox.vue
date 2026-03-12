@@ -6,6 +6,7 @@
             mergeProps: ptViewMerge
         }"
     >
+    <!-- @vue-expect-error -->
         <template #icon="{ checked, indeterminate, dataP }">
             <CheckIcon v-if="checked" :class="theme.icon" :data-p="dataP" />
             <MinusIcon v-else-if="indeterminate" :class="theme.icon" :data-p="dataP" />
@@ -14,11 +15,14 @@
 </template>
 
 <script setup lang="ts">
-import CheckIcon from '@primevue/icons/check';
-import MinusIcon from '@primevue/icons/minus';
-import Checkbox, { type CheckboxPassThroughOptions, type CheckboxProps } from 'primevue/checkbox';
-import { ref } from 'vue';
-import { ptViewMerge } from './utils';
+import { ref } from 'vue'
+import CheckIcon from '@primevue/icons/check'
+import MinusIcon from '@primevue/icons/minus'
+import Checkbox, {
+  type CheckboxPassThroughOptions,
+  type CheckboxProps
+} from 'primevue/checkbox'
+import { ptViewMerge } from './utils'
 
 interface Props extends /* @vue-ignore */ CheckboxProps {}
 defineProps<Props>();

@@ -149,7 +149,7 @@ async function onCustomerSelect (id?: number | null): Promise<void> {
 }
 
 async function useSubmit (): Promise<void> {
-  await ContractService.createContract(usePayload(form.value, selectedCustomer.value!, submitMode.value))
+  await ContractService.createContract(usePayload(form.value, selectedCustomer.value!))
   toast.success('ดำเนินการสำเร็จ')
   router.push({ name: 'ContractListPage' })
 }

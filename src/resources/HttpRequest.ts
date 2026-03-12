@@ -1,5 +1,4 @@
 import axios, { type AxiosInstance } from 'axios'
-import { getAuthToken, type TAuthType } from '@/utils/Auth'
 import { onRequest, onRequestError, onResponse, onResponseError } from './Interceptors'
 
 interface IHttpRequest {
@@ -45,10 +44,7 @@ class HttpRequest implements IHttpRequest {
     this.axiosInstance.interceptors.response.use(onResponse, onResponseError)
   }
 
-  public setAuthHeader (type: TAuthType = 'USER'): void {
-    const authHeader: ISetHeader | null = getAuthToken(type)
-    if (authHeader) this.setHeader(authHeader)
-  }
+  public setAuthHeader (): void {}
 
   public setHeader (data: ISetHeader): void {
     if (data.key && data.value) {
