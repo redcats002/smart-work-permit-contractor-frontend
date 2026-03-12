@@ -125,7 +125,7 @@ import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { ICollateralDetailInfo, ICollateralImage } from '@/models/response/contract/ContractRes.model'
 import type { TBaseParamsId } from '@/models/response/Response.model'
-import { isLandCollateral, isVehicleCollateral } from '@/enums/modules/contract/CollateralType.enum'
+import { isLandEstate, isVehicleEstate } from '@/enums/modules/contract/EstateType.enum'
 import type { IContractProvider } from '@/resources/provider/contract/Contract.provider'
 import ContractProvider from '@/resources/provider/contract/Contract.provider'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
@@ -152,8 +152,8 @@ const contractService: IContractProvider = new ContractProvider()
 
 /* ─── Type detection ─── */
 
-const isVehicle = computed((): boolean => isVehicleCollateral(props.collateral.collateralType))
-const isLand = computed((): boolean => isLandCollateral(props.collateral.collateralType))
+const isVehicle = computed((): boolean => isVehicleEstate(props.collateral.collateralType))
+const isLand = computed((): boolean => isLandEstate(props.collateral.collateralType))
 
 /* ─── Form state ─── */
 

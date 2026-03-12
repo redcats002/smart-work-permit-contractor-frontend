@@ -152,8 +152,8 @@ import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { ICollateralDetailInfo, IContractById } from '@/models/response/contract/ContractRes.model'
-import type { TCollateralType } from '@/enums/modules/contract/CollateralType.enum'
-import { formatTitle as formatCollateralTypeFn } from '@/enums/modules/contract/CollateralType.enum'
+import type { TEstateType } from '@/enums/modules/contract/EstateType.enum'
+import { formatTitle as formatCollateralTypeFn } from '@/enums/modules/contract/EstateType.enum'
 import type { TTitleName } from '@/enums/TitleName.enum'
 import { formatTitle as formatTitleName } from '@/enums/TitleName.enum'
 import type { IContractProvider } from '@/resources/provider/contract/Contract.provider'
@@ -271,7 +271,7 @@ const activeCollateral = computed(
 
 function formatCollateralType (type?: string | null): string {
   if (!type) return '-'
-  return formatCollateralTypeFn(type as TCollateralType)
+  return formatCollateralTypeFn(type as TEstateType)
 }
 
 /* ─── Modal ─── */

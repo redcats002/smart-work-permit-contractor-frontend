@@ -1,14 +1,19 @@
 <template>
   <div>
     <div class="mx-auto max-w-6xl px-4 pt-4">
-      <div class="flex items-center gap-2.5">
-        <SearchInput
-          v-model="collateral.search.value"
-          @search="collateral.fetch()" />
-        <CollateralFilter
-          v-model:filters="collateral.filters.value"
-          @clear="collateral.onClearFilters()"
-          @search="collateral.fetch()" />
+      <div class="flex items-center justify-between gap-2.5">
+        <div class="flex gap-2.5">
+          <SearchInput
+            v-model="collateral.search.value"
+            @search="collateral.fetch()" />
+          <CollateralFilter
+            v-model:filters="collateral.filters.value"
+            @clear="collateral.onClearFilters()"
+            @search="collateral.fetch()" />
+        </div>
+        <CreateButton
+          :to="{ name: 'PreContractCreatePage' }"
+          label="สร้างสัญญาใหม่" />
       </div>
     </div>
     <BasePage>
@@ -27,6 +32,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import BasePage from '@/components/base/BasePage.vue'
+import CreateButton from '@/components/button/CreateButton.vue'
 import SearchInput from '@/components/input/SearchInput.vue'
 import useCollateralList from '../../composables/useCollateralList'
 import CollateralFilter from '../CollateralFilter.vue'

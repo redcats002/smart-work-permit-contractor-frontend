@@ -1,18 +1,19 @@
-import type { TCollateralAssessmentStatus } from '@/enums/modules/contract/CollateralAssessmentStatus.enum'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
+import type { TEstateAssessmentStatus } from '@/enums/modules/contract/EstateAssessmentStatus.enum'
+import type { TEstateType } from '@/enums/modules/contract/EstateType.enum'
 import type { IBasePaginationRequest } from '../Request.model'
 
 export type TContractTab = 'COLLATERAL' | 'CONTRACT'
 
 export interface IGetContractList extends IBasePaginationRequest {
   status?: TContractStatus
-  collateralStatus?: TCollateralAssessmentStatus
+  collateralStatus?: TEstateAssessmentStatus
   loanTypeId?: number
   tab?: TContractTab
 }
 
-export interface ICollateralItem {
-  collateralType: string
+export interface IEstateItem {
+  estateType: TEstateType
   detail: string
   address: string
   subDistrict: string
@@ -24,8 +25,8 @@ export interface ICollateralItem {
 
 export interface ICreateContractPayload {
   customerId: number
-  collateralStatus: TCollateralAssessmentStatus
-  collaterals: ICollateralItem[]
+  estateStatus: TEstateAssessmentStatus
+  estates: IEstateItem[]
 }
 
 export interface IUpdateContractPayload extends Partial<ICreateContractPayload> {}

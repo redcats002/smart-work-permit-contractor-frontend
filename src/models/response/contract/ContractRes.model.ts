@@ -1,6 +1,6 @@
 import type { IBaseModel, IEntity } from '@/models/Global.model'
-import type { TCollateralAssessmentStatus } from '@/enums/modules/contract/CollateralAssessmentStatus.enum'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
+import type { TEstateAssessmentStatus } from '@/enums/modules/contract/EstateAssessmentStatus.enum'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 
 export interface IContractCustomer {
@@ -73,7 +73,7 @@ export interface IContractList extends IEntity {
   endDate: string | null
   amount: number | null
   status: TContractStatus | null
-  collateralStatus: TCollateralAssessmentStatus | null
+  collateralStatus: TEstateAssessmentStatus | null
   customer: IContractCustomer | null
   loanType: IContractLoanType | null
 }
@@ -84,7 +84,7 @@ export interface IContractById extends IEntity {
   endDate: string | null
   amount: number | null
   status: TContractStatus | null
-  collateralStatus: TCollateralAssessmentStatus | null
+  collateralStatus: TEstateAssessmentStatus | null
   customer: IContractCustomerDetail | null
   loanType: IContractLoanType | null
   staff: IContractStaff | null
