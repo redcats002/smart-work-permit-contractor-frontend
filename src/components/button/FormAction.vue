@@ -9,8 +9,8 @@
     <CancelButton
       :disabled="cancelDisabled"
       :to="cancelTo"
-
       @click="emits('cancel')" />
+    <slot />
   </div>
 </template>
 

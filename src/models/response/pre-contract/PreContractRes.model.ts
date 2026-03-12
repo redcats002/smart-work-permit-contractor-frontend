@@ -92,3 +92,4 @@ export interface IPreContractById extends IEntity {
 export type TGetPreContractListResponse = IBasePaginationResponse<IPreContractList>
 export type TGetPreContractByIdResponse = IBaseSuccessResponse<IPreContractById>
 export type TActionPreContract = IBaseSuccessResponse<boolean>
+export type TRequestReappraisalPreContract = IBaseSuccessResponse<boolean>
