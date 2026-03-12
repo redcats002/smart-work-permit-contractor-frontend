@@ -1,10 +1,8 @@
-import { computed, onMounted, ref, type Ref } from 'vue'
+import { computed, ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IBaseOption } from '@/models/Global.model'
 import type { IGetPreContractList } from '@/models/request/pre-contract/PreContractReq.model'
-import type { IContractLoanTypeList } from '@/models/response/contract-loan-type/ContractLoanTypeRes.model'
 import type { IPreContractList } from '@/models/response/pre-contract/PreContractRes.model'
-import ContractLoanTypeProvider from '@/resources/provider/contract-loan-type/ContractLoanType.provider'
 import PreContractProvider, { type IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
@@ -18,7 +16,6 @@ interface IUseContractList extends IUsePagination {
 
 export default function useContractList (): IUseContractList {
   const contractService: IPreContractProvider = new PreContractProvider()
-  const loanTypeService = new ContractLoanTypeProvider()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
 
@@ -46,15 +43,6 @@ export default function useContractList (): IUseContractList {
     })
   }
 
-  async function fetchLoanTypes (): Promise<void> {
-    const response = await loanTypeService.getContractLoanTypePaginate({ limit: 100 })
-    loanTypeOptions.value = (response?.data || []).map(
-      (item: IContractLoanTypeList): IBaseOption => ({
-        label: item.name,
-        value: item.id
-      })
-    )
-  }
 
   function fetch (): void {
     handleLoading(useFetch)
@@ -64,10 +52,6 @@ export default function useContractList (): IUseContractList {
     filters.value = {}
     fetch()
   }
-
-  onMounted((): void => {
-    handleLoading(fetchLoanTypes)
-  })
 
   return {
     filters,
