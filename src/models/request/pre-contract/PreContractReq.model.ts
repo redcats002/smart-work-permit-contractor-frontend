@@ -1,11 +1,11 @@
-import type { TAssetAssessmentStatus } from '@/enums/modules/contract/AssetAssessmentStatus.enum'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
+import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import type { PreContractFormValues } from '@/pages/contract/pages/create/schema/pre-contract.schema'
 import type { IBasePaginationRequest } from '../Request.model'
 
 export interface IGetPreContractList extends IBasePaginationRequest {
   status?: TContractStatus
-  assetStatus?: TAssetAssessmentStatus
+  assetStatus?: TPreContractStatus
   loanTypeId?: number
 }
 

@@ -1,146 +1,40 @@
 <template>
-  <section>
-    <PageTitle />
-    <BaseTop>
-      <BackButton />
-      <Spacer />
-      <BaseActionMenu :items="actionMenuItems" />
-    </BaseTop>
-    <BasePage>
-      <div
-        v-if="isLoading"
-        class="flex justify-center py-20">
-        <Icon
-          class="size-8 text-primary animate-spin"
-          icon="mdi:loading" />
-      </div>
-
-      <div
-        v-else-if="contract"
-        class="flex flex-col gap-5 pb-10">
-        <!-- Top info cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <!-- Customer info -->
-          <BaseContainer class="md:col-span-2">
-            <DisplayList :items="customerItems" />
-          </BaseContainer>
-
-          <!-- Contract status info -->
-          <BaseContainer>
-            <div class="flex flex-col gap-3">
-              <div class="flex items-center gap-3">
-                <span class="text-sm text-surface-500 w-24 shrink-0">สถานะ</span>
-                <ChipAssetStatus :value="contract.assetStatus ?? undefined" />
-              </div>
-              <div class="flex items-center gap-2 text-sm">
-                <span class="text-surface-500 w-24 shrink-0">เลขที่สัญญา</span>
-                <span class="text-surface-800">:{{ contract.idNo || '-' }}</span>
-              </div>
-              <div class="flex items-center gap-2 text-sm">
-                <span class="text-surface-500 w-24 shrink-0">วันที่</span>
-                <span class="text-surface-800">:{{ formatDate(contract.contractDate ?? undefined) }}</span>
-              </div>
-              <div class="flex items-center gap-2 text-sm">
-                <span class="text-surface-500 w-24 shrink-0">พนักงาน</span>
-                <span class="text-surface-800">:{{ staffName }}</span>
-              </div>
-            </div>
-          </BaseContainer>
-        </div>
-
-        <!-- Asset section -->
-        <BaseContainer v-if="contract.assets.length">
-          <div class="grid grid-cols-[200px_1fr] gap-6 min-h-80">
-            <!-- Vertical tabs -->
-            <div class="flex flex-col border-r border-surface-200 pr-4 gap-1">
-              <button
-                v-for="(col, i) in contract.assets"
-                :key="col.id ?? i"
-                :class="activeIndex === i
-                  ? 'border-primary font-bold text-primary'
-                  : 'border-transparent text-surface-500'"
-                class="border-b-2 text-sm text-left py-2 hover:text-primary transition-colors"
-                type="button"
-                @click="activeIndex = i">
-                หลักทรัพย์ที่{{ i + 1 }}
-              </button>
-            </div>
-
-            <!-- Asset content -->
-            <div
-              v-if="activeAsset"
-              class="flex flex-col gap-4">
-              <div>
-                <p class="font-bold text-surface-800">
-                  {{ formatAssetType(activeAsset.assetType) }}
-                  <span
-                    v-if="activeAsset.detail"
-                    class="text-surface-500 font-normal">
-                    / {{ activeAsset.detail }}
-                  </span>
-                </p>
-                <p
-                  v-if="activeAsset.subDistrict || activeAsset.district || activeAsset.province"
-                  class="text-sm text-surface-500 mt-1">
-                  ต.{{ activeAsset.subDistrict }}
-                  อ.{{ activeAsset.district }}
-                  จ.{{ activeAsset.province }}
-                  {{ activeAsset.postCode }}
-                </p>
-              </div>
-
-              <button
-                class="flex items-center gap-1.5 border border-surface-300 rounded-sm px-4 h-9
-                  text-sm text-surface-700 hover:bg-surface-50 transition-colors w-fit"
-                type="button"
-                @click="openModal(activeAsset)">
-                ใส่รายละเอียดสินทรัพย์
-              </button>
-
-              <!-- Images gallery -->
-              <div
-                v-if="activeAsset.images?.length"
-                class="grid grid-cols-4 gap-3 mt-2">
-                <div
-                  v-for="img in activeAsset.images"
-                  :key="img.id ?? img.url"
-                  class="aspect-square rounded-md overflow-hidden border border-surface-200">
-                  <img
-                    :src="img.url"
-                    class="size-full object-cover">
-                </div>
-              </div>
-              <div
-                v-else
-                class="flex items-center justify-center h-48 bg-surface-50 rounded-md
-                  border border-surface-200">
-                <p class="text-sm text-surface-400">
-                  ไม่มีข้อมูล
-                </p>
-              </div>
-            </div>
-          </div>
-        </BaseContainer>
-
-        <!-- Action buttons -->
-        <div class="flex gap-3">
-          <ConfirmButton
-            label="ขอราคาประเมิน"
-            @click="onRequestAssessment()" />
-          <SecondaryButton
-            label="ยกเลิก"
-            @click="onCancel()" />
-        </div>
-      </div>
-    </BasePage>
-
-    <!-- Asset detail modal -->
-    <AssetDetailModal
+  <Teleport to="body">
+    <ModalAssetDetail
       v-if="modalAsset"
       v-model="modalVisible"
       :asset="modalAsset"
       :contract-id="contractId"
       @saved="onAssetSaved()" />
+  </Teleport>
+  <section>
+    <PageTitle />
+    <BaseTop>
+      <BackButton />
+      <Spacer />
+      <PreContractDetailMenuAction @edit="onEdit()" />
+    </BaseTop>
+    <BasePage>
+      <div
+        v-if="contract"
+        class="flex flex-col gap-5 pb-10">
+        <PreContractInformation :data="contract" />
+        <AssetSection
+          v-if="contract.assets.length"
+          :active-asset="activeAsset"
+          :active-index="activeIndex"
+          :asset-category="assetCategory"
+          :assets="contract.assets"
+          @active="onActiveAsset($event)"
+          @open="openModal($event)" />
+        <FormAction
+          :cancel-disabled="!filledAllRequired"
+          :confirm-disabled="!filledAllRequired"
+          confirm-label="ขอราคาประเมิน"
+          @cancel="onCancel()"
+          @confirm="onRequestPreContract()" />
+      </div>
+    </BasePage>
   </section>
 </template>
 
@@ -148,170 +42,191 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
-import { useDayjs } from '@/utils/Dayjs'
-import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IAssetDetailInfo, IPreContractById } from '@/models/response/pre-contract/PreContractRes.model'
-import type { TAssetType } from '@/enums/modules/contract/AssetType.enum'
-import { formatTitle as formatAssetTypeFn } from '@/enums/modules/contract/AssetType.enum'
-import type { TTitleName } from '@/enums/TitleName.enum'
-import { formatTitle as formatTitleName } from '@/enums/TitleName.enum'
+import { isLandAsset, isVehicleAsset } from '@/enums/modules/contract/AssetType.enum'
 import type { IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
 import PreContractProvider from '@/resources/provider/pre-contract/PreContract.provider'
-import type { IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
-import BaseActionMenu from '@/components/base/BaseActionMenu.vue'
-import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
-import ConfirmButton from '@/components/button/ConfirmButton.vue'
-import type { IDisplayList } from '@/components/display/DisplayList.vue'
-import DisplayList from '@/components/display/DisplayList.vue'
+import FormAction from '@/components/button/FormAction.vue'
 import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
-import AssetDetailModal from '../components/AssetDetailModal.vue'
-import { Icon } from '@iconify/vue'
-import ChipAssetStatus from '../../list/components/ChipAssetStatus.vue'
+import AssetSection from '../components/AssetSection.vue'
+import ModalAssetDetail from '../components/ModalAssetDetail.vue'
+import PreContractDetailMenuAction from '../components/PreContractDetailMenuAction.vue'
+import PreContractInformation from '../components/PreContractInformation.vue'
+import type { TAssetCategory } from '../../create/pages/PreContractCreatePage.vue'
 
 const route = useRoute()
 const router = useRouter()
-const { formatDate, formatAge } = useDayjs()
 
-const contractService: IPreContractProvider = new PreContractProvider()
+const PreContractService: IPreContractProvider = new PreContractProvider()
 
 const contractId = computed((): string | string[] => route.params.id)
 const contract = ref<IPreContractById | null>(null)
-const isLoading = ref<boolean>(false)
-
-/* ─── Load ─── */
-
-async function useFetch (): Promise<void> {
-  const res = await contractService.getContractFindOne(contractId.value)
-  contract.value = res.data
-}
-
-onMounted((): void => {
-  handleLoading(useFetch, { loadingUnit: isLoading })
-})
-
-/* ─── Customer display ─── */
-
-const customerItems = computed((): IDisplayList[] => {
-  const c = contract.value?.customer
-  if (!c) return []
-  return [
-    {
-      key: 'name',
-      label: 'ชื่อลูกค้า',
-      value: formatter.fullName({
-        titleName: (c.titleName ?? undefined) as TTitleName | undefined,
-        firstName: c.firstName ?? undefined,
-        lastName: c.lastName ?? undefined
-      })
-    },
-    {
-      key: 'idNo',
-      label: 'เลขที่ลูกค้า',
-      value: c.idNo || '-'
-    },
-    {
-      key: 'idCard',
-      label: 'เลขบัตรประชาชน',
-      value: c.idCard ? formatter.thaiCitizenId(c.idCard) : '-'
-    },
-    {
-      key: 'birthDate',
-      label: 'วันเดือนปีเกิด',
-      value: formatDate(c.birthDate ?? undefined)
-    },
-    {
-      key: 'age',
-      label: 'อายุ',
-      value: c.birthDate ? formatAge(c.birthDate) : '-'
-    },
-    {
-      key: 'customerGroup',
-      label: 'กลุ่มลูกค้า',
-      value: c.customerGroup?.name || '-'
-    },
-    {
-      key: 'occupation',
-      label: 'อาชีพ',
-      value: c.occupation?.name || '-'
-    },
-    {
-      key: 'phone',
-      label: 'เบอร์โทร',
-      value: formatter.fullPhoneNumber({
-        phoneNumber: c.phoneNumber ?? undefined,
-        phoneNumber2: c.phoneNumber2 ?? undefined
-      })
-    },
-    {
-      key: 'email',
-      label: 'อีเมล',
-      value: c.email || '-'
-    }
-  ]
-})
-
-const staffName = computed((): string => {
-  const s = contract.value?.staff
-  if (!s) return '-'
-  const title = formatTitleName((s.titleName ?? undefined) as TTitleName | undefined)
-  return `${title}${s.firstName} ${s.lastName}`.trim()
-})
-
-/* ─── Asset tabs ─── */
 
 const activeIndex = ref<number>(0)
-const activeAsset = computed(
-  (): IAssetDetailInfo | null => contract.value?.assets[activeIndex.value] || null
-)
-
-function formatAssetType (type?: string | null): string {
-  if (!type) return '-'
-  return formatAssetTypeFn(type as TAssetType)
-}
-
-/* ─── Modal ─── */
+const activeAsset = computed((): IAssetDetailInfo | null => contract.value?.assets[activeIndex.value] || null)
 
 const modalVisible = ref<boolean>(false)
 const modalAsset = ref<IAssetDetailInfo | null>(null)
+
+const assetCategory = computed((): TAssetCategory => {
+  if (!contract.value?.assets.length) return null
+  for (const e of (contract.value.assets)) {
+    if (isVehicleAsset(e.assetType)) return 'VEHICLE'
+    if (isLandAsset(e.assetType)) return 'LAND'
+  }
+  return null
+})
+
+const filledAllRequired = computed((): boolean => {
+  if (!contract.value) return false
+  for (const asset of contract.value.assets) {
+    if (isVehicleAsset(asset.assetType)) {
+      if (!asset.vehicleProvince || !asset.yearManufactured || !asset.yearRegistered || !asset.chassisNumber || !asset.mileage) return false
+    }
+    if (isLandAsset(asset.assetType)) {
+      if (!asset.landLocation || !asset.landNumber) return false
+    }
+  }
+  return true
+})
+
+async function useRequestPreContract (): Promise<void> {
+  await PreContractService.requestAssessmentPrice(contractId.value)
+  toast.success('ส่งคำขอราคาประเมินสำเร็จ')
+  router.push({ name: 'ContractListPage' })
+}
+
+async function useFetch (): Promise<void> {
+  const mock = true // TODO: remove mock
+  if (mock) {
+    contract.value = {
+      id: 1,
+      idNo: 'PC-20240001',
+      contractDate: '2024-06-01',
+      status: 'DRAFT',
+      customer: {
+        id: 1,
+        titleName: 'MR',
+        firstName: 'สมชาย',
+        lastName: 'ใจดี',
+        idNo: 'CUST-0001',
+        idCard: '1101700201234',
+        birthDate: '1980-05-15',
+        customerGroup: { id: '1', name: 'กลุ่ม VIP' },
+        occupation: { id: '1', name: 'พนักงานบริษัท' },
+        phoneNumber: '0812345678',
+        phoneNumber2: null,
+        email: 'somchai@example.com'
+      },
+      amount: 50000,
+      staff: { firstName: 'พนักงาน', lastName: 'ขาย', titleName: 'MS', id: 1 },
+      assets: [
+        {
+          address: '123/45 หมู่บ้านสุขใจ ต.เมืองใหม่ อ.เมือง จ.ขอนแก่น 40000',
+          assetType: route?.params?.id === '2' ? 'LAND_NS3K_WITHOUT_STRUCTURE' : 'VEHICLE_CAR',
+          detail: 'โตโยต้า วีออส ปี 2015',
+          aerialPhotoNumber: 'APN-001',
+          subDistrict: 'เมืองใหม่',
+          district: 'เมือง',
+          province: 'ขอนแก่น',
+          postCode: '40000',
+          aerialPhotoSheet: 'แผ่นที่ 1',
+          areaRai: 1,
+          areaRgan: 2,
+          areaTarangWa: 3,
+          chassisNumber: 'CHS-1234567890',
+          id: 1,
+          landLocation: 'ที่ดินเปล่า',
+          landNumber: 'LN-001',
+          licensePlate: 'กข-1234',
+          mileage: 75000,
+          surveyPageNumber: 'SPN-001',
+          urlGoogleMap: 'https://maps.google.com/?q=16.123456,102.123456',
+          vehicleProvince: 'ขอนแก่น',
+          yearManufactured: 2015,
+          yearRegistered: 2015,
+          images: [
+            { fileUrl: 'https://placehold.co/400x400', originalName: 'รูปภาพหลักทรัพย์ 1', filePath: 'path/to/image1.jpg', fileType: 'image/jpeg' },
+            { fileUrl: 'https://placehold.co/500x400', originalName: 'รูปภาพหลักทรัพย์ 2', filePath: 'path/to/image2.jpg', fileType: 'image/jpeg' },
+            { fileUrl: 'https://placehold.co/600x400', originalName: 'รูปภาพหลักทรัพย์ 3', filePath: 'path/to/image3.jpg', fileType: 'image/jpeg' },
+            { fileUrl: 'https://placehold.co/700x400', originalName: 'รูปภาพหลักทรัพย์ 4', filePath: 'path/to/image4.jpg', fileType: 'image/jpeg' },
+            { fileUrl: 'https://placehold.co/800x400', originalName: 'รูปภาพหลักทรัพย์ 5', filePath: 'path/to/image5.jpg', fileType: 'image/jpeg' }
+          ]
+        },
+        {
+          address: '123/45 หมู่บ้านสุขใจ ต.เมืองใหม่ อ.เมือง จ.ขอนแก่น 40000',
+          assetType: route?.params?.id === '2' ? 'LAND_NS3K_WITHOUT_STRUCTURE' : 'VEHICLE_CAR',
+          detail: 'โตโยต้า วีออส ปี 2015',
+          aerialPhotoNumber: 'APN-001',
+          subDistrict: 'เมืองใหม่',
+          district: 'เมือง',
+          province: 'ขอนแก่น',
+          postCode: '40000',
+          aerialPhotoSheet: 'แผ่นที่ 1',
+          areaRai: 1,
+          areaRgan: 2,
+          areaTarangWa: 3,
+          chassisNumber: 'CHS-1234567890',
+          id: 1,
+          landLocation: 'ที่ดินเปล่า',
+          landNumber: 'LN-001',
+          licensePlate: 'กข-1234',
+          mileage: 75000,
+          surveyPageNumber: 'SPN-001',
+          urlGoogleMap: 'https://maps.google.com/?q=16.123456,102.123456',
+          vehicleProvince: 'ขอนแก่น',
+          yearManufactured: 2015,
+          yearRegistered: 2015,
+          images: [
+            { fileUrl: 'https://placehold.co/400x400', originalName: 'รูปภาพหลักทรัพย์ 1', filePath: 'path/to/image1.jpg', fileType: 'image/jpeg' },
+            { fileUrl: 'https://placehold.co/500x400', originalName: 'รูปภาพหลักทรัพย์ 2', filePath: 'path/to/image2.jpg', fileType: 'image/jpeg' },
+            { fileUrl: 'https://placehold.co/600x400', originalName: 'รูปภาพหลักทรัพย์ 3', filePath: 'path/to/image3.jpg', fileType: 'image/jpeg' },
+            { fileUrl: 'https://placehold.co/700x400', originalName: 'รูปภาพหลักทรัพย์ 4', filePath: 'path/to/image4.jpg', fileType: 'image/jpeg' },
+            { fileUrl: 'https://placehold.co/800x400', originalName: 'รูปภาพหลักทรัพย์ 5', filePath: 'path/to/image5.jpg', fileType: 'image/jpeg' }
+          ]
+        }
+      ],
+      endDate: '',
+      loanType: { id: 1, name: 'สินเชื่อทะเบียนรถ' },
+      startDate: ''
+    }
+    return
+  }
+  const res = await PreContractService.getContractFindOne(contractId.value)
+  contract.value = res.data
+}
+
+function onRequestPreContract (): void {
+  handleLoading(useRequestPreContract)
+}
+
+function onAssetSaved (): void {
+  handleLoading(useFetch)
+}
+
+function onEdit (): void {
+  router.push({ name: 'PreContractEditPage', params: { id: contractId.value } })
+}
+
+function onCancel (): void {
+  router.push({ name: 'ContractListPage' })
+}
+
+function onActiveAsset (index: number): void {
+  activeIndex.value = index
+}
 
 function openModal (asset: IAssetDetailInfo): void {
   modalAsset.value = asset
   modalVisible.value = true
 }
 
-async function onAssetSaved (): Promise<void> {
-  await handleLoading(useFetch)
-}
-
-/* ─── Action menu ─── */
-
-const actionMenuItems = computed((): IMenuItemAction[] => [
-  {
-    key: 'edit',
-    type: 'TEXT',
-    label: 'แก้ไขสัญญา',
-    action: (): void => {
-      router.push({ name: 'PreContractEditPage', params: { id: contractId.value } })
-    }
-  }
-])
-
-/* ─── Bottom actions ─── */
-
-async function onRequestAssessment (): Promise<void> {
-  await handleLoading(async (): Promise<void> => {
-    await contractService.requestAssessmentPrice(contractId.value)
-    toast.success('ส่งคำขอราคาประเมินสำเร็จ')
-    router.push({ name: 'ContractListPage' })
-  })
-}
-
-function onCancel (): void {
-  router.push({ name: 'ContractListPage' })
-}
+onMounted((): void => {
+  handleLoading(useFetch)
+})
 </script>

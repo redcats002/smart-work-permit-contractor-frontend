@@ -133,25 +133,9 @@ import { LandAssetTypeItems } from '@/enums/modules/contract/AssetType.enum'
 import AddressFieldInput, { type IAddressData } from '@/components/input/AddressFieldInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import SelectInput from '@/components/input/SelectInput.vue'
+import type { LandFormValues } from '../schema/land.schema'
 
-export interface ILandFormState {
-  assetType: string
-  detail: string
-  landNumber: string
-  surveyPageNumber: string
-  landLocation: string
-  subDistrict: string
-  district: string
-  province: string
-  postCode: string
-  aerialPhotoNumber: string
-  aerialPhotoSheet: string
-  areaRai: number | null
-  areaRgan: number | null
-  areaTarangWa: number | null
-}
-
-const form = defineModel<ILandFormState>({ required: true })
+const form = defineModel<LandFormValues>({ required: true })
 
 function onAddressSelect (data: IAddressData): void {
   form.value.subDistrict = data.subDistrict

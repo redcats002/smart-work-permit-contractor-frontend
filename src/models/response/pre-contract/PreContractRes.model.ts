@@ -1,7 +1,9 @@
 import type { IBaseModel, IEntity } from '@/models/Global.model'
-import type { TAssetAssessmentStatus } from '@/enums/modules/contract/AssetAssessmentStatus.enum'
 import type { TAssetType } from '@/enums/modules/contract/AssetType.enum'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
+import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
+import type { TTitleName } from '@/enums/TitleName.enum'
+import type { IMedia } from '@/resources/provider/Upload.provider'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 
 export interface IPreContractCustomer {
@@ -23,17 +25,13 @@ export interface IPreContractCustomerDetail extends IPreContractCustomer {
 }
 
 export interface IPreContractStaff {
-  id: number | null
-  titleName: string | null
-  firstName: string | null
-  lastName: string | null
+  id: number
+  titleName: TTitleName
+  firstName: string
+  lastName: string
 }
 
-export interface IPreAssetImage {
-  id: number | null
-  url: string
-  name: string
-}
+export interface IPreAssetImage extends IMedia {}
 
 export interface IAssetDetailInfo extends IEntity {
   assetType: TAssetType
@@ -74,7 +72,7 @@ export interface IPreContractList extends IEntity {
   endDate: string | null
   amount: number | null
   status: TContractStatus | null
-  assetStatus: TAssetAssessmentStatus | null
+  assetStatus: TPreContractStatus | null
   customer: IPreContractCustomer | null
   loanType: IPreContractLoanType | null
 }
@@ -84,11 +82,10 @@ export interface IPreContractById extends IEntity {
   startDate: string | null
   endDate: string | null
   amount: number | null
-  status: TContractStatus | null
-  assetStatus: TAssetAssessmentStatus | null
+  status: TPreContractStatus | null
   customer: IPreContractCustomerDetail | null
   loanType: IPreContractLoanType | null
-  staff: IPreContractStaff | null
+  staff?: IPreContractStaff
   assets: IAssetDetailInfo[]
 }
 

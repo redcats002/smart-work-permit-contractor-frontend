@@ -30,7 +30,7 @@
 <script setup lang="ts">
 import type { IBaseOption } from '@/models/Global.model'
 import type { IContractFilter } from '@/models/modules/contract/Filter.model'
-import { AssetAssessmentStatusItems } from '@/enums/modules/contract/AssetAssessmentStatus.enum'
+import { PreContractStatusItems } from '@/enums/modules/contract/PreContractStatus.enum'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
 import SelectInput from '@/components/input/SelectInput.vue'
@@ -48,7 +48,7 @@ const filters = defineModel<IContractFilter>('filters', {
 
 const statusOptions: IBaseOption[] = [
   { label: 'ทั้งหมด', value: null },
-  ...AssetAssessmentStatusItems
+  ...PreContractStatusItems
 ]
 
 function onSearch (close: () => void): void {

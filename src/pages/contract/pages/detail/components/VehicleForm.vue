@@ -78,19 +78,9 @@ import { VehicleAssetTypeItems } from '@/enums/modules/contract/AssetType.enum'
 import AddressFieldInput from '@/components/input/AddressFieldInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import SelectInput from '@/components/input/SelectInput.vue'
+import type { VehicleFormValues } from '../schema/vehicle.schema'
 
-export interface IVehicleFormState {
-  assetType: string
-  detail: string
-  licensePlate: string
-  vehicleProvince: string
-  yearManufactured: number | null
-  yearRegistered: number | null
-  chassisNumber: string
-  mileage: number | null
-}
-
-const form = defineModel<IVehicleFormState>({ required: true })
+const form = defineModel<VehicleFormValues>({ required: true })
 
 const currentYear = new Date().getFullYear()
 

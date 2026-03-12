@@ -9,7 +9,6 @@ export interface IPreContractProvider {
   updateContract (id: TBaseParamsId, payload: IUpdatePreContractPayload): Promise<TActionPreContract>
   deleteContract (id: number): Promise<TActionPreContract>
   getContractFindOne (id: TBaseParamsId): Promise<TGetPreContractByIdResponse>
-  saveAssetDetail (contractId: TBaseParamsId, assetId: TBaseParamsId, formData: FormData): Promise<TActionPreContract>
   requestAssessmentPrice (id: TBaseParamsId): Promise<TActionPreContract>
 }
 
@@ -38,17 +37,6 @@ class PreContractProvider extends HttpRequest implements IPreContractProvider {
 
   public async getContractFindOne (id: TBaseParamsId): Promise<TGetPreContractByIdResponse> {
     const response = await this.get(`${this.urlPrefix}/${id}`)
-    return response
-  }
-
-  public async saveAssetDetail (
-    contractId: TBaseParamsId,
-    assetId: TBaseParamsId,
-    formData: FormData
-  ): Promise<TActionPreContract> {
-    const response = await this.put(
-      `${this.urlPrefix}/${contractId}/asset/${assetId}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }
-    )
     return response
   }
 

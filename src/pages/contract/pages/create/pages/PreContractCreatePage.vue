@@ -45,12 +45,12 @@
           v-for="(item, index) in form.assets"
           :key="item.key"
           v-model="form.assets[index]"
-          :estate-category="estateCategory"
+          :estate-category="assetCategory"
           :form="$form"
           :name-prefix="`estates.${index}`"
           @delete="onRemoveEstate(index)" />
         <Button
-          v-show="canAddEstate"
+          v-show="canAddAsset"
           class="flex items-center justify-start gap-1.5 py-4 text-sm text-primary! font-medium hover:opacity-80
             transition-opacity bg-white!"
           type="button"
@@ -91,8 +91,8 @@ import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
-import type { TAssetAssessmentStatus } from '@/enums/modules/contract/AssetAssessmentStatus.enum'
 import { isLandAsset, isVehicleAsset } from '@/enums/modules/contract/AssetType.enum'
+import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import type { ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import CustomerProvider from '@/resources/provider/customer/Customer.provider'
 import type { IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
@@ -115,7 +115,7 @@ import { usePayload } from '../composables/usePayload'
 import type { PreContractFormValues } from '../schema/pre-contract.schema'
 import { createEstateItem, PreContractSchema, useFormInitialValues } from '../schema/pre-contract.schema'
 
-type TEstateCategory = 'VEHICLE' | 'LAND' | null
+export type TAssetCategory = 'VEHICLE' | 'LAND' | null
 
 const router = useRouter()
 
@@ -124,10 +124,10 @@ const ContractService: IPreContractProvider = new PreContractProvider()
 
 const form = ref<PreContractFormValues>(useFormInitialValues())
 const resolver = zodResolver(PreContractSchema)
-const submitMode = ref<TAssetAssessmentStatus>('PENDING')
+const submitMode = ref<TPreContractStatus>('PENDING')
 const selectedCustomer = ref<ICustomerById | null>(null)
 
-const estateCategory = computed((): TEstateCategory => {
+const assetCategory = computed((): TAssetCategory => {
   for (const e of form.value.assets) {
     if (isVehicleAsset(e.assetType)) return 'VEHICLE'
     if (isLandAsset(e.assetType)) return 'LAND'
@@ -135,9 +135,9 @@ const estateCategory = computed((): TEstateCategory => {
   return null
 })
 
-const canAddEstate = computed((): boolean => {
-  if (!estateCategory.value) return false
-  return estateCategory.value !== 'VEHICLE'
+const canAddAsset = computed((): boolean => {
+  if (!assetCategory.value) return false
+  return assetCategory.value !== 'VEHICLE'
 })
 
 async function onCustomerSelect (id?: number | null): Promise<void> {
@@ -164,7 +164,7 @@ function onSubmit (event: FormSubmitEvent): void {
 
 
 function onAddEstate (): void {
-  if (!canAddEstate.value) return
+  if (!canAddAsset.value) return
   form.value.assets.push(createEstateItem())
 }
 
