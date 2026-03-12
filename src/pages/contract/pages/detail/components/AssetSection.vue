@@ -26,7 +26,7 @@
         <div>
           <div
             v-if="activeAsset.images?.length"
-            class="grid grid-cols-4 gap-3 mt-2">
+            class="grid gap-3 mt-2">
             <BaseGalleria :images="activeAsset.images" />
           </div>
           <div

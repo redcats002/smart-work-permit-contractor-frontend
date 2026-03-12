@@ -5,17 +5,26 @@
     label="กรอกข้อมูลหลักทรัพย์">
     <template #default>
       <div class="grid grid-cols-1 md:grid-cols-[1fr_300px] gap-8">
-        <div>
-          <p class="text-base font-bold mb-5">
-            รายละเอียดหลักทรัพย์
-          </p>
-          <VehicleForm
-            v-if="isVehicle"
-            v-model="vehicleForm" />
-          <LandForm
-            v-else-if="isLand"
-            v-model="landForm" />
-        </div>
+        <Form
+          ref="formRef"
+          v-slot="$form"
+          :initial-values="activeFormValues"
+          :resolver="activeResolver"
+          @submit="onFormSubmit($event)">
+          <div>
+            <p class="text-base font-bold mb-5">
+              รายละเอียดหลักทรัพย์
+            </p>
+            <VehicleForm
+              v-if="isVehicle"
+              v-model="vehicleForm"
+              :form="$form" />
+            <LandForm
+              v-else-if="isLand"
+              v-model="landForm"
+              :form="$form" />
+          </div>
+        </Form>
         <ImageSection
           v-model:existing-images="existingImages"
           v-model:new-files="newFiles"
@@ -29,30 +38,36 @@
         <FormAction
           confirm-label="บันทึก"
           @cancel="close()"
-          @confirm="onSave(close)" />
-        <Button
-          class="text-sm text-red-500 hover:text-red-700 transition-colors"
-          type="button"
-          text
-          @click="onClear()">
-          ล้างข้อมูล
-        </Button>
+          @confirm="onSave(close)">
+          <Button
+            class="text-sm text-red-500 hover:text-red-700 transition-colors"
+            type="button"
+            text
+            @click="onClear()">
+            ล้างข้อมูล
+          </Button>
+        </FormAction>
       </div>
     </template>
   </BaseModal>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, useTemplateRef, watch } from 'vue'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
+import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { IAssetDetailInfo, IPreAssetImage } from '@/models/response/pre-contract/PreContractRes.model'
 import type { TBaseParamsId } from '@/models/response/Response.model'
 import { isLandAsset, isVehicleAsset } from '@/enums/modules/contract/AssetType.enum'
 import FormAction from '@/components/button/FormAction.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
+import { Form, type FormSubmitEvent } from '@primevue/forms'
+import { zodResolver } from '@primevue/forms/resolvers/zod'
 import type { LandFormValues } from '../schema/land.schema'
+import { LandFormSchema } from '../schema/land.schema'
 import type { VehicleFormValues } from '../schema/vehicle.schema'
+import { VehicleSchema } from '../schema/vehicle.schema'
 import ImageSection from './ImageSection.vue'
 import LandForm from './LandForm.vue'
 import VehicleForm from './VehicleForm.vue'
@@ -70,6 +85,17 @@ const props = defineProps<IProps>()
 const emits = defineEmits<IEmits>()
 
 const visible = defineModel<boolean>({ default: false })
+
+const formRef = useTemplateRef<InstanceType<typeof Form> | any>('formRef')
+const pendingClose = ref<(() => void) | null>(null)
+
+const vehicleResolver = zodResolver(VehicleSchema)
+const landResolver = zodResolver(LandFormSchema)
+
+const activeFormValues = computed((): VehicleFormValues | LandFormValues =>
+  isVehicle.value ? vehicleForm.value : landForm.value
+)
+const activeResolver = computed((): ReturnType<typeof zodResolver> => isVehicle.value ? vehicleResolver : landResolver)
 
 const vehicleForm = ref<VehicleFormValues>(buildVehicleForm())
 const landForm = ref<LandFormValues>(buildLandForm())
@@ -145,10 +171,21 @@ async function useSave (): Promise<void> {
   emits('saved')
 }
 
-function onSave (close: () => void): void {
+async function onSave (close: () => void): Promise<void> {
+  pendingClose.value = close
+  const val = await formRef.value?.validate()
+  onFormSubmit({ ...val, valid: Object.keys(val.errors).length === 0 })
+}
+
+function onFormSubmit (event: FormSubmitEvent): void {
+  if (!event.valid) {
+    scrollToFirstError(event.errors)
+    return
+  }
   handleLoading(async (): Promise<void> => {
     await useSave()
-    close()
+    pendingClose.value?.()
+    pendingClose.value = null
   })
 }
 
