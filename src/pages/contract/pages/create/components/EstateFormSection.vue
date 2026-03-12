@@ -19,16 +19,16 @@
         <LabelField
           v-slot="{ invalid }"
           :form="form"
-          :name="`${namePrefix}.collateralType`"
+          :name="`${namePrefix}.assetType`"
           label="ประเภทหลักทรัพย์"
           tag="div"
           hide-error
           required>
           <EstateTypeSelection
-            v-model="model.collateralType"
+            v-model="model.assetType"
             :category="estateCategory"
             :invalid="invalid"
-            :name="`${namePrefix}.collateralType`"
+            :name="`${namePrefix}.assetType`"
             show-clear />
         </LabelField>
         <LabelField
@@ -69,7 +69,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { IFormState } from '@/models/Form.model'
-import { isLandEstate, isVehicleEstate } from '@/enums/modules/contract/EstateType.enum'
+import { isLandAsset, isVehicleAsset } from '@/enums/modules/contract/AssetType.enum'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import EstateTypeSelection from '@/components/selection/modules/estate-type/EstateTypeSelection.vue'
@@ -100,7 +100,7 @@ const emits = defineEmits<IEmits>()
 
 const model = defineModel<IEstateFormItem>({ required: true })
 
-const isVehicle = computed((): boolean => isVehicleEstate(model.value.collateralType))
-const isLand = computed((): boolean => isLandEstate(model.value.collateralType))
+const isVehicle = computed((): boolean => isVehicleAsset(model.value.assetType))
+const isLand = computed((): boolean => isLandAsset(model.value.assetType))
 
 </script>

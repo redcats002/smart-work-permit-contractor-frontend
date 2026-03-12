@@ -6,8 +6,8 @@
         tag="div"
         required>
         <SelectInput
-          v-model="form.collateralType"
-          :options="LandEstateTypeItems"
+          v-model="form.assetType"
+          :options="LandAssetTypeItems"
           option-label="label"
           option-value="value"
           placeholder="เลือกประเภทหลักทรัพย์" />
@@ -129,13 +129,13 @@
 </template>
 
 <script setup lang="ts">
-import { LandEstateTypeItems } from '@/enums/modules/contract/EstateType.enum'
+import { LandAssetTypeItems } from '@/enums/modules/contract/AssetType.enum'
 import AddressFieldInput, { type IAddressData } from '@/components/input/AddressFieldInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import SelectInput from '@/components/input/SelectInput.vue'
 
 export interface ILandFormState {
-  collateralType: string
+  assetType: string
   detail: string
   landNumber: string
   surveyPageNumber: string

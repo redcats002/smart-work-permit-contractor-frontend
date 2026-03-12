@@ -123,11 +123,11 @@
 import { computed, ref, watch } from 'vue'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { ICollateralDetailInfo, ICollateralImage } from '@/models/response/contract/ContractRes.model'
+import type { IAssetDetailInfo, IPreAssetImage } from '@/models/response/pre-contract/PreContractRes.model'
 import type { TBaseParamsId } from '@/models/response/Response.model'
-import { isLandEstate, isVehicleEstate } from '@/enums/modules/contract/EstateType.enum'
-import type { IContractProvider } from '@/resources/provider/contract/Contract.provider'
-import ContractProvider from '@/resources/provider/contract/Contract.provider'
+import { isLandAsset, isVehicleAsset } from '@/enums/modules/contract/AssetType.enum'
+import type { IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
+import PreContractProvider from '@/resources/provider/pre-contract/PreContract.provider'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import { Icon } from '@iconify/vue'
@@ -135,7 +135,7 @@ import LandForm, { type ILandFormState } from './LandForm.vue'
 import VehicleForm, { type IVehicleFormState } from './VehicleForm.vue'
 
 interface IProps {
-  collateral: ICollateralDetailInfo
+  asset: IAssetDetailInfo
   contractId: TBaseParamsId
 }
 
@@ -148,54 +148,54 @@ const emits = defineEmits<IEmits>()
 
 const visible = defineModel<boolean>({ default: false })
 
-const contractService: IContractProvider = new ContractProvider()
+const contractService: IPreContractProvider = new PreContractProvider()
 
 /* ─── Type detection ─── */
 
-const isVehicle = computed((): boolean => isVehicleEstate(props.collateral.collateralType))
-const isLand = computed((): boolean => isLandEstate(props.collateral.collateralType))
+const isVehicle = computed((): boolean => isVehicleAsset(props.asset.assetType))
+const isLand = computed((): boolean => isLandAsset(props.asset.assetType))
 
 /* ─── Form state ─── */
 
 function buildVehicleForm (): IVehicleFormState {
   return {
-    collateralType: props.collateral.collateralType || '',
-    detail: props.collateral.detail || '',
-    licensePlate: props.collateral.licensePlate || '',
-    vehicleProvince: props.collateral.vehicleProvince || '',
-    yearManufactured: props.collateral.yearManufactured,
-    yearRegistered: props.collateral.yearRegistered,
-    chassisNumber: props.collateral.chassisNumber || '',
-    mileage: props.collateral.mileage
+    assetType: props.asset.assetType || '',
+    detail: props.asset.detail || '',
+    licensePlate: props.asset.licensePlate || '',
+    vehicleProvince: props.asset.vehicleProvince || '',
+    yearManufactured: props.asset.yearManufactured,
+    yearRegistered: props.asset.yearRegistered,
+    chassisNumber: props.asset.chassisNumber || '',
+    mileage: props.asset.mileage
   }
 }
 
 function buildLandForm (): ILandFormState {
   return {
-    collateralType: props.collateral.collateralType || '',
-    detail: props.collateral.detail || '',
-    landNumber: props.collateral.landNumber || '',
-    surveyPageNumber: props.collateral.surveyPageNumber || '',
-    landLocation: props.collateral.landLocation || '',
-    subDistrict: props.collateral.subDistrict || '',
-    district: props.collateral.district || '',
-    province: props.collateral.province || '',
-    postCode: props.collateral.postCode || '',
-    aerialPhotoNumber: props.collateral.aerialPhotoNumber || '',
-    aerialPhotoSheet: props.collateral.aerialPhotoSheet || '',
-    areaRai: props.collateral.areaRai,
-    areaRgan: props.collateral.areaRgan,
-    areaTarangWa: props.collateral.areaTarangWa
+    assetType: props.asset.assetType || '',
+    detail: props.asset.detail || '',
+    landNumber: props.asset.landNumber || '',
+    surveyPageNumber: props.asset.surveyPageNumber || '',
+    landLocation: props.asset.landLocation || '',
+    subDistrict: props.asset.subDistrict || '',
+    district: props.asset.district || '',
+    province: props.asset.province || '',
+    postCode: props.asset.postCode || '',
+    aerialPhotoNumber: props.asset.aerialPhotoNumber || '',
+    aerialPhotoSheet: props.asset.aerialPhotoSheet || '',
+    areaRai: props.asset.areaRai,
+    areaRgan: props.asset.areaRgan,
+    areaTarangWa: props.asset.areaTarangWa
   }
 }
 
 const vehicleForm = ref<IVehicleFormState>(buildVehicleForm())
 const landForm = ref<ILandFormState>(buildLandForm())
 
-watch((): ICollateralDetailInfo => props.collateral, (): void => {
+watch((): IAssetDetailInfo => props.asset, (): void => {
   vehicleForm.value = buildVehicleForm()
   landForm.value = buildLandForm()
-  existingImages.value = [...(props.collateral.images || [])]
+  existingImages.value = [...(props.asset.images || [])]
   newFiles.value = []
   previewUrls.value = []
   removedImageIds.value = []
@@ -204,7 +204,7 @@ watch((): ICollateralDetailInfo => props.collateral, (): void => {
 /* ─── Images ─── */
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
-const existingImages = ref<ICollateralImage[]>([...(props.collateral.images || [])])
+const existingImages = ref<IPreAssetImage[]>([...(props.asset.images || [])])
 const newFiles = ref<File[]>([])
 const previewUrls = ref<string[]>([])
 const removedImageIds = ref<number[]>([])
@@ -221,7 +221,7 @@ function onFileChange (event: Event): void {
 
 function removeExistingImage (id: number | null): void {
   if (id !== null) removedImageIds.value.push(id)
-  existingImages.value = existingImages.value.filter((img: ICollateralImage): boolean => img.id !== id)
+  existingImages.value = existingImages.value.filter((img: IPreAssetImage): boolean => img.id !== id)
 }
 
 function removeNewFile (index: number): void {
@@ -238,7 +238,7 @@ function onClear (): void {
   newFiles.value = []
   previewUrls.value = []
   removedImageIds.value = []
-  existingImages.value = [...(props.collateral.images || [])]
+  existingImages.value = [...(props.asset.images || [])]
 }
 
 async function useSave (): Promise<void> {
@@ -258,7 +258,7 @@ async function useSave (): Promise<void> {
     formData.append('images', file)
   })
 
-  await contractService.saveCollateralDetail(props.contractId, props.collateral.id!, formData)
+  await contractService.saveAssetDetail(props.contractId, props.asset.id!, formData)
   toast.success('บันทึกข้อมูลสำเร็จ')
   emits('saved')
 }

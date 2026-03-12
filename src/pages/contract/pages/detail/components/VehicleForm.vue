@@ -5,8 +5,8 @@
       tag="div"
       required>
       <SelectInput
-        v-model="form.collateralType"
-        :options="VehicleEstateTypeItems"
+        v-model="form.assetType"
+        :options="VehicleAssetTypeItems"
         option-label="label"
         option-value="value"
         placeholder="เลือกประเภทหลักทรัพย์" />
@@ -74,13 +74,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { VehicleEstateTypeItems } from '@/enums/modules/contract/EstateType.enum'
+import { VehicleAssetTypeItems } from '@/enums/modules/contract/AssetType.enum'
 import AddressFieldInput from '@/components/input/AddressFieldInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import SelectInput from '@/components/input/SelectInput.vue'
 
 export interface IVehicleFormState {
-  collateralType: string
+  assetType: string
   detail: string
   licensePlate: string
   vehicleProvince: string

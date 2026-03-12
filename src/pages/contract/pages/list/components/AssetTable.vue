@@ -12,8 +12,8 @@
         {{ item.idNo }}
       </LinkText>
     </template>
-    <template #[`item.collateralStatus`]="{ item }">
-      <ChipCollateralStatus :value="item.collateralStatus ?? undefined" />
+    <template #[`item.assetStatus`]="{ item }">
+      <ChipAssetStatus :value="item.assetStatus ?? undefined" />
     </template>
   </BaseTable>
 </template>
@@ -22,16 +22,16 @@
 import { ref } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
-import type { IContractList } from '@/models/response/contract/ContractRes.model'
+import type { IPreContractList } from '@/models/response/pre-contract/PreContractRes.model'
 import type { IColumn } from '@/models/Table.model'
 import type { TTitleName } from '@/enums/TitleName.enum'
 import LinkText from '@/components/button/LinkText.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
-import ChipCollateralStatus from './ChipCollateralStatus.vue'
+import ChipAssetStatus from './ChipAssetStatus.vue'
 
 interface IProps {
-  items: IContractList[]
+  items: IPreContractList[]
 }
 const props = defineProps<IProps>()
 
@@ -46,25 +46,25 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const { formatDate } = useDayjs()
 
-const columns = ref<IColumn<IContractList>[]>([
+const columns = ref<IColumn<IPreContractList>[]>([
   { field: 'idNo', header: 'เลขที่สัญญา', sortable: true, align: 'left' },
   {
     field: 'startDate',
     header: 'วันที่เริ่มทำสัญญา',
     sortable: true,
     align: 'left',
-    value: (e: IContractList): string => formatDate(e.startDate ?? undefined)
+    value: (e: IPreContractList): string => formatDate(e.startDate ?? undefined)
   },
   {
     field: 'customer',
     header: 'ชื่อลูกค้า',
     align: 'left',
-    value: (e: IContractList): string => formatter.fullName({
+    value: (e: IPreContractList): string => formatter.fullName({
       titleName: (e.customer?.titleName ?? undefined) as TTitleName | undefined,
       firstName: e.customer?.firstName ?? undefined,
       lastName: e.customer?.lastName ?? undefined
     })
   },
-  { field: 'collateralStatus', header: 'สถานะ', sortable: true, align: 'left' }
+  { field: 'assetStatus', header: 'สถานะ', sortable: true, align: 'left' }
 ])
 </script>

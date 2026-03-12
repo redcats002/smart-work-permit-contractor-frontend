@@ -42,9 +42,9 @@
           </div>
         </BaseContainer>
         <EstateFormSection
-          v-for="(item, index) in form.estates"
+          v-for="(item, index) in form.assets"
           :key="item.key"
-          v-model="form.estates[index]"
+          v-model="form.assets[index]"
           :estate-category="estateCategory"
           :form="$form"
           :name-prefix="`estates.${index}`"
@@ -91,12 +91,12 @@ import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
-import type { TEstateAssessmentStatus } from '@/enums/modules/contract/EstateAssessmentStatus.enum'
-import { isLandEstate, isVehicleEstate } from '@/enums/modules/contract/EstateType.enum'
-import type { IContractProvider } from '@/resources/provider/contract/Contract.provider'
-import ContractProvider from '@/resources/provider/contract/Contract.provider'
+import type { TAssetAssessmentStatus } from '@/enums/modules/contract/AssetAssessmentStatus.enum'
+import { isLandAsset, isVehicleAsset } from '@/enums/modules/contract/AssetType.enum'
 import type { ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import CustomerProvider from '@/resources/provider/customer/Customer.provider'
+import type { IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
+import PreContractProvider from '@/resources/provider/pre-contract/PreContract.provider'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
@@ -120,17 +120,17 @@ type TEstateCategory = 'VEHICLE' | 'LAND' | null
 const router = useRouter()
 
 const CustomerService: ICustomerProvider = new CustomerProvider()
-const ContractService: IContractProvider = new ContractProvider()
+const ContractService: IPreContractProvider = new PreContractProvider()
 
 const form = ref<PreContractFormValues>(useFormInitialValues())
 const resolver = zodResolver(PreContractSchema)
-const submitMode = ref<TEstateAssessmentStatus>('PENDING')
+const submitMode = ref<TAssetAssessmentStatus>('PENDING')
 const selectedCustomer = ref<ICustomerById | null>(null)
 
 const estateCategory = computed((): TEstateCategory => {
-  for (const e of form.value.estates) {
-    if (isVehicleEstate(e.collateralType)) return 'VEHICLE'
-    if (isLandEstate(e.collateralType)) return 'LAND'
+  for (const e of form.value.assets) {
+    if (isVehicleAsset(e.assetType)) return 'VEHICLE'
+    if (isLandAsset(e.assetType)) return 'LAND'
   }
   return null
 })
@@ -165,12 +165,12 @@ function onSubmit (event: FormSubmitEvent): void {
 
 function onAddEstate (): void {
   if (!canAddEstate.value) return
-  form.value.estates.push(createEstateItem())
+  form.value.assets.push(createEstateItem())
 }
 
 function onRemoveEstate (index: number): void {
-  if (form.value.estates.length <= 1) return
-  form.value.estates.splice(index, 1)
+  if (form.value.assets.length <= 1) return
+  form.value.assets.splice(index, 1)
 }
 
 

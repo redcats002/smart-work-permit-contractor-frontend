@@ -12,7 +12,7 @@
 import { onMounted, ref, watch } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel, TBaseOption } from '@/models/Global.model'
-import { EstateTypeItems, LandEstateTypeItems, VehicleEstateTypeItems } from '@/enums/modules/contract/EstateType.enum'
+import { AssetTypeItems, LandAssetTypeItems, VehicleAssetTypeItems } from '@/enums/modules/contract/AssetType.enum'
 import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
 import usePagination from '@/composables/usePagination'
 
@@ -36,9 +36,9 @@ const { pagination } = usePagination()
 const suggestions = ref<TBaseModel[]>([])
 
 function itemsForCategory (): TBaseOption[] {
-  if (props.category === 'VEHICLE') return VehicleEstateTypeItems
-  if (props.category === 'LAND') return LandEstateTypeItems
-  return EstateTypeItems
+  if (props.category === 'VEHICLE') return VehicleAssetTypeItems
+  if (props.category === 'LAND') return LandAssetTypeItems
+  return AssetTypeItems
 }
 
 async function useFetch (): Promise<void> {

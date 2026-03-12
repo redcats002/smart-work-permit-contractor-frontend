@@ -1,16 +1,17 @@
 import type { IBaseModel, IEntity } from '@/models/Global.model'
+import type { TAssetAssessmentStatus } from '@/enums/modules/contract/AssetAssessmentStatus.enum'
+import type { TAssetType } from '@/enums/modules/contract/AssetType.enum'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
-import type { TEstateAssessmentStatus } from '@/enums/modules/contract/EstateAssessmentStatus.enum'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 
-export interface IContractCustomer {
+export interface IPreContractCustomer {
   id: number | null
   titleName: string | null
   firstName: string | null
   lastName: string | null
 }
 
-export interface IContractCustomerDetail extends IContractCustomer {
+export interface IPreContractCustomerDetail extends IPreContractCustomer {
   idNo: string | null
   idCard: string | null
   birthDate: string | null
@@ -21,21 +22,21 @@ export interface IContractCustomerDetail extends IContractCustomer {
   phoneNumber2: string | null
 }
 
-export interface IContractStaff {
+export interface IPreContractStaff {
   id: number | null
   titleName: string | null
   firstName: string | null
   lastName: string | null
 }
 
-export interface ICollateralImage {
+export interface IPreAssetImage {
   id: number | null
   url: string
   name: string
 }
 
-export interface ICollateralDetailInfo extends IEntity {
-  collateralType: string | null
+export interface IAssetDetailInfo extends IEntity {
+  assetType: TAssetType
   detail: string | null
   address: string | null
   subDistrict: string | null
@@ -59,38 +60,38 @@ export interface ICollateralDetailInfo extends IEntity {
   areaRai: number | null
   areaRgan: number | null
   areaTarangWa: number | null
-  images: ICollateralImage[]
+  images: IPreAssetImage[]
 }
 
-export interface IContractLoanType {
+export interface IPreContractLoanType {
   id: number | null
   name: string
 }
 
-export interface IContractList extends IEntity {
+export interface IPreContractList extends IEntity {
   contractDate: string | null
   startDate: string | null
   endDate: string | null
   amount: number | null
   status: TContractStatus | null
-  collateralStatus: TEstateAssessmentStatus | null
-  customer: IContractCustomer | null
-  loanType: IContractLoanType | null
+  assetStatus: TAssetAssessmentStatus | null
+  customer: IPreContractCustomer | null
+  loanType: IPreContractLoanType | null
 }
 
-export interface IContractById extends IEntity {
+export interface IPreContractById extends IEntity {
   contractDate: string | null
   startDate: string | null
   endDate: string | null
   amount: number | null
   status: TContractStatus | null
-  collateralStatus: TEstateAssessmentStatus | null
-  customer: IContractCustomerDetail | null
-  loanType: IContractLoanType | null
-  staff: IContractStaff | null
-  collaterals: ICollateralDetailInfo[]
+  assetStatus: TAssetAssessmentStatus | null
+  customer: IPreContractCustomerDetail | null
+  loanType: IPreContractLoanType | null
+  staff: IPreContractStaff | null
+  assets: IAssetDetailInfo[]
 }
 
-export type TGetContractListResponse = IBasePaginationResponse<IContractList>
-export type TGetContractByIdResponse = IBaseSuccessResponse<IContractById>
-export type TActionContract = IBaseSuccessResponse<boolean>
+export type TGetPreContractListResponse = IBasePaginationResponse<IPreContractList>
+export type TGetPreContractByIdResponse = IBaseSuccessResponse<IPreContractById>
+export type TActionPreContract = IBaseSuccessResponse<boolean>

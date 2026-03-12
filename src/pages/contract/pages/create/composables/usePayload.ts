@@ -1,20 +1,20 @@
-import type { ICreateContractPayload, IEstateItem } from '@/models/request/contract/ContractReq.model'
+import type { IAssetItem, ICreatePreContractPayload } from '@/models/request/pre-contract/PreContractReq.model'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
-import type { TEstateAssessmentStatus } from '@/enums/modules/contract/EstateAssessmentStatus.enum'
-import type { TEstateType } from '@/enums/modules/contract/EstateType.enum'
+import type { TAssetAssessmentStatus } from '@/enums/modules/contract/AssetAssessmentStatus.enum'
+import type { TAssetType } from '@/enums/modules/contract/AssetType.enum'
 import type { IEstateFormItem, PreContractFormValues } from '../schema/pre-contract.schema'
 
 export function usePayload (
   form: PreContractFormValues,
   selectedCustomer: ICustomerById,
-  submitMode: TEstateAssessmentStatus
-): ICreateContractPayload {
+  submitMode: TAssetAssessmentStatus
+): ICreatePreContractPayload {
   return {
     customerId: selectedCustomer.id!,
     estateStatus: submitMode,
-    estates: form.estates.map(
-      (c: IEstateFormItem): IEstateItem => ({
-        estateType: c.collateralType as TEstateType,
+    assets: form.assets.map(
+      (c: IEstateFormItem): IAssetItem => ({
+        assetType: c.assetType as TAssetType,
         detail: c.detail,
         // Land fields
         address: c.address,

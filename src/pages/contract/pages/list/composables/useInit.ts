@@ -7,12 +7,12 @@ interface IUseInit {
 }
 
 export default function useInit (): IUseInit {
-  const CollateralTab = markRaw(dac((): Promise<Component> => import('../components/tab/CollateralTab.vue')))
+  const AssetTab = markRaw(dac((): Promise<Component> => import('../components/tab/AssetTab.vue')))
   const ContractTab = markRaw(dac((): Promise<Component> => import('../components/tab/ContractTab.vue')))
 
   const { tab, tabItems } = useTabItems(
     computed((): ITabItemComponent[] => [
-      { key: 'Collateral', label: 'หลักประกัน', value: 'collateral', instance: CollateralTab },
+      { key: 'Asset', label: 'หลักประกัน', value: 'asset', instance: AssetTab },
       { key: 'Contract', label: 'สัญญา', value: 'contract', instance: ContractTab }
     ])
   )
