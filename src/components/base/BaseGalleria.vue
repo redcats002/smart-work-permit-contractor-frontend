@@ -4,7 +4,7 @@
     :pt-options="{ mergeProps: ptViewMerge }"
     :responsive-options="responsiveOptions"
     :value="images"
-    container-style="min-width: 400px; background-color: #FAFAFE; padding: 0.5rem; border-radius: 0.5rem;"
+    container-style="width:100%; background-color: #FAFAFE; padding: 0.5rem; border-radius: 0.5rem;"
     unstyled>
     <template #item="slotProps">
       <img
