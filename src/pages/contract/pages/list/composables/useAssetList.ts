@@ -1,40 +1,39 @@
 import { computed, ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IGetContractList } from '@/models/request/contract/ContractReq.model'
-import type { IContractList } from '@/models/response/contract/ContractRes.model'
-import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
+import type { IGetPreContractList } from '@/models/request/pre-contract/PreContractReq.model'
+import type { IPreContractList } from '@/models/response/pre-contract/PreContractRes.model'
+import PreContractProvider, { type IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
-interface IUseCollateralList extends IUsePagination {
-  filters: Ref<IGetContractList>
-  items: Ref<IContractList[]>
+interface IUseAssetList extends IUsePagination {
+  filters: Ref<IGetPreContractList>
+  items: Ref<IPreContractList[]>
   fetch(): void
   onClearFilters(): void
 }
 
-export default function useCollateralList (): IUseCollateralList {
-  const contractService: IContractProvider = new ContractProvider()
+export default function useAssetList (): IUseAssetList {
+  const contractService: IPreContractProvider = new PreContractProvider()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
 
-  const filters = ref<IGetContractList>({})
-  const items = ref<IContractList[]>([])
+  const filters = ref<IGetPreContractList>({})
+  const items = ref<IPreContractList[]>([])
 
-  const paginateQuery = computed((): IGetContractList => ({
+  const paginateQuery = computed((): IGetPreContractList => ({
     search: search.value,
     page: pagination.value.page,
     limit: pagination.value.limit,
     sortBy: sortBy.value || undefined,
     sortOrder: sortOrder.value,
-    tab: 'COLLATERAL',
-    collateralStatus: filters.value.collateralStatus
+    assetStatus: filters.value.assetStatus
   }))
 
   async function useFetch (): Promise<void> {
     const response = await contractService.getContractPaginate(paginateQuery.value)
     items.value = response?.data || []
     pagination.value = extractPagination(response)
-    syncQuery({ collateralStatus: filters.value.collateralStatus })
+    syncQuery({ assetStatus: filters.value.assetStatus })
   }
 
   function fetch (): void {

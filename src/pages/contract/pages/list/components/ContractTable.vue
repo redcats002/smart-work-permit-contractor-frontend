@@ -22,7 +22,7 @@
 import { ref } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
-import type { IContractList } from '@/models/response/contract/ContractRes.model'
+import type { IPreContractList } from '@/models/response/pre-contract/PreContractRes.model'
 import type { IColumn } from '@/models/Table.model'
 import type { TTitleName } from '@/enums/TitleName.enum'
 import LinkText from '@/components/button/LinkText.vue'
@@ -31,7 +31,7 @@ import type { IPagination } from '@/composables/usePagination'
 import ChipContractStatus from './ChipContractStatus.vue'
 
 interface IProps {
-  items: IContractList[]
+  items: IPreContractList[]
 }
 const props = defineProps<IProps>()
 
@@ -46,20 +46,20 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const { formatDate } = useDayjs()
 
-const columns = ref<IColumn<IContractList>[]>([
+const columns = ref<IColumn<IPreContractList>[]>([
   { field: 'idNo', header: 'เลขที่สัญญา', sortable: true, align: 'left' },
   {
     field: 'contractDate',
     header: 'วันที่ทำสัญญา',
     sortable: true,
     align: 'left',
-    value: (e: IContractList): string => formatDate(e.contractDate ?? undefined)
+    value: (e: IPreContractList): string => formatDate(e.contractDate ?? undefined)
   },
   {
     field: 'customer',
     header: 'ชื่อลูกค้า',
     align: 'left',
-    value: (e: IContractList): string => formatter.fullName({
+    value: (e: IPreContractList): string => formatter.fullName({
       titleName: (e.customer?.titleName ?? undefined) as TTitleName | undefined,
       firstName: e.customer?.firstName ?? undefined,
       lastName: e.customer?.lastName ?? undefined
@@ -69,28 +69,28 @@ const columns = ref<IColumn<IContractList>[]>([
     field: 'loanType',
     header: 'ประเภทเงินกู้',
     align: 'left',
-    value: (e: IContractList): string => e.loanType?.name || '-'
+    value: (e: IPreContractList): string => e.loanType?.name || '-'
   },
   {
     field: 'amount',
     header: 'วงเงิน (บาท)',
     sortable: true,
     align: 'right',
-    value: (e: IContractList): string => formatter.numberFormat(e.amount ?? 0)
+    value: (e: IPreContractList): string => formatter.numberFormat(e.amount ?? 0)
   },
   {
     field: 'startDate',
     header: 'วันที่เริ่ม',
     sortable: true,
     align: 'left',
-    value: (e: IContractList): string => formatDate(e.startDate ?? undefined)
+    value: (e: IPreContractList): string => formatDate(e.startDate ?? undefined)
   },
   {
     field: 'endDate',
     header: 'วันที่สิ้นสุด',
     sortable: true,
     align: 'left',
-    value: (e: IContractList): string => formatDate(e.endDate ?? undefined)
+    value: (e: IPreContractList): string => formatDate(e.endDate ?? undefined)
   },
   { field: 'status', header: 'สถานะ', sortable: true, align: 'left' }
 ])

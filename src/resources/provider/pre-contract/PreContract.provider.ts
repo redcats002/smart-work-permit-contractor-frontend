@@ -1,0 +1,62 @@
+import type { ICreatePreContractPayload, IGetPreContractList, IUpdatePreContractPayload } from '@/models/request/pre-contract/PreContractReq.model'
+import type { TActionPreContract, TGetPreContractByIdResponse, TGetPreContractListResponse } from '@/models/response/pre-contract/PreContractRes.model'
+import type { TBaseParamsId } from '@/models/response/Response.model'
+import HttpRequest from '@/resources/HttpRequest'
+
+export interface IPreContractProvider {
+  getContractPaginate (query: IGetPreContractList): Promise<TGetPreContractListResponse>
+  createContract (payload: ICreatePreContractPayload): Promise<TActionPreContract>
+  updateContract (id: TBaseParamsId, payload: IUpdatePreContractPayload): Promise<TActionPreContract>
+  deleteContract (id: number): Promise<TActionPreContract>
+  getContractFindOne (id: TBaseParamsId): Promise<TGetPreContractByIdResponse>
+  saveAssetDetail (contractId: TBaseParamsId, assetId: TBaseParamsId, formData: FormData): Promise<TActionPreContract>
+  requestAssessmentPrice (id: TBaseParamsId): Promise<TActionPreContract>
+}
+
+class PreContractProvider extends HttpRequest implements IPreContractProvider {
+  private urlPrefix: string = '/api/v1/pre-contract'
+
+  public async getContractPaginate (query: IGetPreContractList): Promise<TGetPreContractListResponse> {
+    const response = await this.get(`${this.urlPrefix}`, query)
+    return response
+  }
+
+  public async createContract (payload: ICreatePreContractPayload): Promise<TActionPreContract> {
+    const response = await this.post(`${this.urlPrefix}`, payload)
+    return response
+  }
+
+  public async updateContract (id: TBaseParamsId, payload: IUpdatePreContractPayload): Promise<TActionPreContract> {
+    const response = await this.put(`${this.urlPrefix}/${id}`, payload)
+    return response
+  }
+
+  public async deleteContract (id: number): Promise<TActionPreContract> {
+    const response = await this.delete(`${this.urlPrefix}/${id}`)
+    return response
+  }
+
+  public async getContractFindOne (id: TBaseParamsId): Promise<TGetPreContractByIdResponse> {
+    const response = await this.get(`${this.urlPrefix}/${id}`)
+    return response
+  }
+
+  public async saveAssetDetail (
+    contractId: TBaseParamsId,
+    assetId: TBaseParamsId,
+    formData: FormData
+  ): Promise<TActionPreContract> {
+    this.setAuthHeader('BRANCH')
+    const response = await this.put(
+      `${this.urlPrefix}/${contractId}/asset/${assetId}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }
+    )
+    return response
+  }
+
+  public async requestAssessmentPrice (id: TBaseParamsId): Promise<TActionPreContract> {
+    this.setAuthHeader('BRANCH')
+    const response = await this.post(`${this.urlPrefix}/${id}/request-assessment`, {})
+    return response
+  }
+}
+export default PreContractProvider

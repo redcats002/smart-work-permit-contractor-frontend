@@ -1,129 +1,85 @@
 <template>
-  <section>
+  <section id="pre-contract-create-page">
     <PageTitle />
     <BaseTop>
       <BackButton />
     </BaseTop>
     <BasePage>
-      <div class="flex flex-col gap-5 pb-10">
-        <!-- Assessment Staff Section -->
+      <Form
+        v-slot="$form"
+        :initial-values="form"
+        :resolver="resolver"
+        class="flex flex-col gap-5 pb-10"
+        @submit="onSubmit($event)">
         <BaseContainer>
-          <div class="mb-1.5">
-            <span class="text-sm font-bold">
-              หน้างานประเมิน
-              <span class="text-red-500">*</span>
-            </span>
-          </div>
-          <div
-            class="flex items-center gap-2.5 border border-surface-300 rounded-sm px-3 h-9 bg-surface-50">
-            <Icon
-              class="text-surface-500 size-4 shrink-0"
-              icon="solar:user-bold" />
-            <span class="text-sm text-surface-800">{{ assessorName }}</span>
-          </div>
+          <LabelField
+            :invalid="!selectedCustomer"
+            label="หน้างานประเมิน "
+            name="employeeId"
+            tag="div"
+            required>
+            <EmployeeSelection
+              v-model="form.employeeId"
+              name="employeeId" />
+          </LabelField>
         </BaseContainer>
-
-        <!-- Customer Section -->
         <BaseContainer>
           <div class="flex flex-col gap-4">
             <LabelField
+              :invalid="!selectedCustomer"
               label="ลูกค้า"
+              name="customerId"
               tag="div"
               required>
-              <AutoCompleteInput
-                v-model="customerInput"
-                :suggestions="customerSuggestions"
-                option-label="displayName"
-                placeholder="ค้นหาลูกค้า"
-                force-selection
-                @complete="onCustomerSearch($event)"
-                @item-select="onCustomerSelect($event)" />
+              <CustomerSelection
+                v-model="form.customerId"
+                name="customerId"
+                @update:model-value="onCustomerSelect($event)" />
             </LabelField>
-
-            <!-- Customer Details Card -->
-            <div
+            <CustomerCard
               v-if="selectedCustomer"
-              class="border border-surface-200 rounded-md p-4 space-y-2.5">
-              <div class="flex items-center gap-3 text-sm">
-                <span class="text-surface-500 w-40 shrink-0">สถานะ</span>
-                <BaseChip
-                  :append-icon="getCustomerStatusIcon(selectedCustomer.status)"
-                  :label="formatCustomerStatusTitle(selectedCustomer.status)"
-                  :wrapper-class="getCustomerStatusClass(selectedCustomer.status)" />
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <span class="text-surface-500 w-40 shrink-0">เลขที่ลูกค้า</span>
-                <span class="text-surface-800">:{{ selectedCustomer.idNo || '-' }}</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <span class="text-surface-500 w-40 shrink-0">เลขบัตรประชาชน</span>
-                <span class="text-surface-800">:{{ formatter.thaiCitizenId(selectedCustomer.idCard) }}</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <span class="text-surface-500 w-40 shrink-0">วันเกิด</span>
-                <span class="text-surface-800">:{{ formatDate(selectedCustomer.birthDate ?? undefined) }}</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <span class="text-surface-500 w-40 shrink-0">อายุ</span>
-                <span class="text-surface-800">:{{ customerAge }}</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <span class="text-surface-500 w-40 shrink-0">กลุ่มลูกค้า</span>
-                <span class="text-surface-800">:{{ selectedCustomer.customerGroup?.name || '-' }}</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <span class="text-surface-500 w-40 shrink-0">อาชีพ</span>
-                <span class="text-surface-800">:{{ selectedCustomer.occupation?.name || '-' }}</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <span class="text-surface-500 w-40 shrink-0">เบอร์โทร</span>
-                <span class="text-surface-800">
-                  :{{ formatter.fullPhoneNumber({
-                    phoneNumber: selectedCustomer.phoneNumber,
-                    phoneNumber2: selectedCustomer.phoneNumber2
-                  }) }}
-                </span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <span class="text-surface-500 w-40 shrink-0">อีเมล</span>
-                <span class="text-surface-800">:{{ selectedCustomer.email || '-' }}</span>
-              </div>
-            </div>
+              :data="selectedCustomer" />
           </div>
         </BaseContainer>
-
-        <!-- Collateral Sections -->
-        <CollateralFormSection
-          v-for="(item, index) in collaterals"
+        <EstateFormSection
+          v-for="(item, index) in form.assets"
           :key="item.key"
-          v-model="collaterals[index]"
-          @delete="removeCollateral(index)" />
-
-        <!-- Add Collateral Button -->
-        <button
-          class="flex items-center gap-1.5 text-sm text-primary font-medium hover:opacity-80
-            transition-opacity w-fit"
+          v-model="form.assets[index]"
+          :estate-category="estateCategory"
+          :form="$form"
+          :name-prefix="`estates.${index}`"
+          @delete="onRemoveEstate(index)" />
+        <Button
+          v-show="canAddEstate"
+          class="flex items-center justify-start gap-1.5 py-4 text-sm text-primary! font-medium hover:opacity-80
+            transition-opacity bg-white!"
           type="button"
-          @click="addCollateral()">
+          fluid
+          text
+          @click="onAddEstate()">
           <Icon
             class="size-5"
-            icon="mdi:plus-circle-outline" />
+            icon="mdi:plus" />
           เพิ่มหลักทรัพย์ในสัญญา
-        </button>
-
-        <!-- Action Buttons -->
+        </Button>
         <div class="flex gap-3 flex-wrap">
           <ConfirmButton
-            label="ยืนยัน/ส่งงานประเมิน"
-            @click="onSubmitPending()" />
-          <SecondaryButton
+            label="ยืนยัน/สั่งงานประเมิน"
+            type="submit"
+            @click="submitMode = 'PENDING'" />
+          <Button
+            class="bg-white! text-[#333333]! border-gray-400! flex items-center hover:bg-gray-100! w-49.5"
             label="ร่าง"
-            @click="onSaveDraft()" />
-          <SecondaryButton
+            type="submit"
+            outlined
+            @click="submitMode = 'DRAFT'" />
+          <Button
+            class="w-49.5"
             label="ยกเลิก"
+            outlined
             @click="onCancel()" />
         </div>
-      </div>
+      </Form>
     </BasePage>
   </section>
 </template>
@@ -132,150 +88,91 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
-import { useAuthStore } from '@/stores/Auth'
-import { useDayjs } from '@/utils/Dayjs'
-import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { ICollateralItem } from '@/models/request/contract/ContractReq.model'
-import type { ICustomerById, ICustomerList } from '@/models/response/customer/CustomerRes.model'
-import type { TCollateralAssessmentStatus } from '@/enums/modules/contract/CollateralAssessmentStatus.enum'
-import {
-  formatTitle as formatCustomerStatusTitle,
-  getIcon as getCustomerStatusIcon,
-  getStatusClass as getCustomerStatusClass
-} from '@/enums/modules/customer/CustomerStatus.enum'
-import type { IContractProvider } from '@/resources/provider/contract/Contract.provider'
-import ContractProvider from '@/resources/provider/contract/Contract.provider'
+import { scrollToFirstError } from '@/utils/HandleSubmit'
+import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
+import type { TAssetAssessmentStatus } from '@/enums/modules/contract/AssetAssessmentStatus.enum'
+import { isLandAsset, isVehicleAsset } from '@/enums/modules/contract/AssetType.enum'
 import type { ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import CustomerProvider from '@/resources/provider/customer/Customer.provider'
+import type { IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
+import PreContractProvider from '@/resources/provider/pre-contract/PreContract.provider'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
-import BaseChip from '@/components/chip/BaseChip.vue'
-import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
+import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
-import CollateralFormSection, { type ICollateralFormItem } from '../components/CollateralFormSection.vue'
+import CustomerSelection from '@/components/selection/modules/customer/CustomerSelection.vue'
+import EmployeeSelection from '@/components/selection/modules/employee/EmployeeSelection.vue'
+import CustomerCard from '../components/CustomerCard.vue'
+import EstateFormSection from '../components/EstateFormSection.vue'
 import { Icon } from '@iconify/vue'
-import dayjs from 'dayjs'
+import { Form, type FormSubmitEvent } from '@primevue/forms'
+import { zodResolver } from '@primevue/forms/resolvers/zod'
+import { usePayload } from '../composables/usePayload'
+import type { PreContractFormValues } from '../schema/pre-contract.schema'
+import { createEstateItem, PreContractSchema, useFormInitialValues } from '../schema/pre-contract.schema'
+
+type TEstateCategory = 'VEHICLE' | 'LAND' | null
 
 const router = useRouter()
-const authStore = useAuthStore()
-const { formatDate } = useDayjs()
 
-const customerService: ICustomerProvider = new CustomerProvider()
-const contractService: IContractProvider = new ContractProvider()
+const CustomerService: ICustomerProvider = new CustomerProvider()
+const ContractService: IPreContractProvider = new PreContractProvider()
 
-/* ─── Assessment staff ─── */
-
-const assessorName = computed((): string => {
-  const { firstName, lastName } = authStore.user
-  return `${firstName} ${lastName}`.trim() || 'ไม่ระบุ'
-})
-
-/* ─── Customer search ─── */
-
-interface ICustomerSuggestion extends ICustomerList {
-  displayName: string
-}
-
-const customerInput = ref<ICustomerSuggestion | string | null>(null)
-const customerSuggestions = ref<ICustomerSuggestion[]>([])
+const form = ref<PreContractFormValues>(useFormInitialValues())
+const resolver = zodResolver(PreContractSchema)
+const submitMode = ref<TAssetAssessmentStatus>('PENDING')
 const selectedCustomer = ref<ICustomerById | null>(null)
 
-const customerAge = computed((): string => {
-  if (!selectedCustomer.value?.birthDate) return '-'
-  return String(dayjs().diff(dayjs(selectedCustomer.value.birthDate), 'year'))
+const estateCategory = computed((): TEstateCategory => {
+  for (const e of form.value.assets) {
+    if (isVehicleAsset(e.assetType)) return 'VEHICLE'
+    if (isLandAsset(e.assetType)) return 'LAND'
+  }
+  return null
 })
 
-async function onCustomerSearch (event: { query: string }): Promise<void> {
-  const res = await customerService.getCustomerPaginate({
-    search: event.query,
-    limit: 10
-  })
-  customerSuggestions.value = (res.data || []).map((c: ICustomerList): ICustomerSuggestion => ({
-    ...c,
-    displayName: formatter.fullName({
-      titleName: c.titleName,
-      firstName: c.firstName,
-      lastName: c.lastName
-    })
-  }))
-}
+const canAddEstate = computed((): boolean => {
+  if (!estateCategory.value) return false
+  return estateCategory.value !== 'VEHICLE'
+})
 
-async function onCustomerSelect (event: { value: ICustomerSuggestion }): Promise<void> {
+async function onCustomerSelect (id?: number | null): Promise<void> {
   await handleLoading(async (): Promise<void> => {
-    const res = await customerService.getCustomerFindOne(event.value.id!)
+    if (!id) return
+    const res = await CustomerService.getCustomerFindOne(Number(id))
     selectedCustomer.value = res.data
   })
 }
 
-/* ─── Collaterals ─── */
-
-function createCollateral (): ICollateralFormItem {
-  return {
-    key: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-    collateralType: '',
-    detail: '',
-    address: '',
-    subDistrict: '',
-    district: '',
-    province: '',
-    postCode: '',
-    urlGoogleMap: ''
-  }
-}
-
-const collaterals = ref<ICollateralFormItem[]>([createCollateral()])
-
-function addCollateral (): void {
-  collaterals.value.push(createCollateral())
-}
-
-function removeCollateral (index: number): void {
-  if (collaterals.value.length <= 1) return
-  collaterals.value.splice(index, 1)
-}
-
-/* ─── Submit ─── */
-
-async function submitPayload (collateralStatus: TCollateralAssessmentStatus): Promise<void> {
-  await contractService.createContract({
-    customerId: selectedCustomer.value!.id!,
-    collateralStatus,
-    collaterals: collaterals.value.map(
-      (c: ICollateralFormItem): ICollateralItem => ({
-        collateralType: c.collateralType,
-        detail: c.detail,
-        address: c.address,
-        subDistrict: c.subDistrict,
-        district: c.district,
-        province: c.province,
-        postCode: c.postCode,
-        urlGoogleMap: c.urlGoogleMap
-      })
-    )
-  })
+async function useSubmit (): Promise<void> {
+  await ContractService.createContract(usePayload(form.value, selectedCustomer.value!, submitMode.value))
   toast.success('ดำเนินการสำเร็จ')
   router.push({ name: 'ContractListPage' })
 }
 
-async function onSubmit (collateralStatus: TCollateralAssessmentStatus): Promise<void> {
-  if (!selectedCustomer.value?.id) {
-    toast.error('กรุณาเลือกลูกค้า')
+function onSubmit (event: FormSubmitEvent): void {
+  if (!event.valid) {
+    scrollToFirstError(event.errors)
     return
   }
-  await handleLoading((): Promise<void> => submitPayload(collateralStatus))
+  handleLoading(useSubmit)
 }
 
-function onSubmitPending (): void {
-  onSubmit('PENDING')
+
+function onAddEstate (): void {
+  if (!canAddEstate.value) return
+  form.value.assets.push(createEstateItem())
 }
 
-function onSaveDraft (): void {
-  onSubmit('DRAFT')
+function onRemoveEstate (index: number): void {
+  if (form.value.assets.length <= 1) return
+  form.value.assets.splice(index, 1)
 }
+
 
 function onCancel (): void {
   router.push({ name: 'ContractListPage' })
