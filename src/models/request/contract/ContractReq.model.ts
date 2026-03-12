@@ -14,13 +14,33 @@ export interface IGetContractList extends IBasePaginationRequest {
 
 export interface IEstateItem {
   estateType: TEstateType
-  detail: string
-  address: string
-  subDistrict: string
-  district: string
-  province: string
-  postCode: string
-  urlGoogleMap: string
+  detail?: string
+  // Land fields
+  address?: string
+  subDistrict?: string
+  district?: string
+  province?: string
+  postCode?: string
+  urlGoogleMap?: string
+  landNumber?: string
+  surveyPageNumber?: string
+  landLocation?: string
+  aerialPhotoNumber?: string
+  aerialPhotoSheet?: string
+  areaRai?: number | null
+  areaRgan?: number | null
+  areaTarangWa?: number | null
+  // Vehicle fields
+  brand?: string
+  vehicleModel?: string
+  color?: string
+  licensePlate?: string
+  vehicleProvince?: string
+  yearManufactured?: number | null
+  yearRegistered?: number | null
+  chassisNumber?: string
+  engineNumber?: string
+  mileage?: number | null
 }
 
 export interface ICreateContractPayload {

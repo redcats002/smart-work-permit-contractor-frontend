@@ -1,5 +1,5 @@
 <template>
-  <SelectInput
+  <AutoCompleteInput
     v-model="innerModel"
     :suggestions="suggestions"
     option-label="name"
@@ -12,11 +12,21 @@
 import { onMounted, ref, watch } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel, TBaseOption } from '@/models/Global.model'
-import { EstateTypeItems, type TEstateType } from '@/enums/modules/contract/EstateType.enum'
-import SelectInput from '@/components/input/SelectInput.vue'
+import { EstateTypeItems, LandEstateTypeItems, VehicleEstateTypeItems } from '@/enums/modules/contract/EstateType.enum'
+import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
 import usePagination from '@/composables/usePagination'
 
-const model = defineModel<TEstateType>()
+type TEstateCategory = 'VEHICLE' | 'LAND'
+
+interface IProps {
+  category?: TEstateCategory | null
+}
+
+const props = withDefaults(defineProps<IProps>(), {
+  category: null
+})
+
+const model = defineModel<string>()
 const selectedName = defineModel<string | null>('selectedName', { default: null })
 
 const innerModel = ref<TBaseModel | null>(null)
@@ -25,13 +35,19 @@ const { pagination } = usePagination()
 
 const suggestions = ref<TBaseModel[]>([])
 
-async function useFetch (): Promise<void> {
-  const items = EstateTypeItems
+function itemsForCategory (): TBaseOption[] {
+  if (props.category === 'VEHICLE') return VehicleEstateTypeItems
+  if (props.category === 'LAND') return LandEstateTypeItems
+  return EstateTypeItems
+}
 
-  suggestions.value = (items ?? []).map((item: TBaseOption): TBaseModel => ({
-    id: item.value!,
-    name: item?.label
-  }))
+async function useFetch (): Promise<void> {
+  suggestions.value = itemsForCategory().map(
+    (item: TBaseOption): TBaseModel => ({
+      id: item.value!,
+      name: item.label
+    })
+  )
 }
 
 function fetch (): void {
@@ -50,8 +66,7 @@ function syncInnerFromId (): void {
     return
   }
 
-  innerModel.value
-    = suggestions.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
+  innerModel.value = suggestions.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
   selectedName.value = innerModel.value?.name ?? null
 }
 
@@ -63,18 +78,24 @@ watch(innerModel, (val: TBaseModel | null): void => {
   }
 
   if (typeof val === 'string') {
-    model.value = val as TEstateType
+    model.value = val
     selectedName.value = suggestions.value.find((i: TBaseModel): boolean => i.id === val)?.name ?? null
     return
   }
 
-  model.value = (val.id || '') as TEstateType
+  model.value = (val.id || '') as string
   selectedName.value = val?.name ?? null
 })
 
 watch(model, (): void => {
   syncInnerFromId()
 })
+
+watch(
+  (): TEstateCategory | null => props.category, (): void => {
+    fetch()
+  }
+)
 
 watch(
   suggestions, (): void => {

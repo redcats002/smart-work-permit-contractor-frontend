@@ -22,115 +22,68 @@
           :name="`${namePrefix}.collateralType`"
           label="ประเภทหลักทรัพย์"
           tag="div"
+          hide-error
           required>
           <EstateTypeSelection
             v-model="model.collateralType"
+            :category="estateCategory"
             :invalid="invalid"
             :name="`${namePrefix}.collateralType`"
-            :options="EstateTypeItems"
-            option-label="label"
-            option-value="value"
-            placeholder="เลือกประเภทหลักทรัพย์" />
+            show-clear />
         </LabelField>
         <LabelField
+          v-if="isVehicle"
+          v-model="model.brand"
+          :form="form"
+          :name="`${namePrefix}.brand`"
+          label="ยี่ห้อ"
+          placeholder="กรอกยี่ห้อ"
+          hide-error
+          required />
+        <LabelField
+          v-else
           v-model="model.detail"
           :form="form"
           :name="`${namePrefix}.detail`"
           label="รายละเอียดหลักทรัพย์"
           placeholder="กรอกรายละเอียด"
+          hide-error
           required />
       </div>
-      <LabelField
-        v-model="model.address"
+
+      <VehicleForm
+        v-if="isVehicle"
+        v-model="model"
         :form="form"
-        :name="`${namePrefix}.address`"
-        label="ที่อยู่"
-        placeholder="กรอกที่อยู่" />
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <LabelField
-          v-slot="{ invalid }"
-          :form="form"
-          :name="`${namePrefix}.subDistrict`"
-          label="ตำบล"
-          tag="div"
-          required>
-          <AddressFieldInput
-            v-model="model.subDistrict"
-            :invalid="invalid"
-            :name="`${namePrefix}.subDistrict`"
-            address-type="sub-district"
-            placeholder="เลือกตำบล"
-            @select="onAddressSelect($event)" />
-        </LabelField>
-        <LabelField
-          v-slot="{ invalid }"
-          :form="form"
-          :name="`${namePrefix}.district`"
-          label="อำเภอ"
-          tag="div"
-          required>
-          <AddressFieldInput
-            v-model="model.district"
-            :invalid="invalid"
-            :name="`${namePrefix}.district`"
-            address-type="district"
-            placeholder="เลือกอำเภอ"
-            @select="onAddressSelect($event)" />
-        </LabelField>
-        <LabelField
-          v-slot="{ invalid }"
-          :form="form"
-          :name="`${namePrefix}.province`"
-          label="จังหวัด"
-          tag="div"
-          required>
-          <AddressFieldInput
-            v-model="model.province"
-            :invalid="invalid"
-            :name="`${namePrefix}.province`"
-            address-type="province"
-            placeholder="เลือกจังหวัด"
-            @select="onAddressSelect($event)" />
-        </LabelField>
-        <LabelField
-          v-slot="{ invalid }"
-          :form="form"
-          :name="`${namePrefix}.postCode`"
-          label="รหัสไปรษณีย์"
-          tag="div"
-          required>
-          <AddressFieldInput
-            v-model="model.postCode"
-            :invalid="invalid"
-            :name="`${namePrefix}.postCode`"
-            address-type="zipcode"
-            placeholder="รหัสไปรษณีย์"
-            @select="onAddressSelect($event)" />
-        </LabelField>
-      </div>
-      <LabelField
-        v-model="model.urlGoogleMap"
+        :name-prefix="namePrefix" />
+
+      <LandForm
+        v-if="isLand"
+        v-model="model"
         :form="form"
-        :name="`${namePrefix}.urlGoogleMap`"
-        label="URL Google Map"
-        placeholder="https://maps.app.goo.gl/" />
+        :name-prefix="namePrefix" />
     </div>
   </BaseContainer>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { IFormState } from '@/models/Form.model'
-import { EstateTypeItems } from '@/enums/modules/contract/EstateType.enum'
+import { isLandEstate, isVehicleEstate } from '@/enums/modules/contract/EstateType.enum'
 import BaseContainer from '@/components/base/BaseContainer.vue'
-import AddressFieldInput, { type IAddressData } from '@/components/input/AddressFieldInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import EstateTypeSelection from '@/components/selection/modules/estate-type/EstateTypeSelection.vue'
 import { Icon } from '@iconify/vue'
 import type { IEstateFormItem } from '../schema/pre-contract.schema'
+import LandForm from './LandForm.vue'
+import VehicleForm from './VehicleForm.vue'
+
+type TEstateCategory = 'VEHICLE' | 'LAND'
 
 interface IProps {
   form?: IFormState
   namePrefix?: string
+  estateCategory?: TEstateCategory | null
 }
 
 interface IEmits {
@@ -139,17 +92,15 @@ interface IEmits {
 
 withDefaults(defineProps<IProps>(), {
   form: undefined,
-  namePrefix: ''
+  namePrefix: '',
+  estateCategory: null
 })
 
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<IEstateFormItem>({ required: true })
 
-function onAddressSelect (data: IAddressData): void {
-  model.value.subDistrict = data.subDistrict
-  model.value.district = data.district
-  model.value.province = data.province
-  model.value.postCode = data.postalCode
-}
+const isVehicle = computed((): boolean => isVehicleEstate(model.value.collateralType))
+const isLand = computed((): boolean => isLandEstate(model.value.collateralType))
+
 </script>

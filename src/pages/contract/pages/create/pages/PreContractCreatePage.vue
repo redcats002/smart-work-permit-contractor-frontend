@@ -41,15 +41,16 @@
               :data="selectedCustomer" />
           </div>
         </BaseContainer>
-
         <EstateFormSection
           v-for="(item, index) in form.estates"
           :key="item.key"
           v-model="form.estates[index]"
+          :estate-category="estateCategory"
           :form="$form"
           :name-prefix="`estates.${index}`"
           @delete="onRemoveEstate(index)" />
         <Button
+          v-show="canAddEstate"
           class="flex items-center justify-start gap-1.5 py-4 text-sm text-primary! font-medium hover:opacity-80
             transition-opacity bg-white!"
           type="button"
@@ -63,7 +64,7 @@
         </Button>
         <div class="flex gap-3 flex-wrap">
           <ConfirmButton
-            label="ยืนยัน"
+            label="ยืนยัน/สั่งงานประเมิน"
             type="submit"
             @click="submitMode = 'PENDING'" />
           <Button
@@ -84,14 +85,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { IEstateItem } from '@/models/request/contract/ContractReq.model'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import type { TEstateAssessmentStatus } from '@/enums/modules/contract/EstateAssessmentStatus.enum'
+import { isLandEstate, isVehicleEstate } from '@/enums/modules/contract/EstateType.enum'
 import type { IContractProvider } from '@/resources/provider/contract/Contract.provider'
 import ContractProvider from '@/resources/provider/contract/Contract.provider'
 import type { ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
@@ -110,8 +111,11 @@ import EstateFormSection from '../components/EstateFormSection.vue'
 import { Icon } from '@iconify/vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import type { IEstateFormItem, PreContractFormValues } from '../schema/pre-contract.schema'
+import { usePayload } from '../composables/usePayload'
+import type { PreContractFormValues } from '../schema/pre-contract.schema'
 import { createEstateItem, PreContractSchema, useFormInitialValues } from '../schema/pre-contract.schema'
+
+type TEstateCategory = 'VEHICLE' | 'LAND' | null
 
 const router = useRouter()
 
@@ -123,6 +127,19 @@ const resolver = zodResolver(PreContractSchema)
 const submitMode = ref<TEstateAssessmentStatus>('PENDING')
 const selectedCustomer = ref<ICustomerById | null>(null)
 
+const estateCategory = computed((): TEstateCategory => {
+  for (const e of form.value.estates) {
+    if (isVehicleEstate(e.collateralType)) return 'VEHICLE'
+    if (isLandEstate(e.collateralType)) return 'LAND'
+  }
+  return null
+})
+
+const canAddEstate = computed((): boolean => {
+  if (!estateCategory.value) return false
+  return estateCategory.value !== 'VEHICLE'
+})
+
 async function onCustomerSelect (id?: number | null): Promise<void> {
   await handleLoading(async (): Promise<void> => {
     if (!id) return
@@ -132,40 +149,22 @@ async function onCustomerSelect (id?: number | null): Promise<void> {
 }
 
 async function useSubmit (): Promise<void> {
-  await ContractService.createContract({
-    customerId: selectedCustomer.value!.id!,
-    estateStatus: submitMode.value,
-    estates: form.value.estates.map(
-      (c: IEstateFormItem): IEstateItem => ({
-        estateType: c.collateralType,
-        detail: c.detail,
-        address: c.address,
-        subDistrict: c.subDistrict,
-        district: c.district,
-        province: c.province,
-        postCode: c.postCode,
-        urlGoogleMap: c?.urlGoogleMap || ''
-      })
-    )
-  })
+  await ContractService.createContract(usePayload(form.value, selectedCustomer.value!, submitMode.value))
   toast.success('ดำเนินการสำเร็จ')
   router.push({ name: 'ContractListPage' })
 }
 
-async function onSubmit (event: FormSubmitEvent): Promise<void> {
+function onSubmit (event: FormSubmitEvent): void {
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return
   }
-  if (!selectedCustomer.value?.id) {
-    toast.error('กรุณาเลือกลูกค้า')
-    return
-  }
-  await handleLoading(useSubmit)
+  handleLoading(useSubmit)
 }
 
 
 function onAddEstate (): void {
+  if (!canAddEstate.value) return
   form.value.estates.push(createEstateItem())
 }
 
