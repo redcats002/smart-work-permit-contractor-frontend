@@ -1,10 +1,10 @@
 import { useDayjs } from '@/utils/Dayjs'
 import { StockStatusEnum } from '@/enums/modules/stock/StockStatus.enum'
 import { z } from 'zod'
+import { StockSchema } from './stock.schema'
 
-export const StockSchema = z.object({
+export const StockDocsSchema = z.object({
   // ── ข้อมูลหลักทรัพย์ (Asset Information) ────────────────────────────────
-  id: z.number(),
   assetNo: z.string().min(1, 'กรุณากรอกเลขที่หลักทรัพย์'),
   contractNo: z.string().min(1, 'กรุณากรอกเลขที่สัญญา'),
   receivedDate: z.date().or(z.string()).transform((val: Date | string): string => {
@@ -21,32 +21,38 @@ export const StockSchema = z.object({
   category: z.string().min(1, 'กรุณาเลือกหมวดหมู่'),
   warehouse: z.string().min(1, 'กรุณาเลือกคลัง'),
   storageLocation: z.string().min(1, 'กรุณาระบุจุดจัดเก็บ'),
+  formWarehouse: z.string().min(1, 'กรุณาระบุคลังต้นทาง'),
+  toWarehouse: z.string().min(1, 'กรุณาระบุคลังปลายทาง'),
+  reason: z.string().min(1, 'กรุณาระบุเหตุผล'),
 
   // ── สถานะของหลักทรัพย์ ───────────────────────────────────────────────
-  status: z.enum(StockStatusEnum, 'กรุณาเลือกสถานะหลักทรัพย์')
+  status: z.enum(StockStatusEnum, 'กรุณาเลือกสถานะหลักทรัพย์'),
+
+  items: z.array(StockSchema).min(1, 'กรุณาเลือกหลักทรัพย์อย่างน้อย 1 รายการ')
 })
 
-export type StockFormValues = z.infer<typeof StockSchema>
+export type StockDocsFormValues = z.infer<typeof StockDocsSchema>
 
-export function useFormInitialValues (): StockFormValues {
+export function useFormInitialValues (): StockDocsFormValues {
   return {
-    id: 0,
     assetNo: '',
     contractNo: '',
     receivedDate: '',
-    titleName: '',
     firstName: '',
     lastName: '',
     category: '',
     warehouse: '',
     storageLocation: '',
-    status: StockStatusEnum.ACTIVE
+    formWarehouse: '',
+    toWarehouse: '',
+    reason: '',
+    status: StockStatusEnum.ACTIVE,
+    items: []
   }
 }
 
-export function useDev (): StockFormValues {
+export function useDev (): StockDocsFormValues {
   return {
-    id: 0,
     assetNo: 'AS-00001',
     contractNo: 'LC-00001',
     receivedDate: new Date().toISOString(),
@@ -56,6 +62,24 @@ export function useDev (): StockFormValues {
     category: 'อสังหาริมทรัพย์ - ที่ดิน',
     warehouse: 'สำนักงานใหญ่',
     storageLocation: 'BR001-31-13',
-    status: StockStatusEnum.ACTIVE
+    status: StockStatusEnum.ACTIVE,
+    formWarehouse: '',
+    toWarehouse: '',
+    reason: '',
+    items: [
+      {
+        id: 0,
+        assetNo: 'AS-00001',
+        contractNo: 'LC-00001',
+        receivedDate: new Date().toISOString(),
+        titleName: 'นาย',
+        firstName: 'จันทร์',
+        lastName: 'พงษ์พัฒนโยธิน',
+        category: 'อสังหาริมทรัพย์ - ที่ดิน',
+        warehouse: 'สำนักงานใหญ่',
+        storageLocation: 'BR001-31-13',
+        status: StockStatusEnum.ACTIVE
+      }
+    ]
   }
 }

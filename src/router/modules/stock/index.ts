@@ -37,17 +37,17 @@ export default {
         icon: 'mdi-account'
       }
     },
-    // {
-    //   path: 'create',
-    //   name: 'CustomerCreatePage',
-    //   component: (): ComponentOptions => import('@/pages/customer/pages/create/pages/CustomerCreatePage.vue'),
-    //   meta: {
-    //     auth: true,
-    //     title: 'เพิ่มลูกค้า',
-    //     icon: 'mdi-account',
-    //     back: { name: 'CustomerListPage' }
-    //   }
-    // },
+    {
+      path: 'docs/create',
+      name: 'StockDocsCreatePage',
+      component: (): ComponentOptions => import('@/pages/stock/pages/create/pages/StockDocsCreatePage.vue'),
+      meta: {
+        auth: true,
+        title: 'เพิ่มลูกค้า',
+        icon: 'mdi-account',
+        back: { name: 'CustomerListPage' }
+      }
+    },
     {
       path: ':id',
       name: 'StockDetailPage',

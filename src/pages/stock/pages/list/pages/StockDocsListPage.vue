@@ -6,9 +6,11 @@
       v-model:search="search"
       @clear="onClearFilters()"
       @search="fetch()">
-      <div>
-        จำนวนสินทรัพย์ 35 รายการ
-      </div>
+      <CreateButton
+        :to="{
+          name: 'StockDocsCreatePage'
+        }"
+        label="สร้างย้ายเอกสารใหม่" />
     </StockFilter>
 
     <BasePage>
@@ -33,6 +35,7 @@ import StockFilter from '../components/StockFilter.vue'
 import useList from '../composables/useList'
 import type { IStockDocsList } from '@/models/response/stock/StockDocsRes.model'
 import StockDocsTable from '../components/StockDocsTable.vue'
+import CreateButton from '@/components/button/CreateButton.vue'
 
 const {
   filters,
