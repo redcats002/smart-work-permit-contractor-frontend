@@ -5,6 +5,7 @@ import type { TEmployeeStatus } from '@/enums/modules/employee/EmployeeStatus.en
 import type { TEstateStatus } from '@/enums/modules/estate/EstateStatus.enum'
 import type { TTitleName } from '@/enums/TitleName.enum'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
+import type { TEmployeeRole } from '@/enums/modules/employee/EmployeeRole.enum'
 
 export interface IEmployeeList extends IEntity {
   titleName: TTitleName
@@ -21,12 +22,12 @@ export interface IEmployeeById extends IEntity {
   firstName: string
   lastName: string
   phoneNumber: string
-  phoneNumber2?: string
   birthDate: string
-  workAddress: IAddressRequest
   mainAddress: IAddressRequest
   currentAddress: IAddressRequest
   email?: string
+  role: TEmployeeRole
+  branchId: number
 }
 
 export interface IEmployeeContractList extends IEntity {

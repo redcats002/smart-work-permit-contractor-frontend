@@ -34,16 +34,16 @@ export default {
         title: 'เพิ่มพนักงานใหม่',
         back: { name: 'EmployeeListPage' }
       }
+    },
+    {
+      path: 'detail/:id',
+      name: 'EmployeeDetailPage',
+      component: (): ComponentOptions => import('@/pages/employee/pages/detail/pages/EmployeeDetailPage.vue'),
+      meta: {
+        auth: true,
+        title: 'รายละเอียดพนักงาน',
+        back: { name: 'EmployeeListPage' }
+      }
     }
-    // {
-    //   path: 'detail/:id',
-    //   name: 'EmployeeDetailPage',
-    //   component: (): ComponentOptions => import('@/pages/employee/pages/employee/pages/EmployeeFormPage.vue'), // ใช้ฟอร์มเดียวกันกับ Create ได้
-    //   meta: {
-    //     auth: true,
-    //     title: 'รายละเอียดพนักงาน',
-    //     back: { name: 'EmployeeListPage' }
-    //   }
-    // }
   ]
 } as RouteRecordRaw

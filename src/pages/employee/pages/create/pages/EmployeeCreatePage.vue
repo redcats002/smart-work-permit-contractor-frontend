@@ -112,30 +112,6 @@ const currentAddress = computed({
     form.value.currentAddress.urlGoogleMap = e.urlGoogleMap
   }
 })
-const workAddress = computed({
-  get (): IAddressRequest {
-    return {
-      address: form.value.workAddress.address,
-      subDistrict: form.value.workAddress.subDistrict,
-      district: form.value.workAddress.district,
-      province: form.value.workAddress.province,
-      postCode: form.value.workAddress.postCode,
-      isSameCitizenAddress: form.value.workAddress.isSameCitizenAddress,
-      isSameCurrentAddress: form.value.workAddress.isSameCurrentAddress,
-      urlGoogleMap: form.value.workAddress.urlGoogleMap
-    }
-  },
-  set (e: IAddressRequest): void {
-    form.value.workAddress.address = e.address
-    form.value.workAddress.subDistrict = e.subDistrict
-    form.value.workAddress.district = e.district
-    form.value.workAddress.province = e.province
-    form.value.workAddress.postCode = e.postCode
-    form.value.workAddress.isSameCitizenAddress = e.isSameCitizenAddress
-    form.value.workAddress.isSameCurrentAddress = e.isSameCurrentAddress
-    form.value.workAddress.urlGoogleMap = e.urlGoogleMap
-  }
-})
 
 async function useSubmit (): Promise<void> {
   await EmployeeService.createEmployee(usePayload(form.value))
@@ -160,17 +136,6 @@ function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
   if (type === 'CURRENT') {
     currentAddress.value = {
       ...currentAddress.value,
-      isSameCitizenAddress: true,
-      isSameCurrentAddress: false,
-      address: mainAddress.value.address,
-      subDistrict: mainAddress.value.subDistrict,
-      district: mainAddress.value.district,
-      province: mainAddress.value.province,
-      postCode: mainAddress.value.postCode
-    }
-  } else if (type === 'WORK') {
-    workAddress.value = {
-      ...workAddress.value,
       isSameCitizenAddress: true,
       isSameCurrentAddress: false,
       address: mainAddress.value.address,
