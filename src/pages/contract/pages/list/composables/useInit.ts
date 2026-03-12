@@ -1,5 +1,5 @@
-import { type Component, computed, defineAsyncComponent as dac, markRaw, type Ref } from 'vue'
-import { type ITabItemComponent, useTabItems } from '@/composables/useTabItems'
+import { type Component, computed, type Ref } from 'vue'
+import { importComponent, type ITabItemComponent, useTabItems } from '@/composables/useTabItems'
 
 interface IUseInit {
   tab: Ref<string>
@@ -7,8 +7,8 @@ interface IUseInit {
 }
 
 export default function useInit (): IUseInit {
-  const AssetTab = markRaw(dac((): Promise<Component> => import('../components/tab/AssetTab.vue')))
-  const ContractTab = markRaw(dac((): Promise<Component> => import('../components/tab/ContractTab.vue')))
+  const AssetTab = importComponent((): Promise<Component> => import('../components/tab/AssetTab.vue'))
+  const ContractTab = importComponent((): Promise<Component> => import('../components/tab/ContractTab.vue'))
 
   const { tab, tabItems } = useTabItems(
     computed((): ITabItemComponent[] => [

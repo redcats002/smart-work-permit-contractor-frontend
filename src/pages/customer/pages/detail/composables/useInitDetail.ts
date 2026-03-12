@@ -1,4 +1,4 @@
-import { type Component, computed, defineAsyncComponent as dac, markRaw, ref, type Ref } from 'vue'
+import { type Component, computed, ref, type Ref } from 'vue'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import type AddressTab from '../components/tab/address/AddressTab.vue'
 import type ContactHistoryTab from '../components/tab/contact-history/ContactHistoryTab.vue'
@@ -7,6 +7,7 @@ import type EstateTab from '../components/tab/estate/EstateTab.vue'
 import type PaymentHistoryTab from '../components/tab/payment-history/PaymentHistoryTab.vue'
 import type PrivateDocumentTab from '../components/tab/private-document/PrivateDocumentTab.vue'
 import useTabItems, {
+  importComponent,
   type ITabItemComponent,
   type IUseTabItems
 } from '@/composables/useTabItems'
@@ -65,12 +66,12 @@ export type ListComponentType =
   | InstanceType<typeof EstateTab>
 
 export function useInitTabDetail (): IUseTabItems {
-  const Address = markRaw(dac((): Promise<Component> => import('../components/tab/address/AddressTab.vue')))
-  const PrivateDocument = markRaw(dac((): Promise<Component> => import('../components/tab/private-document/PrivateDocumentTab.vue')))
-  const Contract = markRaw(dac((): Promise<Component> => import('../components/tab/contract/ContractTab.vue')))
-  const PaymentHistory = markRaw(dac((): Promise<Component> => import('../components/tab/payment-history/PaymentHistoryTab.vue')))
-  const ContactHistory = markRaw(dac((): Promise<Component> => import('../components/tab/contact-history/ContactHistoryTab.vue')))
-  const Estate = markRaw(dac((): Promise<Component> => import('../components/tab/estate/EstateTab.vue')))
+  const Address = importComponent((): Promise<Component> => import('../components/tab/address/AddressTab.vue'))
+  const PrivateDocument = importComponent((): Promise<Component> => import('../components/tab/private-document/PrivateDocumentTab.vue'))
+  const Contract = importComponent((): Promise<Component> => import('../components/tab/contract/ContractTab.vue'))
+  const PaymentHistory = importComponent((): Promise<Component> => import('../components/tab/payment-history/PaymentHistoryTab.vue'))
+  const ContactHistory = importComponent((): Promise<Component> => import('../components/tab/contact-history/ContactHistoryTab.vue'))
+  const Estate = importComponent((): Promise<Component> => import('../components/tab/estate/EstateTab.vue'))
 
   const input = computed((): ITabItemComponent[] => [
     { key: 'Address', label: 'ที่อยู่', instance: Address, value: 'address' },
