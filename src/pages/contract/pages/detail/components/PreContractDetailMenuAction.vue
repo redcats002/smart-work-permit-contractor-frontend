@@ -6,16 +6,20 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import BaseActionMenu, { type IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 
-interface IProps {}
-
+interface IProps {
+  status?: TPreContractStatus | null
+}
 interface IEmits {
   edit: []
   delete: []
 }
 
-defineProps<IProps>()
+withDefaults(defineProps<IProps>(), {
+  status: undefined
+})
 const emits = defineEmits<IEmits>()
 
 const items = computed((): IMenuItemAction[] => [
