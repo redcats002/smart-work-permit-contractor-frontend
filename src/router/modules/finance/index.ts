@@ -17,6 +17,14 @@ export default {
       meta: { auth: true, menu: true, title: 'รายการใบแจ้งหนี้', icon: 'solar:bill-list-bold' }
     },
     {
+      path: 'invoice/detail/:id',
+      name: 'InvoiceDetailPage',
+      component: (): ComponentOptions => import('@/pages/finance/pages/invoice/pages/InvoiceDetailPage.vue'),
+      meta: { auth: true, menu: false, title: 'รายละเอียดใบแจ้งหนี้', icon: 'solar:bill-list-bold' }
+    },
+
+
+    {
       path: 'receipt/list',
       name: 'ReceiptListPage',
       component: (): ComponentOptions => import('@/pages/finance/pages/receipt/pages/ReceiptListPage.vue'),

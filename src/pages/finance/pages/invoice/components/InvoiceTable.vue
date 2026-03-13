@@ -7,15 +7,16 @@
     :items="props.items"
     disable-auto-left-padding
     @update="emits('update')">
-    <template #[`item.idNo`]="{ item }">
+    <template #[`item.invoiceNo`]="{ item }">
       <LinkText :to="{ name: 'InvoiceDetailPage', params: { id: item.id } }">
-        {{ item.idNo }}
+        {{ item.invoiceNo }}
       </LinkText>
     </template>
-    <template #[`item.contractIdNo`]="{ item }">
-      <LinkText :to="{ name: 'ContractDetailPage', params: { id: item.contractId } }">
-        {{ item.contractIdNo }}
-      </LinkText>
+    <template #[`item.contractNo`]="{ item }">
+      {{ item.contractNo }}
+      <!-- <LinkText :to="{ name: 'ContractDetailPage', params: { id: item.contractId } }">
+        {{ item.contractNo }}
+      </LinkText> -->
     </template>
   </BaseTable>
 </template>
@@ -47,8 +48,8 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 const { formatDate } = useDayjs()
 
 const columns = ref<IColumn<IInvoiceList>[]>([
-  { field: 'idNo', header: 'เลขที่ใบเสร็จ', sortable: true, align: 'left' },
-  { field: 'contractIdNo', header: 'เลขที่สัญญา', sortable: true, align: 'left' },
+  { field: 'invoiceNo', header: 'เลขที่ใบเสร็จ', sortable: true, align: 'left' },
+  { field: 'contractNo', header: 'เลขที่สัญญา', sortable: true, align: 'left' },
   { field: 'invoiceDate', header: 'วันที่', align: 'left', value: (e: IInvoiceList): string => formatDate(e.invoiceDate ?? undefined) },
   {
     field: 'customer',
