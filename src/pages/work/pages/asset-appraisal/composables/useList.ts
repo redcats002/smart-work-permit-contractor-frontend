@@ -1,9 +1,8 @@
 import { computed, ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IGetCustomerList } from '@/models/request/customer/CustomerReq.model'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 import type { IGetNewWorkList } from '@/models/request/work/WorkReq.model'
-import type { INewWorkList } from '@/models/response/work/WorkRes.model'
+import type { IAssetAppraisalNewWorkList } from '@/models/response/work/WorkRes.model'
 import type { IWorkProvider } from '@/resources/provider/work/Work.provider'
 import WorkProvider from '@/resources/provider/work/Work.provider'
 import { AssetCategoryStatusEnum } from '@/enums/modules/work/AssetCategoryStatus.enum'
@@ -11,7 +10,7 @@ import { WorkStatusEnum } from '@/enums/modules/work/WorkStatus.enum'
 
 interface IUseList extends IUsePagination {
   filters: Ref<IGetNewWorkList>
-  items: Ref<INewWorkList[]>
+  items: Ref<IAssetAppraisalNewWorkList[]>
   fetch(): void
   onClearFilters(): void
 }
@@ -21,9 +20,9 @@ export default function useList (): IUseList {
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
 
   const filters = ref<IGetNewWorkList>({})
-  const items = ref<INewWorkList[]>([])
+  const items = ref<IAssetAppraisalNewWorkList[]>([])
 
-  const paginateQuery = computed((): IGetCustomerList => {
+  const paginateQuery = computed((): IGetNewWorkList => {
     const normalizedFilters = normalizeFilters(filters.value)
     return {
       search: search.value,
@@ -70,14 +69,14 @@ export default function useList (): IUseList {
       ]
       return
     }
-    const response = await WorkService.getWorkPaginate(paginateQuery.value)
+    const response = await WorkService.getWorkAppraisalPaginate(paginateQuery.value)
     items.value = response.data || []
     pagination.value = extractPagination(response)
     syncQuery({ ...normalizeFilters(filters.value) })
   }
 
 
-  function normalizeFilters (value: IGetCustomerList): Partial<IGetCustomerList> {
+  function normalizeFilters (value: IGetNewWorkList): Partial<IGetNewWorkList> {
     return {
       ...value
     }

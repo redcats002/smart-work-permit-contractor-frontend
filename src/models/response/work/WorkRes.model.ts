@@ -4,13 +4,22 @@ import type { IEntity } from '@/models/Global.model'
 import type { IBasePaginationResponse } from '../Response.model'
 
 
-export interface INewWorkList extends IEntity {
+export interface IAssetAppraisalNewWorkList extends IEntity {
   id: number | null
   contractNo: string | null
   customerName: string | null
   assetCategory: TAssetCategoryStatus
   status: TWorkStatus
 }
+export interface IFollowUpNewWorkList extends IEntity {
+  id: number | null
+  assetNo: string | null
+  contractNo: string | null
+  customerName: string | null
+  phoneNumber: string | null
+  assetCategory: TAssetCategoryStatus
+}
 
 
-export type TGetNewWorkListResponse = IBasePaginationResponse<INewWorkList>
+export type TGetNewWorkAppraisalListResponse = IBasePaginationResponse<IAssetAppraisalNewWorkList>
+export type TGetNewWorkFollowUpListResponse = IBasePaginationResponse<IFollowUpNewWorkList>

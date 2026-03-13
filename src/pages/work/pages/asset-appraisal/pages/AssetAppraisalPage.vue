@@ -1,5 +1,5 @@
 <template>
-  <section id="customer-list-page">
+  <section id="work-asset-appraisal-list-page">
     <PageTitle />
     <WorkFilter
       v-model:filters="filters"
@@ -19,6 +19,7 @@
       <component
         :is="component"
         :key="item?.value"
+        v-model:pagination="pagination"
         :items="items"
         class="animate-fade-in" />
     </BaseTabWindow>
@@ -35,7 +36,7 @@ import WorkFilter from '../components/WorkFilter.vue'
 import BaseTabWindow from '@/components/base/BaseTabWindow.vue'
 import useInit from '../composables/useInit'
 
-const { filters, search, fetch, onClearFilters, items } = useList()
+const { filters, search, fetch, onClearFilters, items, pagination } = useList()
 
 
 onMounted((): void => {

@@ -1,15 +1,21 @@
 import type { IGetNewWorkList } from '@/models/request/work/WorkReq.model'
-import type { TGetNewWorkListResponse } from '@/models/response/work/WorkRes.model'
+import type { TGetNewWorkAppraisalListResponse, TGetNewWorkFollowUpListResponse } from '@/models/response/work/WorkRes.model'
 import HttpRequest from '@/resources/HttpRequest'
 
 export interface IWorkProvider {
-  getWorkPaginate (query: IGetNewWorkList): Promise<TGetNewWorkListResponse>
+  getWorkAppraisalPaginate (query: IGetNewWorkList): Promise<TGetNewWorkAppraisalListResponse>
+  getWorkFollowUpPaginate (query: IGetNewWorkList): Promise<TGetNewWorkFollowUpListResponse>
 }
 
 class WorkProvider extends HttpRequest implements IWorkProvider {
   private urlPrefix: string = '/api/v1/work'
 
-  public async getWorkPaginate (query: IGetNewWorkList): Promise<TGetNewWorkListResponse> {
+  public async getWorkAppraisalPaginate (query: IGetNewWorkList): Promise<TGetNewWorkAppraisalListResponse> {
+    const response = await this.get(`${this.urlPrefix}`, query)
+    return response
+  }
+
+  public async getWorkFollowUpPaginate (query: IGetNewWorkList): Promise<TGetNewWorkFollowUpListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }

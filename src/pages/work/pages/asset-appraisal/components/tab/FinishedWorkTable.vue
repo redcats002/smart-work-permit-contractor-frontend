@@ -21,11 +21,11 @@ import type { IColumn } from '@/models/Table.model'
 import LinkText from '@/components/button/LinkText.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
-import type { INewWorkList } from '@/models/response/work/WorkRes.model'
+import type { IAssetAppraisalNewWorkList } from '@/models/response/work/WorkRes.model'
 import { formatTitle as formatTitleAssetCategory } from '@/enums/modules/work/AssetCategoryStatus.enum'
 
 interface IProps {
-  items: INewWorkList[]
+  items: IAssetAppraisalNewWorkList[]
 }
 const props = defineProps<IProps>()
 
@@ -39,26 +39,26 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 
-const columns = ref<IColumn<INewWorkList>[]>([
+const columns = ref<IColumn<IAssetAppraisalNewWorkList>[]>([
   {
     field: 'contractNo',
     header: 'เลขที่สัญญา',
     sortable: true,
     align: 'left',
-    value: (e: INewWorkList): string => e.contractNo ?? ''
+    value: (e: IAssetAppraisalNewWorkList): string => e.contractNo ?? ''
   },
   {
     field: 'customerName',
     header: 'ชื่อลูกค้า',
     sortable: true,
     align: 'left',
-    value: (e: INewWorkList): string => e.customerName ?? ''
+    value: (e: IAssetAppraisalNewWorkList): string => e.customerName ?? ''
   },
   {
     field: 'assetCategory',
     header: 'หมวดหมู่หลักทรัพย์',
     align: 'left',
-    value: (e: INewWorkList): string => formatTitleAssetCategory(e.assetCategory) || '-'
+    value: (e: IAssetAppraisalNewWorkList): string => formatTitleAssetCategory(e.assetCategory) || '-'
   }
 ])
 </script>

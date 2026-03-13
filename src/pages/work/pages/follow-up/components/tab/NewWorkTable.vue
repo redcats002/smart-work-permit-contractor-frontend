@@ -7,13 +7,15 @@
     :items="props.items"
     disable-auto-left-padding
     @update="emits('update')">
+    <template #[`item.assetNo`]="{ item }">
+      <LinkText :to="{}">
+        {{ item.assetNo }}
+      </LinkText>
+    </template>
     <template #[`item.contractNo`]="{ item }">
       <LinkText :to="{}">
         {{ item.contractNo }}
       </LinkText>
-    </template>
-    <template #[`item.status`]="{ item }">
-      <ChipWorkStatus :value="item.status ?? undefined" />
     </template>
   </BaseTable>
 </template>
@@ -24,13 +26,11 @@ import type { IColumn } from '@/models/Table.model'
 import LinkText from '@/components/button/LinkText.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
-import ChipWorkStatus from '../ChipWorkStatus.vue'
-import type { IAssetAppraisalNewWorkList } from '@/models/response/work/WorkRes.model'
+import type { IFollowUpNewWorkList } from '@/models/response/work/WorkRes.model'
 import { formatTitle as formatTitleAssetCategory } from '@/enums/modules/work/AssetCategoryStatus.enum'
-import { formatTitle } from '@/enums/modules/work/WorkStatus.enum'
 
 interface IProps {
-  items: IAssetAppraisalNewWorkList[]
+  items: IFollowUpNewWorkList[]
 }
 const props = defineProps<IProps>()
 
@@ -44,33 +44,40 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 
-const columns = ref<IColumn<IAssetAppraisalNewWorkList>[]>([
+const columns = ref<IColumn<IFollowUpNewWorkList>[]>([
+  {
+    field: 'assetNo',
+    header: 'เลขที่หลักทรัพย์',
+    sortable: true,
+    align: 'left',
+    value: (e: IFollowUpNewWorkList): string => e.assetNo ?? ''
+  },
   {
     field: 'contractNo',
     header: 'เลขที่สัญญา',
     sortable: true,
     align: 'left',
-    value: (e: IAssetAppraisalNewWorkList): string => e.contractNo ?? ''
+    value: (e: IFollowUpNewWorkList): string => e.contractNo ?? ''
   },
   {
     field: 'customerName',
     header: 'ชื่อลูกค้า',
     sortable: true,
     align: 'left',
-    value: (e: IAssetAppraisalNewWorkList): string => e.customerName ?? ''
+    value: (e: IFollowUpNewWorkList): string => e.customerName ?? ''
+  },
+  {
+    field: 'phoneNumber',
+    header: 'เบอร์โทรศัพท์',
+    sortable: true,
+    align: 'left',
+    value: (e: IFollowUpNewWorkList): string => e.phoneNumber ?? ''
   },
   {
     field: 'assetCategory',
     header: 'หมวดหมู่หลักทรัพย์',
     align: 'left',
-    value: (e: IAssetAppraisalNewWorkList): string => formatTitleAssetCategory(e.assetCategory) || '-'
-  },
-  {
-    field: 'status',
-    header: 'สถานะ',
-    sortable: true,
-    align: 'left',
-    value: (e: IAssetAppraisalNewWorkList): string => formatTitle(e.status) || '-'
+    value: (e: IFollowUpNewWorkList): string => formatTitleAssetCategory(e.assetCategory) || '-'
   }
 ])
 </script>
