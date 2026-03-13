@@ -228,8 +228,8 @@ const theme = ref<DataTablePassThroughOptions>({
       py-2.5 px-2.5
       font-medium text-sm
       bg-white text-font-gray bg-white
-       whitespace-nowrap overflow-hidden text-ellipsis
-      ${!props.selectable && !props.disableAutoLeftPadding ? 'pl-[40px]' : ''}
+      whitespace-nowrap overflow-hidden text-ellipsis
+      pl-4
     `,
     columnHeaderContent: 'datatable-header-content flex items-center gap-2',
     columnTitle: 'font-bold',
@@ -238,7 +238,8 @@ const theme = ref<DataTablePassThroughOptions>({
       border-b border-surface-100
       text-sm
       whitespace-nowrap overflow-hidden text-ellipsis
-      text-surface-600 ${!props.selectable && !props.disableAutoLeftPadding ? 'pl-[40px]' : ''}
+      text-surface-600
+      pl-6
     `,
     sortIcon: 'text-gray-light hover:text-gray cursor-pointer transition-colors'
   }
