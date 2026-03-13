@@ -6,6 +6,7 @@ import ContractRouter from './modules/contract'
 import CustomerRouter from './modules/customer'
 import FinanceRouter from './modules/finance'
 import SettingRouter from './modules/setting'
+import WorkRouter from './modules/work'
 
 // import { useAuthStore } from '@/stores/Auth'
 
@@ -37,6 +38,7 @@ export const routes: RouteRecordRaw[] = [
     }
   },
   AuthRouter,
+  WorkRouter,
   ContractRouter,
   CustomerRouter,
   FinanceRouter,
