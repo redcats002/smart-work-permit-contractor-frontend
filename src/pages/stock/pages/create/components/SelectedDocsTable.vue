@@ -6,6 +6,7 @@
     :columns="columns"
     :items="props.items"
     disable-auto-left-padding
+    selectable
     @update="emits('update')">
     <template #[`item.assetNo`]="{ item }">
       <LinkText :to="{ name: 'StockDetailPage', params: { id: 1 }}">
@@ -48,7 +49,6 @@ interface IEmits {
 
 const emits = defineEmits<IEmits>()
 
-
 const pagination = defineModel<IPagination>('pagination', {
   required: true
 })
@@ -86,20 +86,14 @@ const columns = ref<IColumn<IStockList>[]>([
     align: 'left'
   },
   {
-    field: 'warehouse',
-    header: 'คลัง',
-    align: 'left'
-  },
-  {
-    field: 'storageLocation',
+    field: 'stock',
     header: 'จุดจัดเก็บ',
+    sortable: false,
     align: 'left'
   },
-  {
-    field: 'storageLocation',
-    header: 'จุดจัดเก็บ', // wait for real key
-    align: 'left'
-  }
+  { field: 'action',
+    header: 'ลบ',
+    align: 'right' }
 ])
 </script>
 

@@ -17,6 +17,7 @@ export interface IStockList extends IEntity {
   warehouse: string
   storageLocation: string
   status: TStockStatus
+  type: string
 }
 export interface IStockById extends IEntity {
   status: TStockStatus
