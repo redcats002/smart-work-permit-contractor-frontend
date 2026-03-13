@@ -44,7 +44,11 @@ class HttpRequest implements IHttpRequest {
     this.axiosInstance.interceptors.response.use(onResponse, onResponseError)
   }
 
-  public setAuthHeader (): void {}
+  public setAuthHeader (): void {
+    // TODO: Set auth header if needed
+    this.setHeader({ key: 'x-current-path', value: '/contract/list' })
+    this.setHeader({ key: 'x-current-menu', value: 'รายการสัญญา' })
+  }
 
   public setHeader (data: ISetHeader): void {
     if (data.key && data.value) {
