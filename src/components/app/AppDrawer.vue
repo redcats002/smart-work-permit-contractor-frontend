@@ -35,7 +35,7 @@
     </div>
 
     <nav
-      class="flex flex-col flex-1 overflow-y-auto"
+      class="mt-4 flex flex-col flex-1 overflow-y-auto"
       @click="close()">
       <!-- Top Menu -->
       <div class="space-y-1">
@@ -88,7 +88,10 @@ interface IMenuItem {
 }
 
 const menuItems: IMenuItem[] = [
-  { label: 'ข่าวสาร', icon: '/menuicon/news.svg', key: 'news', to: '/news' },
+  { label: 'ข่าวสาร',
+    icon: '/menuicon/news.svg',
+    key: 'announcement',
+    to: '/announcement' },
   { label: 'งาน',
     icon: '/menuicon/box.svg',
     key: 'work',
