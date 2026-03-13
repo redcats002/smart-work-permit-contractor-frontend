@@ -12,11 +12,11 @@
 import { onMounted, ref, watch } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel, TBaseOption } from '@/models/Global.model'
-import { ExternalInternalExpenseItems, type TExternalInternalExpense } from '@/enums/modules/finance/ExpenseType.enum'
+import { ExpensePayItems, type TExpensesType } from '@/enums/modules/finance/ExpenseType.enum'
 import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
 import usePagination from '@/composables/usePagination'
 
-const model = defineModel<TExternalInternalExpense>()
+const model = defineModel<TExpensesType>()
 const selectedName = defineModel<string | null>('selectedName', { default: null })
 
 const innerModel = ref<TBaseModel | null>(null)
@@ -26,10 +26,10 @@ const { pagination } = usePagination()
 const suggestions = ref<TBaseModel[]>([])
 
 async function useFetch (): Promise<void> {
-  const items = ExternalInternalExpenseItems
+  const items = ExpensePayItems
 
   suggestions.value = (items ?? []).map((item: TBaseOption): TBaseModel => ({
-    id: item.value!,
+    id: item?.value,
     name: item?.label
   }))
 }
@@ -44,7 +44,7 @@ function search (): void {
 }
 
 function syncInnerFromId (): void {
-  if (!model.value) {
+  if (model.value == null) {
     innerModel.value = null
     selectedName.value = null
     return
@@ -56,19 +56,7 @@ function syncInnerFromId (): void {
 }
 
 watch(innerModel, (val: TBaseModel | null): void => {
-  if (!val) {
-    model.value = ''
-    selectedName.value = null
-    return
-  }
-
-  if (typeof val === 'string') {
-    model.value = val as TExternalInternalExpense
-    selectedName.value = suggestions.value.find((i: TBaseModel): boolean => i.id === val)?.name ?? null
-    return
-  }
-
-  model.value = (val.id || '') as TExternalInternalExpense
+  model.value = val?.id ? val.id as TExpensesType : undefined
   selectedName.value = val?.name ?? null
 })
 
