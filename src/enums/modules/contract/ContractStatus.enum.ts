@@ -2,7 +2,6 @@ import type { TBaseOption } from '@/models/Global.model'
 
 export enum ContractStatusEnum {
   IN_PROGRESS = 'IN_PROGRESS',
-  PENDING = 'PENDING',
   CANCELLED = 'CANCELLED',
   SUCCESS = 'SUCCESS'
 }
@@ -10,8 +9,7 @@ export enum ContractStatusEnum {
 export type TContractStatus = keyof typeof ContractStatusEnum
 
 const titleMap: Record<TContractStatus, string> = {
-  [ContractStatusEnum.IN_PROGRESS]: 'ให้กู้ยืม',
-  [ContractStatusEnum.PENDING]: 'อนุมัติ',
+  [ContractStatusEnum.IN_PROGRESS]: 'ใช้งานอยู่',
   [ContractStatusEnum.CANCELLED]: 'ยกเลิก',
   [ContractStatusEnum.SUCCESS]: 'ปิดสัญญา'
 }
@@ -32,8 +30,6 @@ export function getStatusClass (value?: TContractStatus): string {
   switch (value) {
     case ContractStatusEnum.IN_PROGRESS:
       return 'bg-teal-50 text-teal-600 border-none'
-    case ContractStatusEnum.PENDING:
-      return 'bg-green-100 text-green-700 border-none'
     case ContractStatusEnum.SUCCESS:
       return 'bg-green-brand-light text-green-brand border-none'
     case ContractStatusEnum.CANCELLED:
@@ -47,8 +43,6 @@ export function getIcon (value?: TContractStatus): string {
   switch (value) {
     case ContractStatusEnum.IN_PROGRESS:
       return 'streamline:graph-arrow-increase'
-    case ContractStatusEnum.PENDING:
-      return 'mdi:check-circle-outline'
     case ContractStatusEnum.SUCCESS:
       return 'mdi:check-circle-outline'
     case ContractStatusEnum.CANCELLED:

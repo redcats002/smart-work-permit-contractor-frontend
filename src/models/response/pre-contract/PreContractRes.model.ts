@@ -1,43 +1,42 @@
 import type { IBaseModel, IEntity } from '@/models/Global.model'
-import type { TAssetAssessmentStatus } from '@/enums/modules/contract/AssetAssessmentStatus.enum'
 import type { TAssetType } from '@/enums/modules/contract/AssetType.enum'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
+import type { TEvaluatorLevel } from '@/enums/modules/contract/EvaluatorLevel.enum'
+import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
+import type { TTitleName } from '@/enums/TitleName.enum'
+import type { IMedia } from '@/resources/provider/Upload.provider'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 
 export interface IPreContractCustomer {
-  id: number | null
-  titleName: string | null
-  firstName: string | null
-  lastName: string | null
+  id: number
+  titleName: TTitleName
+  firstName: string
+  lastName: string
 }
 
 export interface IPreContractCustomerDetail extends IPreContractCustomer {
-  idNo: string | null
-  idCard: string | null
-  birthDate: string | null
-  customerGroup: IBaseModel | null
-  occupation: IBaseModel | null
-  email: string | null
-  phoneNumber: string | null
-  phoneNumber2: string | null
+  idNo: string
+  idCard: string
+  birthDate: string
+  customerGroup: IBaseModel
+  occupation: IBaseModel
+  email: string
+  phoneNumber: string
+  phoneNumber2?: string
 }
 
 export interface IPreContractStaff {
-  id: number | null
-  titleName: string | null
-  firstName: string | null
-  lastName: string | null
+  id: number
+  titleName: TTitleName
+  firstName: string
+  lastName: string
 }
 
-export interface IPreAssetImage {
-  id: number | null
-  url: string
-  name: string
-}
+export interface IPreAssetImage extends IMedia {}
 
 export interface IAssetDetailInfo extends IEntity {
   assetType: TAssetType
-  detail: string | null
+  detail: string
   address: string | null
   subDistrict: string | null
   district: string | null
@@ -68,13 +67,27 @@ export interface IPreContractLoanType {
   name: string
 }
 
+export interface IEvaluatorList extends IEntity {
+  titleName: TTitleName
+  firstName: string
+  lastName: string
+  evaluatorLevel: TEvaluatorLevel
+  loanAmount: number
+}
+
+export interface IAppraisalById extends IEntity {
+  evaluatorLevel: TEvaluatorLevel
+  detail: string
+  evaluators: IEvaluatorList[]
+}
+
 export interface IPreContractList extends IEntity {
   contractDate: string | null
   startDate: string | null
   endDate: string | null
   amount: number | null
   status: TContractStatus | null
-  assetStatus: TAssetAssessmentStatus | null
+  assetStatus: TPreContractStatus | null
   customer: IPreContractCustomer | null
   loanType: IPreContractLoanType | null
 }
@@ -84,14 +97,19 @@ export interface IPreContractById extends IEntity {
   startDate: string | null
   endDate: string | null
   amount: number | null
-  status: TContractStatus | null
-  assetStatus: TAssetAssessmentStatus | null
-  customer: IPreContractCustomerDetail | null
+  status: TPreContractStatus | null
+  customer: IPreContractCustomerDetail
   loanType: IPreContractLoanType | null
-  staff: IPreContractStaff | null
+  staff?: IPreContractStaff
   assets: IAssetDetailInfo[]
+  appraisals: IAppraisalById[]
 }
 
 export type TGetPreContractListResponse = IBasePaginationResponse<IPreContractList>
 export type TGetPreContractByIdResponse = IBaseSuccessResponse<IPreContractById>
 export type TActionPreContract = IBaseSuccessResponse<boolean>
+export type TRequestReappraisalPreContract = IBaseSuccessResponse<boolean>
+export type TAppraisalPricePreContract = IBaseSuccessResponse<boolean>
+export type TConfirmAppraisalPreContract = IBaseSuccessResponse<boolean>
+export type TConfirmMortgagePreContract = IBaseSuccessResponse<boolean>
+export type TMakeAContractPreContract = IBaseSuccessResponse<boolean>

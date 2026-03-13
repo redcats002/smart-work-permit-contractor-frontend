@@ -8,24 +8,19 @@
     <template #default>
       <div class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-surface-700 mb-1.5">ประเภทเงินกู้</label>
-          <SelectInput
-            v-model="filters.loanTypeId"
-            :options="props.loanTypeOptions"
-            option-label="label"
-            option-value="value"
-            placeholder="ทั้งหมด"
-            show-clear />
+          <LabelField label="ประเภทเงินกู้">
+            <ContractLoanTypeSelection
+              v-model="filters.loanTypeId"
+              show-clear />
+          </LabelField>
         </div>
         <div>
-          <label class="block text-sm font-medium text-surface-700 mb-1.5">สถานะ</label>
-          <SelectInput
-            v-model="filters.status"
-            :options="statusOptions"
-            option-label="label"
-            option-value="value"
-            placeholder="ทั้งหมด"
-            show-clear />
+          <LabelField label="สถานะ">
+            <ContractStatusSelection
+              v-model="filters.status"
+              placeholder="ทั้งหมด"
+              show-clear />
+          </LabelField>
         </div>
       </div>
     </template>
@@ -38,20 +33,16 @@
 </template>
 
 <script setup lang="ts">
-import type { IBaseOption } from '@/models/Global.model'
 import type { IContractFilter } from '@/models/modules/contract/Filter.model'
-import { ContractStatusItems } from '@/enums/modules/contract/ContractStatus.enum'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
-import SelectInput from '@/components/input/SelectInput.vue'
+import LabelField from '@/components/input/LabelField.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
+import ContractLoanTypeSelection from '@/components/selection/modules/contract-loan-type/ContractLoanTypeSelection.vue'
+import ContractStatusSelection from '@/components/selection/modules/contract/ContractStatusSelection.vue'
 
-interface IProps {
-  loanTypeOptions?: IBaseOption[]
-}
-const props = withDefaults(defineProps<IProps>(), {
-  loanTypeOptions: (): IBaseOption[] => []
-})
+interface IProps {}
+withDefaults(defineProps<IProps>(), {})
 
 interface IEmits {
   search: []
@@ -62,11 +53,6 @@ const emits = defineEmits<IEmits>()
 const filters = defineModel<IContractFilter>('filters', {
   default: (): IContractFilter => ({})
 })
-
-const statusOptions: IBaseOption[] = [
-  { label: 'ทั้งหมด', value: null },
-  ...ContractStatusItems
-]
 
 function onSearch (close: () => void): void {
   emits('search')
