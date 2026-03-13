@@ -1,4 +1,4 @@
-import { ExternalInternalExpenseEnum } from '@/enums/modules/finance/ExternalInternalExpense.enum'
+import { ExternalInternalExpenseEnum } from '@/enums/modules/finance/ExpenseType.enum'
 import { z } from 'zod'
 
 const externalInternalExpenseSchema = z
