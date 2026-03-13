@@ -4,35 +4,7 @@
     :editor-style="editorStyle"
     :pt="theme"
     :pt-options="{ mergeProps: ptViewMerge }"
-    unstyled>
-    <template #toolbar>
-      <span class="ql-formats">
-        <select class="ql-header" />
-        <select class="ql-font" />
-      </span>
-
-      <span class="ql-formats">
-        <button class="ql-bold" />
-        <button class="ql-italic" />
-        <button class="ql-underline" />
-      </span>
-
-      <span class="ql-formats">
-        <button
-          class="ql-list"
-          value="ordered" />
-        <button
-          class="ql-list"
-          value="bullet" />
-      </span>
-
-      <span class="ql-formats">
-        <button class="ql-link" />
-        <button class="ql-image" />
-        <button class="ql-code-block" />
-      </span>
-    </template>
-  </Editor>
+    unstyled />
 </template>
 
 <script setup lang="ts">
@@ -89,7 +61,7 @@ const theme = ref<EditorPassThroughOptions>({
 
 <style>
 .ql-toolbar {
-  border: none !important;
+  display: none !important;
 }
 
 .ql-container {
@@ -100,5 +72,14 @@ const theme = ref<EditorPassThroughOptions>({
   padding: 0;
   min-height: 100px;
   font-size: 14px;
+}
+.ql-editor::before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+}
+.ql-editor.ql-blank::before {
+  font-style: normal;
+  font-family: 'LINE_Seed_Sans_TH';
+  color: #9ca3af; /* optional ปรับสี */
 }
 </style>

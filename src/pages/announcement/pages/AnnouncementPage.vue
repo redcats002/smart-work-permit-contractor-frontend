@@ -6,11 +6,13 @@
 
 
     <PostComposer />
+    <FeedList />
   </div>
 </template>
 
 <script setup lang="ts">
 import PostComposer from '../components/composer/PostComposer.vue'
+import FeedList from '../components/feed/FeedList.vue'
 
 
 </script>
