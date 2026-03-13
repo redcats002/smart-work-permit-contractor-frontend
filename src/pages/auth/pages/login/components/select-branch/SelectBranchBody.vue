@@ -1,33 +1,29 @@
 <template>
   <div class="grid grid-cols-1 gap-2.5">
-    <div
-      v-for="(branch, i) in props.branches"
-      :key="`branch-${i}`"
-      :class="{
-        'cursor-pointer hover:bg-gray-100 active:bg-gray-500 transition-all': !branch?.isNew
-      }"
-      class="grid grid-cols-1 gap-2 p-4 rounded-lg border-gray-400 border w-full bg-white"
-      @click.passive="onSelect(branch)">
-      <div class="flex justify-between items-center">
-        <div class="text-sm grid grid-cols-1 gap-2">
-          <span class="font-bold">สาขา: {{ branch.name }}</span>
-          <span class="text-gray-500">ตำแหน่ง: {{ branch.role }}</span>
-        </div>
-        <div
+    <template v-if="branches.length">
+      <div
+        v-for="(branch, i) in branches"
+        :key="`branch-${i}`"
+        class="grid grid-cols-1 gap-2 p-4 rounded-lg border-gray-400 border w-full bg-white cursor-pointer hover:bg-gray-100 active:bg-gray-500 transition-all"
+        @click.passive="onSelect(branch)">
+        <div class="flex justify-between items-center">
+          <div class="text-sm grid grid-cols-1 gap-2">
+            <span class="font-bold">สาขา: {{ branch.name }}</span>
+            <span class="text-gray-500">ตำแหน่ง: {{ branch.role }}</span>
+          </div>
+          <!-- <div
           v-if="branch?.isNew"
           class="w-fit h-fit! p-2 bg-[#FF3B30] text-white">
           ใหม่
+        </div> -->
+          <Button text>
+            <Icon
+              class="text-primary"
+              icon="ic:round-login"
+              width="32" />
+          </Button>
         </div>
-        <Button
-          v-else
-          text>
-          <Icon
-            class="text-primary"
-            icon="ic:round-login"
-            width="32" />
-        </Button>
-      </div>
-      <template v-if="branch?.isNew">
+      <!-- <template v-if="branch?.isNew">
         <Divider class="my-0!" />
         <div class="flex gap-2.5 w-1/2">
           <ConfirmButton
@@ -38,24 +34,27 @@
             outlined
             @click="emits('reject', branch.id)" />
         </div>
-      </template>
+      </template> -->
+      </div>
+    </template>
+    <div
+      v-else
+      class="grid place-content-center gap-4">
+      <span class="text-gray-500">ไม่มีสาขาที่สามารถเข้าสู่ระบบได้</span>
+      <Button @click="onByPass()">
+        By passing to dashboard
+      </Button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import ConfirmButton from '@/components/button/ConfirmButton.vue'
+import { useRouter } from 'vue-router'
+import type { IAuthBranchList } from '@/models/response/auth/private/AuthRes.private.model'
 import { Icon } from '@iconify/vue'
 
-export interface IBranchResponse {
-  id: number
-  name: string
-  role: string
-  isNew: boolean
-}
-
 interface IProps {
-  branches?: IBranchResponse[]
+  branches?: IAuthBranchList[]
 }
 interface IEmits {
   approve: [branchId: number]
@@ -63,17 +62,21 @@ interface IEmits {
   submit: [branchId: number]
 }
 
-const props = withDefaults(defineProps<IProps>(), {
-  branches: (): IBranchResponse[] => []
+withDefaults(defineProps<IProps>(), {
+  branches: (): IAuthBranchList[] => []
 })
 const emits = defineEmits<IEmits>()
 
-function onSelect (branch: IBranchResponse): void {
-  if (!branch?.isNew) emits('submit', branch.id)
+const router = useRouter()
+
+function onSelect (branch: IAuthBranchList): void {
+  if (!branch?.id) return
+  emits('submit', branch.id)
 }
 
+function onByPass (): void {
+  router.push({ name: 'CustomerListPage' })
+}
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

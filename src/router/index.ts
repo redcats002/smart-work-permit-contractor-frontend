@@ -20,11 +20,36 @@ export const routes: RouteRecordRaw[] = [
     name: 'HomePage',
     component: (): ComponentOptions => import('@/pages/HomePage.vue')
   },
+  {
+    path: '/not-permitted',
+    name: 'NotPermittedPage',
+    component: (): ComponentOptions => import('@/pages/common/pages/not-permitted/pages/NotPermittedPage.vue'),
+    meta: {
+      layout: 'blank'
+    }
+  },
+  {
+    path: '/not-available',
+    name: 'NotAvailablePage',
+    component: (): ComponentOptions => import('@/pages/common/pages/not-available/pages/NotAvailablePage.vue'),
+    meta: {
+      layout: 'blank'
+    }
+  },
   AuthRouter,
   ContractRouter,
   CustomerRouter,
   FinanceRouter,
-  SettingRouter
+  SettingRouter,
+  {
+    // Catch-all route for 404
+    path: '/:pathMatch(.*)*', // Matches any path
+    name: 'NotFound',
+    component: (): ComponentOptions => import('@/pages/common/pages/not-found/pages/NotFoundPage.vue'),
+    meta: {
+      layout: 'blank'
+    }
+  }
 ]
 
 const router: Router = createRouter({
