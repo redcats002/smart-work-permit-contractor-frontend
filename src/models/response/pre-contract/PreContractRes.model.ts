@@ -8,21 +8,21 @@ import type { IMedia } from '@/resources/provider/Upload.provider'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 
 export interface IPreContractCustomer {
-  id: number | null
-  titleName: string | null
-  firstName: string | null
-  lastName: string | null
+  id: number
+  titleName: TTitleName
+  firstName: string
+  lastName: string
 }
 
 export interface IPreContractCustomerDetail extends IPreContractCustomer {
-  idNo: string | null
-  idCard: string | null
-  birthDate: string | null
-  customerGroup: IBaseModel | null
-  occupation: IBaseModel | null
-  email: string | null
-  phoneNumber: string | null
-  phoneNumber2: string | null
+  idNo: string
+  idCard: string
+  birthDate: string
+  customerGroup: IBaseModel
+  occupation: IBaseModel
+  email: string
+  phoneNumber: string
+  phoneNumber2?: string
 }
 
 export interface IPreContractStaff {
@@ -36,7 +36,7 @@ export interface IPreAssetImage extends IMedia {}
 
 export interface IAssetDetailInfo extends IEntity {
   assetType: TAssetType
-  detail: string | null
+  detail: string
   address: string | null
   subDistrict: string | null
   district: string | null
@@ -98,7 +98,7 @@ export interface IPreContractById extends IEntity {
   endDate: string | null
   amount: number | null
   status: TPreContractStatus | null
-  customer: IPreContractCustomerDetail | null
+  customer: IPreContractCustomerDetail
   loanType: IPreContractLoanType | null
   staff?: IPreContractStaff
   assets: IAssetDetailInfo[]
@@ -111,3 +111,5 @@ export type TActionPreContract = IBaseSuccessResponse<boolean>
 export type TRequestReappraisalPreContract = IBaseSuccessResponse<boolean>
 export type TAppraisalPricePreContract = IBaseSuccessResponse<boolean>
 export type TConfirmAppraisalPreContract = IBaseSuccessResponse<boolean>
+export type TConfirmMortgagePreContract = IBaseSuccessResponse<boolean>
+export type TMakeAContractPreContract = IBaseSuccessResponse<boolean>
