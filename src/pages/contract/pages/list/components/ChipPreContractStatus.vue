@@ -6,11 +6,11 @@
 </template>
 
 <script setup lang="ts">
-import { formatTitle, getIcon, getStatusClass, type TAssetAssessmentStatus } from '@/enums/modules/contract/AssetAssessmentStatus.enum'
+import { formatTitle, getIcon, getStatusClass, type TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import BaseChip from '@/components/chip/BaseChip.vue'
 
 interface IProps {
-  value?: TAssetAssessmentStatus
+  value?: TPreContractStatus
 }
 
 const props = withDefaults(defineProps<IProps>(), {

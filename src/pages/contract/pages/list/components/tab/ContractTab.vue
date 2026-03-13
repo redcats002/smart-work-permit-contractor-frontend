@@ -8,7 +8,6 @@
             @search="contract.fetch()" />
           <ContractFilter
             v-model:filters="contract.filters.value"
-            :loan-type-options="contract.loanTypeOptions.value"
             @clear="contract.onClearFilters()"
             @search="contract.fetch()" />
         </div>

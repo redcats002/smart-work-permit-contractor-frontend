@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { IActionFinanceExpenseTypePayload } from '@/models/request/finance-expense-type/FinanceExpenseTypeReq.model'
+import type { IActionFinanceExpenseCategoryPayload } from '@/models/request/finance-expense-category/FinanceExpenseCategoryReq.model'
 import type { IFinanceExpenseCategoryList } from '@/models/response/finance-expense-category/FinanceExpenseCategoryRes.model'
 import BaseActionMenu, { type IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import ModalExpenseCategoryAction from './ModalExpenseCategoryAction.vue'
@@ -30,7 +30,7 @@ interface IEmits {
 const props = defineProps<IProps>()
 const emits = defineEmits<IEmits>()
 
-const form = defineModel<IActionFinanceExpenseTypePayload>({ required: true })
+const form = defineModel<IActionFinanceExpenseCategoryPayload>({ required: true })
 const editModalVisible = ref<boolean>(false)
 
 const items = ref<IMenuItemAction[]>([
