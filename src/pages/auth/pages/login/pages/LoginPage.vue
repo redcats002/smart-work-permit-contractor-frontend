@@ -8,10 +8,10 @@
           <AuthHeader
             description="กรอกอีเมลและรหัสผ่านของคุณเพื่อเข้าสู่ระบบ"
             title="เข้าสู่ระบบ" />
-          <PreLoginForm
+          <!-- <PreLoginForm
             v-if="authState === 'PRE_LOGIN'"
             v-model="form"
-            @submit="onPreLogin()" />
+            @submit="onPreLogin()" /> -->
           <LoginForm
             v-if="authState === 'LOGIN'"
             v-model="form"
@@ -41,6 +41,7 @@ import { toast } from '@/plugins/toast'
 import { useAuthStore } from '@/stores/Auth'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IActionLoginPayload } from '@/models/request/auth/public/AuthReq.public.model'
+import type { IAuthBranchList } from '@/models/response/auth/private/AuthRes.private.model'
 import type { ILoginResponse, IRegisterResponse } from '@/models/response/auth/public/AuthRes.public.model'
 import AuthPrivateProvider, { type IAuthPrivateProvider } from '@/resources/provider/auth/private/Auth.private.provider'
 import type { IAuthPublicProvider } from '@/resources/provider/auth/public/Auth.public.provider'
@@ -48,12 +49,11 @@ import AuthPublicProvider from '@/resources/provider/auth/public/Auth.public.pro
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import AuthHeader from '../components/auth/AuthHeader.vue'
 import LoginForm from '../components/auth/form/LoginForm.vue'
-import PreLoginForm from '../components/auth/form/PreLoginForm.vue'
 import SetPasswordForm from '../components/auth/form/SetPasswordForm.vue'
-import SelectBranchBody, { type IBranchResponse } from '../components/select-branch/SelectBranchBody.vue'
+import SelectBranchBody from '../components/select-branch/SelectBranchBody.vue'
 import SelectBranchHeader from '../components/select-branch/SelectBranchHeader.vue'
 import { useInitForm } from '../composables/useInit'
-import { useLoginPayload, usePreLoginPayload, useRegisterPayload } from '../composables/usePayload'
+import { useLoginPayload, useRegisterPayload } from '../composables/usePayload'
 
 type TState = 'AUTH' | 'SELECT_BRANCH'
 type TAuthState = 'PRE_LOGIN' | 'LOGIN' | 'SET_PASSWORD'
@@ -66,72 +66,41 @@ const authStore = useAuthStore()
 
 const form = ref<IActionLoginPayload>(useInitForm())
 const state = ref<TState>('AUTH')
-const authState = ref<TAuthState>('PRE_LOGIN')
-const branches = ref<IBranchResponse[]>([])
+const authState = ref<TAuthState>('LOGIN')
+const branches = ref<IAuthBranchList[]>([])
 
-async function usePreLogin (): Promise<void> {
-  const mock = true // TODO: remove this after API ready
-  if (mock) {
-    toast.warn('pre-login mock')
-    if (form.value.email === 'systemuser@email.com') return setAuthState('LOGIN')
-    setAuthState('SET_PASSWORD')
-  } else {
-    const response = await AuthPublicService.preLogin(usePreLoginPayload(form.value))
-    if (response.data?.isNew) return setAuthState('SET_PASSWORD')
-    setAuthState('LOGIN')
-  }
-  toast.success('กรุณากรอกรหัสผ่านของคุณ')
-}
+// async function usePreLogin (): Promise<void> {
+//   const mock = true // TODO: remove this after API ready
+//   if (mock) {
+//     toast.warn('pre-login mock')
+//     if (form.value.email === 'systemuser@email.com') return setAuthState('LOGIN')
+//     setAuthState('SET_PASSWORD')
+//   } else {
+//     const response = await AuthPublicService.preLogin(usePreLoginPayload(form.value))
+//     if (response.data?.isNew) return setAuthState('SET_PASSWORD')
+//     setAuthState('LOGIN')
+//   }
+//   toast.success('กรุณากรอกรหัสผ่านของคุณ')
+// }
 
 async function useLogin (): Promise<void> {
-  const mock = true // TODO: remove this after API ready
-  if (mock) {
-    toast.warn('better auth login')
-    const response = await AuthPublicService.login(useLoginPayload(form.value))
-    router.push({ name: 'HomePage' })
-    setBranchState({
-      branches: [
-        { id: 1, isNew: true, name: 'Test1', role: 'ADMIN' },
-        { id: 2, isNew: false, name: 'Test2', role: 'SALE_MAN' }
-      ],
-      token: response.data.token,
-      user: response.data.user
-    })
-    return
-  } else {
-    const response = await AuthPublicService.login(useLoginPayload(form.value))
-    setBranchState(response.data)
-  }
+  const responseLogin = await AuthPublicService.login(useLoginPayload(form.value))
+  const responseBranch = await AuthPrivateService.getBranch()
+  setBranchState(responseLogin.data, responseBranch.data || [])
   toast.success('เข้าสู่ระบบสำเร็จ')
 }
 
 async function useRegister (): Promise<void> {
-  const mock = true // TODO: remove this after API ready
-  if (mock) {
-    toast.warn('register mock')
-    setBranchState({
-      branches: [
-        { id: 1, isNew: true, name: 'Test1', role: 'ADMIN' },
-        { id: 2, isNew: false, name: 'Test2', role: 'SALE_MAN' }
-      ],
-      token: '',
-      user: { id: 0, email: '', firstName: '', lastName: '' }
-    })
-  } else {
-    const response = await AuthPublicService.register(useRegisterPayload(form.value))
-    setBranchState(response.data)
-  }
+  await AuthPublicService.register(useRegisterPayload(form.value))
+  const responseLogin = await AuthPublicService.login(useLoginPayload(form.value))
+  const responseBranch = await AuthPrivateService.getBranch()
+  setBranchState(responseLogin.data, responseBranch.data || [])
   toast.success('ตั้งรหัสผ่านสำเร็จ')
 }
 
 async function useSelectBranch (branchId: number): Promise<void> {
-  const mock = true // TODO: remove this after API ready
-  if (mock) {
-    toast.warn('select branch mock')
-  } else {
-    const response = await AuthPrivateService.selectBranch({ branchId })
-    authStore.branchLogin(response.data?.branch)
-  }
+  const response = await AuthPrivateService.selectBranch({ branchId })
+  authStore.branchLogin(response.data?.branch)
   toast.success('ยินดีต้อนรับเข้าสู่ระบบ')
   router.push({ name: 'HomePage' })
 }
@@ -146,10 +115,10 @@ async function useRejectBranch (branchId: number): Promise<void> {
   branches.value = response.data?.branches || []
 }
 
-function setBranchState (data: ILoginResponse | IRegisterResponse): void {
+function setBranchState (data: ILoginResponse | IRegisterResponse, _branches: IAuthBranchList[]): void {
   setState('SELECT_BRANCH')
   authStore.userLogin(data.user)
-  branches.value = data.branches
+  branches.value = _branches
 }
 
 function setState (_state: TState): void {
@@ -158,7 +127,7 @@ function setState (_state: TState): void {
 
 function resetState (): void {
   setState('AUTH')
-  setAuthState('PRE_LOGIN')
+  setAuthState('LOGIN')
   form.value = useInitForm()
 }
 
@@ -166,9 +135,9 @@ function setAuthState (_state: TAuthState): void {
   authState.value = _state
 }
 
-function onPreLogin (): void {
-  handleLoading(usePreLogin)
-}
+// function onPreLogin (): void {
+//   handleLoading(usePreLogin)
+// }
 
 function onLogin (): void {
   handleLoading(useLogin)

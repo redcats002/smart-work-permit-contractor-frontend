@@ -2,11 +2,13 @@ import type { ComponentOptions } from 'vue'
 import type { RouteLocationNormalized, Router, RouteRecordRaw } from 'vue-router'
 import { createRouter, createWebHistory } from 'vue-router'
 import AuthRouter from './modules/Auth.router'
+import AssetRouter from './modules/asset'
 import ContractRouter from './modules/contract'
 import CustomerRouter from './modules/customer'
 import FinanceRouter from './modules/finance'
 import SettingRouter from './modules/setting'
 import StockRouter from './modules/stock'
+import WorkRouter from './modules/work'
 
 // import { useAuthStore } from '@/stores/Auth'
 
@@ -21,12 +23,39 @@ export const routes: RouteRecordRaw[] = [
     name: 'HomePage',
     component: (): ComponentOptions => import('@/pages/HomePage.vue')
   },
+  {
+    path: '/not-permitted',
+    name: 'NotPermittedPage',
+    component: (): ComponentOptions => import('@/pages/common/pages/not-permitted/pages/NotPermittedPage.vue'),
+    meta: {
+      layout: 'blank'
+    }
+  },
+  {
+    path: '/not-available',
+    name: 'NotAvailablePage',
+    component: (): ComponentOptions => import('@/pages/common/pages/not-available/pages/NotAvailablePage.vue'),
+    meta: {
+      layout: 'blank'
+    }
+  },
   AuthRouter,
+  AssetRouter,
+  WorkRouter,
   ContractRouter,
   CustomerRouter,
   FinanceRouter,
   StockRouter,
-  SettingRouter
+  SettingRouter,
+  {
+    // Catch-all route for 404
+    path: '/:pathMatch(.*)*', // Matches any path
+    name: 'NotFound',
+    component: (): ComponentOptions => import('@/pages/common/pages/not-found/pages/NotFoundPage.vue'),
+    meta: {
+      layout: 'blank'
+    }
+  }
 ]
 
 const router: Router = createRouter({

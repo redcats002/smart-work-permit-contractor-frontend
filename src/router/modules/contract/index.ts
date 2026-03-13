@@ -18,6 +18,13 @@ export default {
       meta: { auth: true, menu: true, title: 'รายการสัญญา', icon: 'solar:document-bold' }
     },
     {
+      path: 'detail',
+      name: 'ContractDetailPage',
+      component: (): ComponentOptions =>
+        import('@/pages/contract/pages/detail/pages/ContractDetailPage.vue'),
+      meta: { auth: true, menu: true, title: 'รายละเอียดสัญญา', icon: 'solar:document-bold' }
+    },
+    {
       path: 'pre-contract/create',
       name: 'PreContractCreatePage',
       component: (): ComponentOptions =>
@@ -32,7 +39,7 @@ export default {
       path: 'pre-contract/:id',
       name: 'PreContractDetailPage',
       component: (): ComponentOptions =>
-        import('@/pages/contract/pages/detail/pages/PreContractDetailPage.vue'),
+        import('@/pages/contract/pages/pre-contract-detail/pages/PreContractDetailPage.vue'),
       meta: {
         auth: true,
         title: 'รายละเอียดสัญญา',

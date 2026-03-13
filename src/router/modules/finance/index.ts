@@ -39,8 +39,37 @@ export default {
     {
       path: 'expense/list',
       name: 'ExpenseListPage',
-      component: (): ComponentOptions => import('@/pages/finance/pages/record/pages/RecordExpensesListPage.vue'),
-      meta: { auth: true, menu: true, title: 'รายการบันทึกค่าใช้จ่าย', icon: 'solar:bill-list-bold' }
+      component: (): ComponentOptions => import('@/pages/finance/pages/record/list/pages/RecordExpensesListPage.vue'),
+      meta: {
+        auth: true,
+        menu: true,
+        title: 'รายการบันทึกค่าใช้จ่าย',
+        icon: 'solar:bill-list-bold'
+      }
+    },
+    {
+      path: 'expense/create',
+      name: 'ExpenseCreatePage',
+      component: (): ComponentOptions => import('@/pages/finance/pages/record/create/pages/RecordExpensesCreatePage.vue'),
+      meta: {
+        auth: true,
+        menu: true,
+        title: 'เพิ่มบันทึกค่าใช้จ่ายใหม่',
+        icon: 'solar:bill-list-bold',
+        back: { name: 'ExpenseListPage' }
+      }
+    },
+    {
+      path: 'expense/detail/:id',
+      name: 'ExpenseDetailPage',
+      component: (): ComponentOptions => import('@/pages/finance/pages/record/detail/pages/RecordExpensesDetailPage.vue'),
+      meta: {
+        auth: true,
+        menu: true,
+        title: 'รายละเอียดค่าใช้จ่าย',
+        icon: 'solar:bill-list-bold',
+        back: { name: 'ExpenseListPage' }
+      }
     }
   ]
 } as RouteRecordRaw

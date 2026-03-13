@@ -89,12 +89,20 @@ interface IMenuItem {
 
 const menuItems: IMenuItem[] = [
   { label: 'ข่าวสาร', icon: '/menuicon/news.svg', key: 'news', to: '/news' },
-  { label: 'งาน', icon: '/menuicon/box.svg', key: 'jobs', to: '/jobs' },
+  { label: 'งาน',
+    icon: '/menuicon/box.svg',
+    key: 'work',
+    to: '/work',
+    children: [
+      { label: 'ประเมินหลักทรัพย์', to: '/work/asset-appraisal' },
+      { label: 'ติดตามทวงตาม', to: '/work/follow-up' }
+    ]
+  },
   { label: 'แดชบอร์ด', icon: '/menuicon/dashbord.svg', key: 'dashboard', to: '/' },
   { label: 'รายงาน', icon: '/menuicon/report.svg', key: 'reports', to: '/reports' },
   { label: 'สัญญา', icon: '/menuicon/contract.svg', key: 'contracts', to: '/contract/list' },
   { label: 'ลูกค้า', icon: '/menuicon/customer.svg', key: 'customers', to: '/customer/list' },
-  { label: 'หลักทรัพย์', icon: '/menuicon/box.svg', key: 'assets', to: '/assets' },
+  { label: 'หลักทรัพย์', icon: '/menuicon/box.svg', key: 'assets', to: '/assets/list' },
   {
     label: 'เอกสารและการเงิน',
     icon: '/menuicon/document.svg',

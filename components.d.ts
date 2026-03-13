@@ -30,6 +30,7 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     SecondaryButton: typeof import('./src/volt/SecondaryButton.vue')['default']
     Select: typeof import('./src/volt/Select.vue')['default']
+    Textarea: typeof import('./src/volt/Textarea.vue')['default']
     Toast: typeof import('./src/volt/Toast.vue')['default']
     ToggleSwitch: typeof import('./src/volt/ToggleSwitch.vue')['default']
   }

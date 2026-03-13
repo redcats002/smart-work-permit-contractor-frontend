@@ -1,6 +1,6 @@
 import type { IUser } from '@/stores/Auth'
-import type { IBranchResponse } from '@/pages/auth/pages/login/components/select-branch/SelectBranchBody.vue'
 import type { IBaseSuccessResponse } from '../../Response.model'
+import type { IAuthBranchList } from '../private/AuthRes.private.model'
 
 export interface IPreLoginResponse {
   isNew: boolean
@@ -8,12 +8,11 @@ export interface IPreLoginResponse {
 export interface ILoginResponse {
   user: IUser
   token: string
-  branches: IBranchResponse[]
 }
 export interface IRegisterResponse {
   user: IUser
   token: string
-  branches: IBranchResponse[]
+  branches: IAuthBranchList[]
 }
 
 export type TActionPreLoginResponse = IBaseSuccessResponse<IPreLoginResponse>
