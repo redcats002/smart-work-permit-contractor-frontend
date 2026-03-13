@@ -43,6 +43,16 @@ export interface IReceiptById extends IEntity {
   outstanding: number | null
 }
 
+export interface IReceiptInstallment extends IEntity {
+  status: string
+  contractNo: string
+  installmentDate: string
+  installmentPrice: number
+  interest: number
+  paid: number
+  outstanding: number
+}
+
 export type TGetReceiptListResponse = IBasePaginationResponse<IReceiptList>
 export type TGetReceiptDetailResponse = IBaseSuccessResponse<IReceiptById>
 export type TActionReceipt = IBaseSuccessResponse<boolean>

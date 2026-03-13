@@ -50,7 +50,7 @@ export default {
     {
       path: 'receipt/create',
       name: 'ReceiptCreatePage',
-      component: (): ComponentOptions => import('@/pages/finance/pages/receipt/create/pages/ReceiptListPage.vue'),
+      component: (): ComponentOptions => import('@/pages/finance/pages/receipt/create/pages/ReceiptCreatePage.vue'),
       meta: { auth: true,
         menu: true,
         title: 'สร้างใบเสร็จรับเงินใหม่',
