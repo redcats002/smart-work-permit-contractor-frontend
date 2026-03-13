@@ -12,4 +12,16 @@ export interface IStockDocsList extends IEntity {
   status: TStockDocsStatus
 }
 
+export interface IStockDocsById extends IEntity {
+  status: TStockDocsStatus
+  docNo: string
+  reason: string
+  transferDate: string
+  senderName: string
+  receiveDate?: string
+  receiverName?: string
+  originWarehouse: string
+  destinationWarehouse: string
+}
+
 export type TGetStockDocsListResponse = IBasePaginationResponse<IStockDocsList>

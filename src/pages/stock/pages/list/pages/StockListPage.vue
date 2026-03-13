@@ -59,7 +59,8 @@ const mockItems = ref<IStockList[]>([{
   storageLocation: 'BR001-31-13',
   status: 'ACTIVE',
   createdAt: '2024-03-12T00:00:00.000Z',
-  updatedAt: '2024-03-12T00:00:00.000Z'
+  updatedAt: '2024-03-12T00:00:00.000Z',
+  type: ''
 },
 {
   id: 2,
@@ -74,7 +75,8 @@ const mockItems = ref<IStockList[]>([{
   storageLocation: 'KK0991-90-55',
   status: 'LEGAL_PROCEEDING', // บังคับคดี
   createdAt: '2024-04-12T00:00:00.000Z',
-  updatedAt: '2024-04-12T00:00:00.000Z'
+  updatedAt: '2024-04-12T00:00:00.000Z',
+  type: ''
 },
 {
   id: 3,
@@ -89,7 +91,8 @@ const mockItems = ref<IStockList[]>([{
   storageLocation: 'PL006-88-21',
   status: 'RETURNED', // คืนลูกค้า
   createdAt: '2024-05-12T00:00:00.000Z',
-  updatedAt: '2024-05-12T00:00:00.000Z'
+  updatedAt: '2024-05-12T00:00:00.000Z',
+  type: ''
 },
 {
   id: 4,
@@ -104,7 +107,8 @@ const mockItems = ref<IStockList[]>([{
   storageLocation: 'XZ1234-75-89',
   status: 'RETURNED',
   createdAt: '2024-06-12T00:00:00.000Z',
-  updatedAt: '2024-06-12T00:00:00.000Z'
+  updatedAt: '2024-06-12T00:00:00.000Z',
+  type: ''
 },
 {
   id: 5,
@@ -119,7 +123,8 @@ const mockItems = ref<IStockList[]>([{
   storageLocation: 'TR009-12-34',
   status: 'ACTIVE',
   createdAt: '2024-07-12T00:00:00.000Z',
-  updatedAt: '2024-07-12T00:00:00.000Z'
+  updatedAt: '2024-07-12T00:00:00.000Z',
+  type: ''
 }])
 
 // For demonstration purposes, using mock data instead of fetching from API

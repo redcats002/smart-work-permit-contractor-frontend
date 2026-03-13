@@ -62,24 +62,13 @@ export default {
     {
       path: ':id',
       name: 'StockDetailPage',
-      component: (): ComponentOptions => import('@/pages/stock/pages/list/pages/StockListPage.vue'),
+      component: (): ComponentOptions => import('@/pages/stock/pages/detail/pages/StockDetailPage.vue'),
       meta: {
         auth: true,
-        title: '',
+        title: 'รายละเอียดใบย้าย',
         icon: 'mdi-account',
         back: { name: 'CustomerListPage' }
       }
     }
-    // {
-    //   path: 'edit/:id',
-    //   name: 'CustomerEditPage',
-    //   component: (): ComponentOptions => import('@/pages/customer/pages/edit/pages/CustomerEditPage.vue'),
-    //   meta: {
-    //     auth: true,
-    //     title: 'แก้ไขลูกค้า',
-    //     icon: 'mdi-account',
-    //     back: { name: 'CustomerDetailPage' }
-    //   }
-    // }
   ]
 } as RouteRecordRaw

@@ -23,7 +23,8 @@ export const StockSchema = z.object({
   storageLocation: z.string().min(1, 'กรุณาระบุจุดจัดเก็บ'),
 
   // ── สถานะของหลักทรัพย์ ───────────────────────────────────────────────
-  status: z.enum(StockStatusEnum, 'กรุณาเลือกสถานะหลักทรัพย์')
+  status: z.enum(StockStatusEnum, 'กรุณาเลือกสถานะหลักทรัพย์'),
+  type: z.string().min(1, 'กรุณาระบุประเภท')
 })
 
 export type StockFormValues = z.infer<typeof StockSchema>
@@ -40,7 +41,8 @@ export function useFormInitialValues (): StockFormValues {
     category: '',
     warehouse: '',
     storageLocation: '',
-    status: StockStatusEnum.ACTIVE
+    status: StockStatusEnum.ACTIVE,
+    type: ''
   }
 }
 
@@ -56,6 +58,7 @@ export function useDev (): StockFormValues {
     category: 'อสังหาริมทรัพย์ - ที่ดิน',
     warehouse: 'สำนักงานใหญ่',
     storageLocation: 'BR001-31-13',
-    status: StockStatusEnum.ACTIVE
+    status: StockStatusEnum.ACTIVE,
+    type: 'น.ส. 4 - ครุฑแดง'
   }
 }

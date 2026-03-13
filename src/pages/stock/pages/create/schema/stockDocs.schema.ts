@@ -78,7 +78,8 @@ export function useDev (): StockDocsFormValues {
         category: 'อสังหาริมทรัพย์ - ที่ดิน',
         warehouse: 'สำนักงานใหญ่',
         storageLocation: 'BR001-31-13',
-        status: StockStatusEnum.ACTIVE
+        status: StockStatusEnum.ACTIVE,
+        type: ''
       }
     ]
   }
