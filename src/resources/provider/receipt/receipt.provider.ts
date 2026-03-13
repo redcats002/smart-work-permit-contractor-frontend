@@ -1,10 +1,11 @@
 import type { IGetReceiptList } from '@/models/request/receipt/ReceiptReq.model'
-import type { TActionReceipt, TGetReceiptListResponse } from '@/models/response/receipt/ReceiptRes.model'
+import type { TActionReceipt, TGetReceiptDetailResponse, TGetReceiptListResponse } from '@/models/response/receipt/ReceiptRes.model'
 import type { TBaseParamsId } from '@/models/response/Response.model'
 import HttpRequest from '@/resources/HttpRequest'
 
 export interface IReceiptProvider {
   getReceiptPaginate(query: IGetReceiptList): Promise<TGetReceiptListResponse>
+  getReceiptById (id: TBaseParamsId): Promise<TGetReceiptDetailResponse>
   deleteReceipt(id: TBaseParamsId): Promise<TActionReceipt>
 }
 
@@ -13,6 +14,10 @@ class ReceiptProvider extends HttpRequest implements IReceiptProvider {
 
   public async getReceiptPaginate (query: IGetReceiptList): Promise<TGetReceiptListResponse> {
     return this.get(this.urlPrefix, query)
+  }
+
+  public async getReceiptById (id: TBaseParamsId): Promise<TGetReceiptDetailResponse> {
+    return this.get(`${this.urlPrefix}/${id}`)
   }
 
   public async deleteReceipt (id: TBaseParamsId): Promise<TActionReceipt> {
