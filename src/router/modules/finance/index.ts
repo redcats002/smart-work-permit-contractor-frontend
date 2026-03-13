@@ -20,7 +20,13 @@ export default {
       path: 'invoice/detail/:id',
       name: 'InvoiceDetailPage',
       component: (): ComponentOptions => import('@/pages/finance/pages/invoice/pages/InvoiceDetailPage.vue'),
-      meta: { auth: true, menu: false, title: 'รายละเอียดใบแจ้งหนี้', icon: 'solar:bill-list-bold' }
+      meta: {
+        auth: true,
+        menu: false,
+        title: 'รายละเอียดใบแจ้งหนี้',
+        icon: 'solar:bill-list-bold',
+        back: { name: 'InvoiceListPage' }
+      }
     },
 
 
