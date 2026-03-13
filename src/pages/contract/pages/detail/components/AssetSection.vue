@@ -43,6 +43,7 @@
               {{ formatTitle(activeAsset.assetType) }}
             </p>
             <DisplayList :items="items" />
+            <AssetWarehouseForm v-if="status==='WAIT_CONTRACT'" />
           </div>
           <Button
             v-if="isShowEdit"
@@ -68,6 +69,7 @@ import BaseContainer from '@/components/base/BaseContainer.vue'
 import BaseGalleria from '@/components/base/BaseGalleria.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
 import type { TAssetCategory } from '../../create/pages/PreContractCreatePage.vue'
+import AssetWarehouseForm from './AssetWarehouseForm.vue'
 
 interface IProps {
   activeIndex?: number

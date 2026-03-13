@@ -69,7 +69,7 @@ export function useInitDetail (): IUseInitDetail {
         id: 1,
         idNo: 'PC-20240001',
         contractDate: '2024-06-01',
-        status: 'IN_ASSESSMENT', // TODO: change to see each state
+        status: 'DRAFT', // TODO: change to see each state
         customer: {
           id: 1,
           titleName: 'MR',
@@ -81,7 +81,7 @@ export function useInitDetail (): IUseInitDetail {
           customerGroup: { id: '1', name: 'กลุ่ม VIP' },
           occupation: { id: '1', name: 'พนักงานบริษัท' },
           phoneNumber: '0812345678',
-          phoneNumber2: null,
+          phoneNumber2: undefined,
           email: 'somchai@example.com'
         },
         amount: 50000,
