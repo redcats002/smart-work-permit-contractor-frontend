@@ -83,7 +83,7 @@ const data = ref<IStockDocsById>(
     receiverName: '',
     receiveDate: '2026-04-13T15:30:00',
     destinationWarehouse: '',
-    status: 'SUCCESS',
+    status: 'PENDING',
     id: 1,
     reason: 'ส่งไปสำนักงานใหญ่'
   }
