@@ -4,13 +4,15 @@ import type {
   TActionCheckBearerTokenResponse,
   TActionLogoutResponse,
   TActionRejectBranchResponse,
-  TActionSelectBranchResponse
+  TActionSelectBranchResponse,
+  TGetActiveBranchResponse
 } from '@/models/response/auth/private/AuthRes.private.model'
 import HttpRequest from '@/resources/HttpRequest'
 
 export interface IAuthPrivateProvider {
   logout (): Promise<TActionLogoutResponse>
   checkBearerToken (): Promise<TActionCheckBearerTokenResponse>
+  getBranch (): Promise<TGetActiveBranchResponse>
   selectBranch (payload: ISelectBranchPayload): Promise<TActionSelectBranchResponse>
   approveBranch (payload: IApproveBranchPayload): Promise<TActionApproveBranchResponse>
   rejectBranch (payload: IRejectBranchPayload): Promise<TActionRejectBranchResponse>
@@ -29,8 +31,13 @@ class AuthPrivateProvider extends HttpRequest implements IAuthPrivateProvider {
     return response
   }
 
+  public async getBranch (): Promise<TGetActiveBranchResponse> {
+    const response = await this.get(`${this.urlPrefix}/active-branches`)
+    return response
+  }
+
   public async selectBranch (payload: ISelectBranchPayload): Promise<TActionSelectBranchResponse> {
-    const response = await this.post(`${this.urlPrefix}/select-branch`, payload)
+    const response = await this.post(`${this.urlPrefix}/select-active-branch`, payload)
     return response
   }
 
