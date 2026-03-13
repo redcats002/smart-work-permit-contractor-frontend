@@ -2,6 +2,7 @@ import type { ComponentOptions } from 'vue'
 import type { RouteLocationNormalized, Router, RouteRecordRaw } from 'vue-router'
 import { createRouter, createWebHistory } from 'vue-router'
 import AuthRouter from './modules/Auth.router'
+import AssetRouter from './modules/asset'
 import ContractRouter from './modules/contract'
 import CustomerRouter from './modules/customer'
 import FinanceRouter from './modules/finance'
@@ -38,6 +39,7 @@ export const routes: RouteRecordRaw[] = [
     }
   },
   AuthRouter,
+  AssetRouter,
   WorkRouter,
   ContractRouter,
   CustomerRouter,
