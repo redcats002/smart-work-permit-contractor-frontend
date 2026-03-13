@@ -1,8 +1,11 @@
 <template>
   <Button
     :as="to ? RouterLink : 'button'"
+    :class="{
+      'bg-white! text-[#333333]! border-[#E2E8F0]! flex items-center hover:bg-gray-100!': theme === 'secondary',
+    }"
     :to="to"
-    class="bg-white! text-[#333333]! border-[#E2E8F0]! flex items-center hover:bg-gray-100! w-49.5"
+    class="w-49.5"
     type="button"
     unstyled
     @click="onClick($event)">
@@ -13,17 +16,21 @@
 </template>
 
 <script setup lang="ts">
-import { RouterLink, type RouteLocationRaw } from 'vue-router'
+import { type RouteLocationRaw, RouterLink } from 'vue-router'
 
 interface IProps {
   to?: RouteLocationRaw
+  theme?: 'primary' | 'secondary'
 }
 
 interface IEmits {
   cancel: []
 }
 
-const props = defineProps<IProps>()
+const props = withDefaults(defineProps<IProps>(), {
+  to: undefined,
+  theme: 'secondary'
+})
 
 const emit = defineEmits<IEmits>()
 
