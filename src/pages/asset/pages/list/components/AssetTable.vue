@@ -9,9 +9,11 @@
     disable-auto-left-padding
     @update="emits('update')">
     <template #[`item.assetNo`]="{ item }">
-      <span class="font-semibold text-red-500">
+      <LinkText
+        :to="{ name: 'AssetDetailPage', params: { id: item.id } }"
+        class="no-underline hover:no-underline">
         {{ item.assetNo }}
-      </span>
+      </LinkText>
     </template>
     <template #[`item.status`]="{ item }">
       <BaseChip
@@ -29,6 +31,7 @@ import type { IAssetList } from '@/models/response/asset/AssetRes.model'
 import type { IColumn } from '@/models/Table.model'
 import BaseTable from '@/components/table/BaseTable.vue'
 import BaseChip from '@/components/chip/BaseChip.vue'
+import LinkText from '@/components/button/LinkText.vue'
 import type { IPagination } from '@/composables/usePagination'
 import { formatter } from '@/utils/Formatter'
 
@@ -81,19 +84,19 @@ Record<string, { label: string, icon: string, wrapper: string, text: string }> =
   WAITING: {
     label: 'รอขาย',
     icon: 'solar:clock-circle-linear',
-    wrapper: 'border-[#FFF6DB] bg-[#FFF6DB] text-[#FFC000]',
+    wrapper: 'border-[#FFF6DB] bg-[#FFF6DB] text-[#FFC000] font-[Sarabun]',
     text: 'text-[#FFC000]'
   },
   IN_USE: {
     label: 'ใช้งาน',
     icon: 'solar:check-circle-linear',
-    wrapper: 'border-[#CFFFE3] bg-[#CFFFE3] text-[#219653]',
+    wrapper: 'border-[#CFFFE3] bg-[#CFFFE3] text-[#219653] font-[Sarabun]',
     text: 'text-[#219653]'
   },
   SOLD: {
     label: 'ขายแล้ว',
     icon: 'mdi:tag-outline',
-    wrapper: 'border-[#BDBDBD] bg-[#BDBDBD] text-[#333333]',
+    wrapper: 'border-[#BDBDBD] bg-[#BDBDBD] text-[#333333] font-[Sarabun]',
     text: 'text-[#333333]'
   }
 })
