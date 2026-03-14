@@ -25,6 +25,17 @@ export default {
         title: 'รายการหลักทรัพย์',
         icon: 'mdi:package-variant'
       }
+    },
+    {
+      path: ':id',
+      name: 'AssetDetailPage',
+      component: (): ComponentOptions => import('@/pages/asset/pages/detail/pages/AssetDetailPage.vue'),
+      meta: {
+        auth: true,
+        title: 'รายละเอียดหลักทรัพย์',
+        icon: 'mdi:package-variant',
+        back: { name: 'AssetListPage' }
+      }
     }
   ]
 } as RouteRecordRaw
