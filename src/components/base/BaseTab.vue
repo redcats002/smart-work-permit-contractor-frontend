@@ -1,5 +1,9 @@
 <template>
-  <div class="max-w-full overflow-x-auto">
+  <div
+    :class="{
+      'w-full': full
+    }"
+    class="max-w-full overflow-x-auto">
     <div
       :class="[
         full ? 'flex w-full' : 'inline-flex min-w-max',
