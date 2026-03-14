@@ -33,9 +33,32 @@ export default {
     {
       path: 'receipt/list',
       name: 'ReceiptListPage',
-      component: (): ComponentOptions => import('@/pages/finance/pages/receipt/pages/ReceiptListPage.vue'),
+      component: (): ComponentOptions => import('@/pages/finance/pages/receipt/list/pages/ReceiptListPage.vue'),
       meta: { auth: true, menu: true, title: 'รายการใบเสร็จรับเงิน', icon: 'solar:bill-list-bold' }
     },
+    {
+      path: 'receipt/detail/:id',
+      name: 'ReceiptDetailPage',
+      component: (): ComponentOptions => import('@/pages/finance/pages/receipt/detail/pages/ReceiptDetailPage.vue'),
+      meta: { auth: true,
+        menu: true,
+        title: 'รายละเอียดใบเสร็จรับเงิน',
+        icon: 'solar:bill-list-bold',
+        back: { name: 'ReceiptListPage' }
+      }
+    },
+    {
+      path: 'receipt/create',
+      name: 'ReceiptCreatePage',
+      component: (): ComponentOptions => import('@/pages/finance/pages/receipt/create/pages/ReceiptCreatePage.vue'),
+      meta: { auth: true,
+        menu: true,
+        title: 'สร้างใบเสร็จรับเงินใหม่',
+        icon: 'solar:bill-list-bold',
+        back: { name: 'ReceiptListPage' }
+      }
+    },
+
     {
       path: 'expense/list',
       name: 'ExpenseListPage',
