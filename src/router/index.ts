@@ -9,6 +9,7 @@ import FinanceRouter from './modules/finance'
 import SettingRouter from './modules/setting'
 import StockRouter from './modules/stock'
 import WorkRouter from './modules/work'
+import AnnouncementRouter from './modules/announcement'
 
 // import { useAuthStore } from '@/stores/Auth'
 
@@ -39,6 +40,7 @@ export const routes: RouteRecordRaw[] = [
       layout: 'blank'
     }
   },
+  AnnouncementRouter,
   AuthRouter,
   AssetRouter,
   WorkRouter,
