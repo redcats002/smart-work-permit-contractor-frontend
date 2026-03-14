@@ -116,7 +116,15 @@ const menuItems: IMenuItem[] = [
       { label: 'บันทึกค่าใช้จ่าย', to: '/finance/expense/list' }
     ]
   },
-  { label: 'การจัดเก็บ', icon: '/menuicon/storage.svg', key: 'storage', to: '/storage' }
+  {
+    label: 'การจัดเก็บ',
+    icon: '/menuicon/storage.svg',
+    key: 'stock',
+    children: [
+      { label: 'รายการเอกสารหลักทรัพย์', to: '/stock/list' },
+      { label: 'ย้ายเอกสาร', to: '/stock/docs/list' }
+    ]
+  }
 ]
 const buttomMenuItems: IMenuItem[] = [
   { label: 'ตั่งค่า', icon: '/menuicon/setting.svg', key: 'setting', to: '/setting' }
