@@ -21,11 +21,11 @@ export function useInitDetail (data?: Partial<IContractById>): Ref<IContractById
     annualInterestRate: data?.annualInterestRate || 0,
     contractLoanPurpose: {
       name: data?.contractLoanPurpose?.name || '',
-      id: data?.contractLoanPurpose?.id || null
+      id: data?.contractLoanPurpose?.id
     },
     contractLoanType: {
       name: data?.contractLoanType?.name || '',
-      id: data?.contractLoanType?.id || null
+      id: data?.contractLoanType?.id
     },
     customers: data?.customers || [
       {
@@ -73,13 +73,13 @@ export function useInitDetail (data?: Partial<IContractById>): Ref<IContractById
       lastName: data?.employee?.lastName || '',
       phoneNumber: data?.employee?.phoneNumber || '',
       status: data?.employee?.status || 'ACTIVE',
-      id: data?.employee?.id || null
+      id: data?.employee?.id
     },
     id: data?.id || 0,
     endDate: data?.endDate || '',
     howDidFindUs: {
       name: data?.howDidFindUs?.name || '',
-      id: data?.howDidFindUs?.id || null
+      id: data?.howDidFindUs?.id
     },
     interestAmount: data?.interestAmount || 0,
     interestType: data?.interestType,
@@ -96,11 +96,11 @@ export function useInitDetail (data?: Partial<IContractById>): Ref<IContractById
     annualInterestRate: data?.annualInterestRate || 0,
     contractLoanPurpose: {
       name: data?.contractLoanPurpose?.name || '',
-      id: data?.contractLoanPurpose?.id || null
+      id: data?.contractLoanPurpose?.id
     },
     contractLoanType: {
       name: data?.contractLoanType?.name || '',
-      id: data?.contractLoanType?.id || null
+      id: data?.contractLoanType?.id
     },
     customers: data?.customers || [],
     employee: {
@@ -109,13 +109,13 @@ export function useInitDetail (data?: Partial<IContractById>): Ref<IContractById
       lastName: data?.employee?.lastName || '',
       phoneNumber: data?.employee?.phoneNumber || '',
       status: data?.employee?.status || 'ACTIVE',
-      id: data?.employee?.id || null
+      id: data?.employee?.id
     },
     id: data?.id || 0,
     endDate: data?.endDate || '',
     howDidFindUs: {
       name: data?.howDidFindUs?.name || '',
-      id: data?.howDidFindUs?.id || null
+      id: data?.howDidFindUs?.id
     },
     interestAmount: data?.interestAmount || 0,
     interestType: data?.interestType,
