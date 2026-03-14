@@ -5,11 +5,11 @@ export interface IAuthor {
 }
 
 export interface IEntity {
-  id: number | null
-  idNo?: string | null
-  createdAt?: string | null
-  deletedAt?: string | null
-  updatedAt?: string | null
+  id: number
+  idNo?: string
+  createdAt?: string
+  deletedAt?: string
+  updatedAt?: string
   createdBy?: IAuthor
   updatedBy?: IAuthor
 }

@@ -13,22 +13,19 @@ export default {
     {
       path: 'list',
       name: 'ContractListPage',
-      component: (): ComponentOptions =>
-        import('@/pages/contract/pages/list/pages/ContractListPage.vue'),
+      component: (): ComponentOptions => import('@/pages/contract/pages/list/pages/ContractListPage.vue'),
       meta: { auth: true, menu: true, title: 'รายการสัญญา', icon: 'solar:document-bold' }
     },
     {
-      path: 'detail',
+      path: 'detail/:id',
       name: 'ContractDetailPage',
-      component: (): ComponentOptions =>
-        import('@/pages/contract/pages/detail/pages/ContractDetailPage.vue'),
+      component: (): ComponentOptions => import('@/pages/contract/pages/detail/pages/ContractDetailPage.vue'),
       meta: { auth: true, menu: true, title: 'รายละเอียดสัญญา', icon: 'solar:document-bold' }
     },
     {
       path: 'pre-contract/create',
       name: 'PreContractCreatePage',
-      component: (): ComponentOptions =>
-        import('@/pages/contract/pages/create/pages/PreContractCreatePage.vue'),
+      component: (): ComponentOptions => import('@/pages/contract/pages/create/pages/PreContractCreatePage.vue'),
       meta: {
         auth: true,
         title: 'สร้างสัญญาใหม่',
@@ -38,8 +35,7 @@ export default {
     {
       path: 'pre-contract/:id',
       name: 'PreContractDetailPage',
-      component: (): ComponentOptions =>
-        import('@/pages/contract/pages/pre-contract-detail/pages/PreContractDetailPage.vue'),
+      component: (): ComponentOptions => import('@/pages/contract/pages/pre-contract-detail/pages/PreContractDetailPage.vue'),
       meta: {
         auth: true,
         title: 'รายละเอียดสัญญา',

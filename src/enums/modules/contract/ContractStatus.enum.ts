@@ -29,7 +29,7 @@ export function formatTitle (status?: TContractStatus): string {
 export function getStatusClass (value?: TContractStatus): string {
   switch (value) {
     case ContractStatusEnum.IN_PROGRESS:
-      return 'bg-teal-50 text-teal-600 border-none'
+      return 'bg-blue-50 text-blue-600 border-none'
     case ContractStatusEnum.SUCCESS:
       return 'bg-green-brand-light text-green-brand border-none'
     case ContractStatusEnum.CANCELLED:
