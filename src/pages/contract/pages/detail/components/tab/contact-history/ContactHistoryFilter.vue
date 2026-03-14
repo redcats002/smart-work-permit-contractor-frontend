@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ICustomerContactHistoryFilter } from '@/models/modules/customer/contact-history/Filter.model'
+import type { ICustomerEstateFilter } from '@/models/modules/customer/estate/Filter.model'
 import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
@@ -51,7 +51,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>('search', { default: '' })
-defineModel<ICustomerContactHistoryFilter>('filter', { default: (): ICustomerContactHistoryFilter => ({}) })
+defineModel<ICustomerEstateFilter>('filter', { default: (): ICustomerEstateFilter => ({}) })
 
 function onSearch (): void {
   emits('search')

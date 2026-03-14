@@ -7,10 +7,18 @@
     :items="props.items"
     disable-auto-left-padding
     @update="emits('update')">
+    <template #[`item.idNo`]="{ item }">
+      <LinkText :to="{}">
+        {{ item?.idNo }}
+      </LinkText>
+    </template>
     <template #[`item.contractIdNo`]="{ item }">
       <LinkText :to="{}">
         {{ item?.contractIdNo }}
       </LinkText>
+    </template>
+    <template #[`item.estateStatus`]="{ item }">
+      <ChipEstateStatus :value="item?.estateStatus" />
     </template>
   </BaseTable>
 </template>
@@ -18,21 +26,20 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
-import { formatter } from '@/utils/Formatter'
-import type { ICustomerContactHistoryList } from '@/models/response/customer/CustomerRes.model'
+import type { ICustomerEstateList } from '@/models/response/customer/CustomerRes.model'
 import type { IColumn } from '@/models/Table.model'
 import LinkText from '@/components/button/LinkText.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
+import ChipEstateStatus from './ChipContactHistoryStatus.vue'
 
 interface IProps {
-  items: ICustomerContactHistoryList[]
+  items: ICustomerEstateList[]
 }
 
 const props = defineProps<IProps>()
 
 interface IEmits {
-  delete: [id: number]
   update: []
 }
 
@@ -46,12 +53,13 @@ const pagination = defineModel<IPagination>('pagination', {
 const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
-const columns = ref<IColumn<ICustomerContactHistoryList>[]>([
-  { field: 'createdAt', header: 'วันที่', align: 'left', value: (e: ICustomerContactHistoryList): string => dayjs.formatDate(e?.createdAt || '') },
-  { field: 'contractIdNo', header: 'เลขที่สัญญาที่เกี่ยวข้อง', sortable: true, align: 'left' },
-  { field: 'subject', header: 'หัวข้อ', align: 'left', value: (e: ICustomerContactHistoryList): string => e?.subject || '' },
-  { field: 'detail', header: 'รายละเอียด', align: 'left', value: (e: ICustomerContactHistoryList): string => e?.detail || '' },
-  { field: 'createdBy', header: 'โดยพนักงาน', align: 'left', value: (e: ICustomerContactHistoryList): string => formatter.fullName(e?.createdBy || {}) || '-' }
+const columns = ref<IColumn<ICustomerEstateList>[]>([
+  { field: 'createdAt', header: 'วันที่', align: 'left', value: (e: ICustomerEstateList): string => dayjs.formatDate(e?.createdAt || '') },
+  { field: 'idNo', header: 'เลขที่ลูกค้า', align: 'left' },
+  { field: 'contractIdNo', header: 'เลขที่สัญญา', align: 'left' },
+  { field: 'estateType', header: 'ประเภท', align: 'left', value: (e: ICustomerEstateList): string => e?.estateType?.name || '-' },
+  { field: 'storage', header: 'จุดจัดเก็บเอกสาร', align: 'left' },
+  { field: 'estateStatus', header: 'สถานะอสังหา', align: 'left' }
 ])
 </script>
 
