@@ -108,7 +108,7 @@ const selectedStatus = ref<string>(props.assetInfo.status)
 
 const statusOptions = [
   { label: 'รอขาย', value: 'WAITING' },
-  { label: 'ใช้งาน', value: 'IN_USE' },
+  { label: 'ใช้งานอยู่', value: 'IN_USE' },
   { label: 'ขายแล้ว', value: 'SOLD' }
 ]
 
@@ -143,9 +143,9 @@ const statusStyles: Record<TStatusKey, { icon: string, wrapper: string, text: st
     text: 'text-[#FFC000]'
   },
   IN_USE: {
-    icon: 'solar:check-circle-linear',
-    wrapper: 'border-[#CFFFE3] bg-[#CFFFE3] text-[#219653] font-[Sarabun]',
-    text: 'text-[#219653]'
+    icon: 'mdi:trending-up',
+    wrapper: 'border-[#DBEAFF] bg-[#DBEAFF] text-[#2F80ED] font-[Sarabun]',
+    text: 'text-[#2F80ED]'
   },
   SOLD: {
     icon: 'mdi:tag-outline',
@@ -156,7 +156,7 @@ const statusStyles: Record<TStatusKey, { icon: string, wrapper: string, text: st
 
 const statusLabels: Record<TStatusKey, string> = {
   WAITING: 'รอขาย',
-  IN_USE: 'ใช้งาน',
+  IN_USE: 'ใช้งานอยู่',
   SOLD: 'ขายแล้ว'
 }
 
