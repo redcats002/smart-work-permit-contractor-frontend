@@ -1,11 +1,10 @@
 <template>
   <div class="grid gap-2.5">
-    <EstateFilter
-      v-model:filters="filters"
-      v-model:search="search"
-      @clear="onClearFilters()"
-      @search="fetch()" />
-    <EstateTable
+    <Title
+      title="ประวัติการติดต่อ">
+      <ModalContractHistory />
+    </Title>
+    <ContactHistoryTable
       v-model:pagination="pagination"
       v-model:sort-by="sortBy"
       v-model:sort-order="sortOrder"
@@ -15,26 +14,28 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IGetCustomerEstateList, IGetCustomerList } from '@/models/request/customer/CustomerReq.model'
-import type { ICustomerEstateList } from '@/models/response/customer/CustomerRes.model'
-import CustomerProvider, { type ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
+import type { IGetContactHistoryList } from '@/models/request/contract/ContractReq.model'
+import type { IContractContactHistoryList } from '@/models/response/contract/ContractRes.model'
+import type { IContractProvider } from '@/resources/provider/contract/Contract.provider'
+import ContractProvider from '@/resources/provider/contract/Contract.provider'
 import usePagination from '@/composables/usePagination'
-import EstateFilter from './ContactHistoryFilter.vue'
-import EstateTable from './ContactHistoryTable.vue'
+import Title from '../Title.vue'
+import ContactHistoryTable from './ContactHistoryTable.vue'
+import ModalContractHistory from './ModalContractHistory.vue'
 
-const CustomerService: ICustomerProvider = new CustomerProvider()
+const ContractService: IContractProvider = new ContractProvider()
 
 const route = useRoute()
 const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
 
-const filters = ref<IGetCustomerEstateList>({})
-const items = ref<ICustomerEstateList[]>([])
-const customerId = computed((): number => route?.params?.id ? Number(route.params.id) : 0)
+const filters = ref<IGetContactHistoryList>({})
+const items = ref<IContractContactHistoryList[]>([])
+const contractId = computed((): number => route?.params?.id ? Number(route.params.id) : 0)
 
-const paginateQuery = computed((): IGetCustomerEstateList => {
+const paginateQuery = computed((): IGetContactHistoryList => {
   const normalizedFilters = normalizeFilters(filters.value)
   return {
     search: search.value,
@@ -49,17 +50,96 @@ const paginateQuery = computed((): IGetCustomerEstateList => {
 async function useFetch (): Promise<void> {
   const mock = true // TODO: remove mock when api ready
   if (mock) {
-    items.value = []
+    items.value = [
+      {
+        date: '2024-06-01',
+        detail: 'โทรติดต่อลูกค้า แจ้งยอดค้างชำระ',
+        employee: {
+          id: 1,
+          titleName: 'MR',
+          firstName: 'สมชาย',
+          lastName: 'ใจดี',
+          phoneNumber: '0812345678',
+          status: 'ACTIVE',
+          createdAt: '2024-05-01T10:00:00Z',
+          updatedAt: '2024-06-01T09:00:00Z',
+          createdBy: {
+            id: 101,
+            firstName: 'Admin',
+            lastName: 'User'
+          }
+        },
+        subject: 'แจ้งเตือนชำระหนี้',
+        createdAt: '2024-06-01T10:30:00Z',
+        createdBy: {
+          id: 101,
+          firstName: 'Admin',
+          lastName: 'User'
+        }
+      },
+      {
+        date: '2024-06-02',
+        detail: 'ติดต่อลูกค้าไม่รับสาย',
+        employee: {
+          id: 2,
+          titleName: 'MS',
+          firstName: 'สุภาพร',
+          lastName: 'ใจงาม',
+          phoneNumber: '0898765432',
+          status: 'ACTIVE',
+          createdAt: '2024-05-02T11:00:00Z',
+          updatedAt: '2024-06-02T09:00:00Z',
+          createdBy: {
+            id: 102,
+            firstName: 'Staff',
+            lastName: 'One'
+          }
+        },
+        subject: 'ติดตามหนี้',
+        createdAt: '2024-06-02T11:30:00Z',
+        createdBy: {
+          id: 102,
+          firstName: 'Staff',
+          lastName: 'One'
+        }
+      },
+      {
+        date: '2024-06-03',
+        detail: 'ลูกค้าติดต่อกลับ ขอผ่อนชำระ',
+        employee: {
+          id: 3,
+          titleName: 'MRS',
+          firstName: 'วราภรณ์',
+          lastName: 'สุขใจ',
+          phoneNumber: '0865432198',
+          status: 'ACTIVE',
+          createdAt: '2024-05-03T12:00:00Z',
+          updatedAt: '2024-06-03T09:00:00Z',
+          createdBy: {
+            id: 103,
+            firstName: 'Staff',
+            lastName: 'Two'
+          }
+        },
+        subject: 'ขอผ่อนชำระ',
+        createdAt: '2024-06-03T12:30:00Z',
+        createdBy: {
+          id: 103,
+          firstName: 'Staff',
+          lastName: 'Two'
+        }
+      }
+    ]
     return
   }
-  const response = await CustomerService.getCustomerEstates(customerId.value, paginateQuery.value)
+  const response = await ContractService.getContractHistoryList(contractId.value, paginateQuery.value)
   items.value = response?.data || []
   pagination.value = extractPagination(response)
   syncQuery({ ...normalizeFilters(filters.value) })
 }
 
 
-function normalizeFilters (value: IGetCustomerList): Partial<IGetCustomerList> {
+function normalizeFilters (value: IGetContactHistoryList): Partial<IGetContactHistoryList> {
   return {
     ...value
   }
@@ -69,8 +149,9 @@ function fetch (): void {
   handleLoading(useFetch)
 }
 
-function onClearFilters (): void {}
-
+onMounted((): void => {
+  fetch()
+})
 
 </script>
 
