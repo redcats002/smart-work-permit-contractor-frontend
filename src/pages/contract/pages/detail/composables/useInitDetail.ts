@@ -25,6 +25,7 @@ export function useInitDetail (data?: Partial<IContractById>): Ref<IContractById
     },
     guarantors: data?.guarantors || [
       {
+        idCard: '111100000000',
         customerGroup: {
           id: 1,
           name: ''
@@ -37,6 +38,7 @@ export function useInitDetail (data?: Partial<IContractById>): Ref<IContractById
         status: 'ACTIVE'
       },
       {
+        idCard: '12345678901234',
         customerGroup: {
           id: 2,
           name: ''

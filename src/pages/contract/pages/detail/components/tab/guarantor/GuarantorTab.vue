@@ -1,10 +1,7 @@
 <template>
   <div class="grid gap-2.5">
-    <GuarantorFilter
-      v-model:filters="filters"
-      v-model:search="search"
-      @clear="onClearFilters()"
-      @search="fetch()" />
+    <Title
+      title="ผู้ค้ำประกัน" />
     <GuarantorTable
       v-model:pagination="pagination"
       v-model:sort-by="sortBy"
@@ -22,7 +19,7 @@ import type { IGetGuarantorContractList } from '@/models/request/contract/Contra
 import type { IContractGuarantorList } from '@/models/response/contract/ContractRes.model'
 import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
 import usePagination from '@/composables/usePagination'
-import GuarantorFilter from './GuarantorFilter.vue'
+import Title from '../Title.vue'
 import GuarantorTable from './GuarantorTable.vue'
 
 const Service: IContractProvider = new ContractProvider()
@@ -68,9 +65,6 @@ function normalizeFilters (value: IGetGuarantorContractList): Partial<IGetGuaran
 function fetch (): void {
   handleLoading(useFetch)
 }
-
-function onClearFilters (): void {}
-
 
 </script>
 
