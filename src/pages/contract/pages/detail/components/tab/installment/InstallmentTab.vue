@@ -6,9 +6,12 @@
         :key="`card-${i}`"
         v-bind="card" />
     </div>
-    <div class="flex justify-between">
+    <div class="flex justify-between items-center">
       <span>ตารางการชำระ</span>
-      <span><ConfirmButton label="ชำระเงิน" /></span>
+      <span><ConfirmButton
+        :to="{}"
+        label="ชำระเงิน" /></span>
+      <!-- TODO: to document-and-finance detail -->
     </div>
     <InstallmentTable
       v-model:pagination="pagination"
@@ -20,13 +23,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IGetInstallmentList } from '@/models/request/contract/ContractReq.model'
 import type { IContractInstallmentList } from '@/models/response/contract/ContractRes.model'
+import type { TPaymentStatus } from '@/enums/modules/contract/PaymentStatus.enum'
 import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
+import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import CardIndicator, { type ICardIndicator } from '@/components/card/CardIndicator.vue'
 import usePagination from '@/composables/usePagination'
 import InstallmentTable from './InstallmentTable.vue'
@@ -61,7 +66,33 @@ const cards = computed((): ICardIndicator[] => [
 async function useFetch (): Promise<void> {
   const mock = true // TODO: remove mock when api ready
   if (mock) {
-    items.value = []
+    // Generate 3 random mock installments
+    items.value = Array.from({ length: 10 }, (_: unknown, i: number): IContractInstallmentList => {
+      const base = 100 + Math.floor(Math.random() * 900)
+      const principal = Math.floor(Math.random() * 1000)
+      const interest = Math.floor(Math.random() * 500)
+      const lateFee = Math.floor(Math.random() * 200)
+      const payment = Math.floor(Math.random() * 1200)
+      const paymentAmount = payment + lateFee
+      const remainingPrincipal = Math.max(0, principal - payment)
+      const trackingFee = Math.floor(Math.random() * 100)
+      const dueDate = `2024-0${i + 1}-0${Math.floor(Math.random() * 9) + 1}`
+      return {
+        id: i + 1,
+        installment: i,
+        balance: base,
+        principal,
+        interest,
+        dueDate,
+        lateFee,
+        payment,
+        paymentAmount,
+        paymentStatus: ['OVERDUE', 'COMING', 'PARTIAL', 'PAID'][Math.floor(Math.random() * 4)] as TPaymentStatus,
+        period: i + 1,
+        remainingPrincipal,
+        trackingFee
+      }
+    })
     return
   }
   const response = await ContractService.getInstallmentList(contractId.value, paginateQuery.value)
@@ -81,6 +112,9 @@ function fetch (): void {
   handleLoading(useFetch)
 }
 
+onMounted((): void => {
+  fetch()
+})
 
 </script>
 
