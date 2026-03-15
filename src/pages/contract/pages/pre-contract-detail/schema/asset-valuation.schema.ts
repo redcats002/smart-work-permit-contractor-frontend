@@ -3,7 +3,7 @@ import { EvaluatorLevelEnum } from '@/enums/modules/contract/EvaluatorLevel.enum
 import { z } from 'zod'
 
 export const AssetValuationSchema = z.object({
-  evaluatorLevel: schema.enumSchema(EvaluatorLevelEnum, 'กลุ่มผู้ตีราคา'),
+  evaluatorLevel: schema.enum(EvaluatorLevelEnum, 'กลุ่มผู้ตีราคา'),
   detail: z.string().min(1, 'กรุณากรอกรายละเอียดเพิ่มเติม')
 })
 

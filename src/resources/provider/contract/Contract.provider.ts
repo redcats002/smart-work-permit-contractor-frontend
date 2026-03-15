@@ -2,6 +2,8 @@ import type {
   ICreateContractPayload,
   ICreateExpense,
   ICreateIncome,
+  IGetContactHistoryList,
+  IGetContractHistoryList,
   IGetContractList,
   IGetDocumentList,
   IGetExpenseList,
@@ -43,7 +45,7 @@ export interface IContractProvider {
   getIncomeList(id: TBaseParamsId, query?: IGetIncomeList): Promise<TGetContractIncomeListResponse>
   createIncome(id: TBaseParamsId, payload: ICreateIncome): Promise<TActionContractIncomeResponse>
   getGuarantorList(id: TBaseParamsId, query?: IGetGuarantorContractList): Promise<TGetGuarantorContractListResponse>
-  getContractHistoryList(id: TBaseParamsId, query?: IGetContractList): Promise<TGetContractHistoryListResponse>
+  getContractHistoryList(id: TBaseParamsId, query?: IGetContactHistoryList): Promise<TGetContractHistoryListResponse>
   getDocumentList(id: TBaseParamsId, query?: IGetDocumentList): Promise<TGetDocumentListResponse>
 }
 
@@ -122,7 +124,7 @@ class ContractProvider extends HttpRequest implements IContractProvider {
     return response
   }
 
-  public async getContractHistoryList (id: TBaseParamsId, query?: IGetContractList): Promise<TGetContractHistoryListResponse> {
+  public async getContractHistoryList (id: TBaseParamsId, query?: IGetContractHistoryList): Promise<TGetContractHistoryListResponse> {
     const response = await this.get(`${this.urlPrefix}/${id}/history`, query)
     return response
   }

@@ -1,4 +1,4 @@
-import { useDayjs } from '@/utils/Dayjs'
+import { schema } from '@/utils/Schema'
 import { StockStatusEnum } from '@/enums/modules/stock/StockStatus.enum'
 import { z } from 'zod'
 
@@ -7,10 +7,7 @@ export const StockSchema = z.object({
   id: z.number(),
   assetNo: z.string().min(1, 'กรุณากรอกเลขที่หลักทรัพย์'),
   contractNo: z.string().min(1, 'กรุณากรอกเลขที่สัญญา'),
-  receivedDate: z.date().or(z.string()).transform((val: Date | string): string => {
-    const dayjs = useDayjs()
-    return dayjs(val).toISOString()
-  }),
+  receivedDate: schema.date('วันที่รับหลักทรัพย์'),
 
   // ── ข้อมูลผู้ครอบครอง/ลูกค้า ──────────────────────────────────────────
   titleName: z.string().optional(),

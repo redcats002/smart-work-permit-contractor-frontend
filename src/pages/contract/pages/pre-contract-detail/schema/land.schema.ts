@@ -3,7 +3,7 @@ import { AssetTypeEnum } from '@/enums/modules/contract/AssetType.enum'
 import { z } from 'zod'
 
 export const LandFormSchema = z.object({
-  assetType: schema.enumSchema(AssetTypeEnum, 'ประเภทหลักทรัพย์'),
+  assetType: schema.enum(AssetTypeEnum, 'ประเภทหลักทรัพย์'),
   detail: z.string().optional(),
   landNumber: z.string().min(1, 'กรุณากรอกเลขที่ที่ดิน'),
   surveyPageNumber: z.string().optional(),

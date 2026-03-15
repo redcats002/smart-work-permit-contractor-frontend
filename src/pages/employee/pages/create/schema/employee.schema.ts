@@ -1,8 +1,8 @@
-import { useDayjs } from '@/utils/Dayjs'
 import { generator } from '@/utils/Generator'
+import { schema } from '@/utils/Schema'
+import { EmployeeStatusEnum } from '@/enums/modules/employee/EmployeeStatus.enum'
 import { ETitleName } from '@/enums/TitleName.enum'
 import { z } from 'zod'
-import { EmployeeStatusEnum } from '@/enums/modules/employee/EmployeeStatus.enum'
 
 export const EmployeeSchema = z.object({
 
@@ -13,11 +13,7 @@ export const EmployeeSchema = z.object({
   lastName: z.string().min(1, 'กรุณากรอกนามสกุล'),
   phoneNumber: z.string().min(1, 'กรุณากรอกเบอร์โทรศัพท์'),
   phoneNumber2: z.string().optional(),
-  birthDate: z.date().min(1, 'กรุณาเลือกวันเกิด').transform((val: Date): string => {
-    const dayjs = useDayjs()
-    const parse = dayjs(val).toISOString()
-    return dayjs(val).isValid() ? parse : val.toString()
-  }),
+  birthDate: schema.date('วันเกิด'),
   email: z.email('รูปแบบอีเมลไม่ถูกต้อง').or(z.literal('')).optional(),
 
   // ── Classification ───────────────────────────────────────────────────────

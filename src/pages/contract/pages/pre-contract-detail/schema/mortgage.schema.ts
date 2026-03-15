@@ -3,9 +3,9 @@ import { z } from 'zod'
 
 export const MortgageSchema = z.object({
   contractDate: z.string().min(1, 'กรุณาระบุวันที่ทำสัญญา'),
-  loanTypeId: schema.IdSchema('ประเภทเงินกู้'),
-  loanPurposeId: schema.IdSchema('วัตถุประสงค์การกู้'),
-  customerSourceId: schema.IdSchema('ช่องทางที่มาของลูกค้า'),
+  loanTypeId: schema.id('ประเภทเงินกู้'),
+  loanPurposeId: schema.id('วัตถุประสงค์การกู้'),
+  customerSourceId: schema.id('ช่องทางที่มาของลูกค้า'),
   customerIds: z.array(z.number()).default([]),
   guarantorIds: z.array(z.number()).default([])
 })
