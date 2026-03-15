@@ -1,11 +1,11 @@
 <template>
   <div class="grid gap-2.5">
-    <EstateFilter
+    <GuarantorFilter
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
       @search="fetch()" />
-    <EstateTable
+    <GuarantorTable
       v-model:pagination="pagination"
       v-model:sort-by="sortBy"
       v-model:sort-order="sortOrder"
@@ -18,23 +18,23 @@
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IGetCustomerEstateList, IGetCustomerList } from '@/models/request/customer/CustomerReq.model'
-import type { ICustomerEstateList } from '@/models/response/customer/CustomerRes.model'
-import CustomerProvider, { type ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
+import type { IGetGuarantorContractList } from '@/models/request/contract/ContractReq.model'
+import type { IContractGuarantorList } from '@/models/response/contract/ContractRes.model'
+import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
 import usePagination from '@/composables/usePagination'
-import EstateFilter from './GuarantorFilter.vue'
-import EstateTable from './GuarantorTable.vue'
+import GuarantorFilter from './GuarantorFilter.vue'
+import GuarantorTable from './GuarantorTable.vue'
 
-const CustomerService: ICustomerProvider = new CustomerProvider()
+const Service: IContractProvider = new ContractProvider()
 
 const route = useRoute()
 const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
 
-const filters = ref<IGetCustomerEstateList>({})
-const items = ref<ICustomerEstateList[]>([])
+const filters = ref<IGetGuarantorContractList>({})
+const items = ref<IContractGuarantorList[]>([])
 const customerId = computed((): number => route?.params?.id ? Number(route.params.id) : 0)
 
-const paginateQuery = computed((): IGetCustomerEstateList => {
+const paginateQuery = computed((): IGetGuarantorContractList => {
   const normalizedFilters = normalizeFilters(filters.value)
   return {
     search: search.value,
@@ -52,14 +52,14 @@ async function useFetch (): Promise<void> {
     items.value = []
     return
   }
-  const response = await CustomerService.getCustomerEstates(customerId.value, paginateQuery.value)
+  const response = await Service.getGuarantorList(customerId.value, paginateQuery.value)
   items.value = response?.data || []
   pagination.value = extractPagination(response)
   syncQuery({ ...normalizeFilters(filters.value) })
 }
 
 
-function normalizeFilters (value: IGetCustomerList): Partial<IGetCustomerList> {
+function normalizeFilters (value: IGetGuarantorContractList): Partial<IGetGuarantorContractList> {
   return {
     ...value
   }

@@ -6,35 +6,20 @@
     :columns="columns"
     :items="props.items"
     disable-auto-left-padding
-    @update="emits('update')">
-    <template #[`item.idNo`]="{ item }">
-      <LinkText :to="{}">
-        {{ item?.idNo }}
-      </LinkText>
-    </template>
-    <template #[`item.contractIdNo`]="{ item }">
-      <LinkText :to="{}">
-        {{ item?.contractIdNo }}
-      </LinkText>
-    </template>
-    <template #[`item.estateStatus`]="{ item }">
-      <ChipEstateStatus :value="item?.estateStatus" />
-    </template>
-  </BaseTable>
+    @update="emits('update')" />
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
-import type { ICustomerEstateList } from '@/models/response/customer/CustomerRes.model'
+import { formatter } from '@/utils/Formatter'
+import type { IContractGuarantorList } from '@/models/response/contract/ContractRes.model'
 import type { IColumn } from '@/models/Table.model'
-import LinkText from '@/components/button/LinkText.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
-import ChipEstateStatus from './ChipGuarantorStatus.vue'
 
 interface IProps {
-  items: ICustomerEstateList[]
+  items: IContractGuarantorList[]
 }
 
 const props = defineProps<IProps>()
@@ -53,13 +38,13 @@ const pagination = defineModel<IPagination>('pagination', {
 const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
-const columns = ref<IColumn<ICustomerEstateList>[]>([
-  { field: 'createdAt', header: 'วันที่', align: 'left', value: (e: ICustomerEstateList): string => dayjs.formatDate(e?.createdAt || '') },
-  { field: 'idNo', header: 'เลขที่ลูกค้า', align: 'left' },
-  { field: 'contractIdNo', header: 'เลขที่สัญญา', align: 'left' },
-  { field: 'estateType', header: 'ประเภท', align: 'left', value: (e: ICustomerEstateList): string => e?.estateType?.name || '-' },
-  { field: 'storage', header: 'จุดจัดเก็บเอกสาร', align: 'left' },
-  { field: 'estateStatus', header: 'สถานะอสังหา', align: 'left' }
+const columns = ref<IColumn<IContractGuarantorList>[]>([
+  { field: 'idCard', header: 'เลขบัตรประชาชน', value: (e: IContractGuarantorList): string => dayjs.formatDate(e?.createdAt || '') },
+  { field: 'firstName', header: 'ชื่อ', value: (e: IContractGuarantorList): string => formatter.fullName(e) || '-' },
+  { field: 'birthDate', header: 'วันเดือนปีเกิด', value: (e: IContractGuarantorList): string => dayjs.formatDate(e?.birthDate || '') },
+  { field: 'age', header: 'อายุ', value: (e: IContractGuarantorList): string => dayjs.formatAge(e?.birthDate || '') },
+  { field: 'phoneNumber', header: 'เบอร์โทร', value: (e: IContractGuarantorList): string => formatter.fullPhoneNumber(e) },
+  { field: 'address', header: 'ที่อยู่ตามบัตรประจำตัวประชาชน', value: (e: IContractGuarantorList): string => formatter.fullAddress(e) }
 ])
 </script>
 
