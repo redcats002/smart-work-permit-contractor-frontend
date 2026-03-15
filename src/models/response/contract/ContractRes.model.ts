@@ -1,4 +1,4 @@
-import type { IEntity, TBaseOption } from '@/models/Global.model'
+import type { IEntity } from '@/models/Global.model'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
 import type { TDocumentType } from '@/enums/modules/contract/DocumentType.enum'
@@ -78,7 +78,7 @@ export interface IContractGuarantorList extends ICustomerList {
 }
 export interface IContractContactHistoryList extends IEntity {
   date: string
-  subject: TBaseOption
+  subject: string
   detail: string
   employee: IEmployeeList
 }

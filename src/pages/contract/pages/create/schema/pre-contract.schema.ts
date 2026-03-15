@@ -29,7 +29,7 @@ const VehicleSchema = z.object({
 
 const EstateItemBaseSchema = z.object({
   key: z.string().optional(),
-  assetType: schema.enumSchema(AssetTypeEnum, 'ประเภทหลักทรัพย์'),
+  assetType: schema.enum(AssetTypeEnum, 'ประเภทหลักทรัพย์'),
   detail: z.string().default(''),
   ...LandSchema.shape,
   ...VehicleSchema.shape
@@ -65,8 +65,8 @@ export const EstateItemSchema = EstateItemBaseSchema.superRefine(
 export type IEstateFormItem = z.infer<typeof EstateItemSchema>
 
 const PreContractBaseSchema = z.object({
-  customerId: schema.IdSchema('ลูกค้า'),
-  employeeId: schema.IdSchema('หน้างานประเมิน'),
+  customerId: schema.id('ลูกค้า'),
+  employeeId: schema.id('หน้างานประเมิน'),
   assets: z
     .array(EstateItemSchema)
     .min(1, 'กรุณาเพิ่มหลักทรัพย์อย่างน้อย 1 รายการ')
