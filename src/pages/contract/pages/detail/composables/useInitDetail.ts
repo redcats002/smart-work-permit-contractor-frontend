@@ -23,6 +23,32 @@ export function useInitDetail (data?: Partial<IContractById>): Ref<IContractById
       name: data?.contractLoanPurpose?.name || '',
       id: data?.contractLoanPurpose?.id
     },
+    guarantors: data?.guarantors || [
+      {
+        customerGroup: {
+          id: 1,
+          name: ''
+        },
+        firstName: 'D',
+        lastName: '',
+        titleName: '',
+        id: 1,
+        phoneNumber: '',
+        status: 'ACTIVE'
+      },
+      {
+        customerGroup: {
+          id: 2,
+          name: ''
+        },
+        firstName: 'E',
+        lastName: '',
+        titleName: '',
+        id: 1,
+        phoneNumber: '',
+        status: 'ACTIVE'
+      }
+    ],
     contractLoanType: {
       name: data?.contractLoanType?.name || '',
       id: data?.contractLoanType?.id

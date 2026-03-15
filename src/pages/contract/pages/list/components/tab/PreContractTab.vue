@@ -6,7 +6,7 @@
           <SearchInput
             v-model="asset.search.value"
             @search="asset.fetch()" />
-          <AssetFilter
+          <PreContractFilter
             v-model:filters="asset.filters.value"
             @clear="asset.onClearFilters()"
             @search="asset.fetch()" />
@@ -18,7 +18,7 @@
     </div>
     <BasePage>
       <div class="mt-5">
-        <AssetTable
+        <PreContractTable
           v-model:pagination="asset.pagination.value"
           v-model:sort-by="asset.sortBy.value"
           v-model:sort-order="asset.sortOrder.value"
@@ -34,11 +34,11 @@ import { onMounted } from 'vue'
 import BasePage from '@/components/base/BasePage.vue'
 import CreateButton from '@/components/button/CreateButton.vue'
 import SearchInput from '@/components/input/SearchInput.vue'
-import useAssetList from '../../composables/useAssetList'
-import AssetFilter from '../AssetFilter.vue'
-import AssetTable from '../AssetTable.vue'
+import usePreContractList from '../../composables/usePreContractList'
+import PreContractFilter from '../PreContractFilter.vue'
+import PreContractTable from '../PreContractTable.vue'
 
-const asset = useAssetList()
+const asset = usePreContractList()
 
 onMounted((): void => {
   asset.fetch()

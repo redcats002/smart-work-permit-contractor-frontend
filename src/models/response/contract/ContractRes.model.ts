@@ -40,6 +40,7 @@ export interface IContractById extends IEntity {
   perMonthPayment: number
   lastPeriodPayment: number
   interestAmount: number
+  guarantors: IContractGuarantorList[]
 }
 
 export interface IContractAssetList extends IAssetDetailInfo {}
@@ -71,7 +72,10 @@ export interface IContractIncomeList extends IEntity {
   detail: string
   amount: number
 }
-export interface IContractGuarantorList extends ICustomerList {}
+export interface IContractGuarantorList extends ICustomerList {
+  idCard: string
+  birthDate?: string
+}
 export interface IContractContactHistoryList extends IEntity {
   date: string
   subject: TBaseOption
