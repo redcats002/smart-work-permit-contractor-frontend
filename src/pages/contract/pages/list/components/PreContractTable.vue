@@ -4,16 +4,16 @@
     v-model:sort-by="sortBy"
     v-model:sort-order="sortOrder"
     :columns="columns"
-    :items="props.items"
+    :items="items"
     disable-auto-left-padding
     @update="emits('update')">
     <template #[`item.idNo`]="{ item }">
-      <LinkText :to="{ name: 'ContractDetailPage', params: { id: item.id } }">
+      <LinkText :to="{ name: 'PreContractDetailPage', params: { id: item.id } }">
         {{ item.idNo }}
       </LinkText>
     </template>
-    <template #[`item.assetStatus`]="{ item }">
-      <ChipAssetStatus :value="item.assetStatus ?? undefined" />
+    <template #[`item.status`]="{ item }">
+      <ChipAssetStatus :value="item.status ?? undefined" />
     </template>
   </BaseTable>
 </template>
@@ -33,7 +33,7 @@ import ChipAssetStatus from './ChipPreContractStatus.vue'
 interface IProps {
   items: IPreContractList[]
 }
-const props = defineProps<IProps>()
+defineProps<IProps>()
 
 interface IEmits {
   update: []
@@ -65,6 +65,6 @@ const columns = ref<IColumn<IPreContractList>[]>([
       lastName: e.customer?.lastName ?? undefined
     })
   },
-  { field: 'assetStatus', header: 'สถานะ', sortable: true, align: 'left' }
+  { field: 'status', header: 'สถานะ', sortable: true, align: 'left' }
 ])
 </script>

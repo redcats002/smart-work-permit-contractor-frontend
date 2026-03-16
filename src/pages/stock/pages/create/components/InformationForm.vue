@@ -26,9 +26,9 @@
 
 <script setup lang="ts">
 import type { IFormState } from '@/models/Form.model'
+import type { ICreateStockPayload } from '@/models/request/stock/StockReq.model'
 import LabelField from '@/components/input/LabelField.vue'
 import { useFormInitialValues } from '../schema/stock.schema'
-import type { ICreateStockDocsPayload } from '@/models/request/stock/StockReq.model'
 
 interface IProps {
   form?: IFormState
@@ -36,7 +36,7 @@ interface IProps {
 
 defineProps<IProps>()
 
-const model = defineModel<ICreateStockDocsPayload>({
+const model = defineModel<ICreateStockPayload>({
   default: useFormInitialValues()
 })
 

@@ -4,7 +4,8 @@
     <BaseTop>
       <BaseTab
         v-model="tab"
-        :items="tabItems" />
+        :items="tabItems"
+        full />
     </BaseTop>
     <BaseTabWindow
       v-slot="{ component, item }"

@@ -1,11 +1,13 @@
 import z from 'zod'
+import { useDayjs } from './Dayjs'
 
 interface ISchema {
-  IdSchema: (label: string) => z.ZodOptional<z.ZodNumber>
-  enumSchema: (enumObj: object, label: string) => z.ZodType<any, any, any>
+  id: (label: string) => z.ZodOptional<z.ZodNumber>
+  enum: (enumObj: object, label: string) => z.ZodType<any, any, any>
+  date: (label: string) => z.ZodType<string, any, any>
 }
 
-const IdSchema = (label: string): z.ZodOptional<z.ZodNumber> =>
+const id = (label: string): z.ZodOptional<z.ZodNumber> =>
   z
     .number()
     .min(1, `กรุณาเลือก${label}`)
@@ -24,7 +26,18 @@ const enumSchema = (enumObj: object, label: string): z.ZodType<any, any, any> =>
     .optional()
     .refine((val: string | number | undefined): boolean => val !== '', `กรุณาเลือก${label}`)
 
+const date = (label: string): z.ZodType<string, any, any> =>
+  z
+    .date()
+    .min(1, `กรุณาเลือก${label}`)
+    .transform((val: Date): string => {
+      const dayjs = useDayjs()
+      const parse = dayjs(val).toISOString()
+      return dayjs(val).isValid() ? parse : val.toString()
+    })
+
 export const schema: ISchema = {
-  IdSchema,
-  enumSchema
+  id,
+  enum: enumSchema,
+  date
 }

@@ -1,4 +1,5 @@
 import { useDayjs } from '@/utils/Dayjs'
+import { schema } from '@/utils/Schema'
 import { EDays } from '@/enums/Date.enum'
 import { BranchStatusEnum } from '@/enums/modules/branch/BranchStatus.enum'
 import { z } from 'zod'
@@ -24,10 +25,7 @@ export const BranchSchema = z.object({
   status: z.enum(Object.values(BranchStatusEnum)),
   idNo: z.string().min(1, 'กรุณากรอก Branch Code'),
   taxId: z.string().min(1, 'กรุณากรอก Tax ID'),
-  openAt: z.date().min(1, 'กรุณาเลือกวันที่เปิดสาขา').transform((val: Date): string => {
-    const parse = dayjs(val).toISOString()
-    return dayjs(val).isValid() ? parse : val.toString()
-  }),
+  openAt: schema.date('วันเปิดสาขา'),
   branchTimes: z.array(BranchTimeSchema).min(1, 'กรุณาเพิ่มวันและเวลาทำการ'),
   ...AddressSchema.shape
 })

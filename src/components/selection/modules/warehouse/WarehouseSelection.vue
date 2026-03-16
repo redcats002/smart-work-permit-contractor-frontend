@@ -1,6 +1,7 @@
 <template>
   <AutoCompleteInput
     v-model="innerModel"
+    :invalid="props.invalid"
     :suggestions="suggestions"
     option-label="name"
     complete-on-focus
@@ -17,6 +18,11 @@ import WarehouseProvider, { type IWarehouseProvider } from '@/resources/provider
 import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
 import usePagination from '@/composables/usePagination'
 
+interface IProps {
+  invalid?: boolean
+}
+
+const props = defineProps<IProps>()
 const WarehouseService: IWarehouseProvider = new WarehouseProvider()
 
 const model = defineModel<number | null>()
@@ -32,7 +38,7 @@ async function useFetch (): Promise<void> {
     limit: 9999
   })
   suggestions.value = (response.data ?? []).map((item: IWarehouseList): TBaseModel => ({
-    id: item.id,
+    id: item.id!,
     name: item.name
   }))
 }

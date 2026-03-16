@@ -34,6 +34,43 @@ export default function useContractList (): IUseContractList {
   }))
 
   async function useFetch (): Promise<void> {
+    const mock = true // TODO: remove mock when api ready
+    if (mock === true) {
+      items.value = [
+        {
+          id: 1,
+          idNo: 'C-2567-0001',
+          contractDate: '2024-06-01T00:00:00+07:00',
+          startDate: '2024-06-01T00:00:00+07:00',
+          endDate: '2025-06-01T00:00:00+07:00',
+          amount: 100000,
+          status: 'IN_PROGRESS',
+          customer: {
+            titleName: 'MR',
+            id: 101,
+            firstName: 'สมชาย',
+            lastName: 'ใจดี'
+          },
+          loanType: {
+            id: 1,
+            name: 'สินเชื่อส่วนบุคคล'
+          },
+          createdAt: '2024-06-01T00:00:00+07:00',
+          updatedAt: '2024-06-01T00:00:00+07:00',
+          createdBy: {
+            id: 1,
+            firstName: 'Admin',
+            lastName: 'User'
+          },
+          updatedBy: {
+            id: 1,
+            firstName: 'Admin',
+            lastName: 'User'
+          }
+        }
+      ]
+      return
+    }
     const response = await contractService.getContractPaginate(paginateQuery.value)
     items.value = response?.data || []
     pagination.value = extractPagination(response)

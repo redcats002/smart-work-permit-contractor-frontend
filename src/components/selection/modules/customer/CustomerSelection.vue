@@ -37,7 +37,7 @@ async function useFetch (): Promise<void> {
   })
 
   suggestions.value = (response.data ?? []).map((item: ICustomerList): TBaseModel => ({
-    id: item.id,
+    id: item.id!,
     name: formatter.fullName(item)
   }))
 }

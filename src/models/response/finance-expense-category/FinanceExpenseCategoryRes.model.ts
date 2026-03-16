@@ -1,5 +1,5 @@
 import type { IEntity } from '@/models/Global.model'
-import type { TExternalInternalExpense } from '@/enums/modules/finance/ExpenseType.enum'
+import type { TExternalInternalExpense } from '@/enums/modules/finance/ExternalInternalExpense.enum'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 
 export interface IFinanceExpenseCategoryList extends IEntity {

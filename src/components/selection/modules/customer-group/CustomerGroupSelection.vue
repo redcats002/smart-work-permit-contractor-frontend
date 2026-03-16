@@ -12,6 +12,7 @@
 import { onMounted, ref, watch } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel } from '@/models/Global.model'
+import type { ICustomerGroupList } from '@/models/response/customer-group/CustomerGroupRes.model'
 import type { ICustomerGroupProvider } from '@/resources/provider/customer-group/CustomerGroup.provider'
 import CustomerGroupProvider from '@/resources/provider/customer-group/CustomerGroup.provider'
 import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
@@ -34,7 +35,10 @@ async function useFetch (): Promise<void> {
     limit: 9999
   })
 
-  suggestions.value = response.data ?? []
+  suggestions.value = (response.data ?? []).map((item: ICustomerGroupList): TBaseModel => ({
+    id: item.id ?? null,
+    name: item.name ?? ''
+  }))
 }
 
 function fetch (): void {

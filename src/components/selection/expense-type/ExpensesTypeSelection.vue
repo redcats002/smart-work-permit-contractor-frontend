@@ -29,7 +29,7 @@ async function useFetch (): Promise<void> {
   const items = ExpensePayItems
 
   suggestions.value = (items ?? []).map((item: TBaseOption): TBaseModel => ({
-    id: item?.value,
+    id: item.value!,
     name: item?.label
   }))
 }

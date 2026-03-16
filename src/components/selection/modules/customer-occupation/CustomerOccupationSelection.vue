@@ -12,6 +12,7 @@
 import { onMounted, ref, watch } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel } from '@/models/Global.model'
+import type { ICustomerOccupationList } from '@/models/response/customer-occupation/CustomerOccupationRes.model'
 import CustomerOccupationProvider, { type ICustomerOccupationProvider } from '@/resources/provider/customer-occupation/CustomerOccupation.provider'
 import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
 import usePagination from '@/composables/usePagination'
@@ -33,7 +34,10 @@ async function useFetch (): Promise<void> {
     limit: 9999
   })
 
-  suggestions.value = response.data ?? []
+  suggestions.value = (response.data ?? []).map((item: ICustomerOccupationList): TBaseModel => ({
+    id: item.id ?? null,
+    name: item.name ?? ''
+  }))
 }
 
 function fetch (): void {

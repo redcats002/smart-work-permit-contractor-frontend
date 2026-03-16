@@ -7,12 +7,12 @@ interface IUseInit {
 }
 
 export default function useInit (): IUseInit {
-  const AssetTab = importComponent((): Promise<Component> => import('../components/tab/AssetTab.vue'))
+  const PreContract = importComponent((): Promise<Component> => import('../components/tab/PreContractTab.vue'))
   const ContractTab = importComponent((): Promise<Component> => import('../components/tab/ContractTab.vue'))
 
   const { tab, tabItems } = useTabItems(
     computed((): ITabItemComponent[] => [
-      { key: 'Asset', label: 'หลักประกัน', value: 'asset', instance: AssetTab },
+      { key: 'PreContract', label: 'หลักประกัน', value: 'preContract', instance: PreContract },
       { key: 'Contract', label: 'สัญญา', value: 'contract', instance: ContractTab }
     ])
   )

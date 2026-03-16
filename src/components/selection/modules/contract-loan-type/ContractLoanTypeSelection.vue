@@ -12,6 +12,7 @@
 import { onMounted, ref, watch } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel } from '@/models/Global.model'
+import type { IContractLoanTypeList } from '@/models/response/contract-loan-type/ContractLoanTypeRes.model'
 import ContractLoanTypeProvider, { type IContractLoanTypeProvider } from '@/resources/provider/contract-loan-type/ContractLoanType.provider'
 import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
 import usePagination from '@/composables/usePagination'
@@ -33,7 +34,10 @@ async function useFetch (): Promise<void> {
     limit: 9999
   })
 
-  suggestions.value = response.data ?? []
+  suggestions.value = (response.data ?? []).map((item: IContractLoanTypeList): TBaseModel => ({
+    id: item.id!,
+    name: item.name
+  }))
 }
 
 function fetch (): void {

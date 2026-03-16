@@ -1,6 +1,5 @@
 import type { IBaseModel, IEntity } from '@/models/Global.model'
 import type { TAssetType } from '@/enums/modules/contract/AssetType.enum'
-import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
 import type { TEvaluatorLevel } from '@/enums/modules/contract/EvaluatorLevel.enum'
 import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import type { TTitleName } from '@/enums/TitleName.enum'
@@ -37,33 +36,33 @@ export interface IPreAssetImage extends IMedia {}
 export interface IAssetDetailInfo extends IEntity {
   assetType: TAssetType
   detail: string
-  address: string | null
-  subDistrict: string | null
-  district: string | null
-  province: string | null
-  postCode: string | null
-  urlGoogleMap: string | null
+  address: string
+  subDistrict: string
+  district: string
+  province: string
+  postCode: string
+  urlGoogleMap: string
   // vehicle-specific
-  licensePlate: string | null
-  vehicleProvince: string | null
-  yearManufactured: number | null
-  yearRegistered: number | null
-  chassisNumber: string | null
-  mileage: number | null
+  licensePlate: string
+  vehicleProvince: string
+  yearManufactured: number
+  yearRegistered: number
+  chassisNumber: string
+  mileage: number
   // land-specific
-  landNumber: string | null
-  surveyPageNumber: string | null
-  landLocation: string | null
-  aerialPhotoNumber: string | null
-  aerialPhotoSheet: string | null
-  areaRai: number | null
-  areaRgan: number | null
-  areaTarangWa: number | null
+  landNumber: string
+  surveyPageNumber: string
+  landLocation: string
+  aerialPhotoNumber: string
+  aerialPhotoSheet: string
+  areaRai: number
+  areaRgan: number
+  areaTarangWa: number
   images: IPreAssetImage[]
 }
 
 export interface IPreContractLoanType {
-  id: number | null
+  id: number
   name: string
 }
 
@@ -82,24 +81,23 @@ export interface IAppraisalById extends IEntity {
 }
 
 export interface IPreContractList extends IEntity {
-  contractDate: string | null
-  startDate: string | null
-  endDate: string | null
-  amount: number | null
-  status: TContractStatus | null
-  assetStatus: TPreContractStatus | null
-  customer: IPreContractCustomer | null
-  loanType: IPreContractLoanType | null
+  contractDate: string
+  startDate: string
+  endDate: string
+  amount: number
+  status: TPreContractStatus
+  customer: IPreContractCustomer
+  loanType: IPreContractLoanType
 }
 
 export interface IPreContractById extends IEntity {
-  contractDate: string | null
-  startDate: string | null
-  endDate: string | null
-  amount: number | null
-  status: TPreContractStatus | null
+  contractDate: string
+  startDate: string
+  endDate: string
+  amount: number
+  status: TPreContractStatus
   customer: IPreContractCustomerDetail
-  loanType: IPreContractLoanType | null
+  loanType: IPreContractLoanType
   staff?: IPreContractStaff
   assets: IAssetDetailInfo[]
   appraisals: IAppraisalById[]
