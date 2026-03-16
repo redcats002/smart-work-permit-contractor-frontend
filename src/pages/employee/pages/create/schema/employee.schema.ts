@@ -1,5 +1,7 @@
 import { generator } from '@/utils/Generator'
+import { regex } from '@/utils/Regex'
 import { schema } from '@/utils/Schema'
+import { EmployeeRoleEnum } from '@/enums/modules/employee/EmployeeRole.enum'
 import { EmployeeStatusEnum } from '@/enums/modules/employee/EmployeeStatus.enum'
 import { ETitleName } from '@/enums/TitleName.enum'
 import { z } from 'zod'
@@ -8,18 +10,27 @@ export const EmployeeSchema = z.object({
 
   // ── Personal Information ─────────────────────────────────────────────────
   idCard: z.string().min(13, 'กรุณากรอกเลขบัตรประชาชน 13 หลัก').max(13, 'เลขบัตรประชาชนต้องมี 13 หลัก'),
-  titleName: z.enum(ETitleName, 'กรุณาเลือกคำนำหน้าชื่อ'),
+  title: z.enum(ETitleName, 'กรุณาเลือกคำนำหน้าชื่อ'),
   firstName: z.string().min(1, 'กรุณากรอกชื่อ'),
   lastName: z.string().min(1, 'กรุณากรอกนามสกุล'),
   phoneNumber: z.string().min(1, 'กรุณากรอกเบอร์โทรศัพท์'),
-  phoneNumber2: z.string().optional(),
-  birthDate: schema.date('วันเกิด'),
   email: z.email('รูปแบบอีเมลไม่ถูกต้อง').or(z.literal('')).optional(),
-
+  dateOfBirth: schema.date('วันเกิด'),
+  image: z.string().optional(),
+  password: z
+    .string()
+    .min(8, { message: 'ต้องมีตัวอักษรภาษาอังกฤษ และตัวเลข รวมกันอย่างน้อย 8 ถึง 16 ตัว' })
+    .max(16, { message: 'ต้องมีตัวอักษรภาษาอังกฤษ และตัวเลข รวมกันอย่างน้อย 8 ถึง 16 ตัว' })
+    .refine((value: string): boolean => regex.upperCaseOneCharRegex.test(value), {
+      message: 'ต้องมีอักษรภาษาอังกฤษพิมพ์ใหญ่อย่างน้อย 1 ตัว'
+    })
+    .refine((value: string): boolean => regex.atLeastOneNumber.test(value), {
+      message: 'ต้องมี 0-9 อย่างน้อย 1 ตัว'
+    }),
   // ── Classification ───────────────────────────────────────────────────────
-  status: z.enum(EmployeeStatusEnum, 'กรุณาเลือกสถานะลูกค้า'),
-  role: z.string().min(1, 'กรุณาเลือกตำแหน่ง'),
-  branchId: z.number().min(1, 'กรุณาเลือกสาขา'),
+  status: schema.enum(EmployeeStatusEnum, 'กรุณาเลือกสถานะลูกค้า'),
+  role: schema.enum(EmployeeRoleEnum, 'ตำแหน่ง'),
+  branchIds: z.array(z.string()).min(1, 'กรุณาเลือกสาขา'),
 
   // ── Citizen / Home Address ───────────────────────────────────────────────
   mainAddress: z.object({
@@ -45,19 +56,6 @@ export const EmployeeSchema = z.object({
     postCode: z.string().min(1, 'กรุณากรอกรหัสไปรษณีย์'),
     urlGoogleMap: z.string().optional(),
     isSameCurrentAddress: z.boolean().optional()
-  }),
-
-  // ── Work Address ─────────────────────────────────────────────────────────
-  workAddress: z.object({
-    id: z.number().optional(),
-    isSameCurrentAddress: z.boolean().optional(), // true = copy from current address
-    isSameCitizenAddress: z.boolean().optional(), // true = copy from main address
-    address: z.string().min(1, 'กรุณากรอกที่อยู่'),
-    subDistrict: z.string().min(1, 'กรุณากรอกตำบล/แขวง'),
-    district: z.string().min(1, 'กรุณากรอกอำเภอ/เขต'),
-    province: z.string().min(1, 'กรุณากรอกจังหวัด'),
-    postCode: z.string().min(1, 'กรุณากรอกรหัสไปรษณีย์'),
-    urlGoogleMap: z.string().optional()
   })
 })
 
@@ -67,15 +65,15 @@ export function useDev (): EmployeeFormValues {
   return {
     // Personal
     idCard: generator.generateRandomThaiCitizenId(),
-    titleName: ETitleName['MR'],
+    title: ETitleName['MR'],
     firstName: 'Nonthakorn',
     lastName: 'Inthong',
     phoneNumber: generator.generateRandomPhoneNumber(),
-    phoneNumber2: '',
-    birthDate: '',
+    dateOfBirth: '',
     email: '',
+    password: 'Password1',
     role: '',
-    branchId: 0,
+    branchIds: [],
     // Classification
     status: EmployeeStatusEnum.INACTIVE,
     // Citizen / Home address
@@ -99,17 +97,6 @@ export function useDev (): EmployeeFormValues {
       urlGoogleMap: '',
       isSameCitizenAddress: false,
       isSameCurrentAddress: false
-    },
-    // Work address
-    workAddress: {
-      address: 'ที่ทำงาน',
-      subDistrict: 'สายไหม',
-      district: 'สายไหม',
-      province: 'กรุงเทพมหานคร',
-      postCode: '10220',
-      urlGoogleMap: '',
-      isSameCurrentAddress: false,
-      isSameCitizenAddress: false
     }
   }
 }
@@ -118,15 +105,16 @@ export function useFormInitialValues (): EmployeeFormValues {
   return {
     // Personal
     idCard: '',
-    titleName: ETitleName[''],
+    password: '',
+    image: '',
+    title: ETitleName[''],
     firstName: '',
     lastName: '',
     phoneNumber: '',
-    phoneNumber2: '',
-    birthDate: '',
+    dateOfBirth: '',
     email: '',
     role: '',
-    branchId: 0,
+    branchIds: [],
     // Classification
     status: EmployeeStatusEnum.INACTIVE,
     // Citizen / Home address
@@ -150,17 +138,6 @@ export function useFormInitialValues (): EmployeeFormValues {
       urlGoogleMap: '',
       isSameCitizenAddress: false,
       isSameCurrentAddress: false
-    },
-    // Work address
-    workAddress: {
-      address: '',
-      subDistrict: '',
-      district: '',
-      province: '',
-      postCode: '',
-      urlGoogleMap: '',
-      isSameCurrentAddress: false,
-      isSameCitizenAddress: false
     }
   }
 }

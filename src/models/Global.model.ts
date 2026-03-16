@@ -5,7 +5,7 @@ export interface IAuthor {
 }
 
 export interface IEntity {
-  id?: number
+  id: string
   idNo?: string
   createdAt?: string
   deletedAt?: string

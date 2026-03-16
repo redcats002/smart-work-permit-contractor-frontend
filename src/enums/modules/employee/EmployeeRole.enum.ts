@@ -20,13 +20,13 @@ const roleTitleMap: Record<TEmployeeRole, string> = {
 // 4. Export รายการสำหรับใช้ใน Dropdown/Selection
 export const EmployeeRoleItems: TBaseOption[] = Object.values(EmployeeRoleEnum).map(
   (role: TEmployeeRole): TBaseOption => ({
-    label: formatRoleTitle(role),
+    label: formatTitle(role),
     value: role
   })
 )
 
 // 5. ฟังก์ชันสำหรับแปลงค่าเป็นชื่อภาษาไทย
-export function formatRoleTitle (role?: TEmployeeRole): string {
+export function formatTitle (role?: TEmployeeRole): string {
   if (!role) return 'ไม่ระบุ'
   return roleTitleMap[role] || 'ไม่พบตำแหน่ง'
 }

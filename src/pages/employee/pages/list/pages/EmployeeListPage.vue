@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted } from 'vue'
 import BasePage from '@/components/base/BasePage.vue'
 import CreateButton from '@/components/button/CreateButton.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
@@ -37,58 +37,15 @@ import useList from '../composables/useList'
 
 const {
   filters,
-  // items,
+  items,
   pagination,
   sortBy,
   sortOrder,
   search,
-  // fetch,
+  fetch,
   onClearFilters,
   onDelete
 } = useList()
-
-// Mock data
-const mockItems = ref<any[]>([
-  {
-    id: 1,
-    idNo: 'EM-26001',
-    titleName: 'MR',
-    firstName: 'เจษฎากร',
-    lastName: 'เมืองนาม',
-    status: 'ACTIVE',
-    phoneNumber: '0823636036',
-    email: 'chet@softnova.co',
-    role: 'SUPER_ADMIN'
-  },
-  {
-    id: 2,
-    idNo: 'EM-26002',
-    titleName: 'MS',
-    firstName: 'สมหญิง',
-    lastName: 'จริงใจ',
-    status: 'INACTIVE',
-    phoneNumber: '0987654321',
-    email: 'somying@email.com',
-    role: 'ACCOUNTING'
-  },
-  {
-    id: 3,
-    idNo: 'EM-26003',
-    titleName: 'MR',
-    firstName: 'มานะ',
-    lastName: 'อดทน',
-    status: 'ACTIVE',
-    phoneNumber: '0812223334',
-    email: 'mana@email.com',
-    role: 'ADMIN'
-  }
-])
-
-// For demonstration purposes, using mock data instead of fetching from API
-const items = ref<any[]>([])
-function fetch (): void {
-  items.value = mockItems.value
-}
 
 onMounted((): void => {
   fetch()

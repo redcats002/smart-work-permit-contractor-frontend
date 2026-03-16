@@ -23,7 +23,7 @@ export interface IEmployeeProvider {
   getEmployeePaginate (query: IGetEmployeeList): Promise<TGetEmployeeListResponse>
   createEmployee (payload: ICreateEmployeePayload): Promise<TActionEmployee>
   updateEmployee (id: TBaseParamsId, payload: IUpdateEmployeePayload): Promise<TActionEmployee>
-  deleteEmployee (id: number): Promise<TActionEmployee>
+  deleteEmployee (id: TBaseParamsId): Promise<TActionEmployee>
   getEmployeeFindOne (id: TBaseParamsId): Promise<TGetEmployeeByIdResponse>
   getEmployeeContracts (id: TBaseParamsId, query: IGetEmployeeContractList): Promise<TGetEmployeeContractListResponse>
   getEmployeePaymentHistory (id: TBaseParamsId, query: IGetEmployeePaymentHistoryList): Promise<TGetEmployeePaymentHistoryListResponse>
@@ -32,7 +32,7 @@ export interface IEmployeeProvider {
 }
 
 class EmployeeProvider extends HttpRequest implements IEmployeeProvider {
-  private urlPrefix: string = '/api/v1/employee'
+  private urlPrefix: string = '/api/v1/user'
 
   public async getEmployeePaginate (query: IGetEmployeeList): Promise<TGetEmployeeListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)
@@ -49,7 +49,7 @@ class EmployeeProvider extends HttpRequest implements IEmployeeProvider {
     return response
   }
 
-  public async deleteEmployee (id: number): Promise<TActionEmployee> {
+  public async deleteEmployee (id: TBaseParamsId): Promise<TActionEmployee> {
     const response = await this.delete(`${this.urlPrefix}/${id}`)
     return response
   }

@@ -1,16 +1,15 @@
-import type { IBranch, IToken } from '@/stores/Auth'
 import type { IEntity } from '@/models/Global.model'
+import type { TEmployeeRole } from '@/enums/modules/employee/EmployeeRole.enum'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../../Response.model'
 
 export interface IAuthBranchList extends IEntity {
   name: string
   logo: string
-  role: string
+  role?: TEmployeeRole
   status: string
 }
 export interface ISelectBranchResponse {
-  branch: IBranch
-  token: IToken
+  activeOrganizationId: string
 }
 export interface IApproveBranchResponse extends ISelectBranchResponse {
   branches: IAuthBranchList[]

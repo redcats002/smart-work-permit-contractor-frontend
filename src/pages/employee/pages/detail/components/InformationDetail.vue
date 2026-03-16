@@ -30,12 +30,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
+import type { IBranchList } from '@/models/response/branch/BranchRes.model'
 import type { IEmployeeById } from '@/models/response/employee/EmployeeRes.model'
+import { formatTitle } from '@/enums/modules/employee/EmployeeRole.enum'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
 import { Icon } from '@iconify/vue'
-import EmployeeDetailMenuAction from './EmployeeDetailMenuAction.vue'
 import ChipEmployeeStatus from '../../list/components/ChipEmployeeStatus.vue'
+import EmployeeDetailMenuAction from './EmployeeDetailMenuAction.vue'
 
 interface IProps {
   data: IEmployeeById
@@ -54,15 +56,15 @@ const visibleCitizenId = ref<boolean>(true)
 const items = computed((): IDisplayList[] => {
   return [
     { label: 'สถานะ', key: 'status', value: props.data.status, hideColon: true },
-    { label: 'เลขที่ลูกค้า', key: 'id', value: props.data.id },
+    { label: 'เลขที่ลูกค้า', key: 'id', value: props.data?.idNo },
     { label: 'เลขบัตรประชาชน', key: 'idCard', value: props.data.idCard },
-    { label: 'ชื่อ', key: 'name', value: `${props.data.titleName} ${props.data.firstName} ${props.data.lastName}` },
-    { label: 'วันเดือนปีเกิด', key: 'birthDate', value: dayjs.formatDate(props.data.birthDate) },
-    { label: 'อายุ', key: 'age', value: dayjs.formatAge(props.data.birthDate) },
+    { label: 'ชื่อ', key: 'name', value: `${props.data.title} ${props.data.firstName} ${props.data.lastName}` },
+    { label: 'วันเดือนปีเกิด', key: 'birthDate', value: dayjs.formatDate(props.data.dateOfBirth) },
+    { label: 'อายุ', key: 'age', value: dayjs.formatAge(props.data.dateOfBirth) },
     { label: 'อีเมล', key: 'email', value: props.data.email },
     { label: 'เบอร์โทร', key: 'phoneNumber', value: props.data.phoneNumber },
-    { label: 'ตำแหน่ง', key: 'role', value: props.data.role },
-    { label: 'สาขา', key: 'branchId', value: props.data.branchId }
+    { label: 'ตำแหน่ง', key: 'role', value: formatTitle(props.data.role) },
+    { label: 'สาขา', key: 'branches', value: props.data.branches?.map((e: IBranchList): string => e?.name || '-').join(', ') }
   ]
 })
 
