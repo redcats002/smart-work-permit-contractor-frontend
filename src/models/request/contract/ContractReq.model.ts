@@ -48,6 +48,7 @@ export interface ICreateDocument {
   url: string
   detail: string
 }
+export interface IUpdateDocument extends Partial<ICreateDocument> {}
 
 export interface IGetContactHistoryList extends IBasePaginationRequest {}
 

@@ -95,6 +95,7 @@ export interface IContractDocumentList extends IEntity {
   documentType: TDocumentType
   detail: string
   warehouse: IWarehouseList
+  url?: string
 }
 
 export type TGetContractListResponse = IBasePaginationResponse<IContractList>
@@ -110,3 +111,4 @@ export type TActionContractIncomeResponse = IBaseSuccessResponse<boolean>
 export type TGetGuarantorContractListResponse = IBasePaginationResponse<IContractGuarantorList>
 export type TGetContractHistoryListResponse = IBasePaginationResponse<IContractContactHistoryList>
 export type TGetDocumentListResponse = IBasePaginationResponse<IContractDocumentList>
+export type TActionContractDocumentResponse = IBaseSuccessResponse<boolean>

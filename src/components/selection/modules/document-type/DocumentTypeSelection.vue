@@ -12,9 +12,8 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { TBaseModel } from '@/models/Global.model'
-import type { IWarehouseList } from '@/models/response/warehouse/WarehouseRes.model'
-import WarehouseProvider, { type IWarehouseProvider } from '@/resources/provider/warehouse/Warehouse.provider'
+import type { TBaseModel, TBaseOption } from '@/models/Global.model'
+import { DocumentTypeItems, type TDocumentType } from '@/enums/modules/contract/DocumentType.enum'
 import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
 import usePagination from '@/composables/usePagination'
 
@@ -23,23 +22,21 @@ interface IProps {
 }
 
 const props = defineProps<IProps>()
-const WarehouseService: IWarehouseProvider = new WarehouseProvider()
-
-const model = defineModel<number | null>()
+const model = defineModel<TDocumentType>()
 const selectedName = defineModel<string | null>('selectedName', { default: null })
 
 const innerModel = ref<TBaseModel | null>(null)
+
 const { pagination } = usePagination()
+
 const suggestions = ref<TBaseModel[]>([])
 
 async function useFetch (): Promise<void> {
-  const response = await WarehouseService.getWarehousePaginate({
-    page: pagination.value.page,
-    limit: 9999
-  })
-  suggestions.value = (response.data ?? []).map((item: IWarehouseList): TBaseModel => ({
-    id: item.id,
-    name: item.name
+  const items = DocumentTypeItems
+
+  suggestions.value = (items ?? []).map((item: TBaseOption): TBaseModel => ({
+    id: item.value!,
+    name: item?.label
   }))
 }
 
@@ -58,21 +55,30 @@ function syncInnerFromId (): void {
     selectedName.value = null
     return
   }
-  innerModel.value = suggestions.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
+
+  innerModel.value
+    = suggestions.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
   selectedName.value = innerModel.value?.name ?? null
 }
 
 watch(innerModel, (val: TBaseModel | null): void => {
-  model.value = val?.id ? Number(val.id) : null
+  model.value = val?.id ? val.id as TDocumentType : undefined
   selectedName.value = val?.name ?? null
 })
+
 watch(model, (): void => {
   syncInnerFromId()
 })
-watch(suggestions, (): void => {
-  syncInnerFromId()
-}, { immediate: true })
+
+watch(
+  suggestions, (): void => {
+    syncInnerFromId()
+  }, { immediate: true }
+)
+
 onMounted((): void => {
   fetch()
 })
 </script>
+
+<style scoped></style>

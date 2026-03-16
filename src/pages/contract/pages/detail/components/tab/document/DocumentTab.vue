@@ -1,15 +1,25 @@
 <template>
   <div class="grid gap-2.5">
-    <EstateFilter
-      v-model:filters="filters"
-      v-model:search="search"
-      @clear="onClearFilters()"
-      @search="fetch()" />
-    <EstateTable
+    <div class="flex items-center justify-between flex-wrap gap-2">
+      <Title title="รายการค่าใช้จ่าย" />
+      <CreateButton
+        label="บันทึกค่าใช้จ่าย"
+        @click="openModal('create')" />
+    </div>
+    <DocumentTable
       v-model:pagination="pagination"
       v-model:sort-by="sortBy"
       v-model:sort-order="sortOrder"
       :items="items"
+      @delete="openModal('delete', $event)"
+      @edit="openModal('edit', $event)"
+      @read="openModal('read', $event)"
+      @update="fetch()" />
+    <ModalDocument
+      v-model:visible="modalVisible"
+      :contract-id="contractId"
+      :item="selectedItem"
+      :mode="modalMode"
       @update="fetch()" />
   </div>
 </template>
@@ -18,23 +28,27 @@
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IGetCustomerEstateList, IGetCustomerList } from '@/models/request/customer/CustomerReq.model'
-import type { ICustomerEstateList } from '@/models/response/customer/CustomerRes.model'
-import CustomerProvider, { type ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
+import type { IGetDocumentList } from '@/models/request/contract/ContractReq.model'
+import type { IContractDocumentList } from '@/models/response/contract/ContractRes.model'
+import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
+import CreateButton from '@/components/button/CreateButton.vue'
 import usePagination from '@/composables/usePagination'
-import EstateFilter from './DocumentFilter.vue'
-import EstateTable from './DocumentTable.vue'
+import Title from '../Title.vue'
+import DocumentTable from './DocumentTable.vue'
+import ModalDocument from './ModalDocument.vue'
 
-const CustomerService: ICustomerProvider = new CustomerProvider()
+type TDocumentModalMode = 'create' | 'read' | 'edit' | 'delete'
+
+const ContractService: IContractProvider = new ContractProvider()
 
 const route = useRoute()
 const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
 
-const filters = ref<IGetCustomerEstateList>({})
-const items = ref<ICustomerEstateList[]>([])
-const customerId = computed((): number => route?.params?.id ? Number(route.params.id) : 0)
+const filters = ref<IGetDocumentList>({})
+const items = ref<IContractDocumentList[]>([])
+const contractId = computed((): number => route?.params?.id ? Number(route.params.id) : 0)
 
-const paginateQuery = computed((): IGetCustomerEstateList => {
+const paginateQuery = computed((): IGetDocumentList => {
   const normalizedFilters = normalizeFilters(filters.value)
   return {
     search: search.value,
@@ -52,14 +66,14 @@ async function useFetch (): Promise<void> {
     items.value = []
     return
   }
-  const response = await CustomerService.getCustomerEstates(customerId.value, paginateQuery.value)
+  const response = await ContractService.getDocumentList(contractId.value, paginateQuery.value)
   items.value = response?.data || []
   pagination.value = extractPagination(response)
   syncQuery({ ...normalizeFilters(filters.value) })
 }
 
 
-function normalizeFilters (value: IGetCustomerList): Partial<IGetCustomerList> {
+function normalizeFilters (value: IGetDocumentList): Partial<IGetDocumentList> {
   return {
     ...value
   }
@@ -69,8 +83,15 @@ function fetch (): void {
   handleLoading(useFetch)
 }
 
-function onClearFilters (): void {}
+const modalVisible = ref<boolean>(false)
+const modalMode = ref<TDocumentModalMode>('create')
+const selectedItem = ref<IContractDocumentList | undefined>(undefined)
 
+function openModal (mode: TDocumentModalMode, item?: IContractDocumentList): void {
+  modalMode.value = mode
+  selectedItem.value = item
+  modalVisible.value = true
+}
 
 </script>
 
