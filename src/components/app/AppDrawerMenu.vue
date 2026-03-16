@@ -1,6 +1,7 @@
 <template>
   <RouterLink
     v-slot="{ isActive, isExactActive }"
+    :disabled="disabled"
     :to="to">
     <div
       :class="[
@@ -19,14 +20,15 @@
 </template>
 
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
 import type { RouteLocationRaw } from 'vue-router'
+import { RouterLink } from 'vue-router'
 
 interface IProps {
   label: string
   icon: string
   activeIcon?: string
   to: RouteLocationRaw
+  disabled?: boolean
 }
 
 // const props = defineProps<IProps>()

@@ -26,6 +26,7 @@
         v-for="child in children"
         :key="child.label"
         v-slot="{ isActive }"
+        :disabled="disabled"
         :to="child.to">
         <div
           :class="[
@@ -54,6 +55,7 @@ interface IProps {
   label: string
   icon: string
   children: ISubMenuItem[]
+  disabled?: boolean
 }
 
 const props = defineProps<IProps>()
