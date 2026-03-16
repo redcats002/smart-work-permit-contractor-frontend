@@ -4,12 +4,16 @@ import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.en
 import type { TDocumentType } from '@/enums/modules/contract/DocumentType.enum'
 import type { TInterestType } from '@/enums/modules/contract/InterestType.enum'
 import type { TPaymentStatus } from '@/enums/modules/contract/PaymentStatus.enum'
+import type { TVatType } from '@/enums/modules/Vat.enum'
 import type { IInstallmentRow } from '@/pages/contract/pages/pre-contract-detail/schema/installment.schema'
 import type { IContractLoanPurposeList } from '../contract-loan-purpose/ContractLoanPurposeRes.model'
 import type { IContractLoanTypeList } from '../contract-loan-type/ContractLoanTypeRes.model'
 import type { ICustomerList } from '../customer/CustomerRes.model'
 import type { IEmployeeList } from '../employee/EmployeeRes.model'
 import type { IFinanceExpenseCategoryList } from '../finance-expense-category/FinanceExpenseCategoryRes.model'
+import type { IFinanceExpenseTypeList } from '../finance-expense-type/FinanceExpenseTypeRes.model'
+import type { IFinanceIncomeCategoryList } from '../finance-income-category/FinanceIncomeCategoryRes.model'
+import type { IFinanceIncomeTypeList } from '../finance-income-type/FinanceIncomeTypeRes.model'
 import type { IHowDidFindUsList } from '../how-did-find-us/HowDidFindUsRes.model'
 import type { IAssetDetailInfo, IPreContractList } from '../pre-contract/PreContractRes.model'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
@@ -61,16 +65,20 @@ export interface IContractInstallmentList extends IInstallmentRow, IEntity {
 export interface IContractExpenseList extends IEntity {
   date: string
   expenseCategory: IFinanceExpenseCategoryList
-  expenseType: IFinanceExpenseCategoryList
+  expenseType: IFinanceExpenseTypeList
   detail: string
   amount: number
+  vatType?: TVatType
+  url?: string
 }
 export interface IContractIncomeList extends IEntity {
   date: string
-  incomeCategory: IFinanceExpenseCategoryList
-  incomeType: IFinanceExpenseCategoryList
+  incomeCategory: IFinanceIncomeCategoryList
+  incomeType: IFinanceIncomeTypeList
   detail: string
   amount: number
+  vatType?: TVatType
+  url?: string
 }
 export interface IContractGuarantorList extends ICustomerList {
   idCard: string

@@ -24,6 +24,7 @@ export interface ICreateExpense {
   url: string
   vatType: TVatType
 }
+export interface IUpdateExpense extends Partial<ICreateExpense> {}
 
 export interface IGetIncomeList extends IBasePaginationRequest {}
 export interface ICreateIncome {
@@ -34,6 +35,7 @@ export interface ICreateIncome {
   url: string
   vatType: TVatType
 }
+export interface IUpdateIncome extends Partial<ICreateIncome> {}
 
 export interface IGetGuarantorContractList extends IBasePaginationRequest {}
 export interface IGetContractHistoryList extends IBasePaginationRequest {}

@@ -12,8 +12,8 @@
         {{ item.idNo }}
       </LinkText>
     </template>
-    <template #[`item.assetStatus`]="{ item }">
-      <ChipAssetStatus :value="item.assetStatus ?? undefined" />
+    <template #[`item.status`]="{ item }">
+      <ChipAssetStatus :value="item.status ?? undefined" />
     </template>
   </BaseTable>
 </template>
@@ -65,6 +65,6 @@ const columns = ref<IColumn<IPreContractList>[]>([
       lastName: e.customer?.lastName ?? undefined
     })
   },
-  { field: 'assetStatus', header: 'สถานะ', sortable: true, align: 'left' }
+  { field: 'status', header: 'สถานะ', sortable: true, align: 'left' }
 ])
 </script>

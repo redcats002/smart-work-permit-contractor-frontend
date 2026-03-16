@@ -1,6 +1,5 @@
 import type { IBaseModel, IEntity } from '@/models/Global.model'
 import type { TAssetType } from '@/enums/modules/contract/AssetType.enum'
-import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
 import type { TEvaluatorLevel } from '@/enums/modules/contract/EvaluatorLevel.enum'
 import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import type { TTitleName } from '@/enums/TitleName.enum'
@@ -86,8 +85,7 @@ export interface IPreContractList extends IEntity {
   startDate: string
   endDate: string
   amount: number
-  status: TContractStatus
-  assetStatus: TPreContractStatus
+  status: TPreContractStatus
   customer: IPreContractCustomer
   loanType: IPreContractLoanType
 }
