@@ -1,9 +1,10 @@
 import axios, { type AxiosInstance } from 'axios'
+import { getCurrentIdNo, getCurrentMenu, getCurrentPath } from '@/utils/RouterHeader'
 import { onRequest, onRequestError, onResponse, onResponseError } from './Interceptors'
 
 interface IHttpRequest {
   axiosInstance: AxiosInstance
-  setAuthHeader(): void
+  setLogHeader(): void
   setHeader(data: ISetHeader): void
   get(endPoint: string, data: object, config?: object): Promise<any>
   download(endPoint: string, data?: object): Promise<any>
@@ -39,15 +40,25 @@ class HttpRequest implements IHttpRequest {
       }
     })
 
-    this.axiosInstance.interceptors.request.use((config: any): any => onRequest(config), onRequestError)
+    this.axiosInstance.interceptors.request.use((config: any): any => {
+      this.setLogHeader()
+      return onRequest(config)
+    }, onRequestError)
 
     this.axiosInstance.interceptors.response.use(onResponse, onResponseError)
   }
 
-  public setAuthHeader (): void {
-    // TODO: Set auth header if needed
-    this.setHeader({ key: 'x-current-path', value: '/contract/list' })
-    this.setHeader({ key: 'x-current-menu', value: 'รายการสัญญา' })
+  public setLogHeader (): void {
+    const path: string = getCurrentPath()
+    const menu: string = getCurrentMenu()
+    const idNo: string | undefined = getCurrentIdNo()
+    if (path) this.setHeader({ key: 'x-current-path', value: path })
+    if (menu) this.setHeader({ key: 'x-current-menu', value: menu })
+    if (idNo) {
+      this.setHeader({ key: 'x-current-id-no', value: idNo })
+    } else {
+      delete (this.axiosInstance.defaults.headers.common as Record<string, unknown>)['x-current-id-no']
+    }
   }
 
   public setHeader (data: ISetHeader): void {
