@@ -42,30 +42,26 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
+import { useStockDocsStore } from '@/stores/StockDocs'
 import { handleLoading } from '@/utils/HandleLoading'
-import { Form, type FormSubmitEvent } from '@primevue/forms'
+import { scrollToFirstError } from '@/utils/HandleSubmit'
+import type { IStockList } from '@/models/response/stock/StockRes.model'
+import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
+import CreateButton from '@/components/button/CreateButton.vue'
+import FormAction from '@/components/button/FormAction.vue'
 import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import InformationForm from '../components/InformationForm.vue'
-import BaseContainer from '@/components/base/BaseContainer.vue'
-import FormAction from '@/components/button/FormAction.vue'
-import { scrollToFirstError } from '@/utils/HandleSubmit'
-import {
-  // useDev,
-  // useFormInitialValues,
-  StockDocsSchema
-  // type StockDocsFormValues
-} from '../schema/stockDocs.schema'
-import { storeToRefs } from 'pinia'
-import { zodResolver } from '@primevue/forms/resolvers/zod'
-import useList from '../../list/composables/useList'
-import type { IStockList } from '@/models/response/stock/StockRes.model'
-import CreateButton from '@/components/button/CreateButton.vue'
 import SelectedDocsTable from '../components/SelectedDocsTable.vue'
-import { useStockDocsStore } from '@/stores/StockDocs'
+import { Form, type FormSubmitEvent } from '@primevue/forms'
+import { zodResolver } from '@primevue/forms/resolvers/zod'
+import { storeToRefs } from 'pinia'
+import useList from '../../list/composables/useList'
+import { StockDocsSchema } from '../schema/stockDocs.schema'
+
 // import StockProvider from '@/resources/provider/stock/Stock.provider'
 
 const router = useRouter()

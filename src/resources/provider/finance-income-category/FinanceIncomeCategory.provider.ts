@@ -15,7 +15,7 @@ export interface IFinanceIncomeCategoryProvider {
   getFinanceIncomeCategoryPaginate (query: IGetFinanceIncomeCategoryList): Promise<TGetFinanceIncomeCategoryListResponse>
   createFinanceIncomeCategory (payload: ICreateFinanceIncomeCategoryPayload): Promise<TActionFinanceIncomeCategory>
   updateFinanceIncomeCategory (id: TBaseParamsId, payload: IUpdateFinanceIncomeCategoryPayload): Promise<TActionFinanceIncomeCategory>
-  deleteFinanceIncomeCategory (id: number): Promise<TActionFinanceIncomeCategory>
+  deleteFinanceIncomeCategory (id: TBaseParamsId): Promise<TActionFinanceIncomeCategory>
   getFinanceIncomeCategoryFindOne (id: TBaseParamsId): Promise<TGetFinanceIncomeCategoryByIdResponse>
 }
 
@@ -37,7 +37,7 @@ class FinanceIncomeCategoryProvider extends HttpRequest implements IFinanceIncom
     return response
   }
 
-  public async deleteFinanceIncomeCategory (id: number): Promise<TActionFinanceIncomeCategory> {
+  public async deleteFinanceIncomeCategory (id: TBaseParamsId): Promise<TActionFinanceIncomeCategory> {
     const response = await this.delete(`${this.urlPrefix}/${id}`)
     return response
   }

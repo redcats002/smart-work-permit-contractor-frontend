@@ -19,8 +19,8 @@ export function useInitForm (form: Ref<CustomerFormValues>, data: ICustomerById)
     birthDate: (data.birthDate ? dayjs(data.birthDate).toDate() : '') as unknown as string,
     email: data.email ?? '',
     status: data.status as CustomerStatusEnum,
-    customerGroupId: data.customerGroup?.id ?? undefined,
-    occupationId: data.occupation?.id ?? undefined,
+    customerGroupId: typeof data.customerGroup?.id === 'number' ? data.customerGroup.id : undefined,
+    occupationId: typeof data.occupation?.id === 'number' ? data.occupation.id : undefined,
     mainAddress: {
       id: data.mainAddress?.id,
       address: data.mainAddress?.address ?? '',

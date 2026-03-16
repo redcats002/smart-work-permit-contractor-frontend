@@ -15,7 +15,7 @@ export interface IFinanceIncomeTypeProvider {
   getFinanceIncomeTypePaginate (query: IGetFinanceIncomeTypeList): Promise<TGetFinanceIncomeTypeListResponse>
   createFinanceIncomeType (payload: ICreateFinanceIncomeTypePayload): Promise<TActionFinanceIncomeType>
   updateFinanceIncomeType (id: TBaseParamsId, payload: IUpdateFinanceIncomeTypePayload): Promise<TActionFinanceIncomeType>
-  deleteFinanceIncomeType (id: number): Promise<TActionFinanceIncomeType>
+  deleteFinanceIncomeType (id: TBaseParamsId): Promise<TActionFinanceIncomeType>
   getFinanceIncomeTypeFindOne (id: TBaseParamsId): Promise<TGetFinanceIncomeTypeByIdResponse>
 }
 
@@ -37,7 +37,7 @@ class FinanceIncomeTypeProvider extends HttpRequest implements IFinanceIncomeTyp
     return response
   }
 
-  public async deleteFinanceIncomeType (id: number): Promise<TActionFinanceIncomeType> {
+  public async deleteFinanceIncomeType (id: TBaseParamsId): Promise<TActionFinanceIncomeType> {
     const response = await this.delete(`${this.urlPrefix}/${id}`)
     return response
   }

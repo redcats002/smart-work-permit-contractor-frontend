@@ -32,6 +32,7 @@
 import { ref } from 'vue'
 import type { IActionFinanceExpenseTypePayload } from '@/models/request/finance-expense-type/FinanceExpenseTypeReq.model'
 import type { IFinanceExpenseTypeList } from '@/models/response/finance-expense-type/FinanceExpenseTypeRes.model'
+import type { TBaseParamsId } from '@/models/response/Response.model'
 import type { IColumn } from '@/models/Table.model'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
@@ -40,7 +41,7 @@ import ModalExpenseTypeAction from './ModalExpenseTypeAction.vue'
 
 interface IProps {
   items: IFinanceExpenseTypeList[]
-  selectCategoryId?: number | null
+  selectCategoryId?: TBaseParamsId | null
 }
 
 const props = defineProps<IProps>()
@@ -48,8 +49,8 @@ const props = defineProps<IProps>()
 interface IEmits {
   create: []
   update: []
-  delete: [id: number]
-  edit: [id: number]
+  delete: [id: TBaseParamsId]
+  edit: [id: TBaseParamsId]
 }
 
 const emits = defineEmits<IEmits>()

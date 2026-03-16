@@ -36,6 +36,7 @@
 <script setup lang="ts">
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { IActionFinanceIncomeCategoryPayload } from '@/models/request/finance-income-category/FinanceIncomeCategoryReq.model'
+import type { TBaseParamsId } from '@/models/response/Response.model'
 import CreateButton from '@/components/button/CreateButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
 import LabelField from '@/components/input/LabelField.vue'
@@ -46,11 +47,11 @@ import { FinanceIncomeCategorySchema, useFormInitialValues } from '../../schema/
 
 interface IProps {
   type?: 'CREATE' | 'EDIT'
-  id?: number
+  id?: TBaseParamsId
 }
 interface IEmits {
   create: []
-  edit: [id: number]
+  edit: [id: TBaseParamsId]
 }
 
 const props = withDefaults(defineProps<IProps>(), {

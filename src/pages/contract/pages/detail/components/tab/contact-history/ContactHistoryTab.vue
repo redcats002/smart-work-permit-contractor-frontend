@@ -53,6 +53,7 @@ async function useFetch (): Promise<void> {
     items.value = [
       {
         date: '2024-06-01',
+        id: 1,
         detail: 'โทรติดต่อลูกค้า แจ้งยอดค้างชำระ',
         employee: {
           id: 1,
@@ -78,6 +79,7 @@ async function useFetch (): Promise<void> {
         }
       },
       {
+        id: 2,
         date: '2024-06-02',
         detail: 'ติดต่อลูกค้าไม่รับสาย',
         employee: {
@@ -104,6 +106,7 @@ async function useFetch (): Promise<void> {
         }
       },
       {
+        id: 3,
         date: '2024-06-03',
         detail: 'ลูกค้าติดต่อกลับ ขอผ่อนชำระ',
         employee: {

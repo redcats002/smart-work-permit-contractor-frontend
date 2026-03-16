@@ -44,7 +44,7 @@ const columns = ref<IColumn<IContractGuarantorList>[]>([
   { field: 'birthDate', header: 'วันเดือนปีเกิด', value: (e: IContractGuarantorList): string => dayjs.formatDate(e?.birthDate || '') },
   { field: 'age', header: 'อายุ', value: (e: IContractGuarantorList): string => dayjs.formatAge(e?.birthDate || '') },
   { field: 'phoneNumber', header: 'เบอร์โทร', value: (e: IContractGuarantorList): string => formatter.fullPhoneNumber(e) },
-  { field: 'address', header: 'ที่อยู่ตามบัตรประจำตัวประชาชน', value: (e: IContractGuarantorList): string => formatter.fullAddress(e) }
+  { field: 'address', header: 'ที่อยู่ตามบัตรประจำตัวประชาชน', value: (e: IContractGuarantorList): string => formatter.fullAddress(e.mainAddress) }
 ])
 </script>
 

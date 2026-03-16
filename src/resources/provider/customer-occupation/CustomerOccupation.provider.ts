@@ -15,7 +15,7 @@ export interface ICustomerOccupationProvider {
   getCustomerOccupationPaginate (query: IGetCustomerOccupationList): Promise<TGetCustomerOccupationListResponse>
   createCustomerOccupation (payload: ICreateCustomerOccupationPayload): Promise<TActionCustomerOccupation>
   updateCustomerOccupation (id: TBaseParamsId, payload: IUpdateCustomerOccupationPayload): Promise<TActionCustomerOccupation>
-  deleteCustomerOccupation (id: number): Promise<TActionCustomerOccupation>
+  deleteCustomerOccupation (id: TBaseParamsId): Promise<TActionCustomerOccupation>
   getCustomerOccupationFindOne (id: TBaseParamsId): Promise<TGetCustomerOccupationByIdResponse>
 }
 
@@ -37,7 +37,7 @@ class CustomerOccupationProvider extends HttpRequest implements ICustomerOccupat
     return response
   }
 
-  public async deleteCustomerOccupation (id: number): Promise<TActionCustomerOccupation> {
+  public async deleteCustomerOccupation (id: TBaseParamsId): Promise<TActionCustomerOccupation> {
     const response = await this.delete(`${this.urlPrefix}/${id}`)
     return response
   }

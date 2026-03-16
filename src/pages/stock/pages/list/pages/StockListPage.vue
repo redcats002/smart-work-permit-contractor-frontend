@@ -27,12 +27,12 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import type { IStockList } from '@/models/response/stock/StockRes.model'
 import BasePage from '@/components/base/BasePage.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import StockFilter from '../components/StockFilter.vue'
 import StockTable from '../components/StockTable.vue'
 import useList from '../composables/useList'
-import type { IStockList } from '@/models/response/stock/StockRes.model'
 
 const {
   filters,
@@ -47,7 +47,7 @@ const {
 } = useList()
 
 const mockItems = ref<IStockList[]>([{
-  id: 1,
+  id: '1',
   assetNo: 'AS-00001',
   contractNo: 'LC-00001',
   receivedDate: '2024-03-12T00:00:00.000Z',
@@ -63,7 +63,7 @@ const mockItems = ref<IStockList[]>([{
   type: ''
 },
 {
-  id: 2,
+  id: '2',
   assetNo: 'AS-00002',
   contractNo: 'LC-00002',
   receivedDate: '2024-04-12T00:00:00.000Z',
@@ -79,7 +79,7 @@ const mockItems = ref<IStockList[]>([{
   type: ''
 },
 {
-  id: 3,
+  id: '3',
   assetNo: 'AS-00003',
   contractNo: 'LC-00003',
   receivedDate: '2024-05-12T00:00:00.000Z', // 12/5/67
@@ -95,7 +95,7 @@ const mockItems = ref<IStockList[]>([{
   type: ''
 },
 {
-  id: 4,
+  id: '4',
   assetNo: 'AS-00004',
   contractNo: 'LC-00004',
   receivedDate: '2024-06-12T00:00:00.000Z', // 12/6/67
@@ -111,7 +111,7 @@ const mockItems = ref<IStockList[]>([{
   type: ''
 },
 {
-  id: 5,
+  id: '5',
   assetNo: 'AS-00005',
   contractNo: 'LC-00005',
   receivedDate: '2024-07-12T00:00:00.000Z', // 12/7/67

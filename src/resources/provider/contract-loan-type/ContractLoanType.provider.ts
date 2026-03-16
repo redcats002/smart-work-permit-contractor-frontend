@@ -15,7 +15,7 @@ export interface IContractLoanTypeProvider {
   getContractLoanTypePaginate (query: IGetContractLoanTypeList): Promise<TGetContractLoanTypeListResponse>
   createContractLoanType (payload: ICreateContractLoanTypePayload): Promise<TActionContractLoanType>
   updateContractLoanType (id: TBaseParamsId, payload: IUpdateContractLoanTypePayload): Promise<TActionContractLoanType>
-  deleteContractLoanType (id: number): Promise<TActionContractLoanType>
+  deleteContractLoanType (id: TBaseParamsId): Promise<TActionContractLoanType>
   getContractLoanTypeFindOne (id: TBaseParamsId): Promise<TGetContractLoanTypeByIdResponse>
 }
 
@@ -37,7 +37,7 @@ class ContractLoanTypeProvider extends HttpRequest implements IContractLoanTypeP
     return response
   }
 
-  public async deleteContractLoanType (id: number): Promise<TActionContractLoanType> {
+  public async deleteContractLoanType (id: TBaseParamsId): Promise<TActionContractLoanType> {
     const response = await this.delete(`${this.urlPrefix}/${id}`)
     return response
   }

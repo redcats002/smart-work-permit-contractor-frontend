@@ -21,10 +21,17 @@ export function useInitDetail (data?: Partial<IContractById>): Ref<IContractById
     annualInterestRate: data?.annualInterestRate || 0,
     contractLoanPurpose: {
       name: data?.contractLoanPurpose?.name || '',
-      id: data?.contractLoanPurpose?.id
+      id: typeof data?.contractLoanPurpose?.id === 'string' ? data?.contractLoanPurpose?.id : String(data?.contractLoanPurpose?.id)
     },
     guarantors: data?.guarantors || [
       {
+        mainAddress: {
+          address: '',
+          subDistrict: '',
+          district: '',
+          province: '',
+          postCode: ''
+        },
         idCard: '111100000000',
         customerGroup: {
           id: 1,
@@ -48,12 +55,19 @@ export function useInitDetail (data?: Partial<IContractById>): Ref<IContractById
         titleName: '',
         id: 1,
         phoneNumber: '',
-        status: 'ACTIVE'
+        status: 'ACTIVE',
+        mainAddress: {
+          address: '',
+          subDistrict: '',
+          district: '',
+          province: '',
+          postCode: ''
+        }
       }
     ],
     contractLoanType: {
       name: data?.contractLoanType?.name || '',
-      id: data?.contractLoanType?.id
+      id: typeof data?.contractLoanType?.id === 'string' ? data?.contractLoanType?.id : String(data?.contractLoanType?.id)
     },
     customers: data?.customers || [
       {
@@ -101,13 +115,13 @@ export function useInitDetail (data?: Partial<IContractById>): Ref<IContractById
       lastName: data?.employee?.lastName || '',
       phoneNumber: data?.employee?.phoneNumber || '',
       status: data?.employee?.status || 'ACTIVE',
-      id: data?.employee?.id
+      id: typeof data?.employee?.id === 'string' ? data?.employee?.id : String(data?.employee?.id)
     },
-    id: data?.id || 0,
+    id: typeof data?.id === 'string' ? data?.id : String(data?.id),
     endDate: data?.endDate || '',
     howDidFindUs: {
       name: data?.howDidFindUs?.name || '',
-      id: data?.howDidFindUs?.id
+      id: typeof data?.howDidFindUs?.id === 'string' ? data?.howDidFindUs?.id : String(data?.howDidFindUs?.id)
     },
     interestAmount: data?.interestAmount || 0,
     interestType: data?.interestType,

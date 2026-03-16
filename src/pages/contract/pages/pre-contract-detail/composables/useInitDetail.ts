@@ -66,7 +66,7 @@ export function useInitDetail (): IUseInitDetail {
     const mock = true // TODO: remove mock
     if (mock) {
       contract.value = {
-        id: 1,
+        id: '1',
         idNo: 'PC-20240001',
         contractDate: '2024-06-01',
         status: 'DRAFT', // TODO: change to see each state
@@ -78,8 +78,8 @@ export function useInitDetail (): IUseInitDetail {
           idNo: 'CUST-0001',
           idCard: '1101700201234',
           birthDate: '1980-05-15',
-          customerGroup: { id: '1', name: 'กลุ่ม VIP' },
-          occupation: { id: '1', name: 'พนักงานบริษัท' },
+          customerGroup: { id: 1, name: 'กลุ่ม VIP' },
+          occupation: { id: 1, name: 'พนักงานบริษัท' },
           phoneNumber: '0812345678',
           phoneNumber2: undefined,
           email: 'somchai@example.com'
@@ -101,7 +101,7 @@ export function useInitDetail (): IUseInitDetail {
             areaRgan: 2,
             areaTarangWa: 3,
             chassisNumber: 'CHS-1234567890',
-            id: 1,
+            id: '1',
             landLocation: 'ที่ดินเปล่า',
             landNumber: 'LN-001',
             licensePlate: 'กข-1234',
@@ -133,7 +133,7 @@ export function useInitDetail (): IUseInitDetail {
             areaRgan: 2,
             areaTarangWa: 3,
             chassisNumber: 'CHS-1234567890',
-            id: 1,
+            id: '1',
             landLocation: 'ที่ดินเปล่า',
             landNumber: 'LN-001',
             licensePlate: 'กข-1234',
@@ -159,22 +159,22 @@ export function useInitDetail (): IUseInitDetail {
           {
             detail: '',
             evaluators: [
-              { evaluatorLevel: 'DISTRICT_LEVEL', id: 1, firstName: 'ผู้ตีราคา', lastName: 'ระดับอำเภอ', titleName: 'MR', loanAmount: 45000 },
-              { evaluatorLevel: 'DISTRICT_LEVEL', id: 2, firstName: 'ผู้ตีราคา', lastName: 'ระดับจังหวัด', titleName: 'MS', loanAmount: 48000 },
-              { evaluatorLevel: 'DISTRICT_LEVEL', id: 3, firstName: 'ผู้ตีราคา', lastName: 'ระดับภายนอก', titleName: 'MR', loanAmount: 47000 }
+              { evaluatorLevel: 'DISTRICT_LEVEL', id: '1', firstName: 'ผู้ตีราคา', lastName: 'ระดับอำเภอ', titleName: 'MR', loanAmount: 45000 },
+              { evaluatorLevel: 'DISTRICT_LEVEL', id: '2', firstName: 'ผู้ตีราคา', lastName: 'ระดับจังหวัด', titleName: 'MS', loanAmount: 48000 },
+              { evaluatorLevel: 'DISTRICT_LEVEL', id: '3', firstName: 'ผู้ตีราคา', lastName: 'ระดับภายนอก', titleName: 'MR', loanAmount: 47000 }
             ],
             evaluatorLevel: 'DISTRICT_LEVEL',
-            id: 1
+            id: '1'
           },
           {
             detail: 'ลูกค้าอยากได้ 200,000 บาท',
             evaluators: [
-              { evaluatorLevel: 'CEO_LEVEL', id: 1, firstName: 'ผู้ตีราคา', lastName: 'ระดับอำเภอ', titleName: 'MR', loanAmount: 45000 },
-              { evaluatorLevel: 'CEO_LEVEL', id: 2, firstName: 'ผู้ตีราคา', lastName: 'ระดับจังหวัด', titleName: 'MS', loanAmount: 48000 },
-              { evaluatorLevel: 'CEO_LEVEL', id: 3, firstName: 'ผู้ตีราคา', lastName: 'ระดับภายนอก', titleName: 'MR', loanAmount: 47000 }
+              { evaluatorLevel: 'CEO_LEVEL', id: '1', firstName: 'ผู้ตีราคา', lastName: 'ระดับอำเภอ', titleName: 'MR', loanAmount: 45000 },
+              { evaluatorLevel: 'CEO_LEVEL', id: '2', firstName: 'ผู้ตีราคา', lastName: 'ระดับจังหวัด', titleName: 'MS', loanAmount: 48000 },
+              { evaluatorLevel: 'CEO_LEVEL', id: '3', firstName: 'ผู้ตีราคา', lastName: 'ระดับภายนอก', titleName: 'MR', loanAmount: 47000 }
             ],
             evaluatorLevel: 'CEO_LEVEL',
-            id: 2
+            id: '2'
           }
         ]
       }

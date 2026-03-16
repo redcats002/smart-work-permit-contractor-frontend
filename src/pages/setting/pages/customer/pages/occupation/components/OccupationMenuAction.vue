@@ -15,6 +15,7 @@
 import { ref } from 'vue'
 import type { IActionCustomerOccupationPayload } from '@/models/request/customer-occupation/CustomerOccupationReq.model'
 import type { ICustomerOccupationList } from '@/models/response/customer-occupation/CustomerOccupationRes.model'
+import type { TBaseParamsId } from '@/models/response/Response.model'
 import BaseActionMenu, { type IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import ModalOccupationAction from './ModalOccupationAction.vue'
 
@@ -23,8 +24,8 @@ interface IProps {
 }
 
 interface IEmits {
-  edit: [id: number]
-  delete: [id: number]
+  edit: [id: TBaseParamsId]
+  delete: [id: TBaseParamsId]
 }
 
 const props = defineProps<IProps>()
@@ -43,7 +44,7 @@ function openEdit (): void {
   editModalVisible.value = true
 }
 
-function onEdit (id: number): void {
+function onEdit (id: TBaseParamsId): void {
   emits('edit', id)
 }
 
