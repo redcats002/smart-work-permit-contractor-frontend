@@ -12,7 +12,7 @@ export default function useInit (): IUseInit {
 
   const { tab, tabItems } = useTabItems(
     computed((): ITabItemComponent[] => [
-      { key: 'PreContract', label: 'หลักประกัน', value: 'preContract', instance: PreContract },
+      { key: 'PreContract', label: 'ประเมินหลักทรัพย์', value: 'preContract', instance: PreContract },
       { key: 'Contract', label: 'สัญญา', value: 'contract', instance: ContractTab }
     ])
   )

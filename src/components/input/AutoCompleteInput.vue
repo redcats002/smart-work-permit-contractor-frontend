@@ -1,7 +1,7 @@
 <template>
   <AutoComplete
     v-bind="$attrs"
-    class="h-9 shadow-none!"
+    :class="$attrs.multiple ? 'min-h-9 shadow-none!' : 'h-9 shadow-none!'"
     dropdown-class="bg-white"
     dropdown
     fluid>

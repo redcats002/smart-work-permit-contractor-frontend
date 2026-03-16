@@ -7,7 +7,7 @@ export interface IBranchProvider {
   getBranchPaginate(query: IGetBranchList): Promise<TGetBranchListResponse>
   createBranch(payload: ICreateBranchPayload): Promise<TActionBranch>
   updateBranch(id: TBaseParamsId, payload: IUpdateBranchPayload): Promise<TActionBranch>
-  deleteBranch(id: number): Promise<TActionBranch>
+  deleteBranch(id: TBaseParamsId): Promise<TActionBranch>
   getBranchFindOne(id: TBaseParamsId): Promise<TGetBranchByIdResponse>
 }
 
@@ -29,7 +29,7 @@ class BranchProvider extends HttpRequest implements IBranchProvider {
     return response
   }
 
-  public async deleteBranch (id: number): Promise<TActionBranch> {
+  public async deleteBranch (id: TBaseParamsId): Promise<TActionBranch> {
     const response = await this.delete(`${this.urlPrefix}/${id}`)
     return response
   }

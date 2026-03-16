@@ -21,8 +21,9 @@
           name="titleName"
           hide-error>
           <TitleNameSelection
-            v-model="model.titleName"
+            v-model="model.title"
             :invalid="invalid"
+            name="titleName"
             dropdown />
         </LabelField>
         <LabelField
@@ -48,7 +49,7 @@
         hide-error
         required>
         <DatePickerInput
-          v-model="model.birthDate"
+          v-model="model.dateOfBirth"
           :invalid="invalid"
           :max-date="dayjs().toDate()"
           name="birthDate" />
@@ -74,25 +75,24 @@
       </LabelField>
       <LabelField
         label="ตำแหน่ง"
+        name="role"
         tag="div"
         required>
-        <SelectInput
+        <RoleSelection
           v-model="model.role"
-          :options="EmployeeRoleItems"
-          option-label="label"
-          option-value="value"
+          name="role"
           placeholder="เลือกตำแหน่ง" />
       </LabelField>
       <LabelField
         label="สาขา"
+        name="branchIds"
         tag="div"
         required>
-        <SelectInput
-          v-model="model.branchId"
-          :options="branchItems"
-          option-label="label"
-          option-value="value"
-          placeholder="เลือกสาขา" />
+        <BranchSelection
+          v-model="model.branchIds"
+          name="branchIds"
+          placeholder="เลือกสาขา"
+          multiple />
       </LabelField>
     </div>
   </div>
@@ -109,10 +109,10 @@ import DatePickerInput from '@/components/input/DatePickerInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import PhoneNumberInput from '@/components/input/PhoneNumberInput.vue'
 import Switch from '@/components/input/Switch.vue'
+import BranchSelection from '@/components/selection/modules/branch/BranchSelection.vue'
+import RoleSelection from '@/components/selection/modules/role/RoleSelection.vue'
 import TitleNameSelection from '@/components/selection/TitleNameSelection.vue'
 import { useFormInitialValues } from '../schema/employee.schema'
-import SelectInput from '@/components/input/SelectInput.vue'
-import { EmployeeRoleItems } from '@/enums/modules/employee/EmployeeRole.enum'
 
 interface IProps {
   form?: IFormState
@@ -134,12 +134,6 @@ const isActive = computed({
     model.value.status = value ? EmployeeStatusEnum.ACTIVE : EmployeeStatusEnum.INACTIVE
   }
 })
-
-const branchItems = [
-  { label: 'ขอนแก่น', value: 1 },
-  { label: 'กรุงเทพ', value: 2 },
-  { label: 'เชียงใหม่', value: 3 }
-]
 </script>
 
 <style scoped>

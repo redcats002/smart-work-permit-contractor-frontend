@@ -26,7 +26,7 @@
           src="/logo.svg">
       </div>
       <p class="text-sm text-(--p-red) flex justify-center items-center gap-2 my-2">
-        สาขา : <span>ขอนแก่น</span>
+        สาขา : <span>{{ authStore.branch?.name || 'BY_PASS' }}</span>
         <Icon
           class="text-font-gray cursor-pointer hover:text-black transition-all duration-200"
           icon="iconamoon:exit"
@@ -45,10 +45,12 @@
           <AppDrawerSubMenu
             v-if="menu.children?.length"
             :children="menu.children"
+            :disabled="menu.disabled"
             :icon="menu.icon"
             :label="menu.label" />
           <AppDrawerMenu
             v-else
+            :disabled="menu.disabled"
             :icon="menu.icon"
             :label="menu.label"
             :to="menu.to!" />
@@ -60,6 +62,7 @@
         <AppDrawerMenu
           v-for="menu in buttomMenuItems"
           :key="`bottom-${menu.label}`"
+          :disabled="menu.disabled"
           :icon="menu.icon"
           :label="menu.label"
           :to="menu.to!" />
@@ -69,6 +72,7 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '@/stores/Auth'
 import useLogout from '@/pages/auth/composables/useLogout'
 import { useAppDrawer } from '@/composables/useAppDrawer'
 import { Icon } from '@iconify/vue'
@@ -84,8 +88,11 @@ interface IMenuItem {
   icon: string
   key: string
   to?: string
+  disabled?: boolean
   children?: { label: string, to: string }[]
 }
+
+const authStore = useAuthStore()
 
 const menuItems: IMenuItem[] = [
   { label: 'ข่าวสาร',
@@ -102,7 +109,7 @@ const menuItems: IMenuItem[] = [
     ]
   },
   { label: 'แดชบอร์ด', icon: '/menuicon/dashbord.svg', key: 'dashboard', to: '/' },
-  { label: 'รายงาน', icon: '/menuicon/report.svg', key: 'reports', to: '/reports' },
+  { label: 'รายงาน', icon: '/menuicon/report.svg', key: 'reports', to: '/reports', disabled: true },
   { label: 'สัญญา', icon: '/menuicon/contract.svg', key: 'contracts', to: '/contract/list' },
   { label: 'ลูกค้า', icon: '/menuicon/customer.svg', key: 'customers', to: '/customer/list' },
   { label: 'หลักทรัพย์', icon: '/menuicon/box.svg', key: 'assets', to: '/assets/list' },

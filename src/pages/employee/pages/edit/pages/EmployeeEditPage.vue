@@ -41,12 +41,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
+import type { IEmployeeById } from '@/models/response/employee/EmployeeRes.model'
+import type { TBaseParamsId } from '@/models/response/Response.model'
 import type { IEmployeeProvider } from '@/resources/provider/employee/Employee.provider'
 import EmployeeProvider from '@/resources/provider/employee/Employee.provider'
 import BaseContainer from '@/components/base/BaseContainer.vue'
@@ -59,11 +61,13 @@ import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import { usePayload } from '..//../create/composables/usePayload'
-import { type EmployeeFormValues, EmployeeSchema, useFormInitialValues } from '../../create/schema/employee.schema'
-import InformationForm from '../../create/components/InformationForm.vue'
 import AddressForm from '../../create/components/AddressForm.vue'
+import InformationForm from '../../create/components/InformationForm.vue'
+import { usePayload } from '../../create/composables/usePayload'
+import { type EmployeeFormValues, EmployeeSchema, useFormInitialValues } from '../../create/schema/employee.schema'
+import { useInitForm } from '../composables/useInitForm'
 
+const route = useRoute()
 const router = useRouter()
 
 const EmployeeService: IEmployeeProvider = new EmployeeProvider()
@@ -72,6 +76,7 @@ const formKey = ref<number>(0)
 const form = ref<EmployeeFormValues>(useFormInitialValues())
 const resolver = zodResolver(EmployeeSchema)
 
+const employeeId = computed((): TBaseParamsId => route?.params?.id)
 const mainAddress = computed({
   get (): IAddressRequest {
     return {
@@ -113,11 +118,18 @@ const currentAddress = computed({
   }
 })
 
+
+async function useFetch (): Promise<void> {
+  const { data } = await EmployeeService.getEmployeeFindOne(employeeId.value)
+  useInit(data)
+}
+
 async function useSubmit (): Promise<void> {
-  await EmployeeService.createEmployee(usePayload(form.value))
+  await EmployeeService.updateEmployee(employeeId.value, usePayload(form.value))
   toast.success('ดำเนินการสำเร็จ')
   router.push({ name: 'EmployeeListPage' })
 }
+
 
 async function onSubmit (event: FormSubmitEvent): Promise<void> {
   if (!event.valid) {
@@ -131,6 +143,10 @@ function onCancel (): void {
   router.push({ name: 'EmployeeListPage' })
 }
 
+function useInit (data: IEmployeeById): void {
+  useInitForm(form, data)
+  formKey.value++
+}
 
 function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
   if (type === 'CURRENT') {
@@ -146,6 +162,11 @@ function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
     }
   }
 }
+
+
+onMounted((): void => {
+  useFetch()
+})
 </script>
 
 <style scoped>

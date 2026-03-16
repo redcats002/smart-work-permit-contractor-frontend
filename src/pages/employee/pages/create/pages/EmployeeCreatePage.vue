@@ -4,6 +4,9 @@
     <BaseTop>
       <BackButton />
       <Spacer />
+      <ConfirmButton
+        label="Auto"
+        @click="onAuto()" />
       <ReadIdentificationCardButton />
     </BaseTop>
     <BasePage>
@@ -53,6 +56,7 @@ import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
+import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
 import ReadIdentificationCardButton from '@/components/button/ReadIdentificationCardButton.vue'
 import Spacer from '@/components/flex/Spacer.vue'
@@ -62,7 +66,7 @@ import InformationForm from '../components/InformationForm.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { usePayload } from '../composables/usePayload'
-import { type EmployeeFormValues, EmployeeSchema, useFormInitialValues } from '../schema/employee.schema'
+import { type EmployeeFormValues, EmployeeSchema, useDev, useFormInitialValues } from '../schema/employee.schema'
 
 const router = useRouter()
 
@@ -120,6 +124,7 @@ async function useSubmit (): Promise<void> {
 }
 
 async function onSubmit (event: FormSubmitEvent): Promise<void> {
+  console.log(event)
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return
@@ -146,6 +151,13 @@ function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
     }
   }
 }
+
+function onAuto (): void {
+  form.value = { ...useDev() }
+  // Remount <Form> so it picks up the new initial-values without stale error state
+  formKey.value++
+}
+
 </script>
 
 <style scoped>

@@ -1,11 +1,12 @@
 import type { IEntity, TBaseModel } from '@/models/Global.model'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
+import type { TEmployeeRole } from '@/enums/modules/employee/EmployeeRole.enum'
 import type { TEmployeeStatus } from '@/enums/modules/employee/EmployeeStatus.enum'
 import type { TEstateStatus } from '@/enums/modules/estate/EstateStatus.enum'
 import type { TTitleName } from '@/enums/TitleName.enum'
+import type { IBranchList } from '../branch/BranchRes.model'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
-import type { TEmployeeRole } from '@/enums/modules/employee/EmployeeRole.enum'
 
 export interface IEmployeeList extends IEntity {
   titleName: TTitleName
@@ -18,16 +19,17 @@ export interface IEmployeeList extends IEntity {
 export interface IEmployeeById extends IEntity {
   status: TEmployeeStatus
   idCard: string
-  titleName: TTitleName
+  title: TTitleName
   firstName: string
   lastName: string
   phoneNumber: string
-  birthDate: string
+  image?: string
+  dateOfBirth: string
   mainAddress: IAddressRequest
   currentAddress: IAddressRequest
   email?: string
   role: TEmployeeRole
-  branchId: number
+  branches: IBranchList[]
 }
 
 export interface IEmployeeContractList extends IEntity {

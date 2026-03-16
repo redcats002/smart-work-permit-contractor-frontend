@@ -1,23 +1,21 @@
 import { ref, type Ref } from 'vue'
-
 import type { IEmployeeById } from '@/models/response/employee/EmployeeRes.model'
 
 export function useInitDetail (data?: Partial<IEmployeeById>): Ref<IEmployeeById> {
   return ref<IEmployeeById>({
-    status: 'INACTIVE',
-    idCard: '',
-    titleName: 'MR',
-    firstName: '',
-    lastName: '',
-    phoneNumber: '',
-    birthDate: '',
-    email: '',
-    role: 'ADMIN',
-    branchId: 0,
-
     ...data,
-    id: data?.id ?? 0,
-    mainAddress: {
+    status: data?.status || 'INACTIVE',
+    idCard: data?.idCard || '',
+    title: data?.title || 'MR',
+    firstName: data?.firstName || '',
+    lastName: data?.lastName || '',
+    phoneNumber: data?.phoneNumber || '',
+    dateOfBirth: data?.dateOfBirth || '',
+    email: data?.email || '',
+    role: data?.role || 'ADMIN',
+    branches: data?.branches || [],
+    id: data?.id ?? '',
+    mainAddress: data?.mainAddress || {
       id: 0,
       address: '',
       district: '',
@@ -26,10 +24,9 @@ export function useInitDetail (data?: Partial<IEmployeeById>): Ref<IEmployeeById
       province: '',
       urlGoogleMap: '',
       isSameCitizenAddress: false,
-      isSameCurrentAddress: false,
-      ...data?.mainAddress
+      isSameCurrentAddress: false
     },
-    currentAddress: {
+    currentAddress: data?.currentAddress || {
       id: 0,
       address: '',
       district: '',
@@ -38,8 +35,7 @@ export function useInitDetail (data?: Partial<IEmployeeById>): Ref<IEmployeeById
       province: '',
       urlGoogleMap: '',
       isSameCitizenAddress: false,
-      isSameCurrentAddress: false,
-      ...data?.currentAddress
+      isSameCurrentAddress: false
     }
   })
 }

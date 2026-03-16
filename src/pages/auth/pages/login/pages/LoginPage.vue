@@ -43,6 +43,7 @@ import { handleLoading } from '@/utils/HandleLoading'
 import type { IActionLoginPayload } from '@/models/request/auth/public/AuthReq.public.model'
 import type { IAuthBranchList } from '@/models/response/auth/private/AuthRes.private.model'
 import type { ILoginResponse, IRegisterResponse } from '@/models/response/auth/public/AuthRes.public.model'
+import type { TBaseParamsId } from '@/models/response/Response.model'
 import AuthPrivateProvider, { type IAuthPrivateProvider } from '@/resources/provider/auth/private/Auth.private.provider'
 import type { IAuthPublicProvider } from '@/resources/provider/auth/public/Auth.public.provider'
 import AuthPublicProvider from '@/resources/provider/auth/public/Auth.public.provider'
@@ -98,19 +99,20 @@ async function useRegister (): Promise<void> {
   toast.success('ตั้งรหัสผ่านสำเร็จ')
 }
 
-async function useSelectBranch (branchId: number): Promise<void> {
-  const response = await AuthPrivateService.selectBranch({ branchId })
-  authStore.branchLogin(response.data?.branch)
+async function useSelectBranch (branchId: TBaseParamsId, branch: IAuthBranchList): Promise<void> {
+  await AuthPrivateService.selectBranch({ branchId })
+  authStore.branchLogin(branch)
   toast.success('ยินดีต้อนรับเข้าสู่ระบบ')
   router.push({ name: 'HomePage' })
 }
 
-async function useApproveBranch (branchId: number): Promise<void> {
+// !DEPRECATED: Not use accept/reject branch anymore, just auto approve for now
+async function useApproveBranch (branchId: TBaseParamsId): Promise<void> {
   const response = await AuthPrivateService.approveBranch({ branchId })
   branches.value = response.data?.branches || []
 }
 
-async function useRejectBranch (branchId: number): Promise<void> {
+async function useRejectBranch (branchId: TBaseParamsId): Promise<void> {
   const response = await AuthPrivateService.rejectBranch({ branchId })
   branches.value = response.data?.branches || []
 }
@@ -147,15 +149,15 @@ function onRegister (): void {
   handleLoading(useRegister)
 }
 
-function onSelectBranch (branchId: number): void {
-  handleLoading((): Promise<void> => useSelectBranch(branchId))
+function onSelectBranch (branch: IAuthBranchList): void {
+  handleLoading((): Promise<void> => useSelectBranch(branch.id, branch))
 }
 
-function onApproveBranch (branchId: number): void {
+function onApproveBranch (branchId: TBaseParamsId): void {
   handleLoading((): Promise<void> => useApproveBranch(branchId))
 }
 
-function onRejectBranch (branchId: number): void {
+function onRejectBranch (branchId: TBaseParamsId): void {
   handleLoading((): Promise<void> => useRejectBranch(branchId))
 }
 </script>

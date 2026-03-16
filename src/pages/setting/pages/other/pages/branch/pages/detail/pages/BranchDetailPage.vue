@@ -21,6 +21,7 @@ import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
+import type { TBaseParamsId } from '@/models/response/Response.model'
 import type { IBranchProvider } from '@/resources/provider/branch/Branch.provider'
 import BranchProvider from '@/resources/provider/branch/Branch.provider'
 import BasePage from '@/components/base/BasePage.vue'
@@ -37,7 +38,7 @@ const router = useRouter()
 const BranchService: IBranchProvider = new BranchProvider()
 
 const branch = useInitDetail()
-const branchId = computed((): number => Number(route?.params?.id as string ?? ''))
+const branchId = computed((): TBaseParamsId => route?.params?.id)
 
 async function useFetch (): Promise<void> {
   const { data } = await BranchService.getBranchFindOne(branchId.value)
