@@ -1,5 +1,5 @@
 <template>
-  <BaseTop>
+  <BaseTop class="flex flex-wrap">
     <div>
       <SearchInput
         v-model="model"

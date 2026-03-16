@@ -113,10 +113,7 @@ const columns = computed<IColumn<IStockList>[]>((): IColumn<IStockList>[] => {
     }
   ]
 
-  if (props.isDetail) {
-    baseColumns.push(
-    )
-  } else {
+  if (!props.isDetail) {
     baseColumns.push(
       {
         field: 'storageLocation', // หรือ storageLocation ตาม Interface
