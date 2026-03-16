@@ -49,6 +49,7 @@ function isSelected (day: TDays): boolean {
 }
 
 function isNotAllow (day: string | TDays): boolean {
+  if (props.notAllowDays.length === 1) return false
   const index = props.notAllowDays.findIndex((_day: TDays): boolean => _day === day)
   return index !== -1
 }
