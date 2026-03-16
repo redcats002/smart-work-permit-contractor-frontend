@@ -1,7 +1,10 @@
 <template>
   <AutoCompleteInput
     v-model="innerModel"
+    :invalid="props.invalid"
+    :multiple="props.multiple"
     :suggestions="suggestions"
+    class="h-9!"
     option-label="name"
     complete-on-focus
     force-selection
@@ -13,17 +16,25 @@ import { onMounted, ref, watch } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel } from '@/models/Global.model'
 import type { IBranchList } from '@/models/response/branch/BranchRes.model'
+import type { TBaseParamsId } from '@/models/response/Response.model'
 import type { IBranchProvider } from '@/resources/provider/branch/Branch.provider'
 import BranchProvider from '@/resources/provider/branch/Branch.provider'
 import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
 import usePagination from '@/composables/usePagination'
 
+interface IProps {
+  invalid?: boolean
+  multiple?: boolean
+}
+
+const props = defineProps<IProps>()
+
 const BranchService: IBranchProvider = new BranchProvider()
 
-const model = defineModel<number | null>()
+const model = defineModel<TBaseParamsId | TBaseParamsId[] | null>()
 const selectedName = defineModel<string | null>('selectedName', { default: null })
 
-const innerModel = ref<TBaseModel | null>(null)
+const innerModel = ref<TBaseModel | TBaseModel[] | null>(props.multiple ? [] : null)
 
 const { pagination } = usePagination()
 
@@ -53,20 +64,29 @@ function search (): void {
 }
 
 function syncInnerFromId (): void {
-  if (model.value == null) {
+  if (props.multiple) {
+    const ids = Array.isArray(model.value) ? model.value.map((id: TBaseParamsId): string => String(id)) : []
+    innerModel.value = ids.length > 0
+      ? suggestions.value.filter((i: TBaseModel): boolean => ids.includes(String(i.id)))
+      : []
+    return
+  }
+  if (model.value == null || Array.isArray(model.value)) {
     innerModel.value = null
     selectedName.value = null
     return
   }
-
-  innerModel.value
-    = suggestions.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
-  selectedName.value = innerModel.value?.name ?? null
+  innerModel.value = suggestions.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
+  selectedName.value = (innerModel.value as TBaseModel | null)?.name ?? null
 }
 
-watch(innerModel, (val: TBaseModel | null): void => {
-  model.value = val?.id ? Number(val.id) : null
-  selectedName.value = val?.name ?? null
+watch(innerModel, (val: TBaseModel | TBaseModel[] | null): void => {
+  if (props.multiple) {
+    return
+  }
+  const item = val as TBaseModel | null
+  model.value = item?.id ? Number(item.id) : null
+  selectedName.value = item?.name ?? null
 })
 
 watch(model, (): void => {
