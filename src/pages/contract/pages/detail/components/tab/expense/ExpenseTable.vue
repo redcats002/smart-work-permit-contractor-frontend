@@ -7,18 +7,11 @@
     :items="props.items"
     disable-auto-left-padding
     @update="emits('update')">
-    <template #[`item.idNo`]="{ item }">
-      <LinkText :to="{}">
-        {{ item?.idNo }}
-      </LinkText>
-    </template>
-    <template #[`item.contractIdNo`]="{ item }">
-      <LinkText :to="{}">
-        {{ item?.contractIdNo }}
-      </LinkText>
-    </template>
-    <template #[`item.estateStatus`]="{ item }">
-      <ChipEstateStatus :value="item?.estateStatus" />
+    <template #[`item.action`]="{ item }">
+      <ExpenseMenuAction
+        @delete="emits('delete', item)"
+        @edit="emits('edit', item)"
+        @read="emits('read', item)" />
     </template>
   </BaseTable>
 </template>
@@ -26,21 +19,24 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
-import type { ICustomerEstateList } from '@/models/response/customer/CustomerRes.model'
+import { formatter } from '@/utils/Formatter'
+import type { IContractExpenseList } from '@/models/response/contract/ContractRes.model'
 import type { IColumn } from '@/models/Table.model'
-import LinkText from '@/components/button/LinkText.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
-import ChipEstateStatus from './ChipExpenseStatus.vue'
+import ExpenseMenuAction from './ExpenseMenuAction.vue'
 
 interface IProps {
-  items: ICustomerEstateList[]
+  items: IContractExpenseList[]
 }
 
 const props = defineProps<IProps>()
 
 interface IEmits {
   update: []
+  read: [item: IContractExpenseList]
+  edit: [item: IContractExpenseList]
+  delete: [item: IContractExpenseList]
 }
 
 const emits = defineEmits<IEmits>()
@@ -53,13 +49,12 @@ const pagination = defineModel<IPagination>('pagination', {
 const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
-const columns = ref<IColumn<ICustomerEstateList>[]>([
-  { field: 'createdAt', header: 'วันที่', align: 'left', value: (e: ICustomerEstateList): string => dayjs.formatDate(e?.createdAt || '') },
-  { field: 'idNo', header: 'เลขที่ลูกค้า', align: 'left' },
-  { field: 'contractIdNo', header: 'เลขที่สัญญา', align: 'left' },
-  { field: 'estateType', header: 'ประเภท', align: 'left', value: (e: ICustomerEstateList): string => e?.estateType?.name || '-' },
-  { field: 'storage', header: 'จุดจัดเก็บเอกสาร', align: 'left' },
-  { field: 'estateStatus', header: 'สถานะอสังหา', align: 'left' }
+const columns = ref<IColumn<IContractExpenseList>[]>([
+  { field: 'createdAt', header: 'วันที่', value: (e: IContractExpenseList): string => dayjs.formatDate(e?.createdAt || '') },
+  { field: 'expenseCategory', header: 'ประเภทค่าใช้จ่าย', value: (e: IContractExpenseList): string => e?.expenseCategory?.name || '-' },
+  { field: 'detail', header: 'คำอธิบาย', bodyClass: 'max-w-[200px]' },
+  { field: 'amount', header: 'จำนวนเงิน', align: 'right', value: (e: IContractExpenseList): string => formatter.numberFormat2Decimal(e?.amount || 0) },
+  { field: 'action', header: 'จัดการ' }
 ])
 </script>
 
