@@ -36,8 +36,8 @@
 </template>
 
 <script setup lang="ts">
+import type { IAssetDocument, IAssetMedia } from '@/models/asset/AssetDetail.model'
 import { Icon } from '@iconify/vue'
-import type { IAssetMedia, IAssetDocument } from '../composables/useDetail'
 
 interface IProps {
   images: IAssetMedia[]

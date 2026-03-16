@@ -12,6 +12,7 @@
 import { onMounted, ref, watch } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel } from '@/models/Global.model'
+import type { IBranchList } from '@/models/response/branch/BranchRes.model'
 import type { IBranchProvider } from '@/resources/provider/branch/Branch.provider'
 import BranchProvider from '@/resources/provider/branch/Branch.provider'
 import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
@@ -34,7 +35,12 @@ async function useFetch (): Promise<void> {
     limit: 9999
   })
 
-  suggestions.value = response.data ?? []
+  suggestions.value = (response.data ?? [])
+    .filter((item: IBranchList): boolean => item.id !== undefined && item.name !== undefined)
+    .map((item: IBranchList): TBaseModel => ({
+      id: item.id ?? null,
+      name: item.name ?? ''
+    }))
 }
 
 function fetch (): void {

@@ -25,7 +25,9 @@ export interface IContractCustomer extends ICustomerList {
   mainAddress?: IAddressRequest
 }
 
-export interface IContractList extends IPreContractList {}
+export interface IContractList extends Omit<IPreContractList, 'status'> {
+  status: TContractStatus
+}
 
 export interface IContractById extends IEntity {
   customers: IContractCustomer[]

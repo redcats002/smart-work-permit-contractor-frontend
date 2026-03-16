@@ -32,7 +32,7 @@ async function useFetch (): Promise<void> {
     limit: 9999
   })
   suggestions.value = (response.data ?? []).map((item: IHowDidFindUsList): TBaseModel => ({
-    id: item.id,
+    id: item.id!,
     name: item.name
   }))
 }

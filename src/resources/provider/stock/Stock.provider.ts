@@ -7,6 +7,7 @@ import type {
   IGetStockPaymentHistoryList,
   IUpdateStockPayload
 } from '@/models/request/stock/StockReq.model'
+import type { TBaseParamsId } from '@/models/response/Response.model'
 import type {
   TActionStock,
   TGetStockByIdResponse,
@@ -16,7 +17,6 @@ import type {
   TGetStockListResponse,
   TGetStockPaymentHistoryListResponse
 } from '@/models/response/stock/StockRes.model'
-import type { TBaseParamsId } from '@/models/response/Response.model'
 import HttpRequest from '@/resources/HttpRequest'
 
 export interface IStockProvider {

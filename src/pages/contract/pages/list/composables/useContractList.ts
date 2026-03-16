@@ -55,7 +55,6 @@ export default function useContractList (): IUseContractList {
             id: 1,
             name: 'สินเชื่อส่วนบุคคล'
           },
-          assetStatus: 'PENDING',
           createdAt: '2024-06-01T00:00:00+07:00',
           updatedAt: '2024-06-01T00:00:00+07:00',
           createdBy: {

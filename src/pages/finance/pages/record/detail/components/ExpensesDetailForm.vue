@@ -8,8 +8,8 @@
     v-if="data.files.length"
     class="flex gap-2 mt-5">
     <template
-      v-for="(file, fileIndex) in data.files"
-      :key="fileIndex">
+      v-for="(file, _i) in data.files"
+      :key="_i">
       <a
         :href="file.fileUrl"
         class="border border-[#BDBDBD] rounded-lg p-3 flex flex-col items-center justify-center"

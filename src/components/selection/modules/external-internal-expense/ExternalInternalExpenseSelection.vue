@@ -12,7 +12,7 @@
 import { onMounted, ref, watch } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel, TBaseOption } from '@/models/Global.model'
-import { ExternalInternalExpenseItems, type TExternalInternalExpense } from '@/enums/modules/finance/ExpenseType.enum'
+import { ExternalInternalExpenseItems, type TExternalInternalExpense } from '@/enums/modules/finance/ExternalInternalExpense.enum'
 import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
 import usePagination from '@/composables/usePagination'
 
