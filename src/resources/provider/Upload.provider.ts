@@ -21,7 +21,7 @@ class UploadProvider extends HttpRequest implements IUploadProvider {
   private urlPrefix: string = '/v1/api/storage/upload'
 
   public async uploadFile (file: File): Promise<TUploadResponse> {
-    this.setAuthHeader()
+    this.setLogHeader()
     const form = new FormData()
     form.append('file', file, encodeURIComponent(file.name))
     const response = await this.post(`${this.urlPrefix}`, form, {
