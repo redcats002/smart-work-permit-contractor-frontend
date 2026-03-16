@@ -28,9 +28,9 @@ const enumSchema = (enumObj: object, label: string): z.ZodType<any, any, any> =>
 
 const date = (label: string): z.ZodType<string, any, any> =>
   z
-    .date()
+    .string()
     .min(1, `กรุณาเลือก${label}`)
-    .transform((val: Date): string => {
+    .transform((val: string): string => {
       const dayjs = useDayjs()
       const parse = dayjs(val).toISOString()
       return dayjs(val).isValid() ? parse : val.toString()

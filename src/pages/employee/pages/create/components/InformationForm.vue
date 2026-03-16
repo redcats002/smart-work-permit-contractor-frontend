@@ -87,12 +87,10 @@
         label="สาขา"
         tag="div"
         required>
-        <SelectInput
+        <BranchSelection
           v-model="model.branchId"
-          :options="branchItems"
-          option-label="label"
-          option-value="value"
-          placeholder="เลือกสาขา" />
+          placeholder="เลือกสาขา"
+          multiple />
       </LabelField>
     </div>
   </div>
@@ -104,15 +102,16 @@ import { useDayjs } from '@/utils/Dayjs'
 import keypress from '@/utils/Keypress'
 import type { IFormState } from '@/models/Form.model'
 import type { ICreateEmployeePayload } from '@/models/request/employee/EmployeeReq.model'
+import { EmployeeRoleItems } from '@/enums/modules/employee/EmployeeRole.enum'
 import { EmployeeStatusEnum } from '@/enums/modules/employee/EmployeeStatus.enum'
 import DatePickerInput from '@/components/input/DatePickerInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import PhoneNumberInput from '@/components/input/PhoneNumberInput.vue'
+import SelectInput from '@/components/input/SelectInput.vue'
 import Switch from '@/components/input/Switch.vue'
+import BranchSelection from '@/components/selection/modules/branch/BranchSelection.vue'
 import TitleNameSelection from '@/components/selection/TitleNameSelection.vue'
 import { useFormInitialValues } from '../schema/employee.schema'
-import SelectInput from '@/components/input/SelectInput.vue'
-import { EmployeeRoleItems } from '@/enums/modules/employee/EmployeeRole.enum'
 
 interface IProps {
   form?: IFormState
@@ -134,12 +133,6 @@ const isActive = computed({
     model.value.status = value ? EmployeeStatusEnum.ACTIVE : EmployeeStatusEnum.INACTIVE
   }
 })
-
-const branchItems = [
-  { label: 'ขอนแก่น', value: 1 },
-  { label: 'กรุงเทพ', value: 2 },
-  { label: 'เชียงใหม่', value: 3 }
-]
 </script>
 
 <style scoped>

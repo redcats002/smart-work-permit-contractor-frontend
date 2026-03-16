@@ -22,10 +22,10 @@ const BranchTimeSchema = z.object({
 
 export const BranchSchema = z.object({
   name: z.string().min(1, 'กรุณากรอกชื่อคลังสินค้า'),
-  status: z.enum(Object.values(BranchStatusEnum)),
+  status: schema.enum(BranchStatusEnum, 'สถานะ'),
+  openAt: schema.date('วันเปิดสาขา'),
   idNo: z.string().min(1, 'กรุณากรอก Branch Code'),
   taxId: z.string().min(1, 'กรุณากรอก Tax ID'),
-  openAt: schema.date('วันเปิดสาขา'),
   branchTimes: z.array(BranchTimeSchema).min(1, 'กรุณาเพิ่มวันและเวลาทำการ'),
   ...AddressSchema.shape
 })

@@ -13,7 +13,7 @@ export function useInitForm (form: Ref<BranchFormValues>, data: IBranchById): vo
     ...data,
     idNo: data?.idNo || '',
     name: data?.name || '',
-    openAt: (data.openAt ? dayjs(data.openAt).toDate() : '') as unknown as string,
+    openAt: (data.openAt ? dayjs(data.openAt).toISOString() : '') as unknown as string,
     branchTimes: data?.branchTimes.map((item: IBranchTime): BranchTimeFormValues => ({
       ...item,
       closeTime: item.closeTime,
