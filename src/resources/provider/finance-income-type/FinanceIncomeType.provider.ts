@@ -1,8 +1,8 @@
 import type {
-  ICreateFinanceIncomeCategoryPayload,
-  IGetFinanceIncomeCategoryList,
-  IUpdateFinanceIncomeCategoryPayload
-} from '@/models/request/finance-income-category/FinanceIncomeCategoryReq.model'
+  ICreateFinanceIncomeTypePayload,
+  IGetFinanceIncomeTypeList,
+  IUpdateFinanceIncomeTypePayload
+} from '@/models/request/finance-income-type/FinanceIncomeTypeReq.model'
 import type {
   TActionFinanceIncomeType,
   TGetFinanceIncomeTypeByIdResponse,
@@ -12,9 +12,9 @@ import type { TBaseParamsId } from '@/models/response/Response.model'
 import HttpRequest from '@/resources/HttpRequest'
 
 export interface IFinanceIncomeTypeProvider {
-  getFinanceIncomeTypePaginate (query: IGetFinanceIncomeCategoryList): Promise<TGetFinanceIncomeTypeListResponse>
-  createFinanceIncomeType (payload: ICreateFinanceIncomeCategoryPayload): Promise<TActionFinanceIncomeType>
-  updateFinanceIncomeType (id: TBaseParamsId, payload: IUpdateFinanceIncomeCategoryPayload): Promise<TActionFinanceIncomeType>
+  getFinanceIncomeTypePaginate (query: IGetFinanceIncomeTypeList): Promise<TGetFinanceIncomeTypeListResponse>
+  createFinanceIncomeType (payload: ICreateFinanceIncomeTypePayload): Promise<TActionFinanceIncomeType>
+  updateFinanceIncomeType (id: TBaseParamsId, payload: IUpdateFinanceIncomeTypePayload): Promise<TActionFinanceIncomeType>
   deleteFinanceIncomeType (id: number): Promise<TActionFinanceIncomeType>
   getFinanceIncomeTypeFindOne (id: TBaseParamsId): Promise<TGetFinanceIncomeTypeByIdResponse>
 }
@@ -22,17 +22,17 @@ export interface IFinanceIncomeTypeProvider {
 class FinanceIncomeTypeProvider extends HttpRequest implements IFinanceIncomeTypeProvider {
   private urlPrefix: string = '/api/v1/finance-income-type'
 
-  public async getFinanceIncomeTypePaginate (query: IGetFinanceIncomeCategoryList): Promise<TGetFinanceIncomeTypeListResponse> {
+  public async getFinanceIncomeTypePaginate (query: IGetFinanceIncomeTypeList): Promise<TGetFinanceIncomeTypeListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }
 
-  public async createFinanceIncomeType (payload: ICreateFinanceIncomeCategoryPayload): Promise<TActionFinanceIncomeType> {
+  public async createFinanceIncomeType (payload: ICreateFinanceIncomeTypePayload): Promise<TActionFinanceIncomeType> {
     const response = await this.post(`${this.urlPrefix}`, payload)
     return response
   }
 
-  public async updateFinanceIncomeType (id: TBaseParamsId, payload: IUpdateFinanceIncomeCategoryPayload): Promise<TActionFinanceIncomeType> {
+  public async updateFinanceIncomeType (id: TBaseParamsId, payload: IUpdateFinanceIncomeTypePayload): Promise<TActionFinanceIncomeType> {
     const response = await this.put(`${this.urlPrefix}/${id}`, payload)
     return response
   }
