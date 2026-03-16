@@ -9,7 +9,7 @@
         <div class="flex justify-between items-center">
           <div class="text-sm grid grid-cols-1 gap-2">
             <span class="font-bold">สาขา: {{ branch.name }}</span>
-            <span class="text-gray-500">ตำแหน่ง: {{ branch.role }}</span>
+            <span class="text-gray-500">ตำแหน่ง: {{ formatTitle(branch.role) }}</span>
           </div>
           <!-- <div
           v-if="branch?.isNew"
@@ -51,15 +51,17 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import type { IAuthBranchList } from '@/models/response/auth/private/AuthRes.private.model'
+import type { TBaseParamsId } from '@/models/response/Response.model'
+import { formatTitle } from '@/enums/modules/employee/EmployeeRole.enum'
 import { Icon } from '@iconify/vue'
 
 interface IProps {
   branches?: IAuthBranchList[]
 }
 interface IEmits {
-  approve: [branchId: number]
-  reject: [branchId: number]
-  submit: [branchId: number]
+  approve: [branchId: TBaseParamsId]
+  reject: [branchId: TBaseParamsId]
+  submit: [branch: IAuthBranchList]
 }
 
 withDefaults(defineProps<IProps>(), {
@@ -71,7 +73,7 @@ const router = useRouter()
 
 function onSelect (branch: IAuthBranchList): void {
   if (!branch?.id) return
-  emits('submit', branch.id)
+  emits('submit', branch)
 }
 
 function onByPass (): void {
