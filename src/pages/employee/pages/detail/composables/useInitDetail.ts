@@ -14,7 +14,7 @@ export function useInitDetail (data?: Partial<IEmployeeById>): Ref<IEmployeeById
     email: data?.email || '',
     role: data?.role || 'ADMIN',
     branches: data?.branches || [],
-    id: data?.id ?? 0,
+    id: data?.id ?? '',
     mainAddress: data?.mainAddress || {
       id: 0,
       address: '',
