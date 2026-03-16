@@ -41,7 +41,7 @@ class HttpRequest implements IHttpRequest {
     })
 
     this.axiosInstance.interceptors.request.use((config: any): any => {
-      this.setLogHeader()
+      // this.setLogHeader() //TODO: it send method option when set header
       return onRequest(config)
     }, onRequestError)
 
