@@ -31,6 +31,7 @@
 import { ref } from 'vue'
 import type { IActionFinanceExpenseCategoryPayload } from '@/models/request/finance-expense-category/FinanceExpenseCategoryReq.model'
 import type { IFinanceExpenseCategoryList } from '@/models/response/finance-expense-category/FinanceExpenseCategoryRes.model'
+import type { TBaseParamsId } from '@/models/response/Response.model'
 import type { IColumn } from '@/models/Table.model'
 import { formatTitle } from '@/enums/modules/finance/ExternalInternalExpense.enum'
 import BaseTable from '@/components/table/BaseTable.vue'
@@ -40,7 +41,7 @@ import ModalExpenseCategoryAction from './ModalExpenseCategoryAction.vue'
 
 interface IProps {
   items: IFinanceExpenseCategoryList[]
-  selectCategoryId?: number | null
+  selectCategoryId?: TBaseParamsId | null
 }
 
 const props = defineProps<IProps>()
@@ -48,8 +49,8 @@ const props = defineProps<IProps>()
 interface IEmits {
   create: []
   update: []
-  delete: [id: number]
-  edit: [id: number]
+  delete: [id: TBaseParamsId]
+  edit: [id: TBaseParamsId]
 }
 
 const emits = defineEmits<IEmits>()

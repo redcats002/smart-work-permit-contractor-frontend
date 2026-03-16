@@ -7,7 +7,7 @@ export interface IHowDidFindUsProvider {
   getHowDidFindUsPaginate (query: IGetHowDidFindUsList): Promise<TGetHowDidFindUsListResponse>
   createHowDidFindUs (payload: ICreateHowDidFindUsPayload): Promise<TActionHowDidFindUs>
   updateHowDidFindUs (id: TBaseParamsId, payload: IUpdateHowDidFindUsPayload): Promise<TActionHowDidFindUs>
-  deleteHowDidFindUs (id: number): Promise<TActionHowDidFindUs>
+  deleteHowDidFindUs (id: TBaseParamsId): Promise<TActionHowDidFindUs>
   getHowDidFindUsFindOne (id: TBaseParamsId): Promise<TGetHowDidFindUsByIdResponse>
 }
 
@@ -29,7 +29,7 @@ class HowDidFindUsProvider extends HttpRequest implements IHowDidFindUsProvider 
     return response
   }
 
-  public async deleteHowDidFindUs (id: number): Promise<TActionHowDidFindUs> {
+  public async deleteHowDidFindUs (id: TBaseParamsId): Promise<TActionHowDidFindUs> {
     const response = await this.delete(`${this.urlPrefix}/${id}`)
     return response
   }

@@ -84,6 +84,7 @@ export interface IContractIncomeList extends IEntity {
 }
 export interface IContractGuarantorList extends ICustomerList {
   idCard: string
+  mainAddress: IAddressRequest
   birthDate?: string
 }
 export interface IContractContactHistoryList extends IEntity {

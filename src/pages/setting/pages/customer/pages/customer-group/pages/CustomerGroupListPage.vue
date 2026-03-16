@@ -30,6 +30,7 @@ import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IActionCustomerGroupPayload, IGetCustomerGroupList } from '@/models/request/customer-group/CustomerGroupReq.model'
 import type { ICustomerGroupList } from '@/models/response/customer-group/CustomerGroupRes.model'
+import type { TBaseParamsId } from '@/models/response/Response.model'
 import type { ICustomerGroupProvider } from '@/resources/provider/customer-group/CustomerGroup.provider'
 import CustomerGroupProvider from '@/resources/provider/customer-group/CustomerGroup.provider'
 import BasePage from '@/components/base/BasePage.vue'
@@ -71,12 +72,12 @@ async function useCreate (): Promise<void> {
   toast.success('ดำเนินการสำเร็จ')
   await useFetch()
 }
-async function useUpdate (id: number): Promise<void> {
+async function useUpdate (id: TBaseParamsId): Promise<void> {
   await CustomerGroupService.updateCustomerGroup(id, form.value)
   toast.success('ดำเนินการสำเร็จ')
   await useFetch()
 }
-async function useDelete (id: number): Promise<void> {
+async function useDelete (id: TBaseParamsId): Promise<void> {
   await CustomerGroupService.deleteCustomerGroup(id)
   toast.success('ดำเนินการสำเร็จ')
   await useFetch()
@@ -85,10 +86,10 @@ async function useDelete (id: number): Promise<void> {
 function onCreate (): void {
   handleLoading(useCreate)
 }
-function onUpdate (id: number): void {
+function onUpdate (id: TBaseParamsId): void {
   handleLoading((): Promise<void> => useUpdate(id))
 }
-function onDelete (id: number): void {
+function onDelete (id: TBaseParamsId): void {
   handleLoading((): Promise<void> => useDelete(id))
 }
 function fetch (): void {

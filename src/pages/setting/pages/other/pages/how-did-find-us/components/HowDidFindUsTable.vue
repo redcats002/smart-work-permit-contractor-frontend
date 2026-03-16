@@ -22,6 +22,7 @@
 import { ref } from 'vue'
 import type { IActionHowDidFindUsPayload } from '@/models/request/how-did-find-us/HowDidFindUsReq.model'
 import type { IHowDidFindUsList } from '@/models/response/how-did-find-us/HowDidFindUsRes.model'
+import type { TBaseParamsId } from '@/models/response/Response.model'
 import type { IColumn } from '@/models/Table.model'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
@@ -34,8 +35,8 @@ interface IProps {
 const props = defineProps<IProps>()
 
 interface IEmits {
-  delete: [id: number]
-  edit: [id: number]
+  delete: [id: TBaseParamsId]
+  edit: [id: TBaseParamsId]
   update: []
 }
 

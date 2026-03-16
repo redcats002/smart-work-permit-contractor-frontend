@@ -22,6 +22,7 @@
 import { ref } from 'vue'
 import type { IActionCustomerOccupationPayload } from '@/models/request/customer-occupation/CustomerOccupationReq.model'
 import type { ICustomerOccupationList } from '@/models/response/customer-occupation/CustomerOccupationRes.model'
+import type { TBaseParamsId } from '@/models/response/Response.model'
 import type { IColumn } from '@/models/Table.model'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
@@ -34,8 +35,8 @@ interface IProps {
 const props = defineProps<IProps>()
 
 interface IEmits {
-  delete: [id: number]
-  edit: [id: number]
+  delete: [id: TBaseParamsId]
+  edit: [id: TBaseParamsId]
   update: []
 }
 

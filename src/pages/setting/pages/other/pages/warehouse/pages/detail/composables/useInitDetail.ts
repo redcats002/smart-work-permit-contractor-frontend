@@ -4,7 +4,7 @@ import type { IWarehouseById } from '@/models/response/warehouse/WarehouseRes.mo
 export function useInitDetail (data?: Partial<IWarehouseById>): Ref<IWarehouseById> {
   return ref<IWarehouseById>({
     ...data,
-    id: data?.id || 0,
+    id: data?.id || '',
     name: data?.name || '',
     locations: data?.locations || [],
     options: data?.options || [],

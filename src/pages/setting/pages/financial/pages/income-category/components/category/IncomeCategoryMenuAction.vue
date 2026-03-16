@@ -15,6 +15,7 @@
 import { ref } from 'vue'
 import type { IActionFinanceIncomeTypePayload } from '@/models/request/finance-income-type/FinanceIncomeTypeReq.model'
 import type { IFinanceIncomeCategoryList } from '@/models/response/finance-income-category/FinanceIncomeCategoryRes.model'
+import type { TBaseParamsId } from '@/models/response/Response.model'
 import BaseActionMenu, { type IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import ModalIncomeCategoryAction from './ModalIncomeCategoryAction.vue'
 
@@ -23,8 +24,8 @@ interface IProps {
 }
 
 interface IEmits {
-  edit: [id: number]
-  delete: [id: number]
+  edit: [id: TBaseParamsId]
+  delete: [id: TBaseParamsId]
 }
 
 const props = defineProps<IProps>()
@@ -43,7 +44,7 @@ function openEdit (): void {
   editModalVisible.value = true
 }
 
-function onEdit (id: number): void {
+function onEdit (id: TBaseParamsId): void {
   emits('edit', id)
 }
 

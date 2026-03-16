@@ -11,7 +11,7 @@ export interface ICustomerGroupProvider {
   getCustomerGroupPaginate (query: IGetCustomerGroupList): Promise<TGetCustomerGroupListResponse>
   createCustomerGroup (payload: ICreateCustomerGroupPayload): Promise<TActionCustomerGroup>
   updateCustomerGroup (id: TBaseParamsId, payload: IUpdateCustomerGroupPayload): Promise<TActionCustomerGroup>
-  deleteCustomerGroup (id: number): Promise<TActionCustomerGroup>
+  deleteCustomerGroup (id: TBaseParamsId): Promise<TActionCustomerGroup>
   getCustomerGroupFindOne (id: TBaseParamsId): Promise<TGetCustomerGroupByIdResponse>
 }
 
@@ -33,7 +33,7 @@ class CustomerGroupProvider extends HttpRequest implements ICustomerGroupProvide
     return response
   }
 
-  public async deleteCustomerGroup (id: number): Promise<TActionCustomerGroup> {
+  public async deleteCustomerGroup (id: TBaseParamsId): Promise<TActionCustomerGroup> {
     const response = await this.delete(`${this.urlPrefix}/${id}`)
     return response
   }

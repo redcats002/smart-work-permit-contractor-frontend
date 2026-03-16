@@ -30,6 +30,7 @@ import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IActionHowDidFindUsPayload, IGetHowDidFindUsList } from '@/models/request/how-did-find-us/HowDidFindUsReq.model'
 import type { IHowDidFindUsList } from '@/models/response/how-did-find-us/HowDidFindUsRes.model'
+import type { TBaseParamsId } from '@/models/response/Response.model'
 import HowDidFindUsProvider, { type IHowDidFindUsProvider } from '@/resources/provider/how-did-find-us/HowDidFindUs.provider'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
@@ -70,12 +71,12 @@ async function useCreate (): Promise<void> {
   toast.success('ดำเนินการสำเร็จ')
   await useFetch()
 }
-async function useUpdate (id: number): Promise<void> {
+async function useUpdate (id: TBaseParamsId): Promise<void> {
   await HowDidFindUsService.updateHowDidFindUs(id, form.value)
   toast.success('ดำเนินการสำเร็จ')
   await useFetch()
 }
-async function useDelete (id: number): Promise<void> {
+async function useDelete (id: TBaseParamsId): Promise<void> {
   await HowDidFindUsService.deleteHowDidFindUs(id)
   toast.success('ดำเนินการสำเร็จ')
   await useFetch()
@@ -84,10 +85,10 @@ async function useDelete (id: number): Promise<void> {
 function onCreate (): void {
   handleLoading(useCreate)
 }
-function onUpdate (id: number): void {
+function onUpdate (id: TBaseParamsId): void {
   handleLoading((): Promise<void> => useUpdate(id))
 }
-function onDelete (id: number): void {
+function onDelete (id: TBaseParamsId): void {
   handleLoading((): Promise<void> => useDelete(id))
 }
 function fetch (): void {

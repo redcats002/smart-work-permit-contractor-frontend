@@ -1,11 +1,11 @@
 import { computed, ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
-import usePagination, { type IUsePagination } from '@/composables/usePagination'
 import type { IGetNewWorkList } from '@/models/request/work/WorkReq.model'
 import type { IFollowUpNewWorkList } from '@/models/response/work/WorkRes.model'
+import { AssetCategoryStatusEnum } from '@/enums/modules/work/AssetCategoryStatus.enum'
 import type { IWorkProvider } from '@/resources/provider/work/Work.provider'
 import WorkProvider from '@/resources/provider/work/Work.provider'
-import { AssetCategoryStatusEnum } from '@/enums/modules/work/AssetCategoryStatus.enum'
+import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
 interface IUseList extends IUsePagination {
   filters: Ref<IGetNewWorkList>
@@ -38,7 +38,7 @@ export default function useList (): IUseList {
     if (mock) {
       items.value = [
         {
-          id: 1,
+          id: '1',
           assetNo: 'AS-00001',
           phoneNumber: '088-8888888',
           assetCategory: AssetCategoryStatusEnum.LAND_NS3G,
@@ -46,7 +46,7 @@ export default function useList (): IUseList {
           customerName: 'นาย จันทร์ พงษ์พัฒนโยธิน'
         },
         {
-          id: 2,
+          id: '2',
           assetCategory: AssetCategoryStatusEnum.LAND_TITLE,
           contractNo: 'LC-00002',
           customerName: 'นาง พันธนา จิรวราภงษ์',
@@ -54,7 +54,7 @@ export default function useList (): IUseList {
           phoneNumber: '088-8888888'
         },
         {
-          id: 3,
+          id: '3',
           assetCategory: AssetCategoryStatusEnum.LAND_TITLE,
           contractNo: 'LC-00003',
           customerName: 'นางสาว โชติกา ประชายศิริกุล',
@@ -62,7 +62,7 @@ export default function useList (): IUseList {
           phoneNumber: '088-8888888'
         },
         {
-          id: 4,
+          id: '4',
           assetCategory: AssetCategoryStatusEnum.LAND_TITLE,
           contractNo: 'LC-00004',
           customerName: 'นาย ปิยะพร ชุติ้ง',

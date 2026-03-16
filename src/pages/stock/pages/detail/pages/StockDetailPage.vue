@@ -31,31 +31,32 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+// import { zodResolver } from '@primevue/forms/resolvers/zod'
+import { useStockDocsStore } from '@/stores/StockDocs'
+import type { IStockDocsById } from '@/models/response/stock/StockDocsRes.model'
+import type { IStockList } from '@/models/response/stock/StockRes.model'
+import { StockDocsStatusEnum } from '@/enums/modules/stock/StockDocsStatus.enum'
 // import { toast } from '@/plugins/toast'
 // import { handleLoading } from '@/utils/HandleLoading'
 // import { Form, type FormSubmitEvent } from '@primevue/forms'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
+import FormAction from '@/components/button/FormAction.vue'
 import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
+import InformationDetail from '../components/InformationDetail.vue'
+// import BaseContainer from '@/components/base/BaseContainer.vue'
+import StockDocsDetailMenuAction from '../components/StockDocsDetailMenuAction.vue'
 // import FormAction from '@/components/button/FormAction.vue'
 // import { scrollToFirstError } from '@/utils/HandleSubmit'
 // import {
 //   StockDocsSchema
 // } from '../../create/schema/stockDocs.schema'
 import { storeToRefs } from 'pinia'
-// import { zodResolver } from '@primevue/forms/resolvers/zod'
-import { useStockDocsStore } from '@/stores/StockDocs'
-// import BaseContainer from '@/components/base/BaseContainer.vue'
-import StockDocsDetailMenuAction from '../components/StockDocsDetailMenuAction.vue'
-import InformationDetail from '../components/InformationDetail.vue'
-import type { IStockDocsById } from '@/models/response/stock/StockDocsRes.model'
 import SelectedDocsTable from '../../create/components/SelectedDocsTable.vue'
 import useList from '../../list/composables/useList'
-import type { IStockList } from '@/models/response/stock/StockRes.model'
-import { StockDocsStatusEnum } from '@/enums/modules/stock/StockDocsStatus.enum'
-import FormAction from '@/components/button/FormAction.vue'
+
 // import SelectedDocsTable from '../../create/components/SelectedDocsTable.vue'
 // import StockProvider from '@/resources/provider/stock/Stock.provider'
 
@@ -84,7 +85,7 @@ const data = ref<IStockDocsById>(
     receiveDate: '2026-04-13T15:30:00',
     destinationWarehouse: '',
     status: 'PENDING',
-    id: 1,
+    id: '1',
     reason: 'ส่งไปสำนักงานใหญ่'
   }
 )

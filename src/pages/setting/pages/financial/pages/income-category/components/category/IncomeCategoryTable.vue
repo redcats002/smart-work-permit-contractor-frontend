@@ -31,6 +31,7 @@
 import { ref } from 'vue'
 import type { IActionFinanceIncomeTypePayload } from '@/models/request/finance-income-type/FinanceIncomeTypeReq.model'
 import type { IFinanceIncomeCategoryList } from '@/models/response/finance-income-category/FinanceIncomeCategoryRes.model'
+import type { TBaseParamsId } from '@/models/response/Response.model'
 import type { IColumn } from '@/models/Table.model'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
@@ -39,7 +40,7 @@ import ModalIncomeCategoryAction from './ModalIncomeCategoryAction.vue'
 
 interface IProps {
   items: IFinanceIncomeCategoryList[]
-  selectCategoryId?: number | null
+  selectCategoryId?: TBaseParamsId | null
 }
 
 const props = defineProps<IProps>()
@@ -47,8 +48,8 @@ const props = defineProps<IProps>()
 interface IEmits {
   create: []
   update: []
-  delete: [id: number]
-  edit: [id: number]
+  delete: [id: TBaseParamsId]
+  edit: [id: TBaseParamsId]
 }
 
 const emits = defineEmits<IEmits>()

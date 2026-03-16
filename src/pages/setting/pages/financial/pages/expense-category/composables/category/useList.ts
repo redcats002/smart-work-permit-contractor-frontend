@@ -6,6 +6,7 @@ import type {
   IGetFinanceExpenseCategoryList
 } from '@/models/request/finance-expense-category/FinanceExpenseCategoryReq.model'
 import type { IFinanceExpenseCategoryList } from '@/models/response/finance-expense-category/FinanceExpenseCategoryRes.model'
+import type { TBaseParamsId } from '@/models/response/Response.model'
 import FinanceExpenseCategoryProvider, {
   type IFinanceExpenseCategoryProvider
 } from '@/resources/provider/finance-expense-category/FinanceIncomeCategory.provider'
@@ -15,10 +16,10 @@ import { useFormInitialValues } from '../../schema/finance-expense-category.sche
 interface IUseList extends IUsePagination {
   items: Ref<IFinanceExpenseCategoryList[]>
   form: Ref<IActionFinanceExpenseCategoryPayload>
-  useDelete: (id: number) => Promise<void>
+  useDelete: (id: TBaseParamsId) => Promise<void>
   onCreate: () => void
-  onUpdate: (id: number) => void
-  onDelete: (id: number) => void
+  onUpdate: (id: TBaseParamsId) => void
+  onDelete: (id: TBaseParamsId) => void
   fetch: () => void
 }
 
@@ -50,12 +51,12 @@ export default function useList (): IUseList {
     toast.success('ดำเนินการสำเร็จ')
     await useFetch()
   }
-  async function useUpdate (id: number): Promise<void> {
+  async function useUpdate (id: TBaseParamsId): Promise<void> {
     await FinanceExpenseCategoryService.updateFinanceExpenseCategory(id, form.value)
     toast.success('ดำเนินการสำเร็จ')
     await useFetch()
   }
-  async function useDelete (id: number): Promise<void> {
+  async function useDelete (id: TBaseParamsId): Promise<void> {
     await FinanceExpenseCategoryService.deleteFinanceExpenseCategory(id)
     toast.success('ดำเนินการสำเร็จ')
     await useFetch()
@@ -64,10 +65,10 @@ export default function useList (): IUseList {
   function onCreate (): void {
     handleLoading(useCreate)
   }
-  function onUpdate (id: number): void {
+  function onUpdate (id: TBaseParamsId): void {
     handleLoading((): Promise<void> => useUpdate(id))
   }
-  function onDelete (id: number): void {
+  function onDelete (id: TBaseParamsId): void {
     handleLoading((): Promise<void> => useDelete(id))
   }
   function fetch (): void {

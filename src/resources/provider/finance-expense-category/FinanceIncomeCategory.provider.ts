@@ -15,7 +15,7 @@ export interface IFinanceExpenseCategoryProvider {
   getFinanceExpenseCategoryPaginate(query: IGetFinanceExpenseCategoryList): Promise<TGetFinanceExpenseCategoryListResponse>
   createFinanceExpenseCategory(payload: ICreateFinanceExpenseCategoryPayload): Promise<TActionFinanceExpenseCategory>
   updateFinanceExpenseCategory(id: TBaseParamsId, payload: IUpdateFinanceExpenseCategoryPayload): Promise<TActionFinanceExpenseCategory>
-  deleteFinanceExpenseCategory(id: number): Promise<TActionFinanceExpenseCategory>
+  deleteFinanceExpenseCategory(id: TBaseParamsId): Promise<TActionFinanceExpenseCategory>
   getFinanceExpenseCategoryFindOne(id: TBaseParamsId): Promise<TGetFinanceExpenseCategoryByIdResponse>
 }
 
@@ -40,7 +40,7 @@ class FinanceExpenseCategoryProvider extends HttpRequest implements IFinanceExpe
     return response
   }
 
-  public async deleteFinanceExpenseCategory (id: number): Promise<TActionFinanceExpenseCategory> {
+  public async deleteFinanceExpenseCategory (id: TBaseParamsId): Promise<TActionFinanceExpenseCategory> {
     const response = await this.delete(`${this.urlPrefix}/${id}`)
     return response
   }

@@ -15,7 +15,7 @@ export interface IFinanceExpenseTypeProvider {
   getFinanceExpenseTypePaginate (query: IGetFinanceExpenseTypeList): Promise<TGetFinanceExpenseTypeListResponse>
   createFinanceExpenseType (payload: ICreateFinanceExpenseTypePayload): Promise<TActionFinanceExpenseType>
   updateFinanceExpenseType (id: TBaseParamsId, payload: IUpdateFinanceExpenseTypePayload): Promise<TActionFinanceExpenseType>
-  deleteFinanceExpenseType (id: number): Promise<TActionFinanceExpenseType>
+  deleteFinanceExpenseType (id: TBaseParamsId): Promise<TActionFinanceExpenseType>
   getFinanceExpenseTypeFindOne (id: TBaseParamsId): Promise<TGetFinanceExpenseTypeByIdResponse>
 }
 
@@ -37,7 +37,7 @@ class FinanceExpenseTypeProvider extends HttpRequest implements IFinanceExpenseT
     return response
   }
 
-  public async deleteFinanceExpenseType (id: number): Promise<TActionFinanceExpenseType> {
+  public async deleteFinanceExpenseType (id: TBaseParamsId): Promise<TActionFinanceExpenseType> {
     const response = await this.delete(`${this.urlPrefix}/${id}`)
     return response
   }

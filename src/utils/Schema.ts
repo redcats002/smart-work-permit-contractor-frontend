@@ -2,17 +2,24 @@ import z from 'zod'
 import { useDayjs } from './Dayjs'
 
 interface ISchema {
-  id: (label: string) => z.ZodOptional<z.ZodNumber>
+  id: (label: string) => z.ZodOptional<z.ZodType<number | string, any, any>>
   enum: (enumObj: object, label: string) => z.ZodType<any, any, any>
   date: (label: string) => z.ZodType<string, any, any>
 }
 
-const id = (label: string): z.ZodOptional<z.ZodNumber> =>
+const id = (label: string): z.ZodOptional<z.ZodType<number | string, any, any>> =>
   z
-    .number()
-    .min(1, `กรุณาเลือก${label}`)
+    .preprocess(
+      (val: unknown): unknown => {
+        if (typeof val === 'string' && val.trim() !== '') {
+          const num = Number(val)
+          return isNaN(num) ? val : num
+        }
+        return val
+      }, z.union([z.number().min(1, `กรุณาเลือก${label}`), z.string().min(1, `กรุณาเลือก${label}`)])
+    )
     .optional()
-    .refine((val: number | undefined): boolean => val !== undefined, `กรุณาเลือก${label}`)
+    .refine((val: number | string | undefined): boolean => val !== undefined && val !== '', `กรุณาเลือก${label}`)
 
 const enumSchema = (enumObj: object, label: string): z.ZodType<any, any, any> =>
   z

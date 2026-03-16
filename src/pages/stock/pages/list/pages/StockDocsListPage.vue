@@ -29,13 +29,13 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import type { IStockDocsList } from '@/models/response/stock/StockDocsRes.model'
 import BasePage from '@/components/base/BasePage.vue'
+import CreateButton from '@/components/button/CreateButton.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
+import StockDocsTable from '../components/StockDocsTable.vue'
 import StockFilter from '../components/StockFilter.vue'
 import useList from '../composables/useList'
-import type { IStockDocsList } from '@/models/response/stock/StockDocsRes.model'
-import StockDocsTable from '../components/StockDocsTable.vue'
-import CreateButton from '@/components/button/CreateButton.vue'
 
 const {
   filters,
@@ -51,7 +51,7 @@ const {
 
 const mockStockDocsItems = ref<IStockDocsList[]>([
   {
-    id: 1,
+    id: '1',
     docNo: 'EPS-00001',
     transferDate: '2024-03-12T00:00:00.000Z', // ในรูปคือ 12/3/67
     senderName: 'นาย จันทร์ พงษ์พัฒนโยธิน',
@@ -63,7 +63,7 @@ const mockStockDocsItems = ref<IStockDocsList[]>([
     updatedAt: '2024-03-12T00:00:00.000Z'
   },
   {
-    id: 2,
+    id: '2',
     docNo: 'EPS-00003',
     transferDate: '2024-05-12T00:00:00.000Z', // ในรูปคือ 12/5/67
     senderName: 'นางสาว โชติกา ประชายศิริกุล',
