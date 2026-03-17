@@ -49,11 +49,11 @@ const { formatDate } = useDayjs()
 const columns = ref<IColumn<IPreContractList>[]>([
   { field: 'idNo', header: 'เลขที่สัญญา', sortable: true, align: 'left' },
   {
-    field: 'startDate',
+    field: 'createdAt',
     header: 'วันที่เริ่มทำสัญญา',
     sortable: true,
     align: 'left',
-    value: (e: IPreContractList): string => formatDate(e.startDate ?? undefined)
+    value: (e: IPreContractList): string => formatDate(e.createdAt ?? undefined)
   },
   {
     field: 'customer',

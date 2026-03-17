@@ -6,13 +6,16 @@
         @submit="emits('requestReappraisal')" />
     </template>
     <template v-else-if="isConfirmValuation">
-      <ConfirmModal @confirm="emits('confirmAppraisal')">
+      <ModalConfirmAppraisal
+        v-model="confirmAppraisal"
+        @submit="emits('confirmAppraisal')" />
+      <!-- <ConfirmModal @confirm="emits('confirmAppraisal')">
         <template #activator="{ open }">
           <ConfirmButton
             label="ยืนยันราคาประเมิน"
             @click="open()" />
         </template>
-      </ConfirmModal>
+      </ConfirmModal> -->
       <ModalAssetValuation
         v-model="requestReappraisal"
         request-new
@@ -57,15 +60,16 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { IRequestReappraisalPayload } from '@/models/request/pre-contract/PreContractReq.model'
+import type { IConfirmAppraisalPayload, IRequestReappraisalPayload } from '@/models/request/pre-contract/PreContractReq.model'
 import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import CancelButton from '@/components/button/CancelButton.vue'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 import ModalAssetValuation from './ModalAssetValuation.vue'
+import ModalConfirmAppraisal from './ModalConfirmAppraisal.vue'
 
 interface IProps {
-  status: TPreContractStatus
+  status?: TPreContractStatus
   isMortgageFormVisible?: boolean
 }
 interface IEmits {
@@ -83,6 +87,7 @@ const props = withDefaults(defineProps<IProps>(), {
 })
 const emits = defineEmits<IEmits>()
 
+const confirmAppraisal = defineModel<IConfirmAppraisalPayload>('confirmAppraisal', { required: true })
 const requestReappraisal = defineModel<IRequestReappraisalPayload>('requestReappraisal', { required: true })
 
 const isAssetValuation = computed((): boolean => {
@@ -90,7 +95,7 @@ const isAssetValuation = computed((): boolean => {
   return list.includes(props.status)
 })
 const isConfirmValuation = computed((): boolean => {
-  const list: TPreContractStatus[] = ['PENDING_EVALUATION']
+  const list: TPreContractStatus[] = ['UNDER_EVALUATION']
   return list.includes(props.status)
 })
 const isSubmitMortgage = computed((): boolean => {

@@ -15,170 +15,54 @@ import useTabItems, {
 } from '@/composables/useTabItems'
 
 export function useInitDetail (data?: Partial<IContractById>): Ref<IContractById> {
-  const mock: IContractById = {
+  return ref<IContractById>({
     ...data,
-    periodCount: data?.periodCount || 0,
-    annualInterestRate: data?.annualInterestRate || 0,
-    contractLoanPurpose: {
-      name: data?.contractLoanPurpose?.name || '',
-      id: typeof data?.contractLoanPurpose?.id === 'string' ? data?.contractLoanPurpose?.id : String(data?.contractLoanPurpose?.id)
-    },
-    guarantors: data?.guarantors || [
-      {
-        mainAddress: {
-          address: '',
-          subDistrict: '',
-          district: '',
-          province: '',
-          postCode: ''
-        },
-        idCard: '111100000000',
-        customerGroup: {
-          id: 1,
-          name: ''
-        },
-        firstName: 'D',
-        lastName: '',
-        titleName: '',
-        id: 1,
-        phoneNumber: '',
-        status: 'ACTIVE'
-      },
-      {
-        idCard: '12345678901234',
-        customerGroup: {
-          id: 2,
-          name: ''
-        },
-        firstName: 'E',
-        lastName: '',
-        titleName: '',
-        id: 1,
-        phoneNumber: '',
-        status: 'ACTIVE',
-        mainAddress: {
-          address: '',
-          subDistrict: '',
-          district: '',
-          province: '',
-          postCode: ''
-        }
-      }
-    ],
-    contractLoanType: {
-      name: data?.contractLoanType?.name || '',
-      id: typeof data?.contractLoanType?.id === 'string' ? data?.contractLoanType?.id : String(data?.contractLoanType?.id)
-    },
-    customers: data?.customers || [
-      {
-        customerGroup: {
-          id: 1,
-          name: ''
-        },
-        firstName: 'A',
-        idCard: '',
-        lastName: '',
-        titleName: '',
-        id: 1,
-        phoneNumber: '',
-        status: 'ACTIVE'
-      },
-      {
-        customerGroup: {
-          id: 2,
-          name: ''
-        },
-        firstName: 'B',
-        idCard: '',
-        lastName: '',
-        titleName: '',
-        id: 1,
-        phoneNumber: '',
-        status: 'ACTIVE'
-      }, {
-        customerGroup: {
-          id: 3,
-          name: ''
-        },
-        firstName: 'C',
-        idCard: '',
-        lastName: '',
-        titleName: '',
-        id: 1,
-        phoneNumber: '',
-        status: 'ACTIVE'
-      }
-    ],
+    customers: [],
     employee: {
-      titleName: data?.employee?.titleName || '',
-      firstName: data?.employee?.firstName || '',
-      lastName: data?.employee?.lastName || '',
-      phoneNumber: data?.employee?.phoneNumber || '',
-      status: data?.employee?.status || 'ACTIVE',
-      id: typeof data?.employee?.id === 'string' ? data?.employee?.id : String(data?.employee?.id)
+      id: 0,
+      firstName: '',
+      lastName: '',
+      phoneNumber: '',
+      status: 'ACTIVE',
+      titleName: ''
     },
-    id: typeof data?.id === 'string' ? data?.id : String(data?.id),
-    endDate: data?.endDate || '',
-    howDidFindUs: {
-      name: data?.howDidFindUs?.name || '',
-      id: typeof data?.howDidFindUs?.id === 'string' ? data?.howDidFindUs?.id : String(data?.howDidFindUs?.id)
-    },
-    interestAmount: data?.interestAmount || 0,
-    interestType: data?.interestType,
-    lastPeriodPayment: data?.lastPeriodPayment || 0,
-    loanAmount: data?.loanAmount || 0,
-    lateFee: data?.lateFee || 0,
-    perMonthPayment: data?.perMonthPayment || 0,
-    startDate: data?.startDate || '',
-    status: data?.status || 'IN_PROGRESS'
-  }
-  return ref<IContractById>(mock || {
-    ...data,
-    periodCount: data?.periodCount || 0,
-    annualInterestRate: data?.annualInterestRate || 0,
+    guarantors: [],
+    id: 0,
+    interestAmount: 0,
+    lastPeriodPayment: 0,
+    loanAmount: 0,
+    periodCount: 0,
+    perMonthPayment: 0,
+    lateFee: 0,
+    status: 'SUCCESS',
     contractLoanPurpose: {
-      name: data?.contractLoanPurpose?.name || '',
-      id: data?.contractLoanPurpose?.id
+      id: 0,
+      name: ''
+    },
+    howDidFindUs: {
+      id: 0,
+      name: ''
     },
     contractLoanType: {
-      name: data?.contractLoanType?.name || '',
-      id: data?.contractLoanType?.id
+      id: 0,
+      name: ''
     },
-    customers: data?.customers || [],
-    employee: {
-      titleName: data?.employee?.titleName || '',
-      firstName: data?.employee?.firstName || '',
-      lastName: data?.employee?.lastName || '',
-      phoneNumber: data?.employee?.phoneNumber || '',
-      status: data?.employee?.status || 'ACTIVE',
-      id: data?.employee?.id
-    },
-    id: data?.id || 0,
-    endDate: data?.endDate || '',
-    howDidFindUs: {
-      name: data?.howDidFindUs?.name || '',
-      id: data?.howDidFindUs?.id
-    },
-    interestAmount: data?.interestAmount || 0,
-    interestType: data?.interestType,
-    lastPeriodPayment: data?.lastPeriodPayment || 0,
-    loanAmount: data?.loanAmount || 0,
-    lateFee: data?.lateFee || 0,
-    perMonthPayment: data?.perMonthPayment || 0,
-    startDate: data?.startDate || '',
-    status: data?.status || 'IN_PROGRESS'
+    startDate: '',
+    endDate: '',
+    interestType: undefined,
+    annualInterestRate: 0
   })
 }
 
-export type ListComponentType =
-  | InstanceType<typeof InformationTab>
-  | InstanceType<typeof AssetTab>
-  | InstanceType<typeof InstallmentTab>
-  | InstanceType<typeof ExpenseTab>
-  | InstanceType<typeof IncomeTab>
-  | InstanceType<typeof GuarantorTab>
-  | InstanceType<typeof ContactHistoryTab>
-  | InstanceType<typeof DocumentTab>
+export type ListComponentType
+  = | InstanceType<typeof InformationTab>
+    | InstanceType<typeof AssetTab>
+    | InstanceType<typeof InstallmentTab>
+    | InstanceType<typeof ExpenseTab>
+    | InstanceType<typeof IncomeTab>
+    | InstanceType<typeof GuarantorTab>
+    | InstanceType<typeof ContactHistoryTab>
+    | InstanceType<typeof DocumentTab>
 
 export function useInitTabDetail (): IUseTabItems {
   const Information = importComponent((): Promise<Component> => import('../components/tab/information/InformationTab.vue'))

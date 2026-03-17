@@ -4,6 +4,9 @@ import type { IWarehouseOption } from '@/models/modules/warehouse/WarehouseOptio
 import type { TWarehouseStatus } from '@/enums/modules/warehouse/WarehouseStatus.enum'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 
+export interface ILocationList extends IEntity {
+  name: string
+}
 export interface IWarehouseList extends IEntity {
   name: string
   status: TWarehouseStatus
@@ -19,3 +22,4 @@ export interface IWarehouseById extends IEntity {
 export type TGetWarehouseListResponse = IBasePaginationResponse<IWarehouseList>
 export type TGetWarehouseByIdResponse = IBaseSuccessResponse<IWarehouseById>
 export type TActionWarehouse = IBaseSuccessResponse<boolean>
+export type TGetLocationListResponse = IBasePaginationResponse<ILocationList>

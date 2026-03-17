@@ -6,3 +6,6 @@ export interface ICreateWarehousePayload extends WarehouseFormValues {}
 export interface IUpdateWarehousePayload extends ICreateWarehousePayload {}
 
 export interface IGetWarehouseList extends IBasePaginationRequest {}
+export interface IGetLocationList extends IBasePaginationRequest {
+  warehouseId?: number
+}

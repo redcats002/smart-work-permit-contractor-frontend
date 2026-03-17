@@ -3,8 +3,6 @@
     <h1 class="text-xl font-semibold">
       ข่าวสาร
     </h1>
-
-
     <PostComposer />
     <FeedList />
   </div>
@@ -13,6 +11,4 @@
 <script setup lang="ts">
 import PostComposer from '../components/composer/PostComposer.vue'
 import FeedList from '../components/feed/FeedList.vue'
-
-
 </script>

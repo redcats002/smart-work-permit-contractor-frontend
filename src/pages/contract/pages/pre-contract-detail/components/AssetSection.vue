@@ -43,7 +43,9 @@
               {{ formatTitle(activeAsset.type) }}
             </p>
             <DisplayList :items="items" />
-            <AssetWarehouseForm v-if="status==='PENDING_CONTRACT'" />
+            <AssetWarehouseForm
+              v-if="status==='PENDING_CONTRACT' && activeIndex !== undefined"
+              v-model="preAssets[activeIndex]" />
           </div>
           <Button
             v-if="isShowEdit"
@@ -69,6 +71,7 @@ import BaseContainer from '@/components/base/BaseContainer.vue'
 import BaseGalleria from '@/components/base/BaseGalleria.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
 import type { TAssetCategory } from '../../create/schema/pre-contract.schema'
+import type { PreAssetMakeAContractFormValues } from '../schema/installment.schema'
 import AssetWarehouseForm from './AssetWarehouseForm.vue'
 
 interface IProps {
@@ -93,6 +96,8 @@ const props = withDefaults(defineProps<IProps>(), {
 })
 
 const emits = defineEmits<IEmits>()
+
+const preAssets = defineModel<PreAssetMakeAContractFormValues[]>('preAssets', { required: true })
 
 const isShowEdit = computed((): boolean => {
   const editableStatus: TPreContractStatus[] = ['DRAFT', 'PENDING_EVALUATION']

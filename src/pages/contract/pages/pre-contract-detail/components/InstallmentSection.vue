@@ -4,9 +4,10 @@
       <!-- Left: form -->
       <BaseContainer class="md:col-span-2">
         <Form
+          :key="formKey"
           ref="formRef"
           v-slot="$form"
-          :initial-values="formData"
+          :initial-values="form"
           :resolver="resolver"
           class="grid grid-cols-1 sm:grid-cols-2 gap-4"
           @submit="onFormSubmit($event)">
@@ -17,12 +18,13 @@
             required>
             <template #default="{ invalid }">
               <InputNumber
-                v-model="formData.loanAmount"
+                v-model="form.loanAmount"
                 :class="invalid ? 'border-red-400!' : ''"
                 :invalid="invalid"
                 :max-fraction-digits="0"
                 class="h-9 shadow-none!"
                 fluid
+                readonly
                 @update:model-value="recalculate()" />
             </template>
           </LabelField>
@@ -34,7 +36,7 @@
             required>
             <template #default="{ invalid }">
               <InputNumber
-                v-model="formData.installments"
+                v-model="form.installmentCount"
                 :class="invalid ? 'border-red-400!' : ''"
                 :invalid="invalid"
                 :max-fraction-digits="0"
@@ -52,16 +54,13 @@
             tag="div"
             required>
             <template #default="{ invalid }">
-              <SelectInput
-                v-model="formData.interestType"
+              <InterestTypeSelection
+                v-model="form.interestType"
                 :invalid="invalid"
-                :options="interestTypeOptions"
-                option-label="label"
-                option-value="value"
+                name="interestType"
                 @change="recalculate()" />
             </template>
           </LabelField>
-
           <LabelField
             :form="$form"
             label="อัตราดอกเบี้ยเงินกู้ต่อปี (%)"
@@ -69,7 +68,7 @@
             required>
             <template #default="{ invalid }">
               <InputNumber
-                v-model="formData.annualInterestRate"
+                v-model="form.annualInterestRate"
                 :class="invalid ? 'border-red-400!' : ''"
                 :invalid="invalid"
                 :max-fraction-digits="2"
@@ -87,13 +86,14 @@
             required>
             <template #default="{ invalid }">
               <InputNumber
-                v-model="formData.lateFee"
+                v-model="form.lateFee"
                 :class="invalid ? 'border-red-400!' : ''"
                 :invalid="invalid"
                 :max-fraction-digits="0"
                 :min="0"
                 class="h-9 shadow-none!"
-                fluid />
+                fluid
+                readonly />
             </template>
           </LabelField>
         </Form>
@@ -118,13 +118,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { formatter } from '@/utils/Formatter'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { TBaseOption } from '@/models/Global.model'
+import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
+import type { IPreContractById } from '@/models/response/pre-contract/PreContractRes.model'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import LabelField from '@/components/input/LabelField.vue'
-import SelectInput from '@/components/input/SelectInput.vue'
+import InterestTypeSelection from '@/components/selection/modules/interest-type/InterestTypeSelection.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import {
@@ -133,24 +134,27 @@ import {
   computeTotalInterest,
   type IInstallmentRow,
   type InstallmentFormValues,
-  InstallmentSchema
+  InstallmentSchema,
+  type PreAssetMakeAContractFormValues
 } from '../schema/installment.schema'
 import InstallmentTable from './InstallmentTable.vue'
 
-const formData = defineModel<InstallmentFormValues>({ required: true })
+interface IProps {
+  contract: IPreContractById
+}
+
+const props = withDefaults(defineProps<IProps>(), {})
+
+const form = defineModel<InstallmentFormValues>({ required: true })
 const resolver = zodResolver(InstallmentSchema)
 const schedule = ref<IInstallmentRow[]>([])
 const monthlyPayment = ref<number>(0)
 const totalInterest = ref<number>(0)
-
-const interestTypeOptions: TBaseOption[] = [
-  { label: 'คงที่', value: 'FLAT' },
-  { label: 'ลดต้นลดดอก', value: 'REDUCING' }
-]
+const formKey = ref<number>(0)
 
 function recalculate (): void {
-  const v = formData.value
-  if (!v.loanAmount || !v.installments || v.installments <= 0) {
+  const v = form.value
+  if (!v.loanAmount || !v.installmentCount || v.installmentCount <= 0) {
     schedule.value = []
     monthlyPayment.value = 0
     totalInterest.value = 0
@@ -161,12 +165,31 @@ function recalculate (): void {
   schedule.value = computeInstallmentSchedule(v)
 }
 
+function useInit (): void {
+  form.value = {
+    preAssets: props.contract.preAssets.map((e: IPreAssetList): PreAssetMakeAContractFormValues => ({
+      id: e.id,
+      files: e?.files,
+      locationId: null
+    })),
+    loanAmount: props.contract.loanAmount,
+    installmentCount: props.contract.installmentCount,
+    interestType: props.contract.interestType,
+    annualInterestRate: props.contract.annualInterestRate,
+    lateFee: props.contract.lateFee
+  }
+}
+
 function onFormSubmit (event: FormSubmitEvent): void {
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return
   }
-  formData.value = event.values as InstallmentFormValues
+  form.value = event.values as InstallmentFormValues
   recalculate()
 }
+
+watch((): IPreContractById => props.contract, (): void => {
+  useInit()
+}, { immediate: true })
 </script>

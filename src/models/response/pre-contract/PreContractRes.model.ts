@@ -76,6 +76,7 @@ export type TGetPreContractListResponse = IBasePaginationResponse<IPreContractLi
 export type TGetPreContractByIdResponse = IBaseSuccessResponse<IPreContractById>
 export type TActionPreContract = IBaseSuccessResponse<boolean>
 export type TUpdatePreAssetPreContract = IBaseSuccessResponse<boolean>
+export type TRequestAppraisalPreContract = IBaseSuccessResponse<boolean>
 export type TRequestReappraisalPreContract = IBaseSuccessResponse<boolean>
 export type TAppraisalPricePreContract = IBaseSuccessResponse<boolean>
 export type TConfirmAppraisalPreContract = IBaseSuccessResponse<boolean>

@@ -19,13 +19,12 @@
         @edit="onEdit()" />
     </BaseTop>
     <BasePage>
-      <div
-        class="flex flex-col gap-5 pb-10">
+      <div class="flex flex-col gap-5 pb-10">
         <MortgageForm
-          v-if="contract?.status==='PENDING_MORTGAGE' && isMortgageFormVisible"
+          v-if="contract?.status === 'PENDING_MORTGAGE' && isMortgageFormVisible"
           ref="mortgageFormRef"
           v-model="formMortgage"
-          :primary-customer-name="primaryCustomerName"
+          :primary-customer="primaryCustomer"
           @confirmed="onConfirmMortgage()" />
         <template v-else>
           <PreContractInformation
@@ -34,6 +33,7 @@
         </template>
         <AssetSection
           v-if="contract?.preAssets.length"
+          v-model:pre-assets="formMakeContract.preAssets"
           :active-asset="activeAsset"
           :active-index="activeIndex"
           :asset-category="assetCategory"
@@ -48,17 +48,22 @@
           @submit="onAppraisalPrice()" />
         <InstallmentSection
           v-if="contract?.status === 'PENDING_CONTRACT'"
-          v-model="formMakeContract" />
+          v-model="formMakeContract"
+          :contract="contract" />
         <PreContractAction
           v-if="contract?.status"
+          v-model:confirm-appraisal="formConfirmAppraisal"
+          v-model:request-appraisal="formRequestAppraisal"
           v-model:request-reappraisal="formRequestReappraisal"
           :disabled="!filledAllRequired"
+          :evaluate-groups="contract.evaluateGroups"
           :is-mortgage-form-visible="isMortgageFormVisible"
           :status="contract?.status"
           @cancel="onCancel()"
           @confirm-appraisal="onConfirmAppraisal()"
           @confirm-mortgage="onTriggerConfirmMortgage()"
           @make-contract="onConfirmMakeContract()"
+          @request-appraisal="onRequestAppraisal()"
           @request-reappraisal="onRequestReappraisal()"
           @submit-mortgage="onSubmitMortgage()" />
       </div>
@@ -68,7 +73,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, useTemplateRef } from 'vue'
-import { formatter } from '@/utils/Formatter'
+import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
@@ -105,14 +110,23 @@ const {
   fetch
 } = useInitDetail()
 const { formPreAsset, onUpdatePreAsset } = usePreAsset(useFetch)
-const { formRequestReappraisal, formAppraisalPrice, onAppraisalPrice, onRequestReappraisal, onConfirmAppraisal } = useAppraisal(useFetch)
+const {
+  formRequestReappraisal,
+  formRequestAppraisal,
+  formAppraisalPrice,
+  formConfirmAppraisal,
+  onAppraisalPrice,
+  onRequestReappraisal,
+  onRequestAppraisal,
+  onConfirmAppraisal
+} = useAppraisal(useFetch)
 const { formMortgage, isMortgageFormVisible, onConfirmMortgage, onSubmitMortgage } = useMortgage(useFetch)
-const { onConfirmMakeContract, formMakeContract } = useMakeContract(useFetch)
+const { formMakeContract, onConfirmMakeContract } = useMakeContract(useFetch)
 const mortgageFormRef = useTemplateRef<{ submit: () => void }>('mortgageFormRef')
 
-const primaryCustomerName = computed((): string | null => {
+const primaryCustomer = computed((): ICustomerById | null => {
   if (!contract.value?.customer) return null
-  return formatter.fullName(contract.value?.customer)
+  return contract.value?.customer
 })
 
 function onTriggerConfirmMortgage (): void {

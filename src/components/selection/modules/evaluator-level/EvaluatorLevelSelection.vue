@@ -2,45 +2,48 @@
   <AutoCompleteInput
     v-model="innerModel"
     :suggestions="suggestions"
+    option-disabled="disabled"
     option-label="name"
     complete-on-focus
     force-selection
-    @complete="search()" />
+    @complete="search($event.query)" />
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
-import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel, TBaseOption } from '@/models/Global.model'
 import { EvaluatorLevelItems, type TEvaluatorLevel } from '@/enums/modules/contract/EvaluatorLevel.enum'
 import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
-import usePagination from '@/composables/usePagination'
+
+interface IProps {
+  disabledList?: TEvaluatorLevel[]
+}
+
+const props = withDefaults(defineProps<IProps>(), {
+  disabledList: (): TEvaluatorLevel[] => []
+})
 
 const model = defineModel<TEvaluatorLevel>()
 const selectedName = defineModel<string | null>('selectedName', { default: null })
 
 const innerModel = ref<TBaseModel | null>(null)
-
-const { pagination } = usePagination()
-
+const allSuggestions = ref<TBaseModel[]>([])
 const suggestions = ref<TBaseModel[]>([])
 
-async function useFetch (): Promise<void> {
-  const items = EvaluatorLevelItems
-
-  suggestions.value = (items ?? []).map((item: TBaseOption): TBaseModel => ({
+function loadSuggestions (): void {
+  allSuggestions.value = EvaluatorLevelItems.map((item: TBaseOption): TBaseModel => ({
     id: item.value!,
-    name: item?.label
+    name: item.label,
+    disabled: props.disabledList.includes(item.value as TEvaluatorLevel)
   }))
+  suggestions.value = allSuggestions.value
 }
 
-function fetch (): void {
-  handleLoading(useFetch)
-}
-
-function search (): void {
-  pagination.value.page = 1
-  fetch()
+function search (query: string): void {
+  const q = query.trim().toLowerCase()
+  suggestions.value = q
+    ? allSuggestions.value.filter((i: TBaseModel): boolean => i.name.toLowerCase().includes(q))
+    : allSuggestions.value
 }
 
 function syncInnerFromId (): void {
@@ -49,26 +52,12 @@ function syncInnerFromId (): void {
     selectedName.value = null
     return
   }
-
-  innerModel.value
-    = suggestions.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
+  innerModel.value = allSuggestions.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
   selectedName.value = innerModel.value?.name ?? null
 }
 
 watch(innerModel, (val: TBaseModel | null): void => {
-  if (!val) {
-    model.value = '' as TEvaluatorLevel
-    selectedName.value = null
-    return
-  }
-
-  if (typeof val === 'string') {
-    model.value = val as TEvaluatorLevel
-    selectedName.value = suggestions.value.find((i: TBaseModel): boolean => i.id === val)?.name ?? null
-    return
-  }
-
-  model.value = (val.id || '') as TEvaluatorLevel
+  model.value = (val?.id || '') as TEvaluatorLevel
   selectedName.value = val?.name ?? null
 })
 
@@ -76,15 +65,15 @@ watch(model, (): void => {
   syncInnerFromId()
 })
 
-watch(
-  suggestions, (): void => {
-    syncInnerFromId()
-  }, { immediate: true }
-)
+watch(allSuggestions, (): void => {
+  syncInnerFromId()
+}, { immediate: true })
+
+watch((): TEvaluatorLevel[] => props.disabledList, (): void => {
+  loadSuggestions()
+})
 
 onMounted((): void => {
-  fetch()
+  loadSuggestions()
 })
 </script>
-
-<style scoped></style>
