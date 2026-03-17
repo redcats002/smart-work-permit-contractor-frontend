@@ -48,17 +48,17 @@ export default {
         back: { name: 'CustomerListPage' }
       }
     },
-    {
-      path: 'docs/select/list',
-      name: 'StockDocsSelectPage',
-      component: (): ComponentOptions => import('@/pages/stock/pages/create/pages/StockDocsSelectListPage.vue'),
-      meta: {
-        auth: true,
-        title: 'เพิ่มเอกสารที่ต้องการย้าย',
-        icon: 'mdi-account',
-        back: { name: 'CustomerListPage' }
-      }
-    },
+    // {
+    //   path: 'docs/select/list',
+    //   name: 'StockDocsSelectPage',
+    //   component: (): ComponentOptions => import('@/pages/stock/pages/create/pages/StockDocsSelectListPage.vue'),
+    //   meta: {
+    //     auth: true,
+    //     title: 'เพิ่มเอกสารที่ต้องการย้าย',
+    //     icon: 'mdi-account',
+    //     back: { name: 'CustomerListPage' }
+    //   }
+    // },
     {
       path: ':id',
       name: 'StockDetailPage',
