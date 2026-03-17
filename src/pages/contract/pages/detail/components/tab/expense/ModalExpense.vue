@@ -43,10 +43,10 @@
             name="expenseTypeId" />
         </LabelField>
         <LabelField
-          v-model="formData.detail"
+          v-model="formData.note"
           :form="$form"
           label="คำอธิบาย"
-          name="detail"
+          name="note"
           required />
         <LabelField
           v-slot="{ invalid }"
@@ -74,12 +74,15 @@
           required>
           <UploadInput
             v-model="uploadFiles"
-            v-model:preview-urls="uploadPreviewUrls"
+            v-model:preview-urls="uploadPreviewUrlsMap"
             name="url" />
         </LabelField>
 
-        <div class="grid grid-cols-1 gap-1">
-          <span class="text-sm font-bold">ประเภท VAT</span>
+        <LabelField
+          :form="$form"
+          label="ประเภท VAT"
+          name="vatType"
+          hide-error>
           <div class="flex gap-6">
             <label
               v-for="vatOption in vatTypeItems"
@@ -94,7 +97,7 @@
               <span class="text-sm">{{ vatOption.label }}</span>
             </label>
           </div>
-        </div>
+        </LabelField>
 
         <FormAction
           class="mt-2"
@@ -112,17 +115,17 @@
           <span class="font-bold text-gray-700 whitespace-nowrap">วันที่</span>
           <span>: {{ dayjs.formatDate(props.item?.date || '') }}</span>
           <span class="font-bold text-gray-700 whitespace-nowrap">หมวดหมู่ค่าใช้จ่าย</span>
-          <span>: {{ props.item?.expenseCategory?.name || '-' }}</span>
+          <span>: {{ formRead?.expenseCategory?.name || '-' }}</span>
           <span class="font-bold text-gray-700 whitespace-nowrap">ประเภทค่าใช้จ่าย</span>
-          <span>: {{ props.item?.expenseType?.name || '-' }}</span>
+          <span>: {{ formRead?.expenseType?.name || '-' }}</span>
           <span class="font-bold text-gray-700 whitespace-nowrap">จำนวนเงิน</span>
-          <span>: {{ formatter.thaiBaht(props.item?.amount || 0) }}</span>
+          <span>: {{ formatter.thaiBaht(formRead?.amount || 0) }}</span>
           <span class="font-bold text-gray-700 whitespace-nowrap">ประเภท VAT</span>
-          <span>: {{ props.item?.vatType ? formatVatTitle(props.item.vatType) : '-' }}</span>
+          <span>: {{ formRead?.vatType ? formatVatTitle(formRead.vatType) : '-' }}</span>
         </div>
         <img
-          v-if="props.item?.url"
-          :src="props.item.url"
+          v-if="formRead?.file.length"
+          :src="formRead.file[0]?.url"
           alt="หลักฐานการชำระ"
           class="w-full rounded-lg object-contain max-h-80">
       </div>
@@ -157,7 +160,10 @@ import type { ICreateExpense } from '@/models/request/contract/ContractReq.model
 import type { IContractExpenseList } from '@/models/response/contract/ContractRes.model'
 import { EVatType, formatTitle as formatVatTitle, VatTypeItems } from '@/enums/modules/Vat.enum'
 import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
-import UploadProvider, { type IUploadProvider } from '@/resources/provider/Upload.provider'
+import UploadProvider, {
+  type IUploadProvider,
+  type IUploadResponse
+} from '@/resources/provider/Upload.provider'
 import type { IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import BaseActionMenu from '@/components/base/BaseActionMenu.vue'
 import FormAction from '@/components/button/FormAction.vue'
@@ -168,13 +174,14 @@ import FinanceExpenseCategorySelection from '@/components/selection/modules/fina
 import FinanceExpenseTypeSelection from '@/components/selection/modules/finance-expense-type/FinanceExpenseTypeSelection.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
+import { useInitDetail } from './composables/useInitExpense'
 import { type ExpenseFormValues, ExpenseSchema, useFormInitialValues } from './schema/expense.schema'
 
 export type TExpenseModalMode = 'create' | 'read' | 'edit' | 'delete'
 
 interface IProps {
   mode: TExpenseModalMode
-  item?: IContractExpenseList
+  item: IContractExpenseList
   contractId: number
 }
 
@@ -193,10 +200,13 @@ const UploadService: IUploadProvider = new UploadProvider()
 const dayjs = useDayjs()
 
 const currentMode = ref<TExpenseModalMode>(props.mode)
+const formRead = useInitDetail()
 const resolver = zodResolver(ExpenseSchema)
 const formData = ref<ExpenseFormValues>(useFormInitialValues())
 const uploadFiles = ref<File[]>([])
-const uploadPreviewUrls = ref<string[]>([])
+
+const uploadPreviewUrls = ref<IUploadResponse[]>([])
+const uploadPreviewUrlsMap = computed((): string[] => uploadPreviewUrls.value.map((i: IUploadResponse): string => i.url))
 const vatTypeItems = VatTypeItems
 
 const isFormMode = computed((): boolean => currentMode.value === 'create' || currentMode.value === 'edit')
@@ -228,29 +238,37 @@ const readMenuItems = computed((): IMenuItemAction[] => [
 function populateForm (): void {
   if (!props.item) return
   formData.value = {
-    expenseCategoryId: props.item.expenseCategory?.id ? Number(props.item.expenseCategory.id) : undefined,
-    expenseTypeId: props.item.expenseType?.id ? Number(props.item.expenseType.id) : undefined,
-    detail: props.item.detail || '',
-    amount: props.item.amount || 0,
-    url: props.item.url || '',
-    vatType: props.item.vatType ? EVatType[props.item.vatType] : EVatType.VAT
+    expenseCategoryId: formRead.value.expenseCategory?.id ? Number(formRead.value.expenseCategory.id) : undefined,
+    expenseTypeId: formRead.value.expenseType?.id ? Number(formRead.value.expenseType.id) : undefined,
+    note: formRead.value.note || '',
+    amount: formRead.value.amount || 0,
+    file: formRead.value.file || [],
+    vatType: formRead.value.vatType ? EVatType[formRead.value.vatType] : EVatType.VAT
   }
   uploadFiles.value = []
-  uploadPreviewUrls.value = props.item.url ? [props.item.url] : []
+  uploadPreviewUrls.value = props.item.file?.length ? props.item.file : []
 }
 
-function onOpen (): void {
+async function onOpen (): Promise<void> {
   currentMode.value = props.mode
   if (props.mode === 'create') {
     formData.value = useFormInitialValues()
     uploadFiles.value = []
     uploadPreviewUrls.value = []
-  } else if (props.mode === 'edit') {
+    return
+  }
+
+  if (props.item?.id) {
+    const { data } = await ContractService.getExpenseById(Number(props.item.id))
+    formRead.value = data
+  }
+
+  if (props.mode === 'edit') {
     populateForm()
   }
 }
 
-watch((): TExpenseModalMode => props.mode, (val: TExpenseModalMode): void => {
+watch((): TExpenseModalMode => props.mode, async (val: TExpenseModalMode): Promise<void> => {
   currentMode.value = val
 })
 
@@ -260,12 +278,12 @@ function onCategoryChange (): void {
 
 async function uploadAndSetFile (file: File): Promise<void> {
   const response = await UploadService.uploadFile(file)
-  formData.value.url = response.data.url
+  formData.value.file = [response.data]
 }
 
 watch(uploadFiles, (files: File[]): void => {
   if (files.length === 0) {
-    formData.value.url = ''
+    formData.value.file = []
     return
   }
   handleLoading((): Promise<void> => uploadAndSetFile(files[files.length - 1]))
@@ -276,13 +294,21 @@ function onFormSubmit (event: FormSubmitEvent, close: () => void): void {
     scrollToFirstError(event.errors)
     return
   }
-  const values = event.values as ICreateExpense
+  const values = {
+    expenseCategoryId: event.states?.expenseCategoryId?.value?.id ? event.states?.expenseCategoryId?.value?.id : formRead.value.expenseCategory.id,
+    expenseTypeId: event.states?.expenseTypeId?.value?.id ? event.states?.expenseTypeId?.value?.id : formRead.value.expenseType.id,
+    amount: event.states?.amount?.value ? event.states?.amount?.value : formRead.value.amount,
+    file: formData.value.file,
+    note: event.states?.note?.value ? event.states?.note?.value : formRead.value.note,
+    vatType: formData.value.vatType
+  } as ICreateExpense
+
   const itemId = props.item?.id
   handleLoading(async (): Promise<void> => {
     if (currentMode.value === 'create') {
       await ContractService.createExpense(props.contractId, values)
     } else if (currentMode.value === 'edit' && itemId) {
-      await ContractService.updateExpense(props.contractId, itemId, values)
+      await ContractService.updateExpense(itemId, values)
     }
     emits('update')
     close()
@@ -293,7 +319,7 @@ function onDelete (close: () => void): void {
   const id = props.item?.id
   if (!id) return
   handleLoading(async (): Promise<void> => {
-    await ContractService.deleteExpense(props.contractId, id)
+    await ContractService.deleteExpense(id)
     emits('update')
     close()
   })

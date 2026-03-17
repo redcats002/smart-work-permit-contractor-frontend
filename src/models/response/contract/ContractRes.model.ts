@@ -5,6 +5,7 @@ import type { TDocumentType } from '@/enums/modules/contract/DocumentType.enum'
 import type { TInterestType } from '@/enums/modules/contract/InterestType.enum'
 import type { TPaymentStatus } from '@/enums/modules/contract/PaymentStatus.enum'
 import type { TVatType } from '@/enums/modules/Vat.enum'
+import type { IUploadResponse } from '@/resources/provider/Upload.provider'
 import type { IInstallmentRow } from '@/pages/contract/pages/pre-contract-detail/schema/installment.schema'
 import type { IContractLoanPurposeList } from '../contract-loan-purpose/ContractLoanPurposeRes.model'
 import type { IContractLoanTypeList } from '../contract-loan-type/ContractLoanTypeRes.model'
@@ -15,7 +16,7 @@ import type { IFinanceExpenseTypeList } from '../finance-expense-type/FinanceExp
 import type { IFinanceIncomeCategoryList } from '../finance-income-category/FinanceIncomeCategoryRes.model'
 import type { IFinanceIncomeTypeList } from '../finance-income-type/FinanceIncomeTypeRes.model'
 import type { IHowDidFindUsList } from '../how-did-find-us/HowDidFindUsRes.model'
-import type { IAssetDetailInfo, IPreContractList } from '../pre-contract/PreContractRes.model'
+import type { IAssetDetailInfo, IPreContractList, IPreContractLoanType } from '../pre-contract/PreContractRes.model'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 import type { IWarehouseList } from '../warehouse/WarehouseRes.model'
 
@@ -25,18 +26,27 @@ export interface IContractCustomer extends ICustomerList {
   mainAddress?: IAddressRequest
 }
 
+export interface IBorrowersItems {
+  customer: IContractCustomer
+  isMain: boolean
+}
+
 export interface IContractList extends Omit<IPreContractList, 'status'> {
   status: TContractStatus
+  contractedAt: string
+  contractLoanType: IPreContractLoanType
+  loanAmount: number
+  firstInstallmentDate: string
+  finalInstallmentDate: string
 }
 
 export interface IContractById extends IEntity {
-  customers: IContractCustomer[]
+  borrowers: IBorrowersItems[]
   status: TContractStatus
-  employee: IEmployeeList
+  sellMan: IEmployeeList
   contractLoanPurpose: IContractLoanPurposeList
   howDidFindUs: IHowDidFindUsList
   contractLoanType: IContractLoanTypeList
-  startDate: string
   endDate: string
   periodCount: number
   loanAmount: number
@@ -47,6 +57,10 @@ export interface IContractById extends IEntity {
   lastPeriodPayment: number
   interestAmount: number
   guarantors: IContractGuarantorList[]
+  contractedAt: string
+  installmentCount: number
+  monthlyInstallment: number
+  totalInterest: number
 }
 
 export interface IContractAssetList extends IAssetDetailInfo {}
@@ -68,10 +82,20 @@ export interface IContractExpenseList extends IEntity {
   date: string
   expenseCategory: IFinanceExpenseCategoryList
   expenseType: IFinanceExpenseTypeList
-  detail: string
+  note: string
   amount: number
   vatType?: TVatType
-  url?: string
+  file?: IUploadResponse[]
+}
+
+export interface IContractExpenseById extends IEntity {
+  contractId: number | null
+  expenseCategory: IFinanceExpenseCategoryList
+  expenseType: IFinanceExpenseTypeList
+  note: string
+  amount: number
+  vatType: TVatType
+  file: IUploadResponse[]
 }
 export interface IContractIncomeList extends IEntity {
   date: string
@@ -108,6 +132,7 @@ export type TGetAssetContractListResponse = IBasePaginationResponse<IContractAss
 export type TGetInstallmentSummaryResponse = IBaseSuccessResponse<IContractInstallmentSummary>
 export type TGetInstallmentListResponse = IBasePaginationResponse<IContractInstallmentList>
 export type TGetContractExpenseListResponse = IBasePaginationResponse<IContractExpenseList>
+export type TGetContractExpenseByIdResponse = IBaseSuccessResponse<IContractExpenseById>
 export type TActionContractExpenseResponse = IBaseSuccessResponse<boolean>
 export type TGetContractIncomeListResponse = IBasePaginationResponse<IContractIncomeList>
 export type TActionContractIncomeResponse = IBaseSuccessResponse<boolean>
