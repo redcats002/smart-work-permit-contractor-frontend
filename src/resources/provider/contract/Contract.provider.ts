@@ -23,6 +23,7 @@ import type {
   TActionContractExpenseResponse,
   TActionContractIncomeResponse,
   TGetContractByIdResponse,
+  TGetContractExpenseByIdResponse,
   TGetContractExpenseListResponse,
   TGetContractHistoryListResponse,
   TGetContractIncomeListResponse,
@@ -46,9 +47,10 @@ export interface IContractProvider {
   getInstallmentList(id: TBaseParamsId, query?: IGetInstallmentList): Promise<TGetInstallmentListResponse>
   getInstallmentSummary(id: TBaseParamsId, query?: IGetInstallmentSummary): Promise<TGetInstallmentSummaryResponse>
   getExpenseList(id: TBaseParamsId, query?: IGetExpenseList): Promise<TGetContractExpenseListResponse>
+  getExpenseById (id: TBaseParamsId): Promise<TGetContractExpenseByIdResponse>
   createExpense(id: TBaseParamsId, payload: ICreateExpense): Promise<TActionContractExpenseResponse>
-  updateExpense(id: TBaseParamsId, expenseId: TBaseParamsId, payload: IUpdateExpense): Promise<TActionContractExpenseResponse>
-  deleteExpense(id: TBaseParamsId, expenseId: TBaseParamsId): Promise<TActionContractExpenseResponse>
+  updateExpense(id: TBaseParamsId, payload: IUpdateExpense): Promise<TActionContractExpenseResponse>
+  deleteExpense(id: TBaseParamsId): Promise<TActionContractExpenseResponse>
   getIncomeList(id: TBaseParamsId, query?: IGetIncomeList): Promise<TGetContractIncomeListResponse>
   createIncome(id: TBaseParamsId, payload: ICreateIncome): Promise<TActionContractIncomeResponse>
   updateIncome(id: TBaseParamsId, incomeId: TBaseParamsId, payload: IUpdateIncome): Promise<TActionContractIncomeResponse>
@@ -112,22 +114,27 @@ class ContractProvider extends HttpRequest implements IContractProvider {
   }
 
   public async getExpenseList (id: TBaseParamsId, query?: IGetExpenseList): Promise<TGetContractExpenseListResponse> {
-    const response = await this.get(`${this.urlPrefix}/${id}/expense`, query)
+    const response = await this.get(`${this.urlPrefix}-expense/paginate/${id}`, query)
+    return response
+  }
+
+  public async getExpenseById (id: TBaseParamsId): Promise<TGetContractExpenseByIdResponse> {
+    const response = await this.get(`${this.urlPrefix}-expense/${id}`)
     return response
   }
 
   public async createExpense (id: TBaseParamsId, payload: ICreateExpense): Promise<TActionContractExpenseResponse> {
-    const response = await this.post(`${this.urlPrefix}/${id}/expense`, payload)
+    const response = await this.post(`${this.urlPrefix}-expense/${id}`, payload)
     return response
   }
 
-  public async updateExpense (id: TBaseParamsId, expenseId: TBaseParamsId, payload: IUpdateExpense): Promise<TActionContractExpenseResponse> {
-    const response = await this.put(`${this.urlPrefix}/${id}/expense/${expenseId}`, payload)
+  public async updateExpense (id: TBaseParamsId, payload: IUpdateExpense): Promise<TActionContractExpenseResponse> {
+    const response = await this.put(`${this.urlPrefix}-expense/${id}`, payload)
     return response
   }
 
-  public async deleteExpense (id: TBaseParamsId, expenseId: TBaseParamsId): Promise<TActionContractExpenseResponse> {
-    const response = await this.delete(`${this.urlPrefix}/${id}/expense/${expenseId}`)
+  public async deleteExpense (id: TBaseParamsId): Promise<TActionContractExpenseResponse> {
+    const response = await this.delete(`${this.urlPrefix}-expense/${id}`)
     return response
   }
 
