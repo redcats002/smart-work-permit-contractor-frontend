@@ -1,6 +1,7 @@
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
 import type { TDocumentType } from '@/enums/modules/contract/DocumentType.enum'
 import type { TVatType } from '@/enums/modules/Vat.enum'
+import type { IUploadResponse } from '@/resources/provider/Upload.provider'
 import type { ContractHistoryFormValues } from '@/pages/contract/pages/detail/components/tab/contact-history/schema/contract-history.schema'
 import type { IBasePaginationRequest } from '../Request.model'
 
@@ -17,9 +18,9 @@ export interface IGetExpenseList extends IBasePaginationRequest {}
 export interface ICreateExpense {
   expenseCategoryId: number
   expenseTypeId: number
-  detail: string
   amount: number
-  url: string
+  file: IUploadResponse[]
+  note: string
   vatType: TVatType
 }
 export interface IUpdateExpense extends Partial<ICreateExpense> {}
