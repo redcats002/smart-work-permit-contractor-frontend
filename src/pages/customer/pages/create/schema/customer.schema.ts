@@ -75,7 +75,7 @@ export function useDev (): CustomerFormValues {
     birthDate: '',
     email: '',
     // Classification
-    status: CustomerStatusEnum.INACTIVE,
+    status: CustomerStatusEnum.ACTIVE,
     customerGroupId: undefined,
     occupationId: undefined,
     // Citizen / Home address
@@ -126,7 +126,7 @@ export function useFormInitialValues (): CustomerFormValues {
     birthDate: '',
     email: '',
     // Classification
-    status: CustomerStatusEnum.INACTIVE,
+    status: CustomerStatusEnum.ACTIVE,
     customerGroupId: undefined,
     occupationId: undefined,
     // Citizen / Home address

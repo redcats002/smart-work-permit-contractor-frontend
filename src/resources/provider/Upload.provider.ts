@@ -1,12 +1,19 @@
 import type { IBaseSuccessResponse } from '@/models/response/Response.model'
 import HttpRequest from '../HttpRequest'
 
+// export interface IUploadResponse {
+//   fileUrl: string
+//   filePath: string
+//   fileType: string | null
+//   originalName: string
+// }
 export interface IUploadResponse {
-  fileUrl: string
-  filePath: string
-  fileType: string | null
-  originalName: string
+  name: string
+  url: string
+  path: string
 }
+
+
 type TUploadResponse = IBaseSuccessResponse<IUploadResponse>
 
 export interface IMedia extends IUploadResponse {

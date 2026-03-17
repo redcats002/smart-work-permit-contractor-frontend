@@ -52,16 +52,14 @@ async function useFetch (): Promise<void> {
       totalValue: 350,
       files: [
         {
-          fileUrl: 'https://media.newyorker.com/photos/59095bb86552fa0be682d9d0/master/pass/Monkey-Selfie.jpg',
-          filePath: '',
-          fileType: 'pdf',
-          originalName: 'บิลการประปา.pdf'
+          url: 'https://media.newyorker.com/photos/59095bb86552fa0be682d9d0/master/pass/Monkey-Selfie.jpg',
+          path: '',
+          name: 'บิลการประปา.pdf'
         },
         {
-          fileUrl: 'https://media.newyorker.com/photos/59095bb86552fa0be682d9d0/master/pass/Monkey-Selfie.jpg',
-          filePath: '',
-          fileType: 'pdf',
-          originalName: 'บิลการประปา.pdf'
+          url: 'https://media.newyorker.com/photos/59095bb86552fa0be682d9d0/master/pass/Monkey-Selfie.jpg',
+          path: '',
+          name: 'บิลการประปา.pdf'
         }
       ]
     }
