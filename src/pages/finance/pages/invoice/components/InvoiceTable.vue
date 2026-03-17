@@ -7,16 +7,13 @@
     :items="props.items"
     disable-auto-left-padding
     @update="emits('update')">
-    <template #[`item.invoiceNo`]="{ item }">
+    <template #[`item.idNo`]="{ item }">
       <LinkText :to="{ name: 'InvoiceDetailPage', params: { id: item.id } }">
-        {{ item.invoiceNo }}
+        {{ item.idNo }}
       </LinkText>
     </template>
     <template #[`item.contractNo`]="{ item }">
-      {{ item.contractNo }}
-      <!-- <LinkText :to="{ name: 'ContractDetailPage', params: { id: item.contractId } }">
-        {{ item.contractNo }}
-      </LinkText> -->
+      {{ item.contract?.idNo }}
     </template>
   </BaseTable>
 </template>
@@ -48,19 +45,19 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 const { formatDate } = useDayjs()
 
 const columns = ref<IColumn<IInvoiceList>[]>([
-  { field: 'invoiceNo', header: 'เลขที่ใบเสร็จ', sortable: true, align: 'left' },
+  { field: 'idNo', header: 'เลขที่ใบแจ้งหนี้', sortable: true, align: 'left' },
   { field: 'contractNo', header: 'เลขที่สัญญา', sortable: true, align: 'left' },
-  { field: 'invoiceDate', header: 'วันที่', align: 'left', value: (e: IInvoiceList): string => formatDate(e.invoiceDate ?? undefined) },
+  { field: 'invoiceDate', header: 'วันที่', align: 'left', value: (e: IInvoiceList): string => formatDate(e.createdAt ?? undefined) },
   {
     field: 'customer',
     header: 'ชื่อลูกค้า',
     align: 'left',
     value: (e: IInvoiceList): string => formatter.fullName({
-      titleName: e.customer?.titleName ?? undefined,
-      firstName: e.customer?.firstName ?? undefined,
-      lastName: e.customer?.lastName ?? undefined
+      titleName: e.contract?.customer?.titleName ?? undefined,
+      firstName: e.contract?.customer?.firstName ?? undefined,
+      lastName: e.contract?.customer?.lastName ?? undefined
     })
   },
-  { field: 'totalValue', header: 'มูลค่า (บาท)', sortable: true, align: 'right', value: (e: IInvoiceList): string => formatter.numberFormat(e.totalValue ?? 0) }
+  { field: 'totalAmount', header: 'มูลค่า (บาท)', sortable: true, align: 'right', value: (e: IInvoiceList): string => formatter.numberFormat(e.totalAmount ?? 0) }
 ])
 </script>
