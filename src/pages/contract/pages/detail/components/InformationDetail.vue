@@ -10,14 +10,14 @@
             @click="toggleVisibleCitizenId()" />
         </template>
       </DisplayList>
-      <template v-if="data.customers.length > 1">
+      <template v-if="data.borrowers.length > 1">
         <Divider />
         <button
           class="flex items-center gap-1 text-primary text-sm font-medium hover:underline"
           type="button"
           @click="showModal = true">
           <Icon icon="solar:add-circle-bold" />
-          ดูผู้กู้ทั้งหมด (+{{ data.customers.length - 1 }})
+          ดูผู้กู้ทั้งหมด (+{{ data.borrowers.length - 1 }})
         </button>
       </template>
     </BaseContainer>
@@ -35,7 +35,7 @@
 
   <AllBorrowersModal
     v-model:visible="showModal"
-    :customers="data.customers" />
+    :borrowers="data.borrowers" />
 </template>
 
 <script setup lang="ts">
@@ -63,7 +63,7 @@ const { formatDate, formatAge } = useDayjs()
 const visibleCitizenId = ref<boolean>(true)
 const showModal = ref<boolean>(false)
 
-const primaryCustomer = computed((): IContractCustomer | undefined => props.data.customers[0])
+const primaryCustomer = computed((): IContractCustomer | undefined => props.data.borrowers[0]?.customer)
 
 const customerItems = computed((): IDisplayList[] => {
   const c = primaryCustomer.value
@@ -80,8 +80,8 @@ const customerItems = computed((): IDisplayList[] => {
 const contractItems = computed((): IDisplayList[] => [
   { key: 'status', label: 'สถานะ', value: props.data.status },
   { key: 'idNo', label: 'เลขที่สัญญา', value: props.data.idNo || '-' },
-  { key: 'startDate', label: 'วันที่ทำสัญญา', value: formatDate(props.data.startDate) },
-  { key: 'employee', label: 'พนักงาน', value: formatter.fullName(props.data.employee) }
+  { key: 'contractedAt', label: 'วันที่ทำสัญญา', value: formatDate(props.data.contractedAt) },
+  { key: 'sellMan', label: 'พนักงาน', value: formatter.fullName(props.data.sellMan) }
 ])
 
 const loanItems = computed((): IDisplayList[] => [

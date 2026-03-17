@@ -27,15 +27,15 @@ const items = computed((): IDisplayList[] => {
   return [
     { label: 'วันที่ทำสัญญา', key: 'createdAt', value: formatDate(props.data?.createdAt || '') },
     { label: 'ประเภทเงินกู้', key: 'contractLoanType', value: props.data.contractLoanType?.name },
-    { label: 'วันที่เริ่ม', key: 'startDate', value: formatDate(props.data?.startDate || '') },
-    { label: 'จำนวนงวดของการกู้ยืม', key: 'periodCount', value: props.data?.periodCount || 0 },
+    { label: 'วันที่เริ่ม', key: 'startDate', value: formatDate(props.data?.createdAt || '') },
+    { label: 'จำนวนงวดของการกู้ยืม', key: 'installmentCount', value: props.data?.installmentCount || 0 },
     { label: 'จำนวนเงินที่ต้องการกู้', key: 'loanAmount', value: formatter.numberFormat2Decimal(props.data.loanAmount) },
     { label: 'ประเภทดอกเบี้ย', key: 'interestType', value: formatTitle(props.data?.interestType) },
-    { label: 'อัตราดอกเบี้ยเงินกู้ต่อปี', key: 'annualInterestRate', value: formatter.numberFormat2Decimal(props.data?.annualInterestRate) },
-    { label: 'ค่าปรับกรณีล่าช้า', key: 'lateFee', value: formatter.numberFormat2Decimal(props.data?.lateFee) },
-    { label: 'ชำระเดือนละ', key: 'perMonthPayment', value: formatter.numberFormat2Decimal(props.data.perMonthPayment) },
+    { label: 'อัตราดอกเบี้ยเงินกู้ต่อปี', key: 'annualInterestRate', value: `${formatter.numberFormat2Decimal(props.data?.annualInterestRate)}%` },
+    { label: 'ค่าปรับกรณีล่าช้า', key: 'lateFee', value: formatter.numberFormat(props.data?.lateFee) },
+    { label: 'ชำระเดือนละ', key: 'monthlyInstallment', value: formatter.numberFormat2Decimal(props.data.monthlyInstallment) },
     { label: 'ชำระงวดสุดท้าย', key: 'lastPeriodPayment', value: formatter.numberFormat2Decimal(props.data.lastPeriodPayment) },
-    { label: 'ดอกเบี้ยรวม', key: 'interestAmount', value: formatter.numberFormat2Decimal(props.data.interestAmount) }
+    { label: 'ดอกเบี้ยรวม', key: 'interestAmount', value: formatter.numberFormat2Decimal(props.data.totalInterest) }
   ]
 })
 
