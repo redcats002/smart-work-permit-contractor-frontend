@@ -35,7 +35,7 @@ unit-test:
   script:
     - mkdir ./.vercel
     - echo $VERCEL_PROJECT > ./.vercel/project.json
-    - npm install -g vercel pnpm
+    - npm install -g vercel bun
     - vercel pull --yes --prod --token $VERCEL_TOKEN
     - vercel build --prod --yes --debug --token $VERCEL_TOKEN
     - vercel deploy --prebuilt --prod --token $VERCEL_TOKEN
