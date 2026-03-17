@@ -1,7 +1,0 @@
-# Run vitest and block push if tests fail
-npx vitest run
-if [ $? -ne 0 ]; then
-	echo "Vitest failed. Push aborted."
-	exit 1
-fi
-# npx vue-tsc -b && npx vite build
