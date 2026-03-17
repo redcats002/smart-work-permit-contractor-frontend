@@ -8,6 +8,7 @@
       <!-- FORM MODE: create / edit -->
       <Form
         v-if="isFormMode"
+        :key="formKey"
         v-slot="$form"
         :initial-values="formData"
         :resolver="resolver"
@@ -43,10 +44,10 @@
             name="incomeTypeId" />
         </LabelField>
         <LabelField
-          v-model="formData.detail"
+          v-model="formData.note"
           :form="$form"
           label="คำอธิบาย"
-          name="detail"
+          name="note"
           required />
         <LabelField
           v-slot="{ invalid }"
@@ -74,7 +75,7 @@
           required>
           <UploadInput
             v-model="uploadFiles"
-            v-model:preview-urls="uploadPreviewUrls"
+            v-model:preview-urls="uploadPreviewUrlsMap"
             name="url" />
         </LabelField>
 
@@ -112,17 +113,17 @@
           <span class="font-bold text-gray-700 whitespace-nowrap">วันที่</span>
           <span>: {{ dayjs.formatDate(props.item?.date || '') }}</span>
           <span class="font-bold text-gray-700 whitespace-nowrap">หมวดหมู่รายได้</span>
-          <span>: {{ props.item?.incomeCategory?.name || '-' }}</span>
+          <span>: {{ formRead?.incomeCategory?.name || '-' }}</span>
           <span class="font-bold text-gray-700 whitespace-nowrap">ประเภทรายได้</span>
-          <span>: {{ props.item?.incomeType?.name || '-' }}</span>
+          <span>: {{ formRead?.incomeType?.name || '-' }}</span>
           <span class="font-bold text-gray-700 whitespace-nowrap">จำนวนเงิน</span>
-          <span>: {{ formatter.thaiBaht(props.item?.amount || 0) }}</span>
+          <span>: {{ formatter.thaiBaht(formRead?.amount || 0) }}</span>
           <span class="font-bold text-gray-700 whitespace-nowrap">ประเภท VAT</span>
-          <span>: {{ props.item?.vatType ? formatVatTitle(props.item.vatType) : '-' }}</span>
+          <span>: {{ formRead?.vatType ? formatVatTitle(formRead.vatType) : '-' }}</span>
         </div>
         <img
-          v-if="props.item?.url"
-          :src="props.item.url"
+          v-if="formRead?.file.length"
+          :src="formRead.file[0]?.url"
           alt="หลักฐานการชำระ"
           class="w-full rounded-lg object-contain max-h-80">
       </div>
@@ -148,7 +149,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
@@ -157,7 +158,10 @@ import type { ICreateIncome } from '@/models/request/contract/ContractReq.model'
 import type { IContractIncomeList } from '@/models/response/contract/ContractRes.model'
 import { EVatType, formatTitle as formatVatTitle, VatTypeItems } from '@/enums/modules/Vat.enum'
 import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
-import UploadProvider, { type IUploadProvider } from '@/resources/provider/Upload.provider'
+import UploadProvider, {
+  type IUploadProvider,
+  type IUploadResponse
+} from '@/resources/provider/Upload.provider'
 import type { IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import BaseActionMenu from '@/components/base/BaseActionMenu.vue'
 import FormAction from '@/components/button/FormAction.vue'
@@ -168,6 +172,7 @@ import FinanceIncomeCategorySelection from '@/components/selection/modules/finan
 import FinanceIncomeTypeSelection from '@/components/selection/modules/finance-income-type/FinanceIncomeTypeSelection.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
+import { useInitDetail } from './composables/useInitIncome'
 import { type IncomeFormValues, IncomeSchema, useFormInitialValues } from './schema/income.schema'
 
 export type TIncomeModalMode = 'create' | 'read' | 'edit' | 'delete'
@@ -192,11 +197,14 @@ const UploadService: IUploadProvider = new UploadProvider()
 
 const dayjs = useDayjs()
 
+const formKey = ref<number>(0)
 const currentMode = ref<TIncomeModalMode>(props.mode)
+const formRead = useInitDetail()
 const resolver = zodResolver(IncomeSchema)
 const formData = ref<IncomeFormValues>(useFormInitialValues())
 const uploadFiles = ref<File[]>([])
-const uploadPreviewUrls = ref<string[]>([])
+const uploadPreviewUrls = ref<IUploadResponse[]>([])
+const uploadPreviewUrlsMap = computed((): string[] => uploadPreviewUrls.value.map((i: IUploadResponse): string => i.url))
 const vatTypeItems = VatTypeItems
 
 const isFormMode = computed((): boolean => currentMode.value === 'create' || currentMode.value === 'edit')
@@ -225,28 +233,40 @@ const readMenuItems = computed((): IMenuItemAction[] => [
   { label: 'ลบ', key: 'delete', type: 'TEXT', action: switchToDelete }
 ])
 
-function populateForm (): void {
+async function populateForm (): Promise<void> {
   if (!props.item) return
   formData.value = {
-    incomeCategoryId: props.item.incomeCategory?.id ? Number(props.item.incomeCategory.id) : undefined,
-    incomeTypeId: props.item.incomeType?.id ? Number(props.item.incomeType.id) : undefined,
-    detail: props.item.detail || '',
-    amount: props.item.amount || 0,
-    url: props.item.url || '',
-    vatType: props.item.vatType ? EVatType[props.item.vatType] : EVatType.VAT
+    incomeCategoryId: formRead.value.incomeCategory?.id ? Number(formRead.value.incomeCategory.id) : undefined,
+    incomeTypeId: formRead.value.incomeType?.id ? Number(formRead.value.incomeType.id) : undefined,
+    note: formRead.value.note || '',
+    amount: formRead.value.amount || 0,
+    file: formRead.value.file || [],
+    vatType: formRead.value.vatType ? EVatType[formRead.value.vatType] : EVatType.VAT
   }
   uploadFiles.value = []
-  uploadPreviewUrls.value = props.item.url ? [props.item.url] : []
+  uploadPreviewUrls.value = props.item.file?.length ? props.item.file : []
+  await nextTick()
+  formData.value.incomeTypeId = Number(formRead.value.incomeType?.id)
+  await nextTick()
+  formKey.value++
 }
 
-function onOpen (): void {
+async function onOpen (): Promise<void> {
   currentMode.value = props.mode
   if (props.mode === 'create') {
     formData.value = useFormInitialValues()
     uploadFiles.value = []
     uploadPreviewUrls.value = []
-  } else if (props.mode === 'edit') {
-    populateForm()
+    return
+  }
+
+  if (props.item?.id) {
+    const { data } = await ContractService.getIncomeById(Number(props.item.id))
+    formRead.value = data
+
+    if (props.mode === 'edit') {
+      populateForm()
+    }
   }
 }
 
@@ -260,12 +280,12 @@ function onCategoryChange (): void {
 
 async function uploadAndSetFile (file: File): Promise<void> {
   const response = await UploadService.uploadFile(file)
-  formData.value.url = response.data.url
+  formData.value.file = [response.data]
 }
 
 watch(uploadFiles, (files: File[]): void => {
   if (files.length === 0) {
-    formData.value.url = ''
+    formData.value.file = []
     return
   }
   handleLoading((): Promise<void> => uploadAndSetFile(files[files.length - 1]))
@@ -276,13 +296,21 @@ function onFormSubmit (event: FormSubmitEvent, close: () => void): void {
     scrollToFirstError(event.errors)
     return
   }
-  const values = event.values as ICreateIncome
+  const values = {
+    incomeCategoryId: event.states?.incomeCategoryId?.value?.id ? event.states?.incomeCategoryId?.value?.id : formRead.value.incomeCategory.id,
+    incomeTypeId: event.states?.incomeTypeId?.value?.id ? event.states?.incomeTypeId?.value?.id : formRead.value.incomeType.id,
+    amount: event.states?.amount?.value ? event.states?.amount?.value : formRead.value.amount,
+    file: formData.value.file,
+    note: event.states?.note?.value ? event.states?.note?.value : formRead.value.note,
+    vatType: formData.value.vatType
+  } as ICreateIncome
+
   const itemId = props.item?.id
   handleLoading(async (): Promise<void> => {
     if (currentMode.value === 'create') {
       await ContractService.createIncome(props.contractId, values)
     } else if (currentMode.value === 'edit' && itemId) {
-      await ContractService.updateIncome(props.contractId, itemId, values)
+      await ContractService.updateIncome(itemId, values)
     }
     emits('update')
     close()
@@ -293,7 +321,7 @@ function onDelete (close: () => void): void {
   const id = props.item?.id
   if (!id) return
   handleLoading(async (): Promise<void> => {
-    await ContractService.deleteIncome(props.contractId, id)
+    await ContractService.deleteIncome(id)
     emits('update')
     close()
   })
