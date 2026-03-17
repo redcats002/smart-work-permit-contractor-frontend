@@ -4,15 +4,15 @@ export enum EstateStatusEnum {
   RETURNED = 'RETURNED',
   NORMAL = 'NORMAL',
   SOLD = 'SOLD',
-  WAIT_TO_SELL = 'WAIT_TO_SELL',
-  WAIT_TO_AUCTION = 'WAIT_TO_AUCTION'
+  PENDING_TO_SELL = 'PENDING_TO_SELL',
+  PENDING_TO_AUCTION = 'PENDING_TO_AUCTION'
 }
 
 export type TEstateStatus = keyof typeof EstateStatusEnum
 
 const titleMap: Record<TEstateStatus, string> = {
-  [EstateStatusEnum.WAIT_TO_SELL]: 'รอขาย',
-  [EstateStatusEnum.WAIT_TO_AUCTION]: 'รอประมูล',
+  [EstateStatusEnum.PENDING_TO_SELL]: 'รอขาย',
+  [EstateStatusEnum.PENDING_TO_AUCTION]: 'รอประมูล',
   [EstateStatusEnum.RETURNED]: 'คืนลูกค้า',
   [EstateStatusEnum.NORMAL]: 'ปกติ',
   [EstateStatusEnum.SOLD]: 'ขายแล้ว'
@@ -36,9 +36,9 @@ export function getStatusClass (value?: TEstateStatus): string {
       return 'bg-blue-100 text-blue-600 border-none'
     case EstateStatusEnum.SOLD:
       return 'bg-gray-100 text-gray-600 border-none'
-    case EstateStatusEnum.WAIT_TO_SELL:
+    case EstateStatusEnum.PENDING_TO_SELL:
       return 'bg-yellow-100 text-yellow-600 border-none'
-    case EstateStatusEnum.WAIT_TO_AUCTION:
+    case EstateStatusEnum.PENDING_TO_AUCTION:
       return 'bg-yellow-100 text-yellow-600 border-none'
     case EstateStatusEnum.RETURNED:
       return 'bg-green-brand-light text-green-brand border-none'
@@ -53,9 +53,9 @@ export function getIcon (value?: TEstateStatus): string {
       return 'streamline:graph-arrow-increase'
     case EstateStatusEnum.SOLD:
       return 'mingcute:time-duration-line'
-    case EstateStatusEnum.WAIT_TO_SELL:
+    case EstateStatusEnum.PENDING_TO_SELL:
       return 'mingcute:time-duration-line'
-    case EstateStatusEnum.WAIT_TO_AUCTION:
+    case EstateStatusEnum.PENDING_TO_AUCTION:
       return 'mingcute:time-duration-line'
     case EstateStatusEnum.RETURNED:
       return 'mdi:check-circle-outline'

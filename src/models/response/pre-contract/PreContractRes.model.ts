@@ -1,9 +1,16 @@
 import type { IBaseModel, IEntity } from '@/models/Global.model'
-import type { TAssetType } from '@/enums/modules/contract/AssetType.enum'
-import type { TEvaluatorLevel } from '@/enums/modules/contract/EvaluatorLevel.enum'
+import type { IBorrowerList } from '@/models/modules/pre-contract/Borrower.model'
+import type { IEvaluateGroupList } from '@/models/modules/pre-contract/Evaluator.model'
+import type { IGuarantorList } from '@/models/modules/pre-contract/Guarantor.model'
+import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
+import type { TInterestType } from '@/enums/modules/contract/InterestType.enum'
 import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import type { TTitleName } from '@/enums/TitleName.enum'
-import type { IMedia } from '@/resources/provider/Upload.provider'
+import type { IContractLoanPurposeList } from '../contract-loan-purpose/ContractLoanPurposeRes.model'
+import type { IContractLoanTypeList } from '../contract-loan-type/ContractLoanTypeRes.model'
+import type { ICustomerById } from '../customer/CustomerRes.model'
+import type { IEmployeeList } from '../employee/EmployeeRes.model'
+import type { IHowDidFindUsList } from '../how-did-find-us/HowDidFindUsRes.model'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 
 export interface IPreContractCustomer {
@@ -31,55 +38,11 @@ export interface IPreContractStaff {
   lastName: string
 }
 
-export interface IPreAssetImage extends IMedia {}
-
-export interface IAssetDetailInfo extends IEntity {
-  assetType: TAssetType
-  detail: string
-  address: string
-  subDistrict: string
-  district: string
-  province: string
-  postCode: string
-  urlGoogleMap: string
-  // vehicle-specific
-  licensePlate: string
-  vehicleProvince: string
-  yearManufactured: number
-  yearRegistered: number
-  chassisNumber: string
-  mileage: number
-  // land-specific
-  landNumber: string
-  surveyPageNumber: string
-  landLocation: string
-  aerialPhotoNumber: string
-  aerialPhotoSheet: string
-  areaRai: number
-  areaRgan: number
-  areaTarangWa: number
-  images: IPreAssetImage[]
-}
 
 export interface IPreContractLoanType {
   id: number
   name: string
 }
-
-export interface IEvaluatorList extends IEntity {
-  titleName: TTitleName
-  firstName: string
-  lastName: string
-  evaluatorLevel: TEvaluatorLevel
-  loanAmount: number
-}
-
-export interface IAppraisalById extends IEntity {
-  evaluatorLevel: TEvaluatorLevel
-  detail: string
-  evaluators: IEvaluatorList[]
-}
-
 export interface IPreContractList extends IEntity {
   contractDate: string
   startDate: string
@@ -90,22 +53,29 @@ export interface IPreContractList extends IEntity {
   loanType: IPreContractLoanType
 }
 
-export interface IPreContractById extends IEntity {
-  contractDate: string
-  startDate: string
-  endDate: string
-  amount: number
+export interface IPreContractById extends Omit<IEntity, 'status'> {
   status: TPreContractStatus
-  customer: IPreContractCustomerDetail
-  loanType: IPreContractLoanType
-  staff?: IPreContractStaff
-  assets: IAssetDetailInfo[]
-  appraisals: IAppraisalById[]
+  contractedAt: string
+  loanAmount: number
+  installmentCount: number
+  interestType: TInterestType
+  annualInterestRate: number
+  lateFee: number
+  contractLoanPurpose: IContractLoanPurposeList
+  contractLoanType: IContractLoanTypeList
+  howDidFindUs: IHowDidFindUsList
+  sellMan: IEmployeeList
+  customer: ICustomerById
+  borrowers: IBorrowerList[]
+  guarantors: IGuarantorList[]
+  evaluateGroups: IEvaluateGroupList[]
+  preAssets: IPreAssetList[]
 }
 
 export type TGetPreContractListResponse = IBasePaginationResponse<IPreContractList>
 export type TGetPreContractByIdResponse = IBaseSuccessResponse<IPreContractById>
 export type TActionPreContract = IBaseSuccessResponse<boolean>
+export type TUpdatePreAssetPreContract = IBaseSuccessResponse<boolean>
 export type TRequestReappraisalPreContract = IBaseSuccessResponse<boolean>
 export type TAppraisalPricePreContract = IBaseSuccessResponse<boolean>
 export type TConfirmAppraisalPreContract = IBaseSuccessResponse<boolean>
