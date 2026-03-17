@@ -1,16 +1,14 @@
 import type { TBaseOption } from '@/models/Global.model'
 
 export enum InterestTypeEnum {
-  GENERIC_LEVEL = 'GENERIC_LEVEL',
-  DISTRICT_LEVEL = 'DISTRICT_LEVEL',
-  CEO_LEVEL = 'CEO_LEVEL'
+  FLAT_RATE = 'FLAT_RATE',
+  EFFECTIVE_RATE = 'EFFECTIVE_RATE'
 }
 export type TInterestType = keyof typeof InterestTypeEnum
 
 const titleMap: Record<TInterestType, string> = {
-  [InterestTypeEnum.GENERIC_LEVEL]: 'ทั่วไป',
-  [InterestTypeEnum.DISTRICT_LEVEL]: 'ระดับเขต',
-  [InterestTypeEnum.CEO_LEVEL]: 'CEO'
+  [InterestTypeEnum.FLAT_RATE]: 'คงที่',
+  [InterestTypeEnum.EFFECTIVE_RATE]: 'ลดต้นลดดอก'
 }
 
 export const InterestTypeItems: TBaseOption[] = Object.values(InterestTypeEnum).map(
