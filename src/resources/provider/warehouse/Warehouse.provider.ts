@@ -1,6 +1,11 @@
-import type { ICreateWarehousePayload, IGetWarehouseList, IUpdateWarehousePayload } from '@/models/request/warehouse/WarehouseReq.model'
+import type { ICreateWarehousePayload, IGetLocationList, IGetWarehouseList, IUpdateWarehousePayload } from '@/models/request/warehouse/WarehouseReq.model'
 import type { TBaseParamsId } from '@/models/response/Response.model'
-import type { TActionWarehouse, TGetWarehouseByIdResponse, TGetWarehouseListResponse } from '@/models/response/warehouse/WarehouseRes.model'
+import type {
+  TActionWarehouse,
+  TGetLocationListResponse,
+  TGetWarehouseByIdResponse,
+  TGetWarehouseListResponse
+} from '@/models/response/warehouse/WarehouseRes.model'
 import HttpRequest from '@/resources/HttpRequest'
 
 export interface IWarehouseProvider {
@@ -9,6 +14,7 @@ export interface IWarehouseProvider {
   updateWarehouse(id: TBaseParamsId, payload: IUpdateWarehousePayload): Promise<TActionWarehouse>
   deleteWarehouse(id: number): Promise<TActionWarehouse>
   getWarehouseFindOne(id: TBaseParamsId): Promise<TGetWarehouseByIdResponse>
+  getLocationPaginate (query: IGetLocationList): Promise<TGetLocationListResponse>
 }
 
 class WarehouseProvider extends HttpRequest implements IWarehouseProvider {
@@ -36,6 +42,12 @@ class WarehouseProvider extends HttpRequest implements IWarehouseProvider {
 
   public async getWarehouseFindOne (id: TBaseParamsId): Promise<TGetWarehouseByIdResponse> {
     const response = await this.get(`${this.urlPrefix}/${id}`)
+    return response
+  }
+
+
+  public async getLocationPaginate (query: IGetLocationList): Promise<TGetLocationListResponse> {
+    const response = await this.get(`${this.urlPrefix}/location/pagination`, query)
     return response
   }
 }
