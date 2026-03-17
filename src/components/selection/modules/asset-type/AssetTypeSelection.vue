@@ -16,10 +16,10 @@ import { AssetTypeItems, LandAssetTypeItems, VehicleAssetTypeItems } from '@/enu
 import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
 import usePagination from '@/composables/usePagination'
 
-type TEstateCategory = 'VEHICLE' | 'LAND'
+type TAssetCategory = 'VEHICLE' | 'LAND'
 
 interface IProps {
-  category?: TEstateCategory | null
+  category?: TAssetCategory | null
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -92,7 +92,7 @@ watch(model, (): void => {
 })
 
 watch(
-  (): TEstateCategory | null => props.category, (): void => {
+  (): TAssetCategory | null => props.category, (): void => {
     fetch()
   }
 )
