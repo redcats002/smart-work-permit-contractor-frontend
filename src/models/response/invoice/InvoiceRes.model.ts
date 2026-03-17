@@ -11,12 +11,12 @@ export interface IInvoiceCustomer {
 }
 
 export interface IInvoiceList extends IEntity {
-  contractId: number | null
-  invoiceNo: string | null
-  contractNo: string | null
-  invoiceDate: string | null
-  customer: IInvoiceCustomer | null
-  totalValue: number | null
+  contract: {
+    id: number
+    idNo: string
+    customer: IInvoiceCustomer
+  }
+  totalAmount: number | null
 }
 
 export interface IInvoiceDetailItems {
