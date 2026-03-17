@@ -179,5 +179,12 @@ export default [
       '@stylistic/template-curly-spacing': 'error',
       '@stylistic/wrap-regex': 'error'
     }
+  },
+  {
+    files: ['src/**/*.ts'],
+    rules: {
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off'
+    }
   }
 ]

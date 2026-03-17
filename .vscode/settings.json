@@ -11,6 +11,7 @@
 	],
 	"cSpell.ignoreRegExpList": ["/[\\u0E00-\\u0E7F]/g"],
 	"cSpell.words": [
+		"Axios",
 		"bunx",
 		"clearicon",
 		"composables",
@@ -53,6 +54,7 @@
 		"vetur",
 		"Vite",
 		"VITE",
+		"Vitest",
 		"vuejs",
 		"vuetify",
 		"vueuse",

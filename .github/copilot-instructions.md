@@ -1,8 +1,8 @@
-# Mittae Esan Management — Copilot Instructions
+# Mittae Siam Management — Copilot Instructions
 
 ## Project Overview
 
-ระบบจัดการสินเชื่อและสาขา (Loan & Branch Management System) สำหรับบริษัทมิตรแท้สยาม เขียนด้วย Vue 3 + TypeScript ภาษา UI เป็นภาษาไทย
+Loan & Branch Management System for Mittae Siam company. Built with Vue 3 + TypeScript. UI language is Thai.
 
 **Domain modules:** Auth, Customer, Contract, Financial (Income/Expense), Warehouse/Collateral, Branch, Settings
 
@@ -15,7 +15,7 @@
 | Framework | Vue 3.5 (Composition API + `<script setup>`) |
 | Language | TypeScript 5.9 (strict mode) |
 | Build | Vite 7 |
-| Package Manager | **bun** (ห้ามใช้ `npm` หรือ `yarn`) |
+| Package Manager | **bun** (do not use `npm` or `yarn`) |
 | State | Pinia 3 + `pinia-plugin-persistedstate` |
 | Router | Vue Router 5 (HTML5 history mode) |
 | UI Library | PrimeVue 4 (unstyled / Volt pattern) |
@@ -641,7 +641,7 @@ Modes: `development` (default), `staging`, `production` (via `vite --mode stagin
 
 ## Package Manager
 
-โปรเจคนี้ใช้ **bun** เป็น package manager เท่านั้น ห้ามใช้ `npm`, `yarn` หรือ `pnpm`
+This project uses **bun** as the only package manager. Do not use `npm`, `yarn`, or `pnpm`.
 
 ```bash
 bun install           # Install dependencies
