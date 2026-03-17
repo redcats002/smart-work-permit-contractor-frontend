@@ -17,40 +17,84 @@ import useTabItems, {
 export function useInitDetail (data?: Partial<IContractById>): Ref<IContractById> {
   return ref<IContractById>({
     ...data,
-    customers: [],
-    employee: {
-      id: 0,
-      firstName: '',
-      lastName: '',
-      phoneNumber: '',
-      status: 'ACTIVE',
-      titleName: ''
-    },
-    guarantors: [],
-    id: 0,
-    interestAmount: 0,
-    lastPeriodPayment: 0,
-    loanAmount: 0,
-    periodCount: 0,
-    perMonthPayment: 0,
-    lateFee: 0,
-    status: 'SUCCESS',
+    periodCount: data?.periodCount || 0,
+    annualInterestRate: data?.annualInterestRate || 0,
     contractLoanPurpose: {
-      id: 0,
-      name: ''
+      name: data?.contractLoanPurpose?.name || '',
+      id: typeof data?.contractLoanPurpose?.id === 'string' ? data?.contractLoanPurpose?.id : String(data?.contractLoanPurpose?.id)
     },
-    howDidFindUs: {
-      id: 0,
-      name: ''
-    },
+    guarantors: data?.guarantors || [
+      {
+        mainAddress: {
+          address: '',
+          subDistrict: '',
+          district: '',
+          province: '',
+          postCode: ''
+        },
+        idCard: '111100000000',
+        customerGroup: {
+          id: 1,
+          name: ''
+        },
+        firstName: 'D',
+        lastName: '',
+        titleName: '',
+        id: 1,
+        phoneNumber: '',
+        status: 'ACTIVE'
+      },
+      {
+        idCard: '12345678901234',
+        customerGroup: {
+          id: 2,
+          name: ''
+        },
+        firstName: 'E',
+        lastName: '',
+        titleName: '',
+        id: 1,
+        phoneNumber: '',
+        status: 'ACTIVE',
+        mainAddress: {
+          address: '',
+          subDistrict: '',
+          district: '',
+          province: '',
+          postCode: ''
+        }
+      }
+    ],
     contractLoanType: {
-      id: 0,
-      name: ''
+      name: data?.contractLoanType?.name || '',
+      id: typeof data?.contractLoanType?.id === 'string' ? data?.contractLoanType?.id : String(data?.contractLoanType?.id)
     },
-    startDate: '',
-    endDate: '',
-    interestType: undefined,
-    annualInterestRate: 0
+    borrowers: data?.borrowers || [],
+    sellMan: {
+      titleName: data?.sellMan?.titleName || '',
+      firstName: data?.sellMan?.firstName || '',
+      lastName: data?.sellMan?.lastName || '',
+      phoneNumber: data?.sellMan?.phoneNumber || '',
+      status: data?.sellMan?.status || 'ACTIVE',
+      id: typeof data?.sellMan?.id === 'string' ? data?.sellMan?.id : String(data?.sellMan?.id)
+    },
+    id: typeof data?.id === 'string' ? data?.id : String(data?.id),
+    endDate: data?.endDate || '',
+    howDidFindUs: {
+      name: data?.howDidFindUs?.name || '',
+      id: typeof data?.howDidFindUs?.id === 'string' ? data?.howDidFindUs?.id : String(data?.howDidFindUs?.id)
+    },
+    interestAmount: data?.interestAmount || 0,
+    interestType: data?.interestType,
+    lastPeriodPayment: data?.lastPeriodPayment || 0,
+    loanAmount: data?.loanAmount || 0,
+    lateFee: data?.lateFee || 0,
+    perMonthPayment: data?.perMonthPayment || 0,
+    contractedAt: data?.contractedAt || '',
+    installmentCount: data?.installmentCount || 0,
+    monthlyInstallment: data?.monthlyInstallment || 0,
+    totalInterest: data?.totalInterest || 0,
+    status: data?.status || 'PENDING'
   })
 }
 
