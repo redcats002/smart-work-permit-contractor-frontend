@@ -1,13 +1,11 @@
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
 import type { TDocumentType } from '@/enums/modules/contract/DocumentType.enum'
-import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import type { TVatType } from '@/enums/modules/Vat.enum'
 import type { ContractHistoryFormValues } from '@/pages/contract/pages/detail/components/tab/contact-history/schema/contract-history.schema'
 import type { IBasePaginationRequest } from '../Request.model'
 
 export interface IGetContractList extends IBasePaginationRequest {
   status?: TContractStatus
-  assetStatus?: TPreContractStatus
   loanTypeId?: number
 }
 export interface IGetAssetContract {}

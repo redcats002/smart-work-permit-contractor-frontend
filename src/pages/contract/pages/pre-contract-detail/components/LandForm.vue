@@ -3,14 +3,14 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <LabelField
         v-slot="{ invalid }"
-        :form="props.form"
+        :form="form"
         label="ประเภทหลักทรัพย์"
-        name="assetType"
+        name="type"
         tag="div"
         hide-error
         required>
         <SelectInput
-          v-model="model.assetType"
+          v-model="type"
           :invalid="invalid"
           :options="LandAssetTypeItems"
           option-label="label"
@@ -18,40 +18,40 @@
           placeholder="เลือกประเภทหลักทรัพย์" />
       </LabelField>
       <LabelField
-        v-model="model.detail"
-        :form="props.form"
+        v-model="detail"
+        :form="form"
         label="รายละเอียดหลักทรัพย์"
         name="detail"
         placeholder="กรอกรายละเอียด"
         hide-error />
       <LabelField
-        v-model="model.landNumber"
-        :form="props.form"
+        v-model="model.landNo"
+        :form="form"
         label="เลขที่ดิน"
-        name="landNumber"
+        name="landNo"
         placeholder="กรอกเลขที่ดิน"
         hide-error
         required />
       <LabelField
-        v-model="model.surveyPageNumber"
-        :form="props.form"
+        v-model="model.surveyNo"
+        :form="form"
         label="เลขหน้าสำรวจ"
-        name="surveyPageNumber"
+        name="surveyNo"
         placeholder="กรอกเลขหน้าสำรวจ"
         hide-error />
     </div>
     <LabelField
-      v-model="model.landLocation"
-      :form="props.form"
+      v-model="model.address"
+      :form="form"
       label="ตำแหน่งที่ดิน"
-      name="landLocation"
+      name="address"
       placeholder="กรอกตำแหน่งที่ดิน"
       hide-error />
     <Divider />
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <LabelField
         v-slot="{ invalid }"
-        :form="props.form"
+        :form="form"
         label="ตำบล"
         name="subDistrict"
         tag="div"
@@ -60,12 +60,13 @@
           v-model="model.subDistrict"
           :invalid="invalid"
           address-type="sub-district"
+          name="subDistrict"
           placeholder="เลือกตำบล"
           @select="onAddressSelect($event)" />
       </LabelField>
       <LabelField
         v-slot="{ invalid }"
-        :form="props.form"
+        :form="form"
         label="อำเภอ"
         name="district"
         tag="div"
@@ -74,12 +75,13 @@
           v-model="model.district"
           :invalid="invalid"
           address-type="district"
+          name="district"
           placeholder="เลือกอำเภอ"
           @select="onAddressSelect($event)" />
       </LabelField>
       <LabelField
         v-slot="{ invalid }"
-        :form="props.form"
+        :form="form"
         label="จังหวัด"
         name="province"
         tag="div"
@@ -88,12 +90,13 @@
           v-model="model.province"
           :invalid="invalid"
           address-type="province"
+          name="province"
           placeholder="เลือกจังหวัด"
           @select="onAddressSelect($event)" />
       </LabelField>
       <LabelField
         v-slot="{ invalid }"
-        :form="props.form"
+        :form="form"
         label="รหัสไปรษณีย์"
         name="postCode"
         tag="div"
@@ -102,6 +105,7 @@
           v-model="model.postCode"
           :invalid="invalid"
           address-type="zipcode"
+          name="postCode"
           placeholder="รหัสไปรษณีย์"
           @select="onAddressSelect($event)" />
       </LabelField>
@@ -111,15 +115,15 @@
     </Divider>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <LabelField
-        v-model="model.aerialPhotoNumber"
-        :form="props.form"
+        v-model="model.aerialPhotoMapNo"
+        :form="form"
         label="หมายเลข"
-        name="aerialPhotoNumber"
+        name="aerialPhotoMapNo"
         placeholder="กรอกหมายเลข"
         hide-error />
       <LabelField
         v-model="model.aerialPhotoSheet"
-        :form="props.form"
+        :form="form"
         label="แผ่นที่"
         name="aerialPhotoSheet"
         placeholder="กรอกแผ่นที่"
@@ -131,43 +135,46 @@
     <div class="grid grid-cols-3 gap-4">
       <LabelField
         v-slot="{ invalid }"
-        :form="props.form"
+        :form="form"
         label="ไร่"
-        name="areaRai"
+        name="landAreaRai"
         tag="div"
         hide-error>
         <InputNumber
-          v-model="model.areaRai"
+          v-model="model.landAreaRai"
           :invalid="invalid"
           class="h-9! shadow-none!"
+          name="landAreaRai"
           placeholder="0"
           fluid />
       </LabelField>
       <LabelField
         v-slot="{ invalid }"
-        :form="props.form"
+        :form="form"
         label="งาน"
-        name="areaRgan"
+        name="landAreaNgan"
         tag="div"
         hide-error>
         <InputNumber
-          v-model="model.areaRgan"
+          v-model="model.landAreaNgan"
           :invalid="invalid"
           class="h-9! shadow-none!"
+          name="landAreaNgan"
           placeholder="0"
           fluid />
       </LabelField>
       <LabelField
         v-slot="{ invalid }"
-        :form="props.form"
+        :form="form"
         label="ตารางวา"
-        name="areaTarangWa"
+        name="landAreaSquareWah"
         tag="div"
         hide-error>
         <InputNumber
-          v-model="model.areaTarangWa"
+          v-model="model.landAreaSquareWah"
           :invalid="invalid"
           class="h-9! shadow-none!"
+          name="landAreaSquareWah"
           placeholder="0"
           fluid />
       </LabelField>
@@ -177,7 +184,7 @@
 
 <script setup lang="ts">
 import type { IFormState } from '@/models/Form.model'
-import { LandAssetTypeItems } from '@/enums/modules/contract/AssetType.enum'
+import { LandAssetTypeItems, type TAssetType } from '@/enums/modules/contract/AssetType.enum'
 import AddressFieldInput, { type IAddressData } from '@/components/input/AddressFieldInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import SelectInput from '@/components/input/SelectInput.vue'
@@ -187,11 +194,13 @@ interface IProps {
   form?: IFormState
 }
 
-const props = withDefaults(defineProps<IProps>(), {
+withDefaults(defineProps<IProps>(), {
   form: undefined
 })
 
 const model = defineModel<LandFormValues>({ required: true })
+const type = defineModel<TAssetType>('type', { required: true })
+const detail = defineModel<string>('detail', { required: true })
 
 function onAddressSelect (data: IAddressData): void {
   model.value.subDistrict = data.subDistrict

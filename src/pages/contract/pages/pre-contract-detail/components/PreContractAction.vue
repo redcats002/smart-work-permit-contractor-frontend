@@ -86,19 +86,19 @@ const emits = defineEmits<IEmits>()
 const requestReappraisal = defineModel<IRequestReappraisalPayload>('requestReappraisal', { required: true })
 
 const isAssetValuation = computed((): boolean => {
-  const list: TPreContractStatus[] = ['PENDING', 'DRAFT']
+  const list: TPreContractStatus[] = ['PENDING_EVALUATION', 'DRAFT']
   return list.includes(props.status)
 })
 const isConfirmValuation = computed((): boolean => {
-  const list: TPreContractStatus[] = ['IN_ASSESSMENT']
+  const list: TPreContractStatus[] = ['PENDING_EVALUATION']
   return list.includes(props.status)
 })
 const isSubmitMortgage = computed((): boolean => {
-  const list: TPreContractStatus[] = ['WAIT_MORTGAGE']
+  const list: TPreContractStatus[] = ['PENDING_MORTGAGE']
   return list.includes(props.status)
 })
 const isWaitContract = computed((): boolean => {
-  const list: TPreContractStatus[] = ['WAIT_CONTRACT']
+  const list: TPreContractStatus[] = ['PENDING_CONTRACT']
   return list.includes(props.status)
 })
 </script>

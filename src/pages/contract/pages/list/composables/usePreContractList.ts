@@ -26,14 +26,14 @@ export default function usePreContractList (): IUsePreContractList {
     limit: pagination.value.limit,
     sortBy: sortBy.value || undefined,
     sortOrder: sortOrder.value,
-    assetStatus: filters.value.assetStatus
+    status: filters.value.status
   }))
 
   async function useFetch (): Promise<void> {
     const response = await contractService.getContractPaginate(paginateQuery.value)
     items.value = response?.data || []
     pagination.value = extractPagination(response)
-    syncQuery({ assetStatus: filters.value.assetStatus })
+    syncQuery({ status: filters.value.status })
   }
 
   function fetch (): void {

@@ -1,4 +1,4 @@
-import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
+import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
 import type { PreAssetFormValues, PreContractFormValues } from '@/pages/contract/pages/create/schema/pre-contract.schema'
 import type { AppraisalPriceFormValues } from '@/pages/contract/pages/pre-contract-detail/schema/appraisal-price.schema'
 import type { AssetValuationFormValues } from '@/pages/contract/pages/pre-contract-detail/schema/asset-valuation.schema'
@@ -7,7 +7,7 @@ import type { MortgageFormValues } from '@/pages/contract/pages/pre-contract-det
 import type { IBasePaginationRequest } from '../Request.model'
 
 export interface IGetPreContractList extends IBasePaginationRequest {
-  status?: TPreContractStatus
+  status?: TContractStatus
   loanTypeId?: number
 }
 

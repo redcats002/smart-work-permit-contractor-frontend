@@ -2,26 +2,34 @@
   <BaseModal
     v-model="visible"
     class="md:w-240!"
-    label="กรอกข้อมูลหลักทรัพย์">
+    label="กรอกข้อมูลหลักทรัพย์"
+    @open="useInit()">
     <template #default>
       <div class="grid grid-cols-1 md:grid-cols-[1fr_300px] gap-8">
         <Form
+          :key="formKey"
           ref="formRef"
           v-slot="$form"
           :initial-values="activeFormValues"
           :resolver="activeResolver"
-          @submit="onFormSubmit($event)">
+          @submit="onSubmit($event)">
           <div>
             <p class="text-base font-bold mb-5">
               รายละเอียดหลักทรัพย์
             </p>
             <VehicleForm
               v-if="isVehicle"
-              v-model="vehicleForm"
+              v-model="form.vehicleForm!"
+              v-model:detail="form.detail"
+              v-model:type="form.type"
+              :asset="asset"
               :form="$form" />
             <LandForm
               v-else-if="isLand"
-              v-model="landForm"
+              v-model="form.realEstateForm!"
+              v-model:detail="form.detail"
+              v-model:type="form.type"
+              :asset="asset"
               :form="$form" />
           </div>
         </Form>
@@ -53,27 +61,29 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useTemplateRef, watch } from 'vue'
+import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { IAssetDetailInfo, IPreAssetImage } from '@/models/response/pre-contract/PreContractRes.model'
+import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import type { TBaseParamsId } from '@/models/response/Response.model'
 import { isLandAsset, isVehicleAsset } from '@/enums/modules/contract/AssetType.enum'
+import type { IMedia } from '@/resources/provider/Upload.provider'
 import FormAction from '@/components/button/FormAction.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
+import { createPreAssetBase, type PreAssetFormValues } from '../../create/schema/pre-contract.schema'
 import type { LandFormValues } from '../schema/land.schema'
-import { LandFormSchema } from '../schema/land.schema'
+import { ModalLandSchema } from '../schema/land.schema'
 import type { VehicleFormValues } from '../schema/vehicle.schema'
-import { VehicleSchema } from '../schema/vehicle.schema'
+import { ModalVehicleSchema } from '../schema/vehicle.schema'
 import ImageSection from './ImageSection.vue'
 import LandForm from './LandForm.vue'
 import VehicleForm from './VehicleForm.vue'
 
 interface IProps {
-  asset: IAssetDetailInfo
+  asset: IPreAssetList
   contractId: TBaseParamsId
 }
 
@@ -85,64 +95,56 @@ const props = defineProps<IProps>()
 const emits = defineEmits<IEmits>()
 
 const visible = defineModel<boolean>({ default: false })
+const form = defineModel<PreAssetFormValues>('form', { required: true })
 
 const formRef = useTemplateRef<InstanceType<typeof Form> | any>('formRef')
+
+const vehicleResolver = zodResolver(ModalVehicleSchema)
+const landResolver = zodResolver(ModalLandSchema)
+
 const pendingClose = ref<(() => void) | null>(null)
+const formKey = ref<number>(0)
 
-const vehicleResolver = zodResolver(VehicleSchema)
-const landResolver = zodResolver(LandFormSchema)
-
-const activeFormValues = computed((): VehicleFormValues | LandFormValues =>
-  isVehicle.value ? vehicleForm.value : landForm.value
-)
-const activeResolver = computed((): ReturnType<typeof zodResolver> => isVehicle.value ? vehicleResolver : landResolver)
-
-const vehicleForm = ref<VehicleFormValues>(buildVehicleForm())
-const landForm = ref<LandFormValues>(buildLandForm())
-
-const existingImages = ref<IPreAssetImage[]>([...(props.asset.images || [])])
+const existingImages = ref<IMedia[]>([...(props.asset.images || [])])
 const newFiles = ref<File[]>([])
 const previewUrls = ref<string[]>([])
 const removedImageIds = ref<string[]>([])
 
-const isVehicle = computed((): boolean => isVehicleAsset(props.asset.assetType))
-const isLand = computed((): boolean => isLandAsset(props.asset.assetType))
+const activeFormValues = computed((): Record<string, unknown> => ({
+  type: form.value.type,
+  detail: form.value.detail,
+  ...(isVehicle.value ? form.value.vehicleForm! : form.value.realEstateForm!)
+}))
+const activeResolver = computed((): ReturnType<typeof zodResolver> => isVehicle.value ? vehicleResolver : landResolver)
+
+
+const isVehicle = computed((): boolean => isVehicleAsset(props.asset.type))
+const isLand = computed((): boolean => isLandAsset(props.asset.type))
 
 function buildVehicleForm (): VehicleFormValues {
   return {
-    assetType: props.asset.assetType || '',
-    detail: props.asset.detail || '',
-    licensePlate: props.asset.licensePlate || '',
-    vehicleProvince: props.asset.vehicleProvince || '',
-    yearManufactured: props.asset.yearManufactured,
-    yearRegistered: props.asset.yearRegistered,
-    chassisNumber: props.asset.chassisNumber || '',
-    mileage: props.asset.mileage
+    ...props.asset.vehicleForm,
+    plateNo: props.asset.vehicleForm?.plateNo || '',
+    province: props.asset.vehicleForm?.province || '',
+    manufactureYear: props.asset.vehicleForm?.manufactureYear,
+    registrationYear: props.asset.vehicleForm?.registrationYear,
+    vehicleIdentificationNo: props.asset.vehicleForm?.vehicleIdentificationNo || '',
+    mileage: props.asset.vehicleForm?.mileage
   }
 }
 
 function buildLandForm (): LandFormValues {
   return {
-    assetType: props.asset.assetType || '',
-    detail: props.asset.detail || '',
-    landNumber: props.asset.landNumber || '',
-    surveyPageNumber: props.asset.surveyPageNumber || '',
-    landLocation: props.asset.landLocation || '',
-    subDistrict: props.asset.subDistrict || '',
-    district: props.asset.district || '',
-    province: props.asset.province || '',
-    postCode: props.asset.postCode || '',
-    aerialPhotoNumber: props.asset.aerialPhotoNumber || '',
-    aerialPhotoSheet: props.asset.aerialPhotoSheet || '',
-    areaRai: props.asset.areaRai,
-    areaRgan: props.asset.areaRgan,
-    areaTarangWa: props.asset.areaTarangWa
-  }
+    ...props.asset?.realEstateForm,
+    subDistrict: props.asset.realEstateForm?.subDistrict || '',
+    district: props.asset.realEstateForm?.district || '',
+    province: props.asset.realEstateForm?.province || '',
+    postCode: props.asset.realEstateForm?.postCode || '',
+    urlGoogleMap: props.asset.realEstateForm?.urlGoogleMap || '' }
 }
 
 function onClear (): void {
-  vehicleForm.value = buildVehicleForm()
-  landForm.value = buildLandForm()
+  form.value = createPreAssetBase()
   newFiles.value = []
   previewUrls.value = []
   removedImageIds.value = []
@@ -151,8 +153,8 @@ function onClear (): void {
 }
 
 async function useSave (): Promise<void> {
-  const formData = new FormData() // TODO: to use in upload
-  const currentForm = isVehicle.value ? vehicleForm.value : landForm.value
+  const formData = new FormData()
+  const currentForm = isVehicle.value ? form.value.vehicleForm! : form.value.realEstateForm!
 
   Object.entries(currentForm).forEach(([key, val]: [string, unknown]): void => {
     if (val !== null && val !== undefined) {
@@ -166,18 +168,17 @@ async function useSave (): Promise<void> {
   newFiles.value.forEach((file: File): void => {
     formData.append('images', file)
   })
-
-  toast.success('บันทึกข้อมูลสำเร็จ')
   emits('saved')
 }
 
 async function onSave (close: () => void): Promise<void> {
   pendingClose.value = close
   const val = await formRef.value?.validate()
-  onFormSubmit({ ...val, valid: Object.keys(val.errors).length === 0 })
+  onSubmit({ ...val, valid: Object.keys(val.errors).length === 0 })
 }
 
-function onFormSubmit (event: FormSubmitEvent): void {
+function onSubmit (event: FormSubmitEvent): void {
+  formKey.value++
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return
@@ -189,12 +190,28 @@ function onFormSubmit (event: FormSubmitEvent): void {
   })
 }
 
-watch((): IAssetDetailInfo => props.asset, (): void => {
-  vehicleForm.value = buildVehicleForm()
-  landForm.value = buildLandForm()
+function useInit (): void {
+  form.value = {
+    vehicleForm: buildVehicleForm(),
+    realEstateForm: buildLandForm(),
+    detail: props.asset.detail,
+    type: props.asset.type,
+    images: props.asset.images || []
+  }
+  formKey.value++
+}
+
+onMounted((): void => {
+  useInit()
+})
+
+watch((): IPreAssetList => props.asset, (): void => {
+  form.value.vehicleForm = buildVehicleForm()
+  form.value.realEstateForm = buildLandForm()
   existingImages.value = [...(props.asset.images || [])]
   newFiles.value = []
   previewUrls.value = []
   removedImageIds.value = []
+  formKey.value++
 })
 </script>

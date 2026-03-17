@@ -5,7 +5,8 @@
       :form="form"
       :name="`${namePrefix}.address`"
       label="ที่อยู่"
-      placeholder="กรอกที่อยู่" />
+      placeholder="กรอกที่อยู่"
+      hide-error />
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
       <LabelField
         v-slot="{ invalid }"
@@ -13,10 +14,12 @@
         :name="`${namePrefix}.subDistrict`"
         label="ตำบล"
         tag="div"
+        hide-error
         required>
         <AddressFieldInput
           v-model="model.subDistrict"
           :invalid="invalid"
+          :name="`${namePrefix}.subDistrict`"
           address-type="sub-district"
           placeholder="เลือกตำบล"
           @select="onAddressSelect($event)" />
@@ -27,10 +30,12 @@
         :name="`${namePrefix}.district`"
         label="อำเภอ"
         tag="div"
+        hide-error
         required>
         <AddressFieldInput
           v-model="model.district"
           :invalid="invalid"
+          :name="`${namePrefix}.district`"
           address-type="district"
           placeholder="เลือกอำเภอ"
           @select="onAddressSelect($event)" />
@@ -41,10 +46,12 @@
         :name="`${namePrefix}.province`"
         label="จังหวัด"
         tag="div"
+        hide-error
         required>
         <AddressFieldInput
           v-model="model.province"
           :invalid="invalid"
+          :name="`${namePrefix}.province`"
           address-type="province"
           placeholder="เลือกจังหวัด"
           @select="onAddressSelect($event)" />
@@ -55,10 +62,12 @@
         :name="`${namePrefix}.postCode`"
         label="รหัสไปรษณีย์"
         tag="div"
+        hide-error
         required>
         <AddressFieldInput
           v-model="model.postCode"
           :invalid="invalid"
+          :name="`${namePrefix}.postCode`"
           address-type="zipcode"
           placeholder="รหัสไปรษณีย์"
           @select="onAddressSelect($event)" />
@@ -69,7 +78,8 @@
       :form="form"
       :name="`${namePrefix}.urlGoogleMap`"
       label="URL Google Map"
-      placeholder="กรอก URL Google Map" />
+      placeholder="กรอก URL Google Map"
+      hide-error />
   </div>
 </template>
 

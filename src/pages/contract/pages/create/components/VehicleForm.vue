@@ -1,50 +1,57 @@
 <template>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
     <LabelField
-      v-model="model.vehicleModel"
-      :form="props.form"
-      :name="`${props.namePrefix}.vehicleModel`"
+      v-model="model.model"
+      :form="form"
+      :name="`${namePrefix}.model`"
       label="รุ่น"
       placeholder="กรอกรุ่น"
+      hide-error
       required />
     <LabelField
       v-model="model.color"
-      :form="props.form"
-      :name="`${props.namePrefix}.color`"
+      :form="form"
+      :name="`${namePrefix}.color`"
       label="สี"
       placeholder="กรอกสี"
+      hide-error
       required />
     <LabelField
-      v-model="model.licensePlate"
-      :form="props.form"
-      :name="`${props.namePrefix}.licensePlate`"
+      v-model="model.plateNo"
+      :form="form"
+      :name="`${namePrefix}.plateNo`"
       label="เลขทะเบียนรถ"
       placeholder="กรอกเลขทะเบียนรถ"
+      hide-error
       required />
     <LabelField
       v-slot="{ invalid }"
-      :form="props.form"
-      :name="`${props.namePrefix}.vehicleProvince`"
+      :form="form"
+      :name="`${namePrefix}.province`"
       label="จังหวัด"
       tag="div"
+      hide-error
       required>
-      <AddressFieldInput
-        v-model="model.vehicleProvince"
+      <ProvinceSelection
+        v-model="model.province"
         :invalid="invalid"
+        :name="`${namePrefix}.province`"
         address-type="province"
         placeholder="เลือกจังหวัด"
-        @select="model.vehicleProvince = $event.province" />
+        @select="model.province = $event.province" />
     </LabelField>
     <LabelField
       v-slot="{ invalid }"
-      :form="props.form"
-      :name="`${props.namePrefix}.yearManufactured`"
+      :form="form"
+      :name="`${namePrefix}.manufactureYear`"
       label="ปีที่ผลิต"
       tag="div"
+      hide-error
       required>
       <SelectInput
-        v-model="model.yearManufactured"
+        v-model="model.manufactureYear"
         :invalid="invalid"
+        :name="`${namePrefix}.manufactureYear`"
         :options="yearOptions"
         option-label="label"
         option-value="value"
@@ -52,43 +59,49 @@
     </LabelField>
     <LabelField
       v-slot="{ invalid }"
-      :form="props.form"
-      :name="`${props.namePrefix}.yearRegistered`"
+      :form="form"
+      :name="`${namePrefix}.registrationYear`"
       label="ปีที่จดทะเบียน"
       tag="div"
+      hide-error
       required>
       <SelectInput
-        v-model="model.yearRegistered"
+        v-model="model.registrationYear"
         :invalid="invalid"
+        :name="`${namePrefix}.registrationYear`"
         :options="yearOptions"
         option-label="label"
         option-value="value"
         placeholder="เลือกปีที่จดทะเบียน" />
     </LabelField>
     <LabelField
-      v-model="model.chassisNumber"
-      :form="props.form"
-      :name="`${props.namePrefix}.chassisNumber`"
+      v-model="model.vehicleIdentificationNo"
+      :form="form"
+      :name="`${namePrefix}.vehicleIdentificationNo`"
       label="หมายเลขตัวถัง"
       placeholder="กรอกหมายเลขตัวถัง"
+      hide-error
       required />
     <LabelField
       v-model="model.engineNumber"
-      :form="props.form"
-      :name="`${props.namePrefix}.engineNumber`"
+      :form="form"
+      :name="`${namePrefix}.engineNumber`"
       label="หมายเลขเครื่อง"
       placeholder="กรอกหมายเลขเครื่อง"
+      hide-error
       required />
     <LabelField
       v-slot="{ invalid }"
-      :form="props.form"
-      :name="`${props.namePrefix}.mileage`"
+      :form="form"
+      :name="`${namePrefix}.mileage`"
       label="เลขไมล์ (กม.)"
       tag="div"
+      hide-error
       required>
       <InputNumber
         v-model="model.mileage"
         :invalid="invalid"
+        :name="`${namePrefix}.mileage`"
         :use-grouping="true"
         class="h-9! shadow-none!"
         placeholder="กรอกเลขไมล์"
@@ -100,9 +113,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { IFormState } from '@/models/Form.model'
-import AddressFieldInput from '@/components/input/AddressFieldInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import SelectInput from '@/components/input/SelectInput.vue'
+import ProvinceSelection from '@/components/selection/modules/static/province/ProvinceSelection.vue'
 import type { VehicleFormValues } from '../schema/pre-contract.schema'
 
 interface IProps {
@@ -110,7 +123,12 @@ interface IProps {
   namePrefix?: string
 }
 
-const props = withDefaults(defineProps<IProps>(), {
+interface IYearOption {
+  label: string
+  value: string
+}
+
+withDefaults(defineProps<IProps>(), {
   form: undefined,
   namePrefix: ''
 })
@@ -119,15 +137,10 @@ const model = defineModel<VehicleFormValues>({ required: true })
 
 const currentYear = new Date().getFullYear()
 
-interface IYearOption {
-  label: string
-  value: number
-}
-
 const yearOptions = computed((): IYearOption[] =>
   Array.from({ length: currentYear - 1979 }, (_: unknown, i: number): IYearOption => ({
     label: String(currentYear - i),
-    value: currentYear - i
+    value: String(currentYear - i)
   }))
 )
 </script>
