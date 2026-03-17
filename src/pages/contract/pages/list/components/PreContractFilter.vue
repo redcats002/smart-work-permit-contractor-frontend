@@ -8,14 +8,18 @@
     <template #default>
       <div class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-surface-700 mb-1.5">สถานะ</label>
-          <SelectInput
-            v-model="filters.assetStatus"
-            :options="statusOptions"
-            option-label="label"
-            option-value="value"
-            placeholder="ทั้งหมด"
-            show-clear />
+          <LabelField
+            label="สถานะ"
+            name="status"
+            tag="div">
+            <SelectInput
+              v-model="filters.status"
+              :options="statusOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="ทั้งหมด"
+              show-clear />
+          </LabelField>
         </div>
       </div>
     </template>
@@ -33,6 +37,7 @@ import type { IContractFilter } from '@/models/modules/contract/Filter.model'
 import { PreContractStatusItems } from '@/enums/modules/contract/PreContractStatus.enum'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
+import LabelField from '@/components/input/LabelField.vue'
 import SelectInput from '@/components/input/SelectInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 

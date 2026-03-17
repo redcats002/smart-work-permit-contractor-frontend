@@ -40,10 +40,10 @@
         <div>
           <div class="mb-4">
             <p class="font-bold text-xl text-surface-800 mb-2">
-              {{ formatTitle(activeAsset.assetType) }}
+              {{ formatTitle(activeAsset.type) }}
             </p>
             <DisplayList :items="items" />
-            <AssetWarehouseForm v-if="status==='WAIT_CONTRACT'" />
+            <AssetWarehouseForm v-if="status==='PENDING_CONTRACT'" />
           </div>
           <Button
             v-if="isShowEdit"
@@ -62,30 +62,30 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { formatter } from '@/utils/Formatter'
-import type { IAssetDetailInfo } from '@/models/response/pre-contract/PreContractRes.model'
+import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import { formatTitle } from '@/enums/modules/contract/AssetType.enum'
 import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BaseGalleria from '@/components/base/BaseGalleria.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
-import type { TAssetCategory } from '../../create/pages/PreContractCreatePage.vue'
+import type { TAssetCategory } from '../../create/schema/pre-contract.schema'
 import AssetWarehouseForm from './AssetWarehouseForm.vue'
 
 interface IProps {
   activeIndex?: number
-  activeAsset?: IAssetDetailInfo | null
-  assets?: IAssetDetailInfo[]
+  activeAsset?: IPreAssetList | null
+  assets?: IPreAssetList[]
   assetCategory?: TAssetCategory
   status?: TPreContractStatus
 }
 
 interface IEmits {
   active: [index: number]
-  open: [assets: IAssetDetailInfo]
+  open: [assets: IPreAssetList]
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-  assets: (): IAssetDetailInfo[] => [],
+  assets: (): IPreAssetList[] => [],
   activeAsset: undefined,
   activeIndex: undefined,
   assetCategory: null,
@@ -95,34 +95,34 @@ const props = withDefaults(defineProps<IProps>(), {
 const emits = defineEmits<IEmits>()
 
 const isShowEdit = computed((): boolean => {
-  const editableStatus: TPreContractStatus[] = ['DRAFT', 'PENDING']
+  const editableStatus: TPreContractStatus[] = ['DRAFT', 'PENDING_EVALUATION']
   return props.activeAsset !== undefined && props.status !== undefined && editableStatus.includes(props.status)
 })
 
 const items = computed((): IDisplayList[] => {
   if (isLand.value) {
     const fullAddress = formatter.fullAddress({
-      address: props.activeAsset?.address || '',
-      subDistrict: props.activeAsset?.subDistrict || '',
-      district: props.activeAsset?.district || '',
-      province: props.activeAsset?.province || '',
-      postCode: props.activeAsset?.postCode || '',
-      urlGoogleMap: props.activeAsset?.urlGoogleMap || ''
+      address: props.activeAsset?.realEstateForm.address || '',
+      subDistrict: props.activeAsset?.realEstateForm.subDistrict || '',
+      district: props.activeAsset?.realEstateForm.district || '',
+      province: props.activeAsset?.realEstateForm.province || '',
+      postCode: props.activeAsset?.realEstateForm.postCode || '',
+      urlGoogleMap: props.activeAsset?.realEstateForm.urlGoogleMap || ''
     })
     return [
-      { label: 'เลขที่ดิน', value: props.activeAsset?.landNumber || '-', key: 'landNumber', hidden: !props.activeAsset?.landNumber },
-      { label: 'เลขหน้าสำรวจ', value: props.activeAsset?.surveyPageNumber || '-', key: 'surveyPageNumber', hidden: !props.activeAsset?.surveyPageNumber },
-      { label: 'ที่อยู่หลักทรัพย์', value: fullAddress, key: 'address', extUrl: props.activeAsset?.urlGoogleMap || '', hidden: !fullAddress },
-      { label: 'ระวางรูปถ่ายทางอากาศ', value: `หมายเลข ${props.activeAsset?.aerialPhotoNumber || '-'} แผ่นที่ ${props.activeAsset?.aerialPhotoSheet || '-'}`, key: 'aerialPhoto', hidden: !props.activeAsset?.aerialPhotoNumber && !props.activeAsset?.aerialPhotoSheet }
+      { label: 'เลขที่ดิน', value: props.activeAsset?.realEstateForm.landNo || '-', key: 'landNo', hidden: !props.activeAsset?.realEstateForm.landNo },
+      { label: 'เลขหน้าสำรวจ', value: props.activeAsset?.realEstateForm.surveyNo || '-', key: 'surveyNo', hidden: !props.activeAsset?.realEstateForm.surveyNo },
+      { label: 'ที่อยู่หลักทรัพย์', value: fullAddress, key: 'address', extUrl: props.activeAsset?.realEstateForm.urlGoogleMap || '', hidden: !fullAddress },
+      { label: 'ระวางรูปถ่ายทางอากาศ', value: `หมายเลข ${props.activeAsset?.realEstateForm.aerialPhotoMapNo || '-'} แผ่นที่ ${props.activeAsset?.realEstateForm.aerialPhotoSheet || '-'}`, key: 'aerialPhotoMapNo', hidden: !props.activeAsset?.realEstateForm.aerialPhotoMapNo && !props.activeAsset?.realEstateForm.aerialPhotoSheet }
     ]
   }
   return [
     { label: 'รายละเอียดหลักทรัพย์', value: props.activeAsset?.detail || '-', key: 'detail', hidden: !props.activeAsset?.detail },
-    { label: 'เลขทะเบียนรถ', value: props.activeAsset?.licensePlate || '-', key: 'licensePlate', hidden: !props.activeAsset?.licensePlate },
-    { label: 'ปีที่ผลิต', value: props.activeAsset?.yearManufactured || '-', key: 'manufactureYear', hidden: !props.activeAsset?.yearManufactured },
-    { label: 'ปีที่จดทะเบียน', value: props.activeAsset?.yearRegistered || '-', key: 'registrationYear', hidden: !props.activeAsset?.yearRegistered },
-    { label: 'หมายเลขตัวถัง', value: props.activeAsset?.chassisNumber || '-', key: 'chassisNumber', hidden: !props.activeAsset?.chassisNumber },
-    { label: 'เลขไมล์ (กม.)', value: props.activeAsset?.mileage || '-', key: 'mileage', hidden: !props.activeAsset?.mileage }
+    { label: 'เลขทะเบียนรถ', value: props.activeAsset?.vehicleForm?.plateNo || '-', key: 'plateNo', hidden: !props.activeAsset?.vehicleForm?.plateNo },
+    { label: 'ปีที่ผลิต', value: props.activeAsset?.vehicleForm?.manufactureYear || '-', key: 'manufactureYear', hidden: !props.activeAsset?.vehicleForm?.manufactureYear },
+    { label: 'ปีที่จดทะเบียน', value: props.activeAsset?.vehicleForm?.registrationYear || '-', key: 'registrationYear', hidden: !props.activeAsset?.vehicleForm?.registrationYear },
+    { label: 'หมายเลขตัวถัง', value: props.activeAsset?.vehicleForm?.vehicleIdentificationNo || '-', key: 'vehicleIdentificationNo', hidden: !props.activeAsset?.vehicleForm?.vehicleIdentificationNo },
+    { label: 'เลขไมล์ (กม.)', value: props.activeAsset?.vehicleForm?.mileage || '-', key: 'mileage', hidden: !props.activeAsset?.vehicleForm?.mileage }
   ]
 })
 const isLand = computed((): boolean => props.assetCategory === 'LAND')
@@ -131,7 +131,7 @@ function onActiveAsset (index: number): void {
   emits('active', index)
 }
 
-function openModal (asset: IAssetDetailInfo): void {
+function openModal (asset: IPreAssetList): void {
   emits('open', asset)
 }
 

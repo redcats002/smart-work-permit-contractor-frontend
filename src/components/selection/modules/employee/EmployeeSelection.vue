@@ -5,7 +5,7 @@
     option-label="name"
     complete-on-focus
     force-selection
-    @complete="search()" />
+    @complete="search($event.query)" />
 </template>
 
 <script setup lang="ts">
@@ -14,6 +14,7 @@ import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel } from '@/models/Global.model'
 import type { IEmployeeList } from '@/models/response/employee/EmployeeRes.model'
+import type { TBaseParamsId } from '@/models/response/Response.model'
 import type { IEmployeeProvider } from '@/resources/provider/employee/Employee.provider'
 import EmployeeProvider from '@/resources/provider/employee/Employee.provider'
 import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
@@ -21,10 +22,11 @@ import usePagination from '@/composables/usePagination'
 
 const EmployeeService: IEmployeeProvider = new EmployeeProvider()
 
-const model = defineModel<number | null>()
+const model = defineModel<TBaseParamsId | null>()
 const selectedName = defineModel<string | null>('selectedName', { default: null })
 
 const innerModel = ref<TBaseModel | null>(null)
+const searchQuery = ref<string>('')
 
 const { pagination } = usePagination()
 
@@ -33,7 +35,8 @@ const suggestions = ref<TBaseModel[]>([])
 async function useFetch (): Promise<void> {
   const response = await EmployeeService.getEmployeePaginate({
     page: pagination.value.page,
-    limit: 9999
+    limit: 9999,
+    search: searchQuery.value || undefined
   })
 
   suggestions.value = (response.data ?? []).map((item: IEmployeeList): TBaseModel => ({
@@ -46,7 +49,8 @@ function fetch (): void {
   handleLoading(useFetch)
 }
 
-function search (): void {
+function search (query: string): void {
+  searchQuery.value = query
   pagination.value.page = 1
   fetch()
 }
@@ -64,7 +68,7 @@ function syncInnerFromId (): void {
 }
 
 watch(innerModel, (val: TBaseModel | null): void => {
-  model.value = val?.id ? Number(val.id) : null
+  model.value = val?.id ? String(val.id) : null
   selectedName.value = val?.name ?? null
 })
 

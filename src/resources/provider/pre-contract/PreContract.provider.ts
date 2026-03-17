@@ -5,6 +5,7 @@ import type {
   IGetPreContractList,
   IMakeAContractPayload,
   IRequestReappraisalPayload,
+  IUpdatePreAssetPayload,
   IUpdatePreContractPayload
 } from '@/models/request/pre-contract/PreContractReq.model'
 import type {
@@ -15,7 +16,8 @@ import type {
   TGetPreContractByIdResponse,
   TGetPreContractListResponse,
   TMakeAContractPreContract,
-  TRequestReappraisalPreContract
+  TRequestReappraisalPreContract,
+  TUpdatePreAssetPreContract
 } from '@/models/response/pre-contract/PreContractRes.model'
 import type { TBaseParamsId } from '@/models/response/Response.model'
 import HttpRequest from '@/resources/HttpRequest'
@@ -31,6 +33,7 @@ export interface IPreContractProvider {
   confirmAppraisal (id: TBaseParamsId): Promise<TConfirmAppraisalPreContract>
   confirmMortgage (id: TBaseParamsId, payload: IConfirmMortgagePayload): Promise<TConfirmMortgagePreContract>
   makeAContract (id: TBaseParamsId, payload: IMakeAContractPayload): Promise<TMakeAContractPreContract>
+  updatePreAsset (id: TBaseParamsId, payload: IUpdatePreAssetPayload): Promise<TUpdatePreAssetPreContract>
 }
 
 class PreContractProvider extends HttpRequest implements IPreContractProvider {
@@ -83,6 +86,11 @@ class PreContractProvider extends HttpRequest implements IPreContractProvider {
 
   public async makeAContract (id: TBaseParamsId, payload: IMakeAContractPayload): Promise<TMakeAContractPreContract> {
     const response = await this.post(`${this.urlPrefix}/make-a-contract/${id}`, payload)
+    return response
+  }
+
+  public async updatePreAsset (id: TBaseParamsId, payload: IUpdatePreAssetPayload): Promise<TUpdatePreAssetPreContract> {
+    const response = await this.patch(`${this.urlPrefix}/pre-asset/${id}`, payload)
     return response
   }
 }

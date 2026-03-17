@@ -15,7 +15,7 @@ export default function useUpload (): IUseUpload {
       if (!image) continue
       if (image?.file) {
         const response = await UploadService.uploadFile(image.file)
-        if (!response?.data?.fileUrl) continue
+        if (!response?.data?.url) continue
         images.value?.splice(Number(i), 1, { ...image, ...response.data })
       }
     }
@@ -29,7 +29,7 @@ export default function useUpload (): IUseUpload {
       if (!image) continue
       if (image?.file) {
         const response = await UploadService.uploadFile(image.file as any)
-        if (!response.data?.originalName) continue
+        if (!response.data?.name) continue
         images?.splice(Number(i), 1, { ...image, ...response.data })
       }
     }

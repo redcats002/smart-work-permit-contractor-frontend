@@ -3,9 +3,10 @@
     <ModalAssetDetail
       v-if="modalAsset"
       v-model="modalVisible"
+      v-model:form="formPreAsset"
       :asset="modalAsset"
       :contract-id="contractId"
-      @saved="onAssetSaved()" />
+      @saved="onUpdatePreAsset(modalAsset.id)" />
   </Teleport>
   <section>
     <PageTitle />
@@ -13,44 +14,47 @@
       <BackButton />
       <Spacer />
       <PreContractDetailMenuAction
+        v-if="false"
         :status="contract?.status"
         @edit="onEdit()" />
     </BaseTop>
     <BasePage>
       <div
-        v-if="contract && contract?.status"
         class="flex flex-col gap-5 pb-10">
         <MortgageForm
-          v-if="contract.status==='WAIT_MORTGAGE' && isMortgageFormVisible"
+          v-if="contract?.status==='PENDING_MORTGAGE' && isMortgageFormVisible"
           ref="mortgageFormRef"
           v-model="formMortgage"
           :primary-customer-name="primaryCustomerName"
           @confirmed="onConfirmMortgage()" />
-        <PreContractInformation
-          v-else
-          :data="contract" />
+        <template v-else>
+          <PreContractInformation
+            v-if="contract"
+            :data="contract" />
+        </template>
         <AssetSection
-          v-if="contract.assets.length"
+          v-if="contract?.preAssets.length"
           :active-asset="activeAsset"
           :active-index="activeIndex"
           :asset-category="assetCategory"
-          :assets="contract.assets"
+          :assets="contract.preAssets"
           :status="contract.status"
           @active="onActiveAsset($event)"
           @open="openModal($event)" />
         <AppraisalSection
-          v-if="contract?.status === 'IN_ASSESSMENT'"
+          v-if="contract?.status === 'UNDER_EVALUATION'"
           v-model:appraisal-price="formAppraisalPrice"
-          :appraisals="contract?.appraisals"
+          :appraisals="contract?.evaluateGroups"
           @submit="onAppraisalPrice()" />
         <InstallmentSection
-          v-if="contract.status === 'WAIT_CONTRACT'"
+          v-if="contract?.status === 'PENDING_CONTRACT'"
           v-model="formMakeContract" />
         <PreContractAction
+          v-if="contract?.status"
           v-model:request-reappraisal="formRequestReappraisal"
           :disabled="!filledAllRequired"
           :is-mortgage-form-visible="isMortgageFormVisible"
-          :status="contract.status"
+          :status="contract?.status"
           @cancel="onCancel()"
           @confirm-appraisal="onConfirmAppraisal()"
           @confirm-mortgage="onTriggerConfirmMortgage()"
@@ -82,6 +86,7 @@ import { useAppraisal } from '../composables/useAppraisal'
 import { useInitDetail } from '../composables/useInitDetail'
 import { useMakeContract } from '../composables/useMakeContract'
 import { useMortgage } from '../composables/useMortgage'
+import { usePreAsset } from '../composables/usePreAsset'
 
 const {
   contract,
@@ -94,12 +99,12 @@ const {
   contractId,
   onActiveAsset,
   openModal,
-  onAssetSaved,
   onEdit,
   onCancel,
   useFetch,
   fetch
 } = useInitDetail()
+const { formPreAsset, onUpdatePreAsset } = usePreAsset(useFetch)
 const { formRequestReappraisal, formAppraisalPrice, onAppraisalPrice, onRequestReappraisal, onConfirmAppraisal } = useAppraisal(useFetch)
 const { formMortgage, isMortgageFormVisible, onConfirmMortgage, onSubmitMortgage } = useMortgage(useFetch)
 const { onConfirmMakeContract, formMakeContract } = useMakeContract(useFetch)

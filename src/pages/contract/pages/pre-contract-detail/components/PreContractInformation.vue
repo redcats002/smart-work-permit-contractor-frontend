@@ -28,7 +28,9 @@ interface IProps {
   data: IPreContractById
 }
 
-const props = defineProps<IProps>()
+const props = withDefaults(defineProps<IProps>(), {
+  data: (): IPreContractById => ({} as IPreContractById)
+})
 
 const { formatDate, formatAge } = useDayjs()
 
@@ -36,8 +38,8 @@ const { formatDate, formatAge } = useDayjs()
 const contractItems = computed((): IDisplayList[] => [
   { key: 'status', label: 'สถานะ', value: props.data.status },
   { key: 'idNo', label: 'เลขที่สัญญา', value: props.data.idNo || '-' },
-  { key: 'contractDate', label: 'วันที่', value: formatDate(props.data.contractDate ?? undefined) },
-  { key: 'staff', label: 'พนักงาน', value: formatter.fullName(props.data?.staff) }
+  { key: 'contractedAt', label: 'วันที่', value: formatDate(props.data.contractedAt ?? undefined) },
+  { key: 'sellMan', label: 'พนักงาน', value: formatter.fullName(props.data?.sellMan) }
 ])
 
 const items = computed((): IDisplayList[] => {

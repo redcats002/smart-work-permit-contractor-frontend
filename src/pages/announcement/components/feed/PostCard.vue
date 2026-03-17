@@ -29,9 +29,8 @@
 
 
     <div
-      class="prose prose-sm max-w-none"
-      v-html="content" />
-
+      v-sanitize.basic="content"
+      class="prose prose-sm max-w-none" />
     <!-- Attachments -->
     <div class="space-y-2">
       <div class="font-semibold text-sm">
@@ -45,14 +44,14 @@
           v-for="(file, _i) in files"
           :key="_i">
           <a
-            :href="file.fileUrl"
+            :href="file.url"
             class="border border-[#BDBDBD] rounded-lg p-3 flex flex-col items-center justify-center"
             target="_blank">
             <Icon
               icon="material-icon-theme:pdf"
               style="font-size: 90px;" />
             <div class="text-sm">
-              {{ file.originalName }}
+              {{ file.name }}
             </div>
           </a>
         </template>

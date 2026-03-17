@@ -19,8 +19,8 @@
 </template>
 
 <script setup lang="ts">
+import type { IEvaluateGroupList } from '@/models/modules/pre-contract/Evaluator.model'
 import type { IAppraisalPricePayload } from '@/models/request/pre-contract/PreContractReq.model'
-import type { IAppraisalById } from '@/models/response/pre-contract/PreContractRes.model'
 import AppraisalBody from './AppraisalBody.vue'
 import ModalAppraisalPrice from './ModalAppraisalPrice.vue'
 
@@ -28,11 +28,11 @@ interface IEmits {
   submit: []
 }
 interface IProps {
-  appraisals?: IAppraisalById[]
+  appraisals?: IEvaluateGroupList[]
 }
 
 withDefaults(defineProps<IProps>(), {
-  appraisals: (): IAppraisalById[] => []
+  appraisals: (): IEvaluateGroupList[] => []
 })
 const emits = defineEmits<IEmits>()
 

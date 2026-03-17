@@ -11,14 +11,14 @@
       v-for="(file, _i) in data.files"
       :key="_i">
       <a
-        :href="file.fileUrl"
+        :href="file.url"
         class="border border-[#BDBDBD] rounded-lg p-3 flex flex-col items-center justify-center"
         target="_blank">
         <Icon
           icon="material-icon-theme:pdf"
           style="font-size: 90px;" />
         <div class="text-sm">
-          {{ file.originalName }}
+          {{ file.name }}
         </div>
       </a>
     </template>

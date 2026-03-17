@@ -12,10 +12,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import PostCard from './PostCard.vue'
 import type { IUploadResponse } from '@/resources/provider/Upload.provider'
 import BasePage from '@/components/base/BasePage.vue'
-
+import PostCard from './PostCard.vue'
 
 interface Post {
   id: string
@@ -35,8 +34,8 @@ const posts = ref<Post[]>([
       </ul>
     `,
     files: [
-      { originalName: 'เอกสาร.pdf', filePath: 'www.google.com', fileType: 'PDF', fileUrl: 'www.google.com' },
-      { originalName: 'เอกสาร2.pdf', filePath: 'www.google.com', fileType: 'PDF', fileUrl: 'www.google.com' }
+      { name: 'เอกสาร.pdf', path: 'www.google.com', url: 'www.google.com' },
+      { name: 'เอกสาร2.pdf', path: 'www.google.com', url: 'www.google.com' }
     ]
   }
 ])

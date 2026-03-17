@@ -211,7 +211,7 @@ watch((): TDocumentModalMode => props.mode, (val: TDocumentModalMode): void => {
 
 async function uploadAndSetFile (file: File): Promise<void> {
   const response = await UploadService.uploadFile(file)
-  formData.value.url = response.data.fileUrl
+  formData.value.url = response.data.url
 }
 
 watch(uploadFiles, (files: File[]): void => {

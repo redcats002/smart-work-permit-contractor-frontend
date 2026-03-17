@@ -1,26 +1,26 @@
 import type { TBaseOption } from '@/models/Global.model'
 
 export enum AssetTypeEnum {
-  LAND_NS3K_WITH_STRUCTURE = 'LAND_NS3K_WITH_STRUCTURE',
-  LAND_NS3K_WITHOUT_STRUCTURE = 'LAND_NS3K_WITHOUT_STRUCTURE',
-  LAND_NS3_WITH_STRUCTURE = 'LAND_NS3_WITH_STRUCTURE',
-  LAND_NS3_WITHOUT_STRUCTURE = 'LAND_NS3_WITHOUT_STRUCTURE',
+  NS3K_WITH_BUILDING = 'NS3K_WITH_BUILDING',
+  NS3K_VACANT_LAND = 'NS3K_VACANT_LAND',
+  NS3_WITH_BUILDING = 'NS3_WITH_BUILDING',
+  NS3_VACANT_LAND = 'NS3_VACANT_LAND',
   VEHICLE_CAR = 'VEHICLE_CAR',
   VEHICLE_MOTORCYCLE = 'VEHICLE_MOTORCYCLE',
-  VEHICLE_AGRICULTURE_MACHINE = 'VEHICLE_AGRICULTURE_MACHINE',
+  VEHICLE_FARM_MACHINERY = 'VEHICLE_FARM_MACHINERY',
   VEHICLE_TRUCK = 'VEHICLE_TRUCK'
 }
 
 export type TAssetType = keyof typeof AssetTypeEnum
 
 const titleMap: Record<TAssetType, string> = {
-  [AssetTypeEnum.LAND_NS3K_WITH_STRUCTURE]: 'ที่ดิน น.ส.3 ก. - มีสิ่งปลูกสร้าง',
-  [AssetTypeEnum.LAND_NS3K_WITHOUT_STRUCTURE]: 'ที่ดิน น.ส.3 ก. - ไม่มีสิ่งปลูกสร้าง',
-  [AssetTypeEnum.LAND_NS3_WITH_STRUCTURE]: 'ที่ดิน น.ส.3 - มีสิ่งปลูกสร้าง',
-  [AssetTypeEnum.LAND_NS3_WITHOUT_STRUCTURE]: 'ที่ดิน น.ส.3 - ไม่มีสิ่งปลูกสร้าง',
+  [AssetTypeEnum.NS3K_WITH_BUILDING]: 'ที่ดิน น.ส.3 ก. - มีสิ่งปลูกสร้าง',
+  [AssetTypeEnum.NS3K_VACANT_LAND]: 'ที่ดิน น.ส.3 ก. - ไม่มีสิ่งปลูกสร้าง',
+  [AssetTypeEnum.NS3_WITH_BUILDING]: 'ที่ดิน น.ส.3 - มีสิ่งปลูกสร้าง',
+  [AssetTypeEnum.NS3_VACANT_LAND]: 'ที่ดิน น.ส.3 - ไม่มีสิ่งปลูกสร้าง',
   [AssetTypeEnum.VEHICLE_CAR]: 'ยานพาหนะ - รถยนต์',
   [AssetTypeEnum.VEHICLE_MOTORCYCLE]: 'ยานพาหนะ - รถจักรยานยนต์',
-  [AssetTypeEnum.VEHICLE_AGRICULTURE_MACHINE]: 'ยานพาหนะ - เครื่องจักรการเกษตร',
+  [AssetTypeEnum.VEHICLE_FARM_MACHINERY]: 'ยานพาหนะ - เครื่องจักรการเกษตร',
   [AssetTypeEnum.VEHICLE_TRUCK]: 'ยานพาหนะ - รถบรรทุก'
 }
 
@@ -41,7 +41,7 @@ export const VehicleAssetTypeItems: TBaseOption[] = AssetTypeItems.filter(
 )
 
 export const LandAssetTypeItems: TBaseOption[] = AssetTypeItems.filter(
-  (e: TBaseOption): boolean => String(e.value).startsWith('LAND_')
+  (e: TBaseOption): boolean => String(e.value).startsWith('NS3')
 )
 
 export function isVehicleAsset (type?: string | null): boolean {
@@ -51,5 +51,5 @@ export function isVehicleAsset (type?: string | null): boolean {
 
 export function isLandAsset (type?: string | null): boolean {
   if (!type) return false
-  return type.startsWith('LAND_')
+  return type.startsWith('NS3')
 }

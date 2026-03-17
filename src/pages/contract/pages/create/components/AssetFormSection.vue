@@ -19,23 +19,24 @@
         <LabelField
           v-slot="{ invalid }"
           :form="form"
-          :name="`${namePrefix}.assetType`"
-          label="ประเภทหลักทรัพย์"
+          :name="`${namePrefix}.type`"
+          label="หมวดหมู่หลักทรัพย์"
           tag="div"
           hide-error
           required>
-          <EstateTypeSelection
-            v-model="model.assetType"
-            :category="estateCategory"
+          <AssetTypeSelection
+            v-model="model.type"
+            :category="assetCategory"
             :invalid="invalid"
-            :name="`${namePrefix}.assetType`"
+            :name="`${namePrefix}.type`"
+            placeholder="เลือกหมวดหมู่หลักทรัพย์"
             show-clear />
         </LabelField>
         <LabelField
           v-if="isVehicle"
-          v-model="model.brand"
+          v-model="model.vehicleForm!.brand"
           :form="form"
-          :name="`${namePrefix}.brand`"
+          :name="`${namePrefix}.vehicleForm.brand`"
           label="ยี่ห้อ"
           placeholder="กรอกยี่ห้อ"
           hide-error
@@ -50,18 +51,16 @@
           hide-error
           required />
       </div>
-
       <VehicleForm
         v-if="isVehicle"
-        v-model="model"
+        v-model="model.vehicleForm!"
         :form="form"
-        :name-prefix="namePrefix" />
-
+        :name-prefix="`${namePrefix}.vehicleForm`" />
       <LandForm
         v-if="isLand"
-        v-model="model"
+        v-model="model.realEstateForm!"
         :form="form"
-        :name-prefix="namePrefix" />
+        :name-prefix="`${namePrefix}.realEstateForm`" />
     </div>
   </BaseContainer>
 </template>
@@ -72,18 +71,18 @@ import type { IFormState } from '@/models/Form.model'
 import { isLandAsset, isVehicleAsset } from '@/enums/modules/contract/AssetType.enum'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import LabelField from '@/components/input/LabelField.vue'
-import EstateTypeSelection from '@/components/selection/modules/estate-type/EstateTypeSelection.vue'
+import AssetTypeSelection from '@/components/selection/modules/asset-type/AssetTypeSelection.vue'
 import { Icon } from '@iconify/vue'
-import type { IEstateFormItem } from '../schema/pre-contract.schema'
+import type { PreAssetFormValues } from '../schema/pre-contract.schema'
 import LandForm from './LandForm.vue'
 import VehicleForm from './VehicleForm.vue'
 
-type TEstateCategory = 'VEHICLE' | 'LAND'
+type TAssetCategory = 'VEHICLE' | 'LAND'
 
 interface IProps {
   form?: IFormState
   namePrefix?: string
-  estateCategory?: TEstateCategory | null
+  assetCategory?: TAssetCategory | null
 }
 
 interface IEmits {
@@ -93,14 +92,14 @@ interface IEmits {
 withDefaults(defineProps<IProps>(), {
   form: undefined,
   namePrefix: '',
-  estateCategory: null
+  assetCategory: null
 })
 
 const emits = defineEmits<IEmits>()
 
-const model = defineModel<IEstateFormItem>({ required: true })
+const model = defineModel<PreAssetFormValues>({ required: true })
 
-const isVehicle = computed((): boolean => isVehicleAsset(model.value.assetType))
-const isLand = computed((): boolean => isLandAsset(model.value.assetType))
+const isVehicle = computed((): boolean => isVehicleAsset(model.value.type))
+const isLand = computed((): boolean => isLandAsset(model.value.type))
 
 </script>

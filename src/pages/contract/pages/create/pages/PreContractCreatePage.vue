@@ -3,9 +3,14 @@
     <PageTitle />
     <BaseTop>
       <BackButton />
+      <Spacer />
+      <ConfirmButton
+        label="Auto"
+        @click="onAuto()" />
     </BaseTop>
     <BasePage>
       <Form
+        :key="formKey"
         v-slot="$form"
         :initial-values="form"
         :resolver="resolver"
@@ -14,13 +19,13 @@
         <BaseContainer>
           <LabelField
             :invalid="!selectedCustomer"
-            label="หน้างานประเมิน "
-            name="employeeId"
-            tag="div"
+            label="หน้างานประเมิน"
+            name="sellManId"
             required>
             <EmployeeSelection
-              v-model="form.employeeId"
-              name="employeeId" />
+              v-model="form.sellManId"
+              name="sellManId"
+              placeholder="เลือกหน้างานประเมิน" />
           </LabelField>
         </BaseContainer>
         <BaseContainer>
@@ -34,6 +39,7 @@
               <CustomerSelection
                 v-model="form.customerId"
                 name="customerId"
+                placeholder="เลือกลูกค้า"
                 @update:model-value="onCustomerSelect($event)" />
             </LabelField>
             <CustomerCard
@@ -41,14 +47,14 @@
               :data="selectedCustomer" />
           </div>
         </BaseContainer>
-        <EstateFormSection
-          v-for="(item, index) in form.assets"
+        <AssetFormSection
+          v-for="(item, index) in form.preAssets"
           :key="item.key"
-          v-model="form.assets[index]"
-          :estate-category="assetCategory"
+          v-model="form.preAssets[index]"
+          :asset-category="assetCategory"
           :form="$form"
-          :name-prefix="`estates.${index}`"
-          @delete="onRemoveEstate(index)" />
+          :name-prefix="`preAssets.${index}`"
+          @delete="onRemoveAsset(index)" />
         <Button
           v-show="canAddAsset"
           class="flex items-center justify-start gap-1.5 py-4 text-sm text-primary! font-medium hover:opacity-80
@@ -56,7 +62,7 @@
           type="button"
           fluid
           text
-          @click="onAddEstate()">
+          @click="onAddAsset()">
           <Icon
             class="size-5"
             icon="mdi:plus" />
@@ -66,13 +72,13 @@
           <ConfirmButton
             label="ยืนยัน/สั่งงานประเมิน"
             type="submit"
-            @click="submitMode = 'PENDING'" />
+            @click="setSubmitMode('PENDING_EVALUATION')" />
           <Button
             class="bg-white! text-[#333333]! border-gray-400! flex items-center hover:bg-gray-100! w-49.5"
             label="ร่าง"
             type="submit"
             outlined
-            @click="submitMode = 'DRAFT'" />
+            @click="setSubmitMode('DRAFT')" />
           <Button
             class="w-49.5"
             label="ยกเลิก"
@@ -102,35 +108,35 @@ import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
+import Spacer from '@/components/flex/Spacer.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import CustomerSelection from '@/components/selection/modules/customer/CustomerSelection.vue'
 import EmployeeSelection from '@/components/selection/modules/employee/EmployeeSelection.vue'
+import AssetFormSection from '../components/AssetFormSection.vue'
 import CustomerCard from '../components/CustomerCard.vue'
-import EstateFormSection from '../components/EstateFormSection.vue'
 import { Icon } from '@iconify/vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { usePayload } from '../composables/usePayload'
-import type { PreContractFormValues } from '../schema/pre-contract.schema'
-import { createEstateItem, PreContractSchema, useFormInitialValues } from '../schema/pre-contract.schema'
-
-export type TAssetCategory = 'VEHICLE' | 'LAND' | null
+import type { PreContractFormValues, TAssetCategory } from '../schema/pre-contract.schema'
+import { createPreAssetBase, PreContractSchema, useDev, useFormInitialValues } from '../schema/pre-contract.schema'
 
 const router = useRouter()
 
 const CustomerService: ICustomerProvider = new CustomerProvider()
 const ContractService: IPreContractProvider = new PreContractProvider()
 
+const formKey = ref<number>(0)
 const form = ref<PreContractFormValues>(useFormInitialValues())
 const resolver = zodResolver(PreContractSchema)
-const submitMode = ref<TPreContractStatus>('PENDING')
+const submitMode = ref<TPreContractStatus>('DRAFT')
 const selectedCustomer = ref<ICustomerById | null>(null)
 
 const assetCategory = computed((): TAssetCategory => {
-  for (const e of form.value.assets) {
-    if (isVehicleAsset(e.assetType)) return 'VEHICLE'
-    if (isLandAsset(e.assetType)) return 'LAND'
+  for (const e of form.value.preAssets) {
+    if (isVehicleAsset(e.type)) return 'VEHICLE'
+    if (isLandAsset(e.type)) return 'LAND'
   }
   return null
 })
@@ -149,12 +155,13 @@ async function onCustomerSelect (id?: number | null): Promise<void> {
 }
 
 async function useSubmit (): Promise<void> {
-  await ContractService.createContract(usePayload(form.value, selectedCustomer.value!))
+  await ContractService.createContract(usePayload({ ...form.value, status: submitMode.value }, selectedCustomer.value!))
   toast.success('ดำเนินการสำเร็จ')
   router.push({ name: 'ContractListPage' })
 }
 
 function onSubmit (event: FormSubmitEvent): void {
+  console.log(event)
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return
@@ -163,18 +170,28 @@ function onSubmit (event: FormSubmitEvent): void {
 }
 
 
-function onAddEstate (): void {
+function onAddAsset (): void {
   if (!canAddAsset.value) return
-  form.value.assets.push(createEstateItem())
+  form.value.preAssets.push(createPreAssetBase())
 }
 
-function onRemoveEstate (index: number): void {
-  if (form.value.assets.length <= 1) return
-  form.value.assets.splice(index, 1)
+function onRemoveAsset (index: number): void {
+  if (form.value.preAssets.length <= 1) return
+  form.value.preAssets.splice(index, 1)
 }
-
 
 function onCancel (): void {
   router.push({ name: 'ContractListPage' })
 }
+
+function setSubmitMode (mode: TPreContractStatus): void {
+  submitMode.value = mode
+}
+
+function onAuto (): void {
+  form.value = { ...useDev() }
+  formKey.value++
+  onCustomerSelect(form.value.customerId)
+}
+
 </script>

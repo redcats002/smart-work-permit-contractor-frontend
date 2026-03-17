@@ -11,6 +11,14 @@ const id = (label: string): z.ZodOptional<z.ZodType<number | string, any, any>> 
   z
     .preprocess(
       (val: unknown): unknown => {
+        if (val && typeof val === 'object' && 'id' in val) {
+          const inner = (val as { id?: unknown }).id
+          if (typeof inner === 'string' && inner.trim() !== '') {
+            const num = Number(inner)
+            return isNaN(num) ? inner : num
+          }
+          return inner ?? undefined
+        }
         if (typeof val === 'string' && val.trim() !== '') {
           const num = Number(val)
           return isNaN(num) ? val : num
