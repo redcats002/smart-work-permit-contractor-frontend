@@ -5,7 +5,8 @@
     class="md:w-220 w-9/10"
     dismissable-mask
     modal
-    @update:model-value="onUpdateModelValue($event)">
+    @hide="close()"
+    @show="open()">
     <template #container="{ closeCallback }">
       <div class="bg-white rounded-lg w-full max-h-[80vh] flex flex-col overflow-hidden">
         <div
@@ -83,14 +84,15 @@ function close (): void {
   emits('close', false)
 }
 
-function onUpdateModelValue (value: boolean): void {
-  emits('update:model-value', value)
-  if (value) {
-    emits('open', value)
-  } else {
-    emits('close', value)
-  }
-}
+// function onUpdateModelValue (value: boolean): void {
+//   console.log('update:model-value', value)
+//   emits('update:model-value', value)
+//   if (value) {
+//     emits('open', value)
+//   } else {
+//     emits('close', value)
+//   }
+// }
 
 defineExpose({
   open,
