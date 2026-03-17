@@ -114,5 +114,6 @@
 	"tsImportSorter.configuration.emptyLinesAfterAllImports": 1,
 	"tsImportSorter.configuration.keepUnused": [],
 	"tsImportSorter.configuration.removeLastSlashInPath": false,
-	"tsImportSorter.configuration.removeLastIndexInPath": false
+	"tsImportSorter.configuration.removeLastIndexInPath": false,
+	"js/ts.tsdk.path": "node_modules/typescript/lib"
 }

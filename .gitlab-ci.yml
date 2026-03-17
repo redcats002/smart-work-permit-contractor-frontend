@@ -1,0 +1,80 @@
+image: node:24-alpine
+
+stages:
+  - test
+  - deploy
+
+unit-test:
+  stage: test
+  before_script:
+    - apk add --no-cache python3 make g++ cairo-dev jpeg-dev pango-dev giflib-dev
+  environment:
+    name: alpha
+  variables:
+    NODE_ENV: alpha
+  only:
+    - dev
+    - main
+    - tags
+  script:
+    - echo "Running unit test..."
+    - npm install -g bun
+    - bun install
+    - bun run test:coverage
+  allow_failure: true
+  interruptible: true
+  artifacts:
+    when: always
+    paths:
+      - coverage/
+    reports:
+      junit: junit.xml
+    expire_in: 1 days
+
+.vercel-deploy: 
+  script:
+    - mkdir ./.vercel
+    - echo $VERCEL_PROJECT > ./.vercel/project.json
+    - npm install -g vercel pnpm
+    - vercel pull --yes --prod --token $VERCEL_TOKEN
+    - vercel build --prod --yes --debug --token $VERCEL_TOKEN
+    - vercel deploy --prebuilt --prod --token $VERCEL_TOKEN
+
+deploy-alpha:
+  stage: deploy
+  needs:
+    - unit-test
+  environment:
+    name: alpha
+  variables:
+    NODE_ENV: alpha
+  only:
+    - dev
+  extends: .vercel-deploy
+  interruptible: true
+
+deploy-staging:
+  stage: deploy
+  needs:
+    - unit-test
+  environment:
+    name: staging
+  variables:
+    NODE_ENV: staging
+  only:
+    - main
+  extends: .vercel-deploy
+  interruptible: true
+
+deploy-production:
+  stage: deploy
+  needs:
+    - unit-test
+  environment:
+    name: production
+  variables:
+    NODE_ENV: production
+  only:
+    - main
+  extends: .vercel-deploy
+  interruptible: true
