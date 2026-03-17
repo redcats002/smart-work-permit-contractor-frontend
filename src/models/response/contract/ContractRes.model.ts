@@ -101,10 +101,19 @@ export interface IContractIncomeList extends IEntity {
   date: string
   incomeCategory: IFinanceIncomeCategoryList
   incomeType: IFinanceIncomeTypeList
-  detail: string
+  note: string
   amount: number
   vatType?: TVatType
-  url?: string
+  file?: IUploadResponse[]
+}
+export interface IContractIncomeById extends IEntity {
+  contractId: number | null
+  incomeCategory: IFinanceIncomeCategoryList
+  incomeType: IFinanceIncomeTypeList
+  note: string
+  amount: number
+  vatType: TVatType
+  file: IUploadResponse[]
 }
 export interface IContractGuarantorList extends ICustomerList {
   idCard: string
@@ -135,6 +144,7 @@ export type TGetContractExpenseListResponse = IBasePaginationResponse<IContractE
 export type TGetContractExpenseByIdResponse = IBaseSuccessResponse<IContractExpenseById>
 export type TActionContractExpenseResponse = IBaseSuccessResponse<boolean>
 export type TGetContractIncomeListResponse = IBasePaginationResponse<IContractIncomeList>
+export type TGetContractIncomeByIdResponse = IBaseSuccessResponse<IContractIncomeById>
 export type TActionContractIncomeResponse = IBaseSuccessResponse<boolean>
 export type TGetGuarantorContractListResponse = IBasePaginationResponse<IContractGuarantorList>
 export type TGetContractHistoryListResponse = IBasePaginationResponse<IContractContactHistoryList>

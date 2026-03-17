@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IGetIncomeList } from '@/models/request/contract/ContractReq.model'
@@ -61,11 +61,6 @@ const paginateQuery = computed((): IGetIncomeList => {
 })
 
 async function useFetch (): Promise<void> {
-  const mock = true // TODO: remove mock when api ready
-  if (mock) {
-    items.value = []
-    return
-  }
   const response = await ContractService.getIncomeList(contractId.value, paginateQuery.value)
   items.value = response?.data || []
   pagination.value = extractPagination(response)
@@ -93,6 +88,9 @@ function openModal (mode: TIncomeModalMode, item?: IContractIncomeList): void {
   modalVisible.value = true
 }
 
+onMounted((): void => {
+  fetch()
+})
 </script>
 
 <style scoped>

@@ -9,6 +9,7 @@
     @update="emits('update')">
     <template #[`item.action`]="{ item }">
       <IncomeMenuAction
+        class="flex justify-center"
         @delete="emits('delete', item)"
         @edit="emits('edit', item)"
         @read="emits('read', item)" />
@@ -50,11 +51,11 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IContractIncomeList>[]>([
-  { field: 'createdAt', header: 'วันที่', value: (e: IContractIncomeList): string => dayjs.formatDate(e?.createdAt || '') },
+  { field: 'date', header: 'วันที่', value: (e: IContractIncomeList): string => dayjs.formatDate(e?.date || '') },
   { field: 'incomeCategory', header: 'ประเภทรายได้', value: (e: IContractIncomeList): string => e?.incomeCategory?.name || '-' },
-  { field: 'detail', header: 'คำอธิบาย', bodyClass: 'max-w-[200px]' },
+  { field: 'note', header: 'คำอธิบาย', bodyClass: 'max-w-[200px]' },
   { field: 'amount', header: 'จำนวนเงิน', align: 'right', value: (e: IContractIncomeList): string => formatter.numberFormat2Decimal(e?.amount || 0) },
-  { field: 'action', header: 'จัดการ' }
+  { field: 'action', header: 'จัดการ', headerClass: 'text-center' }
 ])
 </script>
 
