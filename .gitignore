@@ -32,3 +32,6 @@ dist-ssr
 .env.*
 !.env.example
 .vercel
+
+# Global Components TypeScript declaration files
+components.d.ts
