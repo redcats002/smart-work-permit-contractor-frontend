@@ -15,7 +15,7 @@ import useTabItems, {
 } from '@/composables/useTabItems'
 
 export function useInitDetail (data?: Partial<IContractById>): Ref<IContractById> {
-  const mock: IContractById = {
+  return ref<IContractById>({
     ...data,
     periodCount: data?.periodCount || 0,
     annualInterestRate: data?.annualInterestRate || 0,
@@ -69,53 +69,14 @@ export function useInitDetail (data?: Partial<IContractById>): Ref<IContractById
       name: data?.contractLoanType?.name || '',
       id: typeof data?.contractLoanType?.id === 'string' ? data?.contractLoanType?.id : String(data?.contractLoanType?.id)
     },
-    customers: data?.customers || [
-      {
-        customerGroup: {
-          id: 1,
-          name: ''
-        },
-        firstName: 'A',
-        idCard: '',
-        lastName: '',
-        titleName: '',
-        id: 1,
-        phoneNumber: '',
-        status: 'ACTIVE'
-      },
-      {
-        customerGroup: {
-          id: 2,
-          name: ''
-        },
-        firstName: 'B',
-        idCard: '',
-        lastName: '',
-        titleName: '',
-        id: 1,
-        phoneNumber: '',
-        status: 'ACTIVE'
-      }, {
-        customerGroup: {
-          id: 3,
-          name: ''
-        },
-        firstName: 'C',
-        idCard: '',
-        lastName: '',
-        titleName: '',
-        id: 1,
-        phoneNumber: '',
-        status: 'ACTIVE'
-      }
-    ],
-    employee: {
-      titleName: data?.employee?.titleName || '',
-      firstName: data?.employee?.firstName || '',
-      lastName: data?.employee?.lastName || '',
-      phoneNumber: data?.employee?.phoneNumber || '',
-      status: data?.employee?.status || 'ACTIVE',
-      id: typeof data?.employee?.id === 'string' ? data?.employee?.id : String(data?.employee?.id)
+    borrowers: data?.borrowers || [],
+    sellMan: {
+      titleName: data?.sellMan?.titleName || '',
+      firstName: data?.sellMan?.firstName || '',
+      lastName: data?.sellMan?.lastName || '',
+      phoneNumber: data?.sellMan?.phoneNumber || '',
+      status: data?.sellMan?.status || 'ACTIVE',
+      id: typeof data?.sellMan?.id === 'string' ? data?.sellMan?.id : String(data?.sellMan?.id)
     },
     id: typeof data?.id === 'string' ? data?.id : String(data?.id),
     endDate: data?.endDate || '',
@@ -129,44 +90,11 @@ export function useInitDetail (data?: Partial<IContractById>): Ref<IContractById
     loanAmount: data?.loanAmount || 0,
     lateFee: data?.lateFee || 0,
     perMonthPayment: data?.perMonthPayment || 0,
-    startDate: data?.startDate || '',
-    status: data?.status || 'IN_PROGRESS'
-  }
-  return ref<IContractById>(mock || {
-    ...data,
-    periodCount: data?.periodCount || 0,
-    annualInterestRate: data?.annualInterestRate || 0,
-    contractLoanPurpose: {
-      name: data?.contractLoanPurpose?.name || '',
-      id: data?.contractLoanPurpose?.id
-    },
-    contractLoanType: {
-      name: data?.contractLoanType?.name || '',
-      id: data?.contractLoanType?.id
-    },
-    customers: data?.customers || [],
-    employee: {
-      titleName: data?.employee?.titleName || '',
-      firstName: data?.employee?.firstName || '',
-      lastName: data?.employee?.lastName || '',
-      phoneNumber: data?.employee?.phoneNumber || '',
-      status: data?.employee?.status || 'ACTIVE',
-      id: data?.employee?.id
-    },
-    id: data?.id || 0,
-    endDate: data?.endDate || '',
-    howDidFindUs: {
-      name: data?.howDidFindUs?.name || '',
-      id: data?.howDidFindUs?.id
-    },
-    interestAmount: data?.interestAmount || 0,
-    interestType: data?.interestType,
-    lastPeriodPayment: data?.lastPeriodPayment || 0,
-    loanAmount: data?.loanAmount || 0,
-    lateFee: data?.lateFee || 0,
-    perMonthPayment: data?.perMonthPayment || 0,
-    startDate: data?.startDate || '',
-    status: data?.status || 'IN_PROGRESS'
+    contractedAt: data?.contractedAt || '',
+    installmentCount: data?.installmentCount || 0,
+    monthlyInstallment: data?.monthlyInstallment || 0,
+    totalInterest: data?.totalInterest || 0,
+    status: data?.status || 'PENDING'
   })
 }
 

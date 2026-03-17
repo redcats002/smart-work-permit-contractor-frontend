@@ -53,7 +53,7 @@ const columns = ref<IColumn<IContractList>[]>([
     header: 'วันที่ทำสัญญา',
     sortable: true,
     align: 'left',
-    value: (e: IContractList): string => formatDate(e.contractDate ?? undefined)
+    value: (e: IContractList): string => formatDate(e.contractedAt ?? undefined)
   },
   {
     field: 'customer',
@@ -66,31 +66,31 @@ const columns = ref<IColumn<IContractList>[]>([
     })
   },
   {
-    field: 'loanType',
+    field: 'contractLoanType',
     header: 'ประเภทเงินกู้',
     align: 'left',
-    value: (e: IContractList): string => e.loanType?.name || '-'
+    value: (e: IContractList): string => e.contractLoanType?.name || '-'
   },
   {
-    field: 'amount',
+    field: 'loanAmount',
     header: 'วงเงิน (บาท)',
     sortable: true,
     align: 'right',
-    value: (e: IContractList): string => formatter.numberFormat(e.amount ?? 0)
+    value: (e: IContractList): string => formatter.numberFormat(e.loanAmount ?? 0)
   },
   {
-    field: 'startDate',
+    field: 'firstInstallmentDate',
     header: 'วันที่เริ่ม',
     sortable: true,
     align: 'left',
-    value: (e: IContractList): string => formatDate(e.startDate ?? undefined)
+    value: (e: IContractList): string => formatDate(e.firstInstallmentDate ?? undefined)
   },
   {
-    field: 'endDate',
+    field: 'finalInstallmentDate',
     header: 'วันที่สิ้นสุด',
     sortable: true,
     align: 'left',
-    value: (e: IContractList): string => formatDate(e.endDate ?? undefined)
+    value: (e: IContractList): string => formatDate(e.finalInstallmentDate ?? undefined)
   },
   { field: 'status', header: 'สถานะ', sortable: true, align: 'left' }
 ])
