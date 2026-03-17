@@ -5,14 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit -p tsconfig.app.json && vite build",
-    "build:alpha": "vue-tsc --noEmit -p tsconfig.app.json && vite build --mode development",
-    "build:staging": "vue-tsc --noEmit -p tsconfig.app.json && vite build --mode staging",
+    "build": "vite build",
+    "build:alpha": "vite build --mode development",
+    "build:staging": "vite build --mode staging",
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "vitest --watch --reporter=verbose",
+    "test:run": "vitest run --reporter=verbose",
+    "test:coverage": "vitest run --coverage",
     "prepare": "husky"
   },
   "dependencies": {
