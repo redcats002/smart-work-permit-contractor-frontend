@@ -7,8 +7,7 @@
     <template
       #activator="{ open }">
       <ConfirmButton
-        :label="requestNew ? 'ขอราคาประเมินใหม่' : 'ขอราคาประเมิน'"
-        :outlined="requestNew"
+        label="ยืนยันราคาประเมิน"
         @click="open()" />
     </template>
     <template #default="{ close }">
@@ -21,35 +20,19 @@
         <LabelField
           v-slot="{ invalid }"
           :form="$form"
-          label="กลุ่มผู้ตีราคา"
-          name="evaluatorLevel"
+          label="ราคา"
+          name="loanAmount"
           hide-error
           required>
-          <EvaluatorLevelSelection
-            v-model="form.evaluatorLevel"
-            :existed-group="existedGroup"
+          <InputNumber
+            v-model="form.loanAmount"
             :invalid="invalid"
-            name="evaluatorLevel" />
+            class="h-9! shadow-none! w-full"
+            name="loanAmount" />
         </LabelField>
-        <LabelField
-          v-model="form.detail"
-          :form="$form"
-          label="รายละเอียดเพิ่มเติม"
-          name="detail"
-          hide-error
-          required />
         <FormAction
           class="mt-6"
-          confirm-label="ยืนยันขอราคา"
-          @cancel="close()">
-          <Button
-            class="text-sm text-red-500 hover:text-red-700 transition-colors"
-            type="button"
-            text
-            @click="onClear()">
-            ล้างข้อมูล
-          </Button>
-        </FormAction>
+          @cancel="close()" />
       </Form>
     </template>
   </BaseModal>
@@ -58,34 +41,27 @@
 <script setup lang="ts">
 import { toast } from '@/plugins/toast'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { IRequestReappraisalPayload } from '@/models/request/pre-contract/PreContractReq.model'
-import type { TEvaluatorLevel } from '@/enums/modules/contract/EvaluatorLevel.enum'
+import type { IConfirmAppraisalPayload } from '@/models/request/pre-contract/PreContractReq.model'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
-import EvaluatorLevelSelection from '@/components/selection/modules/evaluator-level/EvaluatorLevelSelection.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import { AssetValuationSchema, useFormInitialValues } from '../schema/asset-valuation.schema'
+import { ConfirmAppraisalSchema, useFormInitialValues } from '../schema/confirm-appraisal.schema'
 
-interface IProps {
-  requestNew?: boolean
-  existedGroup?: TEvaluatorLevel[]
-}
+interface IProps {}
 interface IEmits {
   submit: []
 }
 
 withDefaults(defineProps<IProps>(), {
-  requestNew: false,
-  existedGroup: (): TEvaluatorLevel[] => []
 })
 const emits = defineEmits<IEmits>()
 
-const form = defineModel<IRequestReappraisalPayload>({ required: true })
+const form = defineModel<IConfirmAppraisalPayload>({ required: true })
 const visible = defineModel<boolean>('visible', { default: false })
-const resolver = zodResolver(AssetValuationSchema)
+const resolver = zodResolver(ConfirmAppraisalSchema)
 
 async function onSubmit (event: FormSubmitEvent, close: () => void): Promise<void> {
   if (!event.valid) {

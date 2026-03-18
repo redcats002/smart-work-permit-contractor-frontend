@@ -14,16 +14,15 @@
 </template>
 
 <script setup lang="ts">
-
 import { onMounted, ref } from 'vue'
+import { toast } from '@/plugins/toast'
+import type { IAnnouncementProvider } from '@/resources/provider/announcement/Announcement.provider'
+import AnnouncementProvider from '@/resources/provider/announcement/Announcement.provider'
 import PostComposer from '../components/composer/PostComposer.vue'
 import FeedList from '../components/feed/FeedList.vue'
 import useList from '../composables/useList'
-import type { AnnouncementCreateAnnouncement } from '../schemas/announcement.schema'
-import type { IAnnouncementProvider } from '@/resources/provider/announcement/Announcement.provider'
-import AnnouncementProvider from '@/resources/provider/announcement/Announcement.provider'
-import { toast } from '@/plugins/toast'
 import { usePayload } from '../composables/usePayload'
+import type { AnnouncementCreateAnnouncement } from '../schemas/announcement.schema'
 
 const list = useList()
 const form = ref<AnnouncementCreateAnnouncement>({

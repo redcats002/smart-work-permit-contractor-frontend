@@ -7,27 +7,28 @@ const FIXED_DATE = new Date('2025-01-01T00:00:00.000Z')
 
 describe('computeInstallmentSchedule', (): void => {
   it('returns empty array when loanAmount is 0', (): void => {
-    const values: InstallmentFormValues = { loanAmount: 0, installments: 12, interestType: 'FLAT', annualInterestRate: 12, lateFee: 0 }
+    const values: InstallmentFormValues = { loanAmount: 0, installmentCount: 12, interestType: 'FLAT_RATE', annualInterestRate: 12, lateFee: 0, preAssets: [] }
     expect(computeInstallmentSchedule(values, FIXED_DATE)).toEqual([])
   })
 
   it('returns empty array when installments is 0', (): void => {
-    const values: InstallmentFormValues = { loanAmount: 12000, installments: 0, interestType: 'FLAT', annualInterestRate: 12, lateFee: 0 }
+    const values: InstallmentFormValues = { loanAmount: 12000, installmentCount: 0, interestType: 'FLAT_RATE', annualInterestRate: 12, lateFee: 0, preAssets: [] }
     expect(computeInstallmentSchedule(values, FIXED_DATE)).toEqual([])
   })
 
   it('returns empty array when installments is negative', (): void => {
-    const values: InstallmentFormValues = { loanAmount: 12000, installments: -1, interestType: 'FLAT', annualInterestRate: 12, lateFee: 0 }
+    const values: InstallmentFormValues = { loanAmount: 12000, installmentCount: -1, interestType: 'FLAT_RATE', annualInterestRate: 12, lateFee: 0, preAssets: [] }
     expect(computeInstallmentSchedule(values, FIXED_DATE)).toEqual([])
   })
 
-  describe('FLAT interest', (): void => {
+  describe('FLAT_RATE interest', (): void => {
     const values: InstallmentFormValues = {
       loanAmount: 12000,
-      installments: 12,
-      interestType: 'FLAT',
+      installmentCount: 12,
+      interestType: 'FLAT_RATE',
       annualInterestRate: 12,
-      lateFee: 0
+      lateFee: 0,
+      preAssets: []
     }
 
     it('returns the correct number of rows', (): void => {
@@ -75,13 +76,14 @@ describe('computeInstallmentSchedule', (): void => {
     })
   })
 
-  describe('REDUCING (reducing balance) interest', (): void => {
+  describe('EFFECTIVE_RATE (reducing balance) interest', (): void => {
     const values: InstallmentFormValues = {
       loanAmount: 12000,
-      installments: 12,
-      interestType: 'REDUCING',
+      installmentCount: 12,
+      interestType: 'EFFECTIVE_RATE',
       annualInterestRate: 12,
-      lateFee: 0
+      lateFee: 0,
+      preAssets: []
     }
 
     it('returns the correct number of rows', (): void => {
@@ -129,8 +131,8 @@ describe('computeInstallmentSchedule', (): void => {
     })
   })
 
-  it('REDUCING with 0% interest: each payment equals loanAmount / installments', (): void => {
-    const values: InstallmentFormValues = { loanAmount: 12000, installments: 12, interestType: 'REDUCING', annualInterestRate: 0, lateFee: 0 }
+  it('EFFECTIVE_RATE with 0% interest: each payment equals loanAmount / installments', (): void => {
+    const values: InstallmentFormValues = { loanAmount: 12000, installmentCount: 12, interestType: 'EFFECTIVE_RATE', annualInterestRate: 0, lateFee: 0, preAssets: [] }
     const rows = computeInstallmentSchedule(values, FIXED_DATE)
     rows.forEach((row: IInstallmentRow): void => {
       expect(row.payment).toBeCloseTo(1000, 2)
@@ -144,52 +146,52 @@ describe('computeInstallmentSchedule', (): void => {
 
 describe('computeMonthlyPayment', (): void => {
   it('returns 0 when loanAmount is 0', (): void => {
-    const values: InstallmentFormValues = { loanAmount: 0, installments: 12, interestType: 'FLAT', annualInterestRate: 12, lateFee: 0 }
+    const values: InstallmentFormValues = { loanAmount: 0, installmentCount: 12, interestType: 'FLAT_RATE', annualInterestRate: 12, lateFee: 0, preAssets: [] }
     expect(computeMonthlyPayment(values)).toBe(0)
   })
 
   it('returns 0 when installments is 0', (): void => {
-    const values: InstallmentFormValues = { loanAmount: 12000, installments: 0, interestType: 'FLAT', annualInterestRate: 12, lateFee: 0 }
+    const values: InstallmentFormValues = { loanAmount: 12000, installmentCount: 0, interestType: 'FLAT_RATE', annualInterestRate: 12, lateFee: 0, preAssets: [] }
     expect(computeMonthlyPayment(values)).toBe(0)
   })
 
-  describe('FLAT interest', (): void => {
+  describe('FLAT_RATE interest', (): void => {
     it('computes monthly payment correctly', (): void => {
       // (12000 + 12000*0.12*1) / 12 = 13440 / 12 = 1120
-      const values: InstallmentFormValues = { loanAmount: 12000, installments: 12, interestType: 'FLAT', annualInterestRate: 12, lateFee: 0 }
+      const values: InstallmentFormValues = { loanAmount: 12000, installmentCount: 12, interestType: 'FLAT_RATE', annualInterestRate: 12, lateFee: 0, preAssets: [] }
       expect(computeMonthlyPayment(values)).toBeCloseTo(1120, 2)
     })
 
     it('returns loanAmount / installments when interest rate is 0%', (): void => {
-      const values: InstallmentFormValues = { loanAmount: 12000, installments: 12, interestType: 'FLAT', annualInterestRate: 0, lateFee: 0 }
+      const values: InstallmentFormValues = { loanAmount: 12000, installmentCount: 12, interestType: 'FLAT_RATE', annualInterestRate: 0, lateFee: 0, preAssets: [] }
       expect(computeMonthlyPayment(values)).toBeCloseTo(1000, 2)
     })
 
     it('correctly accounts for a partial-year term (6 months)', (): void => {
       // (12000 + 12000*0.12*(6/12)) / 6 = (12000 + 720) / 6 = 2120
-      const values: InstallmentFormValues = { loanAmount: 12000, installments: 6, interestType: 'FLAT', annualInterestRate: 12, lateFee: 0 }
+      const values: InstallmentFormValues = { loanAmount: 12000, installmentCount: 6, interestType: 'FLAT_RATE', annualInterestRate: 12, lateFee: 0, preAssets: [] }
       expect(computeMonthlyPayment(values)).toBeCloseTo(2120, 2)
     })
   })
 
-  describe('REDUCING interest', (): void => {
+  describe('EFFECTIVE_RATE interest', (): void => {
     it('computes monthly payment correctly (annuity formula)', (): void => {
       const monthlyRate = 0.01
       const n = 12
       const pv = 12000
       const expected = (pv * monthlyRate * Math.pow(1 + monthlyRate, n)) / (Math.pow(1 + monthlyRate, n) - 1)
-      const values: InstallmentFormValues = { loanAmount: pv, installments: n, interestType: 'REDUCING', annualInterestRate: 12, lateFee: 0 }
+      const values: InstallmentFormValues = { loanAmount: pv, installmentCount: n, interestType: 'EFFECTIVE_RATE', annualInterestRate: 12, lateFee: 0, preAssets: [] }
       expect(computeMonthlyPayment(values)).toBeCloseTo(expected, 5)
     })
 
     it('returns loanAmount / installments when interest rate is 0%', (): void => {
-      const values: InstallmentFormValues = { loanAmount: 12000, installments: 12, interestType: 'REDUCING', annualInterestRate: 0, lateFee: 0 }
+      const values: InstallmentFormValues = { loanAmount: 12000, installmentCount: 12, interestType: 'EFFECTIVE_RATE', annualInterestRate: 0, lateFee: 0, preAssets: [] }
       expect(computeMonthlyPayment(values)).toBeCloseTo(1000, 2)
     })
   })
 
-  it('REDUCING monthly payment matches the payment in each schedule row', (): void => {
-    const values: InstallmentFormValues = { loanAmount: 12000, installments: 12, interestType: 'REDUCING', annualInterestRate: 12, lateFee: 0 }
+  it('EFFECTIVE_RATE monthly payment matches the payment in each schedule row', (): void => {
+    const values: InstallmentFormValues = { loanAmount: 12000, installmentCount: 12, interestType: 'EFFECTIVE_RATE', annualInterestRate: 12, lateFee: 0, preAssets: [] }
     const payment = computeMonthlyPayment(values)
     const rows = computeInstallmentSchedule(values, FIXED_DATE)
     rows.forEach((row: IInstallmentRow): void => {
@@ -197,8 +199,8 @@ describe('computeMonthlyPayment', (): void => {
     })
   })
 
-  it('FLAT monthly payment matches the payment in each schedule row', (): void => {
-    const values: InstallmentFormValues = { loanAmount: 12000, installments: 12, interestType: 'FLAT', annualInterestRate: 12, lateFee: 0 }
+  it('FLAT_RATE monthly payment matches the payment in each schedule row', (): void => {
+    const values: InstallmentFormValues = { loanAmount: 12000, installmentCount: 12, interestType: 'FLAT_RATE', annualInterestRate: 12, lateFee: 0, preAssets: [] }
     const payment = computeMonthlyPayment(values)
     const rows = computeInstallmentSchedule(values, FIXED_DATE)
     rows.forEach((row: IInstallmentRow): void => {
@@ -211,67 +213,67 @@ describe('computeMonthlyPayment', (): void => {
 
 describe('computeTotalInterest', (): void => {
   it('returns 0 when loanAmount is 0', (): void => {
-    const values: InstallmentFormValues = { loanAmount: 0, installments: 12, interestType: 'FLAT', annualInterestRate: 12, lateFee: 0 }
+    const values: InstallmentFormValues = { loanAmount: 0, installmentCount: 12, interestType: 'FLAT_RATE', annualInterestRate: 12, lateFee: 0, preAssets: [] }
     expect(computeTotalInterest(values)).toBe(0)
   })
 
   it('returns 0 when installments is 0', (): void => {
-    const values: InstallmentFormValues = { loanAmount: 12000, installments: 0, interestType: 'FLAT', annualInterestRate: 12, lateFee: 0 }
+    const values: InstallmentFormValues = { loanAmount: 12000, installmentCount: 0, interestType: 'FLAT_RATE', annualInterestRate: 12, lateFee: 0, preAssets: [] }
     expect(computeTotalInterest(values)).toBe(0)
   })
 
-  describe('FLAT interest', (): void => {
+  describe('FLAT_RATE interest', (): void => {
     it('computes total interest correctly', (): void => {
       // 12000 * 0.12 * (12/12) = 1440
-      const values: InstallmentFormValues = { loanAmount: 12000, installments: 12, interestType: 'FLAT', annualInterestRate: 12, lateFee: 0 }
+      const values: InstallmentFormValues = { loanAmount: 12000, installmentCount: 12, interestType: 'FLAT_RATE', annualInterestRate: 12, lateFee: 0, preAssets: [] }
       expect(computeTotalInterest(values)).toBeCloseTo(1440, 2)
     })
 
     it('returns 0 when interest rate is 0%', (): void => {
-      const values: InstallmentFormValues = { loanAmount: 12000, installments: 12, interestType: 'FLAT', annualInterestRate: 0, lateFee: 0 }
+      const values: InstallmentFormValues = { loanAmount: 12000, installmentCount: 12, interestType: 'FLAT_RATE', annualInterestRate: 0, lateFee: 0, preAssets: [] }
       expect(computeTotalInterest(values)).toBeCloseTo(0, 2)
     })
 
     it('scales proportionally for partial-year term (6 months)', (): void => {
       // 12000 * 0.12 * (6/12) = 720
-      const values: InstallmentFormValues = { loanAmount: 12000, installments: 6, interestType: 'FLAT', annualInterestRate: 12, lateFee: 0 }
+      const values: InstallmentFormValues = { loanAmount: 12000, installmentCount: 6, interestType: 'FLAT_RATE', annualInterestRate: 12, lateFee: 0, preAssets: [] }
       expect(computeTotalInterest(values)).toBeCloseTo(720, 2)
     })
   })
 
-  describe('REDUCING interest', (): void => {
+  describe('EFFECTIVE_RATE interest', (): void => {
     it('computes total interest correctly (payment*n - principal)', (): void => {
       const monthlyRate = 0.01
       const n = 12
       const pv = 12000
       const payment = (pv * monthlyRate * Math.pow(1 + monthlyRate, n)) / (Math.pow(1 + monthlyRate, n) - 1)
       const expected = payment * n - pv
-      const values: InstallmentFormValues = { loanAmount: pv, installments: n, interestType: 'REDUCING', annualInterestRate: 12, lateFee: 0 }
+      const values: InstallmentFormValues = { loanAmount: pv, installmentCount: n, interestType: 'EFFECTIVE_RATE', annualInterestRate: 12, lateFee: 0, preAssets: [] }
       expect(computeTotalInterest(values)).toBeCloseTo(expected, 2)
     })
 
     it('returns 0 when interest rate is 0%', (): void => {
-      const values: InstallmentFormValues = { loanAmount: 12000, installments: 12, interestType: 'REDUCING', annualInterestRate: 0, lateFee: 0 }
+      const values: InstallmentFormValues = { loanAmount: 12000, installmentCount: 12, interestType: 'EFFECTIVE_RATE', annualInterestRate: 0, lateFee: 0, preAssets: [] }
       expect(computeTotalInterest(values)).toBe(0)
     })
 
-    it('total interest is less than FLAT for the same parameters', (): void => {
-      const base = { loanAmount: 12000, installments: 12, annualInterestRate: 12, lateFee: 0 }
-      const flatInterest = computeTotalInterest({ ...base, interestType: 'FLAT' })
-      const reducingInterest = computeTotalInterest({ ...base, interestType: 'REDUCING' })
+    it('total interest is less than FLAT_RATE for the same parameters', (): void => {
+      const base: InstallmentFormValues = { loanAmount: 12000, installmentCount: 12, annualInterestRate: 12, lateFee: 0, preAssets: [] }
+      const flatInterest = computeTotalInterest({ ...base, interestType: 'FLAT_RATE' })
+      const reducingInterest = computeTotalInterest({ ...base, interestType: 'EFFECTIVE_RATE' })
       expect(reducingInterest).toBeLessThan(flatInterest)
     })
   })
 
-  it('FLAT total interest equals sum of interest across all schedule rows', (): void => {
-    const values: InstallmentFormValues = { loanAmount: 12000, installments: 12, interestType: 'FLAT', annualInterestRate: 12, lateFee: 0 }
+  it('FLAT_RATE total interest equals sum of interest across all schedule rows', (): void => {
+    const values: InstallmentFormValues = { loanAmount: 12000, installmentCount: 12, interestType: 'FLAT_RATE', annualInterestRate: 12, lateFee: 0, preAssets: [] }
     const rows = computeInstallmentSchedule(values, FIXED_DATE)
     const sumFromRows = rows.reduce((acc: number, row: IInstallmentRow): number => acc + row.interest, 0)
     expect(computeTotalInterest(values)).toBeCloseTo(sumFromRows, 2)
   })
 
-  it('REDUCING total interest equals sum of interest across all schedule rows', (): void => {
-    const values: InstallmentFormValues = { loanAmount: 12000, installments: 12, interestType: 'REDUCING', annualInterestRate: 12, lateFee: 0 }
+  it('EFFECTIVE_RATE total interest equals sum of interest across all schedule rows', (): void => {
+    const values: InstallmentFormValues = { loanAmount: 12000, installmentCount: 12, interestType: 'EFFECTIVE_RATE', annualInterestRate: 12, lateFee: 0, preAssets: [] }
     const rows = computeInstallmentSchedule(values, FIXED_DATE)
     const sumFromRows = rows.reduce((acc: number, row: IInstallmentRow): number => acc + row.interest, 0)
     expect(computeTotalInterest(values)).toBeCloseTo(sumFromRows, 2)

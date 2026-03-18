@@ -1,29 +1,37 @@
+import { schema } from '@/utils/Schema'
+import { InterestTypeEnum } from '@/enums/modules/contract/InterestType.enum'
 import { z } from 'zod'
 
-export const InterestTypeEnum = {
-  FLAT: 'FLAT',
-  REDUCING: 'REDUCING'
-} as const
-
-export type TInterestType = keyof typeof InterestTypeEnum
-
-export const InstallmentSchema = z.object({
-  loanAmount: z.number({ message: 'กรุณากรอกจำนวนเงิน' }).min(1, 'กรุณากรอกจำนวนเงิน'),
-  installments: z.number({ message: 'กรุณากรอกจำนวนงวด' }).int().min(1, 'กรุณากรอกจำนวนงวด'),
-  interestType: z.enum(['FLAT', 'REDUCING'], { message: 'กรุณาเลือกประเภทดอกเบี้ย' }),
-  annualInterestRate: z.number({ message: 'กรุณากรอกอัตราดอกเบี้ย' }).min(0, 'กรุณากรอกอัตราดอกเบี้ย'),
-  lateFee: z.number({ message: 'กรุณากรอกค่าปรับ' }).min(0, 'กรุณากรอกค่าปรับ')
+export const PreAssetMakeAContractSchema = z.object({
+  id: schema.id('รหัสสินทรัพย์'),
+  files: z.array(z.object({
+    name: z.string(),
+    path: z.string(),
+    url: z.string()
+  })).optional(),
+  locationId: schema.id('รหัสคลังสินค้า')
 })
 
+export const InstallmentSchema = z.object({
+  loanAmount: z.number().optional(), // for display purpose only, not required in payload
+  lateFee: z.number().optional(), // for display purpose only, not required in payload
+  installmentCount: z.number({ message: 'กรุณากรอกจำนวนงวด' }).int().min(1, 'กรุณากรอกจำนวนงวด'),
+  interestType: schema.enum(InterestTypeEnum, 'ประเภทดอกเบี้ย'),
+  annualInterestRate: z.number({ message: 'กรุณากรอกอัตราดอกเบี้ย' }).min(0, 'กรุณากรอกอัตราดอกเบี้ย'),
+  preAssets: z.array(PreAssetMakeAContractSchema)
+})
+
+export type PreAssetMakeAContractFormValues = z.infer<typeof PreAssetMakeAContractSchema>
 export type InstallmentFormValues = z.infer<typeof InstallmentSchema>
 
 export function useFormInitialValues (): InstallmentFormValues {
   return {
     loanAmount: 0,
-    installments: 0,
-    interestType: 'FLAT',
+    lateFee: 0,
+    installmentCount: 0,
+    interestType: 'FLAT_RATE',
     annualInterestRate: 0,
-    lateFee: 0
+    preAssets: []
   }
 }
 
@@ -40,13 +48,13 @@ export function computeInstallmentSchedule (
   values: InstallmentFormValues,
   startDate: Date = new Date()
 ): IInstallmentRow[] {
-  const { loanAmount, installments, interestType, annualInterestRate } = values
+  const { loanAmount, installmentCount: installments, interestType, annualInterestRate } = values
   if (!loanAmount || !installments || installments <= 0) return []
 
   const rows: IInstallmentRow[] = []
   const monthlyRate = annualInterestRate / 100 / 12
 
-  if (interestType === 'FLAT') {
+  if (interestType === 'FLAT_RATE') {
     const totalInterest = loanAmount * (annualInterestRate / 100) * (installments / 12)
     const principalPerPeriod = loanAmount / installments
     const interestPerPeriod = totalInterest / installments
@@ -97,11 +105,11 @@ export function computeInstallmentSchedule (
 }
 
 export function computeMonthlyPayment (values: InstallmentFormValues): number {
-  const { loanAmount, installments, interestType, annualInterestRate } = values
+  const { loanAmount, installmentCount: installments, interestType, annualInterestRate } = values
   if (!loanAmount || !installments || installments <= 0) return 0
   const monthlyRate = annualInterestRate / 100 / 12
 
-  if (interestType === 'FLAT') {
+  if (interestType === 'FLAT_RATE') {
     const totalInterest = loanAmount * (annualInterestRate / 100) * (installments / 12)
     return (loanAmount + totalInterest) / installments
   }
@@ -113,10 +121,10 @@ export function computeMonthlyPayment (values: InstallmentFormValues): number {
 }
 
 export function computeTotalInterest (values: InstallmentFormValues): number {
-  const { loanAmount, installments, interestType, annualInterestRate } = values
+  const { loanAmount, installmentCount: installments, interestType, annualInterestRate } = values
   if (!loanAmount || !installments || installments <= 0) return 0
 
-  if (interestType === 'FLAT') {
+  if (interestType === 'FLAT_RATE') {
     return loanAmount * (annualInterestRate / 100) * (installments / 12)
   }
   const monthlyRate = annualInterestRate / 100 / 12

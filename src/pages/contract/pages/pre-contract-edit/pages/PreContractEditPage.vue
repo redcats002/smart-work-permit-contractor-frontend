@@ -90,6 +90,7 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
@@ -100,10 +101,10 @@ import LabelField from '@/components/input/LabelField.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import CustomerSelection from '@/components/selection/modules/customer/CustomerSelection.vue'
 import EmployeeSelection from '@/components/selection/modules/employee/EmployeeSelection.vue'
-import AssetFormSection from '../components/AssetFormSection.vue'
-import CustomerCard from '../components/CustomerCard.vue'
 import { Icon } from '@iconify/vue'
 import { Form } from '@primevue/forms'
+import AssetFormSection from '../../create/components/AssetFormSection.vue'
+import CustomerCard from '../../create/components/CustomerCard.vue'
 import { useInit } from '../composables/useInit'
 
 const {
@@ -119,6 +120,11 @@ const {
   onRemoveAsset,
   onCancel,
   setSubmitMode,
-  onAuto
+  onAuto,
+  fetch
 } = useInit()
+
+onMounted((): void => {
+  fetch()
+})
 </script>

@@ -9,8 +9,7 @@
       v-model:preview-urls="previewUrls"
       class="mb-4" />
 
-    <!-- Existing images -->
-    <div class="space-y-2">
+    <!-- <div class="space-y-2">
       <div
         v-for="img in existingImages"
         :key="`existing-${img.path}`"
@@ -29,7 +28,6 @@
             icon="solar:trash-bin-minimalistic-bold" />
         </Button>
       </div>
-      <!-- New files -->
       <div
         v-for="(file, i) in newFiles"
         :key="`new-${i}`"
@@ -48,29 +46,30 @@
             icon="solar:trash-bin-minimalistic-bold" />
         </Button>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
 <script setup lang="ts">
-import type { IMedia } from '@/resources/provider/Upload.provider'
-import BaseImage from '@/components/base/BaseImage.vue'
+// import type { IMedia } from '@/resources/provider/Upload.provider'
+// import BaseImage from '@/components/base/BaseImage.vue'
 import UploadInput from '@/components/input/UploadInput.vue'
-import { Icon } from '@iconify/vue'
 
-const existingImages = defineModel<IMedia[]>('existingImages', { required: true })
+// import { Icon } from '@iconify/vue'
+
+// const existingImages = defineModel<IMedia[]>('existingImages', { required: true })
 const newFiles = defineModel<File[]>('newFiles', { required: true })
 const previewUrls = defineModel<string[]>('previewUrls', { required: true })
-const removedImageIds = defineModel<string[]>('removedImageIds', { required: true })
+// const removedImageIds = defineModel<string[]>('removedImageIds', { required: true })
 
-function removeExistingImage (filePath: string | null): void {
-  if (filePath !== null) removedImageIds.value.push(filePath)
-  existingImages.value = existingImages.value.filter((img: IMedia): boolean => img.path !== filePath)
-}
+// function removeExistingImage (filePath: string | null): void {
+//   if (filePath !== null) removedImageIds.value.push(filePath)
+//   existingImages.value = existingImages.value.filter((img: IMedia): boolean => img.path !== filePath)
+// }
 
-function removeNewFile (index: number): void {
-  URL.revokeObjectURL(previewUrls.value[index])
-  newFiles.value.splice(index, 1)
-  previewUrls.value.splice(index, 1)
-}
+// function removeNewFile (index: number): void {
+//   URL.revokeObjectURL(previewUrls.value[index])
+//   newFiles.value.splice(index, 1)
+//   previewUrls.value.splice(index, 1)
+// }
 </script>

@@ -182,7 +182,7 @@ export type TExpenseModalMode = 'create' | 'read' | 'edit' | 'delete'
 
 interface IProps {
   mode: TExpenseModalMode
-  item: IContractExpenseList
+  item?: IContractExpenseList
   contractId: number
 }
 
