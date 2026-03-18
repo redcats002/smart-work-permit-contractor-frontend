@@ -26,6 +26,7 @@ import type {
   TGetContractExpenseByIdResponse,
   TGetContractExpenseListResponse,
   TGetContractHistoryListResponse,
+  TGetContractIncomeByIdResponse,
   TGetContractIncomeListResponse,
   TGetContractListResponse,
   TGetDocumentListResponse,
@@ -52,9 +53,10 @@ export interface IContractProvider {
   updateExpense(id: TBaseParamsId, payload: IUpdateExpense): Promise<TActionContractExpenseResponse>
   deleteExpense(id: TBaseParamsId): Promise<TActionContractExpenseResponse>
   getIncomeList(id: TBaseParamsId, query?: IGetIncomeList): Promise<TGetContractIncomeListResponse>
+  getIncomeById (id: TBaseParamsId): Promise<TGetContractIncomeByIdResponse>
   createIncome(id: TBaseParamsId, payload: ICreateIncome): Promise<TActionContractIncomeResponse>
-  updateIncome(id: TBaseParamsId, incomeId: TBaseParamsId, payload: IUpdateIncome): Promise<TActionContractIncomeResponse>
-  deleteIncome(id: TBaseParamsId, incomeId: TBaseParamsId): Promise<TActionContractIncomeResponse>
+  updateIncome(id: TBaseParamsId, payload: IUpdateIncome): Promise<TActionContractIncomeResponse>
+  deleteIncome(id: TBaseParamsId): Promise<TActionContractIncomeResponse>
   getGuarantorList(id: TBaseParamsId, query?: IGetGuarantorContractList): Promise<TGetGuarantorContractListResponse>
   getContractHistoryList(id: TBaseParamsId, query?: IGetContactHistoryList): Promise<TGetContractHistoryListResponse>
   getDocumentList(id: TBaseParamsId, query?: IGetDocumentList): Promise<TGetDocumentListResponse>
@@ -139,22 +141,27 @@ class ContractProvider extends HttpRequest implements IContractProvider {
   }
 
   public async getIncomeList (id: TBaseParamsId, query?: IGetIncomeList): Promise<TGetContractIncomeListResponse> {
-    const response = await this.get(`${this.urlPrefix}/${id}/income`, query)
+    const response = await this.get(`${this.urlPrefix}-income/paginate/${id}`, query)
+    return response
+  }
+
+  public async getIncomeById (id: TBaseParamsId): Promise<TGetContractIncomeByIdResponse> {
+    const response = await this.get(`${this.urlPrefix}-income/${id}`)
     return response
   }
 
   public async createIncome (id: TBaseParamsId, payload: ICreateIncome): Promise<TActionContractIncomeResponse> {
-    const response = await this.post(`${this.urlPrefix}/${id}/income`, payload)
+    const response = await this.post(`${this.urlPrefix}-income/${id}`, payload)
     return response
   }
 
-  public async updateIncome (id: TBaseParamsId, incomeId: TBaseParamsId, payload: IUpdateIncome): Promise<TActionContractIncomeResponse> {
-    const response = await this.put(`${this.urlPrefix}/${id}/income/${incomeId}`, payload)
+  public async updateIncome (id: TBaseParamsId, payload: IUpdateIncome): Promise<TActionContractIncomeResponse> {
+    const response = await this.put(`${this.urlPrefix}-income/${id}`, payload)
     return response
   }
 
-  public async deleteIncome (id: TBaseParamsId, incomeId: TBaseParamsId): Promise<TActionContractIncomeResponse> {
-    const response = await this.delete(`${this.urlPrefix}/${id}/income/${incomeId}`)
+  public async deleteIncome (id: TBaseParamsId): Promise<TActionContractIncomeResponse> {
+    const response = await this.delete(`${this.urlPrefix}-income/${id}`)
     return response
   }
 

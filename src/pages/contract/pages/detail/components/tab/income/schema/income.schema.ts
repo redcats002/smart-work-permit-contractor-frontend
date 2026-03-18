@@ -1,15 +1,16 @@
 import { schema } from '@/utils/Schema'
 import { EVatType } from '@/enums/modules/Vat.enum'
 import { z } from 'zod'
+import { FileUploadSchema } from '../../expense/schema/expense.schema'
 
 export const IncomeSchema = z.object({
   incomeCategoryId: schema.id('หมวดหมู่ค่าใช้จ่าย'),
   incomeTypeId: schema.id('ประเภทค่าใช้จ่าย'),
-  detail: z.string().min(1, 'กรุณากรอกคำอธิบาย'),
+  note: z.string().min(1, 'กรุณากรอกคำอธิบาย'),
   amount: z
     .number({ message: 'กรุณากรอกจำนวนเงิน' })
     .min(1, 'กรุณากรอกจำนวนเงิน'),
-  url: z.string().min(1, 'กรุณาอัพโหลดหลักฐานการชำระ'),
+  file: z.array(FileUploadSchema),
   vatType: z.nativeEnum(EVatType, { message: 'กรุณาเลือกประเภท VAT' })
 })
 
@@ -17,11 +18,11 @@ export type IncomeFormValues = z.infer<typeof IncomeSchema>
 
 export function useFormInitialValues (): IncomeFormValues {
   return {
-    incomeCategoryId: undefined,
-    incomeTypeId: undefined,
-    detail: '',
+    incomeCategoryId: null,
+    incomeTypeId: null,
+    note: '',
     amount: 0,
-    url: '',
+    file: [],
     vatType: EVatType.VAT
   }
 }

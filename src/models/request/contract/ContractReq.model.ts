@@ -29,9 +29,9 @@ export interface IGetIncomeList extends IBasePaginationRequest {}
 export interface ICreateIncome {
   incomeCategoryId: number
   incomeTypeId: number
-  detail: string
+  note: string
   amount: number
-  url: string
+  file: IUploadResponse[]
   vatType: TVatType
 }
 export interface IUpdateIncome extends Partial<ICreateIncome> {}

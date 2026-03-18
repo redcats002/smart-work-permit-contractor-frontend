@@ -3,6 +3,7 @@
     v-model="innerModel"
     :suggestions="suggestions"
     option-label="name"
+    option-value="id"
     complete-on-focus
     force-selection
     @complete="search()" />

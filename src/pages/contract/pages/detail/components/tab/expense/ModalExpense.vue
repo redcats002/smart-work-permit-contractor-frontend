@@ -8,6 +8,7 @@
       <!-- FORM MODE: create / edit -->
       <Form
         v-if="isFormMode"
+        :key="formKey"
         v-slot="$form"
         :initial-values="formData"
         :resolver="resolver"
@@ -151,7 +152,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
@@ -199,6 +200,7 @@ const UploadService: IUploadProvider = new UploadProvider()
 
 const dayjs = useDayjs()
 
+const formKey = ref<number>(0)
 const currentMode = ref<TExpenseModalMode>(props.mode)
 const formRead = useInitDetail()
 const resolver = zodResolver(ExpenseSchema)
@@ -235,7 +237,7 @@ const readMenuItems = computed((): IMenuItemAction[] => [
   { label: 'ลบ', key: 'delete', type: 'TEXT', action: switchToDelete }
 ])
 
-function populateForm (): void {
+async function populateForm (): Promise<void> {
   if (!props.item) return
   formData.value = {
     expenseCategoryId: formRead.value.expenseCategory?.id ? Number(formRead.value.expenseCategory.id) : undefined,
@@ -247,6 +249,11 @@ function populateForm (): void {
   }
   uploadFiles.value = []
   uploadPreviewUrls.value = props.item.file?.length ? props.item.file : []
+  formData.value.expenseCategoryId = Number(formRead.value.expenseCategory?.id)
+  await nextTick()
+  formData.value.expenseTypeId = Number(formRead.value.expenseType?.id)
+  await nextTick()
+  formKey.value++
 }
 
 async function onOpen (): Promise<void> {
@@ -261,10 +268,9 @@ async function onOpen (): Promise<void> {
   if (props.item?.id) {
     const { data } = await ContractService.getExpenseById(Number(props.item.id))
     formRead.value = data
-  }
-
-  if (props.mode === 'edit') {
-    populateForm()
+    if (props.mode === 'edit') {
+      populateForm()
+    }
   }
 }
 
