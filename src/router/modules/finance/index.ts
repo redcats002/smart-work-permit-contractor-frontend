@@ -8,7 +8,7 @@ export default {
   name: 'FinancePage',
   redirect: { name: 'InvoiceListPage' },
   component: (): ComponentOptions => import('@/pages/finance/Finance.vue'),
-  meta: { title: 'เอกสารและการเงิน', auth: true, icon: 'solar:document-medicine-bold' },
+  meta: { title: 'เอกสารและการเงิน', auth: true, icon: 'f7:doc' },
   children: [
     {
       path: 'invoice/list',

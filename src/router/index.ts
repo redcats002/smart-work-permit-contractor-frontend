@@ -3,6 +3,7 @@ import type { NavigationGuardNext, RouteLocationNormalized, Router, RouteRecordR
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/Auth'
 import { updateFromRoute } from '@/utils/RouterHeader'
+import AccessLogRouter from './modules/access-log'
 import AnnouncementRouter from './modules/announcement'
 import AssetRouter from './modules/asset'
 import AuthRouter from './modules/Auth.router'
@@ -40,15 +41,16 @@ export const routes: RouteRecordRaw[] = [
       layout: 'blank'
     }
   },
-  AnnouncementRouter,
   AuthRouter,
-  AssetRouter,
+  AnnouncementRouter,
   WorkRouter,
+  ReportsRouter,
   ContractRouter,
   CustomerRouter,
+  AssetRouter,
   FinanceRouter,
-  ReportsRouter,
   StockRouter,
+  AccessLogRouter,
   SettingRouter,
   {
     // Catch-all route for 404
