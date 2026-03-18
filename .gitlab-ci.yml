@@ -75,6 +75,6 @@ deploy-production:
   variables:
     NODE_ENV: production
   only:
-    - main
+    - tags
   extends: .vercel-deploy
   interruptible: true
