@@ -12,15 +12,15 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import type { TBaseModel, TBaseOption } from '@/models/Global.model'
-import { EvaluatorLevelItems, type TEvaluatorLevel } from '@/enums/modules/contract/EvaluatorLevel.enum'
+import { EvaluatorLevelItems, EvaluatorLevelPriority, type TEvaluatorLevel } from '@/enums/modules/contract/EvaluatorLevel.enum'
 import SelectInput from '@/components/input/SelectInput.vue'
 
 interface IProps {
-  disabledList?: TEvaluatorLevel[]
+  existedGroup?: TEvaluatorLevel[]
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-  disabledList: (): TEvaluatorLevel[] => []
+  existedGroup: (): TEvaluatorLevel[] => []
 })
 
 const model = defineModel<TEvaluatorLevel>()
@@ -30,11 +30,18 @@ const innerModel = ref<TBaseModel | null>(null)
 const allSuggestions = ref<TBaseModel[]>([])
 const options = ref<TBaseModel[]>([])
 
+function isLevelDisabled (level: TEvaluatorLevel): boolean {
+  const priority = EvaluatorLevelPriority[level]
+  return props.existedGroup.some(
+    (existed: TEvaluatorLevel): boolean => EvaluatorLevelPriority[existed] < priority
+  )
+}
+
 function loadSuggestions (): void {
   allSuggestions.value = EvaluatorLevelItems.map((item: TBaseOption): TBaseModel => ({
     id: item.value!,
     name: item.label,
-    disabled: props.disabledList.includes(item.value as TEvaluatorLevel)
+    disabled: isLevelDisabled(item.value as TEvaluatorLevel)
   }))
   options.value = allSuggestions.value
 }
@@ -69,7 +76,7 @@ watch(allSuggestions, (): void => {
   syncInnerFromId()
 }, { immediate: true })
 
-watch((): TEvaluatorLevel[] => props.disabledList, (): void => {
+watch((): TEvaluatorLevel[] => props.existedGroup, (): void => {
   loadSuggestions()
 })
 
