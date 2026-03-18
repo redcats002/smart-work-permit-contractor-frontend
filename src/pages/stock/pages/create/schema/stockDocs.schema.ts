@@ -60,9 +60,9 @@ export function useDev (): StockDocsFormValues {
     warehouse: 'สำนักงานใหญ่',
     storageLocation: 'BR001-31-13',
     status: StockStatusEnum.ACTIVE,
-    formWarehouse: '',
-    toWarehouse: '',
-    reason: '',
+    formWarehouse: 'พญาไท',
+    toWarehouse: 'ทดสอบ',
+    reason: 'ย้ายไปคลังหลัก',
     items: [
       {
         id: 0,

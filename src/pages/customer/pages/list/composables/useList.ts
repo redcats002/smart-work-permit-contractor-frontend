@@ -52,6 +52,7 @@ export default function useList (): IUseList {
     }
   }
 
+
   function fetch (): void {
     handleLoading(useFetch)
   }

@@ -22,9 +22,8 @@
           <p class="text-center text-gray text-bold">
             เอกสารที่ต้องการย้าย
           </p>
-          <CreateButton
-            :to="{ name: 'StockDocsSelectPage' }"
-            label="เพิ่มเอกสารที่ต้องการย้าย" />
+          <ModalStockDocsCreate
+            v-model:model-value="visible" />
         </div>
         <SelectedDocsTable
           v-model:pagination="pagination"
@@ -50,7 +49,6 @@ import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
-import CreateButton from '@/components/button/CreateButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
 import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
@@ -61,6 +59,7 @@ import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { storeToRefs } from 'pinia'
 import useList from '../../list/composables/useList'
 import { StockDocsSchema } from '../schema/stockDocs.schema'
+import ModalStockDocsCreate from '../components/ModalStockDocsCreate.vue'
 
 // import StockProvider from '@/resources/provider/stock/Stock.provider'
 
@@ -70,6 +69,7 @@ const stockDocsStore = useStockDocsStore()
 // const StockService: IStockProvider = new StockProvider()
 
 const formKey = ref<number>(0)
+const visible = ref<boolean>(false)
 const { form } = storeToRefs(stockDocsStore)
 const resolver = zodResolver(StockDocsSchema)
 
