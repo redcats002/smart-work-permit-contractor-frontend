@@ -1,7 +1,7 @@
 <template>
-  <AutoCompleteInput
+  <SelectInput
     v-model="innerModel"
-    :suggestions="suggestions"
+    :options="options"
     option-disabled="disabled"
     option-label="name"
     complete-on-focus
@@ -13,7 +13,7 @@
 import { onMounted, ref, watch } from 'vue'
 import type { TBaseModel, TBaseOption } from '@/models/Global.model'
 import { EvaluatorLevelItems, type TEvaluatorLevel } from '@/enums/modules/contract/EvaluatorLevel.enum'
-import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
+import SelectInput from '@/components/input/SelectInput.vue'
 
 interface IProps {
   disabledList?: TEvaluatorLevel[]
@@ -28,7 +28,7 @@ const selectedName = defineModel<string | null>('selectedName', { default: null 
 
 const innerModel = ref<TBaseModel | null>(null)
 const allSuggestions = ref<TBaseModel[]>([])
-const suggestions = ref<TBaseModel[]>([])
+const options = ref<TBaseModel[]>([])
 
 function loadSuggestions (): void {
   allSuggestions.value = EvaluatorLevelItems.map((item: TBaseOption): TBaseModel => ({
@@ -36,12 +36,12 @@ function loadSuggestions (): void {
     name: item.label,
     disabled: props.disabledList.includes(item.value as TEvaluatorLevel)
   }))
-  suggestions.value = allSuggestions.value
+  options.value = allSuggestions.value
 }
 
 function search (query: string): void {
   const q = query.trim().toLowerCase()
-  suggestions.value = q
+  options.value = q
     ? allSuggestions.value.filter((i: TBaseModel): boolean => i.name.toLowerCase().includes(q))
     : allSuggestions.value
 }
