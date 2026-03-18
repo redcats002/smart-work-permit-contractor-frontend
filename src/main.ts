@@ -1,8 +1,10 @@
+import '@/assets/css/main.css'
 import { createApp } from 'vue'
+import { checkEnv } from '@/utils/EnvChecker'
 import App from './App.vue'
 import registerPlugins from './plugins'
 
-import '@/assets/css/main.css'
+checkEnv()
 
 const app = registerPlugins(createApp(App))
 

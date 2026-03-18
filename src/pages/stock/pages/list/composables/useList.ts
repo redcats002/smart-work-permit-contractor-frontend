@@ -1,0 +1,78 @@
+import { computed, ref, type Ref } from 'vue'
+import { toast } from '@/plugins/toast'
+import { handleLoading } from '@/utils/HandleLoading'
+import type { IGetStockList } from '@/models/request/stock/StockReq.model'
+import type { IStockList } from '@/models/response/stock/StockRes.model'
+import StockProvider, { type IStockProvider } from '@/resources/provider/stock/Stock.provider'
+import usePagination, { type IUsePagination } from '@/composables/usePagination'
+
+interface IUseList extends IUsePagination {
+  filters: Ref<IGetStockList>
+  items: Ref<IStockList[]>
+  fetch(): void
+  onClearFilters(): void
+  onDelete(id: number): void
+}
+export default function useList (): IUseList {
+  const StockService: IStockProvider = new StockProvider()
+
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
+
+  const filters = ref<IGetStockList>({})
+  const items = ref<IStockList[]>([])
+
+  const paginateQuery = computed((): IGetStockList => {
+    const normalizedFilters = normalizeFilters(filters.value)
+    return {
+      search: search.value,
+      page: pagination.value.page,
+      limit: pagination.value.limit,
+      sortBy: sortBy.value || undefined,
+      sortOrder: sortOrder.value,
+      ...normalizedFilters
+    }
+  })
+
+  async function useFetch (): Promise<void> {
+    const response = await StockService.getStockPaginate(paginateQuery.value)
+    items.value = response?.data || []
+    pagination.value = extractPagination(response)
+    syncQuery({ ...normalizeFilters(filters.value) })
+  }
+
+  async function useDelete (id: number): Promise<void> {
+    await StockService.deleteStock(id)
+    fetch()
+    toast.success('ลบลูกค้าสําเร็จ')
+  }
+
+  function normalizeFilters (value: IGetStockList): Partial<IGetStockList> {
+    return {
+      ...value
+    }
+  }
+
+  function fetch (): void {
+    handleLoading(useFetch)
+  }
+
+  function onClearFilters (): void {}
+
+  function onDelete (id: number): void {
+    handleLoading((): Promise<void> => useDelete(id))
+  }
+
+  return {
+    filters,
+    items,
+    pagination,
+    sortBy,
+    sortOrder,
+    search,
+    fetch,
+    onClearFilters,
+    onDelete,
+    extractPagination,
+    syncQuery
+  }
+}

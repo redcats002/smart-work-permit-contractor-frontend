@@ -1,3 +1,13 @@
-@import "tailwindcss";
 @import "tailwindcss-primeui";
 @import "./primevue.css";
+@import "./tailwind.css";
+
+
+/* override primevue */
+[data-pc-section='columntitle'],
+[data-pc-name='bodycell'] {
+	white-space: nowrap;
+}
+/* [data-p-sortable-column='true'][data-p-sorted='true'] {
+	background-color: var(--color-primary-50);
+} */

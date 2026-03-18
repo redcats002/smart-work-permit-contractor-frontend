@@ -25,3 +25,18 @@ export const accessTokenStorage: IStorage = {
     return token ? atob(token as string) : ''
   }
 }
+export const branchAccessTokenStorage: IStorage = {
+  setItem: (_key: string, state: string): string | undefined => {
+    const token = JSON.parse(state)
+    const { expireIn }: IAccessTokenState = token.branchToken
+    const expires: Date | number = expireIn ? new Date(expireIn * 1000) : 3
+
+    return Cookies.set('branch_access_token', btoa(state), {
+      expires
+    })
+  },
+  getItem: (): string => {
+    const token = Cookies.get('branch_access_token')
+    return token ? atob(token as string) : ''
+  }
+}

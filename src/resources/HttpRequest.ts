@@ -1,10 +1,10 @@
 import axios, { type AxiosInstance } from 'axios'
+import { getCurrentIdNo, getCurrentMenu, getCurrentPath } from '@/utils/RouterHeader'
 import { onRequest, onRequestError, onResponse, onResponseError } from './Interceptors'
-import { getAuthToken } from '@/utils/Auth'
 
 interface IHttpRequest {
   axiosInstance: AxiosInstance
-  setAuthHeader(): void
+  setLogHeader(): void
   setHeader(data: ISetHeader): void
   get(endPoint: string, data: object, config?: object): Promise<any>
   download(endPoint: string, data?: object): Promise<any>
@@ -34,20 +34,30 @@ class HttpRequest implements IHttpRequest {
     this.axiosInstance = axios.create({
       baseURL: this.url,
       timeout: 120000,
+      withCredentials: true,
       headers: {
         'Content-Type': 'application/json'
       }
     })
 
-    this.axiosInstance.interceptors.request.use((config: any): any => onRequest(config), onRequestError)
+    this.axiosInstance.interceptors.request.use((config: any): any => {
+      // this.setLogHeader() //TODO: it send method option when set header
+      return onRequest(config)
+    }, onRequestError)
 
     this.axiosInstance.interceptors.response.use(onResponse, onResponseError)
   }
 
-  public setAuthHeader (): void {
-    const authHeader: ISetHeader | null = getAuthToken()
-    if (authHeader) {
-      this.setHeader(authHeader)
+  public setLogHeader (): void {
+    const path: string = getCurrentPath()
+    const menu: string = getCurrentMenu()
+    const idNo: string | undefined = getCurrentIdNo()
+    if (path) this.setHeader({ key: 'x-current-path', value: path })
+    if (menu) this.setHeader({ key: 'x-current-menu', value: menu })
+    if (idNo) {
+      this.setHeader({ key: 'x-current-id-no', value: idNo })
+    } else {
+      delete (this.axiosInstance.defaults.headers.common as Record<string, unknown>)['x-current-id-no']
     }
   }
 
@@ -71,7 +81,7 @@ class HttpRequest implements IHttpRequest {
     })
   }
 
-  public post (endPoint: string, data: object, config?: object): Promise<any> {
+  public post (endPoint: string, data?: object, config?: object): Promise<any> {
     return this.axiosInstance.post(endPoint, data, config)
   }
 

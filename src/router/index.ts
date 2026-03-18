@@ -1,22 +1,64 @@
 import type { ComponentOptions } from 'vue'
 import type { RouteLocationNormalized, Router, RouteRecordRaw } from 'vue-router'
 import { createRouter, createWebHistory } from 'vue-router'
+import { updateFromRoute } from '@/utils/RouterHeader'
+import AnnouncementRouter from './modules/announcement'
+import AssetRouter from './modules/asset'
+import AuthRouter from './modules/Auth.router'
+import ContractRouter from './modules/contract'
+import CustomerRouter from './modules/customer'
+import FinanceRouter from './modules/finance'
+import SettingRouter from './modules/setting'
+import StockRouter from './modules/stock'
+import WorkRouter from './modules/work'
 
 // import { useAuthStore } from '@/stores/Auth'
 
-// import AuthRouter from './modules/Auth.router'
 
 export interface IRouteRedirect {
   name: string
 }
 
-const routes: RouteRecordRaw[] = [
+export const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'HomePage',
     component: (): ComponentOptions => import('@/pages/HomePage.vue')
+  },
+  {
+    path: '/not-permitted',
+    name: 'NotPermittedPage',
+    component: (): ComponentOptions => import('@/pages/common/pages/not-permitted/pages/NotPermittedPage.vue'),
+    meta: {
+      layout: 'blank'
+    }
+  },
+  {
+    path: '/not-available',
+    name: 'NotAvailablePage',
+    component: (): ComponentOptions => import('@/pages/common/pages/not-available/pages/NotAvailablePage.vue'),
+    meta: {
+      layout: 'blank'
+    }
+  },
+  AnnouncementRouter,
+  AuthRouter,
+  AssetRouter,
+  WorkRouter,
+  ContractRouter,
+  CustomerRouter,
+  FinanceRouter,
+  StockRouter,
+  SettingRouter,
+  {
+    // Catch-all route for 404
+    path: '/:pathMatch(.*)*', // Matches any path
+    name: 'NotFound',
+    component: (): ComponentOptions => import('@/pages/common/pages/not-found/pages/NotFoundPage.vue'),
+    meta: {
+      layout: 'blank'
+    }
   }
-  // AuthRouter
 ]
 
 const router: Router = createRouter({
@@ -24,10 +66,11 @@ const router: Router = createRouter({
   routes
 })
 
-const DEFAULT_TITLE: string = 'Title Website' // TODO: Change this
+const DEFAULT_TITLE: string = 'Mittae Siam Management'
 
 router.afterEach((to: RouteLocationNormalized): void => {
   document.title = to?.meta?.title ? `${DEFAULT_TITLE} | ${to.meta.title}` : DEFAULT_TITLE
+  void updateFromRoute(to)
 })
 
 // router.beforeEach((to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext): void => {

@@ -1,19 +1,32 @@
 
-/* Primary and Surface Palettes */
+/* ─────────────────────────────────────────
+   PrimeVue Design Tokens
+   Docs: https://primevue.org/theming/styled/#customization
+   ───────────────────────────────────────── */
+
+/* ─────────────────────────────────────────
+   Primary Palette  — Brand Red (#BD0102)
+   ───────────────────────────────────────── */
 :root {
-    --p-primary-50: #ecfdf5;
-    --p-primary-100: #d1fae5;
-    --p-primary-200: #a7f3d0;
-    --p-primary-300: #6ee7b7;
-    --p-primary-400: #34d399;
-    --p-primary-500: #10b981;
-    --p-primary-600: #059669;
-    --p-primary-700: #047857;
-    --p-primary-800: #065f46;
-    --p-primary-900: #064e3b;
-    --p-primary-950: #022c22;
-    --p-surface-0: #ffffff;
-    --p-surface-50: #fafafa;
+    --p-primary-50:  #fff1f1;
+    --p-primary-100: #ffdcdc;
+    --p-primary-200: #ffb8b8;
+    --p-primary-300: #ff7f7f;
+    --p-primary-400: #ef3434;
+    --p-primary-500: #bd0102;   /* ← brand primary */
+    --p-primary-600: #990101;
+    --p-primary-700: #780001;
+    --p-primary-800: #5a0001;
+    --p-primary-900: #3d0001;
+    --p-primary-950: #220000;
+}
+
+/* ─────────────────────────────────────────
+   Surface Palette — Zinc (neutral gray)
+   ───────────────────────────────────────── */
+:root {
+    --p-surface-0:   #ffffff;
+    --p-surface-50:  #fafafa;
     --p-surface-100: #f4f4f5;
     --p-surface-200: #e4e4e7;
     --p-surface-300: #d4d4d8;
@@ -24,52 +37,79 @@
     --p-surface-800: #27272a;
     --p-surface-900: #18181b;
     --p-surface-950: #09090b;
+
     --p-content-border-radius: 6px;
 }
 
-/* Light */
+/* ─────────────────────────────────────────
+   Brand Accent Tokens
+   ───────────────────────────────────────── */
 :root {
-    --p-primary-color: var(--p-primary-500);
-    --p-primary-contrast-color: var(--p-surface-0);
-    --p-primary-hover-color: var(--p-primary-600);
-    --p-primary-active-color: var(--p-primary-700);
-    --p-content-border-color: var(--p-surface-200);
+    /* Green  ── #219653 */
+    --p-green-light: #cfffe3;   /* badge / tag background */
+    --p-green:       #219653;   /* text / icon */
+
+    /* Orange ── #F2994A */
+    --p-orange:      #ffecd6;   /* badge / tag background */
+    --p-orange-2:    #f2994a;   /* text / icon */
+
+    /* Red ── #BD0102 (alias for inline use) */
+    --p-red:         #bd0102;   /* danger / error */
+    --p-red-2:       #eb5757;   /* softer danger */
+
+    /* Gray */
+    --p-gray-5:      #e0e0e0;   /* border / divider */
+    --p-gray-2:      #4f4f4f;   /* secondary text */
+}
+
+/* ─────────────────────────────────────────
+   Light Mode Semantic Tokens
+   ───────────────────────────────────────── */
+:root {
+    --p-primary-color:           var(--p-primary-500);
+    --p-primary-contrast-color:  var(--p-surface-0);
+    --p-primary-hover-color:     var(--p-primary-600);
+    --p-primary-active-color:    var(--p-primary-700);
+
+    --p-content-border-color:    var(--p-surface-200);
+
     --p-content-hover-background: var(--p-surface-100);
-    --p-content-hover-color: var(--p-surface-800);
-    --p-highlight-background: var(--p-primary-50);
-    --p-highlight-color: var(--p-primary-700);
+    --p-content-hover-color:      var(--p-surface-800);
+
+    --p-highlight-background:       var(--p-primary-50);
+    --p-highlight-color:            var(--p-primary-700);
     --p-highlight-focus-background: var(--p-primary-100);
-    --p-highlight-focus-color: var(--p-primary-800);
-    --p-text-color: var(--p-surface-700);
-    --p-text-hover-color: var(--p-surface-800);
-    --p-text-muted-color: var(--p-surface-500);
+    --p-highlight-focus-color:      var(--p-primary-800);
+
+    --p-text-color:            var(--p-surface-700);
+    --p-text-hover-color:      var(--p-surface-800);
+    --p-text-muted-color:      var(--p-surface-500);
     --p-text-hover-muted-color: var(--p-surface-600);
 }
 
-/*
- * Dark Mode
- * Defaults to system, change the dark variant selector to match the CSS variable configuration.
- * For example;
- * @custom-variant dark (&:where(.app-dark, .app-dark *));
- * should match to;
- * :root[class="app-dark"]
-*/
-@media (prefers-color-scheme: dark) {
-    :root {
-        --p-primary-color: var(--p-primary-400);
-        --p-primary-contrast-color: var(--p-surface-900);
-        --p-primary-hover-color: var(--p-primary-300);
-        --p-primary-active-color: var(--p-primary-200);
-        --p-content-border-color: var(--p-surface-700);
-        --p-content-hover-background: var(--p-surface-800);
-        --p-content-hover-color: var(--p-surface-0);
-        --p-highlight-background: color-mix(in srgb, var(--p-primary-400), transparent 84%);
-        --p-highlight-color: rgba(255, 255, 255, 0.87);
-        --p-highlight-focus-background: color-mix(in srgb, var(--p-primary-400), transparent 76%);
-        --p-highlight-focus-color: rgba(255, 255, 255, 0.87);
-        --p-text-color: var(--p-surface-0);
-        --p-text-hover-color: var(--p-surface-0);
-        --p-text-muted-color: var(--p-surface-400);
-        --p-text-hover-muted-color: var(--p-surface-300);
-    }
+/* ─────────────────────────────────────────
+   Dark Mode Semantic Tokens
+   Activated by class `.dark` on <html>
+   (matches @custom-variant dark in tailwind.css)
+   ───────────────────────────────────────── */
+:root:where(.dark, .dark *) {
+    --p-primary-color:           var(--p-primary-400);
+    --p-primary-contrast-color:  var(--p-surface-900);
+    --p-primary-hover-color:     var(--p-primary-300);
+    --p-primary-active-color:    var(--p-primary-200);
+
+    --p-content-border-color:    var(--p-surface-700);
+
+    --p-content-hover-background: var(--p-surface-800);
+    --p-content-hover-color:      var(--p-surface-0);
+
+    --p-highlight-background:       color-mix(in srgb, var(--p-primary-400), transparent 84%);
+    --p-highlight-color:            rgba(255, 255, 255, 0.87);
+    --p-highlight-focus-background: color-mix(in srgb, var(--p-primary-400), transparent 76%);
+    --p-highlight-focus-color:      rgba(255, 255, 255, 0.87);
+
+    --p-text-color:             var(--p-surface-0);
+    --p-text-hover-color:       var(--p-surface-0);
+    --p-text-muted-color:       var(--p-surface-400);
+    --p-text-hover-muted-color: var(--p-surface-300);
 }

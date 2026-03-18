@@ -1,8 +1,9 @@
 {
-  "name": "vue3-template",
+  "name": "mittae-siam-management-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "packageManager": "bun@1.3.10",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -11,43 +12,59 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "test": "vitest --watch --reporter=verbose",
+    "test:run": "vitest run --reporter=verbose",
+    "test:coverage": "vitest run --coverage",
     "prepare": "husky"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.1.18",
-    "axios": "^1.13.5",
+    "@primevue/forms": "^4.5.4",
+    "@tailwindcss/vite": "^4.2.1",
+    "axios": "^1.13.6",
     "humps": "^2.0.1",
     "js-cookie": "^3.0.5",
     "pinia": "^3.0.4",
     "pinia-plugin-persistedstate": "^4.7.1",
     "primevue": "^4.5.4",
-    "tailwind-merge": "^3.4.1",
-    "tailwindcss": "^4.1.18",
+    "quill": "^2.0.3",
+    "tailwind-merge": "^3.5.0",
+    "tailwindcss": "^4.2.1",
     "tailwindcss-primeui": "^0.6.1",
-    "vue": "^3.5.28",
-    "vue-router": "^5.0.2"
+    "thai-address-universal": "^2.1.3",
+    "vue": "^3.5.30",
+    "vue-router": "^5.0.3",
+    "vue-sanitize-directive": "^0.2.1",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.2",
-    "@stylistic/eslint-plugin": "^3.1.0",
+    "@eslint/js": "^9.39.4",
+    "@iconify/vue": "^5.0.0",
+    "@stylistic/eslint-plugin": "^5.10.0",
     "@types/humps": "^2.0.6",
     "@types/js-cookie": "^3.0.6",
-    "@types/node": "^25.2.3",
-    "@vitejs/plugin-vue": "^5.2.4",
-    "@vue/tsconfig": "^0.7.0",
-    "eslint": "^9.39.2",
-    "eslint-plugin-vue": "^9.33.0",
+    "@types/node": "^25.5.0",
+    "@vitejs/plugin-vue": "^6.0.5",
+    "@vitest/browser-playwright": "^4.1.0",
+    "@vitest/coverage-v8": "^4.1.0",
+    "@vue/tsconfig": "^0.9.0",
+    "dayjs": "^1.11.20",
+    "eslint": "^9.39.4",
+    "eslint-plugin-vue": "^10.8.0",
+    "globals": "^17.4.0",
     "husky": "^9.1.7",
-    "lint-staged": "^15.5.2",
+    "lint-staged": "^16.4.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.56.0",
-    "vite": "^7.3.1",
+    "typescript-eslint": "^8.57.1",
+    "unplugin-vue-components": "^31.0.0",
+    "vite": "^8.0.0",
     "vite-plugin-eslint2": "^5.0.5",
-    "vue-tsc": "^2.2.12"
+    "vitest": "^4.1.0",
+    "vue-tsc": "^3.2.5"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": [
-      "eslint --fix"
+      "eslint --fix",
+      "vitest run"
     ]
   }
 }

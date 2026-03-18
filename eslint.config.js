@@ -26,7 +26,8 @@ export default [
   js.configs.recommended,
   {
     rules: {
-      'default-case': ['error', { commentPattern: '^skip\\sdefault' }]
+      'default-case': ['error', { commentPattern: '^skip\\sdefault' }],
+      'no-console': ['warn', { allow: ['error', 'info'] }]
     }
   },
   ...ts.configs.recommended,
@@ -177,6 +178,13 @@ export default [
       '@stylistic/switch-colon-spacing': 'error',
       '@stylistic/template-curly-spacing': 'error',
       '@stylistic/wrap-regex': 'error'
+    }
+  },
+  {
+    files: ['src/**/*.ts'],
+    rules: {
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off'
     }
   }
 ]
