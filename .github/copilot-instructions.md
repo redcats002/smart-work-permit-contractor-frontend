@@ -353,7 +353,7 @@ Template:
     <!-- Default slot renders InputText automatically -->
   </LabelField>
   <LabelField :form="$form" name="relatedId" label="รายการ" tag="div" required>
-    <RelatedSelection v-model="formData.relatedId" />
+    <RelatedSelection name="relatedId" v-model="formData.relatedId" />
   </LabelField>
   <ConfirmButton type="submit" label="บันทึก" />
 </Form>
