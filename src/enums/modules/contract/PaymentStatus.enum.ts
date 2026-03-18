@@ -2,7 +2,7 @@ import type { TBaseOption } from '@/models/Global.model'
 
 export enum PaymentStatusEnum {
   OVERDUE = 'OVERDUE',
-  COMING = 'COMING',
+  NOT_DUE_YET = 'NOT_DUE_YET',
   PARTIAL = 'PARTIAL',
   PAID = 'PAID'
 }
@@ -11,7 +11,7 @@ export type TPaymentStatus = keyof typeof PaymentStatusEnum
 
 const titleMap: Record<TPaymentStatus, string> = {
   [PaymentStatusEnum.OVERDUE]: 'เกินกำหนด',
-  [PaymentStatusEnum.COMING]: 'ยังไม่ถึงกำหนด',
+  [PaymentStatusEnum.NOT_DUE_YET]: 'ยังไม่ถึงกำหนด',
   [PaymentStatusEnum.PARTIAL]: 'ชำระบางส่วน',
   [PaymentStatusEnum.PAID]: 'ชำระแล้ว'
 }
@@ -34,7 +34,7 @@ export function getStatusClass (value?: TPaymentStatus): string {
       return 'bg-red-100 text-red-600 border-none'
     case PaymentStatusEnum.PARTIAL:
       return 'bg-blue-100 text-blue-600 border-none'
-    case PaymentStatusEnum.COMING:
+    case PaymentStatusEnum.NOT_DUE_YET:
       return 'bg-amber-100 text-amber-600 border-none'
     case PaymentStatusEnum.PAID:
       return 'bg-green-100 text-green-700 border-none'
@@ -49,7 +49,7 @@ export function getIcon (value?: TPaymentStatus): string {
       return 'quill:warning'
     case PaymentStatusEnum.PARTIAL:
       return 'streamline:graph-arrow-increase'
-    case PaymentStatusEnum.COMING:
+    case PaymentStatusEnum.NOT_DUE_YET:
       return 'mingcute:time-duration-line'
     case PaymentStatusEnum.PAID:
       return 'mdi:check-circle-outline'

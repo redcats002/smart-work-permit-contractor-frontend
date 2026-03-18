@@ -7,12 +7,16 @@
     :items="props.items"
     disable-auto-left-padding
     @update="emits('update')">
-    <template #[`item.paymentStatus`]="{ item}">
-      <ChipInstallmentStatus :value="item.paymentStatus" />
+    <template #[`item.period`]="{ index }">
+      {{ index + 1 }}
+    </template>
+    <template #[`item.status`]="{ item}">
+      <ChipInstallmentStatus :value="item.status" />
     </template>
     <template #[`item.action`]="{ item }">
       <InstallmentMenuAction
-        :payment-status="item.paymentStatus"
+        :payment-status="item.status"
+        @create-invoice="emits('createInvoice', Number(item.id))"
         @edit="emits('update')" />
     </template>
   </BaseTable>
@@ -37,6 +41,7 @@ const props = defineProps<IProps>()
 
 interface IEmits {
   update: []
+  createInvoice: [id: number]
 }
 
 const emits = defineEmits<IEmits>()
@@ -52,15 +57,15 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 const columns = ref<IColumn<IContractInstallmentList>[]>([
   { field: 'period', header: 'งวดที่' },
   { field: 'dueDate', header: 'วันครบกำหนดชำระ', value: (e: IContractInstallmentList): string => dayjs.formatDate(e?.dueDate) },
-  { field: 'created', header: 'วันที่ชำระ', value: (e: IContractInstallmentList): string => dayjs.formatDate(e?.createdAt || '') },
+  { field: 'created', header: 'วันที่ชำระ', value: (e: IContractInstallmentList): string => dayjs.formatDate(e?.receipts[0]?.paidAt || '') },
   { field: 'interest', header: 'ดอกเบี้ย', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e?.interest) },
   { field: 'principal', header: 'เงินต้นชำระ', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e?.principal) },
   { field: 'installment', header: 'ค่างวด', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e?.installment) },
   { field: 'remainingPrincipal', header: 'เงินต้นคงเหลือ', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e?.remainingPrincipal) },
-  { field: 'lateFee', header: 'ค่าปรับ', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e?.lateFee) },
-  { field: 'trackingFee', header: 'ค่าติดตาม', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e?.trackingFee) },
-  { field: 'paymentAmount', header: 'ยอดชำระเงิน', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e?.paymentAmount) },
-  { field: 'paymentStatus', header: 'สถานะ' },
+  { field: 'penaltyFee', header: 'ค่าปรับ', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e?.penaltyFee) },
+  { field: 'collectionFee', header: 'ค่าติดตาม', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e?.collectionFee) },
+  { field: 'paymentAmount', header: 'ยอดชำระเงิน', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e?.receipts[0]?.amountPaid) },
+  { field: 'status', header: 'สถานะ' },
   { field: 'action', header: 'จัดการ' }
 ])
 </script>

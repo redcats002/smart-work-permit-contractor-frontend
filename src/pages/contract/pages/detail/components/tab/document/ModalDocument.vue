@@ -30,19 +30,19 @@
           v-slot="{ invalid }"
           :form="$form"
           label="จุดจัดเก็บ"
-          name="warehouseId"
+          name="locationId"
           tag="div"
           hide-error
           required>
           <WarehouseSelection
-            v-model="formData.warehouseId"
+            v-model="formData.locationId"
             :invalid="invalid" />
         </LabelField>
 
         <LabelField
           :form="$form"
           label="แนบเอกสาร"
-          name="url"
+          name="files"
           tag="div"
           hide-error
           required>
@@ -52,10 +52,10 @@
         </LabelField>
 
         <LabelField
-          v-model="formData.detail"
+          v-model="formData.note"
           :form="$form"
           label="คำอธิบาย"
-          name="detail"
+          name="note"
           required />
 
         <FormAction
@@ -74,16 +74,16 @@
           <span class="font-bold text-gray-700 whitespace-nowrap">ประเภทเอกสาร</span>
           <span>: {{ props.item?.documentType ? formatDocumentType(props.item.documentType) : '-' }}</span>
           <span class="font-bold text-gray-700 whitespace-nowrap">คำอธิบาย</span>
-          <span>: {{ props.item?.detail || '-' }}</span>
+          <span>: {{ props.item?.note || '-' }}</span>
           <span class="font-bold text-gray-700 whitespace-nowrap">จุดจัดเก็บ</span>
-          <span>: {{ props.item?.warehouse?.name || '-' }}</span>
+          <span>: {{ props.item?.location?.name || '-' }}</span>
         </div>
         <div
-          v-if="props.item?.url"
+          v-if="props.item?.files?.length"
           class="grid gap-2">
           <span class="text-sm font-bold text-gray-700">เอกสาร</span>
           <img
-            :src="props.item.url"
+            :src="props.item.files"
             alt="เอกสาร"
             class="w-full rounded-lg object-contain max-h-80">
         </div>
@@ -151,6 +151,7 @@ const ContractService: IContractProvider = new ContractProvider()
 const UploadService: IUploadProvider = new UploadProvider()
 
 const currentMode = ref<TDocumentModalMode>(props.mode)
+// const formRead = useInitDetail()
 const resolver = zodResolver(DocumentSchema)
 const formData = ref<DocumentFormValues>(useFormInitialValues())
 const uploadFiles = ref<File[]>([])
@@ -186,12 +187,12 @@ function populateForm (): void {
   if (!props.item) return
   formData.value = {
     documentType: props.item.documentType ? DocumentTypeEnum[props.item.documentType] : undefined,
-    warehouseId: props.item.warehouse?.id ? Number(props.item.warehouse.id) : undefined,
-    url: props.item.url || '',
-    detail: props.item.detail || ''
+    locationId: props.item.location?.id ? Number(props.item.location.id) : undefined,
+    files: [],
+    note: props.item.note || ''
   }
   uploadFiles.value = []
-  uploadPreviewUrls.value = props.item.url ? [props.item.url] : []
+  uploadPreviewUrls.value = props.item.files ? [props.item.files] : []
 }
 
 function onOpen (): void {
@@ -211,12 +212,12 @@ watch((): TDocumentModalMode => props.mode, (val: TDocumentModalMode): void => {
 
 async function uploadAndSetFile (file: File): Promise<void> {
   const response = await UploadService.uploadFile(file)
-  formData.value.url = response.data.url
+  formData.value.files = [response.data]
 }
 
 watch(uploadFiles, (files: File[]): void => {
   if (files.length === 0) {
-    formData.value.url = ''
+    formData.value.files = []
     return
   }
   handleLoading((): Promise<void> => uploadAndSetFile(files[files.length - 1]))
@@ -227,13 +228,18 @@ function onFormSubmit (event: FormSubmitEvent, close: () => void): void {
     scrollToFirstError(event.errors)
     return
   }
-  const values = event.values as ICreateDocument
+  const values = {
+    documentType: formData.value.documentType,
+    locationId: formData.value.locationId,
+    files: [], // TODO WHEN CAN UPLOAD
+    note: formData.value.note
+  } as ICreateDocument
   const itemId = props.item?.id
   handleLoading(async (): Promise<void> => {
     if (currentMode.value === 'create') {
       await ContractService.createDocument(props.contractId, values)
     } else if (currentMode.value === 'edit' && itemId) {
-      await ContractService.updateDocument(props.contractId, itemId, values)
+      // await ContractService.updateDocument(props.contractId, itemId, values)
     }
     emits('update')
     close()

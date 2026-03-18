@@ -52,9 +52,8 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 const columns = ref<IColumn<IContractDocumentList>[]>([
   { field: 'createdAt', header: 'วันที่', value: (e: IContractDocumentList): string => dayjs.formatDate(e?.createdAt || '') },
   { field: 'documentType', header: 'ประเภทเอกสาร', value: (e: IContractDocumentList): string => formatTitle(e?.documentType) },
-  { field: 'detail', header: 'คำอธิบาย', bodyClass: 'max-w-[200px]' },
-  { field: 'warehouse', header: 'จุดจัดเก็บ', align: 'right', value: (e: IContractDocumentList): string => e?.warehouse?.name || '-' },
-  { field: 'action', header: 'จัดการ' }
+  { field: 'note', header: 'คำอธิบาย', bodyClass: 'max-w-[200px]' },
+  { field: 'location', header: 'จุดจัดเก็บ', align: 'left', value: (e: IContractDocumentList): string => e?.location?.name || '-' }
 ])
 </script>
 

@@ -15,6 +15,7 @@ interface IProps {
 
 interface IEmits {
   edit: []
+  createInvoice: []
 }
 
 const props = defineProps<IProps>()
@@ -29,7 +30,7 @@ const items = computed((): IMenuItemAction[] => {
   if (props.paymentStatus === 'PAID') return base
   return [
     { label: 'ดูรายละเอียด', key: 'detail', type: 'TEXT', action: (): void => { emits('edit') } },
-    { label: 'ออกใบแจ้งหนี้', key: 'create-invoice', action: (): void => { }, type: 'TEXT' },
+    { label: 'ออกใบแจ้งหนี้', key: 'create-invoice', action: (): void => { emits('createInvoice') }, type: 'TEXT' },
     { label: 'ชำระเงิน', key: 'payment', action: (): void => { }, type: 'TEXT' }
   ]
 })

@@ -1,4 +1,5 @@
 import type {
+  ICreateContractHistoryPayload,
   ICreateContractPayload,
   ICreateDocument,
   ICreateExpense,
@@ -10,10 +11,8 @@ import type {
   IGetExpenseList,
   IGetGuarantorContractList,
   IGetIncomeList,
-  IGetInstallmentList,
   IGetInstallmentSummary,
   IUpdateContractPayload,
-  IUpdateDocument,
   IUpdateExpense,
   IUpdateIncome
 } from '@/models/request/contract/ContractReq.model'
@@ -21,10 +20,12 @@ import type {
   TActionContract,
   TActionContractDocumentResponse,
   TActionContractExpenseResponse,
+  TActionContractHistoryResponse,
   TActionContractIncomeResponse,
   TGetContractByIdResponse,
   TGetContractExpenseByIdResponse,
   TGetContractExpenseListResponse,
+  TGetContractHistoryByIdResponse,
   TGetContractHistoryListResponse,
   TGetContractIncomeByIdResponse,
   TGetContractIncomeListResponse,
@@ -45,7 +46,7 @@ export interface IContractProvider {
   getContractFindOne(id: TBaseParamsId): Promise<TGetContractByIdResponse>
   saveAssetDetail(contractId: TBaseParamsId, assetId: TBaseParamsId, formData: FormData): Promise<TActionContract>
   requestAssessmentPrice(id: TBaseParamsId): Promise<TActionContract>
-  getInstallmentList(id: TBaseParamsId, query?: IGetInstallmentList): Promise<TGetInstallmentListResponse>
+  getInstallmentList(id: TBaseParamsId): Promise<TGetInstallmentListResponse>
   getInstallmentSummary(id: TBaseParamsId, query?: IGetInstallmentSummary): Promise<TGetInstallmentSummaryResponse>
   getExpenseList(id: TBaseParamsId, query?: IGetExpenseList): Promise<TGetContractExpenseListResponse>
   getExpenseById (id: TBaseParamsId): Promise<TGetContractExpenseByIdResponse>
@@ -59,9 +60,12 @@ export interface IContractProvider {
   deleteIncome(id: TBaseParamsId): Promise<TActionContractIncomeResponse>
   getGuarantorList(id: TBaseParamsId, query?: IGetGuarantorContractList): Promise<TGetGuarantorContractListResponse>
   getContractHistoryList(id: TBaseParamsId, query?: IGetContactHistoryList): Promise<TGetContractHistoryListResponse>
+  getContractHistoryById (id: TBaseParamsId): Promise<TGetContractHistoryByIdResponse>
+  createContractHistory (id: TBaseParamsId, payload: ICreateContractHistoryPayload): Promise<TActionContractHistoryResponse>
+  deleteContractHistory (id: TBaseParamsId): Promise<TActionContractHistoryResponse>
   getDocumentList(id: TBaseParamsId, query?: IGetDocumentList): Promise<TGetDocumentListResponse>
+  getDocumentById(id: TBaseParamsId): Promise<TGetDocumentListResponse>
   createDocument(id: TBaseParamsId, payload: ICreateDocument): Promise<TActionContractDocumentResponse>
-  updateDocument(id: TBaseParamsId, documentId: TBaseParamsId, payload: IUpdateDocument): Promise<TActionContractDocumentResponse>
   deleteDocument(id: TBaseParamsId, documentId: TBaseParamsId): Promise<TActionContractDocumentResponse>
 }
 
@@ -105,8 +109,8 @@ class ContractProvider extends HttpRequest implements IContractProvider {
     return response
   }
 
-  public async getInstallmentList (id: TBaseParamsId, query?: IGetInstallmentList): Promise<TGetInstallmentListResponse> {
-    const response = await this.get(`${this.urlPrefix}/${id}/installment`, query)
+  public async getInstallmentList (id: TBaseParamsId): Promise<TGetInstallmentListResponse> {
+    const response = await this.get(`${this.urlPrefix}/${id}/installments`)
     return response
   }
 
@@ -171,27 +175,42 @@ class ContractProvider extends HttpRequest implements IContractProvider {
   }
 
   public async getContractHistoryList (id: TBaseParamsId, query?: IGetContractHistoryList): Promise<TGetContractHistoryListResponse> {
-    const response = await this.get(`${this.urlPrefix}/${id}/history`, query)
+    const response = await this.get(`${this.urlPrefix}-contact-history/paginate/${id}`, query)
+    return response
+  }
+
+  public async getContractHistoryById (id: TBaseParamsId): Promise<TGetContractHistoryByIdResponse> {
+    const response = await this.get(`${this.urlPrefix}-contact-history/${id}`)
+    return response
+  }
+
+  public async createContractHistory (id: TBaseParamsId, payload: ICreateContractHistoryPayload): Promise<TActionContractHistoryResponse> {
+    const response = await this.post(`${this.urlPrefix}-contact-history/${id}`, payload)
+    return response
+  }
+
+  public async deleteContractHistory (id: TBaseParamsId): Promise<TActionContractHistoryResponse> {
+    const response = await this.delete(`${this.urlPrefix}-contact-history/${id}`)
     return response
   }
 
   public async getDocumentList (id: TBaseParamsId, query?: IGetDocumentList): Promise<TGetDocumentListResponse> {
-    const response = await this.get(`${this.urlPrefix}/${id}/document`, query)
+    const response = await this.get(`${this.urlPrefix}-document/paginate/${id}`, query)
+    return response
+  }
+
+  public async getDocumentById (id: TBaseParamsId): Promise<TGetDocumentListResponse> {
+    const response = await this.get(`${this.urlPrefix}-document/${id}`)
     return response
   }
 
   public async createDocument (id: TBaseParamsId, payload: ICreateDocument): Promise<TActionContractDocumentResponse> {
-    const response = await this.post(`${this.urlPrefix}/${id}/document`, payload)
+    const response = await this.post(`${this.urlPrefix}-document/${id}`, payload)
     return response
   }
 
-  public async updateDocument (id: TBaseParamsId, documentId: TBaseParamsId, payload: IUpdateDocument): Promise<TActionContractDocumentResponse> {
-    const response = await this.put(`${this.urlPrefix}/${id}/document/${documentId}`, payload)
-    return response
-  }
-
-  public async deleteDocument (id: TBaseParamsId, documentId: TBaseParamsId): Promise<TActionContractDocumentResponse> {
-    const response = await this.delete(`${this.urlPrefix}/${id}/document/${documentId}`)
+  public async deleteDocument (id: TBaseParamsId): Promise<TActionContractDocumentResponse> {
+    const response = await this.delete(`${this.urlPrefix}-document/${id}`)
     return response
   }
 }

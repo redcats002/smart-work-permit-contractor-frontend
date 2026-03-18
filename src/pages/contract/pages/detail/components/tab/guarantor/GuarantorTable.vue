@@ -4,7 +4,7 @@
     v-model:sort-by="sortBy"
     v-model:sort-order="sortOrder"
     :columns="columns"
-    :items="props.items"
+    :items="items"
     disable-auto-left-padding
     @update="emits('update')" />
 </template>
@@ -22,7 +22,7 @@ interface IProps {
   items: IContractGuarantorList[]
 }
 
-const props = defineProps<IProps>()
+defineProps<IProps>()
 
 interface IEmits {
   update: []
@@ -39,12 +39,12 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IContractGuarantorList>[]>([
-  { field: 'idCard', header: 'เลขบัตรประชาชน', value: (e: IContractGuarantorList): string => dayjs.formatDate(e?.createdAt || '') },
-  { field: 'firstName', header: 'ชื่อ', value: (e: IContractGuarantorList): string => formatter.fullName(e) || '-' },
-  { field: 'birthDate', header: 'วันเดือนปีเกิด', value: (e: IContractGuarantorList): string => dayjs.formatDate(e?.birthDate || '') },
-  { field: 'age', header: 'อายุ', value: (e: IContractGuarantorList): string => dayjs.formatAge(e?.birthDate || '') },
-  { field: 'phoneNumber', header: 'เบอร์โทร', value: (e: IContractGuarantorList): string => formatter.fullPhoneNumber(e) },
-  { field: 'address', header: 'ที่อยู่ตามบัตรประจำตัวประชาชน', value: (e: IContractGuarantorList): string => formatter.fullAddress(e.mainAddress) }
+  { field: 'idCard', header: 'เลขบัตรประชาชน', value: (e: IContractGuarantorList): string => (e?.customer?.idCard || '') },
+  { field: 'firstName', header: 'ชื่อ', value: (e: IContractGuarantorList): string => formatter.fullName(e?.customer) || '-' },
+  { field: 'birthDate', header: 'วันเดือนปีเกิด', value: (e: IContractGuarantorList): string => dayjs.formatDate(e?.customer?.birthDate || '') },
+  { field: 'age', header: 'อายุ', value: (e: IContractGuarantorList): string => dayjs.formatAge(e?.customer?.birthDate || '') },
+  { field: 'phoneNumber', header: 'เบอร์โทร', value: (e: IContractGuarantorList): string => formatter.fullPhoneNumber(e?.customer) },
+  { field: 'address', header: 'ที่อยู่ตามบัตรประจำตัวประชาชน', value: (e: IContractGuarantorList): string => formatter.fullAddress(e?.customer?.mainAddress) }
 ])
 </script>
 
