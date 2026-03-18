@@ -8,13 +8,13 @@ export default {
   name: 'AccessLogPage',
   redirect: { name: 'AccessLogListPage' },
   component: (): ComponentOptions => import('@/pages/access-log/AccessLog.vue'),
-  meta: { title: 'บันทึกการเข้าถึงระบบ', auth: true, icon: 'material-symbols:history' },
+  meta: { title: 'บันทึกการเข้าถึงระบบ', auth: true, icon: 'streamline-flex:search-history-browser' },
   children: [
     {
       path: 'list',
       name: 'AccessLogListPage',
       component: (): ComponentOptions => import('@/pages/access-log/pages/AccessLogListPage.vue'),
-      meta: { auth: true, menu: true, title: 'บันทึกการเข้าถึงระบบ', icon: 'material-symbols:history' }
+      meta: { auth: true, menu: true, title: 'บันทึกการเข้าถึงระบบ', icon: 'streamline-flex:search-history-browser' }
     }
   ]
 } as RouteRecordRaw

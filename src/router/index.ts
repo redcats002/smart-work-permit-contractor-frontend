@@ -1,6 +1,7 @@
 import type { ComponentOptions } from 'vue'
-import type { RouteLocationNormalized, Router, RouteRecordRaw } from 'vue-router'
+import type { NavigationGuardNext, RouteLocationNormalized, Router, RouteRecordRaw } from 'vue-router'
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/Auth'
 import { updateFromRoute } from '@/utils/RouterHeader'
 import AnnouncementRouter from './modules/announcement'
 import AssetRouter from './modules/asset'
@@ -12,9 +13,6 @@ import ReportsRouter from './modules/reports'
 import SettingRouter from './modules/setting'
 import StockRouter from './modules/stock'
 import WorkRouter from './modules/work'
-
-// import { useAuthStore } from '@/stores/Auth'
-
 
 export interface IRouteRedirect {
   name: string
@@ -75,15 +73,15 @@ router.afterEach((to: RouteLocationNormalized): void => {
   void updateFromRoute(to)
 })
 
-// router.beforeEach((to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext): void => {
-//   const userStore = useAuthStore()
-//   const userToken: string = userStore?.userToken.accessToken
+router.beforeEach((to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext): void => {
+  const userStore = useAuthStore()
+  const userToken: string = userStore?.userToken.accessToken
 
-//   if (to?.meta?.auth && !userToken) {
-//     router.replace({ name: 'LoginPage' })
-//     return
-//   }
-//   next()
-// })
+  if (to?.meta?.auth && !userToken) {
+    router.replace({ name: 'LoginPage' })
+    return
+  }
+  next()
+})
 
 export default router

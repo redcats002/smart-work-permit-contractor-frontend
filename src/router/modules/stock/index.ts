@@ -10,7 +10,7 @@ export default {
   redirect: { name: 'StockListPage' },
   component: (): ComponentOptions => import('@/pages/stock/Stock.vue'),
   meta: {
-    title: 'รายการเอกสารหลักทรัพย์',
+    title: 'การจัดเก็บ',
     auth: true,
     icon: 'mdi-account-cog-outline'
   },
@@ -33,7 +33,7 @@ export default {
       meta: {
         auth: true,
         menu: true,
-        title: 'รายการย้ายเอกสาร',
+        title: 'ย้ายเอกสาร',
         icon: 'mdi-account'
       }
     },
