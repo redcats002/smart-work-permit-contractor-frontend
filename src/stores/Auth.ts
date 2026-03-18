@@ -109,9 +109,10 @@ export const useAuthStore = defineStore(
     }
   }, {
     persist: [
+      { key: 'auth', pick: ['branch', 'user'] },
       {
-        pick: ['user', 'branch'],
-        key: 'auth',
+        pick: ['userToken'],
+        key: 'userToken',
         storage: accessTokenStorage
       }
       // {
