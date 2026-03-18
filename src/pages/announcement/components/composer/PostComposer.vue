@@ -36,52 +36,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import BaseEditor from '@/components/base/BaseEditor.vue'
 import FileInput from '@/components/input/FileInput.vue'
 import BasePage from '@/components/base/BasePage.vue'
-import type { IAnnouncementProvider } from '@/resources/provider/announcement/Announcement.provider'
-import AnnouncementProvider from '@/resources/provider/announcement/Announcement.provider'
-import { useRouter } from 'vue-router'
 import { AnnouncementSchema, type AnnouncementCreateAnnouncement } from '../../schemas/announcement.schema'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import { usePayload } from '../../composables/usePayload'
-import { handleLoading } from '@/utils/HandleLoading'
-import { toast } from '@/plugins/toast'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
-
-
-const router = useRouter()
-
-const emit = defineEmits<{
-  (e: 'created'): void
-}>()
-
-const AnnouncementService: IAnnouncementProvider = new AnnouncementProvider()
-const form = ref<AnnouncementCreateAnnouncement>({
-  content: '',
-  attachments: []
-})
-const resolver = zodResolver(AnnouncementSchema)
-async function useSubmit (): Promise<void> {
-  await AnnouncementService.createAnnouncement(usePayload(form.value))
-  toast.success('ดำเนินการสำเร็จ')
-
-  emit('created')
-
-  form.value = {
-    content: '',
-    attachments: []
-  }
-  router.push({ name: 'AnnouncementPostPage' })
+interface IEmit {
+  created: []
 }
+
+const emit = defineEmits<IEmit>()
+const form = defineModel<AnnouncementCreateAnnouncement>({ required: true })
+const resolver = zodResolver(AnnouncementSchema)
+
 
 async function onSubmit (event: FormSubmitEvent): Promise<void> {
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return
   }
-  await handleLoading(useSubmit)
+  emit('created')
 }
 </script>

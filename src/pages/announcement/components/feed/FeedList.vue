@@ -2,7 +2,7 @@
   <BasePage>
     <div class="space-y-4">
       <PostCard
-        v-for="post in props.items"
+        v-for="post in items"
         :key="post.id"
         :author-name="post.author.name"
         :content="post.content"
@@ -24,13 +24,14 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 
 import BasePage from '@/components/base/BasePage.vue'
 import PostCard from './PostCard.vue'
+import type { IAnnouncementList } from '@/models/response/announcement/AnnouncementRes.model'
 
-
-const props = defineProps<{
-  items: any[]
+interface IProps {
+  items: IAnnouncementList[]
   loadMore: () => Promise<void>
   isFinished: boolean
-}>()
+}
+const props = defineProps<IProps>()
 
 const loadMoreRef = ref<HTMLElement | null>(null)
 const observer = ref<IntersectionObserver | null>(null)

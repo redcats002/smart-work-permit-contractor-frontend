@@ -62,7 +62,7 @@ import type { IUploadResponse } from '@/resources/provider/Upload.provider'
 import { useDayjs } from '@/utils/Dayjs'
 import { Icon } from '@iconify/vue'
 
-interface Props {
+interface IProps {
   content: string
   files?: IUploadResponse[]
   authorName: string
@@ -71,7 +71,7 @@ interface Props {
 }
 const dayjs = useDayjs()
 
-withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<IProps>(), {
   files: (): IUploadResponse[] => []
 })
 

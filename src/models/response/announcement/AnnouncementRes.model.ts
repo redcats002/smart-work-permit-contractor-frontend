@@ -20,5 +20,5 @@ export interface IAnnouncementList extends IEntity {
 }
 
 
-export type TGetAnnouncementListResponse = IBasePaginationResponse<IAnnouncementList>
-export type TActionAnnouncement = IBaseSuccessResponse<boolean>
+export interface TGetAnnouncementListResponse extends IBasePaginationResponse<IAnnouncementList> {}
+export interface TActionAnnouncement extends IBaseSuccessResponse<boolean> {}
