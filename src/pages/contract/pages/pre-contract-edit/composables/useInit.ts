@@ -31,7 +31,8 @@ export function useInit (): IUseInit {
       preContractId.value, usePayload({ ...initCreate.form.value, status: initCreate.submitMode.value }, initCreate.selectedCustomer.value!)
     )
     toast.success('ดำเนินการสำเร็จ')
-    router.push({ name: 'PreContractDetailPage', params: { id: preContractId.value } })
+    if (initCreate.submitMode.value !== 'DRAFT') router.push({ name: 'PreContractDetailPage', params: { id: preContractId.value } })
+    await useFetch()
   }
 
   async function useFetch (): Promise<void> {
