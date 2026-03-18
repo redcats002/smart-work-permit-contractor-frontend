@@ -24,6 +24,28 @@ export default {
         title: 'รายงาน',
         icon: 'mdi:file-document-outline'
       }
+    },
+    {
+      path: 'dailyInstallment',
+      name: 'DailyInstallmentPaymentReport',
+      component: (): ComponentOptions => import('@/pages/reports/pages/daily-branch-summary/pages/ReportDailyInstallmentPaymentPage.vue'),
+      meta: {
+        auth: true,
+        menu: true,
+        title: 'รายงานรับชำระค่างวดประจำวัน',
+        icon: 'mdi:file-document-outline'
+      }
+    },
+    {
+      path: 'PercentageInstallment',
+      name: 'PercentageInstallmentPaymentsReceived',
+      component: (): ComponentOptions => import('@/pages/reports/pages/list/pages/ReportListPage.vue'),
+      meta: {
+        auth: true,
+        menu: true,
+        title: 'รายงานรับชำระค่างวดประจำวัน',
+        icon: 'mdi:file-document-outline'
+      }
     }
   ]
 } as RouteRecordRaw
