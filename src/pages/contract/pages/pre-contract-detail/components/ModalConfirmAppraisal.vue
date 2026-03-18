@@ -7,8 +7,7 @@
     <template
       #activator="{ open }">
       <ConfirmButton
-        label="ประเมินราคาหลักทรัพย์"
-        outlined
+        label="ยืนยันราคาประเมิน"
         @click="open()" />
     </template>
     <template #default="{ close }">

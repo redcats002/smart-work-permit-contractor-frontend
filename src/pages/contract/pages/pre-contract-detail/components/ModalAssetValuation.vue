@@ -27,6 +27,7 @@
           required>
           <EvaluatorLevelSelection
             v-model="form.evaluatorLevel"
+            :existed-group="existedGroup"
             :invalid="invalid"
             name="evaluatorLevel" />
         </LabelField>
@@ -58,6 +59,7 @@
 import { toast } from '@/plugins/toast'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { IRequestReappraisalPayload } from '@/models/request/pre-contract/PreContractReq.model'
+import type { TEvaluatorLevel } from '@/enums/modules/contract/EvaluatorLevel.enum'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
 import LabelField from '@/components/input/LabelField.vue'
@@ -69,13 +71,15 @@ import { AssetValuationSchema, useFormInitialValues } from '../schema/asset-valu
 
 interface IProps {
   requestNew?: boolean
+  existedGroup?: TEvaluatorLevel[]
 }
 interface IEmits {
   submit: []
 }
 
 withDefaults(defineProps<IProps>(), {
-  requestNew: false
+  requestNew: false,
+  existedGroup: (): TEvaluatorLevel[] => []
 })
 const emits = defineEmits<IEmits>()
 

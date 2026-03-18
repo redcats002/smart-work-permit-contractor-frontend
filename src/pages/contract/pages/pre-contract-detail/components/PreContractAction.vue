@@ -2,22 +2,16 @@
   <div class="flex justify-start gap-2.5">
     <template v-if="isAssetValuation">
       <ModalAssetValuation
-        v-model="requestReappraisal"
-        @submit="emits('requestReappraisal')" />
+        v-model="requestAppraisal"
+        @submit="emits('requestAppraisal')" />
     </template>
     <template v-else-if="isConfirmValuation">
       <ModalConfirmAppraisal
         v-model="confirmAppraisal"
         @submit="emits('confirmAppraisal')" />
-      <!-- <ConfirmModal @confirm="emits('confirmAppraisal')">
-        <template #activator="{ open }">
-          <ConfirmButton
-            label="ยืนยันราคาประเมิน"
-            @click="open()" />
-        </template>
-      </ConfirmModal> -->
       <ModalAssetValuation
         v-model="requestReappraisal"
+        :existed-group="existedGroup"
         request-new
         @submit="emits('requestReappraisal')" />
     </template>
@@ -61,6 +55,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { IConfirmAppraisalPayload, IRequestReappraisalPayload } from '@/models/request/pre-contract/PreContractReq.model'
+import type { TEvaluatorLevel } from '@/enums/modules/contract/EvaluatorLevel.enum'
 import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import CancelButton from '@/components/button/CancelButton.vue'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
@@ -71,9 +66,11 @@ import ModalConfirmAppraisal from './ModalConfirmAppraisal.vue'
 interface IProps {
   status?: TPreContractStatus
   isMortgageFormVisible?: boolean
+  existedGroup?: TEvaluatorLevel[]
 }
 interface IEmits {
   cancel: []
+  requestAppraisal: []
   requestReappraisal: []
   confirmAppraisal: []
   submitMortgage: []
@@ -83,11 +80,13 @@ interface IEmits {
 
 const props = withDefaults(defineProps<IProps>(), {
   status: 'DRAFT',
-  isMortgageFormVisible: false
+  isMortgageFormVisible: false,
+  existedGroup: (): TEvaluatorLevel[] => []
 })
 const emits = defineEmits<IEmits>()
 
 const confirmAppraisal = defineModel<IConfirmAppraisalPayload>('confirmAppraisal', { required: true })
+const requestAppraisal = defineModel<IRequestReappraisalPayload>('requestAppraisal', { required: true })
 const requestReappraisal = defineModel<IRequestReappraisalPayload>('requestReappraisal', { required: true })
 
 const isAssetValuation = computed((): boolean => {
