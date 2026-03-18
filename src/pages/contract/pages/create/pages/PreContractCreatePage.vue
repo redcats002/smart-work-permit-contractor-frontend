@@ -57,8 +57,7 @@
           @delete="onRemoveAsset(index)" />
         <Button
           v-show="canAddAsset"
-          class="flex items-center justify-start gap-1.5 py-4 text-sm text-primary! font-medium hover:opacity-80
-            transition-opacity bg-white!"
+          class="flex items-center justify-start gap-1.5 py-4 text-sm text-primary! font-medium hover:opacity-80 transition-opacity bg-white!"
           type="button"
           fluid
           text
@@ -91,18 +90,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { toast } from '@/plugins/toast'
-import { handleLoading } from '@/utils/HandleLoading'
-import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
-import { isLandAsset, isVehicleAsset } from '@/enums/modules/contract/AssetType.enum'
-import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
-import type { ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
-import CustomerProvider from '@/resources/provider/customer/Customer.provider'
-import type { IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
-import PreContractProvider from '@/resources/provider/pre-contract/PreContract.provider'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
@@ -116,82 +103,22 @@ import EmployeeSelection from '@/components/selection/modules/employee/EmployeeS
 import AssetFormSection from '../components/AssetFormSection.vue'
 import CustomerCard from '../components/CustomerCard.vue'
 import { Icon } from '@iconify/vue'
-import { Form, type FormSubmitEvent } from '@primevue/forms'
-import { zodResolver } from '@primevue/forms/resolvers/zod'
-import { usePayload } from '../composables/usePayload'
-import type { PreContractFormValues, TAssetCategory } from '../schema/pre-contract.schema'
-import { createPreAssetBase, PreContractSchema, useDev, useFormInitialValues } from '../schema/pre-contract.schema'
+import { Form } from '@primevue/forms'
+import { useInit } from '../composables/useInit'
 
-const router = useRouter()
-
-const CustomerService: ICustomerProvider = new CustomerProvider()
-const ContractService: IPreContractProvider = new PreContractProvider()
-
-const formKey = ref<number>(0)
-const form = ref<PreContractFormValues>(useFormInitialValues())
-const resolver = zodResolver(PreContractSchema)
-const submitMode = ref<TPreContractStatus>('DRAFT')
-const selectedCustomer = ref<ICustomerById | null>(null)
-
-const assetCategory = computed((): TAssetCategory => {
-  for (const e of form.value.preAssets) {
-    if (isVehicleAsset(e.type)) return 'VEHICLE'
-    if (isLandAsset(e.type)) return 'LAND'
-  }
-  return null
-})
-
-const canAddAsset = computed((): boolean => {
-  if (!assetCategory.value) return false
-  return assetCategory.value !== 'VEHICLE'
-})
-
-async function onCustomerSelect (id?: number | null): Promise<void> {
-  await handleLoading(async (): Promise<void> => {
-    if (!id) return
-    const res = await CustomerService.getCustomerFindOne(Number(id))
-    selectedCustomer.value = res.data
-  })
-}
-
-async function useSubmit (): Promise<void> {
-  await ContractService.createContract(usePayload({ ...form.value, status: submitMode.value }, selectedCustomer.value!))
-  toast.success('ดำเนินการสำเร็จ')
-  router.push({ name: 'ContractListPage' })
-}
-
-function onSubmit (event: FormSubmitEvent): void {
-  console.log(event)
-  if (!event.valid) {
-    scrollToFirstError(event.errors)
-    return
-  }
-  handleLoading(useSubmit)
-}
-
-
-function onAddAsset (): void {
-  if (!canAddAsset.value) return
-  form.value.preAssets.push(createPreAssetBase())
-}
-
-function onRemoveAsset (index: number): void {
-  if (form.value.preAssets.length <= 1) return
-  form.value.preAssets.splice(index, 1)
-}
-
-function onCancel (): void {
-  router.push({ name: 'ContractListPage' })
-}
-
-function setSubmitMode (mode: TPreContractStatus): void {
-  submitMode.value = mode
-}
-
-function onAuto (): void {
-  form.value = { ...useDev() }
-  formKey.value++
-  onCustomerSelect(form.value.customerId)
-}
-
+const {
+  assetCategory,
+  canAddAsset,
+  form,
+  formKey,
+  selectedCustomer,
+  resolver,
+  onCustomerSelect,
+  onSubmit,
+  onAddAsset,
+  onRemoveAsset,
+  onCancel,
+  setSubmitMode,
+  onAuto
+} = useInit()
 </script>
