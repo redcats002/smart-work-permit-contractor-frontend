@@ -11,9 +11,17 @@
       ]"
       @click="!disabled && navigate($event)">
       <img
+        v-if="isImageIcon"
         :class="(isActive || isExactActive) && !disabled && 'brightness-0 invert'"
         :src="icon"
         class="w-5 h-5">
+      <Icon
+        v-else
+        :class="[
+          'size-5',
+          (isActive || isExactActive) && !disabled ? 'text-white' : 'text-surface-700'
+        ]"
+        :icon="icon" />
       <span class="grow">
         {{ label }}
       </span>
@@ -22,8 +30,10 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import { RouterLink } from 'vue-router'
+import { Icon } from '@iconify/vue'
 
 interface IProps {
   label: string
@@ -33,12 +43,7 @@ interface IProps {
   disabled?: boolean
 }
 
-// const props = defineProps<IProps>()
-defineProps<IProps>()
+const props = defineProps<IProps>()
 
-// function getIconName (isActive: boolean, isExactActive: boolean): string {
-//   return isActive || isExactActive
-//     ? props.activeIcon || props.icon
-//     : props.icon
-// }
+const isImageIcon = computed((): boolean => props.icon.startsWith('/'))
 </script>

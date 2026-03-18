@@ -12,7 +12,7 @@ export default {
   meta: {
     title: 'ลูกค้า',
     auth: true,
-    icon: 'mdi-account-cog-outline'
+    icon: 'solar:user-linear'
   },
   children: [
     {

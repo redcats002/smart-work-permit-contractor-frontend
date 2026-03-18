@@ -12,7 +12,7 @@ export default {
   meta: {
     title: 'หลักทรัพย์',
     auth: true,
-    icon: 'mdi:package-variant'
+    icon: 'iconoir:box-iso'
   },
   children: [
     {
@@ -23,7 +23,7 @@ export default {
         auth: true,
         menu: true,
         title: 'รายการหลักทรัพย์',
-        icon: 'mdi:package-variant'
+        icon: 'iconoir:box-iso'
       }
     },
     {
@@ -33,7 +33,7 @@ export default {
       meta: {
         auth: true,
         title: 'รายละเอียดหลักทรัพย์',
-        icon: 'mdi:package-variant',
+        icon: 'iconoir:box-iso',
         back: { name: 'AssetListPage' }
       }
     }

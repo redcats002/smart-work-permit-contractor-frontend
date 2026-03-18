@@ -8,9 +8,17 @@
       ]"
       @click="toggle()">
       <img
+        v-if="isImageIcon"
         :class="isAnyChildActive && 'brightness-0 invert'"
         :src="icon"
         class="w-5 h-5">
+      <Icon
+        v-else
+        :class="[
+          'size-5',
+          isAnyChildActive ? 'text-white' : 'text-surface-700'
+        ]"
+        :icon="icon" />
       <span class="grow">{{ label }}</span>
       <Icon
         :class="isAnyChildActive ? 'text-white' : 'text-surface-400'"
@@ -71,6 +79,7 @@ const isAnyChildActive = computed((): boolean => {
 })
 
 const isExpanded = ref<boolean>(isAnyChildActive.value)
+const isImageIcon = computed((): boolean => props.icon.startsWith('/'))
 
 watch(isAnyChildActive, (val: boolean): void => {
   if (val) isExpanded.value = true
