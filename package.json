@@ -64,7 +64,7 @@
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": [
       "eslint --fix",
-      "vitest run"
+      "vitest related --run"
     ]
   }
 }
