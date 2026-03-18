@@ -2,7 +2,7 @@
   <Form
     ref="formRef"
     v-slot="$form"
-    :initial-values="formData"
+    :initial-values="model"
     :resolver="resolver"
     class="grid grid-cols-1 md:grid-cols-2 gap-5"
     @submit="onFormSubmit($event)">
@@ -11,12 +11,12 @@
         <div class="flex flex-col gap-2">
           <span class="text-sm font-bold after:content-['*'] after:text-red-500 after:ml-0.5">ลูกค้า</span>
           <div
-            v-if="props.primaryCustomerName"
+            v-if="primaryCustomer?.id"
             class="flex items-center gap-2 h-9 px-3 border border-surface-300 rounded-sm bg-surface-50">
             <Icon
               class="size-4 text-surface-400 shrink-0"
               icon="solar:user-bold" />
-            <span class="flex-1 text-sm truncate">{{ props.primaryCustomerName }}</span>
+            <span class="flex-1 text-sm truncate">{{ formatter.fullName(primaryCustomer) }}</span>
           </div>
           <div
             v-for="(customer, index) in localCustomers"
@@ -95,15 +95,15 @@
         <LabelField
           :form="$form"
           label="วันที่ทำสัญญา"
-          name="contractDate"
+          name="contractedAt"
           tag="div"
+          hide-error
           required>
           <template #default="{ invalid }">
             <DatePickerInput
-              v-model="localContractDate"
+              v-model="model.contractedAt"
               :invalid="invalid"
-              name="contractDate"
-              @update:model-value="syncContractDate()" />
+              name="contractedAt" />
           </template>
         </LabelField>
 
@@ -111,39 +111,42 @@
           v-slot="{invalid}"
           :form="$form"
           label="ประเภทเงินกู้"
-          name="loanTypeId"
+          name="contractLoanTypeId"
           tag="div"
+          hide-error
           required>
           <ContractLoanTypeSelection
-            v-model="formData.loanTypeId"
+            v-model="model.contractLoanTypeId"
             :invalid="invalid"
-            name="loanTypeId" />
+            name="contractLoanTypeId" />
         </LabelField>
 
         <LabelField
           v-slot="{invalid}"
           :form="$form"
           label="วัตถุประสงค์การกู้"
-          name="loanPurposeId"
+          name="contractLoanPurposeId"
           tag="div"
+          hide-error
           required>
           <ContractLoanPurposeSelection
-            v-model="formData.loanPurposeId"
+            v-model="model.contractLoanPurposeId"
             :invalid="invalid"
-            name="loanPurposeId" />
+            name="contractLoanPurposeId" />
         </LabelField>
 
         <LabelField
           v-slot="{invalid}"
           :form="$form"
           label="รู้จักเราจากที่ไหน"
-          name="customerSourceId"
+          name="howDidFindUsId"
           tag="div"
+          hide-error
           required>
           <HowDidFindUsSelection
-            v-model="formData.customerSourceId"
+            v-model="model.howDidFindUsId"
             :invalid="invalid"
-            name="customerSourceId" />
+            name="howDidFindUsId" />
         </LabelField>
       </div>
     </BaseContainer>
@@ -152,8 +155,9 @@
 
 <script setup lang="ts">
 import { ref, useTemplateRef } from 'vue'
-import { useDayjs } from '@/utils/Dayjs'
+import { formatter } from '@/utils/Formatter'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
+import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import DatePickerInput from '@/components/input/DatePickerInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
@@ -165,14 +169,14 @@ import { Icon } from '@iconify/vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import type { MortgageFormValues } from '../schema/mortgage.schema'
-import { MortgageSchema, useFormInitialValues } from '../schema/mortgage.schema'
+import { MortgageSchema } from '../schema/mortgage.schema'
 
 interface ISelectItem {
   id: number | null
 }
 
 interface IProps {
-  primaryCustomerName?: string | null
+  primaryCustomer?: ICustomerById | null
 }
 
 interface IEmits {
@@ -180,24 +184,16 @@ interface IEmits {
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-  primaryCustomerName: null
+  primaryCustomer: null
 })
 const emit = defineEmits<IEmits>()
 
 const model = defineModel<MortgageFormValues>({ required: true })
 
-const { formatDateRequest } = useDayjs()
-
 const formRef = useTemplateRef<InstanceType<typeof Form> | any>('formRef')
 const resolver = zodResolver(MortgageSchema)
-const formData = ref<MortgageFormValues>(useFormInitialValues())
-const localContractDate = ref<Date | null>(null)
 const localCustomers = ref<ISelectItem[]>([])
 const localGuarantors = ref<ISelectItem[]>([])
-
-function syncContractDate (): void {
-  formData.value.contractDate = formatDateRequest(localContractDate.value ?? undefined) ?? ''
-}
 
 function updateCustomer (index: number, value: number | null | undefined): void {
   localCustomers.value[index] = { id: value ?? null }
@@ -223,20 +219,27 @@ function removeGuarantor (index: number): void {
   localGuarantors.value.splice(index, 1)
 }
 
+function usePayload (): void {
+  const borrowerIds: number[] = localCustomers.value
+    .map((c: ISelectItem): number | null => c.id)
+    .filter((id: number | null): id is number => id !== null)
+  if (props.primaryCustomer?.id)borrowerIds.unshift(Number(props.primaryCustomer?.id ?? 0))
+  const guarantorIds: number[] = localGuarantors.value
+    .map((g: ISelectItem): number | null => g.id)
+    .filter((id: number | null): id is number => id !== null)
+  model.value = {
+    ...model.value,
+    borrowerIds,
+    guarantorIds
+  }
+}
+
 function onFormSubmit (event: FormSubmitEvent): void {
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return
   }
-  model.value = {
-    ...(event.values as MortgageFormValues),
-    customerIds: localCustomers.value
-      .map((c: ISelectItem): number | null => c.id)
-      .filter((id: number | null): id is number => id !== null),
-    guarantorIds: localGuarantors.value
-      .map((g: ISelectItem): number | null => g.id)
-      .filter((id: number | null): id is number => id !== null)
-  }
+  usePayload()
   emit('confirmed')
 }
 

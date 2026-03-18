@@ -119,7 +119,7 @@ async function useRejectBranch (branchId: TBaseParamsId): Promise<void> {
 
 function setBranchState (data: ILoginResponse | IRegisterResponse, _branches: IAuthBranchList[]): void {
   setState('SELECT_BRANCH')
-  authStore.userLogin(data.user)
+  authStore.userLogin(data.user, data.token)
   branches.value = _branches
 }
 

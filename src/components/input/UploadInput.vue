@@ -36,14 +36,13 @@
       v-for="(file,index) in files"
       :key="index"
       class="flex items-center justify-between border border-surface-300 rounded-md px-3 py-2 bg-gray-50">
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 truncate">
         <Icon
           :icon="getFileIcon(file.name)"
           class="text-xl" />
-
         <a
           :href="previewUrls[index]"
-          class="text-sm text-gray-700"
+          class="text-sm text-gray-700 truncate"
           target="_blank">
           {{ file.name }}
         </a>

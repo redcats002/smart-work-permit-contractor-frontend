@@ -5,7 +5,7 @@
       :active-asset="activeAsset"
       :active-index="activeIndex"
       :asset-category="assetCategory"
-      :assets="contract.preAssets"
+      :pre-assets="contract?.preAssets"
       :status="contract?.status"
       @active="onActiveAsset($event)" />
   </div>

@@ -173,12 +173,10 @@ async function useSave (): Promise<void> {
 
 async function onSave (close: () => void): Promise<void> {
   pendingClose.value = close
-  const val = await formRef.value?.validate()
-  onSubmit({ ...val, valid: Object.keys(val.errors).length === 0 })
+  formRef.value?.submit()
 }
 
 function onSubmit (event: FormSubmitEvent): void {
-  formKey.value++
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return

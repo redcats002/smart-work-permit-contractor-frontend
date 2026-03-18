@@ -8,7 +8,12 @@
     disable-auto-left-padding
     @update="emits('update')">
     <template #[`item.idNo`]="{ item }">
-      <LinkText :to="{ name: 'PreContractDetailPage', params: { id: item.id } }">
+      <LinkText
+        :to="
+          item?.status === 'DRAFT'
+            ? { name: 'PreContractEditPage', params: { id: item.id } }
+            : { name: 'PreContractDetailPage', params: { id: item.id } }
+        ">
         {{ item.idNo }}
       </LinkText>
     </template>
@@ -49,21 +54,22 @@ const { formatDate } = useDayjs()
 const columns = ref<IColumn<IPreContractList>[]>([
   { field: 'idNo', header: 'เลขที่สัญญา', sortable: true, align: 'left' },
   {
-    field: 'startDate',
+    field: 'createdAt',
     header: 'วันที่เริ่มทำสัญญา',
     sortable: true,
     align: 'left',
-    value: (e: IPreContractList): string => formatDate(e.startDate ?? undefined)
+    value: (e: IPreContractList): string => formatDate(e.createdAt ?? undefined)
   },
   {
     field: 'customer',
     header: 'ชื่อลูกค้า',
     align: 'left',
-    value: (e: IPreContractList): string => formatter.fullName({
-      titleName: (e.customer?.titleName ?? undefined) as TTitleName | undefined,
-      firstName: e.customer?.firstName ?? undefined,
-      lastName: e.customer?.lastName ?? undefined
-    })
+    value: (e: IPreContractList): string =>
+      formatter.fullName({
+        titleName: (e.customer?.titleName ?? undefined) as TTitleName | undefined,
+        firstName: e.customer?.firstName ?? undefined,
+        lastName: e.customer?.lastName ?? undefined
+      })
   },
   { field: 'status', header: 'สถานะ', sortable: true, align: 'left' }
 ])

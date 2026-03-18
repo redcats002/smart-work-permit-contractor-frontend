@@ -43,7 +43,15 @@
               {{ formatTitle(activeAsset.type) }}
             </p>
             <DisplayList :items="items" />
-            <AssetWarehouseForm v-if="status==='PENDING_CONTRACT'" />
+            <template v-if="status === 'PENDING_CONTRACT'">
+              <AssetWarehouseForm
+                v-for="(_, i) in preAssets"
+                v-show="activeIndex === i"
+                :key="i"
+                :ref="(el: any) => setWarehouseFormRef(i, el)"
+                v-model="preAssets[i]"
+                @confirmed="onWarehouseConfirmed()" />
+            </template>
           </div>
           <Button
             v-if="isShowEdit"
@@ -60,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { formatter } from '@/utils/Formatter'
 import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import { formatTitle } from '@/enums/modules/contract/AssetType.enum'
@@ -69,6 +77,7 @@ import BaseContainer from '@/components/base/BaseContainer.vue'
 import BaseGalleria from '@/components/base/BaseGalleria.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
 import type { TAssetCategory } from '../../create/schema/pre-contract.schema'
+import type { PreAssetMakeAContractFormValues } from '../schema/installment.schema'
 import AssetWarehouseForm from './AssetWarehouseForm.vue'
 
 interface IProps {
@@ -82,6 +91,10 @@ interface IProps {
 interface IEmits {
   active: [index: number]
   open: [assets: IPreAssetList]
+  allConfirmed: []
+}
+interface IExposes {
+  submitAll: () => void
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -93,6 +106,8 @@ const props = withDefaults(defineProps<IProps>(), {
 })
 
 const emits = defineEmits<IEmits>()
+
+const preAssets = defineModel<PreAssetMakeAContractFormValues[]>('preAssets', { required: true })
 
 const isShowEdit = computed((): boolean => {
   const editableStatus: TPreContractStatus[] = ['DRAFT', 'PENDING_EVALUATION']
@@ -134,6 +149,34 @@ function onActiveAsset (index: number): void {
 function openModal (asset: IPreAssetList): void {
   emits('open', asset)
 }
+
+const warehouseForms = ref<Array<{ submit: () => void } | null>>([])
+const pendingConfirmations = ref<number>(0)
+
+function setWarehouseFormRef (i: number, el: { submit: () => void } | null): void {
+  warehouseForms.value[i] = el
+}
+
+function onWarehouseConfirmed (): void {
+  pendingConfirmations.value--
+  if (pendingConfirmations.value <= 0) {
+    emits('allConfirmed')
+  }
+}
+
+function submitAll (): void {
+  const forms = warehouseForms.value.filter(Boolean)
+  pendingConfirmations.value = forms.length
+  if (forms.length === 0) {
+    emits('allConfirmed')
+    return
+  }
+  forms.forEach((form: { submit: () => void } | null): void => {
+    form?.submit()
+  })
+}
+
+defineExpose<IExposes>({ submitAll })
 
 
 </script>

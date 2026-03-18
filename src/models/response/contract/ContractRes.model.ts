@@ -1,4 +1,5 @@
 import type { IEntity } from '@/models/Global.model'
+import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
 import type { TDocumentType } from '@/enums/modules/contract/DocumentType.enum'
@@ -16,7 +17,7 @@ import type { IFinanceExpenseTypeList } from '../finance-expense-type/FinanceExp
 import type { IFinanceIncomeCategoryList } from '../finance-income-category/FinanceIncomeCategoryRes.model'
 import type { IFinanceIncomeTypeList } from '../finance-income-type/FinanceIncomeTypeRes.model'
 import type { IHowDidFindUsList } from '../how-did-find-us/HowDidFindUsRes.model'
-import type { IAssetDetailInfo, IPreContractList, IPreContractLoanType } from '../pre-contract/PreContractRes.model'
+import type { IPreContractList, IPreContractLoanType } from '../pre-contract/PreContractRes.model'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 import type { IWarehouseList } from '../warehouse/WarehouseRes.model'
 
@@ -39,7 +40,6 @@ export interface IContractList extends Omit<IPreContractList, 'status'> {
   firstInstallmentDate: string
   finalInstallmentDate: string
 }
-
 export interface IContractById extends IEntity {
   borrowers: IBorrowersItems[]
   status: TContractStatus
@@ -63,7 +63,7 @@ export interface IContractById extends IEntity {
   totalInterest: number
 }
 
-export interface IContractAssetList extends IAssetDetailInfo {}
+export interface IContractAssetList extends IPreAssetList {}
 export interface IContractInstallmentSummary {
   remainingDebt: number
   remainingPrincipal: number

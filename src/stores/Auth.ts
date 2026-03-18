@@ -1,4 +1,5 @@
 import { ref, type Ref } from 'vue'
+import { accessTokenStorage } from '@/utils/Storage'
 import type { IAuthBranchList } from '@/models/response/auth/private/AuthRes.private.model'
 import { defineStore } from 'pinia'
 
@@ -16,12 +17,13 @@ export interface IToken {
   expireIn: number | null
 }
 
+
 interface IAuthStore {
   user: Ref<IUser>
-  // userToken: Ref<IToken>
+  userToken: Ref<IToken>
   branch: Ref<IBranch>
   // branchToken: Ref<IToken>
-  userLogin(user: IUser): void
+  userLogin(user: IUser, token: string): void
   branchLogin(branch: IBranch): void
   logout(): void
 }
@@ -48,14 +50,17 @@ export const useAuthStore = defineStore(
       status: ''
     })
 
-    const branchToken = ref<IToken>({
-      accessToken: '',
-      expireIn: null
-    })
+    // const branchToken = ref<IToken>({
+    //   accessToken: '',
+    //   expireIn: null
+    // })
 
-    function userLogin (userValue: IUser): void {
+    function userLogin (userValue: IUser, token: string): void {
       user.value = userValue
-      // userToken.value = tokenValue
+      userToken.value = {
+        accessToken: token,
+        expireIn: null
+      }
     }
 
     function branchLogin (branchValue: IBranch): void {
@@ -71,10 +76,10 @@ export const useAuthStore = defineStore(
         role: undefined,
         status: ''
       }
-      branchToken.value = {
-        accessToken: '',
-        expireIn: null
-      }
+      // branchToken.value = {
+      //   accessToken: '',
+      //   expireIn: null
+      // }
     }
     function clearUser (): void {
       user.value = {
@@ -96,7 +101,7 @@ export const useAuthStore = defineStore(
 
     return {
       user,
-      // userToken,
+      userToken,
       userLogin,
       logout,
       branch,
@@ -105,14 +110,17 @@ export const useAuthStore = defineStore(
     }
   }, {
     persist: [
+      { key: 'auth', pick: ['branch', 'user'] },
       {
-        pick: ['user']
-        // storage: accessTokenStorage
-      },
-      {
-        pick: ['branch']
-        // storage: branchAccessTokenStorage
+        pick: ['userToken'],
+        key: 'userToken',
+        storage: accessTokenStorage
       }
+      // {
+      //   pick: ['branch'],
+      //   key: 'auth_branch',
+      //   storage: branchAccessTokenStorage
+      // }
     ]
   }
 )

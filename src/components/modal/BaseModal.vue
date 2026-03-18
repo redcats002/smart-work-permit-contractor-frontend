@@ -54,6 +54,8 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
 
+defineOptions({ inheritAttrs: false })
+
 interface IProps {
   label?: string
   headerAlign?: 'left' | 'center'

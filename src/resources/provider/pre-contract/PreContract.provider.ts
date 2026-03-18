@@ -1,9 +1,11 @@
 import type {
   IAppraisalPricePayload,
+  IConfirmAppraisalPayload,
   IConfirmMortgagePayload,
   ICreatePreContractPayload,
   IGetPreContractList,
   IMakeAContractPayload,
+  IRequestAppraisalPayload,
   IRequestReappraisalPayload,
   IUpdatePreAssetPayload,
   IUpdatePreContractPayload
@@ -16,6 +18,7 @@ import type {
   TGetPreContractByIdResponse,
   TGetPreContractListResponse,
   TMakeAContractPreContract,
+  TRequestAppraisalPreContract,
   TRequestReappraisalPreContract,
   TUpdatePreAssetPreContract
 } from '@/models/response/pre-contract/PreContractRes.model'
@@ -28,9 +31,10 @@ export interface IPreContractProvider {
   updateContract (id: TBaseParamsId, payload: IUpdatePreContractPayload): Promise<TActionPreContract>
   deleteContract (id: number): Promise<TActionPreContract>
   getContractFindOne (id: TBaseParamsId): Promise<TGetPreContractByIdResponse>
+  requestAppraisal (id: TBaseParamsId, payload: IRequestAppraisalPayload): Promise<TRequestAppraisalPreContract>
   requestReappraisal (id: TBaseParamsId, payload: IRequestReappraisalPayload): Promise<TRequestReappraisalPreContract>
   appraisalPrice (id: TBaseParamsId, payload: IAppraisalPricePayload): Promise<TAppraisalPricePreContract>
-  confirmAppraisal (id: TBaseParamsId): Promise<TConfirmAppraisalPreContract>
+  confirmAppraisal (id: TBaseParamsId, payload: IConfirmAppraisalPayload): Promise<TConfirmAppraisalPreContract>
   confirmMortgage (id: TBaseParamsId, payload: IConfirmMortgagePayload): Promise<TConfirmMortgagePreContract>
   makeAContract (id: TBaseParamsId, payload: IMakeAContractPayload): Promise<TMakeAContractPreContract>
   updatePreAsset (id: TBaseParamsId, payload: IUpdatePreAssetPayload): Promise<TUpdatePreAssetPreContract>
@@ -64,28 +68,33 @@ class PreContractProvider extends HttpRequest implements IPreContractProvider {
     return response
   }
 
-  public async requestReappraisal (id: TBaseParamsId, payload: IRequestReappraisalPayload): Promise<TRequestReappraisalPreContract> {
-    const response = await this.post(`${this.urlPrefix}/request-reappraisal/${id}`, payload)
+  public async requestAppraisal (id: TBaseParamsId, payload: IRequestAppraisalPayload): Promise<TRequestAppraisalPreContract> {
+    const response = await this.patch(`${this.urlPrefix}/request-appraisal/${id}`, payload)
     return response
   }
 
-  public async confirmAppraisal (id: TBaseParamsId): Promise<TConfirmAppraisalPreContract> {
-    const response = await this.post(`${this.urlPrefix}/confirm-appraisal/${id}`)
+  public async requestReappraisal (id: TBaseParamsId, payload: IRequestReappraisalPayload): Promise<TRequestReappraisalPreContract> {
+    const response = await this.patch(`${this.urlPrefix}/request-reappraisal/${id}`, payload)
+    return response
+  }
+
+  public async confirmAppraisal (id: TBaseParamsId, payload: IConfirmAppraisalPayload): Promise<TConfirmAppraisalPreContract> {
+    const response = await this.patch(`${this.urlPrefix}/confirm-appraisal/${id}`, payload)
     return response
   }
 
   public async appraisalPrice (id: TBaseParamsId, payload: IAppraisalPricePayload): Promise<TAppraisalPricePreContract> {
-    const response = await this.post(`${this.urlPrefix}/appraisal-price/${id}`, payload)
+    const response = await this.patch(`${this.urlPrefix}/appraisal-price/${id}`, payload)
     return response
   }
 
   public async confirmMortgage (id: TBaseParamsId, payload: IConfirmMortgagePayload): Promise<TConfirmMortgagePreContract> {
-    const response = await this.post(`${this.urlPrefix}/confirm-mortgage/${id}`, payload)
+    const response = await this.put(`${this.urlPrefix}/confirm-mortgage/${id}`, payload)
     return response
   }
 
   public async makeAContract (id: TBaseParamsId, payload: IMakeAContractPayload): Promise<TMakeAContractPreContract> {
-    const response = await this.post(`${this.urlPrefix}/make-a-contract/${id}`, payload)
+    const response = await this.post(`${this.urlPrefix}/make-contract/${id}`, payload)
     return response
   }
 

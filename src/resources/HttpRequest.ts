@@ -89,7 +89,7 @@ class HttpRequest implements IHttpRequest {
     return this.axiosInstance.put(endPoint, data, config)
   }
 
-  public patch (endPoint: string, data: object, config?: object): Promise<any> {
+  public patch (endPoint: string, data?: object, config?: object): Promise<any> {
     return this.axiosInstance.patch(endPoint, data, config)
   }
 

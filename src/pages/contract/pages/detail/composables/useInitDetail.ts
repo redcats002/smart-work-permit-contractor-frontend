@@ -98,15 +98,15 @@ export function useInitDetail (data?: Partial<IContractById>): Ref<IContractById
   })
 }
 
-export type ListComponentType =
-  | InstanceType<typeof InformationTab>
-  | InstanceType<typeof AssetTab>
-  | InstanceType<typeof InstallmentTab>
-  | InstanceType<typeof ExpenseTab>
-  | InstanceType<typeof IncomeTab>
-  | InstanceType<typeof GuarantorTab>
-  | InstanceType<typeof ContactHistoryTab>
-  | InstanceType<typeof DocumentTab>
+export type ListComponentType
+  = | InstanceType<typeof InformationTab>
+    | InstanceType<typeof AssetTab>
+    | InstanceType<typeof InstallmentTab>
+    | InstanceType<typeof ExpenseTab>
+    | InstanceType<typeof IncomeTab>
+    | InstanceType<typeof GuarantorTab>
+    | InstanceType<typeof ContactHistoryTab>
+    | InstanceType<typeof DocumentTab>
 
 export function useInitTabDetail (): IUseTabItems {
   const Information = importComponent((): Promise<Component> => import('../components/tab/information/InformationTab.vue'))

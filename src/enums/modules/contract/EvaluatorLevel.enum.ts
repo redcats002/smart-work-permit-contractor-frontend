@@ -8,6 +8,12 @@ export enum EvaluatorLevelEnum {
 
 export type TEvaluatorLevel = keyof typeof EvaluatorLevelEnum
 
+export const EvaluatorLevelPriority: Record<TEvaluatorLevel, number> = {
+  CEO_LEVEL: 1,
+  DISTRICT_LEVEL: 2,
+  GENERIC_LEVEL: 3
+}
+
 const titleMap: Record<TEvaluatorLevel, string> = {
   [EvaluatorLevelEnum.GENERIC_LEVEL]: 'ทั่วไป',
   [EvaluatorLevelEnum.DISTRICT_LEVEL]: 'ระดับเขต',

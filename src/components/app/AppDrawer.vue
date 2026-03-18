@@ -108,7 +108,7 @@ const menuItems: IMenuItem[] = [
       { label: 'ติดตามทวงตาม', to: '/work/follow-up' }
     ]
   },
-  { label: 'แดชบอร์ด', icon: '/menuicon/dashbord.svg', key: 'dashboard', to: '/' },
+  { label: 'แดชบอร์ด', icon: '/menuicon/dashbord.svg', key: 'dashboard', to: '/', disabled: true },
   { label: 'รายงาน', icon: '/menuicon/report.svg', key: 'reports', to: '/reports', disabled: true },
   { label: 'สัญญา', icon: '/menuicon/contract.svg', key: 'contracts', to: '/contract/list' },
   { label: 'ลูกค้า', icon: '/menuicon/customer.svg', key: 'customers', to: '/customer/list' },

@@ -4,97 +4,101 @@
       <!-- Left: form -->
       <BaseContainer class="md:col-span-2">
         <Form
+          :key="formKey"
           ref="formRef"
           v-slot="$form"
-          :initial-values="formData"
+          :initial-values="form"
           :resolver="resolver"
           class="grid grid-cols-1 sm:grid-cols-2 gap-4"
-          @submit="onFormSubmit($event)">
+          @submit="onSubmit($event)">
           <LabelField
+            v-slot="{invalid}"
             :form="$form"
             label="จำนวนเงินที่ต้องการกู้ (บาท)"
             name="loanAmount"
+            hide-error
             required>
-            <template #default="{ invalid }">
-              <InputNumber
-                v-model="formData.loanAmount"
-                :class="invalid ? 'border-red-400!' : ''"
-                :invalid="invalid"
-                :max-fraction-digits="0"
-                class="h-9 shadow-none!"
-                fluid
-                @update:model-value="recalculate()" />
-            </template>
+            <InputNumber
+              v-model="form.loanAmount"
+              :class="invalid ? 'border-red-400!' : ''"
+              :invalid="invalid"
+              :max-fraction-digits="0"
+              class="h-9 shadow-none!"
+              name="loanAmount"
+              fluid
+              readonly
+              @update:model-value="recalculate()" />
           </LabelField>
 
           <LabelField
+            v-slot="{invalid}"
             :form="$form"
             label="จำนวนงวดของการกู้ยืม"
-            name="installments"
+            name="installmentCount"
+            hide-error
             required>
-            <template #default="{ invalid }">
-              <InputNumber
-                v-model="formData.installments"
-                :class="invalid ? 'border-red-400!' : ''"
-                :invalid="invalid"
-                :max-fraction-digits="0"
-                :min="1"
-                class="h-9 shadow-none!"
-                fluid
-                @update:model-value="recalculate()" />
-            </template>
+            <InputNumber
+              v-model="form.installmentCount"
+              :class="invalid ? 'border-red-400!' : ''"
+              :invalid="invalid"
+              :max-fraction-digits="0"
+              :min="1"
+              class="h-9 shadow-none!"
+              name="installmentCount"
+              fluid
+              @update:model-value="recalculate()" />
           </LabelField>
 
           <LabelField
+            v-slot="{invalid}"
             :form="$form"
             label="ประเภทดอกเบี้ย"
             name="interestType"
             tag="div"
+            hide-error
             required>
-            <template #default="{ invalid }">
-              <SelectInput
-                v-model="formData.interestType"
-                :invalid="invalid"
-                :options="interestTypeOptions"
-                option-label="label"
-                option-value="value"
-                @change="recalculate()" />
-            </template>
+            <InterestTypeSelection
+              v-model="form.interestType"
+              :invalid="invalid"
+              name="interestType"
+              @change="recalculate()" />
           </LabelField>
-
           <LabelField
+            v-slot="{invalid}"
             :form="$form"
             label="อัตราดอกเบี้ยเงินกู้ต่อปี (%)"
             name="annualInterestRate"
+            hide-error
             required>
-            <template #default="{ invalid }">
-              <InputNumber
-                v-model="formData.annualInterestRate"
-                :class="invalid ? 'border-red-400!' : ''"
-                :invalid="invalid"
-                :max-fraction-digits="2"
-                :min="0"
-                class="h-9 shadow-none!"
-                fluid
-                @update:model-value="recalculate()" />
-            </template>
+            <InputNumber
+              v-model="form.annualInterestRate"
+              :class="invalid ? 'border-red-400!' : ''"
+              :invalid="invalid"
+              :max-fraction-digits="2"
+              :min="0"
+              class="h-9 shadow-none!"
+              name="annualInterestRate"
+              fluid
+              @update:model-value="recalculate()" />
           </LabelField>
 
           <LabelField
+            v-slot="{invalid}"
             :form="$form"
             label="ค่าปรับกรณีล่าช้า"
             name="lateFee"
+            hide-error
             required>
-            <template #default="{ invalid }">
-              <InputNumber
-                v-model="formData.lateFee"
-                :class="invalid ? 'border-red-400!' : ''"
-                :invalid="invalid"
-                :max-fraction-digits="0"
-                :min="0"
-                class="h-9 shadow-none!"
-                fluid />
-            </template>
+            <InputNumber
+              v-model="form.lateFee"
+              :class="invalid ? 'border-red-400!' : ''"
+              :invalid="invalid"
+              :max-fraction-digits="0"
+              :min="0"
+              class="h-9 shadow-none!"
+              name="lateFee"
+              fluid
+              readonly />
           </LabelField>
         </Form>
       </BaseContainer>
@@ -118,13 +122,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, useTemplateRef, watch } from 'vue'
 import { formatter } from '@/utils/Formatter'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { TBaseOption } from '@/models/Global.model'
+import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
+import type { IPreContractById } from '@/models/response/pre-contract/PreContractRes.model'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import LabelField from '@/components/input/LabelField.vue'
-import SelectInput from '@/components/input/SelectInput.vue'
+import InterestTypeSelection from '@/components/selection/modules/static/interest-type/InterestTypeSelection.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import {
@@ -133,24 +138,36 @@ import {
   computeTotalInterest,
   type IInstallmentRow,
   type InstallmentFormValues,
-  InstallmentSchema
+  InstallmentSchema,
+  type PreAssetMakeAContractFormValues
 } from '../schema/installment.schema'
 import InstallmentTable from './InstallmentTable.vue'
 
-const formData = defineModel<InstallmentFormValues>({ required: true })
+interface IExposes {
+  submit: () => void
+}
+interface IProps {
+  contract: IPreContractById
+}
+interface IEmits {
+  confirmed: []
+}
+
+const props = withDefaults(defineProps<IProps>(), {})
+
+const emits = defineEmits<IEmits>()
+
+const form = defineModel<InstallmentFormValues>({ required: true })
 const resolver = zodResolver(InstallmentSchema)
+const formRef = useTemplateRef<InstanceType<typeof Form> | any>('formRef')
 const schedule = ref<IInstallmentRow[]>([])
 const monthlyPayment = ref<number>(0)
 const totalInterest = ref<number>(0)
-
-const interestTypeOptions: TBaseOption[] = [
-  { label: 'คงที่', value: 'FLAT' },
-  { label: 'ลดต้นลดดอก', value: 'REDUCING' }
-]
+const formKey = ref<number>(0)
 
 function recalculate (): void {
-  const v = formData.value
-  if (!v.loanAmount || !v.installments || v.installments <= 0) {
+  const v = form.value
+  if (!v.loanAmount || !v.installmentCount || v.installmentCount <= 0) {
     schedule.value = []
     monthlyPayment.value = 0
     totalInterest.value = 0
@@ -161,12 +178,42 @@ function recalculate (): void {
   schedule.value = computeInstallmentSchedule(v)
 }
 
-function onFormSubmit (event: FormSubmitEvent): void {
+function useInit (): void {
+  form.value = {
+    preAssets: props.contract.preAssets.map(
+      (e: IPreAssetList): PreAssetMakeAContractFormValues => ({
+        id: e.id,
+        files: e?.files,
+        locationId: null
+      })
+    ),
+    loanAmount: props.contract.loanAmount,
+    installmentCount: props.contract.installmentCount,
+    interestType: props.contract.interestType,
+    annualInterestRate: props.contract.annualInterestRate,
+    lateFee: props.contract.lateFee
+  }
+  formKey.value++
+}
+
+function onSubmit (event: FormSubmitEvent): void {
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return
   }
-  formData.value = event.values as InstallmentFormValues
   recalculate()
+  emits('confirmed')
 }
+
+function submit (): void {
+  formRef.value?.submit()
+}
+
+defineExpose<IExposes>({ submit })
+
+watch(
+  (): IPreContractById => props.contract, (): void => {
+    useInit()
+  }, { immediate: true }
+)
 </script>

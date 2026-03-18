@@ -13,6 +13,7 @@
           v-model="type"
           :invalid="invalid"
           :options="LandAssetTypeItems"
+          name="type"
           option-label="label"
           option-value="value"
           placeholder="เลือกประเภทหลักทรัพย์" />
