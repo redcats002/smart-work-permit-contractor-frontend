@@ -1,7 +1,7 @@
 <template>
   <section
     id="report-list-page"
-    class="bg-[#FAFAFE]">
+    class="bg-[#FAFAFE] font-['Sukhumvit_Set']">
     <PageTitle />
     <BasePage>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
@@ -14,7 +14,7 @@
             {{ item.label }}
           </span>
           <Icon
-            class="text-surface-400 group-hover:text-(--p-red) transition-colors"
+            class="text-black group-hover:text-black transition-colors"
             icon="mdi:chevron-right"
             width="20" />
         </router-link>
