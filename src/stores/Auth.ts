@@ -17,6 +17,7 @@ export interface IToken {
   expireIn: number | null
 }
 
+
 interface IAuthStore {
   user: Ref<IUser>
   userToken: Ref<IToken>
@@ -109,9 +110,10 @@ export const useAuthStore = defineStore(
     }
   }, {
     persist: [
+      { key: 'auth', pick: ['branch', 'user'] },
       {
-        pick: ['user', 'branch'],
-        key: 'auth',
+        pick: ['userToken'],
+        key: 'userToken',
         storage: accessTokenStorage
       }
       // {
