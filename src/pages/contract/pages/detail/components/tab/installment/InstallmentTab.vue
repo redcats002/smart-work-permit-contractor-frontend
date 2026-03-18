@@ -18,6 +18,7 @@
       v-model:sort-by="sortBy"
       v-model:sort-order="sortOrder"
       :items="items"
+      @create-invoice="onCreateInvoice($event)"
       @update="fetch()" />
   </div>
 </template>
@@ -25,37 +26,27 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { toast } from '@/plugins/toast'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IGetInstallmentList } from '@/models/request/contract/ContractReq.model'
 import type { IContractInstallmentList } from '@/models/response/contract/ContractRes.model'
-import type { TPaymentStatus } from '@/enums/modules/contract/PaymentStatus.enum'
 import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
+import InvoiceProvider, { type IInvoiceProvider } from '@/resources/provider/invoice/Invoice.provider'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import CardIndicator, { type ICardIndicator } from '@/components/card/CardIndicator.vue'
 import usePagination from '@/composables/usePagination'
 import InstallmentTable from './InstallmentTable.vue'
 
 const ContractService: IContractProvider = new ContractProvider()
+const InvoiceService: IInvoiceProvider = new InvoiceProvider()
 
 const route = useRoute()
-const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
+const { pagination, sortBy, sortOrder, syncQuery } = usePagination()
 
 const filters = ref<IGetInstallmentList>({})
 const items = ref<IContractInstallmentList[]>([])
 const contractId = computed((): number => route?.params?.id ? Number(route.params.id) : 0)
-
-const paginateQuery = computed((): IGetInstallmentList => {
-  const normalizedFilters = normalizeFilters(filters.value)
-  return {
-    search: search.value,
-    page: pagination.value.page,
-    limit: pagination.value.limit,
-    sortBy: sortBy.value || undefined,
-    sortOrder: sortOrder.value,
-    ...normalizedFilters
-  }
-})
 
 const cards = computed((): ICardIndicator[] => [
   { label: 'ยอดหนี้คงเหลือ', value: formatter.numberFormat2Decimal(100), valueClass: 'text-orange-400' },
@@ -64,40 +55,8 @@ const cards = computed((): ICardIndicator[] => [
 ])
 
 async function useFetch (): Promise<void> {
-  const mock = true // TODO: remove mock when api ready
-  if (mock) {
-    // Generate 3 random mock installments
-    items.value = Array.from({ length: 10 }, (_: unknown, i: number): IContractInstallmentList => {
-      const base = 100 + Math.floor(Math.random() * 900)
-      const principal = Math.floor(Math.random() * 1000)
-      const interest = Math.floor(Math.random() * 500)
-      const lateFee = Math.floor(Math.random() * 200)
-      const payment = Math.floor(Math.random() * 1200)
-      const paymentAmount = payment + lateFee
-      const remainingPrincipal = Math.max(0, principal - payment)
-      const trackingFee = Math.floor(Math.random() * 100)
-      const dueDate = `2024-0${i + 1}-0${Math.floor(Math.random() * 9) + 1}`
-      return {
-        id: i + 1,
-        installment: i,
-        balance: base,
-        principal,
-        interest,
-        dueDate,
-        lateFee,
-        payment,
-        paymentAmount,
-        paymentStatus: ['OVERDUE', 'COMING', 'PARTIAL', 'PAID'][Math.floor(Math.random() * 4)] as TPaymentStatus,
-        period: i + 1,
-        remainingPrincipal,
-        trackingFee
-      }
-    })
-    return
-  }
-  const response = await ContractService.getInstallmentList(contractId.value, paginateQuery.value)
+  const response = await ContractService.getInstallmentList(contractId.value)
   items.value = response?.data || []
-  pagination.value = extractPagination(response)
   syncQuery({ ...normalizeFilters(filters.value) })
 }
 
@@ -106,6 +65,13 @@ function normalizeFilters (value: IGetInstallmentList): Partial<IGetInstallmentL
   return {
     ...value
   }
+}
+
+async function onCreateInvoice (id: number): Promise<void> {
+  handleLoading(async (): Promise<void> => {
+    await InvoiceService.createInvoice(id, []) // WAIT BACKEND
+    toast.success('ออกใบแจ้งหนี้สำเร็จ')
+  })
 }
 
 function fetch (): void {

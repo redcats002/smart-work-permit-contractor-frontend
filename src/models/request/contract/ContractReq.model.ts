@@ -43,13 +43,18 @@ export interface ICreateContractHistory extends ContractHistoryFormValues {}
 export interface IGetDocumentList extends IBasePaginationRequest {}
 export interface ICreateDocument {
   documentType: TDocumentType
-  warehouseId: number
-  url: string
-  detail: string
+  locationId: number
+  files: IUploadResponse[]
+  note: string
 }
 export interface IUpdateDocument extends Partial<ICreateDocument> {}
 
 export interface IGetContactHistoryList extends IBasePaginationRequest {}
+export interface ICreateContractHistoryPayload {
+  date: string
+  topic: string
+  note: string
+}
 
 export interface ICreateContractPayload {}
 
