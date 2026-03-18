@@ -17,6 +17,7 @@ export interface IToken {
   expireIn: number | null
 }
 
+
 interface IAuthStore {
   user: Ref<IUser>
   userToken: Ref<IToken>
