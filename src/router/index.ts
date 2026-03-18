@@ -14,6 +14,7 @@ import ReportsRouter from './modules/reports'
 import SettingRouter from './modules/setting'
 import StockRouter from './modules/stock'
 import WorkRouter from './modules/work'
+import comparative from './modules/reports/comparative'
 
 export interface IRouteRedirect {
   name: string
@@ -52,6 +53,7 @@ export const routes: RouteRecordRaw[] = [
   StockRouter,
   AccessLogRouter,
   SettingRouter,
+  comparative,
   {
     // Catch-all route for 404
     path: '/:pathMatch(.*)*', // Matches any path
