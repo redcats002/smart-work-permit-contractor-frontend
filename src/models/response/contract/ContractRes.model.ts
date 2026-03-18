@@ -47,7 +47,9 @@ export interface IContractById extends IEntity {
   contractLoanPurpose: IContractLoanPurposeList
   howDidFindUs: IHowDidFindUsList
   contractLoanType: IContractLoanTypeList
-  endDate: string
+  firstInstallmentDate: string
+  finalInstallmentDate: string
+  finalInstallment: number
   periodCount: number
   loanAmount: number
   interestType?: TInterestType
@@ -121,17 +123,24 @@ export interface IContractGuarantorList extends ICustomerList {
   birthDate?: string
 }
 export interface IContractContactHistoryList extends IEntity {
-  date: string
-  subject: string
-  detail: string
+  contactAt: string
+  topic: string
+  note: string
+  employee: IEmployeeList
+}
+
+export interface IContractContactHistoryById extends IEntity {
+  contactAt: string
+  topic: string
+  note: string
   employee: IEmployeeList
 }
 export interface IContractDocumentList extends IEntity {
   date: string
   documentType: TDocumentType
-  detail: string
-  warehouse: IWarehouseList
-  url?: string
+  note: string
+  location: IWarehouseList
+  files?: string
 }
 
 export type TGetContractListResponse = IBasePaginationResponse<IContractList>
@@ -148,5 +157,8 @@ export type TGetContractIncomeByIdResponse = IBaseSuccessResponse<IContractIncom
 export type TActionContractIncomeResponse = IBaseSuccessResponse<boolean>
 export type TGetGuarantorContractListResponse = IBasePaginationResponse<IContractGuarantorList>
 export type TGetContractHistoryListResponse = IBasePaginationResponse<IContractContactHistoryList>
+export type TGetContractHistoryByIdResponse = IBaseSuccessResponse<IContractContactHistoryById>
+export type TActionContractHistoryResponse = IBaseSuccessResponse<boolean>
+
 export type TGetDocumentListResponse = IBasePaginationResponse<IContractDocumentList>
 export type TActionContractDocumentResponse = IBaseSuccessResponse<boolean>

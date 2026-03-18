@@ -39,10 +39,10 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IContractContactHistoryList>[]>([
-  { field: 'createdAt', header: 'วันที่', value: (e: IContractContactHistoryList): string => dayjs.formatDate(e?.createdAt || '') },
-  { field: 'subject', header: 'เรื่อง' },
-  { field: 'detail', header: 'รายละเอียด', bodyClass: 'max-w-[200px]' },
-  { field: 'createdBy', header: 'โดยพนักงาน', value: (e: IContractContactHistoryList): string => formatter.fullName(e?.createdBy) }
+  { field: 'contactAt', header: 'วันที่', value: (e: IContractContactHistoryList): string => dayjs.formatDate(e?.contactAt || '') },
+  { field: 'topic', header: 'เรื่อง' },
+  { field: 'note', header: 'รายละเอียด', bodyClass: 'max-w-[200px]' },
+  { field: 'createdBy', header: 'โดยพนักงาน', value: (e: IContractContactHistoryList): string => formatter.fullName(e?.employee) }
 ])
 </script>
 

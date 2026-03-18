@@ -33,28 +33,29 @@
           v-slot="{invalid}"
           :form="$form"
           label="เรื่อง"
-          name="subjectId"
+          name="topic"
           tag="div"
           hide-error
           required>
+          {{ formData.topic }}
           <ContractLoanPurposeSelection
-            v-model="formData.subjectId"
+            v-model:selected-name="formData.topic"
             :invalid="invalid"
-            name="subjectId" />
+            name="topic" />
         </LabelField>
         <LabelField
           v-slot="{invalid}"
           :form="$form"
           label="รายละเอียด"
-          name="detail"
+          name="note"
           tag="div"
           hide-error
           required>
           <Textarea
-            v-model="formData.detail"
+            v-model="formData.note"
             :invalid="invalid"
             class="w-full"
-            name="detail"
+            name="note"
             rows="4"
             fluid />
         </LabelField>
@@ -67,9 +68,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { ICreateContractHistory } from '@/models/request/contract/ContractReq.model'
+import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
 import CreateButton from '@/components/button/CreateButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
 import DatePickerInput from '@/components/input/DatePickerInput.vue'
@@ -81,8 +85,12 @@ import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { ContractHistorySchema, useFormInitialValues } from './schema/contract-history.schema'
 
 interface IEmits {
-  submit: [payload: ICreateContractHistory]
+  submit: []
 }
+
+const ContractService: IContractProvider = new ContractProvider()
+const route = useRoute()
+const contractId = computed((): number => route?.params?.id ? Number(route.params.id) : 0)
 
 const emits = defineEmits<IEmits>()
 
@@ -95,12 +103,22 @@ function onOpen (): void {
   formData.value = useFormInitialValues()
 }
 
+async function useCreate (): Promise<void> {
+  const payload = {
+    date: formData.value.date,
+    topic: formData.value.topic,
+    note: formData.value.note
+  }
+  await ContractService.createContractHistory(contractId.value, payload)
+  emits('submit')
+}
+
 function onSubmit (event: FormSubmitEvent, close: () => void): void {
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return
   }
-  emits('submit', event.values as ICreateContractHistory)
+  handleLoading(useCreate)
   close()
 }
 </script>
