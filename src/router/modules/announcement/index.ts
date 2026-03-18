@@ -11,7 +11,7 @@ export default {
   meta: { title: 'ข่าวสาร', auth: true, icon: 'iconamoon:news' },
   children: [
     {
-      path: '/',
+      path: '/announcement',
       name: 'AnnouncementPostPage',
       component: (): ComponentOptions => import('@/pages/announcement/pages/AnnouncementPage.vue'),
       meta: { auth: true, menu: true, title: 'ข่าวสาร', icon: 'iconamoon:news' }
