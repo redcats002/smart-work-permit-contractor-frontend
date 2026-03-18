@@ -125,7 +125,7 @@ import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model
 import type { IPreContractById } from '@/models/response/pre-contract/PreContractRes.model'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import LabelField from '@/components/input/LabelField.vue'
-import InterestTypeSelection from '@/components/selection/modules/interest-type/InterestTypeSelection.vue'
+import InterestTypeSelection from '@/components/selection/modules/static/interest-type/InterestTypeSelection.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import {
