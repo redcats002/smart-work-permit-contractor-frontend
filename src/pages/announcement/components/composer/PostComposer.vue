@@ -1,27 +1,37 @@
 <template>
   <BasePage>
-    <div class="bg-white rounded-xl border p-4 space-y-4">
-      <div class="flex gap-3">
-        <img
-          class="w-10 h-10 rounded-full"
-          src="https://www.pngall.com/wp-content/uploads/20/Cappuccino-Assassino-PNG.png">
+    <Form
+      :resolver="resolver"
+      @submit="onSubmit($event)">
+      <div class="bg-white rounded-xl shadow-md p-4 space-y-4">
+        <div class="flex gap-3">
+          <img
+            class="w-10 h-10 rounded-full"
+            src="https://www.pngall.com/wp-content/uploads/20/Cappuccino-Assassino-PNG.png">
 
-        <div class="flex-1">
-          <BaseEditor
-            v-model="content"
-            placeholder="เขียนประกาศ..." />
-          <div
-            class="mt-4">
-            <FileInput />
-          </div>
-          <div class="mt-4">
+          <div class="flex-1">
+            <div class="relative">
+              <BaseEditor v-model="form.content" />
+
+              <span
+                v-if="!form.content"
+                class="absolute left-3 top-2 text-gray-400 pointer-events-none">
+                เขียนประกาศ...
+              </span>
+            </div>
+
+            <FileInput
+              class="mt-4" />
+
+
             <Button
-              class="bg-primary px-10 py-2 text-base"
-              label="โพสต์" />
+              class="mt-4 bg-primary px-10 py-2 text-base"
+              label="โพสต์"
+              type="submit" />
           </div>
         </div>
       </div>
-    </div>
+    </Form>
   </BasePage>
 </template>
 
@@ -30,6 +40,48 @@ import { ref } from 'vue'
 import BaseEditor from '@/components/base/BaseEditor.vue'
 import FileInput from '@/components/input/FileInput.vue'
 import BasePage from '@/components/base/BasePage.vue'
+import type { IAnnouncementProvider } from '@/resources/provider/announcement/Announcement.provider'
+import AnnouncementProvider from '@/resources/provider/announcement/Announcement.provider'
+import { useRouter } from 'vue-router'
+import { AnnouncementSchema, type AnnouncementCreateAnnouncement } from '../../schemas/announcement.schema'
+import { zodResolver } from '@primevue/forms/resolvers/zod'
+import { usePayload } from '../../composables/usePayload'
+import { handleLoading } from '@/utils/HandleLoading'
+import { toast } from '@/plugins/toast'
+import { scrollToFirstError } from '@/utils/HandleSubmit'
+import { Form, type FormSubmitEvent } from '@primevue/forms'
 
-const content = ref('')
+
+const router = useRouter()
+
+const emit = defineEmits<{
+  (e: 'created'): void
+}>()
+
+const AnnouncementService: IAnnouncementProvider = new AnnouncementProvider()
+const form = ref<AnnouncementCreateAnnouncement>({
+  content: '',
+  attachments: []
+})
+const resolver = zodResolver(AnnouncementSchema)
+async function useSubmit (): Promise<void> {
+  await AnnouncementService.createAnnouncement(usePayload(form.value))
+  toast.success('ดำเนินการสำเร็จ')
+
+  emit('created')
+
+  form.value = {
+    content: '',
+    attachments: []
+  }
+  router.push({ name: 'AnnouncementPostPage' })
+}
+
+async function onSubmit (event: FormSubmitEvent): Promise<void> {
+  if (!event.valid) {
+    scrollToFirstError(event.errors)
+    return
+  }
+  await handleLoading(useSubmit)
+}
 </script>

@@ -2,41 +2,58 @@
   <BasePage>
     <div class="space-y-4">
       <PostCard
-        v-for="post in posts"
+        v-for="post in props.items"
         :key="post.id"
+        :author-name="post.author.name"
         :content="post.content"
-        :files="post.files" />
+        :created-at="post.createdAt"
+        :files="post.attachments"
+        :role="post.author.role" />
+      <div
+        ref="loadMoreRef"
+        class="h-10 flex items-center justify-center">
+        <span v-if="!isFinished">กำลังโหลด...</span>
+        <span v-else>หมดแล้ว</span>
+      </div>
     </div>
   </BasePage>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { IUploadResponse } from '@/resources/provider/Upload.provider'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+
 import BasePage from '@/components/base/BasePage.vue'
 import PostCard from './PostCard.vue'
 
-interface Post {
-  id: string
-  content: string
-  files: IUploadResponse[]
-}
 
-const posts = ref<Post[]>([
-  {
-    id: '1',
-    content: `
-      <p>🎯 กิจกรรม & กำหนดการ</p>
-      <ul>
-        <li>📅 วันที่: 22–23 มีนาคม 2026</li>
-        <li>📍 สถานที่: เขาใหญ่</li>
-        <li>💬 ธีม: Grow Together</li>
-      </ul>
-    `,
-    files: [
-      { name: 'เอกสาร.pdf', path: 'www.google.com', url: 'www.google.com' },
-      { name: 'เอกสาร2.pdf', path: 'www.google.com', url: 'www.google.com' }
-    ]
+const props = defineProps<{
+  items: any[]
+  loadMore: () => Promise<void>
+  isFinished: boolean
+}>()
+
+const loadMoreRef = ref<HTMLElement | null>(null)
+const observer = ref<IntersectionObserver | null>(null)
+const isLoading = ref(false)
+
+onMounted((): void => {
+  observer.value = new IntersectionObserver(async (entries: IntersectionObserverEntry[]): Promise<void> => {
+    const entry = entries[0]
+
+    if (entry.isIntersecting && !props.isFinished && !isLoading.value) {
+      isLoading.value = true
+      await props.loadMore()
+      isLoading.value = false
+    }
+  })
+
+  if (loadMoreRef.value) {
+    observer.value.observe(loadMoreRef.value)
   }
-])
+})
+
+onBeforeUnmount((): void => {
+  observer.value?.disconnect()
+})
+
 </script>
