@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IGetGuarantorContractList } from '@/models/request/contract/ContractReq.model'
@@ -22,36 +22,25 @@ import usePagination from '@/composables/usePagination'
 import Title from '../Title.vue'
 import GuarantorTable from './GuarantorTable.vue'
 
-const Service: IContractProvider = new ContractProvider()
+const ContractService: IContractProvider = new ContractProvider()
 
 const route = useRoute()
-const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
+const { pagination, sortBy, sortOrder, syncQuery } = usePagination()
 
 const filters = ref<IGetGuarantorContractList>({})
-const items = ref<IContractGuarantorList[]>([])
+const allItems = ref<IContractGuarantorList[]>([])
+const items = computed((): IContractGuarantorList[] => {
+  const start = ((pagination.value.page || 1) - 1) * (pagination.value.limit || 25)
+  const end = start + (pagination.value.limit || 25)
+
+  return allItems.value.slice(start, end)
+})
 const customerId = computed((): number => route?.params?.id ? Number(route.params.id) : 0)
 
-const paginateQuery = computed((): IGetGuarantorContractList => {
-  const normalizedFilters = normalizeFilters(filters.value)
-  return {
-    search: search.value,
-    page: pagination.value.page,
-    limit: pagination.value.limit,
-    sortBy: sortBy.value || undefined,
-    sortOrder: sortOrder.value,
-    ...normalizedFilters
-  }
-})
-
 async function useFetch (): Promise<void> {
-  const mock = true // TODO: remove mock when api ready
-  if (mock) {
-    items.value = []
-    return
-  }
-  const response = await Service.getGuarantorList(customerId.value, paginateQuery.value)
-  items.value = response?.data || []
-  pagination.value = extractPagination(response)
+  const response = await ContractService.getContractFindOne(customerId.value)
+  allItems.value = response?.data.guarantors || []
+  pagination.value.count = allItems.value.length
   syncQuery({ ...normalizeFilters(filters.value) })
 }
 
@@ -66,6 +55,9 @@ function fetch (): void {
   handleLoading(useFetch)
 }
 
+onMounted((): void => {
+  fetch()
+})
 </script>
 
 <style scoped>

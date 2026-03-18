@@ -10,7 +10,7 @@ import type { IUploadResponse } from '@/resources/provider/Upload.provider'
 import type { IInstallmentRow } from '@/pages/contract/pages/pre-contract-detail/schema/installment.schema'
 import type { IContractLoanPurposeList } from '../contract-loan-purpose/ContractLoanPurposeRes.model'
 import type { IContractLoanTypeList } from '../contract-loan-type/ContractLoanTypeRes.model'
-import type { ICustomerList } from '../customer/CustomerRes.model'
+import type { ICustomerById, ICustomerList } from '../customer/CustomerRes.model'
 import type { IEmployeeList } from '../employee/EmployeeRes.model'
 import type { IFinanceExpenseCategoryList } from '../finance-expense-category/FinanceExpenseCategoryRes.model'
 import type { IFinanceExpenseTypeList } from '../finance-expense-type/FinanceExpenseTypeRes.model'
@@ -71,13 +71,29 @@ export interface IContractInstallmentSummary {
   remainingPrincipal: number
   remainingInterest: number
 }
+
+export interface IContractInstallmentReceipt {
+  id: number
+  paidAt: string
+  interest: number
+  principal: number
+  penaltyFee: number
+  collectionFee: number
+  discount: number
+  amountPaid: number
+}
 export interface IContractInstallmentList extends IInstallmentRow, IEntity {
+  status: TPaymentStatus
+  dueDate: string
+  interest: number
+  principal: number
   installment: number
   remainingPrincipal: number
-  lateFee: number
-  trackingFee: number
-  paymentAmount: number
-  paymentStatus: TPaymentStatus
+  penaltyFee: number
+  outstandingPenaltyFee: number
+  collectionFee: number
+  outstandingCollectionFee: number
+  receipts: IContractInstallmentReceipt[]
 }
 
 export interface IContractExpenseList extends IEntity {
@@ -118,6 +134,7 @@ export interface IContractIncomeById extends IEntity {
   file: IUploadResponse[]
 }
 export interface IContractGuarantorList extends ICustomerList {
+  customer: ICustomerById
   idCard: string
   mainAddress: IAddressRequest
   birthDate?: string
@@ -148,7 +165,7 @@ export type TGetContractByIdResponse = IBaseSuccessResponse<IContractById>
 export type TActionContract = IBaseSuccessResponse<boolean>
 export type TGetAssetContractListResponse = IBasePaginationResponse<IContractAssetList>
 export type TGetInstallmentSummaryResponse = IBaseSuccessResponse<IContractInstallmentSummary>
-export type TGetInstallmentListResponse = IBasePaginationResponse<IContractInstallmentList>
+export type TGetInstallmentListResponse = IBaseSuccessResponse<IContractInstallmentList[]>
 export type TGetContractExpenseListResponse = IBasePaginationResponse<IContractExpenseList>
 export type TGetContractExpenseByIdResponse = IBaseSuccessResponse<IContractExpenseById>
 export type TActionContractExpenseResponse = IBaseSuccessResponse<boolean>
