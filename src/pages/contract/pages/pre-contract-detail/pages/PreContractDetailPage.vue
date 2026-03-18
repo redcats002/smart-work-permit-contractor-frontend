@@ -33,6 +33,7 @@
         </template>
         <AssetSection
           v-if="contract?.preAssets.length"
+          ref="assetSectionRef"
           v-model:pre-assets="formMakeContract.preAssets"
           :active-asset="activeAsset"
           :active-index="activeIndex"
@@ -40,6 +41,7 @@
           :assets="contract.preAssets"
           :status="contract.status"
           @active="onActiveAsset($event)"
+          @all-confirmed="onAssetsAllConfirmed()"
           @open="openModal($event)" />
         <AppraisalSection
           v-if="contract?.status === 'UNDER_EVALUATION'"
@@ -48,8 +50,10 @@
           @submit="onAppraisalPrice()" />
         <InstallmentSection
           v-if="contract?.status === 'PENDING_CONTRACT'"
+          ref="installmentSectionRef"
           v-model="formMakeContract"
-          :contract="contract" />
+          :contract="contract"
+          @confirmed="onInstallmentConfirmed()" />
         <PreContractAction
           v-if="contract?.status"
           v-model:confirm-appraisal="formConfirmAppraisal"
@@ -57,12 +61,13 @@
           v-model:request-reappraisal="formRequestReappraisal"
           :disabled="!filledAllRequired"
           :evaluate-groups="contract.evaluateGroups"
+          :existed-group="existedGroup"
           :is-mortgage-form-visible="isMortgageFormVisible"
           :status="contract?.status"
           @cancel="onCancel()"
           @confirm-appraisal="onConfirmAppraisal()"
           @confirm-mortgage="onTriggerConfirmMortgage()"
-          @make-contract="onConfirmMakeContract()"
+          @make-contract="onTriggerMakeContract()"
           @request-appraisal="onRequestAppraisal()"
           @request-reappraisal="onRequestReappraisal()"
           @submit-mortgage="onSubmitMortgage()" />
@@ -72,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, useTemplateRef } from 'vue'
+import { computed, onMounted, ref, useTemplateRef } from 'vue'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
@@ -102,6 +107,7 @@ const {
   modalAsset,
   modalVisible,
   contractId,
+  existedGroup,
   onActiveAsset,
   openModal,
   onEdit,
@@ -123,6 +129,10 @@ const {
 const { formMortgage, isMortgageFormVisible, onConfirmMortgage, onSubmitMortgage } = useMortgage(useFetch)
 const { formMakeContract, onConfirmMakeContract } = useMakeContract(useFetch)
 const mortgageFormRef = useTemplateRef<{ submit: () => void }>('mortgageFormRef')
+const installmentSectionRef = useTemplateRef<{ submit: () => void }>('installmentSectionRef')
+const assetSectionRef = useTemplateRef<{ submitAll: () => void }>('assetSectionRef')
+
+const makeContractPending = ref({ assets: false, installment: false })
 
 const primaryCustomer = computed((): ICustomerById | null => {
   if (!contract.value?.customer) return null
@@ -131,6 +141,26 @@ const primaryCustomer = computed((): ICustomerById | null => {
 
 function onTriggerConfirmMortgage (): void {
   mortgageFormRef.value?.submit()
+}
+
+function onTriggerMakeContract (): void {
+  makeContractPending.value = { assets: !assetSectionRef.value, installment: false }
+  assetSectionRef.value?.submitAll()
+  installmentSectionRef.value?.submit()
+}
+
+function onAssetsAllConfirmed (): void {
+  makeContractPending.value.assets = true
+  if (makeContractPending.value.assets && makeContractPending.value.installment) {
+    onConfirmMakeContract()
+  }
+}
+
+function onInstallmentConfirmed (): void {
+  makeContractPending.value.installment = true
+  if (makeContractPending.value.assets && makeContractPending.value.installment) {
+    onConfirmMakeContract()
+  }
 }
 
 onMounted((): void => {

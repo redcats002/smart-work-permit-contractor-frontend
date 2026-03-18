@@ -13,8 +13,8 @@ export const PreAssetMakeAContractSchema = z.object({
 })
 
 export const InstallmentSchema = z.object({
-  loanAmount: z.number({ message: 'กรุณากรอกจำนวนเงิน' }).min(1, 'กรุณากรอกจำนวนเงิน'),
-  lateFee: z.number({ message: 'กรุณากรอกค่าปรับ' }).min(0, 'กรุณากรอกค่าปรับ'),
+  loanAmount: z.number().optional(), // for display purpose only, not required in payload
+  lateFee: z.number().optional(), // for display purpose only, not required in payload
   installmentCount: z.number({ message: 'กรุณากรอกจำนวนงวด' }).int().min(1, 'กรุณากรอกจำนวนงวด'),
   interestType: schema.enum(InterestTypeEnum, 'ประเภทดอกเบี้ย'),
   annualInterestRate: z.number({ message: 'กรุณากรอกอัตราดอกเบี้ย' }).min(0, 'กรุณากรอกอัตราดอกเบี้ย'),

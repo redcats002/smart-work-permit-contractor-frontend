@@ -1,9 +1,11 @@
 import { computed, type ComputedRef, ref, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
+import type { IEvaluateGroupList } from '@/models/modules/pre-contract/Evaluator.model'
 import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import type { IPreContractById } from '@/models/response/pre-contract/PreContractRes.model'
 import { isLandAsset, isVehicleAsset } from '@/enums/modules/contract/AssetType.enum'
+import type { TEvaluatorLevel } from '@/enums/modules/contract/EvaluatorLevel.enum'
 import PreContractProvider, { type IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
 import type { TAssetCategory } from '../../create/schema/pre-contract.schema'
 
@@ -16,6 +18,7 @@ export interface IUseInitDetail {
   modalAsset: Ref<IPreAssetList | null>
   assetCategory: ComputedRef<TAssetCategory>
   filledAllRequired: ComputedRef<boolean>
+  existedGroup: ComputedRef<TEvaluatorLevel[]>
   onEdit(): void
   onCancel(): void
   onActiveAsset(index: number): void
@@ -46,6 +49,12 @@ export function useInitDetail (): IUseInitDetail {
       if (isLandAsset(e.type)) return 'LAND'
     }
     return null
+  })
+
+  const existedGroup = computed((): TEvaluatorLevel[] => {
+    if (!contract.value) return []
+    const group: TEvaluatorLevel[] = contract.value.evaluateGroups.map((e: IEvaluateGroupList): TEvaluatorLevel => e.evaluatorLevel)
+    return group
   })
 
   const filledAllRequired = computed((): boolean => {
@@ -103,6 +112,7 @@ export function useInitDetail (): IUseInitDetail {
     filledAllRequired,
     modalAsset,
     modalVisible,
+    existedGroup,
     useFetch,
     fetch,
     onActiveAsset,

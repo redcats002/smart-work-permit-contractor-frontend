@@ -24,10 +24,10 @@ export function useMakeContract (useFetch: () => Promise<void>): IUseMakeContrac
 
   function usePayload (): IMakeAContractPayload {
     return {
-      annualInterestRate: formatter.numberParseFloat(formMakeContract.value.annualInterestRate),
-      installmentCount: formatter.numberParseFloat(formMakeContract.value.installmentCount),
-      interestType: formMakeContract.value.interestType,
-      preAssets: formMakeContract.value.preAssets.map((e: PreAssetMakeAContractFormValues) => ({
+      annualInterestRate: formatter.numberParseFloat(formMakeContract.value?.annualInterestRate || 0),
+      installmentCount: formatter.numberParseFloat(formMakeContract.value?.installmentCount || 0),
+      interestType: formMakeContract.value?.interestType,
+      preAssets: formMakeContract.value?.preAssets.map((e: PreAssetMakeAContractFormValues) => ({
         id: e.id,
         files: e?.files || [],
         locationId: e.locationId
@@ -39,7 +39,7 @@ export function useMakeContract (useFetch: () => Promise<void>): IUseMakeContrac
     await PreContractService.makeAContract(contractId.value, usePayload())
     toast.success('ทำสัญญาเรียบร้อยแล้ว')
     await useFetch()
-    router.push({ name: 'ContractDetailPage', params: { id: contractId.value } })
+    router.push({ name: 'ContractListPage' })
   }
 
 
