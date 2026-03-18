@@ -1,7 +1,7 @@
 <template>
   <section
     id="report-list-page"
-    class="bg-[#FAFAFE] font-['Sukhumvit_Set']">
+    class="bg-[#FAFAFE]">
     <PageTitle />
     <BasePage>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
