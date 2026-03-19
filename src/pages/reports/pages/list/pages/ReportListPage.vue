@@ -51,7 +51,7 @@ const reportItems: IReportItem[] = [
   { label: 'รายงานรับชำระค่างวดคิดเป็นเปอร์เซ็นต์', to: { name: 'PercentInstallmentPage' } },
   { label: 'รายงานกำไรตามการรับชำระจริง', to: { name: 'ProfitBasedOnActualPaymentPage' } },
   { label: 'รายงานสรุปรับไฟแนนซ์ประจำปี', to: { name: 'NotAvailablePage' }, disabled: true },
-  { label: 'รายงานสรุปการปล่อยสินเชื่อ', to: { name: 'NotAvailablePage' }, disabled: true },
+  { label: 'รายงานสรุปการปล่อยสินเชื่อ', to: { name: 'DailyLoanDisbursementPage' } },
   { label: 'รายงานการรับ/จ่ายประจำสาขา', to: { name: 'BranchIncomeExpensePage' } },
   { label: 'รายงานการรับชำระเงินลูกหนี้ปิดบัญชี', to: { name: 'NotAvailablePage' }, disabled: true },
   { label: 'รายงานสรุปรับ / ปล่อยสินเชื่อ / ค่าใช้จ่าย', to: { name: 'FinancialSummaryPage' } },
