@@ -66,6 +66,21 @@
         </template>
       </Column>
 
+      <ColumnGroup
+        v-if="isShowFooter"
+        type="footer">
+        <Row>
+          <Column
+            v-for="(footer, footerIndex) in itemsFooter"
+            :key="footerIndex"
+            :class="`bg-${footerBgColor} text-sm`"
+            :colspan="footer.colspan"
+            :footer="footer.footer"
+            :footer-class="footer.footerClass"
+            :footer-style="footer.footerStyle"
+            style="padding: 10px !important;" />
+        </Row>
+      </ColumnGroup>
       <template
         v-if="$slots.expansion"
         #expansion="slotProps">
@@ -82,7 +97,6 @@
             src="/assets/images/empty-state.png">
         </div>
       </template>
-
       <slot />
     </DataTable>
 
@@ -99,14 +113,16 @@
 
 <script setup lang="ts" generic="T">
 import { computed, ref, watch } from 'vue'
-import type { IColumn } from '@/models/Table.model'
+import type { IColumn, IFooter } from '@/models/Table.model'
 import type { IPagination } from '@/composables/usePagination'
+import { ColumnGroup, Row } from 'primevue'
 import Column from 'primevue/column'
 import type { DataTablePassThroughOptions } from 'primevue/datatable'
 import Paginate from './Paginate.vue'
 
 interface IProps {
   items: T[]
+  itemsFooter?: IFooter[]
   columns: IColumn<T>[]
   selectable?: boolean
   dataKey?: string
@@ -116,10 +132,12 @@ interface IProps {
   tableStyle?: string | object
   showHeaders?: boolean
   showFooter?: boolean
+  isShowFooter?: boolean
   disableAutoLeftPadding?: boolean
   checkboxHeaderClass?: string
   checkboxBodyClass?: string
   rowClass?: (data: T) => string
+  footerBgColor?: string
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -134,7 +152,9 @@ const props = withDefaults(defineProps<IProps>(), {
   disableAutoLeftPadding: false,
   checkboxHeaderClass: '',
   checkboxBodyClass: '',
-  rowClass: undefined
+  rowClass: undefined,
+  footerBgColor: '',
+  itemsFooter: undefined
 })
 
 const emits = defineEmits<{
