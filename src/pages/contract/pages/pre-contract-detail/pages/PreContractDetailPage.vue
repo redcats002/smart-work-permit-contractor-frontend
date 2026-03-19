@@ -38,7 +38,6 @@
           :active-asset="activeAsset"
           :active-index="activeIndex"
           :asset-category="assetCategory"
-          :assets="contract.preAssets"
           :status="contract.status"
           @active="onActiveAsset($event)"
           @all-confirmed="onAssetsAllConfirmed()"

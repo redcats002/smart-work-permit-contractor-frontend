@@ -10,7 +10,7 @@
         v-if="isLand"
         class="flex flex-col border-r border-surface-200 pr-4 gap-1">
         <Button
-          v-for="(col, i) in assets"
+          v-for="(col, i) in preAssets"
           :key="col.id ?? i"
           :class="activeIndex === i ? 'border-primary! font-bold text-font-gray!' : 'border-transparent text-surface-500!'"
           class="border-b-2! border-l-0 border-t-0 border-r-0 text-sm text-left py-2 hover:text-primary transition-colors rounded-b-none!"
@@ -83,7 +83,6 @@ import AssetWarehouseForm from './AssetWarehouseForm.vue'
 interface IProps {
   activeIndex?: number
   activeAsset?: IPreAssetList | null
-  assets?: IPreAssetList[]
   assetCategory?: TAssetCategory
   status?: TPreContractStatus
 }
@@ -98,7 +97,6 @@ interface IExposes {
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-  assets: (): IPreAssetList[] => [],
   activeAsset: undefined,
   activeIndex: undefined,
   assetCategory: null,
