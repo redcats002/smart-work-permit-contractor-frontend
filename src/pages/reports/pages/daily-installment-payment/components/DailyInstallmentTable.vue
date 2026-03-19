@@ -23,6 +23,7 @@ import type { IColumn } from '@/models/Table.model'
 import LinkText from '@/components/button/LinkText.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
+import type { IDailyInstallmentPaymentList } from '@/models/response/report/daily-installment-payment/DailyInstallmentPaymentRes'
 
 interface IProps {
   items: any[]
@@ -44,7 +45,7 @@ const pagination = defineModel<IPagination>('pagination', {
 const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
-const columns = ref<IColumn<any>[]>([
+const columns = ref<IColumn<IDailyInstallmentPaymentList>[]>([
   { field: 'date', header: 'วันที่', sortable: true, align: 'left' },
   { field: 'receiptNo', header: 'เลขที่ใบเสร็จ', sortable: true, align: 'left', class: 'red--text font-weight-bold' },
   { field: 'contractNo', header: 'เลขที่สัญญา', sortable: true, align: 'left', class: 'red--text font-weight-bold' },

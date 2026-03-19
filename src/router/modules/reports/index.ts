@@ -1,5 +1,6 @@
 import type { ComponentOptions } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
+import dailyInstallmentPaymentRouter from './daily-installment-payment.router'
 
 const prefix = '/reports'
 
@@ -25,27 +26,6 @@ export default {
         icon: 'eva:list-fill'
       }
     },
-    {
-      path: 'dailyInstallment',
-      name: 'DailyInstallmentPaymentReport',
-      component: (): ComponentOptions => import('@/pages/reports/pages/daily-installment-payment/pages/ReportDailyInstallmentPaymentPage.vue'),
-      meta: {
-        auth: true,
-        menu: true,
-        title: 'รายงานรับชำระค่างวดประจำวัน',
-        icon: 'mdi:file-document-outline'
-      }
-    },
-    {
-      path: 'PercentageInstallment',
-      name: 'PercentageInstallmentPaymentsReceived',
-      component: (): ComponentOptions => import('@/pages/reports/pages/list/pages/ReportListPage.vue'),
-      meta: {
-        auth: true,
-        menu: true,
-        title: 'รายงานรับชำระค่างวดประจำวัน',
-        icon: 'mdi:file-document-outline'
-      }
-    }
+    dailyInstallmentPaymentRouter
   ]
 } as RouteRecordRaw

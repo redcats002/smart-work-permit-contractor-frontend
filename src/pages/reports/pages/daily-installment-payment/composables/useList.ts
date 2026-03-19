@@ -2,21 +2,23 @@ import { computed, ref, type Ref } from 'vue'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
+import type { IGetDailyInstallmentList } from '@/models/request/report/daliy-installment-payment/DailyInstallmentPayment.model'
+import type { IDailyInstallmentPaymentList } from '@/models/response/report/daily-installment-payment/DailyInstallmentPaymentRes'
 
-interface IUseList extends IUsePagination {
-  filters: Ref<any>
-  items: Ref<any[]>
+interface IDailyInstallment extends IUsePagination {
+  filters: Ref<IGetDailyInstallmentList>
+  items: Ref<IDailyInstallmentPaymentList[]>
   fetch(): void
   onClearFilters(): void
   onDelete(id: number): void
 }
-export default function useList (): IUseList {
+export default function useList (): IDailyInstallment {
   // const DeilyInstallmentService: any = new Provider()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
 
-  const filters = ref<any>({})
-  const items = ref<any[]>([])
+  const filters = ref<IGetDailyInstallmentList>({})
+  const items = ref<IDailyInstallmentPaymentList[]>([])
 
   const paginateQuery = computed((): any => {
     const normalizedFilters = normalizeFilters(filters.value)
