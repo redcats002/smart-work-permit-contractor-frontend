@@ -1,27 +1,30 @@
 import { computed, ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IGetNewWorkList } from '@/models/request/work/WorkReq.model'
-import type { IFollowUpNewWorkList } from '@/models/response/work/WorkRes.model'
-import { AssetCategoryStatusEnum } from '@/enums/modules/work/AssetCategoryStatus.enum'
+import type { IGetCompleteWorkAssetFollowUpList, IGetNewWorkAssetFollowUpList } from '@/models/request/work/WorkReq.model'
+import type { IFollowUpCompleteWorkList, IFollowUpNewWorkList } from '@/models/response/work/WorkRes.model'
 import type { IWorkProvider } from '@/resources/provider/work/Work.provider'
 import WorkProvider from '@/resources/provider/work/Work.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
+import type { TFollowUpTab } from './useInit'
+
+type TFollowUpList = IFollowUpNewWorkList | IFollowUpCompleteWorkList
+type TGetFollowUpList = IGetNewWorkAssetFollowUpList | IGetCompleteWorkAssetFollowUpList
 
 interface IUseList extends IUsePagination {
-  filters: Ref<IGetNewWorkList>
-  items: Ref<IFollowUpNewWorkList[]>
+  filters: Ref<TGetFollowUpList>
+  items: Ref<TFollowUpList[]>
   fetch(): void
   onClearFilters(): void
 }
-export default function useList (): IUseList {
+export default function useList (tab: Ref<TFollowUpTab>): IUseList {
   const WorkService: IWorkProvider = new WorkProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
-  const filters = ref<IGetNewWorkList>({})
-  const items = ref<IFollowUpNewWorkList[]>([])
+  const filters = ref<TGetFollowUpList>({})
+  const items = ref<TFollowUpList[]>([])
 
-  const paginateQuery = computed((): IGetNewWorkList => {
+  const paginateQuery = computed((): TGetFollowUpList => {
     const normalizedFilters = normalizeFilters(filters.value)
     return {
       search: search.value,
@@ -34,52 +37,18 @@ export default function useList (): IUseList {
   })
 
   async function useFetch (): Promise<void> {
-    const mock = true // TODO: remove
-    if (mock) {
-      items.value = [
-        {
-          id: '1',
-          assetNo: 'AS-00001',
-          phoneNumber: '088-8888888',
-          assetCategory: AssetCategoryStatusEnum.LAND_NS3G,
-          contractNo: 'LC-00001',
-          customerName: 'นาย จันทร์ พงษ์พัฒนโยธิน'
-        },
-        {
-          id: '2',
-          assetCategory: AssetCategoryStatusEnum.LAND_TITLE,
-          contractNo: 'LC-00002',
-          customerName: 'นาง พันธนา จิรวราภงษ์',
-          assetNo: 'AS-00002',
-          phoneNumber: '088-8888888'
-        },
-        {
-          id: '3',
-          assetCategory: AssetCategoryStatusEnum.LAND_TITLE,
-          contractNo: 'LC-00003',
-          customerName: 'นางสาว โชติกา ประชายศิริกุล',
-          assetNo: 'AS-00003',
-          phoneNumber: '088-8888888'
-        },
-        {
-          id: '4',
-          assetCategory: AssetCategoryStatusEnum.LAND_TITLE,
-          contractNo: 'LC-00004',
-          customerName: 'นาย ปิยะพร ชุติ้ง',
-          assetNo: 'AS-00004',
-          phoneNumber: '088-8888888'
-        }
-      ]
-      return
-    }
-    const response = await WorkService.getWorkFollowUpPaginate(paginateQuery.value)
+    const fetchFn = tab.value === 'NewWork'
+      ? () => WorkService.getWorkFollowUpNewPaginate(paginateQuery.value)
+      : () => WorkService.getWorkFollowUpCompletePaginate(paginateQuery.value)
+
+    const response = await fetchFn()
     items.value = response.data || []
     pagination.value = extractPagination(response)
     syncQuery({ ...normalizeFilters(filters.value) })
   }
 
 
-  function normalizeFilters (value: IGetNewWorkList): Partial<IGetNewWorkList> {
+  function normalizeFilters (value: TGetFollowUpList): Partial<TGetFollowUpList> {
     return {
       ...value
     }
@@ -89,7 +58,10 @@ export default function useList (): IUseList {
     handleLoading(useFetch)
   }
 
-  function onClearFilters (): void {}
+  function onClearFilters (): void {
+    filters.value = {} as TGetFollowUpList
+    reset()
+  }
 
 
   return {
@@ -102,6 +74,7 @@ export default function useList (): IUseList {
     fetch,
     onClearFilters,
     extractPagination,
-    syncQuery
+    syncQuery,
+    reset
   }
 }

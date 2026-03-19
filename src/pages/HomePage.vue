@@ -9,7 +9,7 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 onMounted((): void => {
-  router.replace({ name: 'CustomerListPage' })
+  router.replace({ name: 'AnnouncementPage' })
 })
 </script>
 

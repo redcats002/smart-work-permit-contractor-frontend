@@ -15,7 +15,7 @@ interface IUseList extends IUsePagination {
 export default function useList (): IUseList {
   const receiptService: IReceiptProvider = new ReceiptProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
   const items = ref<IReceiptList[]>([])
   const filters = ref<IGetReceiptList>({})
@@ -28,7 +28,9 @@ export default function useList (): IUseList {
     sortOrder: sortOrder.value
   }))
 
-  function onClearFilters (): void {}
+  function onClearFilters (): void {
+    reset()
+  }
 
   async function useFetch (): Promise<void> {
     const isNoApi = true
@@ -99,6 +101,7 @@ export default function useList (): IUseList {
     fetch,
     onClearFilters,
     extractPagination,
-    syncQuery
+    syncQuery,
+    reset
   }
 }

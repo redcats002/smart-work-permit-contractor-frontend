@@ -16,7 +16,7 @@ interface IUseList extends IUsePagination {
 export default function useList (): IUseList {
   const StockService: IStockProvider = new StockProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
   const filters = ref<IGetStockList>({})
   const items = ref<IStockList[]>([])
@@ -56,7 +56,9 @@ export default function useList (): IUseList {
     handleLoading(useFetch)
   }
 
-  function onClearFilters (): void {}
+  function onClearFilters (): void {
+    reset()
+  }
 
   function onDelete (id: number): void {
     handleLoading((): Promise<void> => useDelete(id))
@@ -73,6 +75,7 @@ export default function useList (): IUseList {
     onClearFilters,
     onDelete,
     extractPagination,
-    syncQuery
+    syncQuery,
+    reset
   }
 }
