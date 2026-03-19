@@ -1,5 +1,6 @@
 import type { ComponentOptions } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
+import comparativeRouter from './comparative.router'
 
 const prefix = '/reports'
 
@@ -24,6 +25,7 @@ export default {
         title: 'รายงาน',
         icon: 'eva:list-fill'
       }
-    }
+    },
+    comparativeRouter
   ]
 } as RouteRecordRaw

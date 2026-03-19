@@ -5,10 +5,12 @@ import {
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
+import type { IGetCurrentComparativeList } from '@/models/request/report/current-comparative-account/CurrentComparativeReq.model'
+import type { ICurrentComparativeAccountList } from '@/models/response/report/current-comparative-account/CurrentComparativeAccountRes.model'
 
 interface IUseList extends IUsePagination {
-  filters: Ref<any>
-  items: Ref<any[]>
+  filters: Ref<IGetCurrentComparativeList>
+  items: Ref<ICurrentComparativeAccountList[]>
   fetch(): void
   onClearFilters(): void
   onDelete(id: number): void
@@ -16,8 +18,8 @@ interface IUseList extends IUsePagination {
 export default function useList (): IUseList {
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
 
-  const filters = ref<any>({})
-  const items = ref<any[]>([])
+  const filters = ref<IGetCurrentComparativeList>({})
+  const items = ref<ICurrentComparativeAccountList[]>([])
 
   // const paginateQuery = computed((): any => {
   //   const normalizedFilters = normalizeFilters(filters.value)
@@ -104,7 +106,7 @@ export default function useList (): IUseList {
     console.log('id', id)
     // await EmployeeService.deleteEmployee(id)
     fetch()
-    toast.success('ลบลูกค้าสําเร็จ')
+    toast.success('ลบรายการสําเร็จ')
   }
 
   function normalizeFilters (value: any): Partial<any> {

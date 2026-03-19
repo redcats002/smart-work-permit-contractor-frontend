@@ -44,52 +44,14 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<any>[]>([
-  {
-    field: 'index',
-    header: 'ลำดับ',
-    align: 'center'
-  },
-  {
-    field: 'branchName',
-    header: 'สาขา',
-    align: 'left'
-  },
-  {
-    field: 'contractCount',
-    header: 'จำนวนสัญญา',
-    align: 'left',
-    value: (e: any): string => formatter.numberFormat(e.contractCount ?? 0)
-  },
-  {
-    field: 'principalAmount',
-    header: 'เงินต้น (บาท)',
-    align: 'left',
-    value: (e: any): string => formatter.numberFormat(e.principalAmount ?? 0)
-  },
-  {
-    field: 'principalWithInterest',
-    header: 'เงินต้นรวมดอกเบี้ย (บาท)',
-    align: 'left',
-    value: (e: any): string => formatter.numberFormat(e.principalWithInterest ?? 0)
-  },
-  {
-    field: 'debtCutOff',
-    header: 'ยอดตัดลูกหนี้ (บาท)',
-    align: 'left',
-    value: (e: any): string => formatter.numberFormat(e.debtCutOff ?? 0)
-  },
-  {
-    field: 'discount',
-    header: 'ส่วนลด (บาท)',
-    align: 'left',
-    value: (e: any): string => formatter.numberFormat(e.discount ?? 0)
-  },
-  {
-    field: 'currentBalance',
-    header: 'บัญชีเทียบปัจจุบัน (บาท)',
-    align: 'right',
-    value: (e: any): string => formatter.numberFormat(e.currentBalance ?? 0)
-  }
+  { field: 'index', header: 'ลำดับ', align: 'center' },
+  { field: 'branchName', header: 'สาขา', align: 'left' },
+  { field: 'contractCount', header: 'จำนวนสัญญา', align: 'left', value: (e: any): string => formatter.numberFormat(e.contractCount ?? 0) },
+  { field: 'principalAmount', header: 'เงินต้น (บาท)', align: 'left', value: (e: any): string => formatter.numberFormat(e.principalAmount ?? 0) },
+  { field: 'principalWithInterest', header: 'เงินต้นรวมดอกเบี้ย (บาท)', align: 'left', value: (e: any): string => formatter.numberFormat(e.principalWithInterest ?? 0) },
+  { field: 'debtCutOff', header: 'ยอดตัดลูกหนี้ (บาท)', align: 'left', value: (e: any): string => formatter.numberFormat(e.debtCutOff ?? 0) },
+  { field: 'discount', header: 'ส่วนลด (บาท)', align: 'left', value: (e: any): string => formatter.numberFormat(e.discount ?? 0) },
+  { field: 'currentBalance', header: 'บัญชีเทียบปัจจุบัน (บาท)', align: 'right', value: (e: any): string => formatter.numberFormat(e.currentBalance ?? 0) }
 ])
 </script>
 
