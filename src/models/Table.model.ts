@@ -16,4 +16,12 @@ export interface IColumn<T = any> {
   headerClass?: string
   bodyStyle?: string | object
   bodyClass?: string
+  rowGroup?: boolean
+}
+
+export interface IFooter {
+  colspan: number
+  footer: string
+  footerStyle?: string
+  footerClass?: string
 }

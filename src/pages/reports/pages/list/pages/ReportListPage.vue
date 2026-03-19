@@ -53,7 +53,7 @@ const reportItems: IReportItem[] = [
   { label: 'รายงานสรุปรับไฟแนนซ์ประจำปี', to: { name: 'NotAvailablePage' }, disabled: true },
   { label: 'รายงานสรุปการปล่อยสินเชื่อ', to: { name: 'NotAvailablePage' }, disabled: true },
   { label: 'รายงานการรับ/จ่ายประจำสาขา', to: { name: 'BranchIncomeExpensePage' } },
-  { label: 'รายงานการรับชำระเงินลูกหนี้ปิดบัญชี', to: { name: 'NotAvailablePage' }, disabled: true },
+  { label: 'รายงานการรับชำระเงินลูกหนี้ปิดบัญชี', to: { name: 'PaymentsForAccountClosurePage' }, disabled: true },
   { label: 'รายงานสรุปรับ / ปล่อยสินเชื่อ / ค่าใช้จ่าย', to: { name: 'FinancialSummaryPage' } },
   { label: 'รายงานอันดับ 1-25 การปล่อยสินเชื่อ', to: { name: 'RankingLendingPage' } },
   { label: 'รายงาน 1 - 25 การรับสินเชื่อ', to: { name: 'RankingLoanPage' } },
