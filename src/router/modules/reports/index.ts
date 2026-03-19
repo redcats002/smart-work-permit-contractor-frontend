@@ -6,6 +6,7 @@ import BranchSummaryRouter from './BranchSummary.router'
 import DailyBranchSummaryRouter from './DailyBranchSummary.router'
 import DailyInstallmentPaymentRouter from './DailyInstallmentPayment.router'
 import PercentInstallmentRouter from './PercentInstallment.router'
+import ProfitBasedOnActualPaymentRouter from './ProfitBasedOnActualPayment.router'
 import RankingLendingRouter from './RankingLending.router'
 import RankingLoanRouter from './RankingLoan.router'
 
@@ -33,6 +34,8 @@ export default {
         icon: 'eva:list-fill'
       }
     },
+    PercentInstallmentRouter,
+    ProfitBasedOnActualPaymentRouter,
     ComparativeRouter,
     DailyInstallmentPaymentRouter,
     DailyBranchSummaryRouter,

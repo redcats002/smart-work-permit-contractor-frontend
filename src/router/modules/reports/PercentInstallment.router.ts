@@ -17,7 +17,7 @@ export default {
     {
       path: 'list',
       name: 'PercentInstallmentListPage',
-      component: (): ComponentOptions => import('@/pages/reports/pages/percent-installment-payment/page/PercentInstallmentListPage.vue'),
+      component: (): ComponentOptions => import('@/pages/reports/pages/percent-installment-payment/pages/PercentInstallmentListPage.vue'),
       meta: {
         auth: true,
         title: 'รายงานรับชำระค่างวดคิดเป็นเปอร์เซ็นต์',

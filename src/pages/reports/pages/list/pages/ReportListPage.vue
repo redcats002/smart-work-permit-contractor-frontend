@@ -1,23 +1,31 @@
 <template>
-  <section
-    id="report-list-page"
-    class="bg-[#FAFAFE]">
+  <section id="report-list-page">
     <PageTitle />
     <BasePage>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
-        <router-link
+        <RouterLink
           v-for="(item, i) in reportItems"
           :key="`report-${i}`"
+          v-slot="{ isActive, isExactActive, navigate }"
           :to="item.to"
-          class="group flex items-center justify-between rounded-xl bg-white px-5 py-4 shadow-sm border border-surface-200 hover:border-(--p-red) hover:shadow-md transition-all">
-          <span class="text-[16px] font-[550] leading-none tracking-normal text-surface-900">
-            {{ item.label }}
-          </span>
-          <Icon
-            class="text-black group-hover:text-black transition-colors"
-            icon="mdi:chevron-right"
-            width="20" />
-        </router-link>
+          custom>
+          <div
+            :class="[
+              `group flex items-center justify-between rounded-xl bg-white px-5 py-4 shadow-sm border border-surface-200
+              hover:border-(--p-red) hover:shadow-md transition-all cursor-pointer`,
+              (isActive || isExactActive) && !item.disabled && 'bg-(--p-red)! text-white!',
+              item.disabled && 'cursor-not-allowed opacity-50 pointer-events-none'
+            ]"
+            @click="!item.disabled && navigate($event)">
+            <span class="text-[16px] font-[550] leading-none tracking-normal text-surface-900">
+              {{ item.label }}
+            </span>
+            <Icon
+              class="text-black group-hover:text-black transition-colors"
+              icon="mdi:chevron-right"
+              width="20" />
+          </div>
+        </RouterLink>
       </div>
     </BasePage>
   </section>
@@ -31,6 +39,7 @@ import { Icon } from '@iconify/vue'
 interface IReportItem {
   label: string
   to: { name: string }
+  disabled?: boolean
 }
 
 const reportItems: IReportItem[] = [
@@ -40,7 +49,7 @@ const reportItems: IReportItem[] = [
   { label: 'รายงานลูกหนี้คงเหลือ', to: { name: 'NotAvailablePage' } },
   { label: 'รายงานรับชำระค่างวดประจำวัน', to: { name: 'DailyInstallmentPaymentReport' } },
   { label: 'รายงานรับชำระค่างวดคิดเป็นเปอร์เซ็นต์', to: { name: 'PercentInstallmentPage' } },
-  { label: 'รายงานกำไรตามการรับชำระจริง', to: { name: 'NotAvailablePage' } },
+  { label: 'รายงานกำไรตามการรับชำระจริง', to: { name: 'ProfitBasedOnActualPaymentPage' } },
   { label: 'รายงานสรุปรับไฟแนนซ์ประจำปี', to: { name: 'NotAvailablePage' } },
   { label: 'รายงานสรุปการปล่อยสินเชื่อ', to: { name: 'NotAvailablePage' } },
   { label: 'รายงานการรับ/จ่ายประจำสาขา', to: { name: 'NotAvailablePage' } },
@@ -56,6 +65,4 @@ const reportItems: IReportItem[] = [
 ]
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

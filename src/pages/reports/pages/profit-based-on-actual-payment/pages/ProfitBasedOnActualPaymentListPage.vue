@@ -1,25 +1,26 @@
 <template>
   <section id="percent-installment-list-page">
     <PageTitle />
-    <PercentInstallmentFilter
+    <BaseTop>
+      <BackButton />
+    </BaseTop>
+    <ProfitBasedOnActualPaymentFilter
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
       @search="fetch()">
+      <Spacer />
       <PrintButton
         icon="material-symbols:print-outline-rounded"
         label="พิมพ์" />
-    </PercentInstallmentFilter>
+    </ProfitBasedOnActualPaymentFilter>
     <BasePage>
-      <div class="mt-5">
-        <PercentInstallmentTable
-          v-model:pagination="pagination"
-          v-model:sort-by="sortBy"
-          v-model:sort-order="sortOrder"
-          :items="items"
-          @delete="onDelete($event)"
-          @update="fetch()" />
-      </div>
+      <ProfitBasedOnActualPaymentTable
+        v-model:pagination="pagination"
+        v-model:sort-by="sortBy"
+        v-model:sort-order="sortOrder"
+        :items="items"
+        @update="fetch()" />
     </BasePage>
   </section>
 </template>
@@ -27,10 +28,13 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import BasePage from '@/components/base/BasePage.vue'
+import BaseTop from '@/components/base/BaseTop.vue'
+import BackButton from '@/components/button/BackButton.vue'
 import PrintButton from '@/components/button/PrintButton.vue'
+import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
-import PercentInstallmentFilter from '../components/PercentInstallmentFilter.vue'
-import PercentInstallmentTable from '../components/PercentInstallmentTable.vue'
+import ProfitBasedOnActualPaymentFilter from '../components/ProfitBasedOnActualPaymentFilter.vue'
+import ProfitBasedOnActualPaymentTable from '../components/ProfitBasedOnActualPaymentTable.vue'
 import useList from '../composables/useList'
 
 const {
@@ -41,8 +45,7 @@ const {
   sortOrder,
   search,
   fetch,
-  onClearFilters,
-  onDelete
+  onClearFilters
 } = useList()
 
 onMounted((): void => {
