@@ -1,10 +1,10 @@
 <template>
-  <section id="percent-installment-list-page">
+  <section id="branch-income-expense-page">
     <PageTitle />
     <BaseTop>
       <BackButton />
     </BaseTop>
-    <ProfitBasedOnActualPaymentFilter
+    <BranchIncomeExpenseFilter
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
@@ -13,14 +13,16 @@
       <PrintButton
         icon="material-symbols:print-outline-rounded"
         label="พิมพ์" />
-    </ProfitBasedOnActualPaymentFilter>
+    </BranchIncomeExpenseFilter>
     <BasePage>
-      <ProfitBasedOnActualPaymentTable
+      <BranchIncomeExpenseTable
         v-model:pagination="pagination"
         v-model:sort-by="sortBy"
         v-model:sort-order="sortOrder"
+        :finance-category="filters.financeCategory"
         :items="items"
         :summary="summary"
+        :transaction-type="filters.transactionType"
         @update="fetch()" />
     </BasePage>
   </section>
@@ -34,18 +36,18 @@ import BackButton from '@/components/button/BackButton.vue'
 import PrintButton from '@/components/button/PrintButton.vue'
 import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
-import ProfitBasedOnActualPaymentFilter from '../components/ProfitBasedOnActualPaymentFilter.vue'
-import ProfitBasedOnActualPaymentTable from '../components/ProfitBasedOnActualPaymentTable.vue'
+import BranchIncomeExpenseFilter from '../components/BranchIncomeExpenseFilter.vue'
+import BranchIncomeExpenseTable from '../components/BranchIncomeExpenseTable.vue'
 import useList from '../composables/useList'
 
 const {
   filters,
   items,
+  summary,
   pagination,
   sortBy,
   sortOrder,
   search,
-  summary,
   fetch,
   onClearFilters
 } = useList()

@@ -1,17 +1,18 @@
 import type { ComponentOptions } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
-import ComparativeRouter from './_Comparative.router'
 import AllStockRouter from './AllStock.router'
+import BranchHeadSummaryRouter from './BranchHeadSummary.router'
+import BranchIncomeExpenseRouter from './BranchIncomeExpense.router'
 import BranchSummaryRouter from './BranchSummary.router'
+import ComparativeRouter from './Comparative.router'
+import ContractSecurityDocumentRouter from './ContractSecurityDocument.router'
 import DailyBranchSummaryRouter from './DailyBranchSummary.router'
 import DailyInstallmentPaymentRouter from './DailyInstallmentPayment.router'
+import FinancialSummaryRouter from './FinancialSummary.router'
 import PercentInstallmentRouter from './PercentInstallment.router'
 import ProfitBasedOnActualPaymentRouter from './ProfitBasedOnActualPayment.router'
 import RankingLendingRouter from './RankingLending.router'
 import RankingLoanRouter from './RankingLoan.router'
-import BranchHeadSummaryRouter from './BranchHeadSummary.router'
-import ContractSecurityDocumentRouter from './ContractSecurityDocument.router'
-import FinancialSummaryRouter from './FinancialSummary.router'
 
 const prefix = '/reports'
 
@@ -48,6 +49,7 @@ export default {
     RankingLendingRouter,
     RankingLoanRouter,
     BranchSummaryRouter,
+    BranchIncomeExpenseRouter,
     ContractSecurityDocumentRouter,
     FinancialSummaryRouter
 
