@@ -20,7 +20,6 @@ export default {
       component: (): ComponentOptions => import('@/pages/reports/pages/current-comparative-account/pages/list/pages/ComparativeListPage.vue'),
       meta: {
         auth: true,
-        menu: true,
         title: 'รายงานสรุปบัญชีเทียบปัจจุบัน',
         icon: 'eva:list-fill'
       }

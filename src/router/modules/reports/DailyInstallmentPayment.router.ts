@@ -20,7 +20,6 @@ export default {
       component: (): ComponentOptions => import('@/pages/reports/pages/daily-installment-payment/pages/ReportDailyInstallmentPaymentPage.vue'),
       meta: {
         auth: true,
-        menu: true,
         title: 'รายงานรับชำระค่างวดประจำวัน',
         icon: 'mdi:file-document-outline'
       }

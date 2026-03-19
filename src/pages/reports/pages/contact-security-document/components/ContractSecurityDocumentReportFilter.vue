@@ -1,6 +1,6 @@
 <template>
   <BaseTop>
-    <div class="flex justify-center items-center gap-4">
+    <div class="flex justify-center items-center gap-4 ml-3">
       <div>
         ประจำเดือน
       </div>
@@ -20,10 +20,11 @@
 </template>
 
 <script setup lang="ts">
-import type { IRankLendingFilter } from '@/models/modules/report/rank-lending/Filter.model'
 import BaseTop from '@/components/base/BaseTop.vue'
 import Spacer from '@/components/flex/Spacer.vue'
 import DatePickerInput from '@/components/input/DatePickerInput.vue'
+// import LabelField from '@/components/input/LabelField.vue'
+import type { IContractSecurityDocumentReportFilter } from '@/models/modules/report/contract-security-document/Filter.model'
 
 interface IEmits {
   search: []
@@ -34,13 +35,12 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>({ default: '' })
-defineModel<IRankLendingFilter>('filter', { default: (): IRankLendingFilter => ({
-  type: 'RECEIPT_AMOUNT'
-}) })
+defineModel<IContractSecurityDocumentReportFilter>('filter', { default: (): IContractSecurityDocumentReportFilter => ({}) })
 
 function onSearch (): void {
   emits('search')
 }
+
 
 </script>
 

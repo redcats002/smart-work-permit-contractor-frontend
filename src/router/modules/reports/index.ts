@@ -10,6 +10,7 @@ import ProfitBasedOnActualPaymentRouter from './ProfitBasedOnActualPayment.route
 import RankingLendingRouter from './RankingLending.router'
 import RankingLoanRouter from './RankingLoan.router'
 import BranchHeadSummaryRouter from './BranchHeadSummary.router'
+import ContractSecurityDocumentRouter from './ContractSecurityDocument.router'
 
 const prefix = '/reports'
 
@@ -45,7 +46,8 @@ export default {
     AllStockRouter,
     RankingLendingRouter,
     RankingLoanRouter,
-    BranchSummaryRouter
+    BranchSummaryRouter,
+    ContractSecurityDocumentRouter
 
   ]
 } as RouteRecordRaw
