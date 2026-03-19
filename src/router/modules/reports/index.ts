@@ -16,7 +16,7 @@ export default {
   },
   children: [
     {
-      path: 'list',
+      path: '',
       name: 'ReportListPage',
       component: (): ComponentOptions => import('@/pages/reports/pages/list/pages/ReportListPage.vue'),
       meta: {
@@ -27,5 +27,6 @@ export default {
       }
     },
     PercentInstallmentRouter
+
   ]
 } as RouteRecordRaw

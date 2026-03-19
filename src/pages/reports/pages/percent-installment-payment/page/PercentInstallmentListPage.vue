@@ -1,5 +1,5 @@
 <template>
-  <section id="employee-list-page">
+  <section id="percent-installment-list-page">
     <PageTitle />
     <PercentInstallmentFilter
       v-model:filters="filters"
@@ -27,11 +27,11 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import BasePage from '@/components/base/BasePage.vue'
+import PrintButton from '@/components/button/PrintButton.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import PercentInstallmentFilter from '../components/PercentInstallmentFilter.vue'
 import PercentInstallmentTable from '../components/PercentInstallmentTable.vue'
 import useList from '../composables/useList'
-import PrintButton from '@/components/button/PrintButton.vue'
 
 const {
   filters,
