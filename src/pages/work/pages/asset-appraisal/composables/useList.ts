@@ -1,28 +1,29 @@
 import { computed, ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IGetNewWorkList } from '@/models/request/work/WorkReq.model'
-import type { IAssetAppraisalNewWorkList } from '@/models/response/work/WorkRes.model'
-import { AssetCategoryStatusEnum } from '@/enums/modules/work/AssetCategoryStatus.enum'
-import { WorkStatusEnum } from '@/enums/modules/work/WorkStatus.enum'
+import type { IGetNewWorkAssetAppraisalList } from '@/models/request/work/WorkReq.model'
+import type { IAssetAppraisalCompleteWorkList, IAssetAppraisalNewWorkList } from '@/models/response/work/WorkRes.model'
 import type { IWorkProvider } from '@/resources/provider/work/Work.provider'
 import WorkProvider from '@/resources/provider/work/Work.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
+import type { TAssetAppraisalTab } from './useInit'
 
+type TAssetAppraisalList = IAssetAppraisalNewWorkList | IAssetAppraisalCompleteWorkList
+type TGetAssetAppraisalList = IGetNewWorkAssetAppraisalList | IGetNewWorkAssetAppraisalList
 interface IUseList extends IUsePagination {
-  filters: Ref<IGetNewWorkList>
-  items: Ref<IAssetAppraisalNewWorkList[]>
+  filters: Ref<TGetAssetAppraisalList>
+  items: Ref<TAssetAppraisalList[]>
   fetch(): void
   onClearFilters(): void
 }
-export default function useList (): IUseList {
+export default function useList (tab: Ref<TAssetAppraisalTab>): IUseList {
   const WorkService: IWorkProvider = new WorkProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
-  const filters = ref<IGetNewWorkList>({})
-  const items = ref<IAssetAppraisalNewWorkList[]>([])
+  const filters = ref<TGetAssetAppraisalList>({})
+  const items = ref<TAssetAppraisalList[]>([])
 
-  const paginateQuery = computed((): IGetNewWorkList => {
+  const paginateQuery = computed((): TGetAssetAppraisalList => {
     const normalizedFilters = normalizeFilters(filters.value)
     return {
       search: search.value,
@@ -35,48 +36,18 @@ export default function useList (): IUseList {
   })
 
   async function useFetch (): Promise<void> {
-    const mock = true // TODO: remove
-    if (mock) {
-      items.value = [
-        {
-          id: '1',
-          assetCategory: AssetCategoryStatusEnum.LAND_NS3G,
-          contractNo: 'LC-00001',
-          customerName: 'นาย จันทร์ พงษ์พัฒนโยธิน',
-          status: WorkStatusEnum.IN_PROGRESS
-        },
-        {
-          id: '2',
-          assetCategory: AssetCategoryStatusEnum.LAND_TITLE,
-          contractNo: 'LC-00002',
-          customerName: 'นาง พันธนา จิรวราภงษ์',
-          status: WorkStatusEnum.SUCCESS
-        },
-        {
-          id: '3',
-          assetCategory: AssetCategoryStatusEnum.LAND_TITLE,
-          contractNo: 'LC-00003',
-          customerName: 'นางสาว โชติกา ประชายศิริกุล',
-          status: WorkStatusEnum.PENDING
-        },
-        {
-          id: '4',
-          assetCategory: AssetCategoryStatusEnum.LAND_TITLE,
-          contractNo: 'LC-00004',
-          customerName: 'นาย ปิยะพร ชุติ้ง',
-          status: WorkStatusEnum.CANCELLED
-        }
-      ]
-      return
-    }
-    const response = await WorkService.getWorkAppraisalPaginate(paginateQuery.value)
+    const fetchFn = tab.value === 'NewWork'
+      ? () => WorkService.getWorkAppraisalNewPaginate(paginateQuery.value)
+      : () => WorkService.getWorkAppraisalCompletePaginate(paginateQuery.value)
+
+    const response = await fetchFn()
     items.value = response.data || []
     pagination.value = extractPagination(response)
     syncQuery({ ...normalizeFilters(filters.value) })
   }
 
 
-  function normalizeFilters (value: IGetNewWorkList): Partial<IGetNewWorkList> {
+  function normalizeFilters (value: TGetAssetAppraisalList): Partial<TGetAssetAppraisalList> {
     return {
       ...value
     }
@@ -86,7 +57,10 @@ export default function useList (): IUseList {
     handleLoading(useFetch)
   }
 
-  function onClearFilters (): void {}
+  function onClearFilters (): void {
+    filters.value = {} as TGetAssetAppraisalList
+    reset()
+  }
 
 
   return {
@@ -99,6 +73,7 @@ export default function useList (): IUseList {
     fetch,
     onClearFilters,
     extractPagination,
-    syncQuery
+    syncQuery,
+    reset
   }
 }

@@ -20,6 +20,8 @@
         :is="component"
         :key="item?.value"
         v-model:pagination="pagination"
+        v-model:sort-by="sortBy"
+        v-model:sort-order="sortOrder"
         :items="items"
         class="animate-fade-in" />
     </BaseTabWindow>
@@ -27,22 +29,25 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import BaseTab from '@/components/base/BaseTab.vue'
+import { onMounted, watch } from 'vue'
 import BasePage from '@/components/base/BasePage.vue'
-import PageTitle from '@/components/nav/PageTitle.vue'
-import useList from '../composables/useList'
-import WorkFilter from '../components/WorkFilter.vue'
+import BaseTab from '@/components/base/BaseTab.vue'
 import BaseTabWindow from '@/components/base/BaseTabWindow.vue'
+import PageTitle from '@/components/nav/PageTitle.vue'
+import WorkFilter from '../components/WorkFilter.vue'
 import useInit from '../composables/useInit'
+import useList from '../composables/useList'
 
-const { filters, search, fetch, onClearFilters, items, pagination } = useList()
-
+const { tab, tabItems } = useInit()
+const { filters, search, fetch, onClearFilters, items, pagination, sortBy, sortOrder } = useList(tab)
 
 onMounted((): void => {
   fetch()
 })
-const { tab, tabItems } = useInit()
+
+watch(tab, (): void => {
+  fetch()
+})
 
 </script>
 
