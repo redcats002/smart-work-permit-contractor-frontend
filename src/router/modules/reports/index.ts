@@ -1,8 +1,9 @@
 import type { ComponentOptions } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
-import ComparativeRouter from './_Comparative.router'
 import AllStockRouter from './AllStock.router'
+import BranchIncomeExpenseRouter from './BranchIncomeExpense.router'
 import BranchSummaryRouter from './BranchSummary.router'
+import ComparativeRouter from './Comparative.router'
 import DailyBranchSummaryRouter from './DailyBranchSummary.router'
 import DailyInstallmentPaymentRouter from './DailyInstallmentPayment.router'
 import PercentInstallmentRouter from './PercentInstallment.router'
@@ -43,7 +44,8 @@ export default {
     AllStockRouter,
     RankingLendingRouter,
     RankingLoanRouter,
-    BranchSummaryRouter
+    BranchSummaryRouter,
+    BranchIncomeExpenseRouter
 
   ]
 } as RouteRecordRaw
