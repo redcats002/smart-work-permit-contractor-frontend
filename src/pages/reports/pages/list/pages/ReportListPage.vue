@@ -49,7 +49,7 @@ const reportItems: IReportItem[] = [
   { label: 'รายงานลูกหนี้คงเหลือ', to: { name: 'NotAvailablePage' }, disabled: true },
   { label: 'รายงานรับชำระค่างวดประจำวัน', to: { name: 'NotAvailablePage' }, disabled: true },
   { label: 'รายงานรับชำระค่างวดคิดเป็นเปอร์เซ็นต์', to: { name: 'PercentInstallmentPage' } },
-  { label: 'รายงานกำไรตามการรับชำระจริง', to: { name: 'NotAvailablePage' }, disabled: true },
+  { label: 'รายงานกำไรตามการรับชำระจริง', to: { name: 'ProfitBasedOnActualPaymentPage' } },
   { label: 'รายงานสรุปรับไฟแนนซ์ประจำปี', to: { name: 'NotAvailablePage' }, disabled: true },
   { label: 'รายงานสรุปการปล่อยสินเชื่อ', to: { name: 'NotAvailablePage' }, disabled: true },
   { label: 'รายงานการรับ/จ่ายประจำสาขา', to: { name: 'NotAvailablePage' }, disabled: true },
