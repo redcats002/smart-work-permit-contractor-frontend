@@ -1,4 +1,4 @@
-import { ref, type Ref } from 'vue'
+import { computed, type ComputedRef, ref, type Ref } from 'vue'
 import { accessTokenStorage } from '@/utils/Storage'
 import type { IAuthBranchList } from '@/models/response/auth/private/AuthRes.private.model'
 import { defineStore } from 'pinia'
@@ -23,6 +23,7 @@ interface IAuthStore {
   userToken: Ref<IToken>
   branch: Ref<IBranch>
   // branchToken: Ref<IToken>
+  isSeedAccount: ComputedRef<boolean>
   userLogin(user: IUser, token: string): void
   branchLogin(branch: IBranch): void
   logout(): void
@@ -54,6 +55,10 @@ export const useAuthStore = defineStore(
     //   accessToken: '',
     //   expireIn: null
     // })
+
+    const isSeedAccount = computed((): boolean => {
+      return user.value.email === 'systemuser@email.com'
+    })
 
     function userLogin (userValue: IUser, token: string): void {
       user.value = userValue
@@ -102,10 +107,11 @@ export const useAuthStore = defineStore(
     return {
       user,
       userToken,
-      userLogin,
-      logout,
+      isSeedAccount,
       branch,
       // branchToken,
+      userLogin,
+      logout,
       branchLogin
     }
   }, {
