@@ -5,9 +5,18 @@ import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.
 export interface IInvoiceCustomer {
   id: number
   idCard: string
-  titleName: TTitleName
+  idNo?: string
+  titleName?: TTitleName
   firstName: string
   lastName: string
+  fullName?: string
+  mainAddress: {
+    address: string
+    subDistrict: string
+    district: string
+    province: string
+    postCode: string
+  }
 }
 
 export interface IInvoiceList extends IEntity {
@@ -20,28 +29,47 @@ export interface IInvoiceList extends IEntity {
 }
 
 export interface IInvoiceDetailItems {
-  detail: string
+  name: string
+  qty: number
+  isMain: boolean
   amount: number
-  price: number
-  new?: boolean
 }
-export interface IInvoiceDetail extends IEntity {
-  contractId: number | null
-  invoiceNo: string | null
-  contractNo: string | null
-  dateOfPayment: string | null
-  dueDate: string | null
-  branch: string | null
-  customer: IInvoiceCustomer
+
+export interface IInvoiceContractInstallment {
+  id: number
+  dueDate: string
+}
+export interface IInvoiceDetail extends IEntity, IInvoiceList {
+  idNo: string
+  contractInstallment: IInvoiceContractInstallment
+  items: IInvoiceDetailItems[]
+}
+
+export interface IInvoiceBranch {
+  id: string
+  taxId: string
+  name: string
   address: string
   subDistrict: string
   district: string
   province: string
   postCode: string
-  totalValue: number | null
+  logo: string | null
+}
+
+export interface IInoviceInstallmentContract {
+  id: number
+  idNo: string
+  customer: IInvoiceCustomer
+  branch: IInvoiceBranch
+}
+export interface IInvoiceInstallment {
+  contractInstallment: IInvoiceContractInstallment
+  contract: IInoviceInstallmentContract
   items: IInvoiceDetailItems[]
 }
 
 export type TGetInvoiceListResponse = IBasePaginationResponse<IInvoiceList>
 export type TGetInvoiceByIdResponse = IBaseSuccessResponse<IInvoiceDetail>
+export type TGetInvoiceInstallmentByIdResponse = IBaseSuccessResponse<IInvoiceInstallment>
 export type TActionInvoice = IBaseSuccessResponse<boolean>
