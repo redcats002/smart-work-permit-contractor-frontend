@@ -57,13 +57,13 @@ export function useInitDetail (data?: Partial<ICustomerById>): Ref<ICustomerById
   })
 }
 
-export type ListComponentType =
-  | InstanceType<typeof AddressTab>
-  | InstanceType<typeof PrivateDocumentTab>
-  | InstanceType<typeof ContractTab>
-  | InstanceType<typeof PaymentHistoryTab>
-  | InstanceType<typeof ContactHistoryTab>
-  | InstanceType<typeof EstateTab>
+export type ListComponentType
+  = | InstanceType<typeof AddressTab>
+    | InstanceType<typeof PrivateDocumentTab>
+    | InstanceType<typeof ContractTab>
+    | InstanceType<typeof PaymentHistoryTab>
+    | InstanceType<typeof ContactHistoryTab>
+    | InstanceType<typeof EstateTab>
 
 export function useInitTabDetail (): IUseTabItems {
   const Address = importComponent((): Promise<Component> => import('../components/tab/address/AddressTab.vue'))
