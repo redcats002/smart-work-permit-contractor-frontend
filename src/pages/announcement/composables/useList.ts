@@ -1,10 +1,10 @@
 import { computed, ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
-import usePagination, { type IUsePagination } from '@/composables/usePagination'
 import type { IGetAnnouncementList } from '@/models/request/announcement/AnnouncementReq.model'
 import type { IAnnouncementList } from '@/models/response/announcement/AnnouncementRes.model'
 import type { IAnnouncementProvider } from '@/resources/provider/announcement/Announcement.provider'
 import AnnouncementProvider from '@/resources/provider/announcement/Announcement.provider'
+import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
 interface IUseList extends IUsePagination {
   filters: Ref<IGetAnnouncementList>
@@ -19,7 +19,7 @@ const DEFAULT_LIMIT = 3
 export default function useList (): IUseList {
   const AnnouncementService: IAnnouncementProvider = new AnnouncementProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
   pagination.value.limit = DEFAULT_LIMIT
 
   const filters = ref<IGetAnnouncementList>({})
@@ -89,15 +89,10 @@ export default function useList (): IUseList {
     pagination.value.page! += 1
     await useFetch(true)
   }
-  const reset = (): void => {
-    items.value = []
-    pagination.value.page = 1
-    pagination.value.limit = DEFAULT_LIMIT
-    isFinished.value = false
-  }
   function onClearFilters (): void {
     filters.value = {}
     reset()
+    pagination.value.limit = DEFAULT_LIMIT
     fetch()
   }
 
@@ -115,9 +110,9 @@ export default function useList (): IUseList {
     isFinished,
     loadMore,
     fetch,
-    reset,
     onClearFilters,
     extractPagination,
-    syncQuery
+    syncQuery,
+    reset
   }
 }

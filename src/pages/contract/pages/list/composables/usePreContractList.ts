@@ -15,7 +15,7 @@ interface IUsePreContractList extends IUsePagination {
 export default function usePreContractList (): IUsePreContractList {
   const contractService: IPreContractProvider = new PreContractProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
   const filters = ref<IGetPreContractList>({})
   const items = ref<IPreContractList[]>([])
@@ -41,6 +41,7 @@ export default function usePreContractList (): IUsePreContractList {
   }
 
   function onClearFilters (): void {
+    reset()
     filters.value = {}
     fetch()
   }
@@ -55,6 +56,7 @@ export default function usePreContractList (): IUsePreContractList {
     fetch,
     onClearFilters,
     extractPagination,
-    syncQuery
+    syncQuery,
+    reset
   }
 }
