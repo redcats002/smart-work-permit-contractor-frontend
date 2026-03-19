@@ -5,8 +5,7 @@
     v-model:sort-order="sortOrder"
     :columns="columns"
     :items="props.items"
-    disable-auto-left-padding
-    @update="emits('update')">
+    disable-auto-left-padding>
     <template #[`item.index`]="{ index }">
       {{ index + 1 }}
     </template>
@@ -27,11 +26,6 @@ interface IProps {
 
 const props = defineProps<IProps>()
 
-interface IEmits {
-  update: []
-}
-
-const emits = defineEmits<IEmits>()
 
 const pagination = defineModel<IPagination>('pagination', {
   required: true
@@ -43,15 +37,15 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 const columns = ref<IColumn<IDailyBranchSummaryList>[]>([
   { field: 'index', header: 'ลำดับ', align: 'left', width: 60 },
   { field: 'branchName', header: 'สาขา', align: 'left', width: 150 },
-  { field: 'financeReceive', header: 'รับไฟแนนซ์', align: 'left', width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.financeReceive) },
+  { field: 'financeReceive', header: 'รับไฟแนนซ์', align: 'right', width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.financeReceive) },
   { field: 'financeRelease', header: 'ปล่อยไฟแนนซ์', align: 'left', width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.financeRelease) },
   { field: 'processingFee', header: 'ค่าดำเนินการ', align: 'left', width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.processingFee) },
   { field: 'sell', header: 'ขาย', align: 'left', width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.sell) },
   { field: 'insuranceCost', header: 'เงินประกัน', align: 'left', width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.insuranceCost) },
   { field: 'cancellationCost', header: 'ยกเลิกสัญญา', align: 'left', width: 140, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.cancellationCost) },
-  { field: 'lawyerFee', header: 'ค่าทนาย', align: 'right', width: 100, value: (e: IDailyBranchSummaryList): string => `${formatter.numberFormat(e.lawyerFee)} %` },
-  { field: 'contractReplacementFee', header: 'เปลี่ยนสัญญา', align: 'right', width: 100, value: (e: IDailyBranchSummaryList): string => `${formatter.numberFormat(e.contractReplacementFee)} %` },
-  { field: 'remainingBalance', header: 'เปลี่ยนสัญญา', align: 'right', width: 100, value: (e: IDailyBranchSummaryList): string => `${formatter.numberFormat(e.remainingBalance)} %` }
+  { field: 'lawyerFee', header: 'ค่าทนาย', align: 'left', width: 100, value: (e: IDailyBranchSummaryList): string => `${formatter.numberFormat(e.lawyerFee)}` },
+  { field: 'contractReplacementFee', header: 'เปลี่ยนสัญญา', align: 'left', width: 100, value: (e: IDailyBranchSummaryList): string => `${formatter.numberFormat(e.contractReplacementFee)}` },
+  { field: 'remainingBalance', header: 'เงินคงเหลือ', align: 'left', width: 100, value: (e: IDailyBranchSummaryList): string => `${formatter.numberFormat(e.remainingBalance)}` }
 ])
 </script>
 

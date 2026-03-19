@@ -20,7 +20,6 @@ export default {
       component: (): ComponentOptions => import('@/pages/reports/pages/daily-branch-summary/pages/DailyBranchSummaryListPage.vue'),
       meta: {
         auth: true,
-        menu: true,
         title: 'รายงานสรุปประจำวันรวมทุกสาขา',
         icon: 'eva:list-fill'
       }

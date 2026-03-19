@@ -2,7 +2,6 @@ import { ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
-import type { IPercentInstallmentFilter } from '@/models/modules/report/percent-installment/Filter.model'
 import type { IDailyBranchSummaryFilter } from '@/models/modules/report/daily-branch-summary/Filter.model'
 import type { IDailyBranchSummaryList, TGetDailyBranchSummaryListResponse } from '@/models/response/report/daily-branch-summary/DailyBranchSummaryRes.model'
 
@@ -77,7 +76,7 @@ export default function useList (): IUseList {
     syncQuery({ ...normalizeFilters(filters.value) })
   }
 
-  function normalizeFilters (value: IPercentInstallmentFilter): Partial<IPercentInstallmentFilter> {
+  function normalizeFilters (value: IDailyBranchSummaryFilter): Partial<IDailyBranchSummaryFilter> {
     return {
       ...value
     }
