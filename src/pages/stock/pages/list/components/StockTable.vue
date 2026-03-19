@@ -7,15 +7,15 @@
     :items="props.items"
     disable-auto-left-padding
     @update="emits('update')">
-    <template #[`item.assetNo`]="{ item }">
+    <template #[`item.idNo`]="{ item }">
       <LinkText :to="{ name: 'StockDetailPage', params: { id: 1 }}">
-        {{ item?.assetNo }}
+        {{ item?.idNo }}
       </LinkText>
     </template>
     <template #[`item.contractNo`]="{ item }">
       <LinkText :to="{ name: 'StockDetailPage', params: { id: 1 }}">
         <!-- TODO: chang to real path -->
-        {{ item?.contractNo }}
+        {{ item?.contract?.idNo }}
       </LinkText>
     </template>
     <template #[`item.status`]="{ item }">
@@ -30,6 +30,7 @@ import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import type { IStockList } from '@/models/response/stock/StockRes.model'
 import type { IColumn } from '@/models/Table.model'
+import { formatTitle } from '@/enums/modules/contract/AssetType.enum'
 import LinkText from '@/components/button/LinkText.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
@@ -58,7 +59,7 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IStockList>[]>([
   {
-    field: 'assetNo',
+    field: 'idNo',
     header: 'เลขที่หลักทรัพย์',
     sortable: true,
     align: 'left'
@@ -70,31 +71,34 @@ const columns = ref<IColumn<IStockList>[]>([
     align: 'left'
   },
   {
-    field: 'receivedDate',
+    field: 'createdAt',
     header: 'วันที่รับเข้า',
     align: 'left',
-    value: (e: IStockList): string => formatDate(e.receivedDate) || ''
+    value: (e: IStockList): string => formatDate(e?.createdAt) || ''
   },
   {
     field: 'customerName',
     header: 'ชื่อลูกค้า',
     align: 'left',
-    value: (e: IStockList): string => formatter.fullName(e)
+    value: (e: IStockList): string => formatter.fullName(e?.contract?.customer)
   },
   {
-    field: 'category',
+    field: 'type',
     header: 'หมวดหมู่',
-    align: 'left'
+    align: 'left',
+    value: (e: IStockList): string => formatTitle(e?.type)
   },
   {
     field: 'warehouse',
     header: 'คลัง',
-    align: 'left'
+    align: 'left',
+    value: (e: IStockList): string => e?.location?.warehouse?.name
   },
   {
     field: 'storageLocation',
     header: 'จุดจัดเก็บ',
-    align: 'left'
+    align: 'left',
+    value: (e: IStockList): string => e?.location?.name
   },
   {
     field: 'status',

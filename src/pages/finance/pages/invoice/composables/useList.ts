@@ -13,7 +13,7 @@ interface IUseList extends IUsePagination {
 export default function useList (): IUseList {
   const invoiceService: IInvoiceProvider = new InvoiceProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
   const items = ref<IInvoiceList[]>([])
 
@@ -44,6 +44,7 @@ export default function useList (): IUseList {
     search,
     fetch,
     extractPagination,
-    syncQuery
+    syncQuery,
+    reset
   }
 }

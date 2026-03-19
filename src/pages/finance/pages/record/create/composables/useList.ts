@@ -14,7 +14,7 @@ interface IUseList extends IUsePagination {
 export default function useList (): IUseList {
   const expensesService: IExpensesProvider = new ExpensesProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
   const items = ref<IExpensesList[]>([])
 
@@ -84,6 +84,7 @@ export default function useList (): IUseList {
     search,
     fetch,
     extractPagination,
-    syncQuery
+    syncQuery,
+    reset
   }
 }
