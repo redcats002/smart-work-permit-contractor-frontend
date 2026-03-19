@@ -8,7 +8,7 @@ export default {
   name: 'FinancePage',
   redirect: { name: 'InvoiceListPage' },
   component: (): ComponentOptions => import('@/pages/finance/Finance.vue'),
-  meta: { title: 'เอกสารและการเงิน', auth: true, icon: 'solar:document-medicine-bold' },
+  meta: { title: 'เอกสารและการเงิน', auth: true, icon: 'f7:doc' },
   children: [
     {
       path: 'invoice/list',
@@ -41,7 +41,6 @@ export default {
       name: 'ReceiptDetailPage',
       component: (): ComponentOptions => import('@/pages/finance/pages/receipt/detail/pages/ReceiptDetailPage.vue'),
       meta: { auth: true,
-        menu: true,
         title: 'รายละเอียดใบเสร็จรับเงิน',
         icon: 'solar:bill-list-bold',
         back: { name: 'ReceiptListPage' }
@@ -52,7 +51,6 @@ export default {
       name: 'ReceiptCreatePage',
       component: (): ComponentOptions => import('@/pages/finance/pages/receipt/create/pages/ReceiptCreatePage.vue'),
       meta: { auth: true,
-        menu: true,
         title: 'สร้างใบเสร็จรับเงินใหม่',
         icon: 'solar:bill-list-bold',
         back: { name: 'ReceiptListPage' }
@@ -76,7 +74,6 @@ export default {
       component: (): ComponentOptions => import('@/pages/finance/pages/record/create/pages/RecordExpensesCreatePage.vue'),
       meta: {
         auth: true,
-        menu: true,
         title: 'เพิ่มบันทึกค่าใช้จ่ายใหม่',
         icon: 'solar:bill-list-bold',
         back: { name: 'ExpenseListPage' }
@@ -88,7 +85,6 @@ export default {
       component: (): ComponentOptions => import('@/pages/finance/pages/record/detail/pages/RecordExpensesDetailPage.vue'),
       meta: {
         auth: true,
-        menu: true,
         title: 'รายละเอียดค่าใช้จ่าย',
         icon: 'solar:bill-list-bold',
         back: { name: 'ExpenseListPage' }

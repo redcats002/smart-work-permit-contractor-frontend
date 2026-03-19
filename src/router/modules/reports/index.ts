@@ -11,7 +11,7 @@ export default {
   meta: {
     title: 'รายงาน',
     auth: true,
-    icon: 'mdi:file-document-outline'
+    icon: 'eva:list-fill'
   },
   children: [
     {
@@ -22,7 +22,7 @@ export default {
         auth: true,
         menu: true,
         title: 'รายงาน',
-        icon: 'mdi:file-document-outline'
+        icon: 'eva:list-fill'
       }
     },
     {

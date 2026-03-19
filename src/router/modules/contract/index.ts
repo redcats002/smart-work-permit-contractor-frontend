@@ -8,19 +8,19 @@ export default {
   name: 'ContractPage',
   redirect: { name: 'ContractListPage' },
   component: (): ComponentOptions => import('@/pages/contract/Contract.vue'),
-  meta: { title: 'สัญญา', auth: true, icon: 'solar:document-bold' },
+  meta: { title: 'สัญญา', auth: true, icon: 'bitcoin-icons:sign-outline' },
   children: [
     {
       path: 'list',
       name: 'ContractListPage',
       component: (): ComponentOptions => import('@/pages/contract/pages/list/pages/ContractListPage.vue'),
-      meta: { auth: true, menu: true, title: 'รายการสัญญา', icon: 'solar:document-bold' }
+      meta: { auth: true, menu: true, title: 'รายการสัญญา' }
     },
     {
       path: 'detail/:id',
       name: 'ContractDetailPage',
       component: (): ComponentOptions => import('@/pages/contract/pages/detail/pages/ContractDetailPage.vue'),
-      meta: { auth: true, menu: true, title: 'รายละเอียดสัญญา', icon: 'solar:document-bold' }
+      meta: { auth: true, title: 'รายละเอียดสัญญา' }
     },
     {
       path: 'pre-contract/create',

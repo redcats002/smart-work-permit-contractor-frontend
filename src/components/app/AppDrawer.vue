@@ -60,7 +60,7 @@
       <!-- Bottom Menu -->
       <div class="space-y-1 mt-auto">
         <AppDrawerMenu
-          v-for="menu in buttomMenuItems"
+          v-for="menu in bottomMenuItems"
           :key="`bottom-${menu.label}`"
           :disabled="menu.disabled"
           :icon="menu.icon"
@@ -72,9 +72,12 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import type { RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '@/stores/Auth'
 import useLogout from '@/pages/auth/composables/useLogout'
 import { useAppDrawer } from '@/composables/useAppDrawer'
+import { routes } from '@/router'
 import { Icon } from '@iconify/vue'
 import AppDrawerMenu from './AppDrawerMenu.vue'
 import AppDrawerSubMenu from './AppDrawerSubMenu.vue'
@@ -92,49 +95,97 @@ interface IMenuItem {
   children?: { label: string, to: string }[]
 }
 
+interface IRouteMeta {
+  title?: string
+  icon?: string
+  menu?: boolean
+}
+
+interface IMenuRouteItem {
+  label: string
+  to: string
+  icon?: string
+}
+
 const authStore = useAuthStore()
 
-const menuItems: IMenuItem[] = [
-  { label: 'ข่าวสาร',
-    icon: '/menuicon/news.svg',
-    key: 'announcement',
-    to: '/announcement' },
-  { label: 'งาน',
-    icon: '/menuicon/box.svg',
-    key: 'work',
-    to: '/work',
-    children: [
-      { label: 'ประเมินหลักทรัพย์', to: '/work/asset-appraisal' },
-      { label: 'ติดตามทวงตาม', to: '/work/follow-up' }
-    ]
-  },
-  { label: 'แดชบอร์ด', icon: '/menuicon/dashbord.svg', key: 'dashboard', to: '/', disabled: true },
-  { label: 'รายงาน', icon: '/menuicon/report.svg', key: 'reports', to: '/reports' },
-  { label: 'สัญญา', icon: '/menuicon/contract.svg', key: 'contracts', to: '/contract/list' },
-  { label: 'ลูกค้า', icon: '/menuicon/customer.svg', key: 'customers', to: '/customer/list' },
-  { label: 'หลักทรัพย์', icon: '/menuicon/box.svg', key: 'assets', to: '/assets/list' },
-  {
-    label: 'เอกสารและการเงิน',
-    icon: '/menuicon/document.svg',
-    key: 'finance',
-    children: [
-      { label: 'ใบแจ้งหนี้', to: '/finance/invoice/list' },
-      { label: 'ใบเสร็จรับเงิน', to: '/finance/receipt/list' },
-      { label: 'บันทึกค่าใช้จ่าย', to: '/finance/expense/list' }
-    ]
-  },
-  {
-    label: 'การจัดเก็บ',
-    icon: '/menuicon/storage.svg',
-    key: 'stock',
-    children: [
-      { label: 'รายการเอกสารหลักทรัพย์', to: '/stock/list' },
-      { label: 'ย้ายเอกสาร', to: '/stock/docs/list' }
-    ]
+const menuItems = computed<IMenuItem[]>((): IMenuItem[] => {
+  return routes.flatMap((route: RouteRecordRaw): IMenuItem[] => {
+    if (route.path === '/setting' || route.path.startsWith('/:pathMatch')) {
+      return []
+    }
+
+    const fullPath = normalizePath('', route.path)
+    const routeMeta = getRouteMeta(route)
+    const childMenuItems = (route.children ?? []).flatMap((child: RouteRecordRaw): IMenuRouteItem[] => {
+      const childPath = normalizePath(fullPath, child.path)
+      return collectMenuRouteItems(child, childPath)
+    })
+
+    if (childMenuItems.length === 0) {
+      return []
+    }
+
+    const icon = routeMeta.icon ?? childMenuItems[0]?.icon ?? ''
+    const key = String(route.name ?? route.path)
+
+    if (childMenuItems.length === 1) {
+      return [{
+        label: routeMeta.title ?? childMenuItems[0].label,
+        icon,
+        key,
+        to: childMenuItems[0].to
+      }]
+    }
+
+    return [{
+      label: routeMeta.title ?? childMenuItems[0].label,
+      icon,
+      key,
+      children: childMenuItems.map((item: IMenuRouteItem): { label: string, to: string } => ({
+        label: item.label,
+        to: item.to
+      }))
+    }]
+  })
+})
+
+function normalizePath (parentPath: string, path: string): string {
+  if (path.startsWith('/')) {
+    return path
   }
-]
-const buttomMenuItems: IMenuItem[] = [
-  { label: 'ตั่งค่า', icon: '/menuicon/setting.svg', key: 'setting', to: '/setting' }
+
+  if (parentPath === '' || parentPath === '/') {
+    return `/${path}`.replace(/\/+/g, '/')
+  }
+
+  return `${parentPath.replace(/\/$/, '')}/${path}`.replace(/\/+/g, '/')
+}
+
+function getRouteMeta (route: RouteRecordRaw): IRouteMeta {
+  return (route.meta ?? {}) as IRouteMeta
+}
+
+function collectMenuRouteItems (route: RouteRecordRaw, fullPath: string): IMenuRouteItem[] {
+  const meta = getRouteMeta(route)
+  const currentItems = meta.menu && meta.title
+    ? [{
+      label: meta.title,
+      to: fullPath,
+      icon: meta.icon
+    }]
+    : []
+
+  const childItems = (route.children ?? []).flatMap((child: RouteRecordRaw): IMenuRouteItem[] => {
+    const childPath = normalizePath(fullPath, child.path)
+    return collectMenuRouteItems(child, childPath)
+  })
+
+  return [...currentItems, ...childItems]
+}
+
+const bottomMenuItems: IMenuItem[] = [
+  { label: 'ตั่งค่า', icon: 'lsicon:setting-outline', key: 'setting', to: '/setting' }
 ]
 
 </script>
