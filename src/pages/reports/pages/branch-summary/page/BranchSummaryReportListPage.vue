@@ -1,6 +1,8 @@
 <template>
   <section id="percent-installment-list-page">
     <PageTitle />
+    <BackButton
+      class="mb-2" />
     <BranchSummaryReportFilter
       v-model:filters="filters"
       v-model:search="search"
@@ -30,6 +32,7 @@ import PageTitle from '@/components/nav/PageTitle.vue'
 import useList from '../composables/useList'
 import BranchSummaryReportFilter from '../components/BranchSummaryReportFilter.vue'
 import BranchSummaryReportTable from '../components/BranchSummaryReportTable.vue'
+import BackButton from '@/components/button/BackButton.vue'
 
 const {
   filters,

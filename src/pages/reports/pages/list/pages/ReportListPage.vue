@@ -61,7 +61,8 @@ const reportItems: IReportItem[] = [
   { label: 'รายงานสรุปสต็อกสินค้ารวม', to: { name: 'AllStockPage' } },
   { label: 'รายงานสาขา', to: { name: 'BranchSummaryPage' } },
   { label: 'รายงานลูกค้าค้างชำระ', to: { name: 'NotAvailablePage' }, disabled: true },
-  { label: 'รายงานหัวหน้าสาขา', to: { name: 'NotAvailablePage' }, disabled: true }
+  { label: 'รายงานหัวหน้าสาขา', to: { name: 'BranchHeadSummaryPage' }, disabled: true },
+  { label: 'รายงานสัญญาและเอกสารหลักทรัพย์', to: { name: 'ContractSecurityDocumentPage' } }
 ]
 </script>
 

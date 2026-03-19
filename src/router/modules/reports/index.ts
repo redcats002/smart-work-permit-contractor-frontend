@@ -1,9 +1,11 @@
 import type { ComponentOptions } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
 import AllStockRouter from './AllStock.router'
+import BranchHeadSummaryRouter from './BranchHeadSummary.router'
 import BranchIncomeExpenseRouter from './BranchIncomeExpense.router'
 import BranchSummaryRouter from './BranchSummary.router'
 import ComparativeRouter from './Comparative.router'
+import ContractSecurityDocumentRouter from './ContractSecurityDocument.router'
 import DailyBranchSummaryRouter from './DailyBranchSummary.router'
 import DailyInstallmentPaymentRouter from './DailyInstallmentPayment.router'
 import PercentInstallmentRouter from './PercentInstallment.router'
@@ -36,6 +38,7 @@ export default {
       }
     },
     PercentInstallmentRouter,
+    BranchHeadSummaryRouter,
     ProfitBasedOnActualPaymentRouter,
     ComparativeRouter,
     DailyInstallmentPaymentRouter,
@@ -45,7 +48,8 @@ export default {
     RankingLendingRouter,
     RankingLoanRouter,
     BranchSummaryRouter,
-    BranchIncomeExpenseRouter
+    BranchIncomeExpenseRouter,
+    ContractSecurityDocumentRouter
 
   ]
 } as RouteRecordRaw

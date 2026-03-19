@@ -9,5 +9,5 @@ export interface IBranchSummaryReportList extends IEntity {
 }
 
 
-export type TGetBranchSummaryReportListResponse = IBasePaginationResponse<IBranchSummaryReportList>
-export type TActionBranchSummaryReport = IBaseSuccessResponse<boolean>
+export interface TGetBranchSummaryReportListResponse extends IBasePaginationResponse<IBranchSummaryReportList> {}
+export interface TActionBranchSummaryReport extends IBaseSuccessResponse<boolean> {}
