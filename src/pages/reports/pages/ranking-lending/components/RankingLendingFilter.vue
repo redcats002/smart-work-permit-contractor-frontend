@@ -7,7 +7,7 @@
       <div>
         <DatePickerInput
           v-model="model"
-          date-format="mm/yy"
+          date-format="MM yy"
           view="month"
           @update:model-value="onSearch()" />
       </div>

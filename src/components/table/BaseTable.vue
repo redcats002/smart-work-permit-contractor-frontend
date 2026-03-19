@@ -55,7 +55,7 @@
             :column="col"
             :field="col.field"
             :index="rowIndex"
-            :item="(data as T)"
+            :item="data as T"
             :name="`item.${String(col.field)}`"
             :value="col.value ? col.value(data) : data?.[col.field]" />
           <span
@@ -99,7 +99,6 @@
       </template>
       <slot />
     </DataTable>
-
     <!-- Footer slot -->
     <div
       v-if="showFooter"
@@ -302,25 +301,25 @@ const checkboxColumnPt = ref({
 </script>
 
 <style scoped>
-:deep(th[data-p-frozen-column="true"]) {
-  position: sticky;
-  z-index: 3;
-  background: var(--color-primary-50);
-  padding-left: 0.625rem !important;
+:deep(th[data-p-frozen-column='true']) {
+	position: sticky;
+	z-index: 3;
+	background: var(--color-primary-50);
+	padding-left: 0.625rem !important;
 }
 
-:deep(td[data-p-frozen-column="true"]) {
-  position: sticky;
-  z-index: 2;
-  background: var(--color-surface-0);
-  padding-left: 0.625rem !important;
+:deep(td[data-p-frozen-column='true']) {
+	position: sticky;
+	z-index: 2;
+	background: var(--color-surface-0);
+	padding-left: 0.625rem !important;
 }
 
 :deep(th.text-center .datatable-header-content) {
-  justify-content: center;
+	justify-content: center;
 }
 
 :deep(th.text-right .datatable-header-content) {
-  justify-content: flex-end;
+	justify-content: flex-end;
 }
 </style>

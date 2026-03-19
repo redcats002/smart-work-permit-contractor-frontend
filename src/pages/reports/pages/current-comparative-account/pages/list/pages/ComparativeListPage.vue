@@ -1,7 +1,8 @@
 <template>
-  <section id="percent-installment-list-page">
+  <section id="employee-list-page">
     <PageTitle />
-    <PercentInstallmentFilter
+    <BackButton />
+    <ComparativeFilter
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
@@ -9,10 +10,10 @@
       <PrintButton
         icon="material-symbols:print-outline-rounded"
         label="พิมพ์" />
-    </PercentInstallmentFilter>
+    </ComparativeFilter>
     <BasePage>
       <div class="mt-5">
-        <PercentInstallmentTable
+        <ComparativeTable
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"
           v-model:sort-order="sortOrder"
@@ -27,11 +28,11 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import BasePage from '@/components/base/BasePage.vue'
-import PrintButton from '@/components/button/PrintButton.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
-import PercentInstallmentFilter from '../components/PercentInstallmentFilter.vue'
-import PercentInstallmentTable from '../components/PercentInstallmentTable.vue'
+import ComparativeFilter from '../components/ComparativeFilter.vue'
+import ComparativeTable from '../components/ComparativeTable.vue'
 import useList from '../composables/useList'
+import PrintButton from '@/components/button/PrintButton.vue'
 
 const {
   filters,

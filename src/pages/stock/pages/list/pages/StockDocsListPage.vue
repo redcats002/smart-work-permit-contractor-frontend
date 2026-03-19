@@ -20,7 +20,6 @@
           v-model:sort-by="sortBy"
           v-model:sort-order="sortOrder"
           :items="items"
-          @delete="onDelete($event)"
           @update="fetch()" />
       </div>
     </BasePage>
@@ -45,8 +44,7 @@ const {
   sortOrder,
   search,
   // fetch,
-  onClearFilters,
-  onDelete
+  onClearFilters
 } = useList()
 
 const mockStockDocsItems = ref<IStockDocsList[]>([

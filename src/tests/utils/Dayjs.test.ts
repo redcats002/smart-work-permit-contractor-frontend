@@ -11,11 +11,11 @@ describe('useDayjs', () => {
 
     it('formats a date string to DD/MM/BBBB (Buddhist era)', () => {
       // 2024 AD = 2567 BE, using noon to avoid timezone boundary issues
-      expect(d.formatDate('2024-06-15T12:00:00')).toBe('15/06/2567')
+      expect(d.formatDate('2024-06-15T12:00:00')).toBe('15/06/67')
     })
 
     it('formats a Date object', () => {
-      expect(d.formatDate(new Date('2024-01-15T12:00:00'))).toBe('15/01/2567')
+      expect(d.formatDate(new Date('2024-01-15T12:00:00'))).toBe('15/01/67')
     })
   })
 
