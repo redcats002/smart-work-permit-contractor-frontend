@@ -49,7 +49,7 @@ const reportItems: IReportItem[] = [
   { label: 'รายงานอันดับ 1-25 การปล่อยสินเชื่อ', to: { name: 'NotAvailablePage' } },
   { label: 'รายงาน 1 - 25 การรับสินเชื่อ', to: { name: 'NotAvailablePage' } },
   { label: 'รายงานสัญญาและเอกสารหลักทรัพย์', to: { name: 'NotAvailablePage' } },
-  { label: 'รายงานสรุปสต็อกสินค้ารวม', to: { name: 'NotAvailablePage' } },
+  { label: 'รายงานสรุปสต็อกสินค้ารวม', to: { name: 'AllStockPage' } },
   { label: 'รายงานสาขา', to: { name: 'NotAvailablePage' } },
   { label: 'รายงานลูกค้าค้างชำระ', to: { name: 'NotAvailablePage' } },
   { label: 'รายงานหัวหน้าสาขา', to: { name: 'NotAvailablePage' } }

@@ -1,5 +1,6 @@
 import type { ComponentOptions } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
+import AllStockRouter from './AllStock.router'
 import PercentInstallmentRouter from './PercentInstallment.router'
 
 const prefix = '/reports'
@@ -26,7 +27,8 @@ export default {
         icon: 'eva:list-fill'
       }
     },
-    PercentInstallmentRouter
+    PercentInstallmentRouter,
+    AllStockRouter
 
   ]
 } as RouteRecordRaw
