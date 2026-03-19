@@ -20,6 +20,7 @@
         v-model:sort-by="sortBy"
         v-model:sort-order="sortOrder"
         :items="items"
+        :summary="summary"
         @update="fetch()" />
     </BasePage>
   </section>
@@ -44,6 +45,7 @@ const {
   sortBy,
   sortOrder,
   search,
+  summary,
   fetch,
   onClearFilters
 } = useList()
