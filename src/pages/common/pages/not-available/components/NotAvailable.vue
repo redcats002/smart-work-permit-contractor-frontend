@@ -18,7 +18,7 @@
         </p>
       </div>
       <Button
-        label="Back to Login"
+        label="Back to Home"
         @click="back()" />
     </div>
   </div>

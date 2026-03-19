@@ -6,7 +6,11 @@
     :columns="columns"
     :items="items"
     disable-auto-left-padding
-    @update="emits('update')" />
+    @update="emits('update')">
+    <template #[`item.index`]="{ index }">
+      {{ index + 1 }}
+    </template>
+  </BaseTable>
 </template>
 
 <script setup lang="ts">
@@ -48,7 +52,7 @@ const columns = computed((): IColumn<IBranchIncomeExpenseList>[] => {
   const base: IColumn<IBranchIncomeExpenseList>[] = [
     { field: 'index', header: 'ลำดับ' },
     { field: 'idNo', header: 'รหัสการชำระ' },
-    { field: 'category.name', header: 'หมวดหมู่' }
+    { field: 'category', header: 'หมวดหมู่', value: (e: IBranchIncomeExpenseList): string => e?.category?.name }
   ]
   switch (props.transactionType) {
     case 'INCOME_EXPENSE':

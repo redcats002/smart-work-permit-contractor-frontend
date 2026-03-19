@@ -17,17 +17,21 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { Icon } from '@iconify/vue'
 
 const route = useRoute()
+const router = useRouter()
 
 const isBack = computed<boolean>((): boolean => !!route?.meta?.back)
 
 
 function validate (): void {
-  if (!isBack.value) return toast.warn('ไม่ได้ตั้งค่าเส้นทางย้อนกลับ')
+  if (!isBack.value) {
+    router.back()
+    return toast.warn('ไม่ได้ตั้งค่าเส้นทางย้อนกลับ')
+  }
 }
 
 </script>

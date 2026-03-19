@@ -1,25 +1,26 @@
 <template>
-  <section id="employee-list-page">
+  <section id="daily-loan-disbursement-page">
     <PageTitle />
     <BaseTop>
       <BackButton />
     </BaseTop>
-    <ComparativeFilter
+    <DailyLoanDisbursementFilter
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
       @search="fetch()">
+      <Spacer />
       <PrintButton
         icon="material-symbols:print-outline-rounded"
         label="พิมพ์" />
-    </ComparativeFilter>
+    </DailyLoanDisbursementFilter>
     <BasePage>
-      <ComparativeTable
+      <DailyLoanDisbursementTable
         v-model:pagination="pagination"
         v-model:sort-by="sortBy"
         v-model:sort-order="sortOrder"
         :items="items"
-        @delete="onDelete($event)"
+        :summary="summary"
         @update="fetch()" />
     </BasePage>
   </section>
@@ -31,21 +32,22 @@ import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import PrintButton from '@/components/button/PrintButton.vue'
+import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
-import ComparativeFilter from '../components/ComparativeFilter.vue'
-import ComparativeTable from '../components/ComparativeTable.vue'
+import DailyLoanDisbursementFilter from '../components/DailyLoanDisbursementFilter.vue'
+import DailyLoanDisbursementTable from '../components/DailyLoanDisbursementTable.vue'
 import useList from '../composables/useList'
 
 const {
   filters,
   items,
+  summary,
   pagination,
   sortBy,
   sortOrder,
   search,
   fetch,
-  onClearFilters,
-  onDelete
+  onClearFilters
 } = useList()
 
 onMounted((): void => {
