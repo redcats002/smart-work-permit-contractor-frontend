@@ -1,7 +1,7 @@
 import type { ComponentOptions } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
 
-const prefix = '/percent-installment'
+const prefix = 'percent-installment'
 
 export default {
   path: prefix,
@@ -20,9 +20,9 @@ export default {
       component: (): ComponentOptions => import('@/pages/reports/pages/percent-installment-payment/page/PercentInstallmentListPage.vue'),
       meta: {
         auth: true,
-        menu: true,
         title: 'รายงานรับชำระค่างวดคิดเป็นเปอร์เซ็นต์',
-        icon: 'eva:list-fill'
+        icon: 'eva:list-fill',
+        back: { name: 'ReportListPage' }
       }
     }
   ]
