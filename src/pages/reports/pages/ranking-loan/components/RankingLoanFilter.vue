@@ -13,17 +13,19 @@
       </div>
     </div>
     <Spacer />
-    <div>
+    <div class="flex gap-4">
+      <SelectSortRankLoan v-model="filter.type" />
       <slot />
     </div>
   </BaseTop>
 </template>
 
 <script setup lang="ts">
-import type { IAllStockFilter } from '@/models/modules/report/all-stock/Filter.model'
+import type { IRankLendingFilter } from '@/models/modules/report/rank-lending/Filter.model'
 import BaseTop from '@/components/base/BaseTop.vue'
 import Spacer from '@/components/flex/Spacer.vue'
 import DatePickerInput from '@/components/input/DatePickerInput.vue'
+import SelectSortRankLoan from './SelectSortRankLoan.vue'
 
 interface IEmits {
   search: []
@@ -34,7 +36,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>({ default: '' })
-defineModel<IAllStockFilter>('filter', { default: (): IAllStockFilter => ({}) })
+const filter = defineModel<IRankLendingFilter>('filter', { default: (): IRankLendingFilter => ({ type: 'RECEIPT_AMOUNT' }) })
 
 function onSearch (): void {
   emits('search')

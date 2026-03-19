@@ -2,6 +2,8 @@ import type { ComponentOptions } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
 import AllStockRouter from './AllStock.router'
 import PercentInstallmentRouter from './PercentInstallment.router'
+import RankingLendingRouter from './RankingLending.router'
+import RankingLoanRouter from './RankingLoan.router'
 
 const prefix = '/reports'
 
@@ -28,7 +30,9 @@ export default {
       }
     },
     PercentInstallmentRouter,
-    AllStockRouter
+    AllStockRouter,
+    RankingLendingRouter,
+    RankingLoanRouter
 
   ]
 } as RouteRecordRaw

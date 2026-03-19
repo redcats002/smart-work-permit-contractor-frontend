@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import type { IAllStockFilter } from '@/models/modules/report/all-stock/Filter.model'
+import type { IRankLendingFilter } from '@/models/modules/report/rank-lending/Filter.model'
 import BaseTop from '@/components/base/BaseTop.vue'
 import Spacer from '@/components/flex/Spacer.vue'
 import DatePickerInput from '@/components/input/DatePickerInput.vue'
@@ -34,7 +34,9 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>({ default: '' })
-defineModel<IAllStockFilter>('filter', { default: (): IAllStockFilter => ({}) })
+defineModel<IRankLendingFilter>('filter', { default: (): IRankLendingFilter => ({
+  type: 'RECEIPT_AMOUNT'
+}) })
 
 function onSearch (): void {
   emits('search')
