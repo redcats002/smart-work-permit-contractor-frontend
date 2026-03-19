@@ -1,9 +1,9 @@
 <template>
-  <section id="employee-list-page">
+  <section id="percent-installment-list-page">
     <PageTitle />
     <BackButton
       class="mb-2" />
-    <DailyBranchSummaryFilter
+    <ContractSecurityDocumentReportFilter
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
@@ -11,15 +11,14 @@
       <PrintButton
         icon="material-symbols:print-outline-rounded"
         label="พิมพ์" />
-    </DailyBranchSummaryFilter>
+    </ContractSecurityDocumentReportFilter>
     <BasePage>
       <div class="mt-5">
-        <DailyBranchSummaryTable
+        <ContractSecurityDocumentReportTable
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"
           v-model:sort-order="sortOrder"
-          :items="items"
-          @update="fetch()" />
+          :items="items" />
       </div>
     </BasePage>
   </section>
@@ -28,11 +27,11 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import BasePage from '@/components/base/BasePage.vue'
+import PrintButton from '@/components/button/PrintButton.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import useList from '../composables/useList'
-import PrintButton from '@/components/button/PrintButton.vue'
-import DailyBranchSummaryTable from '../components/DailyBranchSummaryTable.vue'
-import DailyBranchSummaryFilter from '../components/DailyBranchSummaryFilter.vue'
+import ContractSecurityDocumentReportFilter from '../components/ContractSecurityDocumentReportFilter.vue'
+import ContractSecurityDocumentReportTable from '../components/ContractSecurityDocumentReportTable.vue'
 import BackButton from '@/components/button/BackButton.vue'
 
 const {

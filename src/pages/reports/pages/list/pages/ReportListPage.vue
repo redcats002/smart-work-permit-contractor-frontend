@@ -47,7 +47,7 @@ const reportItems: IReportItem[] = [
   { label: 'รายงานสรุปบัญชีเทียบปัจจุบัน', to: { name: 'ComparativeListPage' } },
   { label: 'รายงานสรุปประจำวันรวมทุกสาขา', to: { name: 'DailyBranchSummaryPage' } },
   { label: 'รายงานลูกหนี้คงเหลือ', to: { name: 'NotAvailablePage' } },
-  { label: 'รายงานรับชำระค่างวดประจำวัน', to: { name: 'DailyInstallmentPaymentReport' } },
+  { label: 'รายงานรับชำระค่างวดประจำวัน', to: { name: 'DailyInstallmentPage' } },
   { label: 'รายงานรับชำระค่างวดคิดเป็นเปอร์เซ็นต์', to: { name: 'PercentInstallmentPage' } },
   { label: 'รายงานกำไรตามการรับชำระจริง', to: { name: 'ProfitBasedOnActualPaymentPage' } },
   { label: 'รายงานสรุปรับไฟแนนซ์ประจำปี', to: { name: 'NotAvailablePage' } },
@@ -57,11 +57,11 @@ const reportItems: IReportItem[] = [
   { label: 'รายงานสรุปรับ / ปล่อยสินเชื่อ / ค่าใช้จ่าย', to: { name: 'NotAvailablePage' } },
   { label: 'รายงานอันดับ 1-25 การปล่อยสินเชื่อ', to: { name: 'RankingLendingPage' } },
   { label: 'รายงาน 1 - 25 การรับสินเชื่อ', to: { name: 'RankingLoanPage' } },
-  { label: 'รายงานสัญญาและเอกสารหลักทรัพย์', to: { name: 'NotAvailablePage' } },
+  { label: 'รายงานสัญญาและเอกสารหลักทรัพย์', to: { name: 'ContractSecurityDocumentPage' } },
   { label: 'รายงานสรุปสต็อกสินค้ารวม', to: { name: 'AllStockPage' } },
   { label: 'รายงานสาขา', to: { name: 'BranchSummaryPage' } },
   { label: 'รายงานลูกค้าค้างชำระ', to: { name: 'NotAvailablePage' } },
-  { label: 'รายงานหัวหน้าสาขา', to: { name: 'NotAvailablePage' } }
+  { label: 'รายงานหัวหน้าสาขา', to: { name: 'BranchHeadSummaryPage' } }
 ]
 </script>
 

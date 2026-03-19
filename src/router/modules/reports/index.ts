@@ -9,6 +9,8 @@ import PercentInstallmentRouter from './PercentInstallment.router'
 import ProfitBasedOnActualPaymentRouter from './ProfitBasedOnActualPayment.router'
 import RankingLendingRouter from './RankingLending.router'
 import RankingLoanRouter from './RankingLoan.router'
+import BranchHeadSummaryRouter from './BranchHeadSummary.router'
+import ContractSecurityDocumentRouter from './ContractSecurityDocument.router'
 
 const prefix = '/reports'
 
@@ -35,6 +37,7 @@ export default {
       }
     },
     PercentInstallmentRouter,
+    BranchHeadSummaryRouter,
     ProfitBasedOnActualPaymentRouter,
     ComparativeRouter,
     DailyInstallmentPaymentRouter,
@@ -43,7 +46,8 @@ export default {
     AllStockRouter,
     RankingLendingRouter,
     RankingLoanRouter,
-    BranchSummaryRouter
+    BranchSummaryRouter,
+    ContractSecurityDocumentRouter
 
   ]
 } as RouteRecordRaw
