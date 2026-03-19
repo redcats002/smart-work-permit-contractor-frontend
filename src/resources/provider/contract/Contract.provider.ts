@@ -22,6 +22,7 @@ import type {
   TActionContractExpenseResponse,
   TActionContractHistoryResponse,
   TActionContractIncomeResponse,
+  TGetAssetContractListResponse,
   TGetContractByIdResponse,
   TGetContractExpenseByIdResponse,
   TGetContractExpenseListResponse,
@@ -40,6 +41,7 @@ import HttpRequest from '@/resources/HttpRequest'
 
 export interface IContractProvider {
   getContractPaginate(query: IGetContractList): Promise<TGetContractListResponse>
+  getContractAssets (id: TBaseParamsId): Promise<TGetAssetContractListResponse>
   createContract(payload: ICreateContractPayload): Promise<TActionContract>
   updateContract(id: TBaseParamsId, payload: IUpdateContractPayload): Promise<TActionContract>
   deleteContract(id: number): Promise<TActionContract>
@@ -76,6 +78,12 @@ class ContractProvider extends HttpRequest implements IContractProvider {
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }
+
+  public async getContractAssets (id: TBaseParamsId): Promise<TGetAssetContractListResponse> {
+    const response = await this.get(`${this.urlPrefix}/${id}/assets`)
+    return response
+  }
+
 
   public async createContract (payload: ICreateContractPayload): Promise<TActionContract> {
     const response = await this.post(`${this.urlPrefix}`, payload)

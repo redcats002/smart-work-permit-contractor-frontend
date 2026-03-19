@@ -1,6 +1,7 @@
 import { computed, type ComputedRef, ref, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
+import { useAuthStore } from '@/stores/Auth'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
@@ -36,9 +37,11 @@ export interface IUseInit {
   onCancel: () => void
   setSubmitMode: (mode: TPreContractStatus) => void
   onAuto: () => void
+  onInitSellMan: () => void
 }
 
 export function useInit (): IUseInit {
+  const authStore = useAuthStore()
   const router = useRouter()
 
   const CustomerService: ICustomerProvider = new CustomerProvider()
@@ -109,20 +112,28 @@ export function useInit (): IUseInit {
     formKey.value++
     onCustomerSelect(form.value.customerId)
   }
+
+  function onInitSellMan (): void {
+    if (authStore.isSeedAccount) return
+    form.value.sellManId = authStore.user.id
+    formKey.value++
+  }
+
   return {
     formKey,
     form,
-    resolver,
     submitMode,
     selectedCustomer,
     assetCategory,
     canAddAsset,
+    resolver,
     onCustomerSelect,
     onSubmit,
     onAddAsset,
     onRemoveAsset,
     onCancel,
     setSubmitMode,
-    onAuto
+    onAuto,
+    onInitSellMan
   }
 }
