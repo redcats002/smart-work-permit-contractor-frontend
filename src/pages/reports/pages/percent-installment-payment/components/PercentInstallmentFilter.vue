@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import type { IPercentInstallmeFilter } from '@/models/modules/employee/Filter.model'
+import type { IPercentInstallmentFilter } from '@/models/modules/report/percent-installment/Filter.model'
 import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
@@ -51,7 +51,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>({ default: '' })
-defineModel<IPercentInstallmeFilter>('filter', { default: (): IPercentInstallmeFilter => ({}) })
+defineModel<IPercentInstallmentFilter>('filter', { default: (): IPercentInstallmentFilter => ({}) })
 
 function onSearch (): void {
   emits('search')
