@@ -1,9 +1,10 @@
 import type { ComponentOptions } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
+import ComparativeRouter from './_Comparative.router'
 import AllStockRouter from './AllStock.router'
 import BranchSummaryRouter from './BranchSummary.router'
-import DailyInstallmentPaymentRouter from './daily-installment-payment.router'
 import DailyBranchSummaryRouter from './DailyBranchSummary.router'
+import DailyInstallmentPaymentRouter from './DailyInstallmentPayment.router'
 import PercentInstallmentRouter from './PercentInstallment.router'
 import RankingLendingRouter from './RankingLending.router'
 import RankingLoanRouter from './RankingLoan.router'
@@ -32,6 +33,7 @@ export default {
         icon: 'eva:list-fill'
       }
     },
+    ComparativeRouter,
     DailyInstallmentPaymentRouter,
     DailyBranchSummaryRouter,
     PercentInstallmentRouter,
