@@ -11,6 +11,7 @@ import RankingLendingRouter from './RankingLending.router'
 import RankingLoanRouter from './RankingLoan.router'
 import BranchHeadSummaryRouter from './BranchHeadSummary.router'
 import ContractSecurityDocumentRouter from './ContractSecurityDocument.router'
+import FinancialSummaryRouter from './FinancialSummary.router'
 
 const prefix = '/reports'
 
@@ -47,7 +48,8 @@ export default {
     RankingLendingRouter,
     RankingLoanRouter,
     BranchSummaryRouter,
-    ContractSecurityDocumentRouter
+    ContractSecurityDocumentRouter,
+    FinancialSummaryRouter
 
   ]
 } as RouteRecordRaw
