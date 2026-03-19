@@ -10,6 +10,7 @@ import DailyBranchSummaryRouter from './DailyBranchSummary.router'
 import DailyInstallmentPaymentRouter from './DailyInstallmentPayment.router'
 import DailyLoanDisbursementRouter from './DailyLoanDisbursement.router'
 import FinancialSummaryRouter from './FinancialSummary.router'
+import PaymentsForAccountClosureRouter from './PaymentsForAccountClosure.router'
 import PercentInstallmentRouter from './PercentInstallment.router'
 import ProfitBasedOnActualPaymentRouter from './ProfitBasedOnActualPayment.router'
 import RankingLendingRouter from './RankingLending.router'
@@ -49,6 +50,7 @@ export default {
     AllStockRouter,
     RankingLendingRouter,
     RankingLoanRouter,
+    PaymentsForAccountClosureRouter,
     BranchSummaryRouter,
     BranchIncomeExpenseRouter,
     ContractSecurityDocumentRouter,
