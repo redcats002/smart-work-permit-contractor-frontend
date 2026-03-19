@@ -1,6 +1,7 @@
 import type { ComponentOptions } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
 import PercentInstallmentRouter from './PercentInstallment.router'
+import ProfitBasedOnActualPaymentRouter from './ProfitBasedOnActualPayment.router'
 
 const prefix = '/reports'
 
@@ -26,7 +27,8 @@ export default {
         icon: 'eva:list-fill'
       }
     },
-    PercentInstallmentRouter
+    PercentInstallmentRouter,
+    ProfitBasedOnActualPaymentRouter
 
   ]
 } as RouteRecordRaw
