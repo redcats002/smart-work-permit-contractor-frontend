@@ -8,6 +8,7 @@ import ComparativeRouter from './Comparative.router'
 import ContractSecurityDocumentRouter from './ContractSecurityDocument.router'
 import DailyBranchSummaryRouter from './DailyBranchSummary.router'
 import DailyInstallmentPaymentRouter from './DailyInstallmentPayment.router'
+import FinancialSummaryRouter from './FinancialSummary.router'
 import PercentInstallmentRouter from './PercentInstallment.router'
 import ProfitBasedOnActualPaymentRouter from './ProfitBasedOnActualPayment.router'
 import RankingLendingRouter from './RankingLending.router'
@@ -49,7 +50,8 @@ export default {
     RankingLoanRouter,
     BranchSummaryRouter,
     BranchIncomeExpenseRouter,
-    ContractSecurityDocumentRouter
+    ContractSecurityDocumentRouter,
+    FinancialSummaryRouter
 
   ]
 } as RouteRecordRaw
