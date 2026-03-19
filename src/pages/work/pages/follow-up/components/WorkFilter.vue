@@ -15,22 +15,16 @@
         <div class="space-y-4">
           <div>
             <LabelField label="สถานะ">
-              <SelectInput
+              <PreContractStatusSelection
                 v-model="filters.status"
-                :options="statusOptions"
-                option-label="label"
-                option-value="value"
                 placeholder="ทั้งหมด"
                 show-clear />
             </LabelField>
           </div>
           <div>
             <LabelField label="หมวดหมู่สถานะ">
-              <SelectInput
-                v-model="filters.assetCategoryStatus"
-                :options="assetCategoryOptions"
-                option-label="label"
-                option-value="value"
+              <AssetTypeSelection
+                v-model="filters.type"
                 placeholder="ทั้งหมด"
                 show-clear />
             </LabelField>
@@ -52,19 +46,16 @@
 
 <script setup lang="ts">
 import type { ICustomerFilter } from '@/models/modules/customer/Filter.model'
+import type { IWorkAppraisalFilter } from '@/models/modules/work/Filter.model'
 import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
-import SelectInput from '@/components/input/SelectInput.vue'
-import { WorkStatusItems } from '@/enums/modules/work/WorkStatus.enum'
 import Spacer from '@/components/flex/Spacer.vue'
-// import LabelField from '@/components/input/LabelField.vue'
+import LabelField from '@/components/input/LabelField.vue'
 import SearchInput from '@/components/input/SearchInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
-import type { IWorkFilter } from '@/models/modules/work/Filter.model'
-import type { IBaseOption } from '@/models/Global.model'
-import { AssetCategoryStatusItems } from '@/enums/modules/work/AssetCategoryStatus.enum'
-import LabelField from '@/components/input/LabelField.vue'
+import AssetTypeSelection from '@/components/selection/modules/asset-type/AssetTypeSelection.vue'
+import PreContractStatusSelection from '@/components/selection/modules/static/pre-contract-status/PreContractStatusSelection.vue'
 
 interface IEmits {
   search: []
@@ -75,17 +66,10 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>('search', { default: '' })
-const filters = defineModel<IWorkFilter>('filters', {
-  default: (): IWorkFilter => ({})
+const filters = defineModel<IWorkAppraisalFilter>('filters', {
+  default: (): IWorkAppraisalFilter => ({})
 })
-const statusOptions: IBaseOption[] = [
-  { label: 'ทั้งหมด', value: null },
-  ...WorkStatusItems
-]
-const assetCategoryOptions: IBaseOption[] = [
-  { label: 'ทั้งหมด', value: null },
-  ...AssetCategoryStatusItems
-]
+
 defineModel<ICustomerFilter>('filter', { default: (): ICustomerFilter => ({}) })
 
 function onSearch (): void {
