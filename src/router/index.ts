@@ -12,6 +12,7 @@ import ReportsRouter from './modules/reports'
 import SettingRouter from './modules/setting'
 import StockRouter from './modules/stock'
 import WorkRouter from './modules/work'
+import dailyInstallmantPaymentRouter from './modules/reports/daily-installment-payment.router'
 
 // import { useAuthStore } from '@/stores/Auth'
 
@@ -52,6 +53,7 @@ export const routes: RouteRecordRaw[] = [
   ReportsRouter,
   StockRouter,
   SettingRouter,
+  dailyInstallmantPaymentRouter,
   {
     // Catch-all route for 404
     path: '/:pathMatch(.*)*', // Matches any path

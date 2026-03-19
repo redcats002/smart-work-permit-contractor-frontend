@@ -28,7 +28,7 @@ export default {
     {
       path: 'dailyInstallment',
       name: 'DailyInstallmentPaymentReport',
-      component: (): ComponentOptions => import('@/pages/reports/pages/daily-branch-summary/pages/ReportDailyInstallmentPaymentPage.vue'),
+      component: (): ComponentOptions => import('@/pages/reports/pages/daily-installment-payment/pages/ReportDailyInstallmentPaymentPage.vue'),
       meta: {
         auth: true,
         menu: true,
