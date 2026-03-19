@@ -21,7 +21,8 @@ export default {
       meta: {
         auth: true,
         title: 'รายงานสรุปประจำวันรวมทุกสาขา',
-        icon: 'eva:list-fill'
+        icon: 'eva:list-fill',
+        back: { name: 'ReportListPage' }
       }
     }
   ]
