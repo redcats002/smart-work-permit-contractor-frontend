@@ -12,22 +12,18 @@
 import { onMounted, ref, watch } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel, TBaseOption } from '@/models/Global.model'
-import { AssetTypeItems, LandAssetTypeItems, VehicleAssetTypeItems } from '@/enums/modules/contract/AssetType.enum'
+import { PreContractStatusItems, type TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import SelectInput from '@/components/input/SelectInput.vue'
 import usePagination from '@/composables/usePagination'
 
-type TAssetCategory = 'VEHICLE' | 'LAND'
-
 interface IProps {
   optionAll?: boolean
-  category?: TAssetCategory | null
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-  category: null
 })
 
-const model = defineModel<string>()
+const model = defineModel<TPreContractStatus>()
 const selectedName = defineModel<string | null>('selectedName', { default: null })
 
 const innerModel = ref<TBaseModel | null>(null)
@@ -37,9 +33,7 @@ const { pagination } = usePagination()
 const options = ref<TBaseModel[]>([])
 
 function itemsForCategory (): TBaseOption[] {
-  if (props.category === 'VEHICLE') return VehicleAssetTypeItems
-  if (props.category === 'LAND') return LandAssetTypeItems
-  return AssetTypeItems
+  return PreContractStatusItems
 }
 
 async function useFetch (): Promise<void> {
@@ -87,19 +81,13 @@ watch(innerModel, (val: TBaseModel | null): void => {
     return
   }
 
-  model.value = (val.id || '') as string
+  model.value = (val.id || '') as TPreContractStatus
   selectedName.value = val?.name ?? null
 })
 
 watch(model, (): void => {
   syncInnerFromId()
 })
-
-watch(
-  (): TAssetCategory | null => props.category, (): void => {
-    fetch()
-  }
-)
 
 watch(
   options, (): void => {

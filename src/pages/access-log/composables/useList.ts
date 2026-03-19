@@ -15,7 +15,7 @@ interface IUseList extends IUsePagination {
 export default function useList (): IUseList {
   const AccessLogService: IAccessLogProvider = new AccessLogProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
   const filters = ref<IAccessLogFilter>({})
   const items = ref<IAccessLogList[]>([])
@@ -50,6 +50,7 @@ export default function useList (): IUseList {
   }
 
   function onClearFilters (): void {
+    reset()
     filters.value = {}
   }
 
@@ -63,6 +64,7 @@ export default function useList (): IUseList {
     fetch,
     onClearFilters,
     extractPagination,
-    syncQuery
+    syncQuery,
+    reset
   }
 }

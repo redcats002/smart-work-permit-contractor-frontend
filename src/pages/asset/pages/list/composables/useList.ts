@@ -1,8 +1,8 @@
 import { computed, ref, type Ref } from 'vue'
+import type { IAssetFilter } from '@/models/modules/asset/Filter.model'
 import type { IGetAssetList } from '@/models/request/asset/AssetReq.model'
 import type { IAssetList } from '@/models/response/asset/AssetRes.model'
 import { assetMockItems } from '@/pages/asset/mock/assetMock'
-import type { IAssetFilter } from '@/models/modules/asset/Filter.model'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
 interface IUseList extends IUsePagination {
@@ -13,7 +13,7 @@ interface IUseList extends IUsePagination {
 }
 
 export default function useList (): IUseList {
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
   const filters = ref<IAssetFilter>({})
   const items = ref<IAssetList[]>([])
@@ -76,8 +76,8 @@ export default function useList (): IUseList {
   }
 
   function onClearFilters (): void {
+    reset()
     filters.value = {}
-    pagination.value.page = 1
     fetch()
   }
 
@@ -91,6 +91,7 @@ export default function useList (): IUseList {
     fetch,
     onClearFilters,
     extractPagination,
-    syncQuery
+    syncQuery,
+    reset
   }
 }

@@ -1,8 +1,17 @@
-import type { TAssetCategoryStatus } from '@/enums/modules/work/AssetCategoryStatus.enum'
+import type { TAssetType } from '@/enums/modules/contract/AssetType.enum'
+import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import type { IBasePaginationRequest } from '../Request.model'
-import type { TWorkStatus } from '@/enums/modules/work/WorkStatus.enum'
 
-export interface IGetNewWorkList extends IBasePaginationRequest {
-  status?: TWorkStatus
-  assetCategoryStatus?: TAssetCategoryStatus
+export interface IGetWorkAssetAppraisalListBase extends IBasePaginationRequest {
+  status?: TPreContractStatus
+  type?: TAssetType
 }
+export interface IGetWorkFollowUpListBase extends IBasePaginationRequest {
+  status?: TPreContractStatus
+  type?: TAssetType
+}
+export interface IGetNewWorkAssetAppraisalList extends IGetWorkAssetAppraisalListBase {}
+export interface IGetCompleteWorkAssetAppraisalList extends IGetWorkAssetAppraisalListBase {}
+
+export interface IGetNewWorkAssetFollowUpList extends IGetWorkAssetAppraisalListBase {}
+export interface IGetCompleteWorkAssetFollowUpList extends IGetWorkAssetAppraisalListBase {}

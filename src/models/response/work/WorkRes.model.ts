@@ -1,22 +1,28 @@
 import type { IEntity } from '@/models/Global.model'
-import type { TAssetCategoryStatus } from '@/enums/modules/work/AssetCategoryStatus.enum'
-import type { TWorkStatus } from '@/enums/modules/work/WorkStatus.enum'
+import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
+import type { TAssetType } from '@/enums/modules/contract/AssetType.enum'
+import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
+import type { ICustomerById, ICustomerList } from '../customer/CustomerRes.model'
 import type { IBasePaginationResponse } from '../Response.model'
 
-export interface IAssetAppraisalNewWorkList extends IEntity {
-  contractNo: string | null
-  customerName: string | null
-  assetCategory: TAssetCategoryStatus
-  status: TWorkStatus
+export interface IAssetAppraisalBaseWorkList extends IEntity {
+  status: TPreContractStatus
+  customer: ICustomerList
+  types: TAssetType[]
 }
-export interface IFollowUpNewWorkList extends IEntity {
-  assetNo: string | null
-  contractNo: string | null
-  customerName: string | null
-  phoneNumber: string | null
-  assetCategory: TAssetCategoryStatus
+export interface IFollowUpBaseWorkList extends IEntity {
+  status: TPreContractStatus
+  customer: ICustomerById
+  types: TAssetType[]
+  asset: IPreAssetList
 }
 
+export interface IAssetAppraisalNewWorkList extends IAssetAppraisalBaseWorkList {}
+export interface IAssetAppraisalCompleteWorkList extends IAssetAppraisalBaseWorkList {}
+export interface IFollowUpNewWorkList extends IFollowUpBaseWorkList {}
+export interface IFollowUpCompleteWorkList extends IFollowUpBaseWorkList {}
 
-export type TGetNewWorkAppraisalListResponse = IBasePaginationResponse<IAssetAppraisalNewWorkList>
-export type TGetNewWorkFollowUpListResponse = IBasePaginationResponse<IFollowUpNewWorkList>
+export type TGetNewWorkAppraisalListResponse = IBasePaginationResponse<IAssetAppraisalBaseWorkList>
+export type TGetCompleteWorkAppraisalListResponse = IBasePaginationResponse<IAssetAppraisalBaseWorkList>
+export type TGetNewWorkFollowUpListResponse = IBasePaginationResponse<IFollowUpBaseWorkList>
+export type TGetCompleteWorkFollowUpListResponse = IBasePaginationResponse<IFollowUpBaseWorkList>

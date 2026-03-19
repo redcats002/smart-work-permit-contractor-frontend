@@ -11,7 +11,7 @@
           Not Available
         </p>
         <h1 class="text-2xl font-bold">
-          Clinic Not Available Temporarily
+          This Page Not Available Temporarily
         </h1>
         <p class="text-surface-500 text-sm">
           Please contact the administrator for more information
@@ -30,6 +30,6 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 function back (): void {
-  router.push({ name: 'PersonalInformationListPage' })
+  router.push({ name: 'HomePage' })
 }
 </script>
