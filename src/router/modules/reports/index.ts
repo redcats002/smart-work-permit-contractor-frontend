@@ -1,6 +1,7 @@
 import type { ComponentOptions } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
 import PercentInstallmentRouter from './PercentInstallment.router'
+import DailyBranchSummaryRouter from './DailyBranchSummary.router'
 
 const prefix = '/reports'
 
@@ -26,6 +27,7 @@ export default {
         icon: 'eva:list-fill'
       }
     },
+    DailyBranchSummaryRouter,
     PercentInstallmentRouter
 
   ]
