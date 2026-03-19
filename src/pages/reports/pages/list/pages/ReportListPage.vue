@@ -46,11 +46,11 @@ const reportItems: IReportItem[] = [
   { label: 'รายงานการรับ/จ่ายประจำสาขา', to: { name: 'NotAvailablePage' } },
   { label: 'รายงานการรับชำระเงินลูกหนี้ปิดบัญชี', to: { name: 'NotAvailablePage' } },
   { label: 'รายงานสรุปรับ / ปล่อยสินเชื่อ / ค่าใช้จ่าย', to: { name: 'NotAvailablePage' } },
-  { label: 'รายงานอันดับ 1-25 การปล่อยสินเชื่อ', to: { name: 'NotAvailablePage' } },
-  { label: 'รายงาน 1 - 25 การรับสินเชื่อ', to: { name: 'NotAvailablePage' } },
+  { label: 'รายงานอันดับ 1-25 การปล่อยสินเชื่อ', to: { name: 'RankingLendingPage' } },
+  { label: 'รายงาน 1 - 25 การรับสินเชื่อ', to: { name: 'RankingLoanPage' } },
   { label: 'รายงานสัญญาและเอกสารหลักทรัพย์', to: { name: 'NotAvailablePage' } },
-  { label: 'รายงานสรุปสต็อกสินค้ารวม', to: { name: 'NotAvailablePage' } },
-  { label: 'รายงานสาขา', to: { name: 'NotAvailablePage' } },
+  { label: 'รายงานสรุปสต็อกสินค้ารวม', to: { name: 'AllStockPage' } },
+  { label: 'รายงานสาขา', to: { name: 'BranchSummaryPage' } },
   { label: 'รายงานลูกค้าค้างชำระ', to: { name: 'NotAvailablePage' } },
   { label: 'รายงานหัวหน้าสาขา', to: { name: 'NotAvailablePage' } }
 ]
