@@ -1,13 +1,13 @@
 <template>
   <div class="grid gap-2.5">
     <AssetSection
-      v-if="contract?.preAssets.length"
+      v-if="assets.length"
       :active-asset="activeAsset"
       :active-index="activeIndex"
       :asset-category="assetCategory"
-      :pre-assets="contract?.preAssets"
-      :status="contract?.status"
+      :pre-assets="assets"
       @active="onActiveAsset($event)" />
+    <Empty v-else />
   </div>
 </template>
 
@@ -15,29 +15,29 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
-import type { IPreContractById } from '@/models/response/pre-contract/PreContractRes.model'
+import type { IContractAssetList } from '@/models/response/contract/ContractRes.model'
 import { isLandAsset, isVehicleAsset } from '@/enums/modules/contract/AssetType.enum'
-import PreContractProvider, { type IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
+import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
+import Empty from '@/components/display/Empty.vue'
 import type { TAssetCategory } from '@/pages/contract/pages/create/schema/pre-contract.schema'
 import AssetSection from '@/pages/contract/pages/pre-contract-detail/components/AssetSection.vue'
 
 const route = useRoute()
 
-const PreContractService: IPreContractProvider = new PreContractProvider()
+const ContractService: IContractProvider = new ContractProvider()
 
 const contractId = computed((): string | string[] => route.params.id)
-const contract = ref<IPreContractById | null>(null)
+const assets = ref<IContractAssetList[]>([])
 
 const activeIndex = ref<number>(0)
-const activeAsset = computed((): IPreAssetList | null => {
-  if (!contract.value?.preAssets?.[activeIndex.value]) return null
-  return contract.value?.preAssets?.[activeIndex.value]
+const activeAsset = computed((): IContractAssetList | null => {
+  if (!assets.value?.[activeIndex.value]) return null
+  return assets.value?.[activeIndex.value]
 })
 
 const assetCategory = computed((): TAssetCategory => {
-  if (!contract.value?.preAssets.length) return null
-  for (const e of contract.value.preAssets) {
+  if (!assets.value?.length) return null
+  for (const e of assets.value) {
     if (isVehicleAsset(e.type)) return 'VEHICLE'
     if (isLandAsset(e.type)) return 'LAND'
   }
@@ -45,8 +45,8 @@ const assetCategory = computed((): TAssetCategory => {
 })
 
 async function useFetch (): Promise<void> {
-  const res = await PreContractService.getContractFindOne(contractId.value)
-  contract.value = res.data
+  const res = await ContractService.getContractAssets(contractId.value)
+  assets.value = res.data
 }
 
 
