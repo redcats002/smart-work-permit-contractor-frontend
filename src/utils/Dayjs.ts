@@ -56,7 +56,7 @@ export function useDayjs (): TUseDayjs {
   }
 
   const formatDate = (input?: string | Date): string => {
-    return input ? dayjs(input).format('DD/MM/BBBB') : '-'
+    return input ? dayjs(input).format('DD/MM/BB') : '-'
   }
   const formatTime = (input?: string | Date): string => {
     return input ? dayjs(input).format('HH:mm[น.]') : '-'

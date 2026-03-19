@@ -23,48 +23,10 @@ export function useInitDetail (data?: Partial<IContractById>): Ref<IContractById
       name: data?.contractLoanPurpose?.name || '',
       id: typeof data?.contractLoanPurpose?.id === 'string' ? data?.contractLoanPurpose?.id : String(data?.contractLoanPurpose?.id)
     },
-    guarantors: data?.guarantors || [
-      {
-        mainAddress: {
-          address: '',
-          subDistrict: '',
-          district: '',
-          province: '',
-          postCode: ''
-        },
-        idCard: '111100000000',
-        customerGroup: {
-          id: 1,
-          name: ''
-        },
-        firstName: 'D',
-        lastName: '',
-        titleName: '',
-        id: 1,
-        phoneNumber: '',
-        status: 'ACTIVE'
-      },
-      {
-        idCard: '12345678901234',
-        customerGroup: {
-          id: 2,
-          name: ''
-        },
-        firstName: 'E',
-        lastName: '',
-        titleName: '',
-        id: 1,
-        phoneNumber: '',
-        status: 'ACTIVE',
-        mainAddress: {
-          address: '',
-          subDistrict: '',
-          district: '',
-          province: '',
-          postCode: ''
-        }
-      }
-    ],
+    finalInstallment: data?.finalInstallment || 0,
+    finalInstallmentDate: data?.finalInstallmentDate || '',
+    firstInstallmentDate: data?.firstInstallmentDate || '',
+    guarantors: data?.guarantors || [],
     contractLoanType: {
       name: data?.contractLoanType?.name || '',
       id: typeof data?.contractLoanType?.id === 'string' ? data?.contractLoanType?.id : String(data?.contractLoanType?.id)
@@ -79,7 +41,6 @@ export function useInitDetail (data?: Partial<IContractById>): Ref<IContractById
       id: typeof data?.sellMan?.id === 'string' ? data?.sellMan?.id : String(data?.sellMan?.id)
     },
     id: typeof data?.id === 'string' ? data?.id : String(data?.id),
-    endDate: data?.endDate || '',
     howDidFindUs: {
       name: data?.howDidFindUs?.name || '',
       id: typeof data?.howDidFindUs?.id === 'string' ? data?.howDidFindUs?.id : String(data?.howDidFindUs?.id)

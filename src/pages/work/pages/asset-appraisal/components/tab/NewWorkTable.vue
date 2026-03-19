@@ -4,35 +4,36 @@
     v-model:sort-by="sortBy"
     v-model:sort-order="sortOrder"
     :columns="columns"
-    :items="props.items"
+    :items="items"
     disable-auto-left-padding
     @update="emits('update')">
-    <template #[`item.contractNo`]="{ item }">
-      <LinkText :to="{}">
-        {{ item.contractNo }}
+    <template #[`item.idNo`]="{ item }">
+      <LinkText :to="{ name: 'ContractDetailPage', params: { id: item.id } }">
+        {{ item.idNo }}
       </LinkText>
     </template>
     <template #[`item.status`]="{ item }">
-      <ChipWorkStatus :value="item.status ?? undefined" />
+      <ChipPreContractStatus :value="item.status ?? undefined" />
     </template>
   </BaseTable>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { formatter } from '@/utils/Formatter'
+import type { IAssetAppraisalNewWorkList } from '@/models/response/work/WorkRes.model'
 import type { IColumn } from '@/models/Table.model'
+import { formatTitle as formatTitleAssetType } from '@/enums/modules/contract/AssetType.enum'
+import { formatTitle as formatTitlePreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import LinkText from '@/components/button/LinkText.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
+import ChipPreContractStatus from '@/pages/contract/pages/list/components/ChipPreContractStatus.vue'
 import type { IPagination } from '@/composables/usePagination'
-import ChipWorkStatus from '../ChipWorkStatus.vue'
-import type { IAssetAppraisalNewWorkList } from '@/models/response/work/WorkRes.model'
-import { formatTitle as formatTitleAssetCategory } from '@/enums/modules/work/AssetCategoryStatus.enum'
-import { formatTitle } from '@/enums/modules/work/WorkStatus.enum'
 
 interface IProps {
   items: IAssetAppraisalNewWorkList[]
 }
-const props = defineProps<IProps>()
+defineProps<IProps>()
 
 interface IEmits {
   update: []
@@ -45,32 +46,9 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 
 const columns = ref<IColumn<IAssetAppraisalNewWorkList>[]>([
-  {
-    field: 'contractNo',
-    header: 'เลขที่สัญญา',
-    sortable: true,
-    align: 'left',
-    value: (e: IAssetAppraisalNewWorkList): string => e.contractNo ?? ''
-  },
-  {
-    field: 'customerName',
-    header: 'ชื่อลูกค้า',
-    sortable: true,
-    align: 'left',
-    value: (e: IAssetAppraisalNewWorkList): string => e.customerName ?? ''
-  },
-  {
-    field: 'assetCategory',
-    header: 'หมวดหมู่หลักทรัพย์',
-    align: 'left',
-    value: (e: IAssetAppraisalNewWorkList): string => formatTitleAssetCategory(e.assetCategory) || '-'
-  },
-  {
-    field: 'status',
-    header: 'สถานะ',
-    sortable: true,
-    align: 'left',
-    value: (e: IAssetAppraisalNewWorkList): string => formatTitle(e.status) || '-'
-  }
+  { field: 'idNo', header: 'เลขที่สัญญา', sortable: true, align: 'left', value: (e: IAssetAppraisalNewWorkList): string => e.idNo ?? '' },
+  { field: 'customer', header: 'ชื่อลูกค้า', sortable: true, align: 'left', value: (e: IAssetAppraisalNewWorkList): string => formatter.fullName(e.customer) ?? '' },
+  { field: 'types', header: 'หมวดหมู่หลักทรัพย์', align: 'left', value: (e: IAssetAppraisalNewWorkList): string => e?.types?.map(formatTitleAssetType).join(', ') || '-' },
+  { field: 'status', header: 'สถานะ', align: 'left', value: (e: IAssetAppraisalNewWorkList): string => formatTitlePreContractStatus(e.status) || '-' }
 ])
 </script>

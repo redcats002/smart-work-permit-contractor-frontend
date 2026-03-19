@@ -1,23 +1,46 @@
-import type { IEntity, TBaseModel } from '@/models/Global.model'
+import type { IAuthor, IEntity, TBaseModel } from '@/models/Global.model'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
+import type { TAssetType } from '@/enums/modules/contract/AssetType.enum'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
-import type { TStockStatus } from '@/enums/modules/stock/StockStatus.enum'
 import type { TEstateStatus } from '@/enums/modules/estate/EstateStatus.enum'
+import type { TStockStatus } from '@/enums/modules/stock/StockStatus.enum'
 import type { TTitleName } from '@/enums/TitleName.enum'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 
+export interface IStockCustomer extends IAuthor {
+  idNo: string
+  fullName: string
+}
+
+export interface IStockContract {
+  id: number
+  idNo: string
+  customer: IStockCustomer
+}
+
+export interface IStockWarehouse {
+  id: number
+  idNo: string
+  name: string
+}
+
+export interface IStockLocation {
+  id: number
+  name: string
+  warehouse: IStockWarehouse
+}
 export interface IStockList extends IEntity {
-  assetNo: string
-  contractNo: string
-  receivedDate: string
-  titleName: TTitleName
-  firstName: string
-  lastName: string
-  category: string
-  warehouse: string
-  storageLocation: string
   status: TStockStatus
-  type: string
+  type: TAssetType
+  contract: IStockContract
+  location: IStockLocation
+}
+
+export interface IStockMoveAssetsList extends IEntity {
+  type: TAssetType
+  detail: string
+  contract: IStockContract
+  location: IStockLocation
 }
 export interface IStockById extends IEntity {
   status: TStockStatus
@@ -59,6 +82,7 @@ export interface IStockEstateList extends IEntity {
 }
 
 export type TGetStockListResponse = IBasePaginationResponse<IStockList>
+export type TGetStockMoveAssetsListResponse = IBasePaginationResponse<IStockMoveAssetsList>
 export type TGetStockByIdResponse = IBaseSuccessResponse<IStockById>
 export type TActionStock = IBaseSuccessResponse<boolean>
 

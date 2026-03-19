@@ -6,17 +6,42 @@
         <BackButton />
         <PrintButton @click="onPrint()" />
       </div>
-      <InvoicePrint
-        id="print-area"
-        :form="form"
-        @on-add-row="onAddRow()"
-        @on-delete-row="onDeleteRow($event)" />
+      <div>
+        <div
+          class="page">
+          <InvoicePrint
+            :form="form"
+            :index-chunk="0"
+            :installment-form="installmentForm"
+            :installment-items="installmentForm.items"
+            class="page"
+            @on-add-row="onAddRow()"
+            @on-delete-row="onDeleteRow($event)" />
+        </div>
+      </div>
+      <div
+        id="print-area">
+        <div
+          v-for="(page,index) in paginatedInstallment"
+          :key="index"
+          class="page">
+          <InvoicePrint
+            :form="form"
+            :index-chunk="index"
+            :installment-form="installmentForm"
+            :installment-items="page"
+            class="page"
+            @on-add-row="onAddRow()"
+            @on-delete-row="onDeleteRow($event)" />
+        </div>
+      </div>
     </BasePage>
   </section>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
+import type { IInvoiceDetailItems } from '@/models/response/invoice/InvoiceRes.model'
 import BasePage from '@/components/base/BasePage.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import PrintButton from '@/components/button/PrintButton.vue'
@@ -24,19 +49,26 @@ import PageTitle from '@/components/nav/PageTitle.vue'
 import InvoicePrint from '../components/InvoicePrint.vue'
 import useDetail from '../composables/useDetail'
 
-const { form, fetchById } = useDetail()
-
+const { form, installmentForm, fetchById } = useDetail()
+const chunkSize = 5
+const paginatedInstallment = computed((): IInvoiceDetailItems[][] => {
+  const chunks: IInvoiceDetailItems[][] = []
+  for (let i = 0; i < installmentForm.value.items.length; i += chunkSize) {
+    chunks.push(installmentForm.value.items.slice(i, i + chunkSize))
+  }
+  return chunks
+})
 function onAddRow (): void {
-  form.value.items.push({
-    detail: '',
+  installmentForm.value.items.push({
+    name: '',
     amount: 0,
-    price: 0,
-    new: true
+    qty: 0,
+    isMain: false
   })
 }
 
 function onDeleteRow (index: number): void {
-  form.value.items.splice(index, 1)
+  installmentForm.value.items.splice(index, 1)
 }
 function onPrint (): void {
   window.print()
@@ -47,15 +79,17 @@ onMounted((): void => {
 </script>
 
 <style scoped>
-@media print {
+.page {
+  page-break-after: always;
+}
 
+#print-area {
+  display: none;
+}
+
+@media print {
   body * {
     visibility: hidden;
-    background-color: white !important;
-  }
-
-  .no-print {
-    display: none !important;
   }
 
   #print-area,
@@ -64,16 +98,19 @@ onMounted((): void => {
   }
 
   #print-area {
+    display: block;
     position: absolute;
-    left: 0;
-    top: 0;
+    inset: 0;
     width: 100%;
+  }
+
+  .no-print {
+    display: none !important;
   }
 
   @page {
     size: A4;
-    /* margin: 12mm; */
-    background-color: white !important;
+    margin: 0;
   }
 
 }

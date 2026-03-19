@@ -32,6 +32,7 @@ export interface IFormatter {
   fullName (e?: { titleName?: TTitleName, firstName?: string, lastName?: string }): string
   fullPhoneNumber (e: { phoneNumber?: string, phoneNumber2?: string }): string
   fullAddress (data?: Partial<IAddressRequest>): string
+  numberToThaiText (amount: number): string
 }
 
 const numberParseFloat = (_number: string | number): number => {
@@ -203,6 +204,54 @@ function fullAddress (data?: Partial<IAddressRequest>): string {
     .trim()
 }
 
+function numberToThaiText (amount: number): string {
+  if (typeof amount !== 'number' || Number.isNaN(amount)) {
+    throw new Error('Input must be a valid number')
+  }
+
+  const thaiNumbers = ['ศูนย์', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า']
+  const thaiUnits = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน', 'ล้าน']
+  const bahtText = 'บาท'
+  const satangText = 'สตางค์'
+  const wholeText = 'ถ้วน'
+
+  const formatThaiText = (num: number): string => {
+    let text = ''
+    const numStr = num.toString().split('').reverse()
+    numStr.forEach((digit: string, index: number): any => {
+      const d = Number(digit)
+      const unit = thaiUnits[index % thaiUnits.length]
+      const isTens = index % thaiUnits.length === 1
+
+      if (d !== 0) {
+        if (isTens && d === 2) {
+          text = `ยี่${unit}${text}`
+        } else if (isTens && d === 1) {
+          text = `${unit}${text}`
+        } else if (!isTens && d === 1 && index !== 0) {
+          text = `เอ็ด${unit}${text}`
+        } else {
+          text = `${thaiNumbers[d]}${unit}${text}`
+        }
+      }
+    })
+    if (text.startsWith('เอ็ด')) {
+      text = text.replace('เอ็ด', 'หนึ่ง')
+    }
+    return text
+  }
+
+  const [integerPart, decimalPart] = amount.toFixed(2).split('.')
+  const integerText = formatThaiText(Number(integerPart))
+  const decimalValue = Number(decimalPart)
+
+  if (decimalValue === 0) {
+    return `${integerText}${bahtText}${wholeText}`
+  }
+  const decimalText = formatThaiText(decimalValue)
+  return `${integerText}${bahtText}จุด${decimalText}${satangText}`
+}
+
 export const formatter: IFormatter = {
   numberFormat,
   numberFormat2Decimal,
@@ -225,7 +274,8 @@ export const formatter: IFormatter = {
   stringFormatTitleToCamelCase,
   stringFormatKebabCaseToTitleCase,
   thaiBaht,
-  fullAddress
+  fullAddress,
+  numberToThaiText
 }
 
 export default {

@@ -18,7 +18,7 @@
         @submit="onSubmit($event)">
         <BaseContainer>
           <LabelField
-            :invalid="!selectedCustomer"
+            :invalid="!form.sellManId"
             label="หน้างานประเมิน"
             name="sellManId"
             required>
@@ -90,6 +90,7 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
@@ -119,6 +120,12 @@ const {
   onRemoveAsset,
   onCancel,
   setSubmitMode,
-  onAuto
+  onAuto,
+  onInitSellMan
 } = useInit()
+
+
+onMounted((): void => {
+  onInitSellMan()
+})
 </script>

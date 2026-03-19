@@ -16,7 +16,7 @@ interface IUseList extends IUsePagination {
 export default function useList (): IUseList {
   const CustomerService: ICustomerProvider = new CustomerProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
   const filters = ref<IGetCustomerList>({})
   const items = ref<ICustomerList[]>([])
@@ -57,7 +57,9 @@ export default function useList (): IUseList {
     handleLoading(useFetch)
   }
 
-  function onClearFilters (): void {}
+  function onClearFilters (): void {
+    reset()
+  }
 
   function onDelete (id: number): void {
     handleLoading((): Promise<void> => useDelete(id))
@@ -74,6 +76,7 @@ export default function useList (): IUseList {
     onClearFilters,
     onDelete,
     extractPagination,
-    syncQuery
+    syncQuery,
+    reset
   }
 }

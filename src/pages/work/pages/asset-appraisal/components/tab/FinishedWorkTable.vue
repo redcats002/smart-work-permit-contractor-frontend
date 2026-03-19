@@ -4,12 +4,12 @@
     v-model:sort-by="sortBy"
     v-model:sort-order="sortOrder"
     :columns="columns"
-    :items="props.items"
+    :items="items"
     disable-auto-left-padding
     @update="emits('update')">
-    <template #[`item.contractNo`]="{ item }">
-      <LinkText :to="{}">
-        {{ item.contractNo }}
+    <template #[`item.idNo`]="{ item }">
+      <LinkText :to="{ name: 'PreContractDetailPage', params: { id: item.id } }">
+        {{ item.idNo }}
       </LinkText>
     </template>
   </BaseTable>
@@ -17,17 +17,18 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { formatter } from '@/utils/Formatter'
+import type { IAssetAppraisalCompleteWorkList } from '@/models/response/work/WorkRes.model'
 import type { IColumn } from '@/models/Table.model'
+import { formatTitle } from '@/enums/modules/contract/AssetType.enum'
 import LinkText from '@/components/button/LinkText.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
-import type { IAssetAppraisalNewWorkList } from '@/models/response/work/WorkRes.model'
-import { formatTitle as formatTitleAssetCategory } from '@/enums/modules/work/AssetCategoryStatus.enum'
 
 interface IProps {
-  items: IAssetAppraisalNewWorkList[]
+  items: IAssetAppraisalCompleteWorkList[]
 }
-const props = defineProps<IProps>()
+defineProps<IProps>()
 
 interface IEmits {
   update: []
@@ -39,26 +40,9 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 
-const columns = ref<IColumn<IAssetAppraisalNewWorkList>[]>([
-  {
-    field: 'contractNo',
-    header: 'เลขที่สัญญา',
-    sortable: true,
-    align: 'left',
-    value: (e: IAssetAppraisalNewWorkList): string => e.contractNo ?? ''
-  },
-  {
-    field: 'customerName',
-    header: 'ชื่อลูกค้า',
-    sortable: true,
-    align: 'left',
-    value: (e: IAssetAppraisalNewWorkList): string => e.customerName ?? ''
-  },
-  {
-    field: 'assetCategory',
-    header: 'หมวดหมู่หลักทรัพย์',
-    align: 'left',
-    value: (e: IAssetAppraisalNewWorkList): string => formatTitleAssetCategory(e.assetCategory) || '-'
-  }
+const columns = ref<IColumn<IAssetAppraisalCompleteWorkList>[]>([
+  { field: 'idNo', header: 'เลขที่สัญญา', sortable: true, align: 'left', value: (e: IAssetAppraisalCompleteWorkList): string => e.idNo ?? '' },
+  { field: 'customer', header: 'ชื่อลูกค้า', sortable: true, align: 'left', value: (e: IAssetAppraisalCompleteWorkList): string => formatter.fullName(e.customer) ?? '' },
+  { field: 'types', header: 'หมวดหมู่หลักทรัพย์', align: 'left', value: (e: IAssetAppraisalCompleteWorkList): string => e?.types?.map(formatTitle).join(', ') || '-' }
 ])
 </script>

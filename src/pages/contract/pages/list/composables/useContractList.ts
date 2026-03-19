@@ -17,7 +17,7 @@ interface IUseContractList extends IUsePagination {
 export default function useContractList (): IUseContractList {
   const contractService: IContractProvider = new ContractProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
   const filters = ref<IGetContractList>({})
   const items = ref<IContractList[]>([])
@@ -49,8 +49,8 @@ export default function useContractList (): IUseContractList {
   }
 
   function onClearFilters (): void {
+    reset()
     filters.value = {}
-    fetch()
   }
 
   return {
@@ -64,6 +64,7 @@ export default function useContractList (): IUseContractList {
     fetch,
     onClearFilters,
     extractPagination,
-    syncQuery
+    syncQuery,
+    reset
   }
 }

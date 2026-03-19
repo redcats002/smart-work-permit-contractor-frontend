@@ -20,7 +20,7 @@ export default {
       path: 'detail/:id',
       name: 'ContractDetailPage',
       component: (): ComponentOptions => import('@/pages/contract/pages/detail/pages/ContractDetailPage.vue'),
-      meta: { auth: true, title: 'รายละเอียดสัญญา' }
+      meta: { auth: true, title: 'รายละเอียดสัญญา', back: { name: 'ContractListPage' } }
     },
     {
       path: 'pre-contract/create',

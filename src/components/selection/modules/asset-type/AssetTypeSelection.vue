@@ -1,7 +1,7 @@
 <template>
-  <AutoCompleteInput
+  <SelectInput
     v-model="innerModel"
-    :suggestions="suggestions"
+    :options="options"
     option-label="name"
     complete-on-focus
     force-selection
@@ -13,12 +13,13 @@ import { onMounted, ref, watch } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel, TBaseOption } from '@/models/Global.model'
 import { AssetTypeItems, LandAssetTypeItems, VehicleAssetTypeItems } from '@/enums/modules/contract/AssetType.enum'
-import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
+import SelectInput from '@/components/input/SelectInput.vue'
 import usePagination from '@/composables/usePagination'
 
 type TAssetCategory = 'VEHICLE' | 'LAND'
 
 interface IProps {
+  optionAll?: boolean
   category?: TAssetCategory | null
 }
 
@@ -33,7 +34,7 @@ const innerModel = ref<TBaseModel | null>(null)
 
 const { pagination } = usePagination()
 
-const suggestions = ref<TBaseModel[]>([])
+const options = ref<TBaseModel[]>([])
 
 function itemsForCategory (): TBaseOption[] {
   if (props.category === 'VEHICLE') return VehicleAssetTypeItems
@@ -42,12 +43,15 @@ function itemsForCategory (): TBaseOption[] {
 }
 
 async function useFetch (): Promise<void> {
-  suggestions.value = itemsForCategory().map(
+  options.value = itemsForCategory().map(
     (item: TBaseOption): TBaseModel => ({
       id: item.value!,
       name: item.label
     })
   )
+  if (props.optionAll) {
+    options.value.unshift({ id: null, name: 'ทั้งหมด' })
+  }
 }
 
 function fetch (): void {
@@ -66,7 +70,7 @@ function syncInnerFromId (): void {
     return
   }
 
-  innerModel.value = suggestions.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
+  innerModel.value = options.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
   selectedName.value = innerModel.value?.name ?? null
 }
 
@@ -79,7 +83,7 @@ watch(innerModel, (val: TBaseModel | null): void => {
 
   if (typeof val === 'string') {
     model.value = val
-    selectedName.value = suggestions.value.find((i: TBaseModel): boolean => i.id === val)?.name ?? null
+    selectedName.value = options.value.find((i: TBaseModel): boolean => i.id === val)?.name ?? null
     return
   }
 
@@ -98,7 +102,7 @@ watch(
 )
 
 watch(
-  suggestions, (): void => {
+  options, (): void => {
     syncInnerFromId()
   }, { immediate: true }
 )

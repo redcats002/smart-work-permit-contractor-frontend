@@ -7,14 +7,15 @@
     :items="props.items"
     disable-auto-left-padding
     @update="emits('update')">
-    <template #[`item.assetNo`]="{ item }">
+    <template #[`item.asset.idNo`]="{ item }">
       <LinkText :to="{}">
-        {{ item.assetNo }}
+        <!-- TODO: complete asset.idNo and route -->
+        {{ item.asset.idNo }}
       </LinkText>
     </template>
-    <template #[`item.contractNo`]="{ item }">
-      <LinkText :to="{}">
-        {{ item.contractNo }}
+    <template #[`item.idNo`]="{ item }">
+      <LinkText :to="{ name: 'PreContractDetailPage', params: { id: item.id } }">
+        {{ item.idNo }}
       </LinkText>
     </template>
   </BaseTable>
@@ -22,15 +23,16 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { formatter } from '@/utils/Formatter'
+import type { IFollowUpBaseWorkList } from '@/models/response/work/WorkRes.model'
 import type { IColumn } from '@/models/Table.model'
+import { formatTitle } from '@/enums/modules/contract/AssetType.enum'
 import LinkText from '@/components/button/LinkText.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
-import type { IFollowUpNewWorkList } from '@/models/response/work/WorkRes.model'
-import { formatTitle as formatTitleAssetCategory } from '@/enums/modules/work/AssetCategoryStatus.enum'
 
 interface IProps {
-  items: IFollowUpNewWorkList[]
+  items: IFollowUpBaseWorkList[]
 }
 const props = defineProps<IProps>()
 
@@ -44,40 +46,11 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 
-const columns = ref<IColumn<IFollowUpNewWorkList>[]>([
-  {
-    field: 'assetNo',
-    header: 'เลขที่หลักทรัพย์',
-    sortable: true,
-    align: 'left',
-    value: (e: IFollowUpNewWorkList): string => e.assetNo ?? ''
-  },
-  {
-    field: 'contractNo',
-    header: 'เลขที่สัญญา',
-    sortable: true,
-    align: 'left',
-    value: (e: IFollowUpNewWorkList): string => e.contractNo ?? ''
-  },
-  {
-    field: 'customerName',
-    header: 'ชื่อลูกค้า',
-    sortable: true,
-    align: 'left',
-    value: (e: IFollowUpNewWorkList): string => e.customerName ?? ''
-  },
-  {
-    field: 'phoneNumber',
-    header: 'เบอร์โทรศัพท์',
-    sortable: true,
-    align: 'left',
-    value: (e: IFollowUpNewWorkList): string => e.phoneNumber ?? ''
-  },
-  {
-    field: 'assetCategory',
-    header: 'หมวดหมู่หลักทรัพย์',
-    align: 'left',
-    value: (e: IFollowUpNewWorkList): string => formatTitleAssetCategory(e.assetCategory) || '-'
-  }
+const columns = ref<IColumn<IFollowUpBaseWorkList>[]>([
+  { field: 'asset.idNo', header: 'เลขที่หลักทรัพย์', sortable: true },
+  { field: 'idNo', header: 'เลขที่สัญญา', sortable: true, value: (e: IFollowUpBaseWorkList): string => e.idNo ?? '' },
+  { field: 'customer', header: 'ชื่อลูกค้า', value: (e: IFollowUpBaseWorkList): string => formatter.fullAddress(e.customer?.mainAddress) ?? '' },
+  { field: 'phoneNumber', header: 'เบอร์โทรศัพท์', value: (e: IFollowUpBaseWorkList): string => formatter.fullPhoneNumber(e?.customer) ?? '' },
+  { field: 'types', header: 'หมวดหมู่หลักทรัพย์', value: (e: IFollowUpBaseWorkList): string => e?.types?.map(formatTitle).join(', ') || '-' }
 ])
 </script>
