@@ -15,7 +15,7 @@ interface IUseList extends IUsePagination {
   onDelete(id: number): void
 }
 export default function useList (): IUseList {
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
   const filters = ref<IPercentInstallmentFilter>({})
   const items = ref<IPercentInstallmentList[]>([])
@@ -86,7 +86,7 @@ export default function useList (): IUseList {
     // delete
     console.log(id)
     fetch()
-    toast.success('ลบลูกค้าสําเร็จ')
+    toast.success('ลบสำเร็จ')
   }
 
   function normalizeFilters (value: IPercentInstallmentFilter): Partial<IPercentInstallmentFilter> {
@@ -99,7 +99,9 @@ export default function useList (): IUseList {
     handleLoading(useFetch)
   }
 
-  function onClearFilters (): void {}
+  function onClearFilters (): void {
+    reset()
+  }
 
   function onDelete (id: number): void {
     handleLoading((): Promise<void> => useDelete(id))
@@ -116,6 +118,7 @@ export default function useList (): IUseList {
     onClearFilters,
     onDelete,
     extractPagination,
-    syncQuery
+    syncQuery,
+    reset
   }
 }
