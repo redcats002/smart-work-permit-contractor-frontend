@@ -1,3 +1,4 @@
-import type { IGetNewWorkList } from '@/models/request/work/WorkReq.model'
+import type { IGetWorkAssetAppraisalListBase, IGetWorkFollowUpListBase } from '@/models/request/work/WorkReq.model'
 
-export interface IWorkFilter extends IGetNewWorkList {}
+export interface IWorkAppraisalFilter extends IGetWorkAssetAppraisalListBase {}
+export interface IWorkFollowUpFilter extends IGetWorkFollowUpListBase {}

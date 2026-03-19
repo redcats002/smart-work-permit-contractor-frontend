@@ -52,6 +52,7 @@ export interface IUsePagination {
   pagination: Ref<IPagination>
   extractPagination: (input?: Partial<IPagination>) => IPagination
   syncQuery (payload?: IUseSyncQueryPayload): Record<string, unknown>
+  reset (): void
 }
 
 export function usePagination (): IUsePagination {
@@ -77,13 +78,21 @@ export function usePagination (): IUsePagination {
     return query
   }
 
+  function reset (): void {
+    search.value = ''
+    sortBy.value = ''
+    sortOrder.value = 'desc'
+    pagination.value = { count: 0, page: 1, limit: 10, totalPage: 0 }
+  }
+
   return {
     search,
     sortBy,
     sortOrder,
     pagination,
     extractPagination: useExtractPagination,
-    syncQuery: useSyncQuery
+    syncQuery: useSyncQuery,
+    reset
   }
 }
 
@@ -94,7 +103,7 @@ interface IUseLocalPagination<T> extends IUsePagination {
 }
 
 export function useLocalPagination<T> (inputItems: T[] = []): IUseLocalPagination<T> {
-  const { search, sortBy, sortOrder, pagination, extractPagination, syncQuery } = usePagination()
+  const { search, sortBy, sortOrder, pagination, extractPagination, syncQuery, reset } = usePagination()
 
   const items = ref<T[]>([]) as Ref<T[]>
   const displayItems = ref<T[]>([]) as Ref<T[]>
@@ -115,6 +124,7 @@ export function useLocalPagination<T> (inputItems: T[] = []): IUseLocalPaginatio
   updateItems(inputItems)
   syncQuery({ pagination: pagination.value, search: search.value, sortBy: sortBy.value, sortOrder: sortOrder.value })
 
+
   return {
     search,
     sortBy,
@@ -124,7 +134,8 @@ export function useLocalPagination<T> (inputItems: T[] = []): IUseLocalPaginatio
     displayItems,
     updateItems,
     updatePagination,
-    syncQuery
+    syncQuery,
+    reset
   }
 }
 
