@@ -1,23 +1,24 @@
 <template>
-  <section id="document-asset-list-page">
+  <section id="employee-list-page">
     <PageTitle />
-    <StockFilter
+    <BackButton />
+    <DailyInstallmentFilter
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
       @search="fetch()">
-      <div>
-        จำนวนสินทรัพย์ {{ pagination.count }} รายการ
-      </div>
-    </StockFilter>
-
+      <PrintButton
+        icon="material-symbols:print-outline-rounded"
+        label="พิมพ์" />
+    </DailyInstallmentFilter>
     <BasePage>
       <div class="mt-5">
-        <StockTable
+        <DailyInstallmentTable
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"
           v-model:sort-order="sortOrder"
           :items="items"
+          @delete="onDelete($event)"
           @update="fetch()" />
       </div>
     </BasePage>
@@ -28,9 +29,11 @@
 import { onMounted } from 'vue'
 import BasePage from '@/components/base/BasePage.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
-import StockTable from '../components/asset/AssetTable.vue'
-import StockFilter from '../components/StockFilter.vue'
-import useList from '../composables/asset/useList'
+import DailyInstallmentFilter from '../components/DailyInstallmentFilter.vue'
+import DailyInstallmentTable from '../components/DailyInstallmentTable.vue'
+import useList from '../composables/useList'
+import PrintButton from '@/components/button/PrintButton.vue'
+import BackButton from '@/components/button/BackButton.vue'
 
 const {
   filters,
@@ -40,8 +43,9 @@ const {
   sortOrder,
   search,
   fetch,
-  onClearFilters
-} = useList()
+  onClearFilters,
+  onDelete
+} = useList() // TODO: update when api ready
 
 onMounted((): void => {
   fetch()
