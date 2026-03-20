@@ -11,7 +11,8 @@
           :data="customer"
           @delete="onDelete()"
           @edit="onEdit()" />
-        <CustomerTab :data="customer" />
+        <CustomerTab
+          :data="customer" />
       </div>
     </BasePage>
   </section>

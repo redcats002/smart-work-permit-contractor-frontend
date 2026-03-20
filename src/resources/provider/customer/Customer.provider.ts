@@ -12,6 +12,7 @@ import type {
   TGetCustomerByIdResponse,
   TGetCustomerContactHistoryListResponse,
   TGetCustomerContractListResponse,
+  TGetCustomerDocumentByIdResponse,
   TGetCustomerEstateListResponse,
   TGetCustomerListResponse,
   TGetCustomerPaymentHistoryListResponse
@@ -29,6 +30,7 @@ export interface ICustomerProvider {
   getCustomerPaymentHistory (id: TBaseParamsId, query: IGetCustomerPaymentHistoryList): Promise<TGetCustomerPaymentHistoryListResponse>
   getCustomerContactHistory (id: TBaseParamsId, query: IGetCustomerContactHistoryList): Promise<TGetCustomerContactHistoryListResponse>
   getCustomerEstates (id: TBaseParamsId, query: IGetCustomerEstateList): Promise<TGetCustomerEstateListResponse>
+  getCustomerDocumentFindOne (id: TBaseParamsId): Promise<TGetCustomerDocumentByIdResponse>
 }
 
 class CustomerProvider extends HttpRequest implements ICustomerProvider {
@@ -59,6 +61,12 @@ class CustomerProvider extends HttpRequest implements ICustomerProvider {
     return response
   }
 
+
+  public async getCustomerDocumentFindOne (id: TBaseParamsId): Promise<TGetCustomerDocumentByIdResponse> {
+    const response = await this.get(`${this.urlPrefix}-document/${id}`)
+    return response
+  }
+
   public async getCustomerContracts (id: TBaseParamsId, query: IGetCustomerContractList): Promise<TGetCustomerContractListResponse> {
     const response = await this.get(`${this.urlPrefix}/${id}/contracts`, query)
     return response
@@ -70,12 +78,12 @@ class CustomerProvider extends HttpRequest implements ICustomerProvider {
   }
 
   public async getCustomerContactHistory (id: TBaseParamsId, query: IGetCustomerContactHistoryList): Promise<TGetCustomerContactHistoryListResponse> {
-    const response = await this.get(`${this.urlPrefix}/${id}/contact-history`, query)
+    const response = await this.get(`${this.urlPrefix}/${id}/contact-histories`, query)
     return response
   }
 
   public async getCustomerEstates (id: TBaseParamsId, query: IGetCustomerEstateList): Promise<TGetCustomerEstateListResponse> {
-    const response = await this.get(`${this.urlPrefix}/${id}/estates`, query)
+    const response = await this.get(`${this.urlPrefix}/${id}/assets`, query)
     return response
   }
 }
