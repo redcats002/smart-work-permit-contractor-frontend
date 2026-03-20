@@ -30,7 +30,11 @@
     <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div class="flex items-center justify-center">
         <div class="relative w-52 h-52">
-          <div class="absolute inset-0 rounded-full dashboard-donut" />
+          <canvas
+            ref="canvasRef"
+            aria-label="Marketing donut chart"
+            class="absolute inset-0 w-full h-full"
+            role="img" />
           <div class="absolute inset-6 rounded-full bg-white flex flex-col items-center justify-center">
             <div class="text-xl font-semibold text-surface-900">
               {{ totalAmount }}
@@ -56,7 +60,7 @@
             รวม
           </div>
           <div class="font-semibold text-surface-900">
-            {{ totalCount }} ราย
+            {{ computedTotalCount }} ราย
           </div>
         </div>
       </div>
@@ -65,7 +69,9 @@
 </template>
 
 <script setup lang="ts">
+import { Chart } from 'chart.js/auto'
 import DatePickerInput from '@/components/input/DatePickerInput.vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 interface MarketingRow {
   label: string
@@ -82,23 +88,87 @@ interface Props {
   cardStyle?: Record<string, string>
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const startDate = defineModel<Date | string | null | undefined>('start')
 const endDate = defineModel<Date | string | null | undefined>('end')
-</script>
 
-<style scoped>
-.dashboard-donut {
-  background:
-    conic-gradient(
-      #7f0d0d 0deg 70deg,
-      #b81818 70deg 140deg,
-      #ff2b2b 140deg 210deg,
-      #ff5a5a 210deg 260deg,
-      #ff8c8c 260deg 300deg,
-      #ffc1c1 300deg 330deg,
-      #ffdede 330deg 360deg
-    );
+const canvasRef = ref<HTMLCanvasElement | null>(null)
+let chart: Chart<'doughnut'> | null = null
+
+const palette = [
+  '#7f0d0d',
+  '#b81818',
+  '#ff2b2b',
+  '#ff5a5a',
+  '#ff8c8c',
+  '#ffc1c1',
+  '#ffdede'
+]
+
+const parseCount = (value: string): number => {
+  const normalized = value.replace(/,/g, '').trim()
+  const parsed = Number.parseFloat(normalized)
+  return Number.isFinite(parsed) ? parsed : 0
 }
-</style>
+
+const computedTotalCount = computed<string>((): string => {
+  const total = props.rows.reduce((sum: number, row: MarketingRow): number => {
+    return sum + parseCount(row.count)
+  }, 0)
+  return total.toLocaleString('en-US')
+})
+
+const buildChart = (): void => {
+  if (!canvasRef.value) return
+  if (chart) chart.destroy()
+
+  const data = props.rows.map((row: MarketingRow): number => {
+    const percent = Number.parseFloat(row.percent.replace('%', '').trim())
+    return Number.isFinite(percent) ? percent : 0
+  })
+  const labels = props.rows.map((row: MarketingRow): string => {
+    return row.label
+  })
+  const colors = props.rows.map((row: MarketingRow, index: number): string => {
+    return palette[index % palette.length]
+  })
+
+  chart = new Chart(canvasRef.value, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [
+        {
+          data,
+          backgroundColor: colors,
+          borderWidth: 0
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '68%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { enabled: true }
+      }
+    }
+  })
+}
+
+const destroyChart = (): void => {
+  if (chart) chart.destroy()
+}
+
+const rowsSource = (): MarketingRow[] => props.rows
+const handleRowsChange = (): void => {
+  buildChart()
+}
+
+onMounted(buildChart)
+onBeforeUnmount(destroyChart)
+
+watch(rowsSource, handleRowsChange, { deep: true })
+</script>
