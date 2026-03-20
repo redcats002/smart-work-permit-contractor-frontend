@@ -21,7 +21,8 @@ export interface IColumn<T = any> {
 
 export interface IFooter {
   colspan: number
-  footer: string
+  field: string
+  value: string
   footerStyle?: string
   footerClass?: string
 }
