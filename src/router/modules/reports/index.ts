@@ -10,14 +10,16 @@ import ContractSecurityDocumentRouter from './ContractSecurityDocument.router'
 import DailyBranchSummaryRouter from './DailyBranchSummary.router'
 import DailyInstallmentPaymentRouter from './DailyInstallmentPayment.router'
 import DailyLoanDisbursementRouter from './DailyLoanDisbursement.router'
+import DailySummaryRouter from './DailySummary.router'
 import FinancialSummaryRouter from './FinancialSummary.router'
 import LoanDisbursementSummaryRouter from './LoanDisbursementSummary.router'
+import OutstandingDebtorRouter from './OutstandingDebtor.router'
+import OverdueCustomerRouter from './OverdueCustomer.router'
 import PaymentsForAccountClosureRouter from './PaymentsForAccountClosure.router'
 import PercentInstallmentRouter from './PercentInstallment.router'
 import ProfitBasedOnActualPaymentRouter from './ProfitBasedOnActualPayment.router'
 import RankingLendingRouter from './RankingLending.router'
 import RankingLoanRouter from './RankingLoan.router'
-import DailySummaryRouter from './DailySummary.router'
 
 const prefix = '/reports'
 
@@ -61,6 +63,8 @@ export default {
     FinancialSummaryRouter,
     DailyLoanDisbursementRouter,
     LoanDisbursementSummaryRouter,
+    OutstandingDebtorRouter,
+    OverdueCustomerRouter,
     AnnualFinanceReceiptRouter
   ]
 } as RouteRecordRaw
