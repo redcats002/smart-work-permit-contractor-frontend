@@ -1,19 +1,21 @@
 <template>
-  <section id="customer-list-page">
+  <section id="document-movement-list-page">
     <PageTitle />
     <StockFilter
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
       @search="fetch()">
-      <div>
-        จำนวนสินทรัพย์ {{ pagination.count }} รายการ
-      </div>
+      <CreateButton
+        :to="{
+          name: 'DocumentMovementCreatePage'
+        }"
+        label="สร้างย้ายเอกสารใหม่" />
     </StockFilter>
 
     <BasePage>
       <div class="mt-5">
-        <StockTable
+        <StockDocsTable
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"
           v-model:sort-order="sortOrder"
@@ -27,10 +29,11 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import BasePage from '@/components/base/BasePage.vue'
+import CreateButton from '@/components/button/CreateButton.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
+import StockDocsTable from '../components/MovementTable.vue'
 import StockFilter from '../components/StockFilter.vue'
-import StockTable from '../components/StockTable.vue'
-import useList from '../composables/useList'
+import useList from '../composables/movement/useList'
 
 const {
   filters,
@@ -41,14 +44,7 @@ const {
   search,
   fetch,
   onClearFilters
-  // onDelete
 } = useList()
-
-
-// const items = ref<IStockList[]>([])
-// function fetch (): void {
-//   items.value = mockItems.value
-// }
 
 onMounted((): void => {
   fetch()

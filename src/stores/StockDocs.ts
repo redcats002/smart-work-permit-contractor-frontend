@@ -1,25 +1,21 @@
 import { ref, type Ref } from 'vue'
+import type { IDocumentAssetList } from '@/models/response/document-storage/DocumentStorageRes.model'
+import { type DocumentMovementFormValues, useDev, useFormInitialValues } from '../pages/stock/pages/create/schema/document-movement'
 import { defineStore } from 'pinia'
-import {
-  type StockDocsFormValues,
-  useFormInitialValues,
-  useDev
-} from '../pages/stock/pages/create/schema/stockDocs.schema'
-import type { IStockList } from '@/models/response/stock/StockRes.model'
 
 interface IStockDocsStore {
-  form: Ref<StockDocsFormValues>
-  setForm(data: StockDocsFormValues): void
+  form: Ref<DocumentMovementFormValues>
+  setForm(data: DocumentMovementFormValues): void
   resetForm(): void
-  addItem(item: IStockList): void
+  addItem(item: IDocumentAssetList): void
   removeItem(id: number): void
   loadDevData(): void
 }
 
 export const useStockDocsStore = defineStore('StockDocs', (): IStockDocsStore => {
-  const form = ref<StockDocsFormValues>(useFormInitialValues())
+  const form = ref<DocumentMovementFormValues>(useFormInitialValues())
 
-  function setForm (data: StockDocsFormValues): void {
+  function setForm (data: DocumentMovementFormValues): void {
     form.value = { ...data }
   }
 
@@ -27,7 +23,7 @@ export const useStockDocsStore = defineStore('StockDocs', (): IStockDocsStore =>
     form.value = useFormInitialValues()
   }
 
-  function addItem (item: IStockList): void {
+  function addItem (item: IDocumentAssetList): void {
     const isExist = form.value.items.some((i: any): boolean => i.id === item.id)
     if (!isExist) {
       form.value.items.push(item as any)

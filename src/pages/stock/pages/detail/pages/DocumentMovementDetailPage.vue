@@ -21,7 +21,7 @@
         v-model:sort-by="sortBy"
         v-model:sort-order="sortOrder"
         :is-edit="!isSuccess"
-        :items="(form.items as IStockList[])"
+        :items="(form.items as IDocumentAssetList[])"
         is-detail />
       <FormAction v-if="!isSuccess" />
     </BasePage>
@@ -33,9 +33,9 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 // import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { useStockDocsStore } from '@/stores/StockDocs'
-import type { IStockDocsById } from '@/models/response/stock/StockDocsRes.model'
-import type { IStockList } from '@/models/response/stock/StockRes.model'
-import { StockDocsStatusEnum } from '@/enums/modules/stock/StockDocsStatus.enum'
+import type { IStockDocsById } from '@/models/response/document-storage/DocumentStorageDocsRes.model'
+import type { IDocumentAssetList } from '@/models/response/document-storage/DocumentStorageRes.model'
+import { DocumentStorageMovementStatusEnum } from '@/enums/modules/document-storage/DocumentStorageMovementStatus.enum'
 // import { toast } from '@/plugins/toast'
 // import { handleLoading } from '@/utils/HandleLoading'
 // import { Form, type FormSubmitEvent } from '@primevue/forms'
@@ -55,7 +55,7 @@ import StockDocsDetailMenuAction from '../components/StockDocsDetailMenuAction.v
 // } from '../../create/schema/stockDocs.schema'
 import { storeToRefs } from 'pinia'
 import SelectedDocsTable from '../../create/components/SelectedDocsTable.vue'
-import useList from '../../list/composables/useList'
+import useList from '../../list/composables/asset/useList'
 
 // import SelectedDocsTable from '../../create/components/SelectedDocsTable.vue'
 // import StockProvider from '@/resources/provider/stock/Stock.provider'
@@ -96,7 +96,7 @@ onMounted((): void => {
 })
 
 const isSuccess = computed((): boolean => {
-  return data.value?.status === StockDocsStatusEnum.SUCCESS
+  return data.value?.status === DocumentStorageMovementStatusEnum.SUCCESS
 })
 
 function onDelete (): void {

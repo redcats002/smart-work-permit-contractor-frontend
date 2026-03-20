@@ -7,7 +7,7 @@ export default {
   history: prefix,
   path: prefix,
   name: 'StockPage',
-  redirect: { name: 'StockListPage' },
+  redirect: { name: 'DocumentAssetListPage' },
   component: (): ComponentOptions => import('@/pages/stock/Stock.vue'),
   meta: {
     title: 'การจัดเก็บ',
@@ -16,9 +16,9 @@ export default {
   },
   children: [
     {
-      path: 'list',
-      name: 'StockListPage',
-      component: (): ComponentOptions => import('@/pages/stock/pages/list/pages/StockListPage.vue'),
+      path: 'asset/list',
+      name: 'DocumentAssetListPage',
+      component: (): ComponentOptions => import('@/pages/stock/pages/list/pages/DocumentAssetListPage.vue'),
       meta: {
         auth: true,
         menu: true,
@@ -27,9 +27,9 @@ export default {
       }
     },
     {
-      path: 'docs/list',
-      name: 'StockDocsListPage',
-      component: (): ComponentOptions => import('@/pages/stock/pages/list/pages/StockDocsListPage.vue'),
+      path: 'movement/list',
+      name: 'DocumentMovementListPage',
+      component: (): ComponentOptions => import('@/pages/stock/pages/list/pages/DocumentMovementListPage.vue'),
       meta: {
         auth: true,
         menu: true,
@@ -38,36 +38,25 @@ export default {
       }
     },
     {
-      path: 'docs/create',
-      name: 'StockDocsCreatePage',
-      component: (): ComponentOptions => import('@/pages/stock/pages/create/pages/StockDocsCreatePage.vue'),
+      path: 'movement/create',
+      name: 'DocumentMovementCreatePage',
+      component: (): ComponentOptions => import('@/pages/stock/pages/create/pages/DocumentMovementCreatePage.vue'),
       meta: {
         auth: true,
         title: 'สร้างย้ายเอกสารใหม่',
         icon: 'mdi-account',
-        back: { name: 'CustomerListPage' }
+        back: { name: 'DocumentMovementListPage' }
       }
     },
-    // {
-    //   path: 'docs/select/list',
-    //   name: 'StockDocsSelectPage',
-    //   component: (): ComponentOptions => import('@/pages/stock/pages/create/pages/StockDocsSelectListPage.vue'),
-    //   meta: {
-    //     auth: true,
-    //     title: 'เพิ่มเอกสารที่ต้องการย้าย',
-    //     icon: 'mdi-account',
-    //     back: { name: 'CustomerListPage' }
-    //   }
-    // },
     {
-      path: ':id',
-      name: 'StockDetailPage',
-      component: (): ComponentOptions => import('@/pages/stock/pages/detail/pages/StockDetailPage.vue'),
+      path: 'movement/:id',
+      name: 'DocumentMovementDetailPage',
+      component: (): ComponentOptions => import('@/pages/stock/pages/detail/pages/DocumentMovementDetailPage.vue'),
       meta: {
         auth: true,
         title: 'รายละเอียดใบย้าย',
         icon: 'mdi-account',
-        back: { name: 'CustomerListPage' }
+        back: { name: 'DocumentMovementListPage' }
       }
     }
   ]

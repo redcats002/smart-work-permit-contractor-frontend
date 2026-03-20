@@ -6,11 +6,11 @@
 </template>
 
 <script setup lang="ts">
-import { formatTitle, getIcon, getStatusClass, type TStockStatus } from '@/enums/modules/stock/StockStatus.enum'
+import { formatTitle, getIcon, getStatusClass, type TDocumentStorageMovementStatus } from '@/enums/modules/document-storage/DocumentStorageMovementStatus.enum'
 import BaseChip from '@/components/chip/BaseChip.vue'
 
 interface IProps {
-  value?: TStockStatus
+  value?: TDocumentStorageMovementStatus
 }
 
 const props = withDefaults(defineProps<IProps>(), {

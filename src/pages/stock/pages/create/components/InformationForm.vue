@@ -28,7 +28,7 @@
 import type { IFormState } from '@/models/Form.model'
 import type { ICreateStockPayload } from '@/models/request/stock/StockReq.model'
 import LabelField from '@/components/input/LabelField.vue'
-import { useFormInitialValues } from '../schema/stock.schema'
+import { useFormInitialValues } from '../schema/document-receive.schema'
 
 interface IProps {
   form?: IFormState

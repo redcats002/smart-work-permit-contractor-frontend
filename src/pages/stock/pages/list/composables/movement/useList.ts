@@ -2,16 +2,15 @@ import { computed, ref, type Ref } from 'vue'
 // import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IGetStockList } from '@/models/request/stock/StockReq.model'
-import type { IStockList } from '@/models/response/stock/StockRes.model'
+import type { IDocumentMovementList } from '@/models/response/document-storage/DocumentStorageRes.model'
 import DocumentStorageProvider, { type IDocumentStorageProvider } from '@/resources/provider/document-storages/DocumentStorage.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
 interface IUseList extends IUsePagination {
   filters: Ref<IGetStockList>
-  items: Ref<IStockList[]>
+  items: Ref<IDocumentMovementList[]>
   fetch(): void
   onClearFilters(): void
-  // onDelete(id: number): void
 }
 export default function useList (): IUseList {
   const DocumentStorageService: IDocumentStorageProvider = new DocumentStorageProvider()
@@ -19,7 +18,7 @@ export default function useList (): IUseList {
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
   const filters = ref<IGetStockList>({})
-  const items = ref<IStockList[]>([])
+  const items = ref<IDocumentMovementList[]>([])
 
   const paginateQuery = computed((): IGetStockList => {
     const normalizedFilters = normalizeFilters(filters.value)
@@ -34,17 +33,12 @@ export default function useList (): IUseList {
   })
 
   async function useFetch (): Promise<void> {
-    const response = await DocumentStorageService.getDocumentStorageAssetsPaginate(paginateQuery.value)
+    const response = await DocumentStorageService.getDocumentMovementPaginate(paginateQuery.value)
     items.value = response?.data || []
     pagination.value = extractPagination(response)
     syncQuery({ ...normalizeFilters(filters.value) })
   }
 
-  // async function useDelete (id: number): Promise<void> {
-  //   await StockService.deleteStock(id)
-  //   fetch()
-  //   toast.success('ลบลูกค้าสําเร็จ')
-  // }
 
   function normalizeFilters (value: IGetStockList): Partial<IGetStockList> {
     return {
@@ -60,10 +54,6 @@ export default function useList (): IUseList {
     reset()
   }
 
-  // function onDelete (id: number): void {
-  //   handleLoading((): Promise<void> => useDelete(id))
-  // }
-
   return {
     filters,
     items,
@@ -73,7 +63,6 @@ export default function useList (): IUseList {
     search,
     fetch,
     onClearFilters,
-    // onDelete,
     extractPagination,
     syncQuery,
     reset
