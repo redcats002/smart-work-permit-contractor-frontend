@@ -1,9 +1,9 @@
 <template>
   <BaseModal
-    v-model:visible="visible"
+    v-model="visible"
+    :label="label"
     class="md:w-fit!"
     header-align="center"
-    label="ยืนยันการดำเนินการ"
     modal>
     <template #activator="{ open, close }">
       <slot
@@ -14,12 +14,7 @@
     </template>
     <template #default="{close}">
       <div class="flex flex-col items-center justify-center text-sm text-[#333333] mb-5">
-        <p>
-          คุณแน่ใจหรือไม่ว่าต้องการดำเนินการต่อ
-        </p>
-        <p>
-          หากยืนยันแล้วจะไม่สามารถย้อนกลับได้
-        </p>
+        <p v-sanitize.basic="description" />
       </div>
       <FormAction
         confirm-label="ยืนยัน"
@@ -34,13 +29,19 @@
 import FormAction from '../button/FormAction.vue'
 import BaseModal from './BaseModal.vue'
 
-const visible = defineModel<boolean>({ default: false })
-
+interface IProps {
+  label?: string
+  description?: string
+}
 interface IEmits {
   confirm: []
 }
-
+withDefaults(defineProps<IProps>(), {
+  label: 'ยืนยันการดำเนินการ',
+  description: 'คุณแน่ใจหรือไม่ว่าต้องการดำเนินการต่อ<br/>หากยืนยันแล้วจะไม่สามารถย้อนกลับได้'
+})
 const emits = defineEmits<IEmits>()
+const visible = defineModel<boolean>({ default: false })
 
 function onConfirm (close: () => void): void {
   emits('confirm')
