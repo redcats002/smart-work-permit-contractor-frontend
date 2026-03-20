@@ -14,11 +14,11 @@
     </template>
     <template #[`item.contractIdNo`]="{ item }">
       <LinkText :to="{}">
-        {{ item?.contractIdNo }}
+        {{ item?.contract?.idNo }}
       </LinkText>
     </template>
     <template #[`item.estateStatus`]="{ item }">
-      <ChipEstateStatus :value="item?.estateStatus" />
+      <ChipEstateStatus :value="item?.status" />
     </template>
   </BaseTable>
 </template>
@@ -28,6 +28,7 @@ import { ref } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
 import type { ICustomerEstateList } from '@/models/response/customer/CustomerRes.model'
 import type { IColumn } from '@/models/Table.model'
+import { formatTitle } from '@/enums/modules/contract/AssetType.enum'
 import LinkText from '@/components/button/LinkText.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
@@ -57,8 +58,8 @@ const columns = ref<IColumn<ICustomerEstateList>[]>([
   { field: 'createdAt', header: 'วันที่', align: 'left', value: (e: ICustomerEstateList): string => dayjs.formatDate(e?.createdAt || '') },
   { field: 'idNo', header: 'เลขที่ลูกค้า', align: 'left' },
   { field: 'contractIdNo', header: 'เลขที่สัญญา', align: 'left' },
-  { field: 'estateType', header: 'ประเภท', align: 'left', value: (e: ICustomerEstateList): string => e?.estateType?.name || '-' },
-  { field: 'storage', header: 'จุดจัดเก็บเอกสาร', align: 'left' },
+  { field: 'estateType', header: 'ประเภท', align: 'left', value: (e: ICustomerEstateList): string => formatTitle(e?.type) || '-' },
+  { field: 'storage', header: 'จุดจัดเก็บเอกสาร', align: 'left', value: (e: ICustomerEstateList): string => e?.location?.name || '-' },
   { field: 'estateStatus', header: 'สถานะอสังหา', align: 'left' }
 ])
 </script>

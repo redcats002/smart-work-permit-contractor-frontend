@@ -9,7 +9,7 @@
     @update="emits('update')">
     <template #[`item.contractIdNo`]="{ item }">
       <LinkText :to="{}">
-        {{ item?.contractIdNo }}
+        {{ item?.contract?.idNo }}
       </LinkText>
     </template>
   </BaseTable>
@@ -47,11 +47,11 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<ICustomerContactHistoryList>[]>([
-  { field: 'createdAt', header: 'วันที่', align: 'left', value: (e: ICustomerContactHistoryList): string => dayjs.formatDate(e?.createdAt || '') },
+  { field: 'contactAt', header: 'วันที่', align: 'left', value: (e: ICustomerContactHistoryList): string => dayjs.formatDate(e?.contactAt || '') },
   { field: 'contractIdNo', header: 'เลขที่สัญญาที่เกี่ยวข้อง', sortable: true, align: 'left' },
-  { field: 'subject', header: 'หัวข้อ', align: 'left', value: (e: ICustomerContactHistoryList): string => e?.subject || '' },
-  { field: 'detail', header: 'รายละเอียด', align: 'left', value: (e: ICustomerContactHistoryList): string => e?.detail || '' },
-  { field: 'createdBy', header: 'โดยพนักงาน', align: 'left', value: (e: ICustomerContactHistoryList): string => formatter.fullName(e?.createdBy || {}) || '-' }
+  { field: 'subject', header: 'หัวข้อ', align: 'left', value: (e: ICustomerContactHistoryList): string => e?.topic || '' },
+  { field: 'detail', header: 'รายละเอียด', align: 'left', value: (e: ICustomerContactHistoryList): string => e?.note || '' },
+  { field: 'createdBy', header: 'โดยพนักงาน', align: 'left', value: (e: ICustomerContactHistoryList): string => formatter.fullName(e?.employee || {}) || '-' }
 ])
 </script>
 

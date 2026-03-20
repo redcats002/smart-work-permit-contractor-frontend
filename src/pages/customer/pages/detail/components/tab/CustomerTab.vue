@@ -1,7 +1,8 @@
 <template>
   <BaseTab
     v-model="tab"
-    :items="tabItems" />
+    :items="tabItems"
+    full />
   <BaseTabWindow
     v-slot="{ component, item }"
     v-model="tab"

@@ -13,7 +13,7 @@
       </LinkText>
     </template>
     <template #[`item.contractStatus`]="{ item }">
-      <ChipContractStatus :value="item?.contractStatus" />
+      <ChipContractStatus :value="item?.status" />
       <Icon
         v-if="item?.isLate"
         color="#F2994A"
@@ -57,11 +57,11 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<ICustomerContractList>[]>([
   { field: 'idNo', header: 'เลขที่สัญญา', sortable: true, align: 'left' },
-  { field: 'createdAt', header: 'วันที่ทำสัญญา', sortable: true, align: 'left', value: (e: ICustomerContractList): string => dayjs.formatDate(e?.createdAt || '') },
-  { field: 'contractType', header: 'ประเภทเงินกู้', align: 'left', value: (e: ICustomerContractList): string => e?.contractType?.name || '-' },
-  { field: 'loanLimit', header: 'วงเงินกู้(บาท)', align: 'right', value: (e: ICustomerContractList): string => formatter.numberFormat2Decimal(e?.loanLimit) || '-' },
-  { field: 'contractStartAt', header: 'วันที่เริ่ม', sortable: true, align: 'left', value: (e: ICustomerContractList): string => dayjs.formatDate(e?.contractStartAt || '') },
-  { field: 'contractEndAt', header: 'วันที่สิ้นสุด', sortable: true, align: 'left', value: (e: ICustomerContractList): string => dayjs.formatDate(e?.contractEndAt || '') },
+  { field: 'contractedAt', header: 'วันที่ทำสัญญา', sortable: true, align: 'left', value: (e: ICustomerContractList): string => dayjs.formatDate(e?.contractedAt || '') },
+  { field: 'contractType', header: 'ประเภทเงินกู้', align: 'left', value: (e: ICustomerContractList): string => e?.contractLoanType?.name || '-' },
+  { field: 'loanLimit', header: 'วงเงินกู้(บาท)', align: 'right', value: (e: ICustomerContractList): string => formatter.numberFormat2Decimal(e?.loanAmount) || '-' },
+  { field: 'contractStartAt', header: 'วันที่เริ่ม', sortable: true, align: 'left', value: (e: ICustomerContractList): string => dayjs.formatDate(e?.firstInstallmentDate || '') },
+  { field: 'contractEndAt', header: 'วันที่สิ้นสุด', sortable: true, align: 'left', value: (e: ICustomerContractList): string => dayjs.formatDate(e?.finalInstallmentDate || '') },
   { field: 'contractStatus', header: 'สถานะ', sortable: true, align: 'left' }
 ])
 </script>

@@ -1,5 +1,5 @@
 import { type Component, computed, ref, type Ref } from 'vue'
-import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
+import type { ICustomerById, ICustomerDocumentById } from '@/models/response/customer/CustomerRes.model'
 import type AddressTab from '../components/tab/address/AddressTab.vue'
 import type ContactHistoryTab from '../components/tab/contact-history/ContactHistoryTab.vue'
 import type ContractTab from '../components/tab/contract/ContractTab.vue'
@@ -53,6 +53,20 @@ export function useInitDetail (data?: Partial<ICustomerById>): Ref<ICustomerById
       urlGoogleMap: data?.workAddress?.urlGoogleMap ?? '',
       isSameCitizenAddress: data?.workAddress?.isSameCitizenAddress ?? false,
       isSameCurrentAddress: data?.workAddress?.isSameCurrentAddress ?? false
+    }
+  })
+}
+
+export function useInitCustomerDocumentDetail (data?: Partial<ICustomerDocumentById>): Ref<ICustomerDocumentById> {
+  return ref<ICustomerDocumentById>({
+    ...data,
+    id: data?.id ?? 0,
+    name: data?.name ?? '',
+    fileName: data?.fileName ?? '',
+    image: data?.image ?? '',
+    location: data?.location ?? {
+      id: 0,
+      name: ''
     }
   })
 }

@@ -14,7 +14,6 @@ export interface IEntity {
   updatedBy?: IAuthor
 }
 
-
 export interface IBaseOption<T = string | number> {
   label: string
   value?: T | null | boolean
