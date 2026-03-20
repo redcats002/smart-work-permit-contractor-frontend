@@ -2,12 +2,12 @@ import { computed, ref, type Ref } from 'vue'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
-import type { IGetDailyInstallmentList } from '@/models/request/report/daliy-installment-payment/DailyInstallmentPayment.model'
-import type { IDailyInstallmentPaymentList } from '@/models/response/report/daily-installment-payment/DailyInstallmentPaymentRes'
+import type { IDailySummaryList } from '@/models/response/report/daily-summary/DailySummaryRes'
+import type { IGetDailySummaryList } from '@/models/request/report/daily-summary/DailySummary.model'
 
 interface IDailyInstallment extends IUsePagination {
-  filters: Ref<IGetDailyInstallmentList>
-  items: Ref<IDailyInstallmentPaymentList[]>
+  filters: Ref<IGetDailySummaryList>
+  items: Ref<IDailySummaryList[]>
   fetch(): void
   onClearFilters(): void
   onDelete(id: number): void
@@ -17,8 +17,8 @@ export default function useList (): IDailyInstallment {
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
 
-  const filters = ref<IGetDailyInstallmentList>({})
-  const items = ref<IDailyInstallmentPaymentList[]>([])
+  const filters = ref<IGetDailySummaryList>({})
+  const items = ref<IDailySummaryList[]>([])
 
   const paginateQuery = computed((): any => {
     const normalizedFilters = normalizeFilters(filters.value)

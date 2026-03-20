@@ -1,6 +1,6 @@
 import type { ComponentOptions } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
-import ComparativeRouter from './_Comparative.router'
+import ComparativeRouter from './Comparative.router'
 import AllStockRouter from './AllStock.router'
 import BranchSummaryRouter from './BranchSummary.router'
 import DailyBranchSummaryRouter from './DailyBranchSummary.router'
@@ -11,6 +11,7 @@ import RankingLendingRouter from './RankingLending.router'
 import RankingLoanRouter from './RankingLoan.router'
 import BranchHeadSummaryRouter from './BranchHeadSummary.router'
 import ContractSecurityDocumentRouter from './ContractSecurityDocument.router'
+import DailySummaryRouter from './DailySummary.router'
 
 const prefix = '/reports'
 
@@ -47,7 +48,8 @@ export default {
     RankingLendingRouter,
     RankingLoanRouter,
     BranchSummaryRouter,
-    ContractSecurityDocumentRouter
+    ContractSecurityDocumentRouter,
+    DailySummaryRouter
 
   ]
 } as RouteRecordRaw
