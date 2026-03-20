@@ -24,7 +24,7 @@
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"
           v-model:sort-order="sortOrder"
-          :items="(form.items as IStockList[])" />
+          :items="(form.items as IDocumentAssetList[])" />
         <FormAction
           @cancel="onCancel(close)"
           @confirm="onConfirm(close)" />
@@ -34,20 +34,19 @@
 </template>
 
 <script setup lang="ts">
-import CreateButton from '@/components/button/CreateButton.vue'
-import BaseModal from '@/components/modal/BaseModal.vue'
-
 import { onMounted } from 'vue'
+import { useStockDocsStore } from '@/stores/StockDocs'
+import type { IDocumentAssetList } from '@/models/response/document-storage/DocumentStorageRes.model'
 // import { useRouter } from 'vue-router'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
-import { storeToRefs } from 'pinia'
-import { useStockDocsStore } from '@/stores/StockDocs'
-import StockFilter from '../../list/components/StockFilter.vue'
-import useList from '../../list/composables/useList'
+import CreateButton from '@/components/button/CreateButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
+import BaseModal from '@/components/modal/BaseModal.vue'
 import SelectDocsTable from '../components/SelectDocsTable.vue'
-import type { IStockList } from '@/models/response/stock/StockRes.model'
+import { storeToRefs } from 'pinia'
+import StockFilter from '../../list/components/StockFilter.vue'
+import useList from '../../list/composables/asset/useList'
 
 interface IEmits {
   clear: []
@@ -80,11 +79,9 @@ onMounted((): void => {
 function onCancel (close: () => void): void {
   emits('clear')
   close()
-  // router.push({ name: 'StockDocsCreatePage' })
 }
 function onConfirm (close: () => void): void {
   close()
-  // router.push({ name: 'StockDocsCreatePage' })
 }
 </script>
 

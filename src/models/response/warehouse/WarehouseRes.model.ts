@@ -7,6 +7,9 @@ import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.
 export interface ILocationList extends IEntity {
   name: string
 }
+export interface ILocationWarehouseList extends ILocationList {
+  warehouse: Omit<IWarehouseList, 'locations'>
+}
 export interface IWarehouseList extends IEntity {
   name: string
   status: TWarehouseStatus

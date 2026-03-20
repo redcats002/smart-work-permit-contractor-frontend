@@ -9,12 +9,12 @@
     disable-auto-left-padding
     @update="emits('update')">
     <template #[`item.assetNo`]="{ item }">
-      <LinkText :to="{ name: 'StockDetailPage', params: { id: 1 }}">
+      <LinkText :to="{ name: 'DocumentMovementDetailPage', params: { id: 1 }}">
         {{ item?.assetNo }}
       </LinkText>
     </template>
     <template #[`item.contractNo`]="{ item }">
-      <LinkText :to="{ name: 'StockDetailPage', params: { id: 1 }}">
+      <LinkText :to="{ name: 'DocumentMovementDetailPage', params: { id: 1 }}">
         {{ item?.contractNo }}
       </LinkText>
     </template>
@@ -41,17 +41,17 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { formatter } from '@/utils/Formatter'
-import type { IStockList } from '@/models/response/stock/StockRes.model'
+import type { TBaseOption } from '@/models/Global.model'
+import type { IDocumentAssetList } from '@/models/response/document-storage/DocumentStorageRes.model'
 import type { IColumn } from '@/models/Table.model'
 import LinkText from '@/components/button/LinkText.vue'
+import SelectInput from '@/components/input/SelectInput.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
 import { Icon } from '@iconify/vue'
-import type { TBaseOption } from '@/models/Global.model'
-import SelectInput from '@/components/input/SelectInput.vue'
 
 interface IProps {
-  items: IStockList[]
+  items: IDocumentAssetList[]
   isDetail?: boolean
   isEdit?: boolean
 }
@@ -75,8 +75,8 @@ const pagination = defineModel<IPagination>('pagination', {
 const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
-const columns = computed<IColumn<IStockList>[]>((): IColumn<IStockList>[] => {
-  const baseColumns: IColumn<IStockList>[] = [
+const columns = computed<IColumn<IDocumentAssetList>[]>((): IColumn<IDocumentAssetList>[] => {
+  const baseColumns: IColumn<IDocumentAssetList>[] = [
     {
       field: 'assetNo',
       header: 'เลขที่หลักทรัพย์',
@@ -93,7 +93,7 @@ const columns = computed<IColumn<IStockList>[]>((): IColumn<IStockList>[] => {
       field: 'customerName',
       header: 'ชื่อลูกค้า',
       align: 'left',
-      value: (e: IStockList): string => formatter.fullName(e)
+      value: (e: IDocumentAssetList): string => formatter.fullName(e)
     },
     {
       field: 'category',
