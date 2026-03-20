@@ -1,8 +1,10 @@
 <template>
   <AutoCompleteInput
     v-model="innerModel"
-    :invalid="props.invalid"
+    :invalid="invalid"
+    :show-clear="showClear"
     :suggestions="suggestions"
+    option-disabled="disabled"
     option-label="name"
     complete-on-focus
     force-selection
@@ -20,6 +22,8 @@ import usePagination from '@/composables/usePagination'
 
 interface IProps {
   invalid?: boolean
+  disabledIds?: number[]
+  showClear?: boolean
 }
 
 const props = defineProps<IProps>()
@@ -39,7 +43,8 @@ async function useFetch (): Promise<void> {
   })
   suggestions.value = (response.data ?? []).map((item: IWarehouseList): TBaseModel => ({
     id: item.id!,
-    name: item.name
+    name: item.name,
+    disabled: props.disabledIds?.includes(Number(item?.id)) ?? false
   }))
 }
 

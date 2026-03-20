@@ -9,106 +9,63 @@
         @edit="onEdit()" />
     </BaseTop>
     <BasePage class="flex flex-col gap-2.5">
-      <InformationDetail
-        :data="data" />
-      <div class="flex justify-between items-center">
-        <p class="text-center text-gray text-bold">
-          เอกสารที่ต้องการย้าย
-        </p>
-      </div>
-      <SelectedDocsTable
-        v-model:pagination="pagination"
-        v-model:sort-by="sortBy"
-        v-model:sort-order="sortOrder"
-        :is-edit="!isSuccess"
-        :items="(form.items as IDocumentAssetList[])"
-        is-detail />
-      <FormAction v-if="!isSuccess" />
+      <InformationDetail :data="data" />
+      <Form
+        v-slot="$form"
+        :initial-values="form"
+        :resolver="resolver"
+        class="flex flex-col gap-2.5"
+        @submit="onFormSubmit($event)">
+        <div class="flex justify-between items-center">
+          <p class="text-center text-gray font-bold">
+            เอกสารที่ต้องการย้าย
+          </p>
+        </div>
+        <DocumentMovementReceiveTable
+          v-model="form"
+          :form="$form"
+          :is-success="isSuccess"
+          :items="data.items"
+          is-detail />
+        <FormAction
+          v-if="!isSuccess"
+          @cancel="onCancel()" />
+      </Form>
     </BasePage>
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-// import { zodResolver } from '@primevue/forms/resolvers/zod'
-import { useStockDocsStore } from '@/stores/StockDocs'
-import type { IStockDocsById } from '@/models/response/document-storage/DocumentStorageDocsRes.model'
-import type { IDocumentAssetList } from '@/models/response/document-storage/DocumentStorageRes.model'
-import { DocumentStorageMovementStatusEnum } from '@/enums/modules/document-storage/DocumentStorageMovementStatus.enum'
-// import { toast } from '@/plugins/toast'
-// import { handleLoading } from '@/utils/HandleLoading'
-// import { Form, type FormSubmitEvent } from '@primevue/forms'
+import { onMounted } from 'vue'
+import { scrollToFirstError } from '@/utils/HandleSubmit'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
 import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
+import DocumentMovementReceiveTable from '../components/DocumentMovementReceiveTable.vue'
 import InformationDetail from '../components/InformationDetail.vue'
-// import BaseContainer from '@/components/base/BaseContainer.vue'
 import StockDocsDetailMenuAction from '../components/StockDocsDetailMenuAction.vue'
-// import FormAction from '@/components/button/FormAction.vue'
-// import { scrollToFirstError } from '@/utils/HandleSubmit'
-// import {
-//   StockDocsSchema
-// } from '../../create/schema/stockDocs.schema'
-import { storeToRefs } from 'pinia'
-import SelectedDocsTable from '../../create/components/SelectedDocsTable.vue'
-import useList from '../../list/composables/asset/useList'
+import { Form, type FormSubmitEvent } from '@primevue/forms'
+import { zodResolver } from '@primevue/forms/resolvers/zod'
+import useDetail from '../composables/useDetail'
+import { DocumentReceiveSchema } from '../schema/document-receive.schema'
 
-// import SelectedDocsTable from '../../create/components/SelectedDocsTable.vue'
-// import StockProvider from '@/resources/provider/stock/Stock.provider'
+const resolver = zodResolver(DocumentReceiveSchema)
+const { data, form, isSuccess, fetch, onCancel, onDelete, onEdit, onSubmit } = useDetail()
 
-const router = useRouter()
-const stockDocsStore = useStockDocsStore()
-
-// const StockService: IStockProvider = new StockProvider()
-
-// const formKey = ref<number>(0)
-const { form } = storeToRefs(stockDocsStore)
-// const resolver = zodResolver(StockDocsSchema)
-
-const {
-  pagination,
-  sortBy,
-  sortOrder
-} = useList()
-
-const data = ref<IStockDocsById>(
-  {
-    docNo: 'LC-00001',
-    transferDate: '2026-04-13T15:30:00',
-    senderName: 'นางสาว โชติกา ประชายศิริกุล',
-    originWarehouse: '',
-    receiverName: '',
-    receiveDate: '2026-04-13T15:30:00',
-    destinationWarehouse: '',
-    status: 'PENDING',
-    id: '1',
-    reason: 'ส่งไปสำนักงานใหญ่'
+function onFormSubmit (event: FormSubmitEvent): void {
+  if (!event.valid) {
+    scrollToFirstError(event.errors)
+    return
   }
-)
+  onSubmit()
+}
+
 onMounted((): void => {
-  if (form.value.items.length === 0) {
-    stockDocsStore.loadDevData()
-  }
+  fetch()
 })
-
-const isSuccess = computed((): boolean => {
-  return data.value?.status === DocumentStorageMovementStatusEnum.SUCCESS
-})
-
-function onDelete (): void {
-  router.push({ name: 'StockDocsList' })
-}
-
-function onEdit (): void {
-  router.push({ name: 'StockDocsList' })
-}
-
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

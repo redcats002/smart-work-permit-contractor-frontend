@@ -2,7 +2,7 @@ import type { TAssetType } from '@/enums/modules/contract/AssetType.enum'
 import type { TDocumentStorageAssetStatus } from '@/enums/modules/document-storage/DocumentStorageAssetStatus.enum'
 import type { TDocumentStorageMovementStatus } from '@/enums/modules/document-storage/DocumentStorageMovementStatus.enum'
 import type { DocumentMovementFormValues } from '@/pages/stock/pages/create/schema/document-movement'
-import type { DocumentReceiveFormValues } from '@/pages/stock/pages/create/schema/document-receive.schema'
+import type { DocumentReceiveFormValues } from '@/pages/stock/pages/detail/schema/document-receive.schema'
 import type { IBasePaginationRequest } from '../Request.model'
 
 export interface IGetDocumentAssetsList extends IBasePaginationRequest {
@@ -17,5 +17,7 @@ export interface IGetDocumentMovementList extends IBasePaginationRequest {
   status?: TDocumentStorageMovementStatus
 }
 export interface IGetDocumentMovementAssetsList extends IBasePaginationRequest {}
-export interface ICreateDocumentMovementPayload extends DocumentMovementFormValues {}
+export interface ICreateDocumentMovementPayload extends Omit<DocumentMovementFormValues, 'assets'> {
+  assetsIds: number[]
+}
 export interface IReceiveDocumentMovementPayload extends DocumentReceiveFormValues {}

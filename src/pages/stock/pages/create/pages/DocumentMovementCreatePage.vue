@@ -19,18 +19,20 @@
             :form="$form" />
         </BaseContainer>
         <div class="flex justify-between items-center">
-          <p class="text-center text-gray text-bold">
+          <p class="text-center text-gray font-bold">
             เอกสารที่ต้องการย้าย
           </p>
           <ModalStockDocsCreate
-            v-model:model-value="visible" />
+            v-model="visible"
+            v-model:form="form"
+            @delete="onRemoveItem($event)" />
         </div>
         <SelectedDocsTable
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"
           v-model:sort-order="sortOrder"
-          :items="(form.items as IDocumentAssetList[])"
-          @delete="handleRemoveItem($event)" />
+          :items="form.assets"
+          @delete="onRemoveItem($event)" />
         <FormAction @cancel="onCancel()" />
       </Form>
     </BasePage>
@@ -41,10 +43,10 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
-import { useStockDocsStore } from '@/stores/StockDocs'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { IDocumentAssetList } from '@/models/response/document-storage/DocumentStorageRes.model'
+import type { IDocumentStorageProvider } from '@/resources/provider/document-storages/DocumentStorage.provider'
+import DocumentStorageProvider from '@/resources/provider/document-storages/DocumentStorage.provider'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
@@ -55,41 +57,32 @@ import PageTitle from '@/components/nav/PageTitle.vue'
 import InformationForm from '../components/InformationForm.vue'
 import ModalStockDocsCreate from '../components/ModalStockDocsCreate.vue'
 import SelectedDocsTable from '../components/SelectedDocsTable.vue'
+import { useDocumentMovement } from '@/pages/stock/pages/create/composables/useDocumentMovement'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import { storeToRefs } from 'pinia'
 import useList from '../../list/composables/asset/useList'
-import { StockDocsSchema } from '../schema/document-movement'
-
-// import StockProvider from '@/resources/provider/stock/Stock.provider'
+import { usePayload } from '../composables/usePayload'
+import { DocumentMovementSchema } from '../schema/document-movement'
 
 const router = useRouter()
-const stockDocsStore = useStockDocsStore()
 
-// const StockService: IStockProvider = new StockProvider()
+const DocumentStorageService: IDocumentStorageProvider = new DocumentStorageProvider()
 
-const formKey = ref<number>(0)
+const resolver = zodResolver(DocumentMovementSchema)
+const { form, formKey, removeItem, resetForm } = useDocumentMovement()
+
 const visible = ref<boolean>(false)
-const { form } = storeToRefs(stockDocsStore)
-const resolver = zodResolver(StockDocsSchema)
-
 const {
   pagination,
   sortBy,
   sortOrder
 } = useList()
 
-onMounted((): void => {
-  if (form.value.items.length === 0) {
-    stockDocsStore.loadDevData()
-  }
-})
-
 async function useSubmit (): Promise<void> {
-  // await StockService.createStock(usePayload(form.value))
+  await DocumentStorageService.createDocumentMovement(usePayload(form.value))
   toast.success('ดำเนินการสำเร็จ')
-  stockDocsStore.resetForm()
-  router.push({ name: 'EmployeeListPage' })
+  resetForm()
+  router.push({ name: 'DocumentMovementListPage' })
 }
 
 async function onSubmit (event: FormSubmitEvent): Promise<void> {
@@ -100,13 +93,16 @@ async function onSubmit (event: FormSubmitEvent): Promise<void> {
   await handleLoading(useSubmit)
 }
 
-function onCancel (): void {
-  router.push({ name: 'EmployeeListPage' })
+function onRemoveItem (id: number): void {
+  removeItem(id)
 }
 
-function handleRemoveItem (id: number): void {
-  stockDocsStore.removeItem(id)
+function onCancel (): void {
+  router.push({ name: 'DocumentMovementListPage' })
 }
+
+onMounted((): void => {})
+
 </script>
 
 <style scoped>

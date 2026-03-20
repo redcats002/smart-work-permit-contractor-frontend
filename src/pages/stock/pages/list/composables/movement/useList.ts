@@ -1,13 +1,13 @@
 import { computed, ref, type Ref } from 'vue'
 // import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IGetStockList } from '@/models/request/stock/StockReq.model'
+import type { IGetDocumentMovementList } from '@/models/request/document-storage/DocumentStorageReq.model'
 import type { IDocumentMovementList } from '@/models/response/document-storage/DocumentStorageRes.model'
 import DocumentStorageProvider, { type IDocumentStorageProvider } from '@/resources/provider/document-storages/DocumentStorage.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
 interface IUseList extends IUsePagination {
-  filters: Ref<IGetStockList>
+  filters: Ref<IGetDocumentMovementList>
   items: Ref<IDocumentMovementList[]>
   fetch(): void
   onClearFilters(): void
@@ -17,10 +17,10 @@ export default function useList (): IUseList {
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
-  const filters = ref<IGetStockList>({})
+  const filters = ref<IGetDocumentMovementList>({})
   const items = ref<IDocumentMovementList[]>([])
 
-  const paginateQuery = computed((): IGetStockList => {
+  const paginateQuery = computed((): IGetDocumentMovementList => {
     const normalizedFilters = normalizeFilters(filters.value)
     return {
       search: search.value,
@@ -40,7 +40,7 @@ export default function useList (): IUseList {
   }
 
 
-  function normalizeFilters (value: IGetStockList): Partial<IGetStockList> {
+  function normalizeFilters (value: IGetDocumentMovementList): Partial<IGetDocumentMovementList> {
     return {
       ...value
     }

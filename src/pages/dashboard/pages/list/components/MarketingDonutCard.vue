@@ -69,9 +69,9 @@
 </template>
 
 <script setup lang="ts">
-import { Chart } from 'chart.js/auto'
-import DatePickerInput from '@/components/input/DatePickerInput.vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import DatePickerInput from '@/components/input/DatePickerInput.vue'
+import { Chart } from 'chart.js/auto'
 
 interface MarketingRow {
   label: string
@@ -130,7 +130,7 @@ const buildChart = (): void => {
   const labels = props.rows.map((row: MarketingRow): string => {
     return row.label
   })
-  const colors = props.rows.map((row: MarketingRow, index: number): string => {
+  const colors = props.rows.map((_row: MarketingRow, index: number): string => {
     return palette[index % palette.length]
   })
 

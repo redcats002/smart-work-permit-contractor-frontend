@@ -3,9 +3,9 @@
     <BaseContainer>
       <DisplayList :items="leftItems">
         <template #[`value.status`]>
-          <ChipStockDocsStatus :value="data.status" />
+          <ChipMovementStatus :value="data.status" />
         </template>
-      </displaylist>
+      </DisplayList>
     </BaseContainer>
     <div class="flex flex-col gap-2.5">
       <BaseContainer>
@@ -21,13 +21,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
-import type { IStockDocsById } from '@/models/response/document-storage/DocumentStorageDocsRes.model'
+import { formatter } from '@/utils/Formatter'
+import type { IDocumentMovementById } from '@/models/response/document-storage/DocumentStorageRes.model'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
-import ChipStockDocsStatus from '../../list/components/ChipMovementStatus.vue'
+import ChipMovementStatus from '../../list/components/ChipMovementStatus.vue'
 
 interface IProps {
-  data: IStockDocsById
+  data: IDocumentMovementById
 }
 
 const props = defineProps<IProps>()
@@ -36,18 +37,18 @@ const dayjs = useDayjs()
 
 const leftItems = computed((): IDisplayList[] => [
   { label: 'สถานะ', key: 'status', value: props.data.status, hideColon: true },
-  { label: 'เลขที่ใบย้ายเอกสาร', key: 'docNo', value: props.data.docNo || '-' },
+  { label: 'เลขที่ใบย้ายเอกสาร', key: 'idNo', value: props.data.idNo || '-' },
   { label: 'เหตุผล', key: 'reason', value: props.data.reason || '-' }
 ])
 
 const senderItems = computed((): IDisplayList[] => [
-  { label: 'วันที่ย้าย', key: 'transferDate', value: dayjs.formatDate(props.data.transferDate) },
-  { label: 'ย้ายโดย', key: 'senderName', value: props.data.senderName || '-' }
+  { label: 'วันที่ย้าย', key: 'createdAt', value: dayjs.formatDate(props.data.createdAt) },
+  { label: 'ย้ายโดย', key: 'createdByEmployee', value: formatter.fullName(props.data.createdByEmployee) || '-' }
 ])
 
 const receiverItems = computed((): IDisplayList[] => [
   { label: 'วันที่รับ', key: 'receiveDate', value: props.data.receiveDate ? dayjs.formatDate(props.data.receiveDate) : '-' },
-  { label: 'รับโดย', key: 'receiverName', value: props.data.receiverName || '-' }
+  { label: 'รับโดย', key: 'receiverName', value: formatter.fullName(props.data.receivedByEmployee) || '-' }
 ])
 
 

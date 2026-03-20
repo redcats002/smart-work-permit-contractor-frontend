@@ -1,19 +1,36 @@
 <template>
   <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+    <ConfirmModal
+      v-model="visibleConfirm"
+      description="เอกสารที่ต้องการย้ายจากคลังต้นทางจะถูกรีเซ็ตและเลือกใหม่ทั้งหมด"
+      @confirm="onConfirm()" />
     <LabelField
-      v-model="model.formWarehouse"
+      v-slot="{ invalid }"
       :form="form"
       label="คลังต้นทาง"
-      name="idCard"
-      disabled
-      hide-error />
+      name="originalWarehouseId"
+      required>
+      <WarehouseSelection
+        v-model="model.originalWarehouseId"
+        :disabled-ids="[model.destinationWarehouseId]"
+        :invalid="invalid"
+        name="originalWarehouseId"
+        @update:model-value="onChangeOriginal($event)" />
+    </LabelField>
     <LabelField
-      v-model="model.toWarehouse"
+      v-slot="{ invalid }"
       :form="form"
       label="คลังปลายทาง"
-      name="idCard"
-      hide-error
-      required />
+      name="destinationWarehouseId"
+      required>
+      <WarehouseSelection
+        v-model="model.destinationWarehouseId"
+        :disabled-ids="[model.originalWarehouseId]"
+        :invalid="invalid"
+        name="destinationWarehouseId"
+        show-clear
+        @update:model-value="onChangeDestination()" />
+    </LabelField>
     <LabelField
       v-model="model.reason"
       :form="form"
@@ -25,10 +42,12 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import type { IFormState } from '@/models/Form.model'
-import type { ICreateStockPayload } from '@/models/request/stock/StockReq.model'
 import LabelField from '@/components/input/LabelField.vue'
-import { useFormInitialValues } from '../schema/document-receive.schema'
+import ConfirmModal from '@/components/modal/ConfirmModal.vue'
+import WarehouseSelection from '@/components/selection/modules/warehouse/WarehouseSelection.vue'
+import { type DocumentMovementFormValues, useFormInitialValues } from '../schema/document-movement'
 
 interface IProps {
   form?: IFormState
@@ -36,9 +55,27 @@ interface IProps {
 
 defineProps<IProps>()
 
-const model = defineModel<ICreateStockPayload>({
+const model = defineModel<DocumentMovementFormValues>({
   default: useFormInitialValues()
 })
+const visibleConfirm = ref<boolean>(false)
+
+function onConfirm (): void {
+  visibleConfirm.value = false
+  model.value.assets = []
+}
+
+function onChangeOriginal (value?: number | null): void {
+  if (!value) return
+  if (model.value?.originalWarehouseId === model.value?.destinationWarehouseId) model.value.destinationWarehouseId = null
+  if (value && model.value.assets?.length > 0) visibleConfirm.value = true
+}
+
+function onChangeDestination (): void {
+  if (model.value?.originalWarehouseId === model.value?.destinationWarehouseId) {
+    model.value.originalWarehouseId = null
+  }
+}
 
 </script>
 

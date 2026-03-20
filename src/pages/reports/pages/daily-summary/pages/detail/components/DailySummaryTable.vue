@@ -4,7 +4,7 @@
     v-model:sort-by="sortBy"
     v-model:sort-order="sortOrder"
     :columns="columns"
-    :items="props.items"
+    :items="items"
     @update="emits('update')">
     <template #[`item.index`]="{ index }">
       {{ index + 1 }}
@@ -14,17 +14,19 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { formatter } from '@/utils/Formatter'
+import type { IDailySummaryDetailItem } from '@/models/response/report/daily-summary/DailySummaryDetailRes'
 import type { IColumn } from '@/models/Table.model'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
-import type { IDailySummaryDetailItem } from '@/models/response/report/daily-summary/DailySummaryDetailRes'
-import { formatter } from '@/utils/Formatter'
 
 interface IProps {
-  items: IDailySummaryDetailItem[] | undefined
+  items?: IDailySummaryDetailItem[]
 }
 
-const props = defineProps<IProps>()
+withDefaults(defineProps<IProps>(), {
+  items: (): IDailySummaryDetailItem[] => []
+})
 
 interface IEmits {
   delete: [id: number]

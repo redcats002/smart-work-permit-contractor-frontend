@@ -117,12 +117,6 @@ async function fetchIdNo (provider: string, id: string): Promise<string | undefi
         const res = await service.getWarehouseFindOne(id)
         return (res?.data as any)?.idNo as string | undefined
       }
-      case 'stock': {
-        const { default: StockProvider } = await import('@/resources/provider/stock/Stock.provider')
-        const service = new StockProvider()
-        const res = await service.getStockFindOne(id)
-        return (res?.data as any)?.idNo as string | undefined
-      }
       default:
         return undefined
     }

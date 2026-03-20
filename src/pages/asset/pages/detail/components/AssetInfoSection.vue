@@ -70,10 +70,12 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Icon } from '@iconify/vue'
+import type { IAssetDetailInfo, IContractDetailInfo } from '@/models/asset/AssetDetail.model'
 import BaseChip from '@/components/chip/BaseChip.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
-import type { IAssetDetailInfo, IContractDetailInfo } from '@/models/asset/AssetDetail.model'
+import SelectInput from '@/components/input/SelectInput.vue'
+import BaseModal from '@/components/modal/BaseModal.vue'
+import { Icon } from '@iconify/vue'
 
 interface IProps {
   assetInfo: IAssetDetailInfo
