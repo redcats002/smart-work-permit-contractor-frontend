@@ -78,23 +78,20 @@
               footerBgClass
             ]"
             :colspan="footer.colspan"
-            :footer="footer.value"
             :footer-class="footer.footerClass"
             :footer-style="footer.footerStyle"
             style="padding: 10px 22px !important;">
-            <template #body="{ data, index: rowIndex }">
+            <template #footer>
               <slot
                 v-if="$slots[`footer.${String(footer.field)}`]"
                 :column="footer"
                 :field="footer.field"
-                :index="rowIndex"
-                :item="data as T"
                 :name="`footer.${String(footer.field)}`"
-                :value="footer.value ? footer.value : data?.[footer.field]" />
+                :value="footer.value" />
               <span
                 v-else
                 class="text-[#333333] text-sm">
-                {{ getFooterCellValue(footer, data) }}
+                {{ displayValue(footer.value, 'footer') }}
               </span>
             </template>
           </Column>
@@ -197,8 +194,8 @@ const pagination = defineModel<IPagination>('pagination', {
   }
 })
 
-function displayValue (value: any): any {
-  if (value === null || value === undefined || value === '') return '-'
+function displayValue (value: any, type: 'item' | 'footer' = 'item'): any {
+  if (value === null || value === undefined || value === '') return type === 'footer' ? '' : '-'
   return value
 }
 
@@ -206,12 +203,6 @@ function getCellValue (col: IColumn, row: any): any {
   const raw = col.value ? col.value(row) : row?.[col.field]
   return displayValue(raw)
 }
-
-function getFooterCellValue (footer: IFooter, row: any): any {
-  const raw = footer.value ? footer.value : row?.[footer.field]
-  return displayValue(raw)
-}
-
 
 function resolveAlignClass (align?: 'left' | 'center' | 'right'): string {
   if (align === 'center') return 'text-center'
