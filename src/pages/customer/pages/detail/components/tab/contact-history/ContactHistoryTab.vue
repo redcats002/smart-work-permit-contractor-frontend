@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
@@ -49,11 +49,6 @@ const paginateQuery = computed((): IGetCustomerContactHistoryList => {
 })
 
 async function useFetch (): Promise<void> {
-  const mock = true // TODO: remove mock when api ready
-  if (mock) {
-    items.value = []
-    return
-  }
   const response = await CustomerService.getCustomerContactHistory(customerId.value, paginateQuery.value)
   items.value = response?.data || []
   pagination.value = extractPagination(response)
@@ -82,6 +77,9 @@ function onDelete (id: number): void {
   handleLoading((): Promise<void> => useDelete(id))
 }
 
+onMounted((): void => {
+  fetch()
+})
 </script>
 
 <style scoped>

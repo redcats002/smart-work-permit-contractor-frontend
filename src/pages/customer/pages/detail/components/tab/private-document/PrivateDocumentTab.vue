@@ -13,13 +13,32 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
+// import { useRoute } from 'vue-router'
+import { handleLoading } from '@/utils/HandleLoading'
+import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
+// import CustomerProvider, { type ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
 
+// import { useInitCustomerDocumentDetail } from '../../../composables/useInitDetail'
+
+interface IProps {
+  data: ICustomerById
+}
+
+const props = defineProps<IProps>()
+
+// const route = useRoute()
+
+// const CustomerService: ICustomerProvider = new CustomerProvider()
+
+// const customerId = computed((): number => Number(route?.params?.id as string ?? ''))
+// const customerDoc = useInitCustomerDocumentDetail()
+
 const citizenItems = computed((): IDisplayList[] => {
   return [
-    { label: 'บัตรประชาชน', key: 'citizenCardFile', value: '' },
+    { label: 'บัตรประชาชน', key: 'citizenCardFile', value: props.data?.idCard },
     { label: 'จุดจัดเก็บเอกสาร', key: 'citizenCardStoredAt', value: '' }
   ]
 })
@@ -36,7 +55,18 @@ const otherItems = computed((): IDisplayList[] => {
   ]
 })
 
+async function useFetch (): Promise<void> {
+  // const { data } = await CustomerService.getCustomerDocumentFindOne(customerId.value)
+  // customerDoc.value = useInitCustomerDocumentDetail(data).value
+}
 
+function fetch (): void {
+  handleLoading(useFetch)
+}
+
+onMounted((): void => {
+  fetch()
+})
 </script>
 
 <style scoped>

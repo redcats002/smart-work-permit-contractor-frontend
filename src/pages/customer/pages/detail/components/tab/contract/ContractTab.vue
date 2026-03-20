@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IGetCustomerContractList, IGetCustomerList } from '@/models/request/customer/CustomerReq.model'
@@ -52,11 +52,6 @@ const paginateQuery = computed((): IGetCustomerContractList => {
 })
 
 async function useFetch (): Promise<void> {
-  const mock = true // TODO: remove mock when api ready
-  if (mock) {
-    items.value = []
-    return
-  }
   const response = await CustomerService.getCustomerContracts(customerId.value, paginateQuery.value)
   items.value = response?.data || []
   pagination.value = extractPagination(response)
@@ -76,6 +71,9 @@ function fetch (): void {
 
 function onClearFilters (): void {}
 
+onMounted((): void => {
+  fetch()
+})
 </script>
 
 <style scoped>
