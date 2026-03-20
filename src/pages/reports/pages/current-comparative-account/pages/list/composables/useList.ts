@@ -1,12 +1,9 @@
-import {
-  // computed,
-  ref,
-  type Ref } from 'vue'
+import { ref, type Ref } from 'vue'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
-import usePagination, { type IUsePagination } from '@/composables/usePagination'
 import type { IGetCurrentComparativeList } from '@/models/request/report/current-comparative-account/CurrentComparativeReq.model'
 import type { ICurrentComparativeAccountList } from '@/models/response/report/current-comparative-account/CurrentComparativeAccountRes.model'
+import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
 interface IUseList extends IUsePagination {
   filters: Ref<IGetCurrentComparativeList>
@@ -16,7 +13,7 @@ interface IUseList extends IUsePagination {
   onDelete(id: number): void
 }
 export default function useList (): IUseList {
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
   const filters = ref<IGetCurrentComparativeList>({})
   const items = ref<ICurrentComparativeAccountList[]>([])
@@ -119,7 +116,9 @@ export default function useList (): IUseList {
     handleLoading(useFetch)
   }
 
-  function onClearFilters (): void {}
+  function onClearFilters (): void {
+    reset()
+  }
 
   function onDelete (id: number): void {
     handleLoading((): Promise<void> => useDelete(id))
@@ -136,6 +135,7 @@ export default function useList (): IUseList {
     onClearFilters,
     onDelete,
     extractPagination,
-    syncQuery
+    syncQuery,
+    reset
   }
 }

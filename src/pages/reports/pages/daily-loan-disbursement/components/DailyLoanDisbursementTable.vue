@@ -5,7 +5,9 @@
     v-model:sort-order="sortOrder"
     :columns="columns"
     :items="items"
+    :items-footer="itemsFooter"
     disable-auto-left-padding
+    show-footer
     @update="emits('update')">
     <template #[`item.receipt.idNo`]="{item}">
       <LinkText :to="{}">
@@ -24,9 +26,9 @@
 import { computed, ref } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
-import type { IDailyLoanDisbursementDisplay } from '@/models/modules/report/daily-loan-disbursement/Summary.model'
+import { generateTableFooter, type IFooterColConfig } from '@/utils/TableFooter'
 import type { IDailyLoanDisbursementList, IDailyLoanDisbursementSummary } from '@/models/response/report/daily-loan-disbursement/DailyLoanDisbursementRes.model'
-import type { IColumn } from '@/models/Table.model'
+import type { IColumn, IFooter } from '@/models/Table.model'
 import LinkText from '@/components/button/LinkText.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
@@ -36,7 +38,7 @@ interface IProps {
   summary?: IDailyLoanDisbursementSummary
 }
 
-withDefaults(defineProps<IProps>(), {
+const props = withDefaults(defineProps<IProps>(), {
   summary: undefined
 })
 
@@ -67,8 +69,18 @@ const columns = ref<IColumn<IDailyLoanDisbursementList>[]>([
   { field: 'numberOfInstallments', header: 'จำนวนงวด', value: (e: IDailyLoanDisbursementList): string => formatter.numberFormatNoDecimal(e?.numberOfInstallments) }
 ])
 
-// TODO: Summary
-computed((): Partial<IDailyLoanDisbursementDisplay> => ({}))
+const itemsFooter = computed((): IFooter[] => {
+  const footerConfig: Partial<Record<keyof IDailyLoanDisbursementList, IFooterColConfig<IDailyLoanDisbursementSummary>>> = {
+    customer: { value: `รวมทั้งสิ้น ${formatter.numberFormatNoDecimal(props.summary?.numberOfCustomer || 0)} รายการ` },
+    totalWithInterest: { value: formatter.numberFormat2Decimal(props.summary?.totalWithInterest || 0) },
+    total: { value: formatter.numberFormat2Decimal(props.summary?.total || 0) },
+    operation: { value: formatter.numberFormat2Decimal(props.summary?.operation || 0) },
+    interest: { value: formatter.numberFormat2Decimal(props.summary?.interest || 0) },
+    installment: { value: formatter.numberFormat2Decimal(props.summary?.installment || 0) }
+  }
+  return generateTableFooter(columns.value, props.summary, footerConfig)
+})
+
 </script>
 
 <style scoped></style>

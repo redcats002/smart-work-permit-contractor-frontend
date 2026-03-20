@@ -27,12 +27,12 @@ export default function useList (): IUseList {
   })
   const items = ref<IDailyLoanDisbursementList[]>([])
   const summary = ref<IDailyLoanDisbursementSummary>({
-    acknowledgement: 0,
-    cutoff: 0,
-    discount: 0,
-    net: 0,
+    installment: 0,
+    interest: 0,
     numberOfCustomer: 0,
-    payment: 0
+    operation: 0,
+    total: 0,
+    totalWithInterest: 0
   })
   // mock
   const mockResponse: IDailyLoanDisbursementList[] = [
@@ -138,11 +138,11 @@ export default function useList (): IUseList {
       items.value = mockResponse
       summary.value = {
         numberOfCustomer: mockResponse.length,
-        payment: mockResponse.reduce((sum: number, item: IDailyLoanDisbursementList): number => sum + (item.total || 0), 0),
-        cutoff: mockResponse.reduce((sum: number, item: IDailyLoanDisbursementList): number => sum + (item.operation || 0), 0),
-        discount: 0,
-        net: mockResponse.reduce((sum: number, item: IDailyLoanDisbursementList): number => sum + (item.totalWithInterest || 0), 0),
-        acknowledgement: mockResponse.reduce((sum: number, item: IDailyLoanDisbursementList): number => sum + (item.interest || 0), 0)
+        installment: mockResponse.reduce((sum: number, item: IDailyLoanDisbursementList): number => sum + item.installment, 0),
+        interest: mockResponse.reduce((sum: number, item: IDailyLoanDisbursementList): number => sum + item.interest, 0),
+        operation: mockResponse.reduce((sum: number, item: IDailyLoanDisbursementList): number => sum + item.operation, 0),
+        total: mockResponse.reduce((sum: number, item: IDailyLoanDisbursementList): number => sum + item.total, 0),
+        totalWithInterest: mockResponse.reduce((sum: number, item: IDailyLoanDisbursementList): number => sum + item.totalWithInterest, 0)
       }
       pagination.value.count = mockResponse.length
       pagination.value.totalPage = 1
@@ -151,7 +151,14 @@ export default function useList (): IUseList {
     const response = await DailyLoanDisbursementService.getDailyLoanDisbursementPaginate(paginateQuery.value)
     items.value = response?.data || []
     pagination.value = extractPagination(response)
-    summary.value = {}
+    summary.value = {
+      numberOfCustomer: response?.numberOfCustomer || 0,
+      installment: response?.installment || 0,
+      interest: response?.interest || 0,
+      operation: response?.operation || 0,
+      total: response?.total || 0,
+      totalWithInterest: response?.totalWithInterest || 0
+    }
     syncQuery({ ...normalizeFilters(filters.value) })
   }
 

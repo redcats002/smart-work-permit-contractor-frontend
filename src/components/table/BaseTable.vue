@@ -67,18 +67,37 @@
       </Column>
 
       <ColumnGroup
-        v-if="isShowFooter"
+        v-if="showFooter"
         type="footer">
         <Row>
           <Column
             v-for="(footer, footerIndex) in itemsFooter"
-            :key="footerIndex"
-            :class="`bg-${footerBgColor} text-sm`"
+            :key="`footer-col-${footerIndex}`"
+            :class="[
+              `text-sm`,
+              footerBgClass
+            ]"
             :colspan="footer.colspan"
-            :footer="footer.footer"
+            :footer="footer.value"
             :footer-class="footer.footerClass"
             :footer-style="footer.footerStyle"
-            style="padding: 10px !important;" />
+            style="padding: 10px 22px !important;">
+            <template #body="{ data, index: rowIndex }">
+              <slot
+                v-if="$slots[`footer.${String(footer.field)}`]"
+                :column="footer"
+                :field="footer.field"
+                :index="rowIndex"
+                :item="data as T"
+                :name="`footer.${String(footer.field)}`"
+                :value="footer.value ? footer.value : data?.[footer.field]" />
+              <span
+                v-else
+                class="text-[#333333] text-sm">
+                {{ getFooterCellValue(footer, data) }}
+              </span>
+            </template>
+          </Column>
         </Row>
       </ColumnGroup>
       <template
@@ -101,7 +120,7 @@
     </DataTable>
     <!-- Footer slot -->
     <div
-      v-if="showFooter"
+      v-if="!hidePagination"
       class="border-t border-surface-200 bg-white h-14 py-2.5 px-5 flex items-center justify-end gap-2.5">
       <Paginate
         v-model:pagination="pagination"
@@ -130,13 +149,13 @@ interface IProps {
   tableClass?: string | object
   tableStyle?: string | object
   showHeaders?: boolean
+  hidePagination?: boolean
   showFooter?: boolean
-  isShowFooter?: boolean
   disableAutoLeftPadding?: boolean
   checkboxHeaderClass?: string
   checkboxBodyClass?: string
   rowClass?: (data: T) => string
-  footerBgColor?: string
+  footerBgClass?: string
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -147,13 +166,14 @@ const props = withDefaults(defineProps<IProps>(), {
   tableClass: '',
   tableStyle: '',
   showHeaders: true,
-  showFooter: true,
+  hidePagination: false,
   disableAutoLeftPadding: false,
   checkboxHeaderClass: '',
   checkboxBodyClass: '',
   rowClass: undefined,
-  footerBgColor: '',
-  itemsFooter: undefined
+  footerBgClass: 'bg-(--p-gray-5)',
+  itemsFooter: undefined,
+  showFooter: false
 })
 
 const emits = defineEmits<{
@@ -186,6 +206,12 @@ function getCellValue (col: IColumn, row: any): any {
   const raw = col.value ? col.value(row) : row?.[col.field]
   return displayValue(raw)
 }
+
+function getFooterCellValue (footer: IFooter, row: any): any {
+  const raw = footer.value ? footer.value : row?.[footer.field]
+  return displayValue(raw)
+}
+
 
 function resolveAlignClass (align?: 'left' | 'center' | 'right'): string {
   if (align === 'center') return 'text-center'

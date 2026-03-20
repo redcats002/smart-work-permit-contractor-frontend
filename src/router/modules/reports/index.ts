@@ -10,6 +10,7 @@ import DailyBranchSummaryRouter from './DailyBranchSummary.router'
 import DailyInstallmentPaymentRouter from './DailyInstallmentPayment.router'
 import DailyLoanDisbursementRouter from './DailyLoanDisbursement.router'
 import FinancialSummaryRouter from './FinancialSummary.router'
+import LoanDisbursementSummaryRouter from './LoanDisbursementSummary.router'
 import PaymentsForAccountClosureRouter from './PaymentsForAccountClosure.router'
 import PercentInstallmentRouter from './PercentInstallment.router'
 import ProfitBasedOnActualPaymentRouter from './ProfitBasedOnActualPayment.router'
@@ -55,7 +56,8 @@ export default {
     BranchIncomeExpenseRouter,
     ContractSecurityDocumentRouter,
     FinancialSummaryRouter,
-    DailyLoanDisbursementRouter
+    DailyLoanDisbursementRouter,
+    LoanDisbursementSummaryRouter
 
   ]
 } as RouteRecordRaw

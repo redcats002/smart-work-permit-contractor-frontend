@@ -5,8 +5,8 @@
     <BaseTable
       :columns="columns"
       :items="customers"
-      :show-footer="false"
-      disable-auto-left-padding />
+      disable-auto-left-padding
+      hide-pagination />
   </BaseModal>
 </template>
 

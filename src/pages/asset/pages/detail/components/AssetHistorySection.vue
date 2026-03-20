@@ -25,9 +25,9 @@
           key="history"
           :columns="columns"
           :items="items"
-          :show-footer="false"
           table-class="border-0"
-          disable-auto-left-padding>
+          disable-auto-left-padding
+          hide-pagination>
           <template #[`item.status`]="{ item }">
             <BaseChip
               :append-icon="statusIcon(item.status)"
@@ -59,12 +59,12 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Icon } from '@iconify/vue'
+import type { IAssetHistoryItem } from '@/models/asset/AssetDetail.model'
 import type { IColumn } from '@/models/Table.model'
-import BaseTable from '@/components/table/BaseTable.vue'
 import BaseChip from '@/components/chip/BaseChip.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
-import type { IAssetHistoryItem } from '@/models/asset/AssetDetail.model'
+import BaseTable from '@/components/table/BaseTable.vue'
+import { Icon } from '@iconify/vue'
 
 interface IProps {
   items: IAssetHistoryItem[]

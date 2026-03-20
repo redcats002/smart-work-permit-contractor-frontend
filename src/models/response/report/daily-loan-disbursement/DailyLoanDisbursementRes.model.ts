@@ -15,6 +15,13 @@ export interface IDailyLoanDisbursementList extends IEntity {
   installment: number
   numberOfInstallments: number
 }
-export interface IDailyLoanDisbursementSummary {}
+export interface IDailyLoanDisbursementSummary {
+  numberOfCustomer: number
+  interest: number
+  total: number
+  totalWithInterest: number
+  operation: number
+  installment: number
+}
 
 export interface TGetDailyLoanDisbursementListResponse extends IBasePaginationResponse<IDailyLoanDisbursementList>, IDailyLoanDisbursementSummary {}
