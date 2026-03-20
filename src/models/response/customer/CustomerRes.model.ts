@@ -82,3 +82,4 @@ export type TGetCustomerContactHistoryListResponse = IBasePaginationResponse<ICu
 export type TGetCustomerEstateListResponse = IBasePaginationResponse<ICustomerEstateList>
 
 export type TGetCustomerDocumentByIdResponse = IBaseSuccessResponse<ICustomerDocumentById>
+export type TGetCustomerDocumentListResponse = IBasePaginationResponse<ICustomerDocumentById>
