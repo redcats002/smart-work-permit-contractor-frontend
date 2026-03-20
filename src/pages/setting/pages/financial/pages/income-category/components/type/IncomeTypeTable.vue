@@ -4,8 +4,8 @@
     v-model:sort-by="sortBy"
     v-model:sort-order="sortOrder"
     :columns="columns"
+    :hide-pagination="!props.selectCategoryId"
     :items="props.items"
-    :show-footer="!!props.selectCategoryId"
     disable-auto-left-padding
     @update="emits('update')">
     <template #[`header.action`]>

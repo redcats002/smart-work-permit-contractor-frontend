@@ -14,11 +14,9 @@
         </template>
         <div class="grid grid-cols-1 gap-5">
           <LabelField
-            class="w-fit"
             label="การชำระ"
             placeholder="ทั้งหมด" />
           <LabelField
-            class="w-fit"
             label="หมวดหมู่"
             placeholder="ทั้งหมด" />
         </div>
