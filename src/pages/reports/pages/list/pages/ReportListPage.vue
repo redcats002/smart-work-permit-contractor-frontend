@@ -43,7 +43,7 @@ interface IReportItem {
 }
 
 const reportItems: IReportItem[] = [
-  { label: 'รายงานสรุปประจำวัน', to: { name: 'DailyBranchSummaryPage' } },
+  { label: 'รายงานสรุปประจำวัน', to: { name: 'DailySummaryPage' } },
   { label: 'รายงานสรุปบัญชีเทียบปัจจุบัน', to: { name: 'ComparativeListPage' } },
   { label: 'รายงานสรุปประจำวันรวมทุกสาขา', to: { name: 'DailyBranchSummaryPage' } },
   { label: 'รายงานลูกหนี้คงเหลือ', to: { name: 'NotAvailablePage' }, disabled: true },

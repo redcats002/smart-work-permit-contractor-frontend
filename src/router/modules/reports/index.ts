@@ -17,6 +17,7 @@ import PercentInstallmentRouter from './PercentInstallment.router'
 import ProfitBasedOnActualPaymentRouter from './ProfitBasedOnActualPayment.router'
 import RankingLendingRouter from './RankingLending.router'
 import RankingLoanRouter from './RankingLoan.router'
+import DailySummaryRouter from './DailySummary.router'
 
 const prefix = '/reports'
 
@@ -54,6 +55,7 @@ export default {
     RankingLoanRouter,
     PaymentsForAccountClosureRouter,
     BranchSummaryRouter,
+    DailySummaryRouter,
     BranchIncomeExpenseRouter,
     ContractSecurityDocumentRouter,
     FinancialSummaryRouter,
