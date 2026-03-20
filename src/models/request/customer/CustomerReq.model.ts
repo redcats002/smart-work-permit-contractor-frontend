@@ -10,3 +10,6 @@ export interface IGetCustomerContractList extends IBasePaginationRequest {}
 export interface IGetCustomerPaymentHistoryList extends IBasePaginationRequest {}
 export interface IGetCustomerContactHistoryList extends IBasePaginationRequest {}
 export interface IGetCustomerEstateList extends IBasePaginationRequest {}
+export interface IGetCustomerDocumentList extends IBasePaginationRequest {
+  customerId?: number
+}
