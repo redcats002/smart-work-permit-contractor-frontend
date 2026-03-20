@@ -9,6 +9,7 @@ import AssetRouter from './modules/asset'
 import AuthRouter from './modules/Auth.router'
 import ContractRouter from './modules/contract'
 import CustomerRouter from './modules/customer'
+import DashboardRouter from './modules/dashboard'
 import FinanceRouter from './modules/finance'
 import ReportsRouter from './modules/reports'
 import SettingRouter from './modules/setting'
@@ -44,6 +45,7 @@ export const routes: RouteRecordRaw[] = [
   AuthRouter,
   AnnouncementRouter,
   WorkRouter,
+  DashboardRouter,
   ReportsRouter,
   ContractRouter,
   CustomerRouter,
