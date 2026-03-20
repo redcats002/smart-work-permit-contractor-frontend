@@ -1,15 +1,21 @@
 import type { TAssetType } from '@/enums/modules/contract/AssetType.enum'
-import type { TDocumentStorageAssetsStatus } from '@/enums/modules/document-storage/DocumentStorageAssetsStatus.enum'
-import type { StockDocsFormValues } from '@/pages/stock/pages/create/schema/stockDocs.schema'
+import type { TDocumentStorageAssetStatus } from '@/enums/modules/document-storage/DocumentStorageAssetStatus.enum'
+import type { TDocumentStorageMovementStatus } from '@/enums/modules/document-storage/DocumentStorageMovementStatus.enum'
+import type { DocumentMovementFormValues } from '@/pages/stock/pages/create/schema/document-movement'
+import type { DocumentReceiveFormValues } from '@/pages/stock/pages/create/schema/document-receive.schema'
 import type { IBasePaginationRequest } from '../Request.model'
 
-export interface IGetDocumentStorageAssetsList extends IBasePaginationRequest {
+export interface IGetDocumentAssetsList extends IBasePaginationRequest {
   type?: TAssetType
   warehouseId?: number
   locationId?: number
-  status?: TDocumentStorageAssetsStatus
+  status?: TDocumentStorageAssetStatus
 }
-
-export interface ICreateDocumentMovementPayload extends StockDocsFormValues {}
-
+export interface IGetDocumentMovementList extends IBasePaginationRequest {
+  originalWarehouseId?: number
+  destinationWarehouseId?: number
+  status?: TDocumentStorageMovementStatus
+}
 export interface IGetDocumentMovementAssetsList extends IBasePaginationRequest {}
+export interface ICreateDocumentMovementPayload extends DocumentMovementFormValues {}
+export interface IReceiveDocumentMovementPayload extends DocumentReceiveFormValues {}
