@@ -5,6 +5,7 @@ import type { IGetDailyInstallmentList } from '@/models/request/report/daliy-ins
 import type { IDailyInstallmentPaymentList } from '@/models/response/report/daily-installment-payment/DailyInstallmentPaymentRes'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
+
 interface IDailyInstallment extends IUsePagination {
   filters: Ref<IGetDailyInstallmentList>
   items: Ref<IDailyInstallmentPaymentList[]>

@@ -1,13 +1,13 @@
 import type { ComponentOptions } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
 
-const prefix = '/daily-installment'
+const prefix = 'daily-installment'
 
 export default {
   path: prefix,
   name: 'DailyInstallmentPage',
-  redirect: { name: 'ReportListPage' },
-  component: (): ComponentOptions => import('@/pages/reports/Reports.vue'),
+  redirect: { name: 'DailyInstallmentList' },
+  component: (): ComponentOptions => import('@/pages/reports/pages/daily-installment-payment/ReportDailyInstallmentPaymentPage.vue'),
   meta: {
     title: 'รายงาน',
     auth: true,
@@ -17,7 +17,7 @@ export default {
     {
       path: 'list',
       name: 'DailyInstallmentListPage',
-      component: (): ComponentOptions => import('@/pages/reports/pages/daily-installment-payment/pages/ReportDailyInstallmentPaymentPage.vue'),
+      component: (): ComponentOptions => import('@/pages/reports/pages/daily-installment-payment/pages/ReportDailyInstallmentPaymentListPage.vue'),
       meta: {
         auth: true,
         title: 'รายงานรับชำระค่างวดประจำวัน',

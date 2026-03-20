@@ -3,8 +3,8 @@
     v-if="show"
     :as="to ? RouterLink : 'button'"
     :class="{
-      'h-10 w-10 p-0 justify-center': !label,
-      'gap-2 px-3 h-10': label && icon
+      'h-9 w-9 p-0 justify-center': !label,
+      'gap-2 px-3 h-9': label && icon
     }"
     :to="to"
     class="flex items-center rounded-sm"
@@ -22,8 +22,8 @@
 </template>
 
 <script setup lang="ts">
-import { Icon } from '@iconify/vue'
 import { type RouteLocationRaw, RouterLink } from 'vue-router'
+import { Icon } from '@iconify/vue'
 
 interface IProps {
   label?: string
