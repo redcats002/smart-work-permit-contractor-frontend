@@ -21,10 +21,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
-import type { IStockDocsById } from '@/models/response/stock/StockDocsRes.model'
+import type { IStockDocsById } from '@/models/response/document-storage/DocumentStorageDocsRes.model'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
-import ChipStockDocsStatus from '../../list/components/ChipStockDocsStatus.vue'
+import ChipStockDocsStatus from '../../list/components/ChipMovementStatus.vue'
 
 interface IProps {
   data: IStockDocsById

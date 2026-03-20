@@ -29,7 +29,7 @@
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"
           v-model:sort-order="sortOrder"
-          :items="(form.items as IStockList[])"
+          :items="(form.items as IDocumentAssetList[])"
           @delete="handleRemoveItem($event)" />
         <FormAction @cancel="onCancel()" />
       </Form>
@@ -44,7 +44,7 @@ import { toast } from '@/plugins/toast'
 import { useStockDocsStore } from '@/stores/StockDocs'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { IStockList } from '@/models/response/stock/StockRes.model'
+import type { IDocumentAssetList } from '@/models/response/document-storage/DocumentStorageRes.model'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
@@ -53,13 +53,13 @@ import FormAction from '@/components/button/FormAction.vue'
 import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import InformationForm from '../components/InformationForm.vue'
+import ModalStockDocsCreate from '../components/ModalStockDocsCreate.vue'
 import SelectedDocsTable from '../components/SelectedDocsTable.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { storeToRefs } from 'pinia'
-import useList from '../../list/composables/useList'
-import { StockDocsSchema } from '../schema/stockDocs.schema'
-import ModalStockDocsCreate from '../components/ModalStockDocsCreate.vue'
+import useList from '../../list/composables/asset/useList'
+import { StockDocsSchema } from '../schema/document-movement'
 
 // import StockProvider from '@/resources/provider/stock/Stock.provider'
 
