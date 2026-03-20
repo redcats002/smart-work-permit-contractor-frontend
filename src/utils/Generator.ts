@@ -1,6 +1,9 @@
+import type { IPagination } from '@/composables/usePagination'
+
 interface IGenerator {
   generateRandomThaiCitizenId: () => string
   generateRandomPhoneNumber: () => string
+  generateOrder (index: number, pagination?: IPagination): number
 }
 
 function generateRandomThaiCitizenId (): string {
@@ -38,7 +41,14 @@ function generateRandomPhoneNumber (): string {
   return `${prefix}${remaining}`
 }
 
+function generateOrder (index: number, pagination?: IPagination): number {
+  const page = pagination?.page || 1
+  const limit = pagination?.limit || 10
+  return (page - 1) * limit + index + 1
+}
+
 export const generator: IGenerator = {
   generateRandomThaiCitizenId,
-  generateRandomPhoneNumber
+  generateRandomPhoneNumber,
+  generateOrder
 }

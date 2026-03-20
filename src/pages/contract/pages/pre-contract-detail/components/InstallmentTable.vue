@@ -2,8 +2,8 @@
   <BaseTable
     :columns="columns"
     :items="items"
-    :show-footer="false"
     disable-auto-left-padding
+    hide-pagination
     @update="emits('update')" />
 </template>
 

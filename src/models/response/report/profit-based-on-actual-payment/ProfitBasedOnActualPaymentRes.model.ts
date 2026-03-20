@@ -20,11 +20,11 @@ export interface IProfitBasedOnActualPaymentList extends IEntity {
 }
 export interface IProfitBasedOnActualPaymentSummary {
   numberOfCustomer: number
-  totalPrincipal: string
-  totalInterest: string
-  installmentPaymentAmount: string
-  currentPrincipal: string
-  currentInterest: string
+  totalPrincipal: number
+  totalInterest: number
+  installmentPaymentAmount: number
+  currentPrincipal: number
+  currentInterest: number
 }
 
 export interface TGetProfitBasedOnActualPaymentListResponse

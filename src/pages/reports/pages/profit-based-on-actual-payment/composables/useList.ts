@@ -2,13 +2,17 @@ import { computed, ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IProfitBasedOnActualPaymentFilter } from '@/models/modules/report/profit-based-on-actual-payment/Filter.model'
 import type { IGetProfitBasedOnActualPaymentList } from '@/models/request/report/profit-based-on-actual-payment/ProfitBasedOnActualPaymentReq.model'
-import type { IProfitBasedOnActualPaymentList } from '@/models/response/report/profit-based-on-actual-payment/ProfitBasedOnActualPaymentRes.model'
+import type {
+  IProfitBasedOnActualPaymentList,
+  IProfitBasedOnActualPaymentSummary
+} from '@/models/response/report/profit-based-on-actual-payment/ProfitBasedOnActualPaymentRes.model'
 import ProfitBasedOnActualPaymentProvider from '@/resources/provider/report/ProfitBasedOnActualPayment.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
 interface IUseList extends IUsePagination {
   filters: Ref<IProfitBasedOnActualPaymentFilter>
   items: Ref<IProfitBasedOnActualPaymentList[]>
+  summary: Ref<IProfitBasedOnActualPaymentSummary>
   fetch(): void
   onClearFilters(): void
 }
@@ -19,6 +23,14 @@ export default function useList (): IUseList {
 
   const filters = ref<IProfitBasedOnActualPaymentFilter>({})
   const items = ref<IProfitBasedOnActualPaymentList[]>([])
+  const summary = ref<IProfitBasedOnActualPaymentSummary>({
+    currentInterest: 0,
+    currentPrincipal: 0,
+    installmentPaymentAmount: 0,
+    totalInterest: 0,
+    totalPrincipal: 0,
+    numberOfCustomer: 0
+  })
   // mock
   const mockResponse: IProfitBasedOnActualPaymentList[] = [
     {
@@ -173,6 +185,14 @@ export default function useList (): IUseList {
     }
     const response = await ProfitBasedOnActualPaymentService.getProfitBasedOnActualPaymentPaginate(paginateQuery.value)
     items.value = response?.data || []
+    summary.value = {
+      currentInterest: response?.currentInterest || 0,
+      currentPrincipal: response?.currentPrincipal || 0,
+      installmentPaymentAmount: response?.installmentPaymentAmount || 0,
+      totalInterest: response?.totalInterest || 0,
+      totalPrincipal: response?.totalPrincipal || 0,
+      numberOfCustomer: response?.numberOfCustomer || 0
+    }
     pagination.value = extractPagination(response)
     syncQuery({ ...normalizeFilters(filters.value) })
   }
@@ -198,6 +218,7 @@ export default function useList (): IUseList {
     sortBy,
     sortOrder,
     search,
+    summary,
     fetch,
     onClearFilters,
     extractPagination,

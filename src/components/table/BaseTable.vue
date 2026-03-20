@@ -65,6 +65,38 @@
           </span>
         </template>
       </Column>
+
+      <ColumnGroup
+        v-if="showFooter"
+        type="footer">
+        <Row>
+          <Column
+            v-for="(footer, footerIndex) in itemsFooter"
+            :key="`footer-col-${footerIndex}`"
+            :class="[
+              `text-sm`,
+              footerBgClass
+            ]"
+            :colspan="footer.colspan"
+            :footer-class="footer.footerClass"
+            :footer-style="footer.footerStyle"
+            style="padding: 10px 22px !important;">
+            <template #footer>
+              <slot
+                v-if="$slots[`footer.${String(footer.field)}`]"
+                :column="footer"
+                :field="footer.field"
+                :name="`footer.${String(footer.field)}`"
+                :value="footer.value" />
+              <span
+                v-else
+                class="text-[#333333] text-sm">
+                {{ displayValue(footer.value, 'footer') }}
+              </span>
+            </template>
+          </Column>
+        </Row>
+      </ColumnGroup>
       <template
         v-if="$slots.expansion"
         #expansion="slotProps">
@@ -85,7 +117,7 @@
     </DataTable>
     <!-- Footer slot -->
     <div
-      v-if="showFooter"
+      v-if="!hidePagination"
       class="border-t border-surface-200 bg-white h-14 py-2.5 px-5 flex items-center justify-end gap-2.5">
       <Paginate
         v-model:pagination="pagination"
@@ -96,15 +128,16 @@
 
 <script setup lang="ts" generic="T">
 import { computed, ref, watch } from 'vue'
-import type { IColumn } from '@/models/Table.model'
+import type { IColumn, IFooter } from '@/models/Table.model'
 import type { IPagination } from '@/composables/usePagination'
-// import { ColumnGroup, Row } from 'primevue'
+import { ColumnGroup, Row } from 'primevue'
 import Column from 'primevue/column'
 import type { DataTablePassThroughOptions } from 'primevue/datatable'
 import Paginate from './Paginate.vue'
 
 interface IProps {
   items: T[]
+  itemsFooter?: IFooter[]
   columns: IColumn<T>[]
   selectable?: boolean
   dataKey?: string
@@ -113,11 +146,13 @@ interface IProps {
   tableClass?: string | object
   tableStyle?: string | object
   showHeaders?: boolean
+  hidePagination?: boolean
   showFooter?: boolean
   disableAutoLeftPadding?: boolean
   checkboxHeaderClass?: string
   checkboxBodyClass?: string
   rowClass?: (data: T) => string
+  footerBgClass?: string
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -128,11 +163,14 @@ const props = withDefaults(defineProps<IProps>(), {
   tableClass: '',
   tableStyle: '',
   showHeaders: true,
-  showFooter: true,
+  hidePagination: false,
   disableAutoLeftPadding: false,
   checkboxHeaderClass: '',
   checkboxBodyClass: '',
-  rowClass: undefined
+  rowClass: undefined,
+  footerBgClass: 'bg-(--p-gray-5)',
+  itemsFooter: undefined,
+  showFooter: false
 })
 
 const emits = defineEmits<{
@@ -156,8 +194,8 @@ const pagination = defineModel<IPagination>('pagination', {
   }
 })
 
-function displayValue (value: any): any {
-  if (value === null || value === undefined || value === '') return '-'
+function displayValue (value: any, type: 'item' | 'footer' = 'item'): any {
+  if (value === null || value === undefined || value === '') return type === 'footer' ? '' : '-'
   return value
 }
 
