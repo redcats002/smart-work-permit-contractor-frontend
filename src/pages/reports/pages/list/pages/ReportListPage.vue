@@ -46,7 +46,7 @@ const reportItems: IReportItem[] = [
   { label: 'รายงานสรุปประจำวัน', to: { name: 'DailyBranchSummaryPage' } },
   { label: 'รายงานสรุปบัญชีเทียบปัจจุบัน', to: { name: 'ComparativeListPage' } },
   { label: 'รายงานสรุปประจำวันรวมทุกสาขา', to: { name: 'DailyBranchSummaryPage' } },
-  { label: 'รายงานลูกหนี้คงเหลือ', to: { name: 'NotAvailablePage' }, disabled: true },
+  { label: 'รายงานลูกหนี้คงเหลือ', to: { name: 'OutstandingDebtorPage' } },
   { label: 'รายงานรับชำระค่างวดประจำวัน', to: { name: 'DailyInstallmentListPage' } },
   { label: 'รายงานปล่อยสินเชื่อประจำวัน', to: { name: 'DailyLoanDisbursementPage' } },
   { label: 'รายงานรับชำระค่างวดคิดเป็นเปอร์เซ็นต์', to: { name: 'PercentInstallmentPage' } },
@@ -61,7 +61,7 @@ const reportItems: IReportItem[] = [
   { label: 'รายงานสัญญาและเอกสารหลักทรัพย์', to: { name: 'NotAvailablePage' }, disabled: true },
   { label: 'รายงานสรุปสต็อกสินค้ารวม', to: { name: 'AllStockPage' } },
   { label: 'รายงานสาขา', to: { name: 'BranchSummaryPage' } },
-  { label: 'รายงานลูกค้าค้างชำระ', to: { name: 'NotAvailablePage' }, disabled: true },
+  { label: 'รายงานลูกค้าค้างชำระ', to: { name: 'OverdueCustomerPage' } },
   { label: 'รายงานหัวหน้าสาขา', to: { name: 'BranchHeadSummaryPage' }, disabled: true },
   { label: 'รายงานสัญญาและเอกสารหลักทรัพย์', to: { name: 'ContractSecurityDocumentPage' } }
 ]

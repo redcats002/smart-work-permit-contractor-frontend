@@ -11,6 +11,8 @@ import DailyInstallmentPaymentRouter from './DailyInstallmentPayment.router'
 import DailyLoanDisbursementRouter from './DailyLoanDisbursement.router'
 import FinancialSummaryRouter from './FinancialSummary.router'
 import LoanDisbursementSummaryRouter from './LoanDisbursementSummary.router'
+import OutstandingDebtorRouter from './OutstandingDebtor.router'
+import OverdueCustomerRouter from './OverdueCustomer.router'
 import PaymentsForAccountClosureRouter from './PaymentsForAccountClosure.router'
 import PercentInstallmentRouter from './PercentInstallment.router'
 import ProfitBasedOnActualPaymentRouter from './ProfitBasedOnActualPayment.router'
@@ -57,7 +59,9 @@ export default {
     ContractSecurityDocumentRouter,
     FinancialSummaryRouter,
     DailyLoanDisbursementRouter,
-    LoanDisbursementSummaryRouter
+    LoanDisbursementSummaryRouter,
+    OutstandingDebtorRouter,
+    OverdueCustomerRouter
 
   ]
 } as RouteRecordRaw

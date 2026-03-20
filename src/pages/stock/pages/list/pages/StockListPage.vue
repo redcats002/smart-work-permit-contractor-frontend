@@ -7,7 +7,7 @@
       @clear="onClearFilters()"
       @search="fetch()">
       <div>
-        จำนวนสินทรัพย์ 35 รายการ
+        จำนวนสินทรัพย์ {{ pagination.count }} รายการ
       </div>
     </StockFilter>
 
