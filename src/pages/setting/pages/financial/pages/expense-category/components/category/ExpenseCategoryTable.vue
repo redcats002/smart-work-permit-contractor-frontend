@@ -64,8 +64,8 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IFinanceExpenseCategoryList>[]>([
-  { field: 'externalInternalExpense', header: 'ค่าใช้จ่าย ภายนอก/ภายใน', align: 'left', value: (e: IFinanceExpenseCategoryList): string => formatTitle(e?.externalInternalExpense) },
-  { field: 'name', header: 'หมวดหมู่รายจ่าย', align: 'left', value: (e: IFinanceExpenseCategoryList): string => e?.name || '' },
+  { field: 'name', header: 'หมวดหมู่ค่าใช้จ่าย', align: 'left', value: (e: IFinanceExpenseCategoryList): string => e?.name || '' },
+  { field: 'externalInternalExpense', header: 'ค่าใช้จ่าย ภายใน/ภายนอก', align: 'left', value: (e: IFinanceExpenseCategoryList): string => formatTitle(e?.externalInternalExpense) },
   { field: 'action', header: '', align: 'right' }
 ])
 

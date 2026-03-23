@@ -28,7 +28,7 @@
   { "path": "/setting/customer/customer-group/list", "menu": "กลุ่มลูกค้า" },
   { "path": "/setting/customer/occupation/list", "menu": "อาชีพ" },
   { "path": "/setting/financial/finance-income-category/list", "menu": "หมวดหมู่รายได้" },
-  { "path": "/setting/financial/finance-expense-category/list", "menu": "หมวดหมู่รายจ่าย" },
+  { "path": "/setting/financial/finance-expense-category/list", "menu": "หมวดหมู่ค่าใช้จ่าย" },
   { "path": "/setting/other/employee/list", "menu": "รายการพนักงาน" },
   { "path": "/setting/other/employee/create", "menu": "เพิ่มพนักงานใหม่" },
   { "path": "/setting/other/employee/detail/:id", "menu": "รายละเอียดพนักงาน", "idProvider": "employee" },

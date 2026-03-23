@@ -1,7 +1,7 @@
 <template>
   <BaseModal
     v-model="visible"
-    :label="type==='CREATE' ? 'เพิ่มหมวดหมู่รายจ่ายใหม่' : 'แก้ไขหมวดหมู่รายจ่าย'"
+    :label="type==='CREATE' ? 'เพิ่มหมวดหมู่ค่าใช้จ่ายใหม่' : 'แก้ไขหมวดหมู่ค่าใช้จ่าย'"
     class="md:w-200!"
     @open="clear()">
     <template
@@ -22,7 +22,7 @@
         <LabelField
           v-model="form.name"
           :form="$form"
-          label="หมวดหมู่รายจ่าย"
+          label="หมวดหมู่ค่าใช้จ่าย"
           name="name"
           required />
         <LabelField
