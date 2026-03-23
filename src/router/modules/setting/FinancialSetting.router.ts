@@ -13,7 +13,7 @@ export default {
     title: 'การเงิน',
     auth: true,
     setting: true,
-    icon: 'bitcoin-icons:sign-outline'
+    icon: 'iconoir:box-iso'
   },
   children: [
     {
