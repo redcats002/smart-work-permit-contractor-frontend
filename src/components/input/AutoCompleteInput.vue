@@ -2,7 +2,7 @@
   <AutoComplete
     v-bind="$attrs"
     :class="$attrs.multiple ? 'min-h-9 shadow-none!' : 'h-9 shadow-none!'"
-    :dropdown="props?.dropdown"
+    :dropdown="dropdown"
     dropdown-class="bg-white"
     fluid>
     <template #clearicon="{ clearCallback }">
@@ -25,11 +25,11 @@
           @click="removeCallback($event)" />
       </span>
     </template>
-    <!-- <template #dropdownicon>
+    <template #dropdownicon>
       <Icon
         class="size-5 text-[#A4B0C1]"
         icon="mdi:chevron-down" />
-    </template> -->
+    </template>
     <template #empty>
       ไม่พบข้อมูล
     </template>
@@ -45,7 +45,8 @@ interface IProps extends /* @vue-ignore */ AutoCompleteProps {
   dropdown?: boolean
 }
 
-const props = withDefaults(defineProps<IProps>(), {
+withDefaults(defineProps<IProps>(), {
+  dropdown: true
 })
 </script>
 
