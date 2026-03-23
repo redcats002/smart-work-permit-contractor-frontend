@@ -1,7 +1,7 @@
 <template>
-  <AutoCompleteInput
+  <SelectInput
     v-model="innerModel"
-    :suggestions="suggestions"
+    :options="options"
     option-label="name"
     complete-on-focus
     force-selection
@@ -13,7 +13,7 @@ import { onMounted, ref, watch } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel, TBaseOption } from '@/models/Global.model'
 import { TitleNameItems, type TTitleName } from '@/enums/TitleName.enum'
-import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
+import SelectInput from '@/components/input/SelectInput.vue'
 import usePagination from '@/composables/usePagination'
 
 const model = defineModel<TTitleName>()
@@ -23,12 +23,12 @@ const innerModel = ref<TBaseModel | null>(null)
 
 const { pagination } = usePagination()
 
-const suggestions = ref<TBaseModel[]>([])
+const options = ref<TBaseModel[]>([])
 
 async function useFetch (): Promise<void> {
   const items = TitleNameItems
 
-  suggestions.value = (items ?? []).map((item: TBaseOption): TBaseModel => ({
+  options.value = (items ?? []).map((item: TBaseOption): TBaseModel => ({
     id: item?.value || -1,
     name: item?.label
   }))
@@ -51,7 +51,7 @@ function syncInnerFromId (): void {
   }
 
   innerModel.value
-    = suggestions.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
+    = options.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
   selectedName.value = innerModel.value?.name ?? null
 }
 
@@ -65,7 +65,7 @@ watch(model, (): void => {
 })
 
 watch(
-  suggestions, (): void => {
+  options, (): void => {
     syncInnerFromId()
   }, { immediate: true }
 )
