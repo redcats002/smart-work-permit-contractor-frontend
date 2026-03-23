@@ -1,9 +1,9 @@
 import { ref, type Ref } from 'vue'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
-import usePagination, { type IUsePagination } from '@/composables/usePagination'
 import type { IGetDailySummaryList } from '@/models/request/report/daily-summary/DailySummary.model'
 import type { IDailySummaryList } from '@/models/response/report/daily-summary/DailySummaryRes'
+import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
 interface IDailySummary extends IUsePagination {
   filters: Ref<IGetDailySummaryList>
@@ -15,7 +15,7 @@ interface IDailySummary extends IUsePagination {
 export default function useList (): IDailySummary {
   // const DeilyInstallmentService: any = new Provider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
   const filters = ref<IGetDailySummaryList>({})
   const items = ref<IDailySummaryList[]>([])
@@ -108,6 +108,7 @@ export default function useList (): IDailySummary {
 
   function onClearFilters (): void {
     filters.value = {}
+    reset()
   }
 
   return {
@@ -121,6 +122,7 @@ export default function useList (): IDailySummary {
     onClearFilters,
     onDelete,
     extractPagination,
-    syncQuery
+    syncQuery,
+    reset
   }
 }

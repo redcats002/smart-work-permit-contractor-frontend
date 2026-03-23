@@ -1,4 +1,4 @@
-import { computed, ref, type Ref } from 'vue'
+import { computed, type ComputedRef, ref, type Ref } from 'vue'
 // import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IGetDocumentAssetsList } from '@/models/request/document-storage/DocumentStorageReq.model'
@@ -12,7 +12,7 @@ interface IUseList extends IUsePagination {
   fetch(): void
   onClearFilters(): void
 }
-export default function useList (): IUseList {
+export default function useList (warehouseId: ComputedRef<number>): IUseList {
   const DocumentStorageService: IDocumentStorageProvider = new DocumentStorageProvider()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
@@ -33,7 +33,9 @@ export default function useList (): IUseList {
   })
 
   async function useFetch (): Promise<void> {
-    const response = await DocumentStorageService.getDocumentAssetsPaginate(paginateQuery.value)
+    console.log(warehouseId.value)
+    if (!warehouseId.value) return
+    const response = await DocumentStorageService.getDocumentMovementAssetsPaginateByWarehouseId(warehouseId.value, paginateQuery.value)
     items.value = response?.data || []
     pagination.value = extractPagination(response)
     syncQuery({ ...normalizeFilters(filters.value) })

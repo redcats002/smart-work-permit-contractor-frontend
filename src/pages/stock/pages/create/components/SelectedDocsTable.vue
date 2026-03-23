@@ -8,32 +8,33 @@
     :selectable="!isDetail"
     disable-auto-left-padding
     @update="emits('update')">
-    <template #[`item.assetNo`]="{ item }">
-      <LinkText :to="{ name: 'DocumentMovementDetailPage', params: { id: 1 }}">
-        {{ item?.assetNo }}
+    <template #[`item.idNo`]="{ item }">
+      <LinkText :to="{ name: 'DocumentMovementDetailPage', params: { id: item?.id }}">
+        {{ item?.idNo }}
       </LinkText>
     </template>
-    <template #[`item.contractNo`]="{ item }">
-      <LinkText :to="{ name: 'DocumentMovementDetailPage', params: { id: 1 }}">
-        {{ item?.contractNo }}
+    <template #[`item.contract.idNo`]="{ item }">
+      <LinkText :to="{ name: 'DocumentMovementDetailPage', params: { id: item?.contract?.id }}">
+        {{ item?.contract.idNo }}
       </LinkText>
     </template>
-    <template #[`item.storageLocation`]="{ item }">
+    <template #[`item.location`]="{ item }">
       <div v-if="isDetail && isEdit">
         <SelectInput
-          v-model="selectstock"
+          v-model="selectStock"
           :options="stockOptions"
           option-label="label"
           option-value="value" />
       </div>
       <div v-else>
-        {{ item.storageLocation }}
+        {{ item.location?.name }}
       </div>
     </template>
-    <template #[`item.action`]="{ }">
+    <template #[`item.action`]="{ item }">
       <Icon
         class="size-5 text-[#BD0102] cursor-pointer"
-        icon="mdi:trash-can" />
+        icon="mdi:trash-can"
+        @click="emits('delete',Number(item.id))" />
     </template>
   </BaseTable>
 </template>
@@ -42,16 +43,16 @@
 import { computed, ref } from 'vue'
 import { formatter } from '@/utils/Formatter'
 import type { TBaseOption } from '@/models/Global.model'
-import type { IDocumentAssetList } from '@/models/response/document-storage/DocumentStorageRes.model'
 import type { IColumn } from '@/models/Table.model'
 import LinkText from '@/components/button/LinkText.vue'
 import SelectInput from '@/components/input/SelectInput.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
 import { Icon } from '@iconify/vue'
+import type { DocumentAssetFormValues } from '../schema/document-asset.schema'
 
 interface IProps {
-  items: IDocumentAssetList[]
+  items: DocumentAssetFormValues[]
   isDetail?: boolean
   isEdit?: boolean
 }
@@ -68,55 +69,25 @@ interface IEmits {
 
 const emits = defineEmits<IEmits>()
 
-const pagination = defineModel<IPagination>('pagination', {
-  required: true
-})
+const pagination = defineModel<IPagination>('pagination')
 
 const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
-const columns = computed<IColumn<IDocumentAssetList>[]>((): IColumn<IDocumentAssetList>[] => {
-  const baseColumns: IColumn<IDocumentAssetList>[] = [
-    {
-      field: 'assetNo',
-      header: 'เลขที่หลักทรัพย์',
-      sortable: true,
-      align: 'left'
-    },
-    {
-      field: 'contractNo',
-      header: 'เลขที่สัญญา',
-      sortable: true,
-      align: 'left'
-    },
-    {
-      field: 'customerName',
-      header: 'ชื่อลูกค้า',
-      align: 'left',
-      value: (e: IDocumentAssetList): string => formatter.fullName(e)
-    },
-    {
-      field: 'category',
-      header: 'หมวดหมู่',
-      align: 'left'
-    },
-    {
-      field: 'type',
-      header: 'ประเภท',
-      align: 'left'
-    },
-    {
-      field: 'storageLocation', // หรือ storageLocation ตาม Interface
-      header: 'จุดจัดเก็บ',
-      sortable: false,
-      align: 'left'
-    }
+const columns = computed<IColumn<DocumentAssetFormValues>[]>((): IColumn<DocumentAssetFormValues>[] => {
+  const baseColumns: IColumn<DocumentAssetFormValues>[] = [
+    { field: 'idNo', header: 'เลขที่หลักทรัพย์', sortable: true, align: 'left' },
+    { field: 'contract.idNo', header: 'เลขที่สัญญา', sortable: true, align: 'left' },
+    { field: 'customerName', header: 'ชื่อลูกค้า', align: 'left', value: (e: DocumentAssetFormValues): string => formatter.fullName(e?.contract?.customer) },
+    { field: 'category', header: 'หมวดหมู่', align: 'left' },
+    { field: 'type', header: 'ประเภท', align: 'left' },
+    { field: 'location', header: 'จุดจัดเก็บ', sortable: false, align: 'left' }
   ]
 
   if (!props.isDetail) {
     baseColumns.push(
       {
-        field: 'storageLocation', // หรือ storageLocation ตาม Interface
+        field: 'location',
         header: 'จุดจัดเก็บ',
         sortable: false,
         align: 'left'
@@ -130,7 +101,7 @@ const columns = computed<IColumn<IDocumentAssetList>[]>((): IColumn<IDocumentAss
 
   return baseColumns
 })
-const selectstock = ref<number>(0)
+const selectStock = ref<number>(0)
 const stockOptions: TBaseOption[] = [
   { label: 'จุดจัดเก็บ 1', value: 0 },
   { label: 'จุดจัดเก็บ 2', value: 1 }

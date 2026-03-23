@@ -5,15 +5,18 @@ import type { TDocumentStorageAssetStatus } from '@/enums/modules/document-stora
 import type { TDocumentStorageMovementStatus } from '@/enums/modules/document-storage/DocumentStorageMovementStatus.enum'
 import type { TEstateStatus } from '@/enums/modules/estate/EstateStatus.enum'
 import type { IAssetList } from '../asset/AssetRes.model'
-import type { IContractList } from '../contract/ContractRes.model'
+import type { ICustomerList } from '../customer/CustomerRes.model'
 import type { IEmployeeList } from '../employee/EmployeeRes.model'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 import type { ILocationWarehouseList, IWarehouseList } from '../warehouse/WarehouseRes.model'
 
+interface IAssetContractList extends IEntity {
+  customer: ICustomerList
+}
 export interface IDocumentAssetList extends IEntity {
   status: TDocumentStorageAssetStatus
   type: TAssetType
-  contract: IContractList
+  contract: IAssetContractList
   location: ILocationWarehouseList
 }
 
@@ -25,10 +28,22 @@ export interface IDocumentMovementList extends IEntity {
   destinationWarehouse: IWarehouseList
 }
 
+export interface IAssetMovementItem extends IEntity {
+  asset: IAssetMovementList
+  locationName?: string
+}
+
+export interface IAssetMovementList extends IEntity {
+  type: TAssetType
+  detail: string
+  contract: IAssetContractList
+}
 
 export interface IDocumentMovementById extends IDocumentMovementList {
   asset: IAssetList
   reason?: string
+  receiveDate?: string
+  items: IAssetMovementItem[]
 }
 
 export interface IStockContractList extends IEntity {

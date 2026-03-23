@@ -16,7 +16,7 @@ export interface ICustomerList extends IEntity {
   lastName: string
   phoneNumber: string
   phoneNumber2?: string
-  customerGroup: TBaseModel
+  customerGroup?: TBaseModel
   status: TCustomerStatus
 }
 export interface ICustomerById extends IEntity {

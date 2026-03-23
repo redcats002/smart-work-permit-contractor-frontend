@@ -11,19 +11,21 @@ const id = (label: string): z.ZodOptional<z.ZodType<number | string, any, any>> 
   z
     .preprocess(
       (val: unknown): unknown => {
+        if (val === null || val === undefined || val === '' || val === 0) return undefined
         if (val && typeof val === 'object' && 'id' in val) {
           const inner = (val as { id?: unknown }).id
+          if (inner === null || inner === undefined || inner === '' || inner === 0) return undefined
           if (typeof inner === 'string' && inner.trim() !== '') {
             const num = Number(inner)
             return isNaN(num) ? inner : num
           }
-          return inner ?? undefined
+          return inner
         }
         if (typeof val === 'string' && val.trim() !== '') {
           const num = Number(val)
           return isNaN(num) ? val : num
         }
-        return val
+        return undefined
       }, z.union([z.number().min(1, `กรุณาเลือก${label}`), z.string().min(1, `กรุณาเลือก${label}`)])
     )
     .optional()
