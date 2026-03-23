@@ -1,8 +1,8 @@
 <template>
   <AutoCompleteInput
     v-model="innerModel"
-    :invalid="props.invalid"
-    :multiple="props.multiple"
+    :invalid="invalid"
+    :multiple="multiple"
     :suggestions="suggestions"
     class="h-9!"
     option-label="name"
