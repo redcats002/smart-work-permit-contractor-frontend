@@ -1,6 +1,7 @@
 <template>
   <section id="employee-list-page">
     <PageTitle />
+    <BackButton />
     <EmployeeFilter
       v-model:filters="filters"
       v-model:search="search"
@@ -34,6 +35,7 @@ import PageTitle from '@/components/nav/PageTitle.vue'
 import EmployeeFilter from '../components/EmployeeFilter.vue'
 import EmployeeTable from '../components/EmployeeTable.vue'
 import useList from '../composables/useList'
+import BackButton from '@/components/button/BackButton.vue'
 
 const {
   filters,
