@@ -2,8 +2,8 @@
   <AutoComplete
     v-bind="$attrs"
     :class="$attrs.multiple ? 'min-h-9 shadow-none!' : 'h-9 shadow-none!'"
+    :dropdown="props?.dropdown"
     dropdown-class="bg-white"
-    dropdown
     fluid>
     <template #clearicon="{ clearCallback }">
       <div class="flex justify-center items-center border border-l-0 border-r-0 border-surface-300">
@@ -25,11 +25,11 @@
           @click="removeCallback($event)" />
       </span>
     </template>
-    <template #dropdownicon>
+    <!-- <template #dropdownicon>
       <Icon
         class="size-5 text-[#A4B0C1]"
         icon="mdi:chevron-down" />
-    </template>
+    </template> -->
     <template #empty>
       ไม่พบข้อมูล
     </template>
@@ -37,7 +37,16 @@
 </template>
 
 <script setup lang="ts">
+import AutoComplete from '@/volt/AutoComplete.vue'
 import { Icon } from '@iconify/vue'
+import type { AutoCompleteProps } from 'primevue'
+
+interface IProps extends /* @vue-ignore */ AutoCompleteProps {
+  dropdown?: boolean
+}
+
+const props = withDefaults(defineProps<IProps>(), {
+})
 </script>
 
 <style scoped></style>
