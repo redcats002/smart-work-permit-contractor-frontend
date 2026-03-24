@@ -30,6 +30,6 @@ export function useGenerateLocationTable (
 
   return combinations.map((name: string): WarehouseLocationFormValues => ({
     name: cleanWarehousePrefix ? `${cleanWarehousePrefix}-${name}` : name,
-    status: LocationStatusEnum.INACTIVE
+    status: LocationStatusEnum.ACTIVE
   }))
 }
