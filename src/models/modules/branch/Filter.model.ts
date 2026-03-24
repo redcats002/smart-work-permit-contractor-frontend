@@ -1,3 +1,3 @@
-import type { IGetWarehouseList } from '@/models/request/warehouse/WarehouseReq.model'
+import type { IGetBranchList } from '@/models/request/branch/BranchReq.model'
 
-export interface IWarehouseFilter extends IGetWarehouseList {}
+export interface IBranchFilter extends IGetBranchList {}
