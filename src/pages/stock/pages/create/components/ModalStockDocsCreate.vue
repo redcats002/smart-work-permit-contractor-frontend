@@ -37,7 +37,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue'
 import type { IDocumentAssetList } from '@/models/response/document-storage/DocumentStorageRes.model'
-import type { AssetTypeEnum } from '@/enums/modules/contract/AssetType.enum'
+import type { AssetTypeEnum } from '@/enums/modules/asset/AssetType.enum'
 import type { CustomerStatusEnum } from '@/enums/modules/customer/CustomerStatus.enum'
 import type { DocumentStorageAssetStatusEnum } from '@/enums/modules/document-storage/DocumentStorageAssetStatus.enum'
 import type { WarehouseStatusEnum } from '@/enums/modules/warehouse/WarehouseStatus.enum'

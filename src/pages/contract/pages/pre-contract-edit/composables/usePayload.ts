@@ -1,6 +1,6 @@
 import type { IUpdatePreContractPayload } from '@/models/request/pre-contract/PreContractReq.model'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
-import { type TAssetType } from '@/enums/modules/contract/AssetType.enum'
+import { type TAssetType } from '@/enums/modules/asset/AssetType.enum'
 import type { PreAssetFormValues, PreContractFormValues } from '../../create/schema/pre-contract.schema'
 
 export function usePayload (form: PreContractFormValues, selectedCustomer: ICustomerById): IUpdatePreContractPayload {

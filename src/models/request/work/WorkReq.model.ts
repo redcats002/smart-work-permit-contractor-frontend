@@ -1,4 +1,4 @@
-import type { TAssetType } from '@/enums/modules/contract/AssetType.enum'
+import type { TAssetType } from '@/enums/modules/asset/AssetType.enum'
 import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import type { IBasePaginationRequest } from '../Request.model'
 

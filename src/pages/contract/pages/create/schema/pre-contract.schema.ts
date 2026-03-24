@@ -1,5 +1,5 @@
 import { schema } from '@/utils/Schema'
-import { AssetTypeEnum, isLandAsset, isVehicleAsset } from '@/enums/modules/contract/AssetType.enum'
+import { AssetTypeEnum, isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
 import { PreContractStatusEnum } from '@/enums/modules/contract/PreContractStatus.enum'
 import { ProvinceEnum } from '@/enums/modules/province/Province.enum'
 import { z } from 'zod'

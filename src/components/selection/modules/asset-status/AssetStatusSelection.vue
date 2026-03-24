@@ -12,19 +12,15 @@
 import { onMounted, ref, watch } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel, TBaseOption } from '@/models/Global.model'
-import { AssetTypeItems, LandAssetTypeItems, VehicleAssetTypeItems } from '@/enums/modules/asset/AssetType.enum'
 import SelectInput from '@/components/input/SelectInput.vue'
 import usePagination from '@/composables/usePagination'
-
-type TAssetCategory = 'VEHICLE' | 'LAND'
+import { AssetsStatusItems } from '@/enums/modules/asset/AssetStatus.enum'
 
 interface IProps {
   optionAll?: boolean
-  category?: TAssetCategory | null
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-  category: null
 })
 
 const model = defineModel<string>()
@@ -37,9 +33,7 @@ const { pagination } = usePagination()
 const options = ref<TBaseModel[]>([])
 
 function itemsForCategory (): TBaseOption[] {
-  if (props.category === 'VEHICLE') return VehicleAssetTypeItems
-  if (props.category === 'LAND') return LandAssetTypeItems
-  return AssetTypeItems
+  return AssetsStatusItems
 }
 
 async function useFetch (): Promise<void> {
@@ -94,12 +88,6 @@ watch(innerModel, (val: TBaseModel | null): void => {
 watch(model, (): void => {
   syncInnerFromId()
 })
-
-watch(
-  (): TAssetCategory | null => props.category, (): void => {
-    fetch()
-  }
-)
 
 watch(
   options, (): void => {

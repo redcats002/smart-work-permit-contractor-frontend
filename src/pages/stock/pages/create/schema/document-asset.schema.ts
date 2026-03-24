@@ -1,5 +1,5 @@
 import { schema } from '@/utils/Schema'
-import { AssetTypeEnum } from '@/enums/modules/contract/AssetType.enum'
+import { AssetTypeEnum } from '@/enums/modules/asset/AssetType.enum'
 import { ContractStatusEnum } from '@/enums/modules/contract/ContractStatus.enum'
 import { CustomerStatusEnum } from '@/enums/modules/customer/CustomerStatus.enum'
 import { DocumentStorageAssetStatusEnum } from '@/enums/modules/document-storage/DocumentStorageAssetStatus.enum'
