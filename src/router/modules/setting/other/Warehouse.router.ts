@@ -21,7 +21,7 @@ export default {
       meta: {
         auth: true,
         menu: true,
-        title: 'คลัง'
+        title: 'รายการคลัง'
       }
     },
     {
