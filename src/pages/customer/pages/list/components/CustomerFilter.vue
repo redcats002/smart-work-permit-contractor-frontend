@@ -12,12 +12,22 @@
         <template #activator="{ open }">
           <FilterButton @click="open()" />
         </template>
-        <!-- <div class="flex flex-col gap-5">
-            <div class="w-fit">
-              <LabelField
-                label="สถานะ" />
-            </div>
-          </div> -->
+        <div class="flex flex-col gap-5">
+          <LabelField
+            label="กลุ่มลูกค้า">
+            <CustomerGroupSelection
+              v-model="filters.customerGroupId"
+              placeholder="ทั้งหมด"
+              show-clear />
+          </LabelField>
+          <LabelField
+            label="สถานะ">
+            <CustomerStatusSelection
+              v-model="filters.status"
+              placeholder="ทั้งหมด"
+              show-clear />
+          </LabelField>
+        </div>
         <template #footer="{ close }">
           <FormActionFilter
             @clear="onClear(close)"
@@ -38,9 +48,11 @@ import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
 import Spacer from '@/components/flex/Spacer.vue'
-// import LabelField from '@/components/input/LabelField.vue'
+import LabelField from '@/components/input/LabelField.vue'
 import SearchInput from '@/components/input/SearchInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
+import CustomerGroupSelection from '@/components/selection/modules/customer-group/CustomerGroupSelection.vue'
+import CustomerStatusSelection from '@/components/selection/modules/static/customer-status/CustomerStatusSelection.vue'
 
 interface IEmits {
   search: []
@@ -51,7 +63,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>('search', { default: '' })
-defineModel<ICustomerFilter>('filters', { default: (): ICustomerFilter => ({}) })
+const filters = defineModel<ICustomerFilter>('filters', { default: (): ICustomerFilter => ({}) })
 
 function onSearch (): void {
   emits('search')

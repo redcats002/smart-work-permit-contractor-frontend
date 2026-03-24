@@ -1,13 +1,14 @@
 import { computed, ref, type Ref } from 'vue'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
+import type { ICustomerFilter } from '@/models/modules/customer/Filter.model'
 import type { IGetCustomerList } from '@/models/request/customer/CustomerReq.model'
 import type { ICustomerList } from '@/models/response/customer/CustomerRes.model'
 import CustomerProvider, { type ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
 interface IUseList extends IUsePagination {
-  filters: Ref<IGetCustomerList>
+  filters: Ref<ICustomerFilter>
   items: Ref<ICustomerList[]>
   fetch(): void
   onClearFilters(): void
@@ -18,7 +19,7 @@ export default function useList (): IUseList {
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
-  const filters = ref<IGetCustomerList>({})
+  const filters = ref<ICustomerFilter>({})
   const items = ref<ICustomerList[]>([])
 
   const paginateQuery = computed((): IGetCustomerList => {
@@ -48,7 +49,9 @@ export default function useList (): IUseList {
 
   function normalizeFilters (value: IGetCustomerList): Partial<IGetCustomerList> {
     return {
-      ...value
+      ...value,
+      customerGroupId: filters.value?.customerGroupId,
+      status: filters.value?.status
     }
   }
 
@@ -58,6 +61,7 @@ export default function useList (): IUseList {
   }
 
   function onClearFilters (): void {
+    filters.value = {}
     reset()
   }
 
