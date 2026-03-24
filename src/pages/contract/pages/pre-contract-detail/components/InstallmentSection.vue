@@ -19,7 +19,7 @@
             hide-error
             required>
             <InputNumber
-              v-model="form.loanAmount"
+              v-model:number="form.loanAmount"
               :class="invalid ? 'border-red-400!' : ''"
               :invalid="invalid"
               :max-fraction-digits="0"
@@ -38,7 +38,7 @@
             hide-error
             required>
             <InputNumber
-              v-model="form.installmentCount"
+              v-model:number="form.installmentCount"
               :class="invalid ? 'border-red-400!' : ''"
               :invalid="invalid"
               :max-fraction-digits="0"
@@ -71,7 +71,7 @@
             hide-error
             required>
             <InputNumber
-              v-model="form.annualInterestRate"
+              v-model:number="form.annualInterestRate"
               :class="invalid ? 'border-red-400!' : ''"
               :invalid="invalid"
               :max-fraction-digits="2"
@@ -90,7 +90,7 @@
             hide-error
             required>
             <InputNumber
-              v-model="form.lateFee"
+              v-model:number="form.lateFee"
               :class="invalid ? 'border-red-400!' : ''"
               :invalid="invalid"
               :max-fraction-digits="0"

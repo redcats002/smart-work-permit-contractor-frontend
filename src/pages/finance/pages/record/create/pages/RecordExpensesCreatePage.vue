@@ -46,7 +46,7 @@
               tag="div"
               required>
               <InputNumber
-                v-model="form.amount"
+                v-model:number="form.amount"
                 :use-grouping="true"
                 class="h-9! shadow-none!"
                 placeholder="กรอกจำนวนเงิน"

@@ -170,7 +170,7 @@
                   class="print:hidden"
                   tag="div">
                   <InputNumber
-                    v-model="item.qty"
+                    v-model:number="item.qty"
                     class="h-9! shadow-none!"
                     fluid />
                 </LabelField>
@@ -190,7 +190,7 @@
                   class="print:hidden"
                   tag="div">
                   <InputNumber
-                    v-model="item.amount"
+                    v-model:number="item.amount"
                     class="h-9! shadow-none!"
                     fluid />
                 </LabelField>

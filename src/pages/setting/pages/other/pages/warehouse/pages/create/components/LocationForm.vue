@@ -27,7 +27,7 @@
         hide-error
         required>
         <InputNumber
-          v-model="model.options[i].maxLimit"
+          v-model:number="model.options[i].maxLimit"
           :invalid="invalid"
           :name="`options.${i}.maxLimit`"
           class="h-9 w-full" />

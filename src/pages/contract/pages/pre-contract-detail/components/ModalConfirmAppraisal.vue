@@ -25,7 +25,7 @@
           hide-error
           required>
           <InputNumber
-            v-model="form.loanAmount"
+            v-model:number="form.loanAmount"
             :invalid="invalid"
             class="h-9! shadow-none! w-full"
             name="loanAmount" />

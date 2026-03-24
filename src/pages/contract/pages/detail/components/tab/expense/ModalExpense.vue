@@ -58,7 +58,7 @@
           hide-error
           required>
           <InputNumber
-            v-model="formData.amount"
+            v-model:number="formData.amount"
             :invalid="invalid"
             :max-fraction-digits="2"
             :min="0"

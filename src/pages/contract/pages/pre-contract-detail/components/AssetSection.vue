@@ -59,7 +59,7 @@
             type="button"
             outlined
             @click="openModal(activeAsset)">
-            ใส่รายละเอียดสินทรัพย์
+            {{ btnText }}
           </Button>
         </div>
       </div>
@@ -107,6 +107,26 @@ const emits = defineEmits<IEmits>()
 
 const preAssets = defineModel<PreAssetMakeAContractFormValues[]>('preAssets', { required: true })
 
+const isLand = computed((): boolean => props.assetCategory === 'LAND')
+const btnText = computed((): string => {
+  if (props.activeAsset?.detail && !isLand.value) return 'แก้ไขรายละเอียดสินทรัพย์'
+  if (
+    props.activeAsset?.realEstateForm?.landNo
+    && props.activeAsset?.realEstateForm?.surveyNo
+    && props.activeAsset?.realEstateForm?.aerialPhotoMapNo
+    && props.activeAsset?.realEstateForm?.aerialPhotoSheet
+    && props.activeAsset?.realEstateForm?.landAreaNgan
+    && props.activeAsset?.realEstateForm?.landAreaRai
+    && props.activeAsset?.realEstateForm?.landAreaSquareWah
+    && props.activeAsset?.realEstateForm?.subDistrict
+    && props.activeAsset?.realEstateForm?.district
+    && props.activeAsset?.realEstateForm?.province
+    && props.activeAsset?.realEstateForm?.postCode
+    && isLand.value
+  )
+    return 'แก้ไขรายละเอียดสินทรัพย์'
+  return `ใส่รายละเอียดสินทรัพย์`
+})
 const isShowEdit = computed((): boolean => {
   const editableStatus: TPreContractStatus[] = ['DRAFT', 'PENDING_EVALUATION']
   return props.activeAsset !== undefined && props.status !== undefined && editableStatus.includes(props.status)
@@ -123,22 +143,67 @@ const items = computed((): IDisplayList[] => {
       urlGoogleMap: props.activeAsset?.realEstateForm.urlGoogleMap || ''
     })
     return [
-      { label: 'เลขที่ดิน', value: props.activeAsset?.realEstateForm.landNo || '-', key: 'landNo', hidden: !props.activeAsset?.realEstateForm.landNo },
-      { label: 'เลขหน้าสำรวจ', value: props.activeAsset?.realEstateForm.surveyNo || '-', key: 'surveyNo', hidden: !props.activeAsset?.realEstateForm.surveyNo },
-      { label: 'ที่อยู่หลักทรัพย์', value: fullAddress, key: 'address', extUrl: props.activeAsset?.realEstateForm.urlGoogleMap || '', hidden: !fullAddress },
-      { label: 'ระวางรูปถ่ายทางอากาศ', value: `หมายเลข ${props.activeAsset?.realEstateForm.aerialPhotoMapNo || '-'} แผ่นที่ ${props.activeAsset?.realEstateForm.aerialPhotoSheet || '-'}`, key: 'aerialPhotoMapNo', hidden: !props.activeAsset?.realEstateForm.aerialPhotoMapNo && !props.activeAsset?.realEstateForm.aerialPhotoSheet }
+      {
+        label: 'เลขที่ดิน',
+        value: props.activeAsset?.realEstateForm.landNo || '-',
+        key: 'landNo',
+        hidden: !props.activeAsset?.realEstateForm.landNo
+      },
+      {
+        label: 'เลขหน้าสำรวจ',
+        value: props.activeAsset?.realEstateForm.surveyNo || '-',
+        key: 'surveyNo',
+        hidden: !props.activeAsset?.realEstateForm.surveyNo
+      },
+      {
+        label: 'ที่อยู่หลักทรัพย์',
+        value: fullAddress,
+        key: 'address',
+        extUrl: props.activeAsset?.realEstateForm.urlGoogleMap || '',
+        hidden: !fullAddress
+      },
+      {
+        label: 'ระวางรูปถ่ายทางอากาศ',
+        value: `หมายเลข ${props.activeAsset?.realEstateForm.aerialPhotoMapNo || '-'} แผ่นที่ ${props.activeAsset?.realEstateForm.aerialPhotoSheet || '-'}`,
+        key: 'aerialPhotoMapNo',
+        hidden: !props.activeAsset?.realEstateForm.aerialPhotoMapNo && !props.activeAsset?.realEstateForm.aerialPhotoSheet
+      }
     ]
   }
   return [
     { label: 'รายละเอียดหลักทรัพย์', value: props.activeAsset?.detail || '-', key: 'detail', hidden: !props.activeAsset?.detail },
-    { label: 'เลขทะเบียนรถ', value: props.activeAsset?.vehicleForm?.plateNo || '-', key: 'plateNo', hidden: !props.activeAsset?.vehicleForm?.plateNo },
-    { label: 'ปีที่ผลิต', value: props.activeAsset?.vehicleForm?.manufactureYear || '-', key: 'manufactureYear', hidden: !props.activeAsset?.vehicleForm?.manufactureYear },
-    { label: 'ปีที่จดทะเบียน', value: props.activeAsset?.vehicleForm?.registrationYear || '-', key: 'registrationYear', hidden: !props.activeAsset?.vehicleForm?.registrationYear },
-    { label: 'หมายเลขตัวถัง', value: props.activeAsset?.vehicleForm?.vehicleIdentificationNo || '-', key: 'vehicleIdentificationNo', hidden: !props.activeAsset?.vehicleForm?.vehicleIdentificationNo },
-    { label: 'เลขไมล์ (กม.)', value: props.activeAsset?.vehicleForm?.mileage || '-', key: 'mileage', hidden: !props.activeAsset?.vehicleForm?.mileage }
+    {
+      label: 'เลขทะเบียนรถ',
+      value: props.activeAsset?.vehicleForm?.plateNo || '-',
+      key: 'plateNo',
+      hidden: !props.activeAsset?.vehicleForm?.plateNo
+    },
+    {
+      label: 'ปีที่ผลิต',
+      value: props.activeAsset?.vehicleForm?.manufactureYear || '-',
+      key: 'manufactureYear',
+      hidden: !props.activeAsset?.vehicleForm?.manufactureYear
+    },
+    {
+      label: 'ปีที่จดทะเบียน',
+      value: props.activeAsset?.vehicleForm?.registrationYear || '-',
+      key: 'registrationYear',
+      hidden: !props.activeAsset?.vehicleForm?.registrationYear
+    },
+    {
+      label: 'หมายเลขตัวถัง',
+      value: props.activeAsset?.vehicleForm?.vehicleIdentificationNo || '-',
+      key: 'vehicleIdentificationNo',
+      hidden: !props.activeAsset?.vehicleForm?.vehicleIdentificationNo
+    },
+    {
+      label: 'เลขไมล์ (กม.)',
+      value: props.activeAsset?.vehicleForm?.mileage || '-',
+      key: 'mileage',
+      hidden: !props.activeAsset?.vehicleForm?.mileage
+    }
   ]
 })
-const isLand = computed((): boolean => props.assetCategory === 'LAND')
 
 function onActiveAsset (index: number): void {
   emits('active', index)
@@ -175,8 +240,6 @@ function submitAll (): void {
 }
 
 defineExpose<IExposes>({ submitAll })
-
-
 </script>
 
 <style scoped></style>
