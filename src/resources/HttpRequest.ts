@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance } from 'axios'
-import { getCurrentIdNo, getCurrentMenu, getCurrentPath } from '@/utils/RouterHeader'
+import { getCurrentMenu, getCurrentPath } from '@/utils/RouterHeader'
 import { onRequest, onRequestError, onResponse, onResponseError } from './Interceptors'
 
 interface IHttpRequest {
@@ -51,14 +51,8 @@ class HttpRequest implements IHttpRequest {
   public setLogHeader (): void {
     const path: string = getCurrentPath()
     const menu: string = getCurrentMenu()
-    const idNo: string | undefined = getCurrentIdNo()
     if (path) this.setHeader({ key: 'x-current-path', value: path })
     if (menu) this.setHeader({ key: 'x-current-menu', value: menu })
-    if (idNo) {
-      this.setHeader({ key: 'x-current-id-no', value: idNo })
-    } else {
-      delete (this.axiosInstance.defaults.headers.common as Record<string, unknown>)['x-current-id-no']
-    }
   }
 
   public setHeader (data: ISetHeader): void {
