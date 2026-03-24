@@ -30,14 +30,12 @@
           :name="`branchTimes.${i}.openTime`"
           range />
       </LabelField>
-      <Button
-        class="w-14"
-        rounded
-        text
-        @click="onRemove(i)">
-        <Icon
-          icon="material-symbols:delete-outline" />
-      </Button>
+      <Icon
+        class="text-primary hover:bg-primary-100 transition-all cursor-pointer rounded-full p-1"
+        height="32"
+        icon="material-symbols:delete-outline"
+        width="48"
+        @click="onRemove(i)" />
     </div>
     <CreateButton
       class="mt-4"
@@ -66,6 +64,7 @@ defineProps<IProps>()
 const model = defineModel<BranchFormValues>({
   default: useFormInitialValues()
 })
+const formKey = defineModel<number>('formKey', { default: 0 })
 
 const notAllowDays = computed((): TDays[] => {
   const days: TDays[] = []
@@ -84,10 +83,12 @@ function onAdd (): void {
     openTime: '',
     day: []
   })
+  formKey.value++
 }
 
 function onRemove (index: number): void {
   model.value.branchTimes.splice(index, 1)
+  formKey.value++
 }
 
 </script>
