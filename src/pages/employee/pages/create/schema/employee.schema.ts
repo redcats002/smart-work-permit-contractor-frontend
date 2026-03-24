@@ -16,7 +16,7 @@ export const EmployeeSchema = z.object({
   phoneNumber: z.string().min(1, 'กรุณากรอกเบอร์โทรศัพท์'),
   email: z.email('รูปแบบอีเมลไม่ถูกต้อง').or(z.literal('')).optional(),
   dateOfBirth: schema.date('วันเกิด'),
-  image: z.string().optional(),
+  image: z.instanceof(File).optional().nullable(),
   password: z
     .string()
     .min(8, { message: 'ต้องมีตัวอักษรภาษาอังกฤษ และตัวเลข รวมกันอย่างน้อย 8 ถึง 16 ตัว' })
@@ -74,6 +74,7 @@ export function useDev (): EmployeeFormValues {
     password: 'Password1',
     role: '',
     branchIds: [],
+    image: null,
     // Classification
     status: EmployeeStatusEnum.INACTIVE,
     // Citizen / Home address
@@ -106,7 +107,7 @@ export function useFormInitialValues (): EmployeeFormValues {
     // Personal
     idCard: '',
     password: '',
-    image: '',
+    image: null,
     title: ETitleName[''],
     firstName: '',
     lastName: '',

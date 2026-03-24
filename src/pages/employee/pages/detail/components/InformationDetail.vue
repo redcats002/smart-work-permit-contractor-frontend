@@ -15,7 +15,7 @@
           <ChipEmployeeStatus :value="value" />
         </template>
         <template #[`value.idCard`]="{ value }">
-          <span>{{ visibleCitizenId ? value : '*************' }}</span>
+          <span>{{ visibleCitizenId ? formatter.thaiCitizenId(value) : '*************' }}</span>
           <Icon
             :icon="visibleCitizenId ? 'famicons:eye-outline' : 'famicons:eye-off-outline'"
             class="cursor-pointer"
@@ -38,6 +38,7 @@ import DisplayList, { type IDisplayList } from '@/components/display/DisplayList
 import { Icon } from '@iconify/vue'
 import ChipEmployeeStatus from '../../list/components/ChipEmployeeStatus.vue'
 import EmployeeDetailMenuAction from './EmployeeDetailMenuAction.vue'
+import { formatter } from '@/utils/Formatter'
 
 interface IProps {
   data: IEmployeeById

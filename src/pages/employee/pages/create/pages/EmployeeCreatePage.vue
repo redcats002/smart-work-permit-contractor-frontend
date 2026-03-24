@@ -10,13 +10,13 @@
       <ReadIdentificationCardButton />
     </BaseTop>
     <BasePage>
-      <div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
         <Form
           :key="formKey"
           v-slot="$form"
           :initial-values="form"
           :resolver="resolver"
-          class="flex flex-col gap-5"
+          class="flex flex-col gap-5 col-span-2"
           @submit="onSubmit($event)">
           <BaseContainer>
             <InformationForm
@@ -38,6 +38,18 @@
           </BaseContainer>
           <FormAction @cancel="onCancel()" />
         </Form>
+        <BaseContainer class="h-fit">
+          <UploadInput
+            v-model="uploadFiles"
+            v-model:preview-urls="uploadPreviewUrls"
+            v-model:profile-preview="form.image"
+            :hidden-icon-button="true"
+            :is-fro-profile="true"
+            button-upload-class="bg-primary text-white"
+            detail="ไฟล์ JPG, JPEG และ PNG ได้รับอนุญาต"
+            label="เลือกเพื่ออัปโหลดหรือลากและวาง"
+            @upload="onHandleUpload($event)" />
+        </BaseContainer>
       </div>
     </BasePage>
   </section>
@@ -67,6 +79,7 @@ import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { usePayload } from '../composables/usePayload'
 import { type EmployeeFormValues, EmployeeSchema, useDev, useFormInitialValues } from '../schema/employee.schema'
+import UploadInput from '@/components/input/UploadInput.vue'
 
 const router = useRouter()
 
@@ -75,6 +88,8 @@ const EmployeeService: IEmployeeProvider = new EmployeeProvider()
 const formKey = ref<number>(0)
 const form = ref<EmployeeFormValues>(useFormInitialValues())
 const resolver = zodResolver(EmployeeSchema)
+const uploadFiles = ref<File[]>([])
+const uploadPreviewUrls = ref<string[]>([])
 
 const mainAddress = computed({
   get (): IAddressRequest {
@@ -124,7 +139,6 @@ async function useSubmit (): Promise<void> {
 }
 
 async function onSubmit (event: FormSubmitEvent): Promise<void> {
-  console.log(event)
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return
@@ -149,6 +163,14 @@ function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
       province: mainAddress.value.province,
       postCode: mainAddress.value.postCode
     }
+  }
+}
+
+function onHandleUpload (files: File[]): void {
+  if (files.length > 0) {
+    form.value.image = files[files.length - 1]
+  } else {
+    form.value.image = undefined
   }
 }
 
