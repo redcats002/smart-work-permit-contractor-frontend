@@ -7,9 +7,10 @@
       variant="text"
       @click="toggle($event)">
       <Icon
+        :class="iconClass"
+        :icon="icon"
         :stroke-width="2"
-        class="size-5 text-primary hover:text-primary-900 transition-all duration-200"
-        icon="qlementine-icons:menu-dots-16" />
+        class="size-5 text-primary hover:text-primary-900 transition-all duration-200" />
     </div>
     <Menu
       id="overlay_menu"
@@ -64,9 +65,14 @@ interface IMenuItem {
 
 interface IProps {
   items: IMenuItemAction[]
+  icon?: string
+  iconClass?: string
 }
 
-const props = defineProps<IProps>()
+const props = withDefaults(defineProps<IProps>(), {
+  icon: 'qlementine-icons:menu-dots-16',
+  iconClass: ''
+})
 
 const menuRef = useTemplateRef('menu')
 
