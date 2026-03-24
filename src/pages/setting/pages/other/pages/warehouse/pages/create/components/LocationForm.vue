@@ -47,6 +47,7 @@
 
 <script setup lang="ts">
 import { watch } from 'vue'
+import { useLoadingStore } from '@/stores/Loading'
 import type { IFormState } from '@/models/Form.model'
 import CreateButton from '@/components/button/CreateButton.vue'
 import LabelField from '@/components/input/LabelField.vue'
@@ -61,6 +62,7 @@ interface IProps {
 
 defineProps<IProps>()
 
+const loadingStore = useLoadingStore()
 
 const model = defineModel<WarehouseFormValues>({
   default: useFormInitialValues()
@@ -79,7 +81,9 @@ function onRemove (index: number): void {
 }
 
 function generateLocationTable (): void {
+  loadingStore.addLoading()
   model.value.locations = buildLocationTable(model.value.prefix, model.value.options)
+  loadingStore.removeLoading()
 }
 
 watch((): string => model.value.prefix, (): void => {
