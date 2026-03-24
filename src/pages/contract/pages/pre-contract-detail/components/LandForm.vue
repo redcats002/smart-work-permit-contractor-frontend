@@ -24,7 +24,8 @@
         label="รายละเอียดหลักทรัพย์"
         name="detail"
         placeholder="กรอกรายละเอียด"
-        hide-error />
+        hide-error
+        required />
       <LabelField
         v-model="model.landNo"
         :form="form"
@@ -39,8 +40,10 @@
         label="เลขหน้าสำรวจ"
         name="surveyNo"
         placeholder="กรอกเลขหน้าสำรวจ"
-        hide-error />
+        hide-error
+        required />
     </div>
+    <Divider />
     <LabelField
       v-model="model.address"
       :form="form"
@@ -48,7 +51,6 @@
       name="address"
       placeholder="กรอกตำแหน่งที่ดิน"
       hide-error />
-    <Divider />
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <LabelField
         v-slot="{ invalid }"
@@ -56,7 +58,8 @@
         label="ตำบล"
         name="subDistrict"
         tag="div"
-        hide-error>
+        hide-error
+        required>
         <AddressFieldInput
           v-model="model.subDistrict"
           :invalid="invalid"
@@ -71,7 +74,8 @@
         label="อำเภอ"
         name="district"
         tag="div"
-        hide-error>
+        hide-error
+        required>
         <AddressFieldInput
           v-model="model.district"
           :invalid="invalid"
@@ -86,7 +90,8 @@
         label="จังหวัด"
         name="province"
         tag="div"
-        hide-error>
+        hide-error
+        required>
         <AddressFieldInput
           v-model="model.province"
           :invalid="invalid"
@@ -101,7 +106,8 @@
         label="รหัสไปรษณีย์"
         name="postCode"
         tag="div"
-        hide-error>
+        hide-error
+        required>
         <AddressFieldInput
           v-model="model.postCode"
           :invalid="invalid"
@@ -111,9 +117,8 @@
           @select="onAddressSelect($event)" />
       </LabelField>
     </div>
-    <Divider>
-      <span class="text-sm font-bold text-surface-600">ระวางรูปถ่ายทางอากาศ</span>
-    </Divider>
+    <Divider />
+    <span class="text-sm font-bold text-surface-600">ระวางรูปถ่ายทางอากาศ</span>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <LabelField
         v-model="model.aerialPhotoMapNo"
@@ -121,18 +126,19 @@
         label="หมายเลข"
         name="aerialPhotoMapNo"
         placeholder="กรอกหมายเลข"
-        hide-error />
+        hide-error
+        required />
       <LabelField
         v-model="model.aerialPhotoSheet"
         :form="form"
         label="แผ่นที่"
         name="aerialPhotoSheet"
         placeholder="กรอกแผ่นที่"
-        hide-error />
+        hide-error
+        required />
     </div>
-    <Divider>
-      <span class="text-sm font-bold text-surface-600">เนื้อที่</span>
-    </Divider>
+    <Divider />
+    <span class="text-sm font-bold text-surface-600">เนื้อที่</span>
     <div class="grid grid-cols-3 gap-4">
       <LabelField
         v-slot="{ invalid }"
@@ -140,11 +146,13 @@
         label="ไร่"
         name="landAreaRai"
         tag="div"
-        hide-error>
+        hide-error
+        required>
         <InputNumber
-          v-model="model.landAreaRai"
+          v-model:number="model.landAreaRai"
           :invalid="invalid"
           class="h-9! shadow-none!"
+          input-id="landAreaRai"
           name="landAreaRai"
           placeholder="0"
           fluid />
@@ -155,11 +163,13 @@
         label="งาน"
         name="landAreaNgan"
         tag="div"
-        hide-error>
+        hide-error
+        required>
         <InputNumber
-          v-model="model.landAreaNgan"
+          v-model:number="model.landAreaNgan"
           :invalid="invalid"
           class="h-9! shadow-none!"
+          input-id="landAreaNgan"
           name="landAreaNgan"
           placeholder="0"
           fluid />
@@ -170,11 +180,13 @@
         label="ตารางวา"
         name="landAreaSquareWah"
         tag="div"
-        hide-error>
+        hide-error
+        required>
         <InputNumber
-          v-model="model.landAreaSquareWah"
+          v-model:number="model.landAreaSquareWah"
           :invalid="invalid"
           class="h-9! shadow-none!"
+          input-id="landAreaSquareWah"
           name="landAreaSquareWah"
           placeholder="0"
           fluid />
