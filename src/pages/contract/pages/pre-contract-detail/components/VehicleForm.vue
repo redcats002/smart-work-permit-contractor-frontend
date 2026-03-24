@@ -23,7 +23,8 @@
       label="รายละเอียดหลักทรัพย์"
       name="detail"
       placeholder="กรอกรายละเอียด"
-      hide-error />
+      hide-error
+      required />
     <LabelField
       v-model="model.plateNo"
       :form="form"

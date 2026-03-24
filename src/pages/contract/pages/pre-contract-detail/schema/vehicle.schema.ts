@@ -11,7 +11,7 @@ export type VehicleFormValues = z.infer<typeof VehicleFormSchema>
 
 export const ModalVehicleSchema = z.object({
   type: z.string().min(1, 'กรุณาเลือกประเภทหลักทรัพย์'),
-  detail: z.string().default(''),
+  detail: z.string().min(1, 'กรุณากรอกรายละเอียด').default(''),
   plateNo: z.string().min(1, 'กรุณากรอกเลขทะเบียนรถ'),
   province: z.string().min(1, 'กรุณาเลือกจังหวัด'),
   manufactureYear: z.string().refine((val: string | null | undefined): boolean => !!val, 'กรุณาเลือกปีที่ผลิต'),

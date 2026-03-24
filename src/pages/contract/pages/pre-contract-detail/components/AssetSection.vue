@@ -115,9 +115,6 @@ const btnText = computed((): string => {
     && props.activeAsset?.realEstateForm?.surveyNo
     && props.activeAsset?.realEstateForm?.aerialPhotoMapNo
     && props.activeAsset?.realEstateForm?.aerialPhotoSheet
-    && props.activeAsset?.realEstateForm?.landAreaNgan
-    && props.activeAsset?.realEstateForm?.landAreaRai
-    && props.activeAsset?.realEstateForm?.landAreaSquareWah
     && props.activeAsset?.realEstateForm?.subDistrict
     && props.activeAsset?.realEstateForm?.district
     && props.activeAsset?.realEstateForm?.province
