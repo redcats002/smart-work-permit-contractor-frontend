@@ -194,7 +194,7 @@ function fullPhoneNumber (e: { phoneNumber?: string, phoneNumber2?: string }): s
   if (!e?.phoneNumber && !e?.phoneNumber2) return 'ไม่ระบุ'
   if (e?.phoneNumber && !e.phoneNumber2) return phoneNumberFormat(e.phoneNumber)
   if (!e?.phoneNumber && e?.phoneNumber2) return phoneNumberFormat(e.phoneNumber2)
-  return `${phoneNumberFormat(e?.phoneNumber || '')} ${phoneNumberFormat(e?.phoneNumber2 || '')}`
+  return `${phoneNumberFormat(e?.phoneNumber || '')}, ${phoneNumberFormat(e?.phoneNumber2 || '')}`
 }
 
 function fullAddress (data?: Partial<IAddressRequest>): string {
