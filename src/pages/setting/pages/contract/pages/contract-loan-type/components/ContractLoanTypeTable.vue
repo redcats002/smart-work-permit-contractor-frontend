@@ -4,7 +4,7 @@
     v-model:sort-by="sortBy"
     v-model:sort-order="sortOrder"
     :columns="columns"
-    :items="props.items"
+    :items="items"
     disable-auto-left-padding
     @update="emits('update')">
     <template #[`item.action`]="{ item }">
@@ -32,7 +32,7 @@ interface IProps {
   items: IContractLoanTypeList[]
 }
 
-const props = defineProps<IProps>()
+defineProps<IProps>()
 
 interface IEmits {
   delete: [id: TBaseParamsId]

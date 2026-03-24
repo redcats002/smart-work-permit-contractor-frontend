@@ -1,6 +1,9 @@
 <template>
   <section id="customer-list-page">
     <PageTitle />
+    <BaseTop>
+      <BackButton />
+    </BaseTop>
     <BranchFilter
       v-model:filters="filters"
       v-model:search="search"
@@ -29,6 +32,8 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import BasePage from '@/components/base/BasePage.vue'
+import BaseTop from '@/components/base/BaseTop.vue'
+import BackButton from '@/components/button/BackButton.vue'
 import CreateButton from '@/components/button/CreateButton.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import BranchFilter from '../components/BranchFilter.vue'

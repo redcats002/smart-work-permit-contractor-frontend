@@ -185,7 +185,7 @@
 
 <script setup lang="ts">
 import type { IFormState } from '@/models/Form.model'
-import { LandAssetTypeItems, type TAssetType } from '@/enums/modules/contract/AssetType.enum'
+import { LandAssetTypeItems, type TAssetType } from '@/enums/modules/asset/AssetType.enum'
 import AddressFieldInput, { type IAddressData } from '@/components/input/AddressFieldInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import SelectInput from '@/components/input/SelectInput.vue'

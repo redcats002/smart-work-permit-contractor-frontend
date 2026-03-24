@@ -19,9 +19,9 @@ const props = defineProps<IProps>()
 
 const items = computed((): IDisplayList[] => {
   return [
-    { label: 'ที่อยู่ตามบัตรประจำตัวประชาชน', key: 'idCard', value: props?.data?.idCard || '-' },
-    { label: 'ที่อยู่ปัจจุบัน', key: 'currentAddress', value: formatter.fullAddress(props?.data?.currentAddress) || '-' },
-    { label: 'สถานที่ประกอบอาชีพ', key: 'workplaceAddress', value: formatter.fullAddress(props?.data?.workAddress) || '-' }
+    { label: 'ที่อยู่ตามบัตรประจำตัวประชาชน', key: 'mainAddress', value: formatter.fullAddress(props?.data?.mainAddress) || '-' },
+    { label: 'ที่อยู่ปัจจุบัน', key: 'currentAddress', value: formatter.fullAddress(props?.data?.currentAddress) || '-', extUrl: props.data?.currentAddress?.urlGoogleMap },
+    { label: 'สถานที่ประกอบอาชีพ', key: 'workplaceAddress', value: formatter.fullAddress(props?.data?.workAddress) || '-', extUrl: props.data?.workAddress?.urlGoogleMap }
   ]
 })
 

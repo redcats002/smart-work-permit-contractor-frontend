@@ -1,5 +1,5 @@
 <template>
-  <RouterLink
+  <router-link
     v-slot="{ isActive, isExactActive, navigate }"
     :to="to"
     custom>
@@ -26,13 +26,12 @@
         {{ label }}
       </span>
     </div>
-  </RouterLink>
+  </router-link>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
-import { RouterLink } from 'vue-router'
 import { Icon } from '@iconify/vue'
 
 interface IProps {

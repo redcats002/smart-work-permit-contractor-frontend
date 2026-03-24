@@ -21,7 +21,7 @@ export default {
       component: (): ComponentOptions => import('@/pages/employee/pages/list/pages/EmployeeListPage.vue'),
       meta: {
         auth: true,
-        title: 'รายการพนักงาน',
+        title: 'รายชื่อพนักงาน',
         back: { name: 'SettingListPage' }
       }
     },

@@ -1,3 +1,4 @@
+import type { TBranchStatus } from '@/enums/modules/branch/BranchStatus.enum'
 import type { BranchFormValues } from '@/pages/setting/pages/other/pages/branch/pages/create/schema/branch.schema'
 import type { IBasePaginationRequest } from '../Request.model'
 
@@ -5,4 +6,6 @@ export interface IActionBranchPayload extends ICreateBranchPayload, IUpdateBranc
 export interface ICreateBranchPayload extends BranchFormValues {}
 export interface IUpdateBranchPayload extends ICreateBranchPayload {}
 
-export interface IGetBranchList extends IBasePaginationRequest {}
+export interface IGetBranchList extends IBasePaginationRequest {
+  status?: TBranchStatus
+}

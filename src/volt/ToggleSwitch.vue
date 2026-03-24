@@ -13,9 +13,12 @@
 </template>
 
 <script setup lang="ts">
-import ToggleSwitch, { type ToggleSwitchPassThroughOptions, type ToggleSwitchProps } from 'primevue/toggleswitch';
-import { ref } from 'vue';
-import { ptViewMerge } from './utils';
+import { ref } from 'vue'
+import ToggleSwitch, {
+  type ToggleSwitchPassThroughOptions,
+  type ToggleSwitchProps
+} from 'primevue/toggleswitch'
+import { ptViewMerge } from './utils'
 
 interface Props extends /* @vue-ignore */ ToggleSwitchProps {}
 defineProps<Props>();
@@ -28,16 +31,16 @@ const theme = ref<ToggleSwitchPassThroughOptions>({
         border border-transparent
         transition-colors duration-200
         peer-enabled:peer-hover:bg-surface-400 dark:peer-enabled:peer-hover:bg-surface-600
-        p-checked:bg-primary peer-enabled:peer-hover:p-checked:bg-primary-emphasis
+        p-checked:bg-green-700 peer-enabled:peer-hover:p-checked:bg-green-700-emphasis
         p-invalid:border-red-400 dark:p-invalid:border-red-300
         p-disabled:bg-surface-200 dark:p-disabled:bg-surface-600
-        peer-focus-visible:outline peer-focus-visible:outline-1 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary`,
+        peer-focus-visible:outline peer-focus-visible:outline-1 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-green-700`,
     handle: `absolute top-1/2 flex justify-center items-center
         bg-surface-0 dark:bg-surface-400
         text-surface-500 dark:text-surface-900
         w-4 h-4 start-1 -mt-2 rounded-full
         transition-[background,color,left] duration-200
-        p-checked:bg-surface-0 dark:p-checked:bg-surface-900 p-checked:text-primary p-checked:start-5
+        p-checked:bg-surface-0 dark:p-checked:bg-surface-900 p-checked:text-green-700 p-checked:start-5
         p-disabled:bg-surface-700 dark:p-disabled:bg-surface-900
 }`
 });

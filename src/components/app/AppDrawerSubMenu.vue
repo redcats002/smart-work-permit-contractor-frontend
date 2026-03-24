@@ -30,7 +30,7 @@
     <div
       v-if="isExpanded"
       class="mt-0.5 space-y-0.5">
-      <RouterLink
+      <router-link
         v-for="child in children"
         :key="child.label"
         v-slot="{ isActive }"
@@ -43,7 +43,7 @@
           ]">
           {{ child.label }}
         </div>
-      </RouterLink>
+      </router-link>
     </div>
   </div>
 </template>
@@ -51,7 +51,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
-import { RouterLink, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { Icon } from '@iconify/vue'
 
 interface ISubMenuItem {

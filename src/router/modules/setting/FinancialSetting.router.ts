@@ -13,7 +13,7 @@ export default {
     title: 'การเงิน',
     auth: true,
     setting: true,
-    icon: 'bitcoin-icons:sign-outline'
+    icon: 'iconoir:box-iso'
   },
   children: [
     {
@@ -32,7 +32,7 @@ export default {
       component: (): ComponentOptions => import('@/pages/setting/pages/financial/pages/expense-category/pages/ExpenseCategoryListPage.vue'),
       meta: {
         auth: true,
-        title: 'หมวดหมู่รายจ่าย',
+        title: 'หมวดหมู่ค่าใช้จ่าย',
         back: { name: 'SettingListPage' }
       }
     }

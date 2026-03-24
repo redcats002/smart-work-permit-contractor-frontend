@@ -57,9 +57,9 @@ const pt = computed((): any => {
     ...base,
     box: `
       ${base.box}
-      peer-hover:border-surface-400
-      p-checked:bg-surface-800
-      p-checked:border-surface-800
+      peer-hover:border-primary-400
+      p-checked:bg-primary-800
+      p-checked:border-primary-800
     `
   }
 })

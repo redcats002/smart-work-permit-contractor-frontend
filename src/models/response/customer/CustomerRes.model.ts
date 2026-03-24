@@ -1,6 +1,6 @@
 import type { IEntity, TBaseModel } from '@/models/Global.model'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
-import type { TAssetType } from '@/enums/modules/contract/AssetType.enum'
+import type { TAssetType } from '@/enums/modules/asset/AssetType.enum'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
 import type { TCustomerStatus } from '@/enums/modules/customer/CustomerStatus.enum'
 import type { TEstateStatus } from '@/enums/modules/estate/EstateStatus.enum'

@@ -1,3 +1,4 @@
+
 export interface IKeypress {
   number (evt: any): boolean
   numberNoDecimal (evt: any): boolean
@@ -5,8 +6,26 @@ export interface IKeypress {
   telInputWithPrefix (evt: any): boolean
   numberTwoDecimal (evt: any): boolean
   emailNoThai (evt: any): boolean
+  thaiCitizenId (evt: any): boolean
 }
 
+
+export function thaiCitizenId (evt: any): boolean {
+  const event = evt || window.event
+  const charCode = event.which ? event.which : event.keyCode
+  const input = event.target as HTMLInputElement
+  // Only allow digits
+  if (charCode < 48 || charCode > 57) {
+    event.preventDefault()
+    return false
+  }
+  // Limit to 13 digits
+  if (input && input.value && input.value.length >= 13) {
+    event.preventDefault()
+    return false
+  }
+  return true
+}
 export function numberTwoDecimal (evt: any): boolean {
   const event = evt || window.event
   const charCode = event.which ? event.which : event.keyCode
@@ -124,7 +143,8 @@ const keypress: IKeypress = {
   numberNoDecimal,
   telInput,
   telInputWithPrefix,
-  emailNoThai
+  emailNoThai,
+  thaiCitizenId
 }
 
 export default keypress

@@ -25,6 +25,8 @@ const id = (label: string): z.ZodOptional<z.ZodType<number | string, any, any>> 
           const num = Number(val)
           return isNaN(num) ? val : num
         }
+        // Accept number 1 or greater
+        if (typeof val === 'number' && val >= 1) return val
         return undefined
       }, z.union([z.number().min(1, `กรุณาเลือก${label}`), z.string().min(1, `กรุณาเลือก${label}`)])
     )

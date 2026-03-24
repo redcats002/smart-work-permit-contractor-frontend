@@ -1,5 +1,5 @@
 import type { IEntity } from '@/models/Global.model'
-import type { TAssetType } from '@/enums/modules/contract/AssetType.enum'
+import type { TAssetType } from '@/enums/modules/asset/AssetType.enum'
 import type { IContractList } from '../contract/ContractRes.model'
 import type { IBasePaginationResponse } from '../Response.model'
 

@@ -33,6 +33,7 @@
 </template>
 
 <script setup lang="ts">
+import type { IFinancialSummaryReportFilter } from '@/models/modules/report/financial-summary/Filter.model'
 import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
@@ -40,7 +41,6 @@ import Spacer from '@/components/flex/Spacer.vue'
 // import LabelField from '@/components/input/LabelField.vue'
 import SearchInput from '@/components/input/SearchInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
-import type { IFinancialSummaryReportFilter } from '@/models/modules/report/financial-summary/Filter.model'
 
 interface IEmits {
   search: []
@@ -51,7 +51,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>({ default: '' })
-defineModel<IFinancialSummaryReportFilter>('filter', { default: (): IFinancialSummaryReportFilter => ({}) })
+defineModel<IFinancialSummaryReportFilter>('filters', { default: (): IFinancialSummaryReportFilter => ({}) })
 
 function onSearch (): void {
   emits('search')

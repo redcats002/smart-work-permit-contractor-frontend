@@ -74,7 +74,7 @@ async function onSubmit (event: FormSubmitEvent, close: () => void): Promise<voi
 }
 
 function clear (): void {
-  form.value = useFormInitialValues()
+  if (props.type === 'CREATE') form.value = useFormInitialValues()
 }
 </script>
 

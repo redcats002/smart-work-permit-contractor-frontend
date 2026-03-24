@@ -111,7 +111,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { IFormState } from '@/models/Form.model'
-import { type TAssetType, VehicleAssetTypeItems } from '@/enums/modules/contract/AssetType.enum'
+import { type TAssetType, VehicleAssetTypeItems } from '@/enums/modules/asset/AssetType.enum'
 import LabelField from '@/components/input/LabelField.vue'
 import SelectInput from '@/components/input/SelectInput.vue'
 import ProvinceSelection from '@/components/selection/modules/static/province/ProvinceSelection.vue'

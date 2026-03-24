@@ -9,8 +9,8 @@ describe('useGenerateLocationTable', (): void => {
     ])
 
     expect(result).toEqual([
-      { name: 'WH-A1', status: LocationStatusEnum.INACTIVE },
-      { name: 'WH-A2', status: LocationStatusEnum.INACTIVE }
+      { name: 'WH-A1', status: LocationStatusEnum.ACTIVE },
+      { name: 'WH-A2', status: LocationStatusEnum.ACTIVE }
     ])
   })
 
@@ -21,10 +21,10 @@ describe('useGenerateLocationTable', (): void => {
     ])
 
     expect(result).toEqual([
-      { name: 'WH-A1-B1', status: LocationStatusEnum.INACTIVE },
-      { name: 'WH-A1-B2', status: LocationStatusEnum.INACTIVE },
-      { name: 'WH-A2-B1', status: LocationStatusEnum.INACTIVE },
-      { name: 'WH-A2-B2', status: LocationStatusEnum.INACTIVE }
+      { name: 'WH-A1-B1', status: LocationStatusEnum.ACTIVE },
+      { name: 'WH-A1-B2', status: LocationStatusEnum.ACTIVE },
+      { name: 'WH-A2-B1', status: LocationStatusEnum.ACTIVE },
+      { name: 'WH-A2-B2', status: LocationStatusEnum.ACTIVE }
     ])
   })
 
@@ -35,10 +35,10 @@ describe('useGenerateLocationTable', (): void => {
     ])
 
     expect(result).toEqual([
-      { name: 'WH-A1-1', status: LocationStatusEnum.INACTIVE },
-      { name: 'WH-A1-2', status: LocationStatusEnum.INACTIVE },
-      { name: 'WH-A2-1', status: LocationStatusEnum.INACTIVE },
-      { name: 'WH-A2-2', status: LocationStatusEnum.INACTIVE }
+      { name: 'WH-A1-1', status: LocationStatusEnum.ACTIVE },
+      { name: 'WH-A1-2', status: LocationStatusEnum.ACTIVE },
+      { name: 'WH-A2-1', status: LocationStatusEnum.ACTIVE },
+      { name: 'WH-A2-2', status: LocationStatusEnum.ACTIVE }
     ])
   })
 
@@ -50,18 +50,18 @@ describe('useGenerateLocationTable', (): void => {
     ])
 
     expect(result).toEqual([
-      { name: 'WH-A1-B1-1', status: LocationStatusEnum.INACTIVE },
-      { name: 'WH-A1-B1-2', status: LocationStatusEnum.INACTIVE },
-      { name: 'WH-A1-B1-3', status: LocationStatusEnum.INACTIVE },
-      { name: 'WH-A1-B2-1', status: LocationStatusEnum.INACTIVE },
-      { name: 'WH-A1-B2-2', status: LocationStatusEnum.INACTIVE },
-      { name: 'WH-A1-B2-3', status: LocationStatusEnum.INACTIVE },
-      { name: 'WH-A2-B1-1', status: LocationStatusEnum.INACTIVE },
-      { name: 'WH-A2-B1-2', status: LocationStatusEnum.INACTIVE },
-      { name: 'WH-A2-B1-3', status: LocationStatusEnum.INACTIVE },
-      { name: 'WH-A2-B2-1', status: LocationStatusEnum.INACTIVE },
-      { name: 'WH-A2-B2-2', status: LocationStatusEnum.INACTIVE },
-      { name: 'WH-A2-B2-3', status: LocationStatusEnum.INACTIVE }
+      { name: 'WH-A1-B1-1', status: LocationStatusEnum.ACTIVE },
+      { name: 'WH-A1-B1-2', status: LocationStatusEnum.ACTIVE },
+      { name: 'WH-A1-B1-3', status: LocationStatusEnum.ACTIVE },
+      { name: 'WH-A1-B2-1', status: LocationStatusEnum.ACTIVE },
+      { name: 'WH-A1-B2-2', status: LocationStatusEnum.ACTIVE },
+      { name: 'WH-A1-B2-3', status: LocationStatusEnum.ACTIVE },
+      { name: 'WH-A2-B1-1', status: LocationStatusEnum.ACTIVE },
+      { name: 'WH-A2-B1-2', status: LocationStatusEnum.ACTIVE },
+      { name: 'WH-A2-B1-3', status: LocationStatusEnum.ACTIVE },
+      { name: 'WH-A2-B2-1', status: LocationStatusEnum.ACTIVE },
+      { name: 'WH-A2-B2-2', status: LocationStatusEnum.ACTIVE },
+      { name: 'WH-A2-B2-3', status: LocationStatusEnum.ACTIVE }
     ])
   })
 

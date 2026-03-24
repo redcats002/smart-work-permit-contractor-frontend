@@ -1,8 +1,6 @@
 <template>
-  <div class="p-6 space-y-6">
-    <h1 class="text-xl font-semibold">
-      ข่าวสาร
-    </h1>
+  <section id="announcement-page">
+    <PageTitle />
     <PostComposer
       v-model="form"
       @created="useSubmit()" />
@@ -10,7 +8,7 @@
       :is-finished="list.isFinished.value"
       :items="list.items.value"
       :load-more="list.loadMore" />
-  </div>
+  </section>
 </template>
 
 <script setup lang="ts">
@@ -23,6 +21,7 @@ import FeedList from '../components/feed/FeedList.vue'
 import useList from '../composables/useList'
 import { usePayload } from '../composables/usePayload'
 import type { AnnouncementCreateAnnouncement } from '../schemas/announcement.schema'
+import PageTitle from '@/components/nav/PageTitle.vue'
 
 const list = useList()
 const form = ref<AnnouncementCreateAnnouncement>({

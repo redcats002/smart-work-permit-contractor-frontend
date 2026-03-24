@@ -71,7 +71,7 @@
 import { computed, ref } from 'vue'
 import { formatter } from '@/utils/Formatter'
 import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
-import { formatTitle } from '@/enums/modules/contract/AssetType.enum'
+import { formatTitle } from '@/enums/modules/asset/AssetType.enum'
 import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BaseGalleria from '@/components/base/BaseGalleria.vue'

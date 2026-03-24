@@ -1,6 +1,6 @@
 import type { IEntity } from '@/models/Global.model'
 import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
-import type { TAssetType } from '@/enums/modules/contract/AssetType.enum'
+import type { TAssetType } from '@/enums/modules/asset/AssetType.enum'
 import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import type { ICustomerById, ICustomerList } from '../customer/CustomerRes.model'
 import type { IBasePaginationResponse } from '../Response.model'

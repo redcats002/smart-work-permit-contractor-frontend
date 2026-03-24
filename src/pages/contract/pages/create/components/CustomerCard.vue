@@ -6,6 +6,10 @@
       <template #[`value.status`]>
         <ChipCustomerStatus :value="data.status" />
       </template>
+      <template #[`value.idCard`]="{ value }">
+        <CitizenId
+          :value="value" />
+      </template>
     </DisplayList>
   </div>
 </template>
@@ -15,6 +19,7 @@ import { computed } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
+import CitizenId from '@/components/display/CitizenId.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
 import ChipCustomerStatus from '@/pages/customer/pages/list/components/ChipCustomerStatus.vue'
 
@@ -34,7 +39,7 @@ const items = computed((): IDisplayList[] => {
   return [
     { key: 'status', label: 'สถานะ', value: d.status },
     { key: 'idNo', label: 'เลขที่ลูกค้า', value: d.idNo || '-' },
-    { key: 'idCard', label: 'เลขบัตรประชาชน', value: formatter.thaiCitizenId(d.idCard) },
+    { key: 'idCard', label: 'เลขบัตรประชาชน', value: d.idCard },
     { key: 'birthDate', label: 'วันเกิด', value: formatDate(d.birthDate ?? undefined) },
     { key: 'age', label: 'อายุ', value: formatAge(d.birthDate ?? undefined) },
     { key: 'customerGroup', label: 'กลุ่มลูกค้า', value: d.customerGroup?.name || '-' },

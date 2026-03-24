@@ -2,12 +2,14 @@ import { computed, type ComputedRef, ref, type Ref } from 'vue'
 import { accessTokenStorage } from '@/utils/Storage'
 import type { IAuthBranchList } from '@/models/response/auth/private/AuthRes.private.model'
 import { defineStore } from 'pinia'
+import type { TEmployeeRole } from '@/enums/modules/employee/EmployeeRole.enum'
 
 export interface IUser {
   id: number | null
   firstName: string
   lastName: string
   email: string
+  role?: TEmployeeRole
 }
 
 export interface IBranch extends IAuthBranchList {}
@@ -35,7 +37,8 @@ export const useAuthStore = defineStore(
       id: null,
       firstName: '',
       lastName: '',
-      email: ''
+      email: '',
+      role: undefined
     })
 
     const userToken = ref<IToken>({
@@ -91,7 +94,8 @@ export const useAuthStore = defineStore(
         id: null,
         firstName: '',
         lastName: '',
-        email: ''
+        email: '',
+        role: undefined
       }
       userToken.value = {
         accessToken: '',

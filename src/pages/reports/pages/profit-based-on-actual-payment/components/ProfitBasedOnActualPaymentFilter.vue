@@ -51,7 +51,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>('search', { default: '' })
-defineModel<IProfitBasedOnActualPaymentFilter>('filter', { default: (): IProfitBasedOnActualPaymentFilter => ({}) })
+defineModel<IProfitBasedOnActualPaymentFilter>('filters', { default: (): IProfitBasedOnActualPaymentFilter => ({}) })
 
 function onSearch (): void {
   emits('search')

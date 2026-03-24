@@ -1,14 +1,13 @@
 <template>
   <BaseModal
     v-model="visible"
-    :label="type==='CREATE' ? 'เพิ่มหมวดหมู่รายจ่ายใหม่' : 'แก้ไขหมวดหมู่รายจ่าย'"
+    :label="type==='CREATE' ? 'เพิ่มหมวดหมู่ค่าใช้จ่ายใหม่' : 'แก้ไขหมวดหมู่ค่าใช้จ่าย'"
     class="md:w-200!"
     @open="clear()">
     <template
       v-if="type === 'CREATE'"
       #activator="{ open }">
       <CreateButton
-        icon="weui:add-outlined"
         rounded
         @click="open()" />
     </template>
@@ -22,7 +21,7 @@
         <LabelField
           v-model="form.name"
           :form="$form"
-          label="หมวดหมู่รายจ่าย"
+          label="หมวดหมู่ค่าใช้จ่าย"
           name="name"
           required />
         <LabelField
@@ -87,7 +86,7 @@ async function onSubmit (event: FormSubmitEvent, close: () => void): Promise<voi
 }
 
 function clear (): void {
-  form.value = useFormInitialValues()
+  if (props.type === 'CREATE') form.value = useFormInitialValues()
 }
 </script>
 

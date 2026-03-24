@@ -68,7 +68,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { IFormState } from '@/models/Form.model'
-import { isLandAsset, isVehicleAsset } from '@/enums/modules/contract/AssetType.enum'
+import { isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import AssetTypeSelection from '@/components/selection/modules/asset-type/AssetTypeSelection.vue'

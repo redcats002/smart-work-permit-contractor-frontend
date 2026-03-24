@@ -2,6 +2,7 @@
   <BaseTable
     :columns="columns"
     :items="items"
+    scroll-height="400px"
     disable-auto-left-padding
     hide-pagination
     @update="emits('update')">
@@ -9,6 +10,9 @@
       <Switch
         :model-value="items[index].status === 'ACTIVE'"
         :readonly="readonly"
+        false-label="ปิด"
+        label-class="font-medium"
+        true-label="ใช้งาน"
         @update:model-value="onToggle(index)" />
     </template>
   </BaseTable>

@@ -48,7 +48,8 @@ export default function useList (): IUseList {
 
   function normalizeFilters (value: IGetWarehouseList): Partial<IGetWarehouseList> {
     return {
-      ...value
+      ...value,
+      status: filters.value?.status
     }
   }
 
@@ -57,6 +58,7 @@ export default function useList (): IUseList {
   }
 
   function onClearFilters (): void {
+    filters.value = {}
     reset()
   }
 

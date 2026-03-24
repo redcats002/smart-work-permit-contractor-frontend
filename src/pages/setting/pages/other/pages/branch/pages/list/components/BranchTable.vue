@@ -13,7 +13,9 @@
       </LinkText>
     </template>
     <template #[`item.status`]="{ item }">
-      <ChipBranchStatus :value="item.status" />
+      <div class="flex justify-end">
+        <ChipBranchStatus :value="item.status" />
+      </div>
     </template>
   </BaseTable>
 </template>
