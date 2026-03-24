@@ -11,7 +11,6 @@
       </template>
       <template #[`value.idCard`]="{ value }">
         <CitizenId
-          v-model="visibleCitizenId"
           :value="value" />
       </template>
     </DisplayList>
@@ -19,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import BaseContainer from '@/components/base/BaseContainer.vue'
@@ -40,7 +39,6 @@ const props = defineProps<IProps>()
 const emits = defineEmits<IEmits>()
 
 const dayjs = useDayjs()
-const visibleCitizenId = ref<boolean>(false)
 
 const items = computed((): IDisplayList[] => {
   return [

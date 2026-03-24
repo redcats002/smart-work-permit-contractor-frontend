@@ -1,10 +1,12 @@
 <template>
-  <span>{{ maskedValue }}</span>
-  <Icon
-    :icon="!visibleCitizenId ? 'famicons:eye-outline' : 'famicons:eye-off-outline'"
-    class="cursor-pointer"
-    color="#BD0102"
-    @click="toggleVisibleCitizenId()" />
+  <div class="flex items-center gap-1.5">
+    <span>{{ maskedValue }}</span>
+    <Icon
+      :icon="!visibleCitizenId ? 'famicons:eye-outline' : 'famicons:eye-off-outline'"
+      class="cursor-pointer"
+      color="#BD0102"
+      @click="toggleVisibleCitizenId()" />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -22,10 +24,9 @@ const visibleCitizenId = defineModel<boolean>({
 })
 
 const maskedValue = computed((): string => {
-  const last4 = props.value?.slice(-4)
-  // *-**-*
-  const masked = `${last4?.[0]}-${last4?.[1]}${last4?.[2]}-${last4?.[3]}`
-  if (!visibleCitizenId.value) return `*-****-****${masked}`
+  const last3 = props.value?.slice(-3)
+  const masked = `${last3?.[0]}${last3?.[1]}-${last3?.[2]}`
+  if (!visibleCitizenId.value) return `X-XXXX-XXXXX-${masked}`
   return formatter.thaiCitizenId(props.value)
 })
 

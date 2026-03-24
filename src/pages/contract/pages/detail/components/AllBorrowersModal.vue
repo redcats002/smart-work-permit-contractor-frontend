@@ -6,7 +6,12 @@
       :columns="columns"
       :items="customers"
       disable-auto-left-padding
-      hide-pagination />
+      hide-pagination>
+      <template #[`item.idCard`]="{ value }">
+        <CitizenId
+          :value="value" />
+      </template>
+    </BaseTable>
   </BaseModal>
 </template>
 
@@ -17,6 +22,7 @@ import { formatter } from '@/utils/Formatter'
 import type { IBorrowersItems } from '@/models/response/contract/ContractRes.model'
 import type { IColumn } from '@/models/Table.model'
 import type { TTitleName } from '@/enums/TitleName.enum'
+import CitizenId from '@/components/display/CitizenId.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 
@@ -31,46 +37,11 @@ const visible = defineModel<boolean>('visible', { default: false })
 const { formatDate, formatAgeYear } = useDayjs()
 
 const columns = ref<IColumn<IBorrowersItems>[]>([
-  {
-    field: 'idCard',
-    header: 'เลขบัตรประชาชน',
-    align: 'left',
-    value: (e: IBorrowersItems): string => e.customer?.idCard ? formatter.thaiCitizenId(e.customer?.idCard) : '-'
-  },
-  {
-    field: 'firstName',
-    header: 'ชื่อลูกค้า',
-    sortable: true,
-    align: 'left',
-    value: (e: IBorrowersItems): string => formatter.fullName({
-      titleName: (e.customer?.titleName ?? undefined) as TTitleName,
-      firstName: e.customer?.firstName,
-      lastName: e.customer?.lastName
-    })
-  },
-  {
-    field: 'age',
-    header: 'อายุ',
-    align: 'left',
-    value: (e: IBorrowersItems): string => e.customer?.birthDate ? formatAgeYear(e.customer?.birthDate) : '-'
-  },
-  {
-    field: 'birthDate',
-    header: 'วันเดือนปีเกิด',
-    align: 'left',
-    value: (e: IBorrowersItems): string => formatDate(e.customer?.birthDate ?? undefined)
-  },
-  {
-    field: 'phoneNumber',
-    header: 'เบอร์โทร',
-    align: 'left',
-    value: (e: IBorrowersItems): string => formatter.fullPhoneNumber({ phoneNumber: e.customer?.phoneNumber, phoneNumber2: e.customer?.phoneNumber2 })
-  },
-  {
-    field: 'mainAddress',
-    header: 'ที่อยู่ตามบัตรประชาชน',
-    align: 'left',
-    value: (e: IBorrowersItems): string => e.customer?.mainAddress ? formatter.fullAddress(e.customer?.mainAddress) : '-'
-  }
+  { field: 'idCard', header: 'เลขบัตรประชาชน', align: 'left', value: (e: IBorrowersItems): string => e.customer?.idCard || '-' },
+  { field: 'firstName', header: 'ชื่อลูกค้า', sortable: true, align: 'left', value: (e: IBorrowersItems): string => formatter.fullName({ titleName: (e.customer?.titleName ?? undefined) as TTitleName, firstName: e.customer?.firstName, lastName: e.customer?.lastName }) },
+  { field: 'age', header: 'อายุ', align: 'left', value: (e: IBorrowersItems): string => e.customer?.birthDate ? formatAgeYear(e.customer?.birthDate) : '-' },
+  { field: 'birthDate', header: 'วันเดือนปีเกิด', align: 'left', value: (e: IBorrowersItems): string => formatDate(e.customer?.birthDate ?? undefined) },
+  { field: 'phoneNumber', header: 'เบอร์โทร', align: 'left', value: (e: IBorrowersItems): string => formatter.fullPhoneNumber({ phoneNumber: e.customer?.phoneNumber, phoneNumber2: e.customer?.phoneNumber2 }) },
+  { field: 'mainAddress', header: 'ที่อยู่ตามบัตรประชาชน', align: 'left', value: (e: IBorrowersItems): string => e.customer?.mainAddress ? formatter.fullAddress(e.customer?.mainAddress) : '-' }
 ])
 </script>

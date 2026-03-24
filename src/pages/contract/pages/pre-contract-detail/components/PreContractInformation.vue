@@ -1,7 +1,12 @@
 <template>
   <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
     <BaseContainer class="md:col-span-2">
-      <DisplayList :items="items" />
+      <DisplayList :items="items">
+        <template #[`value.idCard`]="{ value }">
+          <CitizenId
+            :value="value" />
+        </template>
+      </DisplayList>
     </BaseContainer>
     <BaseContainer>
       <DisplayList :items="contractItems">
@@ -20,6 +25,7 @@ import { formatter } from '@/utils/Formatter'
 import type { IPreContractById } from '@/models/response/pre-contract/PreContractRes.model'
 import type { TTitleName } from '@/enums/TitleName.enum'
 import BaseContainer from '@/components/base/BaseContainer.vue'
+import CitizenId from '@/components/display/CitizenId.vue'
 import type { IDisplayList } from '@/components/display/DisplayList.vue'
 import DisplayList from '@/components/display/DisplayList.vue'
 import ChipAssetStatus from '../../list/components/ChipPreContractStatus.vue'
@@ -48,7 +54,7 @@ const items = computed((): IDisplayList[] => {
   return [
     { key: 'name', label: 'ชื่อลูกค้า', value: formatter.fullName({ titleName: (c.titleName ?? undefined) as TTitleName | undefined, firstName: c.firstName ?? undefined, lastName: c.lastName ?? undefined }) },
     { key: 'idNo', label: 'เลขที่ลูกค้า', value: c.idNo || '-' },
-    { key: 'idCard', label: 'เลขบัตรประชาชน', value: c.idCard ? formatter.thaiCitizenId(c.idCard) : '-' },
+    { key: 'idCard', label: 'เลขบัตรประชาชน', value: c.idCard || '-' },
     { key: 'birthDate', label: 'วันเดือนปีเกิด', value: formatDate(c.birthDate ?? undefined) },
     { key: 'age', label: 'อายุ', value: c.birthDate ? formatAge(c.birthDate) : '-' },
     { key: 'customerGroup', label: 'กลุ่มลูกค้า', value: c.customerGroup?.name || '-' },

@@ -5,25 +5,20 @@
         <ChipCustomerStatus :value="value" />
       </template>
       <template #[`value.idCard`]="{ value }">
-        <span>{{ visibleCitizenId ? value : '*************' }}</span>
-        <Icon
-          :icon="visibleCitizenId ? 'famicons:eye-outline' : 'famicons:eye-off-outline'"
-          class="cursor-pointer"
-          color="#BD0102"
-          @click="toggleVisibleCitizenId()" />
+        <CitizenId
+          :value="value" />
       </template>
     </DisplayList>
   </BaseContainer>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
 import ChipCustomerStatus from '@/pages/customer/pages/list/components/ChipCustomerStatus.vue'
-import { Icon } from '@iconify/vue'
 
 interface IProps {
   data: ICustomerById
@@ -32,7 +27,6 @@ interface IProps {
 const props = defineProps<IProps>()
 
 const dayjs = useDayjs()
-const visibleCitizenId = ref<boolean>(true)
 
 const items = computed((): IDisplayList[] => {
   return [
@@ -49,9 +43,6 @@ const items = computed((): IDisplayList[] => {
   ]
 })
 
-function toggleVisibleCitizenId (): void {
-  visibleCitizenId.value = !visibleCitizenId.value
-}
 
 </script>
 

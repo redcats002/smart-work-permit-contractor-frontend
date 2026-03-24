@@ -3,11 +3,8 @@
     <BaseContainer>
       <DisplayList :items="customerItems">
         <template #[`value.idCard`]="{ value }">
-          <span>{{ visibleCitizenId ? value : '*************' }}</span>
-          <Icon
-            :icon="visibleCitizenId ? 'famicons:eye-outline' : 'famicons:eye-off-outline'"
-            class="cursor-pointer text-red-700"
-            @click="toggleVisibleCitizenId()" />
+          <CitizenId
+            :value="value" />
         </template>
       </DisplayList>
       <template v-if="data.borrowers.length > 1">
@@ -45,6 +42,7 @@ import { formatter } from '@/utils/Formatter'
 import type { IContractById, IContractCustomer } from '@/models/response/contract/ContractRes.model'
 import type { TTitleName } from '@/enums/TitleName.enum'
 import BaseContainer from '@/components/base/BaseContainer.vue'
+import CitizenId from '@/components/display/CitizenId.vue'
 import type { IDisplayList } from '@/components/display/DisplayList.vue'
 import DisplayList from '@/components/display/DisplayList.vue'
 import Divider from '@/volt/Divider.vue'
@@ -60,7 +58,6 @@ const props = defineProps<IProps>()
 
 const { formatDate, formatAge } = useDayjs()
 
-const visibleCitizenId = ref<boolean>(true)
 const showModal = ref<boolean>(false)
 
 const primaryCustomer = computed((): IContractCustomer | undefined => props.data.borrowers[0]?.customer)
@@ -68,7 +65,7 @@ const primaryCustomer = computed((): IContractCustomer | undefined => props.data
 const customerItems = computed((): IDisplayList[] => {
   const c = primaryCustomer.value
   return [
-    { key: 'idCard', label: 'เลขบัตรประชาชน', value: c?.idCard ? formatter.thaiCitizenId(c.idCard) : '-' },
+    { key: 'idCard', label: 'เลขบัตรประชาชน', value: c?.idCard || '-' },
     { key: 'name', label: 'ชื่อ', value: formatter.fullName({ titleName: (c?.titleName ?? undefined) as TTitleName, firstName: c?.firstName, lastName: c?.lastName }) },
     { key: 'birthDate', label: 'วันเดือนปีเกิด', value: formatDate(c?.birthDate ?? undefined) },
     { key: 'age', label: 'อายุ', value: c?.birthDate ? formatAge(c.birthDate) : '-' },
@@ -88,8 +85,4 @@ const loanItems = computed((): IDisplayList[] => [
   { key: 'contractLoanPurpose', label: 'วัตถุประสงค์การกู้', value: props.data.contractLoanPurpose?.name || '-' },
   { key: 'howDidFindUs', label: 'รู้จักมิตรแท้จากที่ไหน', value: props.data.howDidFindUs?.name || '-' }
 ])
-
-function toggleVisibleCitizenId (): void {
-  visibleCitizenId.value = !visibleCitizenId.value
-}
 </script>

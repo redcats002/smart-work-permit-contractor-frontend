@@ -6,7 +6,12 @@
     :columns="columns"
     :items="items"
     disable-auto-left-padding
-    @update="emits('update')" />
+    @update="emits('update')">
+    <template #[`item.idCard`]="{ value }">
+      <CitizenId
+        :value="value" />
+    </template>
+  </BaseTable>
 </template>
 
 <script setup lang="ts">
@@ -15,6 +20,7 @@ import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import type { IContractGuarantorList } from '@/models/response/contract/ContractRes.model'
 import type { IColumn } from '@/models/Table.model'
+import CitizenId from '@/components/display/CitizenId.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
 
