@@ -19,6 +19,7 @@
           <BaseContainer>
             <InformationForm
               v-model="form"
+              v-model:form-key="formKey"
               :form="$form" />
           </BaseContainer>
           <BaseContainer>
@@ -29,6 +30,7 @@
           <BaseContainer>
             <BranchTimeForm
               v-model="form"
+              v-model:form-key="formKey"
               :form="$form" />
           </BaseContainer>
           <FormAction @cancel="onCancel()" />

@@ -33,7 +33,6 @@
 </template>
 
 <script setup lang="ts">
-import type { ICustomerFilter } from '@/models/modules/customer/Filter.model'
 import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
@@ -51,7 +50,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>('search', { default: '' })
-defineModel<ICustomerFilter>('filters', { default: (): ICustomerFilter => ({}) })
+defineModel<any>('filters', { default: (): any => ({}) })
 
 function onSearch (): void {
   emits('search')

@@ -64,7 +64,7 @@ defineProps<IProps>()
 const model = defineModel<BranchFormValues>({
   default: useFormInitialValues()
 })
-const formKey = defineModel<number>('formKey', { default: 0 })
+const formKey = defineModel<number>('formKey', { required: true })
 
 const notAllowDays = computed((): TDays[] => {
   const days: TDays[] = []
