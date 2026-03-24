@@ -12,7 +12,7 @@
 import { onMounted, ref, watch } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel, TBaseOption } from '@/models/Global.model'
-import { AssetTypeItems, LandAssetTypeItems, VehicleAssetTypeItems } from '@/enums/modules/contract/AssetType.enum'
+import { AssetTypeItems, LandAssetTypeItems, VehicleAssetTypeItems } from '@/enums/modules/asset/AssetType.enum'
 import SelectInput from '@/components/input/SelectInput.vue'
 import usePagination from '@/composables/usePagination'
 

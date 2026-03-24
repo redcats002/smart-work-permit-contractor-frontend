@@ -3,7 +3,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
       <Switch
         v-model="isActive"
-        class="col-span-3"
+        class="md:col-span-3"
         false-label="ปิดใช้งาน"
         true-label="ใช้งาน" />
       <LabelField

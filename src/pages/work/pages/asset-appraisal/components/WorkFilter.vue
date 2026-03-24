@@ -45,7 +45,6 @@
 </template>
 
 <script setup lang="ts">
-import type { ICustomerFilter } from '@/models/modules/customer/Filter.model'
 import type { IWorkAppraisalFilter } from '@/models/modules/work/Filter.model'
 import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
@@ -69,8 +68,6 @@ const model = defineModel<string>('search', { default: '' })
 const filters = defineModel<IWorkAppraisalFilter>('filters', {
   default: (): IWorkAppraisalFilter => ({})
 })
-
-defineModel<ICustomerFilter>('filter', { default: (): ICustomerFilter => ({}) })
 
 function onSearch (): void {
   emits('search')

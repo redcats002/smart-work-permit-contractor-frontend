@@ -1,9 +1,9 @@
 import type { ComponentOptions } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
+import EmployeeRouter from '../Employee.router'
 import BranchRouter from './Branch.router'
 import HowDidFindUsRouter from './HowDidFindUs.router'
 import WarehouseRouter from './Warehouse.router'
-import EmployeeRouter from '../Employee.router'
 
 const prefix = 'other'
 
@@ -17,7 +17,7 @@ export default {
     title: 'อื่น ๆ',
     auth: true,
     setting: true,
-    icon: 'bitcoin-icons:sign-outline'
+    icon: 'hugeicons:list-setting'
   },
   children: [
     EmployeeRouter,

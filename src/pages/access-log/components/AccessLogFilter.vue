@@ -64,7 +64,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>('search', { default: '' })
-const filter = defineModel<IAccessLogFilter>('filter', { default: (): IAccessLogFilter => ({}) })
+const filter = defineModel<IAccessLogFilter>('filters', { default: (): IAccessLogFilter => ({}) })
 
 function onSearch (): void {
   emits('search')

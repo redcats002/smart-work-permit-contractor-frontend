@@ -48,7 +48,8 @@ export default function useList (): IUseList {
 
   function normalizeFilters (value: IGetBranchList): Partial<IGetBranchList> {
     return {
-      ...value
+      ...value,
+      status: filters.value?.status
     }
   }
 
@@ -57,6 +58,7 @@ export default function useList (): IUseList {
   }
 
   function onClearFilters (): void {
+    filters.value = {}
     reset()
   }
 

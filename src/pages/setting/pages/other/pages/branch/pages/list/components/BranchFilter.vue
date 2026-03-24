@@ -12,12 +12,14 @@
         <template #activator="{ open }">
           <FilterButton @click="open()" />
         </template>
-        <!-- <div class="flex flex-col gap-5">
-            <div class="w-fit">
-              <LabelField
-                label="สถานะ" />
-            </div>
-          </div> -->
+        <div class="flex flex-col gap-5">
+          <LabelField
+            label="สถานะ">
+            <BranchStatusSelection
+              v-model="filters.status"
+              placeholder="ทั้งหมด" />
+          </LabelField>
+        </div>
         <template #footer="{ close }">
           <FormActionFilter
             @clear="onClear(close)"
@@ -33,14 +35,16 @@
 </template>
 
 <script setup lang="ts">
-import type { IWarehouseFilter } from '@/models/modules/warehouse/Filter.model'
+import type { IBranchFilter } from '@/models/modules/branch/Filter.model'
 import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
 import Spacer from '@/components/flex/Spacer.vue'
+import LabelField from '@/components/input/LabelField.vue'
 // import LabelField from '@/components/input/LabelField.vue'
 import SearchInput from '@/components/input/SearchInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
+import BranchStatusSelection from '@/components/selection/modules/static/branch-status/BranchStatusSelection.vue'
 
 interface IEmits {
   search: []
@@ -51,7 +55,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>('search', { default: '' })
-defineModel<IWarehouseFilter>('filter', { default: (): IWarehouseFilter => ({}) })
+const filters = defineModel<IBranchFilter>('filters', { default: (): IBranchFilter => ({}) })
 
 function onSearch (): void {
   emits('search')

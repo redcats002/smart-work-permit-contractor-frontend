@@ -3,11 +3,11 @@
     v-bind="$attrs"
     v-model="pickerValue"
     :date-format="dateFormat"
+    :manual-input="false"
     class="w-full h-9 text-sm!"
     icon-display="input"
     update-model-type="date"
     fluid
-    manual-input
     show-icon />
 </template>
 

@@ -86,7 +86,6 @@
       <LabelField
         label="สาขา"
         name="branchIds"
-        tag="div"
         required>
         <BranchSelection
           v-model="model.branchIds"

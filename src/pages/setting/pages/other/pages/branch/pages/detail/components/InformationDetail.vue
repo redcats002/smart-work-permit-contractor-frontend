@@ -21,6 +21,9 @@
           </template>
         </div>
       </template>
+      <template #[`value.taxId`]="{ value }">
+        <CitizenId :value="value" />
+      </template>
     </DisplayList>
   </BaseContainer>
 </template>
@@ -33,6 +36,7 @@ import type { IBranchTime } from '@/models/modules/branch/BranchTime.model'
 import type { IBranchById } from '@/models/response/branch/BranchRes.model'
 import { formatDayToThai, type TDays } from '@/enums/Date.enum'
 import BaseContainer from '@/components/base/BaseContainer.vue'
+import CitizenId from '@/components/display/CitizenId.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
 import ChipBranchStatus from '../../list/components/ChipBranchStatus.vue'
 import BranchDetailMenuAction from './BranchDetailMenuAction.vue'

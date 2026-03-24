@@ -8,7 +8,6 @@
       v-if="type === 'CREATE'"
       #activator="{ open }">
       <CreateButton
-        icon="weui:add-outlined"
         rounded
         @click="open()" />
     </template>
@@ -75,7 +74,7 @@ async function onSubmit (event: FormSubmitEvent, close: () => void): Promise<voi
 }
 
 function clear (): void {
-  form.value = useFormInitialValues()
+  if (props.type === 'CREATE') form.value = useFormInitialValues()
 }
 </script>
 

@@ -45,8 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ICustomerFilter } from '@/models/modules/customer/Filter.model'
-import type { IWorkAppraisalFilter } from '@/models/modules/work/Filter.model'
+import type { IWorkFollowUpFilter } from '@/models/modules/work/Filter.model'
 import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
@@ -66,11 +65,9 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>('search', { default: '' })
-const filters = defineModel<IWorkAppraisalFilter>('filters', {
-  default: (): IWorkAppraisalFilter => ({})
+const filters = defineModel<IWorkFollowUpFilter>('filters', {
+  default: (): IWorkFollowUpFilter => ({})
 })
-
-defineModel<ICustomerFilter>('filter', { default: (): ICustomerFilter => ({}) })
 
 function onSearch (): void {
   emits('search')

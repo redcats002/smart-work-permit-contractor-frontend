@@ -50,7 +50,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>({ default: '' })
-defineModel<any>('filter', { default: (): any => ({}) })
+defineModel<any>('filters', { default: (): any => ({}) })
 
 function onSearch (): void {
   emits('search')

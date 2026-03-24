@@ -18,6 +18,17 @@ const BranchTimeSchema = z.object({
   day: z.array(z.enum(EDays)).min(1, 'กรุณาเลือกวันเปิดทำการ'),
   openTime: z.string().min(1, 'กรุณากรอกเวลาเปิดทำการ'),
   closeTime: z.string().min(1, 'กรุณากรอกเวลาปิดทำการ')
+}).superRefine((val: BranchTimeFormValues, ctx: z.RefinementCtx) => {
+  // Only validate if both times are present and in HH:mm format
+  if (val.openTime && val.closeTime && (/^\d{2}:\d{2}$/).test(val.openTime) && (/^\d{2}:\d{2}$/).test(val.closeTime)) {
+    if (val.openTime >= val.closeTime) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'เวลาเปิดต้องน้อยกว่าเวลาปิด',
+        path: ['closeTime']
+      })
+    }
+  }
 })
 
 export const BranchSchema = z.object({

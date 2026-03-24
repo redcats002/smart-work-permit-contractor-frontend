@@ -4,7 +4,7 @@
     <BasePage class="max-w-none">
       <div class="px-3 pb-6 pt-0 -mt-2 bg-(--p-gray-1) min-h-full">
         <div class="mt-1">
-          <BranchSelect
+          <BranchSelection
             :options="branchOptions"
             label="สาขา"
             required />
@@ -56,14 +56,14 @@
 </template>
 
 <script setup lang="ts">
-import { Icon } from '@iconify/vue'
 import { ref } from 'vue'
 import BasePage from '@/components/base/BasePage.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
-import BranchSelect from '../components/BranchSelect.vue'
+import BranchSelection from '../components/BranchSelection.vue'
 import MarketingDonutCard from '../components/MarketingDonutCard.vue'
 import StatCard from '../components/StatCard.vue'
 import SummaryCard from '../components/SummaryCard.vue'
+import { Icon } from '@iconify/vue'
 
 const branchOptions = ['สำนักงานใหญ่', 'ขอนแก่น']
 

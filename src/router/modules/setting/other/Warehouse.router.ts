@@ -10,7 +10,7 @@ export default {
   redirect: { name: 'WarehouseListPage' },
   component: (): ComponentOptions => import('@/pages/setting/pages/other/pages/warehouse/Warehouse.vue'),
   meta: {
-    title: 'รายการคลัง',
+    title: 'คลัง',
     auth: true
   },
   children: [
@@ -21,7 +21,8 @@ export default {
       meta: {
         auth: true,
         menu: true,
-        title: 'รายการคลัง'
+        title: 'รายการคลัง',
+        back: { name: 'SettingListPage' }
       }
     },
     {
@@ -30,7 +31,7 @@ export default {
       component: (): ComponentOptions => import('@/pages/setting/pages/other/pages/warehouse/pages/create/pages/WarehouseCreatePage.vue'),
       meta: {
         auth: true,
-        title: 'เพิ่มคลัง',
+        title: 'เพิ่มคลังใหม่',
         back: { name: 'WarehouseListPage' }
       }
     },

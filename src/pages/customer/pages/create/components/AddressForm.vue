@@ -134,6 +134,7 @@ const model = defineModel<IAddressRequest>({ default: (): IAddressRequest => ({
   district: '',
   province: '',
   postCode: '',
+  urlGoogleMap: '',
   isSameCitizenAddress: false,
   isSameCurrentAddress: false
 }) })

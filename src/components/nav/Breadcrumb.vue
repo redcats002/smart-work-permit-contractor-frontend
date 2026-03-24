@@ -8,9 +8,9 @@
           <component
             :is="isActive(index) ? 'span' : 'router-link'"
             :class="[
-              'text-xl font-bold',
+              'text-2xl font-bold',
               isActive(index)
-                ? 'text-primary cursor-default'
+                ? 'text-font-gray cursor-default'
                 : 'text-gray-400 hover:text-gray-600 transition-all duration-200 cursor-pointer'
             ]"
             :to="!isActive(index) ? normalizeRoute(item.route) : undefined">

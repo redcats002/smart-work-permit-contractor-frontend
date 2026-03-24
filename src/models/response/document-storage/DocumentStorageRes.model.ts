@@ -1,5 +1,5 @@
 import type { IEntity, TBaseModel } from '@/models/Global.model'
-import type { TAssetType } from '@/enums/modules/contract/AssetType.enum'
+import type { TAssetType } from '@/enums/modules/asset/AssetType.enum'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
 import type { TDocumentStorageAssetStatus } from '@/enums/modules/document-storage/DocumentStorageAssetStatus.enum'
 import type { TDocumentStorageMovementStatus } from '@/enums/modules/document-storage/DocumentStorageMovementStatus.enum'

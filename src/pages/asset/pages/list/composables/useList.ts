@@ -33,7 +33,7 @@ export default function useList (): IUseList {
 
   function filterItems (): IAssetList[] {
     const keyword = search.value?.trim().toLowerCase()
-    const category = filters.value.category || null
+    const category = filters.value.type || null
     const status = filters.value.status || null
 
     return allItems.value.filter((item: IAssetList): boolean => {

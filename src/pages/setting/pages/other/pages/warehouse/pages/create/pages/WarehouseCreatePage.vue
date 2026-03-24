@@ -4,8 +4,7 @@
     <BaseTop>
       <BackButton />
       <Spacer />
-      <ConfirmButton
-        label="Auto"
+      <DevButton
         @click="onAuto()" />
     </BaseTop>
     <BasePage>
@@ -47,7 +46,7 @@ import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
-import ConfirmButton from '@/components/button/ConfirmButton.vue'
+import DevButton from '@/components/button/DevButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
 import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'

@@ -1,20 +1,20 @@
 <template>
   <div class="flex flex-wrap gap-2">
-    <button
+    <div
       v-for="(item, i) in items"
       :key="`${item}-${i}`"
       :aria-pressed="isSelected(item)"
       :class="[
-        'w-10 h-10 rounded-full border border-primary text-sm font-semibold flex items-center justify-center transition-colors duration-200',
+        'cursor-pointer w-10 h-10 rounded-full border border-primary text-sm font-semibold flex items-center justify-center transition-colors duration-200',
         isSelected(item)
           ? 'bg-primary text-white'
           : 'bg-white text-primary',
         props.readonly ? 'pointer-events-none' : ''
       ]"
       type="button"
-      @click.passive="onClickToggle(item)">
+      @click="onClickToggle(item)">
       {{ formatDayToThai(item, true) }}
-    </button>
+    </div>
   </div>
 </template>
 
@@ -49,7 +49,7 @@ function isSelected (day: TDays): boolean {
 }
 
 function isNotAllow (day: string | TDays): boolean {
-  if (props.notAllowDays.length === 1) return false
+  // if (props.notAllowDays.length === 1) return false
   const index = props.notAllowDays.findIndex((_day: TDays): boolean => _day === day)
   return index !== -1
 }
@@ -57,7 +57,9 @@ function isNotAllow (day: string | TDays): boolean {
 function onClickToggle (day: TDays): void {
   if (props.readonly) return
   if (isNotAllow(day)) {
-    const index = model.value?.findIndex((_day: TDays): boolean => _day === day) || -1
+    const index = model.value?.findIndex((_day: TDays): boolean => {
+      return _day === day
+    }) ?? -1
     const temp = index
     if (temp < 0) return
     model.value?.splice(index, 1)

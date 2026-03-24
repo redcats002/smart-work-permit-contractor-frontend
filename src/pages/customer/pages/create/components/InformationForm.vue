@@ -5,14 +5,17 @@
         v-model="isActive"
         class="col-span-3"
         false-label="ปิดใช้งาน"
-        true-label="ใช้งาน" />
+        true-label="ใช้งาน"
+        handle />
       <LabelField
         v-model="model.idCard"
         :form="form"
         label="เลขบัตรประชาชน"
         name="idCard"
         hide-error
-        required />
+        required
+        @keypress="keypress.thaiCitizenId"
+        @paste="handlePasteIdCard($event)" />
       <div class="w-full grid grid-cols-2 gap-5">
         <LabelField
           v-slot="{ invalid }"
@@ -113,6 +116,7 @@
 import { computed } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
 import keypress from '@/utils/Keypress'
+import paste from '@/utils/Paste'
 import type { IFormState } from '@/models/Form.model'
 import type { ICreateCustomerPayload } from '@/models/request/customer/CustomerReq.model'
 import { CustomerStatusEnum } from '@/enums/modules/customer/CustomerStatus.enum'
@@ -136,6 +140,7 @@ const dayjs = useDayjs()
 const model = defineModel<ICreateCustomerPayload>({
   default: useFormInitialValues()
 })
+const formKey = defineModel<number>('formKey', { required: true })
 
 const isActive = computed({
   get (): boolean {
@@ -145,6 +150,16 @@ const isActive = computed({
     model.value.status = value ? CustomerStatusEnum.ACTIVE : CustomerStatusEnum.INACTIVE
   }
 })
+
+function handlePasteNumber (evt: ClipboardEvent, key: keyof ICreateCustomerPayload): void {
+  model.value[key] = ''
+  model.value[key] = paste.number(evt)
+  formKey.value++
+}
+
+function handlePasteIdCard (evt: ClipboardEvent): void {
+  handlePasteNumber(evt, 'idCard')
+}
 </script>
 
 <style scoped>

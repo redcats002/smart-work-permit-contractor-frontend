@@ -1,4 +1,7 @@
+import type { TAssetStatus } from '@/enums/modules/asset/AssetStatus.enum'
+import type { TAssetType } from '@/enums/modules/asset/AssetType.enum'
+
 export interface IAssetFilter {
-  category?: string | null
-  status?: string | null
+  type?: TAssetType
+  status?: TAssetStatus
 }

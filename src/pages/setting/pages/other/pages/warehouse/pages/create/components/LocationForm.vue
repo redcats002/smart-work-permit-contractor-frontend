@@ -3,10 +3,10 @@
     <div
       v-for="(_, i) in model.options"
       :key="`model-option-${i}`"
-      class="gap-5 mb-4 flex items-end">
+      class="flex items-end flex-wrap gap-5 mb-4 ">
       <Switch
         v-model="model.options[i].isRequirePrefix"
-        class="mb-2"
+        class="mb-2 w-full md:w-fit"
         false-label="ไม่กำหนดตัวย่อ"
         true-label="ไม่กำหนดตัวย่อ" />
       <LabelField
@@ -32,14 +32,12 @@
           :name="`options.${i}.maxLimit`"
           class="h-9 w-full" />
       </LabelField>
-      <Button
-        class="w-14"
-        rounded
-        text
-        @click="onRemove(i)">
-        <Icon
-          icon="material-symbols:delete-outline" />
-      </Button>
+      <Icon
+        class="text-primary hover:bg-primary-100 transition-all cursor-pointer rounded-full p-1"
+        height="32"
+        icon="material-symbols:delete-outline"
+        width="32"
+        @click="onRemove(i)" />
     </div>
     <CreateButton
       label="เพิ่มจุดจัดเก็บ"
@@ -49,6 +47,7 @@
 
 <script setup lang="ts">
 import { watch } from 'vue'
+import { useLoadingStore } from '@/stores/Loading'
 import type { IFormState } from '@/models/Form.model'
 import CreateButton from '@/components/button/CreateButton.vue'
 import LabelField from '@/components/input/LabelField.vue'
@@ -63,6 +62,7 @@ interface IProps {
 
 defineProps<IProps>()
 
+const loadingStore = useLoadingStore()
 
 const model = defineModel<WarehouseFormValues>({
   default: useFormInitialValues()
@@ -81,7 +81,9 @@ function onRemove (index: number): void {
 }
 
 function generateLocationTable (): void {
+  loadingStore.addLoading()
   model.value.locations = buildLocationTable(model.value.prefix, model.value.options)
+  loadingStore.removeLoading()
 }
 
 watch((): string => model.value.prefix, (): void => {

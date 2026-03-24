@@ -1,5 +1,5 @@
 import { schema } from '@/utils/Schema'
-import { AssetTypeEnum, isLandAsset, isVehicleAsset } from '@/enums/modules/contract/AssetType.enum'
+import { AssetTypeEnum, isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
 import { PreContractStatusEnum } from '@/enums/modules/contract/PreContractStatus.enum'
 import { ProvinceEnum } from '@/enums/modules/province/Province.enum'
 import { z } from 'zod'
@@ -86,7 +86,7 @@ export type PreAssetFormValues = z.infer<typeof PreAssetSchema>
 
 const PreContractBaseSchema = z.object({
   customerId: schema.id('ลูกค้า'),
-  sellManId: schema.id('หน้างานประเมิน'),
+  sellManId: schema.id('พนักงานประเมิน'),
   preAssets: z.array(PreAssetSchema).min(1, 'กรุณาเพิ่มหลักทรัพย์อย่างน้อย 1 รายการ'),
   status: schema.enum(PreContractStatusEnum, 'สถานะหลักทรัพย์')
 })

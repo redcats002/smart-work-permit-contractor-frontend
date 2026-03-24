@@ -5,7 +5,8 @@
         v-model="isActive"
         class="col-span-3"
         false-label="ปิดใช้งาน"
-        true-label="ใช้งาน" />
+        true-label="ใช้งาน"
+        handle />
       <LabelField
         v-model="model.name"
         :form="form"
@@ -19,14 +20,18 @@
         label="Branch Code"
         name="idNo"
         hide-error
-        required />
+        required
+        @keypress="keypress.number"
+        @paste="handlePasteIdNo($event)" />
       <LabelField
         v-model="model.taxId"
         :form="form"
         label="เลขประจำตัวผู้เสียภาษี"
         name="taxId"
         hide-error
-        required />
+        required
+        @keypress="keypress.thaiCitizenId"
+        @paste="handlePasteTaxId($event)" />
       <LabelField
         v-slot="{invalid}"
         :form="form"
@@ -47,6 +52,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
+import keypress from '@/utils/Keypress'
+import paste from '@/utils/Paste'
 import type { IFormState } from '@/models/Form.model'
 import { BranchStatusEnum } from '@/enums/modules/branch/BranchStatus.enum'
 import DatePickerInput from '@/components/input/DatePickerInput.vue'
@@ -65,6 +72,7 @@ const dayjs = useDayjs()
 const model = defineModel<BranchFormValues>({
   default: useFormInitialValues()
 })
+const formKey = defineModel<number>('formKey', { required: true })
 
 const isActive = computed({
   get (): boolean {
@@ -74,6 +82,19 @@ const isActive = computed({
     model.value.status = value ? BranchStatusEnum.ACTIVE : BranchStatusEnum.INACTIVE
   }
 })
+
+function handlePasteNumber (evt: ClipboardEvent, key: keyof BranchFormValues): void {
+  model.value[key] = ''
+  model.value[key] = paste.number(evt)
+  formKey.value++
+}
+
+function handlePasteIdNo (evt: ClipboardEvent): void {
+  handlePasteNumber(evt, 'idNo')
+}
+function handlePasteTaxId (evt: ClipboardEvent): void {
+  handlePasteNumber(evt, 'taxId')
+}
 </script>
 
 <style scoped>

@@ -18,7 +18,10 @@ export function useGenerateLocationTable (
 
     for (const base of combinations) {
       for (let i = 1; i <= maxLimit; i++) {
-        const segment = cleanPrefix ? `${cleanPrefix}${i}` : `${i}`
+        const padLength = String(maxLimit).length
+        const segment = cleanPrefix
+          ? `${cleanPrefix}${String(i).padStart(padLength, '0')}`
+          : `${String(i).padStart(padLength, '0')}`
         nextCombinations.push(base ? `${base}-${segment}` : segment)
       }
     }
@@ -30,6 +33,6 @@ export function useGenerateLocationTable (
 
   return combinations.map((name: string): WarehouseLocationFormValues => ({
     name: cleanWarehousePrefix ? `${cleanWarehousePrefix}-${name}` : name,
-    status: LocationStatusEnum.INACTIVE
+    status: LocationStatusEnum.ACTIVE
   }))
 }

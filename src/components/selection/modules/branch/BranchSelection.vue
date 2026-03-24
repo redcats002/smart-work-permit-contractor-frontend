@@ -1,10 +1,10 @@
 <template>
   <AutoCompleteInput
     v-model="innerModel"
-    :invalid="props.invalid"
-    :multiple="props.multiple"
+    :invalid="invalid"
+    :multiple="multiple"
+    :placeholder="placeholderText"
     :suggestions="suggestions"
-    class="h-9!"
     option-label="name"
     complete-on-focus
     force-selection
@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel } from '@/models/Global.model'
 import type { IBranchList } from '@/models/response/branch/BranchRes.model'
@@ -25,6 +25,7 @@ import usePagination from '@/composables/usePagination'
 interface IProps {
   invalid?: boolean
   multiple?: boolean
+  placeholder?: string
 }
 
 const props = defineProps<IProps>()
@@ -39,7 +40,13 @@ const innerModel = ref<TBaseModel | TBaseModel[] | null>(props.multiple ? [] : n
 const { pagination } = usePagination()
 
 const suggestions = ref<TBaseModel[]>([])
-
+const placeholderText = computed((): string | undefined => {
+  if (props.placeholder) {
+    if (Array.isArray(model.value) && model.value.length > 0) return undefined
+    return props.placeholder
+  }
+  return undefined
+})
 async function useFetch (): Promise<void> {
   const response = await BranchService.getBranchPaginate({
     page: pagination.value.page,
@@ -66,26 +73,37 @@ function search (): void {
 function syncInnerFromId (): void {
   if (props.multiple) {
     const ids = Array.isArray(model.value) ? model.value.map((id: TBaseParamsId): string => String(id)) : []
-    innerModel.value = ids.length > 0
+    const newItems = ids.length > 0
       ? suggestions.value.filter((i: TBaseModel): boolean => ids.includes(String(i.id)))
       : []
+    const current = Array.isArray(innerModel.value) ? innerModel.value : []
+    if (current.length === newItems.length && current.every((item: TBaseModel, i: number): boolean => item.id === newItems[i].id)) return
+    innerModel.value = newItems
     return
   }
   if (model.value == null || Array.isArray(model.value)) {
+    if (innerModel.value === null) return
     innerModel.value = null
     selectedName.value = null
     return
   }
-  innerModel.value = suggestions.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
-  selectedName.value = (innerModel.value as TBaseModel | null)?.name ?? null
+  const found = suggestions.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
+  if ((innerModel.value as TBaseModel | null)?.id === found?.id) return
+  innerModel.value = found
+  selectedName.value = found?.name ?? null
 }
 
 watch(innerModel, (val: TBaseModel | TBaseModel[] | null): void => {
   if (props.multiple) {
+    const items = Array.isArray(val) ? val : []
+    const newIds = items.filter(Boolean).map((item: TBaseModel): string => item.id ? String(item.id) : '') as TBaseParamsId[]
+    const currentIds = Array.isArray(model.value) ? model.value.map((id: TBaseParamsId): string => String(id)) : []
+    if (newIds.length === currentIds.length && newIds.every((id: TBaseParamsId, i: number): boolean => String(id) === currentIds[i])) return
+    model.value = newIds
     return
   }
   const item = val as TBaseModel | null
-  model.value = item?.id ? Number(item.id) : null
+  model.value = item?.id ? String(item.id) : null
   selectedName.value = item?.name ?? null
 })
 
