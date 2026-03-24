@@ -8,48 +8,46 @@
         @click="onAuto()" />
       <ReadIdentificationCardButton />
     </BaseTop>
-    <BasePage>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-        <Form
-          :key="formKey"
-          v-slot="$form"
-          :initial-values="form"
-          :resolver="resolver"
-          class="flex flex-col gap-5 col-span-2"
-          @submit="onSubmit($event)">
-          <BaseContainer>
-            <InformationForm
-              v-model="form"
-              :form="$form" />
-          </BaseContainer>
-          <BaseContainer>
-            <AddressForm
-              v-model="mainAddress"
-              :form="$form"
-              type="MAIN" />
-          </BaseContainer>
-          <BaseContainer>
-            <AddressForm
-              v-model="currentAddress"
-              :form="$form"
-              type="CURRENT"
-              @use-same-citizen-address="onUseSameCitizenAddress('CURRENT')" />
-          </BaseContainer>
-          <FormAction @cancel="onCancel()" />
-        </Form>
-        <BaseContainer class="h-fit">
-          <UploadInput
-            v-model="uploadFiles"
-            v-model:preview-urls="uploadPreviewUrls"
-            v-model:profile-preview="form.image"
-            :hidden-icon-button="true"
-            :is-fro-profile="true"
-            button-upload-class="bg-primary text-white"
-            detail="ไฟล์ JPG, JPEG และ PNG ได้รับอนุญาต"
-            label="เลือกเพื่ออัปโหลดหรือลากและวาง"
-            @upload="onHandleUpload($event)" />
+    <BasePage class="flex flex-col md:grid md:grid-cols-3 gap-4">
+      <BaseContainer class="h-fit md:order-2 md:col-span-1">
+        <UploadInput
+          v-model="uploadFiles"
+          v-model:preview-urls="uploadPreviewUrls"
+          v-model:profile-preview="form.image"
+          :hidden-icon-button="true"
+          :is-fro-profile="true"
+          button-upload-class="bg-primary text-white"
+          detail="ไฟล์ JPG, JPEG และ PNG ได้รับอนุญาต"
+          label="เลือกเพื่ออัปโหลดหรือลากและวาง"
+          @upload="onHandleUpload($event)" />
+      </BaseContainer>
+      <Form
+        :key="formKey"
+        v-slot="$form"
+        :initial-values="form"
+        :resolver="resolver"
+        class="flex flex-col gap-5 col-span-2"
+        @submit="onSubmit($event)">
+        <BaseContainer>
+          <InformationForm
+            v-model="form"
+            :form="$form" />
         </BaseContainer>
-      </div>
+        <BaseContainer>
+          <AddressForm
+            v-model="mainAddress"
+            :form="$form"
+            type="MAIN" />
+        </BaseContainer>
+        <BaseContainer>
+          <AddressForm
+            v-model="currentAddress"
+            :form="$form"
+            type="CURRENT"
+            @use-same-citizen-address="onUseSameCitizenAddress('CURRENT')" />
+        </BaseContainer>
+        <FormAction @cancel="onCancel()" />
+      </Form>
     </BasePage>
   </section>
 </template>

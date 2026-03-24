@@ -3,9 +3,10 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
       <Switch
         v-model="isActive"
-        class="col-span-3"
+        class="col-span-1 md:col-span-3"
         false-label="ปิดใช้งาน"
         true-label="ใช้งาน" />
+
       <LabelField
         v-model="model.idCard"
         :form="form"
@@ -13,7 +14,8 @@
         name="idCard"
         hide-error
         required />
-      <div class="w-full grid grid-cols-2 gap-5">
+
+      <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
         <LabelField
           v-slot="{ invalid }"
           :form="form"
@@ -34,6 +36,7 @@
           hide-error
           required />
       </div>
+
       <LabelField
         v-model="model.lastName"
         :form="form"
@@ -41,6 +44,7 @@
         name="lastName"
         hide-error
         required />
+
       <LabelField
         v-slot="{ invalid }"
         :form="form"
@@ -54,6 +58,7 @@
           :max-date="dayjs().toDate()"
           name="birthDate" />
       </LabelField>
+
       <LabelField
         v-model="model.email"
         :form="form"
@@ -61,6 +66,7 @@
         name="email"
         hide-error
         @keypress="keypress.emailNoThai($event)" />
+
       <LabelField
         v-slot="{ invalid }"
         :form="form"
@@ -73,6 +79,7 @@
           :invalid="invalid"
           name="phoneNumber" />
       </LabelField>
+
       <LabelField
         label="ตำแหน่ง"
         name="role"
@@ -83,6 +90,7 @@
           name="role"
           placeholder="เลือกตำแหน่ง" />
       </LabelField>
+
       <LabelField
         label="สาขา"
         name="branchIds"
