@@ -114,7 +114,7 @@ const errorMessage = computed((): string => {
 <style scoped>
 .label-section>span.required::after {
   content: '*';
-  color: red;
+  color: var(--color-primary-500);
   margin-left: 4px;
 }
 
