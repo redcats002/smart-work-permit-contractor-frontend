@@ -30,7 +30,7 @@ export default {
       component: (): ComponentOptions => import('@/pages/setting/pages/other/pages/warehouse/pages/create/pages/WarehouseCreatePage.vue'),
       meta: {
         auth: true,
-        title: 'เพิ่มคลัง',
+        title: 'เพิ่มคลังใหม่',
         back: { name: 'WarehouseListPage' }
       }
     },

@@ -21,7 +21,7 @@ export default {
       meta: {
         auth: true,
         menu: true,
-        title: 'สาขา'
+        title: 'รายการสาขา'
       }
     },
     {
@@ -30,7 +30,7 @@ export default {
       component: (): ComponentOptions => import('@/pages/setting/pages/other/pages/branch/pages/create/pages/BranchCreatePage.vue'),
       meta: {
         auth: true,
-        title: 'เพิ่มสาขา',
+        title: 'เพิ่มสาขาใหม่',
         back: { name: 'BranchListPage' }
       }
     },

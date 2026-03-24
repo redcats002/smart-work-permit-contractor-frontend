@@ -223,7 +223,7 @@ defineExpose({
 	exportCSV: () => el.value.exportCSV()
 })
 </script>
-<style lang="scss">
+<style>
 @media (max-width: 767px) {
     #dt-responsive-table table {
         width: 100% !important;
