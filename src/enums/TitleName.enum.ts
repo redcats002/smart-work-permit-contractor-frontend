@@ -1,4 +1,5 @@
 import type { TBaseOption } from '@/models/Global.model'
+import { formatter } from '@/utils/Formatter'
 
 export enum ETitleName {
   '' = '',
@@ -25,6 +26,6 @@ export const TitleNameItems: TBaseOption[] = Object.values(ETitleName).filter(Bo
 
 export function formatTitle (title?: TTitleName, eng?: boolean): string {
   if (!title) return ''
-  if (eng) return title
+  if (eng) return formatter.stringFormatSnakeToTitleCase(title)
   return titleMap[title] || ''
 }

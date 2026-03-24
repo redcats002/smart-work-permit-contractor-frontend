@@ -29,7 +29,7 @@ export interface IFormatter {
   getActionNameToast(_actionName: string): string
   thaiCitizenId(value: string): string
   thaiBaht(value: number | string, prefix?: string): string
-  fullName (e?: { titleName?: TTitleName, firstName?: string, lastName?: string }): string
+  fullName (e?: { titleName?: TTitleName, title?: TTitleName, firstName?: string, lastName?: string }): string
   fullPhoneNumber (e: { phoneNumber?: string, phoneNumber2?: string }): string
   fullAddress (data?: Partial<IAddressRequest>): string
   numberToThaiText (amount: number): string
@@ -181,12 +181,13 @@ function thaiBaht (value: number | string, prefix?: string): string {
   return `฿${formatted}`
 }
 
-function fullName (e: { titleName?: TTitleName, firstName?: string, lastName?: string }): string {
+function fullName (e: { titleName?: TTitleName, title?: TTitleName, firstName?: string, lastName?: string }): string {
+  const actualTitle = e?.titleName || e?.title
   if (!e?.firstName && !e?.lastName) return 'ไม่ระบุ'
   if (e?.firstName && !e.lastName) return e.firstName
   if (!e?.firstName && e?.lastName) return e.lastName
   const isEng = (/[a-zA-Z]/).test(`${e.firstName} ${e.lastName}`)
-  const title = formatTitle(e.titleName, isEng)
+  const title = formatTitle(actualTitle, isEng)
   return `${title} ${e.firstName} ${e.lastName}`
 }
 
