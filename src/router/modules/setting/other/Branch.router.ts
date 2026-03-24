@@ -21,7 +21,8 @@ export default {
       meta: {
         auth: true,
         menu: true,
-        title: 'รายการสาขา'
+        title: 'รายการสาขา',
+        back: { name: 'SettingListPage' }
       }
     },
     {

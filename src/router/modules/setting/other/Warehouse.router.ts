@@ -21,7 +21,8 @@ export default {
       meta: {
         auth: true,
         menu: true,
-        title: 'รายการคลัง'
+        title: 'รายการคลัง',
+        back: { name: 'SettingListPage' }
       }
     },
     {
