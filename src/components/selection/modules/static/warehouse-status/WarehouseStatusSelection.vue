@@ -1,7 +1,7 @@
 <template>
   <SelectInput
     v-model="innerModel"
-    :invalid="props.invalid"
+    :invalid="invalid"
     :options="options"
     option-label="name"
     complete-on-focus
@@ -21,7 +21,7 @@ interface IProps {
   invalid?: boolean
 }
 
-const props = defineProps<IProps>()
+defineProps<IProps>()
 const model = defineModel<TWarehouseStatus>()
 const selectedName = defineModel<string | null>('selectedName', { default: null })
 
