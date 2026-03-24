@@ -99,7 +99,7 @@
       hide-error
       required>
       <InputNumber
-        v-model="model.mileage"
+        v-model:number="model.mileage"
         :invalid="invalid"
         :name="`${namePrefix}.mileage`"
         :use-grouping="true"

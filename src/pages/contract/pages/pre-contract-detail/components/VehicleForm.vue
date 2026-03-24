@@ -97,7 +97,7 @@
       hide-error
       required>
       <InputNumber
-        v-model="model.mileage"
+        v-model:number="model.mileage"
         :invalid="invalid"
         :use-grouping="true"
         class="h-9! shadow-none!"
