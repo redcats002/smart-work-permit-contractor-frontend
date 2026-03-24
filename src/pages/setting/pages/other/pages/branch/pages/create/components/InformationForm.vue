@@ -5,7 +5,8 @@
         v-model="isActive"
         class="col-span-3"
         false-label="ปิดใช้งาน"
-        true-label="ใช้งาน" />
+        true-label="ใช้งาน"
+        handle />
       <LabelField
         v-model="model.name"
         :form="form"
