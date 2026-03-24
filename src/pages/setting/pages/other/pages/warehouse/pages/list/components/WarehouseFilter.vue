@@ -15,7 +15,9 @@
         <div class="flex flex-col gap-5">
           <LabelField
             label="สถานะ">
-            <WarehouseStatusSelection v-model="filter.status" />
+            <WarehouseStatusSelection
+              v-model="filter.status"
+              placeholder="ทั้งหมด" />
           </LabelField>
         </div>
         <template #footer="{ close }">

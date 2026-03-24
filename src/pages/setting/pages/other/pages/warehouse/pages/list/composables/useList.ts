@@ -58,6 +58,7 @@ export default function useList (): IUseList {
   }
 
   function onClearFilters (): void {
+    filters.value = {}
     reset()
   }
 
