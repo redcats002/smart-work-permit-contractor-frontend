@@ -27,12 +27,21 @@ interface Props extends /* @vue-ignore */ AutoCompleteProps {}
 defineProps<Props>()
 const attrs = useAttrs()
 
+
 const theme = computed((): AutoCompletePassThroughOptions => {
 	const borderRight = attrs?.dropdown ? 'border-r-0' : ''
+	let isHaveValue = false
+	if(attrs?.multiple) {
+		const value = Array.isArray(attrs?.modelValue) ? attrs?.modelValue : []
+		isHaveValue = value.length > 0
+	}else {
+		isHaveValue = !!attrs?.modelValue
+	}
+	
 	return {
 		root: `inline-flex p-fluid:flex group`,
 		pcInputText: {
-			root: `appearance-none rounded-md outline-hidden 
+			root: `appearance-none rounded-sm outline-hidden 
             bg-surface-0 dark:bg-surface-950
             p-filled:bg-surface-50 dark:p-filled:bg-surface-800
             text-surface-700 dark:text-surface-0
@@ -52,7 +61,7 @@ const theme = computed((): AutoCompletePassThroughOptions => {
 		},
 		inputMultiple: `m-0 list-none cursor-text overflow-visible flex items-center flex-wrap
         px-3! py-1 not-p-empty:px-1 gap-1 text-surface-700 dark:text-surface-0 bg-surface-0 dark:bg-surface-950
-        border ${borderRight} border-surface-300 dark:border-surface-700 rounded-md p-has-dropdown:rounded-e-none w-full
+        border ${borderRight} border-surface-300 dark:border-surface-700 rounded-sm p-has-dropdown:rounded-e-none w-full
         group-hover:border-surface-400 dark:group-hover:border-surface-600 p-focus:border-primary group-focus-within:border-primary
         p-invalid:border-red-400 dark:p-invalid:border-red-300
         p-filled:bg-surface-50 dark:p-filled:bg-surface-800
@@ -75,7 +84,7 @@ const theme = computed((): AutoCompletePassThroughOptions => {
             focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-primary`
 		},
 		chipIcon: ``,
-		inputChip: `flex-auto inline-flex py-1 max-w-30 hidden`,
+		inputChip: `flex-auto inline-flex py-1 max-w-30 h-6! ${(isHaveValue) ? 'hidden': ''}`,
 		input: `border-none outline-none bg-transparent m-0 p-0 shadow-none rounded-none w-full text-inherit
         placeholder:text-surface-500 dark:placeholder:text-surface-400`,
 		loader: `absolute top-1/2 -mt-2 end-3 p-has-dropdown:end-[3.25rem]`,
@@ -87,7 +96,7 @@ const theme = computed((): AutoCompletePassThroughOptions => {
         text-surface-600 dark:text-surface-300
         transition-colors duration-200`,
 		dropdownIcon: ``,
-		overlay: `p-portal-self:min-w-full absolute top-0 left-0 rounded-md
+		overlay: `p-portal-self:min-w-full absolute top-0 left-0 rounded-sm
         bg-surface-0 dark:bg-surface-900
         border border-surface-200 dark:border-surface-700
         text-surface-700 dark:text-surface-0

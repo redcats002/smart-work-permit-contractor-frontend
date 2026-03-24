@@ -4,6 +4,7 @@
     v-model="model"
     :class="$attrs.multiple ? 'min-h-9 shadow-none!' : 'h-9 shadow-none!'"
     :dropdown="dropdown"
+    :placeholder="placeholder"
     dropdown-class="bg-white"
     fluid>
     <template #clearicon="{ clearCallback }">
@@ -55,15 +56,16 @@
 import type { TBaseModel } from '@/models/Global.model'
 import AutoComplete from '@/volt/AutoComplete.vue'
 import { Icon } from '@iconify/vue'
-import type { AutoCompleteProps } from 'primevue'
 import CheckboxInput from './CheckboxInput.vue'
 
-interface IProps extends /* @vue-ignore */ AutoCompleteProps {
+interface IProps {
   dropdown?: boolean
+  placeholder?: string
 }
 
 withDefaults(defineProps<IProps>(), {
-  dropdown: true
+  dropdown: true,
+  placeholder: ''
 })
 
 const model = defineModel<TBaseModel | TBaseModel[] | null>()
