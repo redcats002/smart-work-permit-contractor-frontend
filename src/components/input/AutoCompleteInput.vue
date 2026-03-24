@@ -1,6 +1,7 @@
 <template>
   <AutoComplete
     v-bind="$attrs"
+    v-model="model"
     :class="$attrs.multiple ? 'min-h-9 shadow-none!' : 'h-9 shadow-none!'"
     :dropdown="dropdown"
     dropdown-class="bg-white"
@@ -14,7 +15,9 @@
       </div>
     </template>
     <template #chip="{ value, removeCallback }">
-      <span class="flex items-center gap-1 rounded-md bg-[#E7F4FF] px-2 py-1 text-sm text-[#027CE9] h-6">
+      <span
+        v-if="value"
+        class="flex items-center gap-1 rounded-md px-2 py-0.5 text-sm text-[#027CE9] bg-[#E7F4FF]">
         <span>
           {{ value?.name || value }}
         </span>
@@ -30,6 +33,18 @@
         class="size-5 text-[#A4B0C1]"
         icon="mdi:chevron-down" />
     </template>
+    <template
+      v-if="$attrs?.multiple"
+      #option="{ option }">
+      <div
+        class="flex gap-1.5 items-center"
+        @click="onSelect(option)">
+        <CheckboxInput
+          :model-value="isSelected(option)"
+          readonly />
+        {{ option[String($attrs?.optionLabel || 'name')] }}
+      </div>
+    </template>
     <template #empty>
       ไม่พบข้อมูล
     </template>
@@ -37,9 +52,11 @@
 </template>
 
 <script setup lang="ts">
+import type { TBaseModel } from '@/models/Global.model'
 import AutoComplete from '@/volt/AutoComplete.vue'
 import { Icon } from '@iconify/vue'
 import type { AutoCompleteProps } from 'primevue'
+import CheckboxInput from './CheckboxInput.vue'
 
 interface IProps extends /* @vue-ignore */ AutoCompleteProps {
   dropdown?: boolean
@@ -48,6 +65,23 @@ interface IProps extends /* @vue-ignore */ AutoCompleteProps {
 withDefaults(defineProps<IProps>(), {
   dropdown: true
 })
+
+const model = defineModel<TBaseModel | TBaseModel[] | null>()
+
+function isSelected (option: TBaseModel): boolean {
+  if (Array.isArray(model.value)) return model.value.some((item: TBaseModel): boolean => item?.id === option.id)
+  return model.value?.id === option?.id
+}
+
+function onSelect (value: TBaseModel): void {
+  if (!Array.isArray(model.value)) return
+  const exists = model.value.some((item: TBaseModel): boolean => item?.id === value?.id)
+  if (exists) {
+    model.value = model.value.filter((item: TBaseModel): boolean => item?.id !== value?.id).slice()
+  } else {
+    model.value = [...model.value, value]
+  }
+}
 </script>
 
 <style scoped></style>
