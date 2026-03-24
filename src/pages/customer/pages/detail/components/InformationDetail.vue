@@ -20,6 +20,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
+import { formatter } from '@/utils/Formatter'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import CitizenId from '@/components/display/CitizenId.vue'
@@ -45,7 +46,7 @@ const items = computed((): IDisplayList[] => {
     { label: 'สถานะ', key: 'status', value: props.data.status, hideColon: true },
     { label: 'เลขที่ลูกค้า', key: 'idNo', value: props.data?.idNo },
     { label: 'เลขบัตรประชาชน', key: 'idCard', value: props.data.idCard },
-    { label: 'ชื่อ', key: 'name', value: `${props.data.titleName} ${props.data.firstName} ${props.data.lastName}` },
+    { label: 'ชื่อ', key: 'name', value: formatter.fullName(props.data) },
     { label: 'วันเดือนปีเกิด', key: 'birthDate', value: dayjs.formatDate(props.data.birthDate) },
     { label: 'อายุ', key: 'age', value: dayjs.formatAge(props.data.birthDate) },
     { label: 'กลุ่มลูกค้า', key: 'customerGroup', value: props.data.customerGroup?.name || '-' },
