@@ -34,7 +34,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>({ default: '' })
-defineModel<IRankLendingFilter>('filter', { default: (): IRankLendingFilter => ({
+defineModel<IRankLendingFilter>('filters', { default: (): IRankLendingFilter => ({
   type: 'RECEIPT_AMOUNT'
 }) })
 

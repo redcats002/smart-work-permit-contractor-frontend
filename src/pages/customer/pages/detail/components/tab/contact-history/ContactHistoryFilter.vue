@@ -51,7 +51,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>('search', { default: '' })
-defineModel<ICustomerContactHistoryFilter>('filter', { default: (): ICustomerContactHistoryFilter => ({}) })
+defineModel<ICustomerContactHistoryFilter>('filters', { default: (): ICustomerContactHistoryFilter => ({}) })
 
 function onSearch (): void {
   emits('search')

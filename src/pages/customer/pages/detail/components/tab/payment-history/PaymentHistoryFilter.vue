@@ -51,7 +51,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>('search', { default: '' })
-defineModel<ICustomerPaymentHistoryFilter>('filter', { default: (): ICustomerPaymentHistoryFilter => ({}) })
+defineModel<ICustomerPaymentHistoryFilter>('filters', { default: (): ICustomerPaymentHistoryFilter => ({}) })
 
 function onSearch (): void {
   emits('search')

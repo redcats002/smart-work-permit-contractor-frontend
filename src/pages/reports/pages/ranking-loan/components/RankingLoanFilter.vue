@@ -36,7 +36,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>({ default: '' })
-const filter = defineModel<IRankLendingFilter>('filter', { default: (): IRankLendingFilter => ({ type: 'RECEIPT_AMOUNT' }) })
+const filter = defineModel<IRankLendingFilter>('filters', { default: (): IRankLendingFilter => ({ type: 'RECEIPT_AMOUNT' }) })
 
 function onSearch (): void {
   emits('search')

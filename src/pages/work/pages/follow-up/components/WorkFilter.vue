@@ -70,7 +70,7 @@ const filters = defineModel<IWorkAppraisalFilter>('filters', {
   default: (): IWorkAppraisalFilter => ({})
 })
 
-defineModel<ICustomerFilter>('filter', { default: (): ICustomerFilter => ({}) })
+defineModel<ICustomerFilter>('filters', { default: (): ICustomerFilter => ({}) })
 
 function onSearch (): void {
   emits('search')

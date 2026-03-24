@@ -33,6 +33,7 @@
 </template>
 
 <script setup lang="ts">
+import type { IBranchSummaryReportFilter } from '@/models/modules/report/branch-summary/Filter.model'
 import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
@@ -40,7 +41,6 @@ import Spacer from '@/components/flex/Spacer.vue'
 // import LabelField from '@/components/input/LabelField.vue'
 import SearchInput from '@/components/input/SearchInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
-import type { IBranchSummaryReportFilter } from '@/models/modules/report/branch-summary/Filter.model'
 
 interface IEmits {
   search: []
@@ -51,7 +51,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>({ default: '' })
-defineModel<IBranchSummaryReportFilter>('filter', { default: (): IBranchSummaryReportFilter => ({}) })
+defineModel<IBranchSummaryReportFilter>('filters', { default: (): IBranchSummaryReportFilter => ({}) })
 
 function onSearch (): void {
   emits('search')

@@ -4,7 +4,7 @@
     <BackButton />
     <BasePage>
       <RankingLoanFilter
-        v-model:filter="filters"
+        v-model:filters="filters"
         v-model:search="search"
         @clear="onClearFilters()"
         @search="fetch()">

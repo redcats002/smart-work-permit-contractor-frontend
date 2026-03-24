@@ -51,7 +51,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>({ default: '' })
-defineModel<IPercentInstallmentFilter>('filter', { default: (): IPercentInstallmentFilter => ({}) })
+defineModel<IPercentInstallmentFilter>('filters', { default: (): IPercentInstallmentFilter => ({}) })
 
 function onSearch (): void {
   emits('search')

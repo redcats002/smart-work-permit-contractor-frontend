@@ -51,7 +51,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>({ default: '' })
-defineModel<IEmployeeFilter>('filter', { default: (): IEmployeeFilter => ({}) })
+defineModel<IEmployeeFilter>('filters', { default: (): IEmployeeFilter => ({}) })
 
 function onSearch (): void {
   emits('search')
