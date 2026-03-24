@@ -13,7 +13,8 @@
     </ToggleSwitch>
     <span
       v-if="trueLabel || falseLabel"
-      class="duration-300 font-bold text-base">{{ checked ? trueLabel : falseLabel }}
+      :class="labelClass"
+      class="duration-300 text-base">{{ checked ? trueLabel : falseLabel }}
     </span>
   </div>
 </template>
@@ -24,6 +25,7 @@ import { Icon } from '@iconify/vue'
 interface IProps {
   trueLabel?: string
   falseLabel?: string
+  labelClass?: string
   handle?: boolean
   readonly?: boolean
 }
@@ -31,6 +33,7 @@ interface IProps {
 withDefaults(defineProps<IProps>(), {
   trueLabel: '',
   falseLabel: '',
+  labelClass: 'font-bold',
   handle: false,
   readonly: false
 })
