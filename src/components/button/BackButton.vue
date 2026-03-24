@@ -9,7 +9,7 @@
     <Icon
       class="size-5 text-[#62748E]"
       icon="lets-icons:back-light" />
-    <div class="text-sm font-bold">
+    <div class="text-sm font-bold hidden md:visible">
       ย้อนกลับ
     </div>
   </Button>
