@@ -3,6 +3,7 @@
     v-model="innerModel"
     :options="options"
     option-label="name"
+    placeholder="คำนำหน้า"
     complete-on-focus
     force-selection
     @complete="search()" />
