@@ -18,13 +18,13 @@
         <BaseContainer>
           <LabelField
             :invalid="!selectedCustomer"
-            label="หน้างานประเมิน"
+            label="พนักงานประเมิน"
             name="sellManId"
             required>
             <EmployeeSelection
               v-model="form.sellManId"
               name="sellManId"
-              placeholder="เลือกหน้างานประเมิน" />
+              placeholder="เลือกพนักงานประเมิน" />
           </LabelField>
         </BaseContainer>
         <BaseContainer>

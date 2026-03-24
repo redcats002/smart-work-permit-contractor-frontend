@@ -86,7 +86,7 @@ export type PreAssetFormValues = z.infer<typeof PreAssetSchema>
 
 const PreContractBaseSchema = z.object({
   customerId: schema.id('ลูกค้า'),
-  sellManId: schema.id('หน้างานประเมิน'),
+  sellManId: schema.id('พนักงานประเมิน'),
   preAssets: z.array(PreAssetSchema).min(1, 'กรุณาเพิ่มหลักทรัพย์อย่างน้อย 1 รายการ'),
   status: schema.enum(PreContractStatusEnum, 'สถานะหลักทรัพย์')
 })
