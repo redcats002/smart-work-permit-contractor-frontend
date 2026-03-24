@@ -10,6 +10,7 @@
       :lazy="lazy"
       :pt="theme"
       :row-class="rowClass"
+      :scroll-height="scrollHeight"
       :show-headers="showHeaders"
       v-bind="$attrs"
       :table-class="resolvedTableClass"
@@ -153,6 +154,7 @@ interface IProps {
   checkboxBodyClass?: string
   rowClass?: (data: T) => string
   footerBgClass?: string
+  scrollHeight?: string
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -170,7 +172,8 @@ const props = withDefaults(defineProps<IProps>(), {
   rowClass: undefined,
   footerBgClass: 'bg-(--p-gray-5)',
   itemsFooter: undefined,
-  showFooter: false
+  showFooter: false,
+  scrollHeight: undefined
 })
 
 const emits = defineEmits<{
@@ -270,7 +273,7 @@ const theme = ref<DataTablePassThroughOptions>({
     columnHeaderContent: 'datatable-header-content flex items-center gap-2',
     columnTitle: 'font-bold',
     bodyCell: `
-      py-[22px] px-2.5
+      py-[12px] px-2.5
       border-b border-surface-100
       text-sm
       whitespace-nowrap overflow-hidden text-ellipsis
