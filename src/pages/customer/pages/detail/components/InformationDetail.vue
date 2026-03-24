@@ -48,7 +48,7 @@ const visibleCitizenId = ref<boolean>(true)
 const items = computed((): IDisplayList[] => {
   return [
     { label: 'สถานะ', key: 'status', value: props.data.status, hideColon: true },
-    { label: 'เลขที่ลูกค้า', key: 'id', value: props.data.id },
+    { label: 'เลขที่ลูกค้า', key: 'idNo', value: props.data?.idNo },
     { label: 'เลขบัตรประชาชน', key: 'idCard', value: props.data.idCard },
     { label: 'ชื่อ', key: 'name', value: `${props.data.titleName} ${props.data.firstName} ${props.data.lastName}` },
     { label: 'วันเดือนปีเกิด', key: 'birthDate', value: dayjs.formatDate(props.data.birthDate) },
