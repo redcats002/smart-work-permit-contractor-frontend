@@ -1,7 +1,7 @@
 <template>
   <div
     v-bind="$attrs"
-    class="border border-dashed border-surface-300 rounded-md p-6 flex flex-col items-center gap-2"
+    class="rounded-md p-6 flex flex-col items-center gap-2"
     @click="hiddenIconButton ? fileInputRef?.click() : undefined">
     <Icon
       v-if="!isFroProfile"
@@ -29,8 +29,8 @@
     </p>
     <Button
       :class="[
-        `cursor-pointer flex items-center justify-center gap-2 w-full border border-primary
-        text-primary rounded-sm h-9 text-sm font-medium hover:bg-primary
+        `custom-upload-btn cursor-pointer flex items-center justify-center gap-2 w-full border border-primary
+        text-primary rounded-sm h-9 text-sm font-medium hover:opacity-75
         hover:text-white transition-colors`,
         buttonUploadClass
       ]"

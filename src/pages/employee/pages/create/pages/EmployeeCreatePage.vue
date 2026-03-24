@@ -183,5 +183,8 @@ function onAuto (): void {
 </script>
 
 <style scoped>
-
+:deep(.custom-upload-btn) {
+  background-color: var(--color-primary);
+  color: white
+}
 </style>
