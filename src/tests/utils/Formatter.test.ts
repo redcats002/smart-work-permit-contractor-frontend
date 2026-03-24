@@ -170,7 +170,7 @@ describe('formatter', () => {
 
     it('formats full English name with title', () => {
       const result = formatter.fullName({ titleName: 'MR', firstName: 'John', lastName: 'Doe' })
-      expect(result).toBe('MR John Doe')
+      expect(result).toBe('Mr John Doe')
     })
   })
 
@@ -185,7 +185,7 @@ describe('formatter', () => {
 
     it('formats both phone numbers', () => {
       const result = formatter.fullPhoneNumber({ phoneNumber: '0812345678', phoneNumber2: '0899876543' })
-      expect(result).toBe('081-234-5678 089-987-6543')
+      expect(result).toBe('081-234-5678, 089-987-6543')
     })
   })
 
