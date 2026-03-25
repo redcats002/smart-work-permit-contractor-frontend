@@ -8,7 +8,7 @@
         @click="emits('delete')">
         <Icon
           class="size-5 text-red-500 cursor-pointer hover:text-red-700 transition-colors"
-          icon="solar:trash-bin-minimalistic-bold" />
+          icon="material-symbols:delete-outline" />
       </Button>
     </template>
     <h3 class="text-base font-bold mb-5">
