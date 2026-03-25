@@ -97,7 +97,8 @@
           class="md:col-span-2"
           label="URL Google Map"
           placeholder="https://maps.app.goo.gl/"
-          hide-error />
+          hide-error
+          @update:model-value="onUpdate()" />
       </div>
     </div>
   </div>
@@ -188,6 +189,9 @@ function onUseSameCitizenAddress (isChecked: boolean): void {
 }
 function onUseSameCurrentAddress (isChecked: boolean): void {
   if (isChecked) emits('useSameCurrentAddress')
+}
+function onUpdate (): void { // for v-model update
+  model.value = { ...model.value }
 }
 </script>
 
