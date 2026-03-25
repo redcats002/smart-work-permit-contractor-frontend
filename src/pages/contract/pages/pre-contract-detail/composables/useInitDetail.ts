@@ -9,6 +9,8 @@ import type { TEvaluatorLevel } from '@/enums/modules/contract/EvaluatorLevel.en
 import PreContractProvider, { type IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
 import type { TAssetCategory } from '../../create/schema/pre-contract.schema'
 import type { InstallmentFormValues } from '../schema/installment.schema'
+import { readyForAppraisal as readyForLandAppraisal } from '../schema/land.schema'
+import { readyForAppraisal as readyForVehicleAppraisal } from '../schema/vehicle.schema'
 
 export interface IUseInitDetail {
   contractId: ComputedRef<string | string[]>
@@ -58,24 +60,14 @@ export function useInitDetail (): IUseInitDetail {
     return group
   })
 
+
   const filledAllRequired = computed((): boolean => {
     if (!contract.value) return false
-    for (const asset of contract.value.preAssets) {
-      if (isVehicleAsset(asset.type)) {
-        if (
-          !asset.vehicleForm?.province
-          || !asset.vehicleForm?.manufactureYear
-          || !asset.vehicleForm?.registrationYear
-          || !asset.vehicleForm?.vehicleIdentificationNo
-          || !asset.vehicleForm?.mileage
-        )
-          return false
-      }
-      if (isLandAsset(asset.type)) {
-        if (!asset.realEstateForm?.address || !asset.realEstateForm?.landNo) return false
-      }
-    }
-    return true
+    return contract.value?.preAssets.every((preAsset: IPreAssetList): boolean => {
+      if (readyForVehicleAppraisal(preAsset) && assetCategory.value !== 'LAND') return true
+      if (readyForLandAppraisal(preAsset) && assetCategory.value === 'LAND') return true
+      return false
+    }) ?? false
   })
 
   async function useFetch (): Promise<void> {

@@ -3,6 +3,7 @@
     <template v-if="isAssetValuation">
       <ModalAssetValuation
         v-model="requestAppraisal"
+        :disabled="disabled"
         @submit="emits('requestAppraisal')" />
     </template>
     <template v-else-if="isConfirmValuation">
@@ -46,6 +47,7 @@
       </ConfirmModal>
     </template>
     <CancelButton
+      :disabled="disabled"
       theme="primary"
       outlined
       @click="emits('cancel')" />
@@ -64,6 +66,7 @@ import ModalAssetValuation from './ModalAssetValuation.vue'
 import ModalConfirmAppraisal from './ModalConfirmAppraisal.vue'
 
 interface IProps {
+  disabled?: boolean
   status?: TPreContractStatus
   isMortgageFormVisible?: boolean
   existedGroup?: TEvaluatorLevel[]

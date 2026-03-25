@@ -57,7 +57,6 @@
           v-model:request-appraisal="formRequestAppraisal"
           v-model:request-reappraisal="formRequestReappraisal"
           :disabled="!filledAllRequired"
-          :evaluate-groups="contract.evaluateGroups"
           :existed-group="existedGroup"
           :is-mortgage-form-visible="isMortgageFormVisible"
           :status="contract?.status"
