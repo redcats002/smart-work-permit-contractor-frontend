@@ -31,6 +31,7 @@
         <BaseContainer>
           <InformationForm
             v-model="form"
+            v-model:form-key="formKey"
             :form="$form" />
         </BaseContainer>
         <BaseContainer>
