@@ -16,7 +16,8 @@ export const EmployeeSchema = z.object({
   phoneNumber: z.string().min(1, 'กรุณากรอกเบอร์โทรศัพท์'),
   email: z.email('รูปแบบอีเมลไม่ถูกต้อง').or(z.literal('')).optional(),
   dateOfBirth: schema.date('วันเกิด'),
-  image: z.instanceof(File).optional().nullable(),
+  // image: z.instanceof(File).optional().nullable(),
+  image: z.string().optional().nullable(),
   password: z
     .string()
     .min(8, { message: 'ต้องมีตัวอักษรภาษาอังกฤษ และตัวเลข รวมกันอย่างน้อย 8 ถึง 16 ตัว' })
@@ -103,41 +104,82 @@ export function useDev (): EmployeeFormValues {
 }
 
 export function useFormInitialValues (): EmployeeFormValues {
+  // return {
+  //   // Personal
+  //   idCard: '',
+  //   password: '',
+  //   image: null,
+  //   title: ETitleName[''],
+  //   firstName: '',
+  //   lastName: '',
+  //   phoneNumber: '',
+  //   dateOfBirth: '',
+  //   email: '',
+  //   role: '',
+  //   branchIds: [],
+  //   // Classification
+  //   status: EmployeeStatusEnum.INACTIVE,
+  //   // Citizen / Home address
+  //   mainAddress: {
+  //     address: '',
+  //     subDistrict: '',
+  //     district: '',
+  //     province: '',
+  //     postCode: '',
+  //     urlGoogleMap: '',
+  //     isSameCitizenAddress: false,
+  //     isSameCurrentAddress: false
+  //   },
+  //   // Current / Mailing address
+  //   currentAddress: {
+  //     address: '',
+  //     subDistrict: '',
+  //     district: '',
+  //     province: '',
+  //     postCode: '',
+  //     urlGoogleMap: '',
+  //     isSameCitizenAddress: false,
+  //     isSameCurrentAddress: false
+  //   }
+  // }
   return {
-    // Personal
-    idCard: '',
-    password: '',
-    image: null,
-    title: ETitleName[''],
-    firstName: '',
-    lastName: '',
-    phoneNumber: '',
-    dateOfBirth: '',
-    email: '',
-    role: '',
-    branchIds: [],
+    // Personal Information
+    idCard: '1700401323201',
+    password: 'Password1234', // ใส่ค่าไว้เพื่อให้ผ่าน Validation กฎ 8-16 ตัว + พิมพ์ใหญ่ + ตัวเลข
+    image: '',
+    title: ETitleName['MR'],
+    firstName: 'Chetsadakorn',
+    lastName: 'Mueangnam',
+    phoneNumber: '082-363-6036',
+    dateOfBirth: '2000-08-16T17:00:00.000Z',
+    email: 'chet@softnova.co',
+
     // Classification
+    role: EmployeeRoleEnum['SUPER_ADMIN'], // ใช้ Enum ให้ถูกต้อง
+    branchIds: ['mJafJK7f1njqwBCKorZ7h9D8kEL3Bo9K'],
     status: EmployeeStatusEnum.INACTIVE,
+
     // Citizen / Home address
     mainAddress: {
-      address: '',
-      subDistrict: '',
-      district: '',
-      province: '',
-      postCode: '',
+      address: '42',
+      subDistrict: 'หนองสองห้อง',
+      district: 'บ้านแพ้ว',
+      province: 'สมุทรสาคร',
+      postCode: '74120',
       urlGoogleMap: '',
       isSameCitizenAddress: false,
       isSameCurrentAddress: false
     },
+
     // Current / Mailing address
     currentAddress: {
-      address: '',
-      subDistrict: '',
-      district: '',
-      province: '',
-      postCode: '',
+      address: '42',
+      subDistrict: 'หนองสองห้อง',
+      district: 'บ้านแพ้ว',
+      province: 'สมุทรสาคร',
+      postCode: '74120',
       urlGoogleMap: '',
-      isSameCitizenAddress: false,
+      isSameCitizenAddress: true,
       isSameCurrentAddress: false
     }
   }
