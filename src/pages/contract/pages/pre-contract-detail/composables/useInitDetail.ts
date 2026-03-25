@@ -8,6 +8,7 @@ import { isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enu
 import type { TEvaluatorLevel } from '@/enums/modules/contract/EvaluatorLevel.enum'
 import PreContractProvider, { type IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
 import type { TAssetCategory } from '../../create/schema/pre-contract.schema'
+import type { InstallmentFormValues } from '../schema/installment.schema'
 
 export interface IUseInitDetail {
   contractId: ComputedRef<string | string[]>
@@ -24,7 +25,7 @@ export interface IUseInitDetail {
   onActiveAsset(index: number): void
   openModal(asset: IPreAssetList): void
   useFetch(): Promise<void>
-  fetch(): void
+  fetch(formMakeContract: Ref<InstallmentFormValues>): void
 }
 
 export function useInitDetail (): IUseInitDetail {
@@ -99,8 +100,15 @@ export function useInitDetail (): IUseInitDetail {
     modalVisible.value = true
   }
 
-  function fetch (): void {
-    handleLoading(useFetch)
+  function onInitFormMakeContract (formMakeContract: Ref<InstallmentFormValues>): void {
+    formMakeContract.value.preAssets = contract.value?.preAssets || []
+  }
+
+  function fetch (formMakeContract: Ref<InstallmentFormValues>): void {
+    handleLoading(async () => {
+      await useFetch()
+      onInitFormMakeContract(formMakeContract)
+    })
   }
 
   return {

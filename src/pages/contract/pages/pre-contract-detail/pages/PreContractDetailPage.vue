@@ -26,11 +26,9 @@
           v-model="formMortgage"
           :primary-customer="primaryCustomer"
           @confirmed="onConfirmMortgage()" />
-        <template v-else>
-          <PreContractInformation
-            v-if="contract"
-            :data="contract" />
-        </template>
+        <PreContractInformation
+          v-else
+          :data="contract" />
         <AssetSection
           v-if="contract?.preAssets.length"
           ref="assetSectionRef"
@@ -163,6 +161,6 @@ function onInstallmentConfirmed (): void {
 }
 
 onMounted((): void => {
-  fetch()
+  fetch(formMakeContract)
 })
 </script>

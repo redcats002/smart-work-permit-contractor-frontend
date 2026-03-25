@@ -11,7 +11,7 @@
     <BaseContainer>
       <DisplayList :items="contractItems">
         <template #[`value.status`]>
-          <ChipAssetStatus :value="data.status ?? undefined" />
+          <ChipAssetStatus :value="data?.status ?? undefined" />
         </template>
       </DisplayList>
     </BaseContainer>
@@ -31,19 +31,17 @@ import DisplayList from '@/components/display/DisplayList.vue'
 import ChipAssetStatus from '../../list/components/ChipPreContractStatus.vue'
 
 interface IProps {
-  data?: IPreContractById
+  data: IPreContractById | null
 }
 
-const props = withDefaults(defineProps<IProps>(), {
-  data: (): IPreContractById => ({} as IPreContractById)
-})
+const props = defineProps<IProps>()
 
 const { formatDate, formatAge } = useDayjs()
 
 
 const contractItems = computed((): IDisplayList[] => [
-  { key: 'status', label: 'สถานะ', value: props.data.status },
-  { key: 'idNo', label: 'เลขที่สัญญา', value: props.data.idNo || '-' },
+  { key: 'status', label: 'สถานะ', value: props.data?.status },
+  { key: 'idNo', label: 'เลขที่สัญญา', value: props.data?.idNo || '-' },
   { key: 'createdAt', label: 'วันที่', value: formatDate(props.data?.createdAt ?? undefined) },
   { key: 'sellMan', label: 'พนักงาน', value: formatter.fullName(props.data?.sellMan) }
 ])
