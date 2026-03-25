@@ -1,5 +1,5 @@
 <template>
-  <Button class="bg-white! btn flex items-center hover:bg-gray-100!">
+  <Button class="w-full md:w-fit bg-white! btn flex items-center hover:bg-gray-100!">
     <Icon
       class="size-5 text-font-gray"
       icon="mynaui:filter-solid" />
