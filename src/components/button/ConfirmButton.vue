@@ -1,7 +1,9 @@
 <template>
   <Button
     :class="buttonClass"
-    class="flex items-center rounded-sm! h-10.5 w-49.5 text-white transition-all duration-200"
+    class="flex items-center rounded-sm!
+    h-10.5 w-full md:w-49.5
+    text-white transition-all duration-200"
     type="submit">
     <div class="text-sm font-medium">
       {{ label }}

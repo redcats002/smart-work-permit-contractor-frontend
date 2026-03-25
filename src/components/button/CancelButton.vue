@@ -5,8 +5,9 @@
       'bg-white! text-[#333333]! border-[#E2E8F0]! flex items-center hover:bg-gray-100!': theme === 'secondary',
     }"
     :to="to"
-    class="w-49.5"
+    class="w-full md:w-49.5"
     type="button"
+    fluid
     unstyled
     @click="onClick($event)">
     <div class="text-sm font-medium">

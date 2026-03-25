@@ -69,13 +69,13 @@
             type="submit"
             @click="setSubmitMode('PENDING_EVALUATION')" />
           <Button
-            class="bg-white! text-[#333333]! border-gray-400! flex items-center hover:bg-gray-100! w-49.5"
+            class="bg-white! text-[#333333]! border-gray-400! flex items-center hover:bg-gray-100! w-full md:w-49.5"
             label="ร่าง"
             type="submit"
             outlined
             @click="setSubmitMode('DRAFT')" />
           <Button
-            class="w-49.5"
+            class="w-full md:w-49.5"
             label="ยกเลิก"
             outlined
             @click="onCancel()" />
