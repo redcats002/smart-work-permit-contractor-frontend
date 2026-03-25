@@ -1,4 +1,5 @@
 import { schema } from '@/utils/Schema'
+import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import { z } from 'zod'
 import { VehicleSchema as FormValues } from '../../create/schema/pre-contract.schema'
 
@@ -19,3 +20,8 @@ export const ModalVehicleSchema = z.object({
   vehicleIdentificationNo: z.string().min(1, 'กรุณากรอกหมายเลขตัวถัง'),
   mileage: z.number({ message: 'กรุณากรอกเลขไมล์' }).refine((val: number | null | undefined): boolean => val != null, 'กรุณากรอกเลขไมล์')
 })
+
+export function readyForAppraisal (preAsset?: IPreAssetList | null): boolean {
+  if (preAsset?.detail) return true
+  return false
+}

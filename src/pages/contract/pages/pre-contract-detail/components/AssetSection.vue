@@ -78,6 +78,8 @@ import BaseGalleria from '@/components/base/BaseGalleria.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
 import type { TAssetCategory } from '../../create/schema/pre-contract.schema'
 import type { PreAssetMakeAContractFormValues } from '../schema/installment.schema'
+import { readyForAppraisal as readyForLandAppraisal } from '../schema/land.schema'
+import { readyForAppraisal as readyForVehicleAppraisal } from '../schema/vehicle.schema'
 import AssetWarehouseForm from './AssetWarehouseForm.vue'
 
 interface IProps {
@@ -109,19 +111,8 @@ const preAssets = defineModel<PreAssetMakeAContractFormValues[]>('preAssets', { 
 
 const isLand = computed((): boolean => props.assetCategory === 'LAND')
 const btnText = computed((): string => {
-  if (props.activeAsset?.detail && !isLand.value) return 'แก้ไขรายละเอียดสินทรัพย์'
-  if (
-    props.activeAsset?.realEstateForm?.landNo
-    && props.activeAsset?.realEstateForm?.surveyNo
-    && props.activeAsset?.realEstateForm?.aerialPhotoMapNo
-    && props.activeAsset?.realEstateForm?.aerialPhotoSheet
-    && props.activeAsset?.realEstateForm?.subDistrict
-    && props.activeAsset?.realEstateForm?.district
-    && props.activeAsset?.realEstateForm?.province
-    && props.activeAsset?.realEstateForm?.postCode
-    && isLand.value
-  )
-    return 'แก้ไขรายละเอียดสินทรัพย์'
+  if (readyForVehicleAppraisal(props.activeAsset) && !isLand.value) return 'แก้ไขรายละเอียดสินทรัพย์'
+  if (readyForLandAppraisal(props.activeAsset) && isLand.value) return 'แก้ไขรายละเอียดสินทรัพย์'
   return `ใส่รายละเอียดสินทรัพย์`
 })
 const isShowEdit = computed((): boolean => {
