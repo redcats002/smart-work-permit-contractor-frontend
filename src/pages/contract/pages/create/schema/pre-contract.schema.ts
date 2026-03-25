@@ -10,26 +10,26 @@ function addRequired (ctx: z.RefinementCtx, path: (string | number)[], message: 
 }
 
 export const LandSchema = z.object({
-  landNo: z.string().optional().default(''),
-  surveyNo: z.string().optional().default(''),
-  aerialPhotoMapNo: z.string().optional().default(''),
-  aerialPhotoSheet: z.string().optional().default(''),
-  landAreaNgan: z.number().optional().default(0),
-  landAreaRai: z.number().optional().default(0),
-  landAreaSquareWah: z.number().optional().default(0),
   address: z.string().default(''),
   subDistrict: z.string().default(''),
   district: z.string().default(''),
   province: z.string().default(''),
   postCode: z.string().default(''),
-  urlGoogleMap: z.string().default('')
+  urlGoogleMap: z.string().default(''),
+  landNo: z.string().default(''),
+  surveyNo: z.string().default(''),
+  aerialPhotoMapNo: z.string().default(''),
+  aerialPhotoSheet: z.string().default(''),
+  landAreaRai: z.number().default(0),
+  landAreaNgan: z.number().default(0),
+  landAreaSquareWah: z.number().default(0)
 })
 export const VehicleSchema = z.object({
   brand: z.string().default(''),
   color: z.string().default(''),
   engineNumber: z.string().default(''),
   manufactureYear: z.string().nullable().default(null),
-  mileage: z.number().nullable().default(0),
+  mileage: z.number().nullable().default(null),
   model: z.string().default(''),
   plateNo: z.string().default(''),
   province: z.string().default(''),
@@ -40,7 +40,7 @@ export const VehicleSchema = z.object({
 const PreAssetBaseSchema = z.object({
   key: z.string().optional(),
   type: schema.enum(AssetTypeEnum, 'หมวดหมู่หลักทรัพย์'),
-  detail: z.string().min(1, 'กรุณากรอกรายละเอียดหลักทรัพย์'),
+  detail: z.string().default(''),
   realEstateForm: LandSchema.optional(),
   vehicleForm: VehicleSchema.optional(),
   images: z.array(z.object({
@@ -55,29 +55,28 @@ type IPreAssetBase = z.infer<typeof PreAssetBaseSchema>
 export const PreAssetSchema = PreAssetBaseSchema.superRefine((data: IPreAssetBase, ctx: z.RefinementCtx): void => {
   if (!data.type) return
   if (isVehicleAsset(data.type)) {
-    if (!data.vehicleForm?.brand) addRequired(ctx, ['vehicleForm', 'brand'], 'กรุณากรอกยี่ห้อ')
-    if (!data.vehicleForm?.model) addRequired(ctx, ['vehicleForm', 'model'], 'กรุณากรอกรุ่น')
-    if (!data.vehicleForm?.color) addRequired(ctx, ['vehicleForm', 'color'], 'กรุณากรอกสี')
-    if (!data.vehicleForm?.plateNo) addRequired(ctx, ['vehicleForm', 'plateNo'], 'กรุณากรอกเลขทะเบียนรถ')
-    if (!data.vehicleForm?.province) addRequired(ctx, ['vehicleForm', 'province'], 'กรุณาเลือกจังหวัด')
-    if (!data.vehicleForm?.manufactureYear) addRequired(ctx, ['vehicleForm', 'manufactureYear'], 'กรุณาเลือกปีที่ผลิต')
-    if (!data.vehicleForm?.registrationYear) addRequired(ctx, ['vehicleForm', 'registrationYear'], 'กรุณาเลือกปีที่จดทะเบียน')
-    if (!data.vehicleForm?.vehicleIdentificationNo) addRequired(ctx, ['vehicleForm', 'vehicleIdentificationNo'], 'กรุณากรอกหมายเลขตัวถัง')
-    if (!data.vehicleForm?.engineNumber) addRequired(ctx, ['vehicleForm', 'engineNumber'], 'กรุณากรอกหมายเลขเครื่อง')
-    if (data.vehicleForm?.mileage == null) addRequired(ctx, ['vehicleForm', 'mileage'], 'กรุณากรอกเลขไมล์')
-  } else if (isLandAsset(data.type)) {
-    if (!data?.detail) addRequired(ctx, ['detail'], 'กรุณากรอกรายละเอียด')
+    if (!data.vehicleForm) {
+      addRequired(ctx, ['vehicleForm'], 'กรุณากรอกข้อมูลยานพาหนะ')
+      return
+    }
+    if (!data.detail) addRequired(ctx, ['detail'], 'กรุณากรอกรายละเอียด')
+    if (!data.vehicleForm.brand) addRequired(ctx, ['vehicleForm', 'brand'], 'กรุณากรอกยี่ห้อ')
+    if (!data.vehicleForm.model) addRequired(ctx, ['vehicleForm', 'model'], 'กรุณากรอกรุ่น')
+    if (!data.vehicleForm.color) addRequired(ctx, ['vehicleForm', 'color'], 'กรุณากรอกสี')
+    if (!data.vehicleForm.plateNo) addRequired(ctx, ['vehicleForm', 'plateNo'], 'กรุณากรอกเลขทะเบียนรถ')
+    if (!data.vehicleForm.province) addRequired(ctx, ['vehicleForm', 'province'], 'กรุณาเลือกจังหวัด')
+    if (!data.vehicleForm.manufactureYear) addRequired(ctx, ['vehicleForm', 'manufactureYear'], 'กรุณาเลือกปีที่ผลิต')
+    if (!data.vehicleForm.registrationYear) addRequired(ctx, ['vehicleForm', 'registrationYear'], 'กรุณาเลือกปีที่จดทะเบียน')
+    if (!data.vehicleForm.vehicleIdentificationNo) addRequired(ctx, ['vehicleForm', 'vehicleIdentificationNo'], 'กรุณากรอกหมายเลขตัวถัง')
+    if (!data.vehicleForm.engineNumber) addRequired(ctx, ['vehicleForm', 'engineNumber'], 'กรุณากรอกหมายเลขเครื่อง')
+    if (data.vehicleForm.mileage === null) addRequired(ctx, ['vehicleForm', 'mileage'], 'กรุณากรอกเลขไมล์')
+  }
+  if (isLandAsset(data.type)) {
+    if (!data.detail) addRequired(ctx, ['detail'], 'กรุณากรอกรายละเอียด')
     if (!data.realEstateForm?.subDistrict) addRequired(ctx, ['realEstateForm', 'subDistrict'], 'กรุณาเลือกตำบล')
     if (!data.realEstateForm?.district) addRequired(ctx, ['realEstateForm', 'district'], 'กรุณาเลือกอำเภอ')
     if (!data.realEstateForm?.province) addRequired(ctx, ['realEstateForm', 'province'], 'กรุณาเลือกจังหวัด')
     if (!data.realEstateForm?.postCode) addRequired(ctx, ['realEstateForm', 'postCode'], 'กรุณากรอกรหัสไปรษณีย์')
-    if (!data.realEstateForm?.landNo) addRequired(ctx, ['realEstateForm', 'landNo'], 'กรุณากรอกเลขที่ดิน')
-    if (!data.realEstateForm?.surveyNo) addRequired(ctx, ['realEstateForm', 'surveyNo'], 'กรุณากรอกเลขที่สำรวจ')
-    if (!data.realEstateForm?.aerialPhotoMapNo) addRequired(ctx, ['realEstateForm', 'aerialPhotoMapNo'], 'กรุณากรอกเลขที่แผนที่ถ่ายทางอากาศ')
-    if (!data.realEstateForm?.aerialPhotoSheet) addRequired(ctx, ['realEstateForm', 'aerialPhotoSheet'], 'กรุณากรอกแผ่นถ่ายทางอากาศ')
-    if (!data.realEstateForm?.landAreaNgan) addRequired(ctx, ['realEstateForm', 'landAreaNgan'], 'กรุณากรอกเนื้อที่ (งาน)')
-    if (!data.realEstateForm?.landAreaRai) addRequired(ctx, ['realEstateForm', 'landAreaRai'], 'กรุณากรอกเนื้อที่ (ไร่)')
-    if (!data.realEstateForm?.landAreaSquareWah) addRequired(ctx, ['realEstateForm', 'landAreaSquareWah'], 'กรุณากรอกเนื้อที่ (ตารางวา)')
   }
 })
 
@@ -135,9 +134,9 @@ export function createPreAssetBase (): PreAssetFormValues {
       aerialPhotoSheet: '',
       landAreaNgan: 0,
       landAreaRai: 0,
-      landAreaSquareWah: 0,
       landNo: '',
-      surveyNo: ''
+      surveyNo: '',
+      landAreaSquareWah: 0
     },
     // Vehicle fields
     vehicleForm: {

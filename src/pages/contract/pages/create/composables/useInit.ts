@@ -76,6 +76,7 @@ export function useInit (): IUseInit {
       const res = await CustomerService.getCustomerFindOne(Number(id))
       selectedCustomer.value = res.data
     })
+    mount()
   }
 
   async function useSubmit (): Promise<void> {

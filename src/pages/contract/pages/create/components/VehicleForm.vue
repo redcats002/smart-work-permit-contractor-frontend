@@ -99,7 +99,7 @@
       hide-error
       required>
       <InputNumber
-        v-model:number="model.mileage"
+        v-model="model.mileage"
         :invalid="invalid"
         :name="`${namePrefix}.mileage`"
         :use-grouping="true"
@@ -119,7 +119,7 @@ import ProvinceSelection from '@/components/selection/modules/static/province/Pr
 import type { VehicleFormValues } from '../schema/pre-contract.schema'
 
 interface IProps {
-  form?: IFormState
+  form: IFormState
   namePrefix?: string
 }
 
@@ -129,7 +129,6 @@ interface IYearOption {
 }
 
 withDefaults(defineProps<IProps>(), {
-  form: undefined,
   namePrefix: ''
 })
 

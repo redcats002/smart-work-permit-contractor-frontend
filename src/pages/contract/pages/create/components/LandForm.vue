@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-5">
+  <div class="grid grid-cols-1 gap-5">
     <LabelField
       v-model="model.address"
       :form="form"
@@ -90,12 +90,11 @@ import LabelField from '@/components/input/LabelField.vue'
 import type { LandFormValues } from '../schema/pre-contract.schema'
 
 interface IProps {
-  form?: IFormState
+  form: IFormState
   namePrefix?: string
 }
 
 withDefaults(defineProps<IProps>(), {
-  form: undefined,
   namePrefix: ''
 })
 

@@ -47,21 +47,21 @@
           v-model="model.detail"
           :form="form"
           :name="`${namePrefix}.detail`"
+          :required="!!model.type"
           label="รายละเอียดหลักทรัพย์"
           placeholder="กรอกรายละเอียด"
-          hide-error
-          required />
+          hide-error />
       </div>
-      <VehicleForm
-        v-if="isVehicle"
-        v-model="model.vehicleForm!"
-        :form="form"
-        :name-prefix="`${namePrefix}.vehicleForm`" />
       <LandForm
         v-if="isLand"
         v-model="model.realEstateForm!"
         :form="form"
         :name-prefix="`${namePrefix}.realEstateForm`" />
+      <VehicleForm
+        v-if="isVehicle"
+        v-model="model.vehicleForm!"
+        :form="form"
+        :name-prefix="`${namePrefix}.vehicleForm`" />
     </div>
   </BaseContainer>
 </template>
@@ -81,7 +81,7 @@ import VehicleForm from './VehicleForm.vue'
 type TAssetCategory = 'VEHICLE' | 'LAND'
 
 interface IProps {
-  form?: IFormState
+  form: IFormState
   namePrefix?: string
   assetCategory?: TAssetCategory | null
 }
@@ -92,10 +92,10 @@ interface IEmits {
 }
 
 withDefaults(defineProps<IProps>(), {
-  form: undefined,
   namePrefix: '',
   assetCategory: null
 })
+
 
 const emits = defineEmits<IEmits>()
 

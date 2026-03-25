@@ -16,33 +16,26 @@
         class="flex flex-col gap-5 pb-10"
         @submit="onSubmit($event)">
         <BaseContainer>
-          <LabelField
-            v-slot="{invalid}"
+          <ModalEmployeeSelection
+            v-model="form.sellManId"
+            :form="$form"
             label="พนักงานประเมิน"
             name="sellManId"
-            required>
-            <EmployeeSelection
-              v-model="form.sellManId"
-              :invalid="invalid"
-              name="sellManId"
-              placeholder="เลือกพนักงานประเมิน" />
-          </LabelField>
+            placeholder="เลือกพนักงานประเมิน"
+            hide-error
+            required />
         </BaseContainer>
         <BaseContainer>
           <div class="flex flex-col gap-4">
-            <LabelField
-              v-slot="{invalid}"
+            <ModalCustomerSelection
+              v-model="form.customerId"
+              :form="$form"
               label="ลูกค้า"
               name="customerId"
-              tag="div"
-              required>
-              <CustomerSelection
-                v-model="form.customerId"
-                :invalid="invalid"
-                name="customerId"
-                placeholder="เลือกลูกค้า"
-                @update:model-value="onCustomerSelect($event)" />
-            </LabelField>
+              placeholder="เลือกลูกค้า"
+              hide-error
+              required
+              @update:model-value="onCustomerSelect($event)" />
             <CustomerCard
               v-if="selectedCustomer"
               :data="selectedCustomer" />
@@ -101,10 +94,9 @@ import BackButton from '@/components/button/BackButton.vue'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import DevButton from '@/components/button/DevButton.vue'
 import Spacer from '@/components/flex/Spacer.vue'
-import LabelField from '@/components/input/LabelField.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
-import CustomerSelection from '@/components/selection/modules/customer/CustomerSelection.vue'
-import EmployeeSelection from '@/components/selection/modules/employee/EmployeeSelection.vue'
+import ModalCustomerSelection from '@/components/selection/modules/customer/ModalCustomerSelection.vue'
+import ModalEmployeeSelection from '@/components/selection/modules/employee/ModalEmployeeSelection.vue'
 import AssetFormSection from '../components/AssetFormSection.vue'
 import CustomerCard from '../components/CustomerCard.vue'
 import { Icon } from '@iconify/vue'
