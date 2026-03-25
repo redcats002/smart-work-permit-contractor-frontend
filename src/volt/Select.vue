@@ -45,7 +45,7 @@ interface Props extends /* @vue-ignore */ SelectProps {}
 defineProps<Props>()
 
 const theme = ref<SelectPassThroughOptions>({
-	root: `inline-flex cursor-pointer relative select-none rounded-md p-fluid:flex
+	root: `group inline-flex cursor-pointer relative select-none rounded-md p-fluid:flex
         bg-surface-0 dark:bg-surface-950
         border border-surface-300 hover:border-surface-400 dark:border-surface-700 dark:hover:border-surface-600
         p-focus:border-primary
@@ -59,6 +59,8 @@ const theme = ref<SelectPassThroughOptions>({
         p-clearable:pe-7 p-empty:overflow-hidden p-empty:opacity-0 p-editable:cursor-default
         text-surface-700 dark:text-surface-0 bg-transparent border-none outline-none
         p-placeholder:text-surface-500 dark:p-placeholder:text-surface-400
+				group-p-invalid:p-placeholder:text-red-600! 
+        dark:group-p-invalid:p-placeholder:text-red-400!
         p-disabled:text-surface-500 dark:p-disabled:text-surface-400
         p-small:text-sm p-small:px-[0.625rem] p-small:py-[0.375rem]
         p-large:text-lg p-large:px-[0.875rem] p-large:py-[0.625rem]`,
