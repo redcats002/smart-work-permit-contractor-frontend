@@ -71,7 +71,7 @@ export function useDev (): BranchFormValues {
     postCode: '',
     subDistrict: '',
     branchTimes: [],
-    openAt: dayjs().toISOString(),
+    openAt: dayjs().toDate(),
     status: BranchStatusEnum.ACTIVE
   }
 }

@@ -37,7 +37,6 @@
         :form="form"
         label="วันที่เปิดสาขา"
         name="openAt"
-        hide-error
         required>
         <DatePickerInput
           v-model="model.openAt"
