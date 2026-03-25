@@ -1,8 +1,8 @@
 <template>
-  <AutoCompleteInput
+  <SelectInput
     v-model="innerModel"
-    :invalid="props.invalid"
-    :suggestions="suggestions"
+    :invalid="invalid"
+    :options="options"
     option-label="name"
     complete-on-focus
     force-selection
@@ -13,31 +13,31 @@
 import { onMounted, ref, watch } from 'vue'
 import type { TBaseModel, TBaseOption } from '@/models/Global.model'
 import { ProvinceItems, type TProvince } from '@/enums/modules/province/Province.enum'
-import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
+import SelectInput from '@/components/input/SelectInput.vue'
 
 interface IProps {
   invalid?: boolean
 }
 
-const props = defineProps<IProps>()
+defineProps<IProps>()
 const model = defineModel<TProvince | null>()
 const selectedName = defineModel<string | null>('selectedName', { default: null })
 
 const innerModel = ref<TBaseModel | null>(null)
 const allSuggestions = ref<TBaseModel[]>([])
-const suggestions = ref<TBaseModel[]>([])
+const options = ref<TBaseModel[]>([])
 
 function loadSuggestions (): void {
   allSuggestions.value = ProvinceItems.map((item: TBaseOption): TBaseModel => ({
     id: item.value!,
     name: item.label
   }))
-  suggestions.value = allSuggestions.value
+  options.value = allSuggestions.value
 }
 
 function search (query: string): void {
   const q = query.trim().toLowerCase()
-  suggestions.value = q
+  options.value = q
     ? allSuggestions.value.filter((i: TBaseModel): boolean => i.name.toLowerCase().includes(q))
     : allSuggestions.value
 }
