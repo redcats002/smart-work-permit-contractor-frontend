@@ -26,7 +26,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
-import { formatter } from '@/utils/Formatter'
 import type { IBranchList } from '@/models/response/branch/BranchRes.model'
 import type { IEmployeeById } from '@/models/response/employee/EmployeeRes.model'
 import { formatTitle } from '@/enums/modules/employee/EmployeeRole.enum'
@@ -35,6 +34,7 @@ import CitizenId from '@/components/display/CitizenId.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
 import ChipEmployeeStatus from '../../list/components/ChipEmployeeStatus.vue'
 import EmployeeDetailMenuAction from './EmployeeDetailMenuAction.vue'
+import { formatter } from '@/utils/Formatter'
 
 interface IProps {
   data: IEmployeeById

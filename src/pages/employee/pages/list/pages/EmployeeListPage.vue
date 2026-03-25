@@ -33,12 +33,12 @@
 import { onMounted } from 'vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
-import BackButton from '@/components/button/BackButton.vue'
 import CreateButton from '@/components/button/CreateButton.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import EmployeeFilter from '../components/EmployeeFilter.vue'
 import EmployeeTable from '../components/EmployeeTable.vue'
 import useList from '../composables/useList'
+import BackButton from '@/components/button/BackButton.vue'
 
 const {
   filters,

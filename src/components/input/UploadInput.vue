@@ -1,24 +1,46 @@
 <template>
   <div
-    class="border border-dashed border-surface-300 rounded-md p-6 flex flex-col items-center gap-2">
+    v-bind="$attrs"
+    class="rounded-md p-6 flex flex-col items-center gap-2"
+    @click="hiddenIconButton ? fileInputRef?.click() : undefined">
     <Icon
+      v-if="!isFroProfile"
       class="size-12 text-gray-800"
       icon="bxs:image-add" />
+    <img
+      v-if="previewUrls.length > 0"
+      :src="previewUrls[previewUrls.length - 1]"
+      class="w-24 h-24 object-cover rounded-md">
+
+    <img
+      v-else-if="profilePreview && typeof profilePreview === 'string'"
+      :src="profilePreview"
+      class="w-24 h-24 object-cover rounded-md">
+
+    <img
+      v-else
+      class="w-24 h-24 object-cover rounded-md"
+      src="/images/blank_avatar.png">
     <p class="text-sm text-surface-600 text-center">
-      อัปโหลดรูปภาพสินค้า
+      {{ label }}
     </p>
     <p class="text-xs text-surface-400 text-center">
-      ไฟล์สามารถอัปโหลดได้ JPG, JPEG และ PNG
+      {{ detail }}
     </p>
     <Button
-      class="cursor-pointer flex items-center justify-center gap-2 w-full border border-primary
-             text-primary rounded-sm h-9 text-sm font-medium hover:bg-primary
-             hover:text-white transition-colors"
+      :class="[
+        `custom-upload-btn cursor-pointer flex items-center justify-center gap-2 w-full border border-primary
+        text-primary rounded-sm h-9 text-sm font-medium hover:opacity-75
+        hover:text-white transition-colors`,
+        buttonUploadClass
+      ]"
       type="button"
       outlined
-      @click="fileInputRef?.click()">
-      <Icon icon="mdi:plus" />
-      อัปโหลดรูปภาพ
+      @click.stop="fileInputRef?.click()">
+      <Icon
+        v-if="!hiddenIconButton"
+        icon="mdi:plus" />
+      {{ buttonText }}
     </Button>
     <input
       ref="fileInputRef"
@@ -62,8 +84,37 @@
 import { useTemplateRef } from 'vue'
 import { Icon } from '@iconify/vue'
 
+defineOptions({
+  inheritAttrs: false
+})
+
+interface Props {
+  isFroProfile?: boolean
+  profilePreview?: any | null
+  label?: string
+  detail?: string
+  hiddenIconButton?: boolean
+  buttonText?: string
+  buttonUploadClass?: string
+}
+
+withDefaults(defineProps<Props>(), {
+  isFroProfile: false,
+  profilePreview: '',
+  label: 'อัปโหลดรูปภาพสินค้า',
+  detail: 'ไฟล์สามารถอัปโหลดได้ JPG, JPEG และ PNG',
+  hiddenIconButton: false,
+  buttonText: 'อัปโหลดรูปภาพ',
+  buttonUploadClass: ''
+})
+
 const files = defineModel<File[]>({ required: true })
 const previewUrls = defineModel<string[]>('previewUrls', { required: true })
+
+const emit = defineEmits<{
+  (e: 'upload', files: File[]): void
+  (e: 'remove', index: number): void
+}>()
 
 const fileInputRef = useTemplateRef<HTMLInputElement | null>('fileInputRef')
 
@@ -75,6 +126,7 @@ function onFileChange (event: Event): void {
     previewUrls.value.push(URL.createObjectURL(file))
   })
   input.value = ''
+  emit('upload', files.value)
 }
 
 function removeFile (index: number): void {
