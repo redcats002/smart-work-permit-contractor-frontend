@@ -4,6 +4,7 @@
     v-model="model"
     :class="$attrs.multiple ? 'min-h-9 shadow-none!' : 'h-9 shadow-none!'"
     :dropdown="dropdown"
+    :name="name"
     :placeholder="placeholder"
     dropdown-class="bg-white"
     fluid>
@@ -29,11 +30,20 @@
           @click="removeCallback($event)" />
       </span>
     </template>
-    <template #dropdownicon>
+    <template #dropdown>
+      <div
+        :class="dropdownClass"
+        :data-p="$attrs?.invalid ? 'invalid' : ''">
+        <Icon
+          class="size-5"
+          icon="mdi:chevron-down" />
+      </div>
+    </template>
+    <!-- <template #dropdownicon>
       <Icon
         class="size-5 text-[#A4B0C1]"
         icon="mdi:chevron-down" />
-    </template>
+    </template> -->
     <template
       v-if="$attrs?.multiple"
       #option="{ option }">
@@ -53,22 +63,37 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { TBaseModel } from '@/models/Global.model'
 import AutoComplete from '@/volt/AutoComplete.vue'
 import { Icon } from '@iconify/vue'
 import CheckboxInput from './CheckboxInput.vue'
 
 interface IProps {
+  name?: string
   dropdown?: boolean
   placeholder?: string
 }
 
 withDefaults(defineProps<IProps>(), {
+  name: undefined,
   dropdown: true,
   placeholder: ''
 })
 
 const model = defineModel<TBaseModel | TBaseModel[] | null>()
+
+const dropdownClass = computed((): string => {
+  return `cursor-pointer inline-flex items-center justify-center select-none overflow-hidden relative w-10 shrink-0 rounded-e-md
+        border border-s-0 border-surface-300 dark:border-surface-700
+        group-hover:border-surface-400 dark:group-hover:border-surface-600
+        group-focus-within:!border-primary
+				p-invalid:border-red-400 dark:p-invalid:border-red-300
+        p-invalid:placeholder:text-red-600 dark:p-invalid:placeholder:text-red-400
+        bg-white dark:bg-surface-800
+        text-surface-600 dark:text-surface-300
+        transition-colors duration-200`
+})
 
 function isSelected (option: TBaseModel): boolean {
   if (Array.isArray(model.value)) return model.value.some((item: TBaseModel): boolean => item?.id === option.id)
