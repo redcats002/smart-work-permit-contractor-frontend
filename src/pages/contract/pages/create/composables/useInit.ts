@@ -69,7 +69,10 @@ export function useInit (): IUseInit {
 
   async function onCustomerSelect (id?: TBaseParamsId | null): Promise<void> {
     await handleLoading(async (): Promise<void> => {
-      if (!id) return
+      if (!id) {
+        selectedCustomer.value = null
+        return
+      }
       const res = await CustomerService.getCustomerFindOne(Number(id))
       selectedCustomer.value = res.data
     })
