@@ -328,7 +328,7 @@ const formRef = useTemplateRef<any>('formRef')
 const resolver = zodResolver(FeatureSchema)
 const formData = ref<FeatureFormValues>(useFormInitialValues())
 
-function onFormSubmit (event: FormSubmitEvent): void {
+function onSubmit (event: FormSubmitEvent): void {
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return
@@ -348,7 +348,7 @@ Template:
   v-slot="$form"
   :initial-values="formData"
   :resolver="resolver"
-  @submit="onFormSubmit($event)">
+  @submit="onSubmit($event)">
   <LabelField :form="$form" name="name" label="ชื่อ" required>
     <!-- Default slot renders InputText automatically -->
   </LabelField>
@@ -363,7 +363,7 @@ Template:
 - Fields bound to `v-model="formData.fieldName"` — the `formData` ref is the live form state used by the resolver
 - `LabelField :form="$form" name="fieldName"` — reads `$form.fieldName.invalid` to show validation errors automatically
 - No `name` attribute is required on inner inputs (selection/date components) — the resolver validates via reactive `initial-values`
-- `@submit="onFormSubmit($event)"` — ESLint-compliant handler syntax (method call with `$event`, not bare reference)
+- `@submit="onSubmit($event)"` — ESLint-compliant handler syntax (method call with `$event`, not bare reference)
 
 ### Child Form Component Pattern
 
@@ -376,7 +376,7 @@ For forms inside child components submitted programmatically by a parent:
   v-slot="$form"
   :initial-values="formData"
   :resolver="resolver"
-  @submit="onFormSubmit($event)">
+  @submit="onSubmit($event)">
   <!-- fields with :form="$form" -->
 </Form>
 
@@ -384,7 +384,7 @@ For forms inside child components submitted programmatically by a parent:
 const formRef = useTemplateRef<any>('formRef')
 const emit = defineEmits<{ confirmed: [] }>()
 
-function onFormSubmit (event: FormSubmitEvent): void {
+function onSubmit (event: FormSubmitEvent): void {
   if (!event.valid) { scrollToFirstError(event.errors); return }
   model.value = event.values as FormValues
   emit('confirmed')
