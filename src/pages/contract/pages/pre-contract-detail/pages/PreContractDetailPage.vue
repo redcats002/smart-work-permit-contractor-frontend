@@ -26,11 +26,9 @@
           v-model="formMortgage"
           :primary-customer="primaryCustomer"
           @confirmed="onConfirmMortgage()" />
-        <template v-else>
-          <PreContractInformation
-            v-if="contract"
-            :data="contract" />
-        </template>
+        <PreContractInformation
+          v-else
+          :data="contract" />
         <AssetSection
           v-if="contract?.preAssets.length"
           ref="assetSectionRef"
@@ -59,7 +57,6 @@
           v-model:request-appraisal="formRequestAppraisal"
           v-model:request-reappraisal="formRequestReappraisal"
           :disabled="!filledAllRequired"
-          :evaluate-groups="contract.evaluateGroups"
           :existed-group="existedGroup"
           :is-mortgage-form-visible="isMortgageFormVisible"
           :status="contract?.status"
@@ -163,6 +160,6 @@ function onInstallmentConfirmed (): void {
 }
 
 onMounted((): void => {
-  fetch()
+  fetch(formMakeContract)
 })
 </script>

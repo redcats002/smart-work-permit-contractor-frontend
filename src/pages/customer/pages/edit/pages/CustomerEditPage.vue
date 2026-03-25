@@ -35,7 +35,6 @@
               @use-same-citizen-address="onUseSameCitizenAddress('CURRENT')" />
           </BaseContainer>
           <BaseContainer>
-            {{ workAddress }}
             <AddressForm
               v-model="workAddress"
               :form="$form"
@@ -140,13 +139,26 @@ const currentAddress = computed({
 
 const workAddress = computed<IAddressRequest>({
   get (): IAddressRequest {
-    // Always return a shallow copy for reactivity
-    const wa = form.value.workAddress
-    return { ...wa }
+    return {
+      address: form.value.workAddress.address,
+      subDistrict: form.value.workAddress.subDistrict,
+      district: form.value.workAddress.district,
+      province: form.value.workAddress.province,
+      postCode: form.value.workAddress.postCode,
+      isSameCitizenAddress: form.value.workAddress.isSameCitizenAddress,
+      isSameCurrentAddress: form.value.workAddress.isSameCurrentAddress,
+      urlGoogleMap: form.value.workAddress.urlGoogleMap
+    }
   },
   set (e: IAddressRequest): void {
-    // Always replace the object reference for reactivity
-    form.value.workAddress = { ...e }
+    form.value.workAddress.address = e.address
+    form.value.workAddress.subDistrict = e.subDistrict
+    form.value.workAddress.district = e.district
+    form.value.workAddress.province = e.province
+    form.value.workAddress.postCode = e.postCode
+    form.value.workAddress.isSameCitizenAddress = e.isSameCitizenAddress
+    form.value.workAddress.isSameCurrentAddress = e.isSameCurrentAddress
+    form.value.workAddress.urlGoogleMap = e.urlGoogleMap
   }
 })
 

@@ -1,4 +1,5 @@
 import { schema } from '@/utils/Schema'
+import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import { z } from 'zod'
 import { VehicleSchema as FormValues } from '../../create/schema/pre-contract.schema'
 
@@ -11,7 +12,7 @@ export type VehicleFormValues = z.infer<typeof VehicleFormSchema>
 
 export const ModalVehicleSchema = z.object({
   type: z.string().min(1, 'กรุณาเลือกประเภทหลักทรัพย์'),
-  detail: z.string().default(''),
+  detail: z.string().min(1, 'กรุณากรอกรายละเอียด').default(''),
   plateNo: z.string().min(1, 'กรุณากรอกเลขทะเบียนรถ'),
   province: z.string().min(1, 'กรุณาเลือกจังหวัด'),
   manufactureYear: z.string().refine((val: string | null | undefined): boolean => !!val, 'กรุณาเลือกปีที่ผลิต'),
@@ -19,3 +20,10 @@ export const ModalVehicleSchema = z.object({
   vehicleIdentificationNo: z.string().min(1, 'กรุณากรอกหมายเลขตัวถัง'),
   mileage: z.number({ message: 'กรุณากรอกเลขไมล์' }).refine((val: number | null | undefined): boolean => val != null, 'กรุณากรอกเลขไมล์')
 })
+
+export type ModalVehicleFormValues = z.infer<typeof ModalVehicleSchema>
+
+export function readyForAppraisal (preAsset?: IPreAssetList | null): boolean {
+  if (preAsset?.detail) return true
+  return false
+}

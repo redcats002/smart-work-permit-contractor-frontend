@@ -5,7 +5,7 @@
     option-label="name"
     complete-on-focus
     force-selection
-    @complete="search()" />
+    @complete="search($event.query)" />
 </template>
 
 <script setup lang="ts">
@@ -29,11 +29,13 @@ const innerModel = ref<TBaseModel | null>(null)
 const { pagination } = usePagination()
 
 const suggestions = ref<TBaseModel[]>([])
+const searchQuery = ref<string>('')
 
 async function useFetch (): Promise<void> {
   const response = await CustomerService.getCustomerPaginate({
     page: pagination.value.page,
     limit: 9999
+    // search: searchQuery.value || undefined
   })
 
   suggestions.value = (response.data ?? []).map((item: ICustomerList): TBaseModel => ({
@@ -46,10 +48,12 @@ function fetch (): void {
   handleLoading(useFetch)
 }
 
-function search (): void {
+function search (query: string): void {
+  searchQuery.value = query
   pagination.value.page = 1
   fetch()
 }
+
 
 function syncInnerFromId (): void {
   if (model.value == null) {

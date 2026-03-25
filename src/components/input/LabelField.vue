@@ -11,21 +11,38 @@
         class="text-sm font-bold">
         {{ label }}
       </span>
-
       <slot name="actions" />
     </div>
-
     <slot
       v-if="!hideField"
       :invalid="isInvalid">
-      <InputText
-        v-model="model"
-        :class="isInvalid ? 'border-red-400!' : ''"
-        :invalid="isInvalid"
-        :name="name"
-        class="h-9 shadow-none! rounded-sm! placeholder:text-[#A4B0C1]! placeholder:text-sm! placeholder:font-medium!"
-        fluid
-        v-bind="$attrs" />
+      <div class="relative">
+        <slot name="prependIcon">
+          <Icon
+            v-if="prependIcon"
+            :class="[isInvalid ? 'text-red-400!' : '']"
+            :icon="prependIcon"
+            class="absolute top-1/2 -mt-2 text-surface-400 leading-none inset-s-3 z-1" />
+        </slot>
+        <InputText
+          v-model="model"
+          :class="isInvalid ? 'border-red-400!' : ''"
+          :invalid="isInvalid"
+          :name="name"
+          class="h-9 shadow-none! rounded-sm! placeholder:text-gray-500! placeholder:text-md! placeholder:font-medium!"
+          fluid
+          v-bind="{
+            ...$attrs,
+            'pt:root': prependIcon ? 'ps-10' : 'pe-10'
+          }" />
+        <slot name="appendIcon">
+          <Icon
+            v-if="appendIcon"
+            :class="[isInvalid ? 'text-red-400!' : '']"
+            :icon="appendIcon"
+            class="absolute top-1/2 -mt-2 text-surface-400 leading-none inset-e-3 z-1" />
+        </slot>
+      </div>
     </slot>
     <p
       v-if="description"
@@ -46,6 +63,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { Icon } from '@iconify/vue'
 
 type TInputTag = 'label' | 'div'
 
@@ -68,6 +86,8 @@ interface IProps {
   name?: string
   form?: IFormState
   invalid?: boolean
+  appendIcon?: string
+  prependIcon?: string
 }
 
 const model = defineModel<string>({ default: '' })
@@ -82,7 +102,9 @@ const props = withDefaults(defineProps<IProps>(), {
   hideError: false,
   name: '',
   form: undefined,
-  invalid: undefined
+  invalid: undefined,
+  appendIcon: undefined,
+  prependIcon: undefined
 })
 
 function resolveFormField (form: IFormState, name: string): IFormState[string] | undefined {
@@ -114,7 +136,7 @@ const errorMessage = computed((): string => {
 <style scoped>
 .label-section>span.required::after {
   content: '*';
-  color: red;
+  color: var(--color-primary-500);
   margin-left: 4px;
 }
 

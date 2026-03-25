@@ -9,6 +9,7 @@ import usePagination, { type IUsePagination } from '@/composables/usePagination'
 interface IUseList extends IUsePagination {
   filters: Ref<IGetEmployeeList>
   items: Ref<IEmployeeList[]>
+  useFetch(): Promise<void>
   fetch(): void
   onClearFilters(): void
   onDelete(id: number): void
@@ -71,6 +72,7 @@ export default function useList (): IUseList {
     sortBy,
     sortOrder,
     search,
+    useFetch,
     fetch,
     onClearFilters,
     onDelete,

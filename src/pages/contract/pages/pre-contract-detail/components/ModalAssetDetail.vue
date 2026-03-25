@@ -10,7 +10,7 @@
           :key="formKey"
           ref="formRef"
           v-slot="$form"
-          :initial-values="activeFormValues"
+          :initial-values="activeForm"
           :resolver="activeResolver"
           @submit="onSubmit($event)">
           <div>
@@ -73,10 +73,10 @@ import FormAction from '@/components/button/FormAction.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import { createPreAssetBase, type PreAssetFormValues } from '../../create/schema/pre-contract.schema'
-import type { LandFormValues } from '../schema/land.schema'
+import type { ModalLandFormValues } from '../schema/land.schema'
 import { ModalLandSchema } from '../schema/land.schema'
-import type { VehicleFormValues } from '../schema/vehicle.schema'
+import { type PreAssetUpdateValues, useInitForm } from '../schema/pre-asset.schema'
+import type { ModalVehicleFormValues } from '../schema/vehicle.schema'
 import { ModalVehicleSchema } from '../schema/vehicle.schema'
 import ImageSection from './ImageSection.vue'
 import LandForm from './LandForm.vue'
@@ -95,7 +95,7 @@ const props = defineProps<IProps>()
 const emits = defineEmits<IEmits>()
 
 const visible = defineModel<boolean>({ default: false })
-const form = defineModel<PreAssetFormValues>('form', { required: true })
+const form = defineModel<PreAssetUpdateValues>('form', { required: true })
 
 const formRef = useTemplateRef<InstanceType<typeof Form> | any>('formRef')
 
@@ -110,46 +110,67 @@ const newFiles = ref<File[]>([])
 const previewUrls = ref<string[]>([])
 const removedImageIds = ref<string[]>([])
 
-const activeFormValues = computed((): Record<string, unknown> => ({
-  type: form.value.type,
-  detail: form.value.detail,
-  ...(isVehicle.value ? form.value.vehicleForm! : form.value.realEstateForm!)
-}))
 const activeResolver = computed((): ReturnType<typeof zodResolver> => isVehicle.value ? vehicleResolver : landResolver)
-
-
+const activeForm = computed((): ModalVehicleFormValues | ModalLandFormValues => {
+  if (isVehicle.value) {
+    return {
+      ...form.value.vehicleForm!,
+      detail: form.value.detail,
+      type: form.value.type
+    }
+  }
+  return {
+    ...form.value.realEstateForm!,
+    detail: form.value.detail,
+    type: form.value.type
+  }
+})
 const isVehicle = computed((): boolean => isVehicleAsset(props.asset.type))
 const isLand = computed((): boolean => isLandAsset(props.asset.type))
 
-function buildVehicleForm (): VehicleFormValues {
+
+function buildVehicleForm (): ModalVehicleFormValues {
   return {
     ...props.asset.vehicleForm,
     plateNo: props.asset.vehicleForm?.plateNo || '',
     province: props.asset.vehicleForm?.province || '',
-    manufactureYear: props.asset.vehicleForm?.manufactureYear,
-    registrationYear: props.asset.vehicleForm?.registrationYear,
+    manufactureYear: props.asset.vehicleForm?.manufactureYear || '',
+    registrationYear: props.asset.vehicleForm?.registrationYear || '',
     vehicleIdentificationNo: props.asset.vehicleForm?.vehicleIdentificationNo || '',
-    mileage: props.asset.vehicleForm?.mileage
+    mileage: props.asset.vehicleForm?.mileage || 0,
+    type: props.asset?.type,
+    detail: props.asset?.detail || ''
   }
 }
 
-function buildLandForm (): LandFormValues {
+function buildLandForm (): ModalLandFormValues {
   return {
     ...props.asset?.realEstateForm,
     subDistrict: props.asset.realEstateForm?.subDistrict || '',
     district: props.asset.realEstateForm?.district || '',
     province: props.asset.realEstateForm?.province || '',
     postCode: props.asset.realEstateForm?.postCode || '',
-    urlGoogleMap: props.asset.realEstateForm?.urlGoogleMap || '' }
+    urlGoogleMap: props.asset.realEstateForm?.urlGoogleMap || '',
+    type: props.asset?.type,
+    detail: props.asset?.detail || '',
+    landNo: props.asset.realEstateForm?.landNo || '',
+    surveyNo: props.asset.realEstateForm?.surveyNo || '',
+    aerialPhotoMapNo: props.asset.realEstateForm?.aerialPhotoMapNo || '',
+    aerialPhotoSheet: props.asset.realEstateForm?.aerialPhotoSheet || '',
+    landAreaRai: props.asset.realEstateForm?.landAreaRai || 0,
+    landAreaNgan: props.asset.realEstateForm?.landAreaNgan || 0,
+    landAreaSquareWah: props.asset.realEstateForm?.landAreaSquareWah || 0
+  }
 }
 
 function onClear (): void {
-  form.value = createPreAssetBase()
+  form.value = useInitForm()
   newFiles.value = []
   previewUrls.value = []
   removedImageIds.value = []
   existingImages.value = [...(props.asset.images || [])]
   toast.success('ล้างข้อมูลสำเร็จ')
+  mount()
 }
 
 async function useSave (): Promise<void> {
@@ -196,6 +217,10 @@ function useInit (): void {
     type: props.asset.type,
     images: props.asset.images || []
   }
+  mount()
+}
+
+function mount (): void {
   formKey.value++
 }
 
@@ -210,6 +235,6 @@ watch((): IPreAssetList => props.asset, (): void => {
   newFiles.value = []
   previewUrls.value = []
   removedImageIds.value = []
-  formKey.value++
+  mount()
 })
 </script>

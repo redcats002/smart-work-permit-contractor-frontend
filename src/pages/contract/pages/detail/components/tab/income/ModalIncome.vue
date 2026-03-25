@@ -13,7 +13,7 @@
         :initial-values="formData"
         :resolver="resolver"
         class="grid grid-cols-1 gap-4"
-        @submit="onFormSubmit($event, close)">
+        @submit="onSubmit($event, close)">
         <LabelField
           v-slot="{ invalid }"
           :form="$form"
@@ -291,7 +291,7 @@ watch(uploadFiles, (files: File[]): void => {
   handleLoading((): Promise<void> => uploadAndSetFile(files[files.length - 1]))
 }, { deep: true })
 
-function onFormSubmit (event: FormSubmitEvent, close: () => void): void {
+function onSubmit (event: FormSubmitEvent, close: () => void): void {
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return

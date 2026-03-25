@@ -40,7 +40,7 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = computed((): IColumn<IEvaluatorList>[] => [
-  { field: 'firstName', header: 'ชื่อผู้ตีราคา รอบที่ 1', value: (e: IEvaluatorList): string => formatter.fullName(e?.evaluator) },
+  { field: 'firstName', header: `ชื่อผู้ตีราคา รอบที่ ${props.count}`, value: (e: IEvaluatorList): string => formatter.fullName(e?.evaluator) },
   { field: 'evaluatorLevel', header: 'กลุ่มผู้ตีราคา', value: (): string => formatTitle(props.evaluatorLevel) },
   { field: 'loanAmount', header: 'ราคา', align: 'right', value: (e: IEvaluatorList): string => formatter.numberFormat2Decimal(e.loanAmount) }
 ])

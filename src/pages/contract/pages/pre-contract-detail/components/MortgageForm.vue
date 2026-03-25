@@ -5,7 +5,7 @@
     :initial-values="model"
     :resolver="resolver"
     class="grid grid-cols-1 md:grid-cols-2 gap-5"
-    @submit="onFormSubmit($event)">
+    @submit="onSubmit($event)">
     <BaseContainer>
       <div class="flex flex-col gap-4">
         <div class="flex flex-col gap-2">
@@ -234,7 +234,7 @@ function usePayload (): void {
   }
 }
 
-function onFormSubmit (event: FormSubmitEvent): void {
+function onSubmit (event: FormSubmitEvent): void {
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return
@@ -245,7 +245,7 @@ function onFormSubmit (event: FormSubmitEvent): void {
 
 async function submit (): Promise<void> {
   const event = await formRef.value?.validate()
-  onFormSubmit({ ...event, valid: Object.keys(event?.errors).length === 0 })
+  onSubmit({ ...event, valid: Object.keys(event?.errors).length === 0 })
 }
 
 defineExpose({ submit })

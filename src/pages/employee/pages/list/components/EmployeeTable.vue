@@ -4,11 +4,11 @@
     v-model:sort-by="sortBy"
     v-model:sort-order="sortOrder"
     :columns="columns"
-    :items="props.items"
+    :items="items"
     disable-auto-left-padding
     @update="emits('update')">
     <template #[`item.idNo`]="{ item }">
-      <LinkText :to="{ name: 'EmployeeDetailPage', params: { id: item.id }}">
+      <LinkText :to="{ name: 'EmployeeDetailPage', params: { id: item.id } }">
         {{ item?.idNo }}
       </LinkText>
     </template>
@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
 import { formatter } from '@/utils/Formatter'
 import type { IEmployeeList } from '@/models/response/employee/EmployeeRes.model'
 import type { IColumn } from '@/models/Table.model'
@@ -31,10 +31,13 @@ import type { IPagination } from '@/composables/usePagination'
 import ChipEmployeeStatus from './ChipEmployeeStatus.vue'
 
 interface IProps {
+  hideColumns?: (keyof IEmployeeList)[]
   items: IEmployeeList[]
 }
 
-const props = defineProps<IProps>()
+const props = withDefaults(defineProps<IProps>(), {
+  hideColumns: undefined
+})
 
 interface IEmits {
   delete: [id: number]
@@ -50,11 +53,14 @@ const pagination = defineModel<IPagination>('pagination', {
 const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
-const columns = ref<IColumn<IEmployeeList>[]>([
-  { field: 'idNo', header: 'เลขที่พนักงาน', sortable: true, align: 'left' },
-  { field: 'firstName', header: 'ชื่อพนักงาน', align: 'left', value: (e: IEmployeeList): string => formatter.fullName(e) },
-  { field: 'status', header: 'สถานะ', sortable: true, align: 'right' }
-])
+const columns = computed((): IColumn<IEmployeeList>[] => {
+  const base: IColumn<IEmployeeList>[] = [
+    { field: 'idNo', header: 'เลขที่พนักงาน', sortable: true, align: 'left' },
+    { field: 'firstName', header: 'ชื่อพนักงาน', align: 'left', value: (e: IEmployeeList): string => formatter.fullName(e) },
+    { field: 'status', header: 'สถานะ', sortable: true, align: 'right' }
+  ]
+  return base.filter((c: IColumn<IEmployeeList>): boolean => !props.hideColumns?.includes(c.field as keyof IEmployeeList))
+})
 </script>
 
 <style scoped></style>

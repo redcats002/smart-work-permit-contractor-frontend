@@ -8,7 +8,7 @@
         @click="emits('delete')">
         <Icon
           class="size-5 text-red-500 cursor-pointer hover:text-red-700 transition-colors"
-          icon="solar:trash-bin-minimalistic-bold" />
+          icon="material-symbols:delete-outline" />
       </Button>
     </template>
     <h3 class="text-base font-bold mb-5">
@@ -30,7 +30,8 @@
             :invalid="invalid"
             :name="`${namePrefix}.type`"
             placeholder="เลือกหมวดหมู่หลักทรัพย์"
-            show-clear />
+            show-clear
+            @update:model-value="emits('mount')" />
         </LabelField>
         <LabelField
           v-if="isVehicle"
@@ -46,21 +47,21 @@
           v-model="model.detail"
           :form="form"
           :name="`${namePrefix}.detail`"
+          :required="!!model.type"
           label="รายละเอียดหลักทรัพย์"
           placeholder="กรอกรายละเอียด"
-          hide-error
-          required />
+          hide-error />
       </div>
-      <VehicleForm
-        v-if="isVehicle"
-        v-model="model.vehicleForm!"
-        :form="form"
-        :name-prefix="`${namePrefix}.vehicleForm`" />
       <LandForm
         v-if="isLand"
         v-model="model.realEstateForm!"
         :form="form"
         :name-prefix="`${namePrefix}.realEstateForm`" />
+      <VehicleForm
+        v-if="isVehicle"
+        v-model="model.vehicleForm!"
+        :form="form"
+        :name-prefix="`${namePrefix}.vehicleForm`" />
     </div>
   </BaseContainer>
 </template>
@@ -80,20 +81,21 @@ import VehicleForm from './VehicleForm.vue'
 type TAssetCategory = 'VEHICLE' | 'LAND'
 
 interface IProps {
-  form?: IFormState
+  form: IFormState
   namePrefix?: string
   assetCategory?: TAssetCategory | null
 }
 
 interface IEmits {
   delete: []
+  mount: []
 }
 
 withDefaults(defineProps<IProps>(), {
-  form: undefined,
   namePrefix: '',
   assetCategory: null
 })
+
 
 const emits = defineEmits<IEmits>()
 

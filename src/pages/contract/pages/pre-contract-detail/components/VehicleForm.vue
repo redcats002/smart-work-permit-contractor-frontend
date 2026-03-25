@@ -23,7 +23,8 @@
       label="รายละเอียดหลักทรัพย์"
       name="detail"
       placeholder="กรอกรายละเอียด"
-      hide-error />
+      hide-error
+      required />
     <LabelField
       v-model="model.plateNo"
       :form="form"
@@ -115,7 +116,7 @@ import { type TAssetType, VehicleAssetTypeItems } from '@/enums/modules/asset/As
 import LabelField from '@/components/input/LabelField.vue'
 import SelectInput from '@/components/input/SelectInput.vue'
 import ProvinceSelection from '@/components/selection/modules/static/province/ProvinceSelection.vue'
-import type { VehicleFormValues } from '../schema/vehicle.schema'
+import type { ModalVehicleFormValues } from '../schema/vehicle.schema'
 
 interface IProps {
   form?: IFormState
@@ -131,7 +132,7 @@ withDefaults(defineProps<IProps>(), {
   form: undefined
 })
 
-const model = defineModel<VehicleFormValues>({ required: true })
+const model = defineModel<ModalVehicleFormValues>({ required: true })
 const type = defineModel<TAssetType>('type', { required: true })
 const detail = defineModel<string>('detail', { required: true })
 

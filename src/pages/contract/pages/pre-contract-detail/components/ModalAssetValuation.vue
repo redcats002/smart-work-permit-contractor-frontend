@@ -7,6 +7,7 @@
     <template
       #activator="{ open }">
       <ConfirmButton
+        :disabled="disabled"
         :label="requestNew ? 'ขอราคาประเมินใหม่' : 'ขอราคาประเมิน'"
         :outlined="requestNew"
         @click="open()" />
@@ -70,6 +71,7 @@ import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { AssetValuationSchema, useFormInitialValues } from '../schema/asset-valuation.schema'
 
 interface IProps {
+  disabled?: boolean
   requestNew?: boolean
   existedGroup?: TEvaluatorLevel[]
 }
@@ -78,6 +80,7 @@ interface IEmits {
 }
 
 withDefaults(defineProps<IProps>(), {
+  disabled: false,
   requestNew: false,
   existedGroup: (): TEvaluatorLevel[] => []
 })

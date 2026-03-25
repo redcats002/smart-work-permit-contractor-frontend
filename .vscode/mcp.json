@@ -1,8 +1,14 @@
 {
-    "servers": {
-        "primevue": {
-            "command": "npx",
-            "args": ["-y", "@primevue/mcp"]
-        }
-    }
+	"servers": {
+		"primevue": {
+			"command": "npx",
+			"args": ["-y", "@primevue/mcp"],
+			"type": "stdio"
+		},
+		"my-mcp-server-62c1a902": {
+			"url": "http://127.0.0.1:3845/mcp",
+			"type": "http"
+		}
+	},
+	"inputs": []
 }

@@ -1,14 +1,17 @@
 import { computed, type ComputedRef, ref, type Ref } from 'vue'
 import { accessTokenStorage } from '@/utils/Storage'
 import type { IAuthBranchList } from '@/models/response/auth/private/AuthRes.private.model'
-import { defineStore } from 'pinia'
 import type { TEmployeeRole } from '@/enums/modules/employee/EmployeeRole.enum'
+import type { TTitleName } from '@/enums/TitleName.enum'
+import { defineStore } from 'pinia'
 
 export interface IUser {
   id: number | null
+  title?: TTitleName
   firstName: string
   lastName: string
   email: string
+  image?: string
   role?: TEmployeeRole
 }
 
@@ -38,7 +41,9 @@ export const useAuthStore = defineStore(
       firstName: '',
       lastName: '',
       email: '',
-      role: undefined
+      image: undefined,
+      role: undefined,
+      title: undefined
     })
 
     const userToken = ref<IToken>({

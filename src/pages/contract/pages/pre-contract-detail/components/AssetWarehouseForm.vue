@@ -5,7 +5,7 @@
     :initial-values="preAsset"
     :resolver="resolver"
     class="grid grid-cols-1 gap-4"
-    @submit="onFormSubmit($event)">
+    @submit="onSubmit($event)">
     <LabelField
       :form="$form"
       label="เอกสารหลักทรัพย์"
@@ -55,7 +55,7 @@ const formRef = useTemplateRef<any>('formRef')
 const uploadFiles = ref<File[]>([])
 const previewUrls = ref<string[]>([])
 
-function onFormSubmit (event: FormSubmitEvent): void {
+function onSubmit (event: FormSubmitEvent): void {
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return

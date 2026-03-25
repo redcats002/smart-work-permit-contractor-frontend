@@ -1,9 +1,8 @@
 <template>
-  <AutoCompleteInput
+  <SelectInput
     v-model="innerModel"
-    :invalid="props.invalid"
-    :suggestions="suggestions"
-    option-label="name"
+    :invalid="invalid"
+    :options="options"
     complete-on-focus
     force-selection
     @complete="search($event.query)" />
@@ -11,34 +10,31 @@
 
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
-import type { TBaseModel, TBaseOption } from '@/models/Global.model'
+import type { TBaseOption } from '@/models/Global.model'
 import { ProvinceItems, type TProvince } from '@/enums/modules/province/Province.enum'
-import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
+import SelectInput from '@/components/input/SelectInput.vue'
 
 interface IProps {
   invalid?: boolean
 }
 
-const props = defineProps<IProps>()
+defineProps<IProps>()
 const model = defineModel<TProvince | null>()
 const selectedName = defineModel<string | null>('selectedName', { default: null })
 
-const innerModel = ref<TBaseModel | null>(null)
-const allSuggestions = ref<TBaseModel[]>([])
-const suggestions = ref<TBaseModel[]>([])
+const innerModel = ref<string | null>(null)
+const allSuggestions = ref<string[]>([])
+const options = ref<string[]>([])
 
 function loadSuggestions (): void {
-  allSuggestions.value = ProvinceItems.map((item: TBaseOption): TBaseModel => ({
-    id: item.value!,
-    name: item.label
-  }))
-  suggestions.value = allSuggestions.value
+  allSuggestions.value = ProvinceItems.map((item: TBaseOption): string => item.label)
+  options.value = allSuggestions.value
 }
 
 function search (query: string): void {
   const q = query.trim().toLowerCase()
-  suggestions.value = q
-    ? allSuggestions.value.filter((i: TBaseModel): boolean => i.name.toLowerCase().includes(q))
+  options.value = q
+    ? allSuggestions.value.filter((i: string): boolean => i.toLowerCase().includes(q))
     : allSuggestions.value
 }
 
@@ -48,13 +44,13 @@ function syncInnerFromValue (): void {
     selectedName.value = null
     return
   }
-  innerModel.value = allSuggestions.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
-  selectedName.value = innerModel.value?.name ?? null
+  innerModel.value = allSuggestions.value.find((i: string): boolean => i === model.value) ?? null
+  selectedName.value = innerModel.value ?? null
 }
 
-watch(innerModel, (val: TBaseModel | null): void => {
-  model.value = (val?.id as TProvince) ?? null
-  selectedName.value = val?.name ?? null
+watch(innerModel, (val: string | null): void => {
+  model.value = (val as TProvince) ?? null
+  selectedName.value = val ?? null
 })
 
 watch(model, (): void => {

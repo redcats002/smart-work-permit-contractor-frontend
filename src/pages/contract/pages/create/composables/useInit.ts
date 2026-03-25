@@ -29,6 +29,7 @@ export interface IUseInit {
   selectedCustomer: Ref<ICustomerById | null>
   assetCategory: ComputedRef<TAssetCategory>
   canAddAsset: ComputedRef<boolean>
+  mount (): void
   resolver: ReturnType<typeof zodResolver>
   onCustomerSelect: (id?: TBaseParamsId | null) => Promise<void>
   onSubmit: (event: FormSubmitEvent) => void
@@ -68,16 +69,24 @@ export function useInit (): IUseInit {
 
   async function onCustomerSelect (id?: TBaseParamsId | null): Promise<void> {
     await handleLoading(async (): Promise<void> => {
-      if (!id) return
+      if (!id) {
+        selectedCustomer.value = null
+        return
+      }
       const res = await CustomerService.getCustomerFindOne(Number(id))
       selectedCustomer.value = res.data
     })
+    mount()
   }
 
   async function useSubmit (): Promise<void> {
-    await ContractService.createContract(usePayload({ ...form.value, status: submitMode.value }, selectedCustomer.value!))
+    const response = await ContractService.createContract(usePayload({ ...form.value, status: submitMode.value }, selectedCustomer.value!))
     toast.success('ดำเนินการสำเร็จ')
-    router.push({ name: 'ContractListPage' })
+    if (submitMode.value === 'DRAFT') {
+      router.push({ name: 'PreContractEditPage', params: { id: response?.id } })
+      return
+    }
+    router.push({ name: 'PreContractDetailPage', params: { id: response?.id } })
   }
 
   function onSubmit (event: FormSubmitEvent): void {
@@ -92,11 +101,13 @@ export function useInit (): IUseInit {
   function onAddAsset (): void {
     if (!canAddAsset.value) return
     form.value.preAssets.push(createPreAssetBase())
+    formKey.value++
   }
 
   function onRemoveAsset (index: number): void {
     if (form.value.preAssets.length <= 1) return
     form.value.preAssets.splice(index, 1)
+    formKey.value++
   }
 
   function onCancel (): void {
@@ -119,6 +130,10 @@ export function useInit (): IUseInit {
     formKey.value++
   }
 
+  function mount (): void {
+    formKey.value++
+  }
+
   return {
     formKey,
     form,
@@ -134,6 +149,7 @@ export function useInit (): IUseInit {
     onCancel,
     setSubmitMode,
     onAuto,
-    onInitSellMan
+    onInitSellMan,
+    mount
   }
 }

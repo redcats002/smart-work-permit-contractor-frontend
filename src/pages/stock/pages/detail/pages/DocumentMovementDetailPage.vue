@@ -15,7 +15,7 @@
         :initial-values="form"
         :resolver="resolver"
         class="flex flex-col gap-2.5"
-        @submit="onFormSubmit($event)">
+        @submit="onSubmit($event)">
         <div class="flex justify-between items-center">
           <p class="text-center text-gray font-bold">
             เอกสารที่ต้องการย้าย
@@ -53,14 +53,14 @@ import useDetail from '../composables/useDetail'
 import { DocumentReceiveSchema } from '../schema/document-receive.schema'
 
 const resolver = zodResolver(DocumentReceiveSchema)
-const { data, form, isSuccess, fetch, onCancel, onDelete, onEdit, onSubmit } = useDetail()
+const { data, form, isSuccess, fetch, onCancel, onDelete, onEdit, onSubmit: submit } = useDetail()
 
-function onFormSubmit (event: FormSubmitEvent): void {
+function onSubmit (event: FormSubmitEvent): void {
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return
   }
-  onSubmit()
+  submit()
 }
 
 onMounted((): void => {
