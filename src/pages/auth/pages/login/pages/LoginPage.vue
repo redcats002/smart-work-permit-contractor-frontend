@@ -71,7 +71,7 @@ const authState = ref<TAuthState>('LOGIN')
 const branches = ref<IAuthBranchList[]>([])
 
 // async function usePreLogin (): Promise<void> {
-//   const mock = true // TODO: remove this after API ready
+//   const mock = true // !DEPRECATED: security issue
 //   if (mock) {
 //     toast.warn('pre-login mock')
 //     if (form.value.email === 'systemuser@email.com') return setAuthState('LOGIN')
