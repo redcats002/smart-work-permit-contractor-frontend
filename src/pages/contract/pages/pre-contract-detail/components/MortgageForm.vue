@@ -157,6 +157,7 @@
 import { ref, useTemplateRef } from 'vue'
 import { formatter } from '@/utils/Formatter'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
+import type { IFormType } from '@/models/Form.model'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import DatePickerInput from '@/components/input/DatePickerInput.vue'
@@ -190,7 +191,7 @@ const emit = defineEmits<IEmits>()
 
 const model = defineModel<MortgageFormValues>({ required: true })
 
-const formRef = useTemplateRef<InstanceType<typeof Form> | any>('formRef')
+const formRef = useTemplateRef<IFormType>('formRef')
 const resolver = zodResolver(MortgageSchema)
 const localCustomers = ref<ISelectItem[]>([])
 const localGuarantors = ref<ISelectItem[]>([])
@@ -245,7 +246,7 @@ function onSubmit (event: FormSubmitEvent): void {
 
 async function submit (): Promise<void> {
   const event = await formRef.value?.validate()
-  onSubmit({ ...event, valid: Object.keys(event?.errors).length === 0 })
+  onSubmit({ ...event, valid: Object.keys((event?.errors || [])).length === 0 } as FormSubmitEvent)
 }
 
 defineExpose({ submit })

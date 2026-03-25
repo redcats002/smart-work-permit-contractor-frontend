@@ -8,8 +8,8 @@ import { isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enu
 import type { TEvaluatorLevel } from '@/enums/modules/contract/EvaluatorLevel.enum'
 import PreContractProvider, { type IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
 import type { TAssetCategory } from '../../create/schema/pre-contract.schema'
-import type { InstallmentFormValues } from '../schema/installment.schema'
 import { readyForAppraisal as readyForLandAppraisal } from '../schema/land.schema'
+import type { MakeContractFormValues, PreAssetWarehouseFormValues } from '../schema/make-contract.schema'
 import { readyForAppraisal as readyForVehicleAppraisal } from '../schema/vehicle.schema'
 
 export interface IUseInitDetail {
@@ -27,7 +27,7 @@ export interface IUseInitDetail {
   onActiveAsset(index: number): void
   openModal(asset: IPreAssetList): void
   useFetch(): Promise<void>
-  fetch(formMakeContract: Ref<InstallmentFormValues>): void
+  fetch(formMakeContract: Ref<MakeContractFormValues>, mount: () => void): void
 }
 
 export function useInitDetail (): IUseInitDetail {
@@ -92,14 +92,19 @@ export function useInitDetail (): IUseInitDetail {
     modalVisible.value = true
   }
 
-  function onInitFormMakeContract (formMakeContract: Ref<InstallmentFormValues>): void {
-    formMakeContract.value.preAssets = contract.value?.preAssets || []
+  function onInitFormMakeContract (formMakeContract: Ref<MakeContractFormValues>): void {
+    formMakeContract.value.preAssets = (contract.value?.preAssets || []).map((e: IPreAssetList): PreAssetWarehouseFormValues => ({
+      id: e.id,
+      locationId: e.location?.id,
+      files: e?.files
+    }))
   }
 
-  function fetch (formMakeContract: Ref<InstallmentFormValues>): void {
+  function fetch (formMakeContract: Ref<MakeContractFormValues>, mount: () => void): void {
     handleLoading(async () => {
       await useFetch()
       onInitFormMakeContract(formMakeContract)
+      mount()
     })
   }
 

@@ -78,6 +78,7 @@ import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
+import type { IFormType } from '@/models/Form.model'
 import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import type { TBaseParamsId } from '@/models/response/Response.model'
 import { isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
@@ -110,7 +111,7 @@ const emits = defineEmits<IEmits>()
 const visible = defineModel<boolean>({ default: false })
 const form = defineModel<PreAssetUpdateValues>('form', { required: true })
 
-const formRef = useTemplateRef<InstanceType<typeof Form> | any>('formRef')
+const formRef = useTemplateRef<IFormType>('formRef')
 
 const vehicleResolver = zodResolver(ModalVehicleSchema)
 const landResolver = zodResolver(ModalLandSchema)
