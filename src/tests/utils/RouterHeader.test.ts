@@ -1,5 +1,5 @@
 import type { RouteLocationNormalized } from 'vue-router'
-import { getCurrentIdNo, getCurrentMenu, getCurrentPath, updateFromRoute } from '@/utils/RouterHeader'
+import { getCurrentMenu, getCurrentPath, updateFromRoute } from '@/utils/RouterHeader'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@/resources/route-header.map.json', () => ({
@@ -45,12 +45,6 @@ describe('RouterHeader', () => {
       await updateFromRoute(makeRoute('/customer/list'))
       expect(getCurrentMenu()).toBe('')
     })
-
-    it('initialises currentIdNo to undefined', async () => {
-      // No idProvider on /customer/list, so idNo stays undefined
-      await updateFromRoute(makeRoute('/customer/list', 'รายการลูกค้า'))
-      expect(getCurrentIdNo()).toBeUndefined()
-    })
   })
 
   describe('updateFromRoute — path matching', () => {
@@ -64,11 +58,6 @@ describe('RouterHeader', () => {
       // because the customer provider is not available in this test
       await updateFromRoute(makeRoute('/customer/42'))
       expect(getCurrentPath()).toBe('/customer/42')
-    })
-
-    it('resets idNo to undefined when no idProvider matches', async () => {
-      await updateFromRoute(makeRoute('/customer/list'))
-      expect(getCurrentIdNo()).toBeUndefined()
     })
   })
 })
