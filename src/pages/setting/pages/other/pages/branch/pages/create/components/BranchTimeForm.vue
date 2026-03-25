@@ -18,6 +18,7 @@
           class="w-max" />
       </LabelField>
       <LabelField
+        v-slot="{ invalid }"
         :form="form"
         :label="i===0 ? `เวลาทำการ` :undefined"
         :name="`branchTimes.${i}.openTime`"
@@ -27,7 +28,9 @@
         <TimePickerInput
           v-model:end="model.branchTimes[i].closeTime"
           v-model:start="model.branchTimes[i].openTime"
+          :invalid="invalid"
           :name="`branchTimes.${i}.openTime`"
+          class="relative"
           range />
       </LabelField>
       <Icon
