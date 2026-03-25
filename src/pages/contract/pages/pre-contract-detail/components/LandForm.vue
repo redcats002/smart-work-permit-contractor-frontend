@@ -117,6 +117,13 @@
           @select="onAddressSelect($event)" />
       </LabelField>
     </div>
+    <LabelField
+      v-model="model.urlGoogleMap"
+      :form="form"
+      label="URL Google Map"
+      name="urlGoogleMap"
+      placeholder="กรอก URL Google Map"
+      hide-error />
     <Divider />
     <span class="text-sm font-bold text-surface-600">ระวางรูปถ่ายทางอากาศ</span>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -149,7 +156,7 @@
         hide-error
         required>
         <InputNumber
-          v-model:number="model.landAreaRai"
+          v-model="model.landAreaRai"
           :invalid="invalid"
           class="h-9! shadow-none!"
           input-id="landAreaRai"
@@ -166,7 +173,7 @@
         hide-error
         required>
         <InputNumber
-          v-model:number="model.landAreaNgan"
+          v-model="model.landAreaNgan"
           :invalid="invalid"
           class="h-9! shadow-none!"
           input-id="landAreaNgan"
@@ -183,7 +190,7 @@
         hide-error
         required>
         <InputNumber
-          v-model:number="model.landAreaSquareWah"
+          v-model="model.landAreaSquareWah"
           :invalid="invalid"
           class="h-9! shadow-none!"
           input-id="landAreaSquareWah"
@@ -201,7 +208,7 @@ import { LandAssetTypeItems, type TAssetType } from '@/enums/modules/asset/Asset
 import AddressFieldInput, { type IAddressData } from '@/components/input/AddressFieldInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import SelectInput from '@/components/input/SelectInput.vue'
-import type { LandFormValues } from '../schema/land.schema'
+import type { ModalLandFormValues } from '../schema/land.schema'
 
 interface IProps {
   form?: IFormState
@@ -211,7 +218,7 @@ withDefaults(defineProps<IProps>(), {
   form: undefined
 })
 
-const model = defineModel<LandFormValues>({ required: true })
+const model = defineModel<ModalLandFormValues>({ required: true })
 const type = defineModel<TAssetType>('type', { required: true })
 const detail = defineModel<string>('detail', { required: true })
 
