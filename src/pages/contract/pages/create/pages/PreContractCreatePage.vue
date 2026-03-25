@@ -17,12 +17,13 @@
         @submit="onSubmit($event)">
         <BaseContainer>
           <LabelField
-            :invalid="!form.sellManId"
+            v-slot="{invalid}"
             label="พนักงานประเมิน"
             name="sellManId"
             required>
             <EmployeeSelection
               v-model="form.sellManId"
+              :invalid="invalid"
               name="sellManId"
               placeholder="เลือกพนักงานประเมิน" />
           </LabelField>
@@ -30,13 +31,14 @@
         <BaseContainer>
           <div class="flex flex-col gap-4">
             <LabelField
-              :invalid="!selectedCustomer"
+              v-slot="{invalid}"
               label="ลูกค้า"
               name="customerId"
               tag="div"
               required>
               <CustomerSelection
                 v-model="form.customerId"
+                :invalid="invalid"
                 name="customerId"
                 placeholder="เลือกลูกค้า"
                 @update:model-value="onCustomerSelect($event)" />

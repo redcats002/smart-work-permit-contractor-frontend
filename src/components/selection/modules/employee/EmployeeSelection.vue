@@ -35,8 +35,8 @@ const suggestions = ref<TBaseModel[]>([])
 async function useFetch (): Promise<void> {
   const response = await EmployeeService.getEmployeePaginate({
     page: pagination.value.page,
-    limit: 9999,
-    search: searchQuery.value || undefined
+    limit: 9999
+    // search: searchQuery.value || undefined
   })
 
   suggestions.value = (response.data ?? []).map((item: IEmployeeList): TBaseModel => ({
