@@ -33,7 +33,9 @@
               v-model:form-key="formKey"
               :form="$form" />
           </BaseContainer>
-          <FormAction @cancel="onCancel()" />
+          <FormAction
+            :confirm-disabled="isDisabled"
+            @cancel="onCancel()" />
         </Form>
       </div>
     </BasePage>
@@ -64,6 +66,7 @@ import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { usePayload } from '../composables/usePayload'
 import { type BranchFormValues, BranchSchema, useDev, useFormInitialValues } from '../schema/branch.schema'
+import type { EDays } from '@/enums/Date.enum'
 
 const router = useRouter()
 
@@ -73,6 +76,11 @@ const formKey = ref<number>(0)
 const form = ref<BranchFormValues>(useFormInitialValues())
 const resolver = zodResolver(BranchSchema)
 
+interface IBranchItem {
+  day: EDays[]
+  openTime: string
+  closeTime: string
+}
 
 const mainAddress = computed({
   get (): IAddressRequest {
@@ -93,6 +101,24 @@ const mainAddress = computed({
   }
 })
 
+const isDisabled = computed((): boolean => {
+  const times = form.value.branchTimes
+
+  if (!times || times.length === 0) {
+    return true
+  }
+
+  const hasInvalidRow = times.some((item: IBranchItem): boolean => {
+    const isDayEmpty = !item.day || item.day.length === 0
+    const isOpenTimeEmpty = !item.openTime || item.openTime.trim() === ''
+    const isCloseTimeEmpty = !item.closeTime || item.closeTime.trim() === ''
+
+    return isDayEmpty || isOpenTimeEmpty || isCloseTimeEmpty
+  })
+
+  return hasInvalidRow
+})
+
 async function useSubmit (): Promise<void> {
   await BranchService.createBranch(usePayload(form.value))
   toast.success('ดำเนินการสำเร็จ')
@@ -101,6 +127,8 @@ async function useSubmit (): Promise<void> {
 
 async function onSubmit (event: FormSubmitEvent): Promise<void> {
   if (!event.valid) {
+    const firstErrorMessage = Object.values(event.errors).flat()[0]?.message
+    toast.error(firstErrorMessage || 'กรุณาตรวจสอบข้อมูลให้ถูกต้อง')
     scrollToFirstError(event.errors)
     return
   }

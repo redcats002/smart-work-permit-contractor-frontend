@@ -16,6 +16,9 @@
         {{ displayValue || placeholder }}
       </span>
     </button>
+    <div class="relative">
+      <span class="absolute text-primary text-sm">{{ validationMessage }}</span>
+    </div>
 
     <Menu
       ref="menuRef"
@@ -185,6 +188,34 @@ const disabled = computed((): boolean => props.disabled)
 
 const useStartEndRange = computed((): boolean => {
   return props.range || ('onUpdate:start' in attrs && 'onUpdate:end' in attrs)
+})
+
+const validationMessage = computed((): string => {
+  if (useStartEndRange.value) {
+    const start = startModel.value
+    const end = endModel.value
+
+    if (!start || !end) {
+      const msg = 'กรุณาระบุเวลาเปิดและเวลาปิดร้านให้ครบถ้วน'
+      return msg
+    }
+
+    const startVal = splitTimeParts(start)
+    const endVal = splitTimeParts(end)
+    const startTotal = startVal.hours * 60 + startVal.minutes
+    const endTotal = endVal.hours * 60 + endVal.minutes
+
+    if (startTotal >= endTotal) {
+      const msg = 'เวลาเปิดต้องน้อยกว่าเวลาปิดร้าน'
+      return msg
+    }
+  } else {
+    if (!model.value) {
+      return 'กรุณาระบุเวลา'
+    }
+  }
+
+  return ''
 })
 
 function normalizeTime24 (value: string | null | undefined): string | null {

@@ -49,14 +49,14 @@
         v-slot="{ invalid }"
         :form="form"
         label="วันเดือนปีเกิด"
-        name="birthDate"
+        name="dateOfBirth"
         hide-error
         required>
         <DatePickerInput
           v-model="model.dateOfBirth"
           :invalid="invalid"
           :max-date="dayjs().toDate()"
-          name="birthDate" />
+          name="dateOfBirth" />
       </LabelField>
 
       <LabelField
@@ -81,22 +81,30 @@
       </LabelField>
 
       <LabelField
+        v-slot="{ invalid }"
+        :form="form"
         label="ตำแหน่ง"
         name="role"
         tag="div"
+        hide-error
         required>
         <RoleSelection
           v-model="model.role"
+          :invalid="invalid"
           name="role"
           placeholder="เลือกตำแหน่ง" />
       </LabelField>
 
       <LabelField
+        v-slot="{ invalid }"
+        :form="form"
         label="สาขา"
         name="branchIds"
+        hide-error
         required>
         <BranchSelection
           v-model="model.branchIds"
+          :invalid="invalid"
           name="branchIds"
           placeholder="เลือกสาขา"
           multiple />

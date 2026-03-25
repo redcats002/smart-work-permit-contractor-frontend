@@ -31,6 +31,7 @@
         <BaseContainer>
           <InformationForm
             v-model="form"
+            v-model:form-key="formKey"
             :form="$form" />
         </BaseContainer>
         <BaseContainer>
@@ -130,6 +131,7 @@ const currentAddress = computed({
 })
 
 async function useSubmit (): Promise<void> {
+  form.value.password = form.value.idCard
   await EmployeeService.createEmployee(usePayload(form.value))
   toast.success('ดำเนินการสำเร็จ')
   router.push({ name: 'EmployeeListPage' })
@@ -137,6 +139,8 @@ async function useSubmit (): Promise<void> {
 
 async function onSubmit (event: FormSubmitEvent): Promise<void> {
   if (!event.valid) {
+    const firstErrorMessage = Object.values(event.errors).flat()[0]?.message
+    toast.error(firstErrorMessage || 'กรุณาตรวจสอบข้อมูลให้ถูกต้อง')
     scrollToFirstError(event.errors)
     return
   }
@@ -165,9 +169,9 @@ function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
 
 function onHandleUpload (files: File[]): void {
   if (files.length > 0) {
-    form.value.image = files[files.length - 1]
+    form.value.image = ''
   } else {
-    form.value.image = undefined
+    form.value.image = ''
   }
 }
 

@@ -1,5 +1,5 @@
 import { generator } from '@/utils/Generator'
-import { regex } from '@/utils/Regex'
+// import { regex } from '@/utils/Regex'
 import { schema } from '@/utils/Schema'
 import { EmployeeRoleEnum } from '@/enums/modules/employee/EmployeeRole.enum'
 import { EmployeeStatusEnum } from '@/enums/modules/employee/EmployeeStatus.enum'
@@ -16,17 +16,20 @@ export const EmployeeSchema = z.object({
   phoneNumber: z.string().min(1, 'กรุณากรอกเบอร์โทรศัพท์'),
   email: z.email('รูปแบบอีเมลไม่ถูกต้อง').or(z.literal('')).optional(),
   dateOfBirth: schema.date('วันเกิด'),
-  image: z.instanceof(File).optional().nullable(),
-  password: z
-    .string()
-    .min(8, { message: 'ต้องมีตัวอักษรภาษาอังกฤษ และตัวเลข รวมกันอย่างน้อย 8 ถึง 16 ตัว' })
-    .max(16, { message: 'ต้องมีตัวอักษรภาษาอังกฤษ และตัวเลข รวมกันอย่างน้อย 8 ถึง 16 ตัว' })
-    .refine((value: string): boolean => regex.upperCaseOneCharRegex.test(value), {
-      message: 'ต้องมีอักษรภาษาอังกฤษพิมพ์ใหญ่อย่างน้อย 1 ตัว'
-    })
-    .refine((value: string): boolean => regex.atLeastOneNumber.test(value), {
-      message: 'ต้องมี 0-9 อย่างน้อย 1 ตัว'
-    }),
+  // image: z.instanceof(File).optional().nullable(),
+  image: z.string().optional().nullable(),
+  password: z.string().optional(),
+  // password: z
+  //   .string()
+  //   .min(8, { message: 'ต้องมีตัวอักษรภาษาอังกฤษ และตัวเลข รวมกันอย่างน้อย 8 ถึง 16 ตัว' })
+  //   .max(16, { message: 'ต้องมีตัวอักษรภาษาอังกฤษ และตัวเลข รวมกันอย่างน้อย 8 ถึง 16 ตัว' })
+  //   .refine((value: string): boolean => regex.upperCaseOneCharRegex.test(value), {
+  //     message: 'ต้องมีอักษรภาษาอังกฤษพิมพ์ใหญ่อย่างน้อย 1 ตัว'
+  //   })
+  //   .refine((value: string): boolean => regex.atLeastOneNumber.test(value), {
+  //     message: 'ต้องมี 0-9 อย่างน้อย 1 ตัว'
+  //   }),
+  // password no require
   // ── Classification ───────────────────────────────────────────────────────
   status: schema.enum(EmployeeStatusEnum, 'กรุณาเลือกสถานะลูกค้า'),
   role: schema.enum(EmployeeRoleEnum, 'ตำแหน่ง'),
@@ -71,7 +74,7 @@ export function useDev (): EmployeeFormValues {
     phoneNumber: generator.generateRandomPhoneNumber(),
     dateOfBirth: '',
     email: '',
-    password: 'Password1',
+    password: '',
     role: '',
     branchIds: [],
     image: null,
@@ -107,7 +110,7 @@ export function useFormInitialValues (): EmployeeFormValues {
     // Personal
     idCard: '',
     password: '',
-    image: null,
+    image: '',
     title: ETitleName[''],
     firstName: '',
     lastName: '',
