@@ -27,17 +27,16 @@ interface Props extends /* @vue-ignore */ AutoCompleteProps {}
 defineProps<Props>()
 const attrs = useAttrs()
 
-
 const theme = computed((): AutoCompletePassThroughOptions => {
 	const borderRight = attrs?.dropdown ? 'border-r-0' : ''
 	let isHaveValue = false
-	if(attrs?.multiple) {
+	if (attrs?.multiple) {
 		const value = Array.isArray(attrs?.modelValue) ? attrs?.modelValue : []
 		isHaveValue = value.length > 0
-	}else {
+	} else {
 		isHaveValue = !!attrs?.modelValue
 	}
-	
+
 	return {
 		root: `inline-flex p-fluid:flex group`,
 		pcInputText: {
@@ -84,7 +83,7 @@ const theme = computed((): AutoCompletePassThroughOptions => {
             focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-primary`
 		},
 		chipIcon: ``,
-		inputChip: `flex-auto inline-flex py-1 max-w-30 h-6! ${(isHaveValue) ? 'hidden': ''}`,
+		inputChip: `flex-auto inline-flex py-1 max-w-30 h-6! ${isHaveValue ? 'hidden' : ''}`,
 		input: `border-none outline-none bg-transparent m-0 p-0 shadow-none rounded-none w-full text-inherit
         placeholder:text-surface-500 dark:placeholder:text-surface-400`,
 		loader: `absolute top-1/2 -mt-2 end-3 p-has-dropdown:end-[3.25rem]`,
@@ -92,6 +91,8 @@ const theme = computed((): AutoCompletePassThroughOptions => {
         border border-s-0 border-surface-300 dark:border-surface-700
         group-hover:border-surface-400 dark:group-hover:border-surface-600
         group-focus-within:!border-primary
+				p-invalid:border-red-400 dark:p-invalid:border-red-300
+        p-invalid:placeholder:text-red-600 dark:p-invalid:placeholder:text-red-400
         bg-surface-100 dark:bg-surface-800
         text-surface-600 dark:text-surface-300
         transition-colors duration-200`,
