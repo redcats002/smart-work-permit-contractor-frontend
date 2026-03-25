@@ -23,7 +23,7 @@
         :class="isInvalid ? 'border-red-400!' : ''"
         :invalid="isInvalid"
         :name="name"
-        class="h-9 shadow-none! rounded-sm! placeholder:text-[#A4B0C1]! placeholder:text-sm! placeholder:font-medium!"
+        class="h-9 shadow-none! rounded-sm! placeholder:text-gray-500! placeholder:text-md! placeholder:font-medium!"
         fluid
         v-bind="$attrs" />
     </slot>

@@ -5,7 +5,7 @@
     fluid>
     <template #dropdownicon>
       <Icon
-        class="size-5 text-[#A4B0C1]"
+        class="size-5"
         icon="mdi:chevron-down" />
     </template>
     <template

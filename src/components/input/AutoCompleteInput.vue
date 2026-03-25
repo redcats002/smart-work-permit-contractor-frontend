@@ -30,7 +30,9 @@
           @click="removeCallback($event)" />
       </span>
     </template>
-    <template #dropdown>
+    <template
+      v-if="dropdown"
+      #dropdown>
       <div
         :class="dropdownClass"
         :data-p="$attrs?.invalid ? 'invalid' : ''">
