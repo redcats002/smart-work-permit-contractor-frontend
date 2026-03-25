@@ -8,36 +8,46 @@
         @click="onAuto()" />
       <ReadIdentificationCardButton />
     </BaseTop>
-    <BasePage>
-      <div>
-        <Form
-          :key="formKey"
-          v-slot="$form"
-          :initial-values="form"
-          :resolver="resolver"
-          class="flex flex-col gap-5"
-          @submit="onSubmit($event)">
-          <BaseContainer>
-            <InformationForm
-              v-model="form"
-              :form="$form" />
-          </BaseContainer>
-          <BaseContainer>
-            <AddressForm
-              v-model="mainAddress"
-              :form="$form"
-              type="MAIN" />
-          </BaseContainer>
-          <BaseContainer>
-            <AddressForm
-              v-model="currentAddress"
-              :form="$form"
-              type="CURRENT"
-              @use-same-citizen-address="onUseSameCitizenAddress('CURRENT')" />
-          </BaseContainer>
-          <FormAction @cancel="onCancel()" />
-        </Form>
-      </div>
+    <BasePage class="flex flex-col md:grid md:grid-cols-3 gap-4">
+      <BaseContainer class="h-fit md:order-2 md:col-span-1">
+        <UploadInput
+          v-model="uploadFiles"
+          v-model:preview-urls="uploadPreviewUrls"
+          v-model:profile-preview="form.image"
+          :hidden-icon-button="true"
+          :is-fro-profile="true"
+          button-upload-class="bg-primary text-white"
+          detail="ไฟล์ JPG, JPEG และ PNG ได้รับอนุญาต"
+          label="เลือกเพื่ออัปโหลดหรือลากและวาง"
+          @upload="onHandleUpload($event)" />
+      </BaseContainer>
+      <Form
+        :key="formKey"
+        v-slot="$form"
+        :initial-values="form"
+        :resolver="resolver"
+        class="flex flex-col gap-5 col-span-2"
+        @submit="onSubmit($event)">
+        <BaseContainer>
+          <InformationForm
+            v-model="form"
+            :form="$form" />
+        </BaseContainer>
+        <BaseContainer>
+          <AddressForm
+            v-model="mainAddress"
+            :form="$form"
+            type="MAIN" />
+        </BaseContainer>
+        <BaseContainer>
+          <AddressForm
+            v-model="currentAddress"
+            :form="$form"
+            type="CURRENT"
+            @use-same-citizen-address="onUseSameCitizenAddress('CURRENT')" />
+        </BaseContainer>
+        <FormAction @cancel="onCancel()" />
+      </Form>
     </BasePage>
   </section>
 </template>
@@ -66,6 +76,7 @@ import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { usePayload } from '../composables/usePayload'
 import { type EmployeeFormValues, EmployeeSchema, useDev, useFormInitialValues } from '../schema/employee.schema'
+import UploadInput from '@/components/input/UploadInput.vue'
 
 const router = useRouter()
 
@@ -74,6 +85,8 @@ const EmployeeService: IEmployeeProvider = new EmployeeProvider()
 const formKey = ref<number>(0)
 const form = ref<EmployeeFormValues>(useFormInitialValues())
 const resolver = zodResolver(EmployeeSchema)
+const uploadFiles = ref<File[]>([])
+const uploadPreviewUrls = ref<string[]>([])
 
 const mainAddress = computed({
   get (): IAddressRequest {
@@ -123,7 +136,6 @@ async function useSubmit (): Promise<void> {
 }
 
 async function onSubmit (event: FormSubmitEvent): Promise<void> {
-  console.log(event)
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return
@@ -151,6 +163,14 @@ function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
   }
 }
 
+function onHandleUpload (files: File[]): void {
+  if (files.length > 0) {
+    form.value.image = files[files.length - 1]
+  } else {
+    form.value.image = undefined
+  }
+}
+
 function onAuto (): void {
   form.value = { ...useDev() }
   // Remount <Form> so it picks up the new initial-values without stale error state
@@ -160,5 +180,8 @@ function onAuto (): void {
 </script>
 
 <style scoped>
-
+:deep(.custom-upload-btn) {
+  background-color: var(--color-primary);
+  color: white
+}
 </style>
