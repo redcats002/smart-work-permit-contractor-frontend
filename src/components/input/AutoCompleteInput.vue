@@ -88,7 +88,7 @@ const model = defineModel<TBaseModel | TBaseModel[] | null>()
 const dropdownClass = computed((): string => {
   return `cursor-pointer inline-flex items-center justify-center select-none overflow-hidden relative w-10 shrink-0 rounded-e-md
         border border-s-0 border-surface-300 dark:border-surface-700
-        group-hover:border-surface-400 dark:group-hover:border-surface-600
+        group-hover:border-surface-400! dark:group-hover:border-surface-600
         group-focus-within:!border-primary
 				p-invalid:border-red-400 dark:p-invalid:border-red-300
         p-invalid:placeholder:text-red-600 dark:p-invalid:placeholder:text-red-400

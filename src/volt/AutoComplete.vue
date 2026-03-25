@@ -38,15 +38,15 @@ const theme = computed((): AutoCompletePassThroughOptions => {
 	}
 
 	return {
-		root: `inline-flex p-fluid:flex group`,
+		root: `group inline-flex p-fluid:flex group`,
 		pcInputText: {
-			root: `appearance-none rounded-sm outline-hidden 
+			root: `cursor-pointer appearance-none rounded-sm outline-hidden 
             bg-surface-0 dark:bg-surface-950
             p-filled:bg-surface-50 dark:p-filled:bg-surface-800
             text-surface-700 dark:text-surface-0
             placeholder:text-surface-500 dark:placeholder:text-surface-400
             border ${borderRight} border-surface-300 dark:border-surface-700
-            !group-hover:border-surface-400 dark:!group-hover:border-surface-600
+            group-hover:border-surface-400! dark:group-hover:border-surface-600!
             enabled:focus:border-primary group-focus-within:border-primary
             disabled:bg-surface-200 disabled:text-surface-500
             dark:disabled:bg-surface-700 dark:disabled:text-surface-400
