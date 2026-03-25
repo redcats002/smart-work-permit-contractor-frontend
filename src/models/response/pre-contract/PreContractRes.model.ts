@@ -74,7 +74,7 @@ export interface IPreContractById extends Omit<IEntity, 'status'> {
 
 export type TGetPreContractListResponse = IBasePaginationResponse<IPreContractList>
 export type TGetPreContractByIdResponse = IBaseSuccessResponse<IPreContractById>
-export type TActionPreContract = IBaseSuccessResponse<boolean>
+export type TActionPreContract = IPreContractList
 export type TUpdatePreAssetPreContract = IBaseSuccessResponse<boolean>
 export type TRequestAppraisalPreContract = IBaseSuccessResponse<boolean>
 export type TRequestReappraisalPreContract = IBaseSuccessResponse<boolean>

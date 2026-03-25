@@ -30,7 +30,8 @@
             :invalid="invalid"
             :name="`${namePrefix}.type`"
             placeholder="เลือกหมวดหมู่หลักทรัพย์"
-            show-clear />
+            show-clear
+            @update:model-value="emits('mount')" />
         </LabelField>
         <LabelField
           v-if="isVehicle"
@@ -87,6 +88,7 @@ interface IProps {
 
 interface IEmits {
   delete: []
+  mount: []
 }
 
 withDefaults(defineProps<IProps>(), {

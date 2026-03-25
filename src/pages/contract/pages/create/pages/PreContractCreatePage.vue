@@ -52,10 +52,12 @@
           v-for="(item, index) in form.preAssets"
           :key="item.key"
           v-model="form.preAssets[index]"
+          v-model:form-key="formKey"
           :asset-category="assetCategory"
           :form="$form"
           :name-prefix="`preAssets.${index}`"
-          @delete="onRemoveAsset(index)" />
+          @delete="onRemoveAsset(index)"
+          @mount="mount()" />
         <Button
           v-show="canAddAsset"
           class="flex items-center justify-start gap-1.5 py-4 text-sm text-primary! font-medium hover:opacity-80 transition-opacity bg-white!"
@@ -123,7 +125,8 @@ const {
   onCancel,
   setSubmitMode,
   onAuto,
-  onInitSellMan
+  onInitSellMan,
+  mount
 } = useInit()
 
 
