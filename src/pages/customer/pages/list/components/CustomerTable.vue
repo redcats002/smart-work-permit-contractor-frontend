@@ -4,7 +4,7 @@
     v-model:sort-by="sortBy"
     v-model:sort-order="sortOrder"
     :columns="columns"
-    :items="props.items"
+    :items="items"
     disable-auto-left-padding
     @update="emits('update')">
     <template #[`item.idNo`]="{ item }">
@@ -32,7 +32,7 @@ interface IProps {
   items: ICustomerList[]
 }
 
-const props = defineProps<IProps>()
+defineProps<IProps>()
 
 interface IEmits {
   delete: [id: number]
@@ -64,6 +64,8 @@ const columns = ref<IColumn<ICustomerList>[]>([
   //   bodyStyle: { boxShadow: '-1px 0 0 #E5E7EB' }
   // }
 ])
+
+
 </script>
 
 <style scoped></style>
