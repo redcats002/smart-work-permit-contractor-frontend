@@ -1,5 +1,5 @@
 import { generator } from '@/utils/Generator'
-import { regex } from '@/utils/Regex'
+// import { regex } from '@/utils/Regex'
 import { schema } from '@/utils/Schema'
 import { EmployeeRoleEnum } from '@/enums/modules/employee/EmployeeRole.enum'
 import { EmployeeStatusEnum } from '@/enums/modules/employee/EmployeeStatus.enum'
@@ -18,16 +18,18 @@ export const EmployeeSchema = z.object({
   dateOfBirth: schema.date('วันเกิด'),
   // image: z.instanceof(File).optional().nullable(),
   image: z.string().optional().nullable(),
-  password: z
-    .string()
-    .min(8, { message: 'ต้องมีตัวอักษรภาษาอังกฤษ และตัวเลข รวมกันอย่างน้อย 8 ถึง 16 ตัว' })
-    .max(16, { message: 'ต้องมีตัวอักษรภาษาอังกฤษ และตัวเลข รวมกันอย่างน้อย 8 ถึง 16 ตัว' })
-    .refine((value: string): boolean => regex.upperCaseOneCharRegex.test(value), {
-      message: 'ต้องมีอักษรภาษาอังกฤษพิมพ์ใหญ่อย่างน้อย 1 ตัว'
-    })
-    .refine((value: string): boolean => regex.atLeastOneNumber.test(value), {
-      message: 'ต้องมี 0-9 อย่างน้อย 1 ตัว'
-    }),
+  password: z.string().optional(),
+  // password: z
+  //   .string()
+  //   .min(8, { message: 'ต้องมีตัวอักษรภาษาอังกฤษ และตัวเลข รวมกันอย่างน้อย 8 ถึง 16 ตัว' })
+  //   .max(16, { message: 'ต้องมีตัวอักษรภาษาอังกฤษ และตัวเลข รวมกันอย่างน้อย 8 ถึง 16 ตัว' })
+  //   .refine((value: string): boolean => regex.upperCaseOneCharRegex.test(value), {
+  //     message: 'ต้องมีอักษรภาษาอังกฤษพิมพ์ใหญ่อย่างน้อย 1 ตัว'
+  //   })
+  //   .refine((value: string): boolean => regex.atLeastOneNumber.test(value), {
+  //     message: 'ต้องมี 0-9 อย่างน้อย 1 ตัว'
+  //   }),
+  // password no require
   // ── Classification ───────────────────────────────────────────────────────
   status: schema.enum(EmployeeStatusEnum, 'กรุณาเลือกสถานะลูกค้า'),
   role: schema.enum(EmployeeRoleEnum, 'ตำแหน่ง'),
@@ -72,7 +74,7 @@ export function useDev (): EmployeeFormValues {
     phoneNumber: generator.generateRandomPhoneNumber(),
     dateOfBirth: '',
     email: '',
-    password: 'Password1',
+    password: '',
     role: '',
     branchIds: [],
     image: null,
@@ -104,82 +106,41 @@ export function useDev (): EmployeeFormValues {
 }
 
 export function useFormInitialValues (): EmployeeFormValues {
-  // return {
-  //   // Personal
-  //   idCard: '',
-  //   password: '',
-  //   image: null,
-  //   title: ETitleName[''],
-  //   firstName: '',
-  //   lastName: '',
-  //   phoneNumber: '',
-  //   dateOfBirth: '',
-  //   email: '',
-  //   role: '',
-  //   branchIds: [],
-  //   // Classification
-  //   status: EmployeeStatusEnum.INACTIVE,
-  //   // Citizen / Home address
-  //   mainAddress: {
-  //     address: '',
-  //     subDistrict: '',
-  //     district: '',
-  //     province: '',
-  //     postCode: '',
-  //     urlGoogleMap: '',
-  //     isSameCitizenAddress: false,
-  //     isSameCurrentAddress: false
-  //   },
-  //   // Current / Mailing address
-  //   currentAddress: {
-  //     address: '',
-  //     subDistrict: '',
-  //     district: '',
-  //     province: '',
-  //     postCode: '',
-  //     urlGoogleMap: '',
-  //     isSameCitizenAddress: false,
-  //     isSameCurrentAddress: false
-  //   }
-  // }
   return {
-    // Personal Information
-    idCard: '1700401323201',
-    password: 'Password1234', // ใส่ค่าไว้เพื่อให้ผ่าน Validation กฎ 8-16 ตัว + พิมพ์ใหญ่ + ตัวเลข
+    // Personal
+    idCard: '',
+    password: '',
     image: '',
-    title: ETitleName['MR'],
-    firstName: 'Chetsadakorn',
-    lastName: 'Mueangnam',
-    phoneNumber: '082-363-6036',
-    dateOfBirth: '2000-08-16T17:00:00.000Z',
-    email: 'chet@softnova.co',
-
+    title: ETitleName[''],
+    firstName: '',
+    lastName: '',
+    phoneNumber: '',
+    dateOfBirth: '',
+    email: '',
+    role: '',
+    branchIds: [],
     // Classification
-    role: EmployeeRoleEnum['SUPER_ADMIN'], // ใช้ Enum ให้ถูกต้อง
-    branchIds: ['mJafJK7f1njqwBCKorZ7h9D8kEL3Bo9K'],
     status: EmployeeStatusEnum.INACTIVE,
-
     // Citizen / Home address
     mainAddress: {
-      address: '42',
-      subDistrict: 'หนองสองห้อง',
-      district: 'บ้านแพ้ว',
-      province: 'สมุทรสาคร',
-      postCode: '74120',
+      address: '',
+      subDistrict: '',
+      district: '',
+      province: '',
+      postCode: '',
       urlGoogleMap: '',
       isSameCitizenAddress: false,
       isSameCurrentAddress: false
     },
-
     // Current / Mailing address
     currentAddress: {
-      address: '42',
-      subDistrict: 'หนองสองห้อง',
-      district: 'บ้านแพ้ว',
-      province: 'สมุทรสาคร',
-      postCode: '74120',
+      address: '',
+      subDistrict: '',
+      district: '',
+      province: '',
+      postCode: '',
       urlGoogleMap: '',
-      isSameCitizenAddress: true,
+      isSameCitizenAddress: false,
       isSameCurrentAddress: false
     }
   }

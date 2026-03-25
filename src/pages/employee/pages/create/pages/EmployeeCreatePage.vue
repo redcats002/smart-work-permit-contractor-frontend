@@ -130,6 +130,7 @@ const currentAddress = computed({
 })
 
 async function useSubmit (): Promise<void> {
+  form.value.password = form.value.idCard
   await EmployeeService.createEmployee(usePayload(form.value))
   toast.success('ดำเนินการสำเร็จ')
   router.push({ name: 'EmployeeListPage' })
