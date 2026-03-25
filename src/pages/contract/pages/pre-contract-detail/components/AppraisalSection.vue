@@ -1,7 +1,7 @@
 <template>
   <div>
-    <div class="flex justify-between items-center">
-      <h5 class="font-bold text-base!">
+    <div class="flex justify-between items-center gap-2.5">
+      <h5 class="font-bold text-base! min-w-fit">
         รายการประเมินหลักทรัพย์
       </h5>
       <ModalAppraisalPrice

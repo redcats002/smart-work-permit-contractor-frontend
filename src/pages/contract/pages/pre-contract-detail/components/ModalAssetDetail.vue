@@ -61,7 +61,7 @@
           @cancel="close()"
           @confirm="onSave(close)">
           <Button
-            class="text-sm text-red-500 hover:text-red-700 transition-colors"
+            class="text-sm text-red-500 hover:text-red-700 transition-colors h-10.5"
             type="button"
             text
             @click="onClear()">
