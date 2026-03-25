@@ -7,7 +7,6 @@
     :to="to"
     class="w-full h-10.5 md:w-49.5"
     type="button"
-    fluid
     unstyled
     @click="onClick($event)">
     <div class="text-sm font-medium">
