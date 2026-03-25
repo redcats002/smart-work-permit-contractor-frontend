@@ -35,7 +35,7 @@
         </template>
       </BaseModal>
     </div>
-    <Spacer />
+    <Spacer class="hidden md:flex" />
     <div>
       <slot />
     </div>
