@@ -15,6 +15,7 @@
     <Menu
       id="overlay_menu"
       ref="menu"
+      :class="menuClass"
       :model="menuItems"
       class="text-sm"
       popup>
@@ -67,11 +68,13 @@ interface IProps {
   items: IMenuItemAction[]
   icon?: string
   iconClass?: string
+  menuClass?: string
 }
 
 const props = withDefaults(defineProps<IProps>(), {
   icon: 'qlementine-icons:menu-dots-16',
-  iconClass: ''
+  iconClass: '',
+  menuClass: ''
 })
 
 const menuRef = useTemplateRef('menu')
