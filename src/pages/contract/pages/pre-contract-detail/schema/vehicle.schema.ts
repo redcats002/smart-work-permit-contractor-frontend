@@ -21,6 +21,8 @@ export const ModalVehicleSchema = z.object({
   mileage: z.number({ message: 'กรุณากรอกเลขไมล์' }).refine((val: number | null | undefined): boolean => val != null, 'กรุณากรอกเลขไมล์')
 })
 
+export type ModalVehicleFormValues = z.infer<typeof ModalVehicleSchema>
+
 export function readyForAppraisal (preAsset?: IPreAssetList | null): boolean {
   if (preAsset?.detail) return true
   return false

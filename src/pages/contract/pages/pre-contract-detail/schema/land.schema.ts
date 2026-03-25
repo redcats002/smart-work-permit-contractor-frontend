@@ -5,7 +5,14 @@ import { LandSchema as FormValues } from '../../create/schema/pre-contract.schem
 
 export const LandFormSchema = z.object({
   ...FormValues.shape,
-  id: schema.id('รหัสที่ดิน')
+  id: schema.id('รหัสที่ดิน'),
+  landNo: z.string().min(1, 'กรุณากรอกเลขที่ดิน'),
+  surveyNo: z.string().min(1, 'กรุณากรอกเลขที่สำรวจ'),
+  aerialPhotoMapNo: z.string().min(1, 'กรุณากรอกหมายเลข'),
+  aerialPhotoSheet: z.string().min(1, 'กรุณากรอกเลขที่แผ่น'),
+  landAreaRai: z.number().min(0, 'กรุณากรอกจำนวนไร่').default(0),
+  landAreaNgan: z.number().min(0, 'กรุณากรอกจำนวนงาน').default(0),
+  landAreaSquareWah: z.number().min(0, 'กรุณากรอกจำนวนตารางวา').default(0)
 })
 
 export type LandFormValues = z.infer<typeof LandFormSchema>
@@ -27,6 +34,8 @@ export const ModalLandSchema = z.object({
   landAreaNgan: z.number().min(0, 'กรุณากรอกจำนวนงาน'),
   landAreaSquareWah: z.number().min(0, 'กรุณากรอกจำนวนตารางวา')
 })
+
+export type ModalLandFormValues = z.infer<typeof ModalLandSchema>
 
 export function readyForAppraisal (preAsset?: IPreAssetList | null): boolean {
   if (
