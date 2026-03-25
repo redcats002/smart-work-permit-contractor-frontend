@@ -1,7 +1,6 @@
 import { schema } from '@/utils/Schema'
 import { AssetTypeEnum, isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
 import { PreContractStatusEnum } from '@/enums/modules/contract/PreContractStatus.enum'
-import { ProvinceEnum } from '@/enums/modules/province/Province.enum'
 import { z } from 'zod'
 
 export type TAssetCategory = 'VEHICLE' | 'LAND' | null
@@ -33,7 +32,7 @@ export const VehicleSchema = z.object({
   mileage: z.number().nullable().default(0),
   model: z.string().default(''),
   plateNo: z.string().default(''),
-  province: schema.enum(ProvinceEnum, 'จังหวัด'),
+  province: z.string().default(''),
   registrationYear: z.string().nullable().default(null),
   vehicleIdentificationNo: z.string().default('')
 })
@@ -41,7 +40,7 @@ export const VehicleSchema = z.object({
 const PreAssetBaseSchema = z.object({
   key: z.string().optional(),
   type: schema.enum(AssetTypeEnum, 'หมวดหมู่หลักทรัพย์'),
-  detail: z.string().default(''),
+  detail: z.string().min(1, 'กรุณากรอกรายละเอียดหลักทรัพย์'),
   realEstateForm: LandSchema.optional(),
   vehicleForm: VehicleSchema.optional(),
   images: z.array(z.object({
