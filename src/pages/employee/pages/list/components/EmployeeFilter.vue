@@ -12,12 +12,13 @@
         <template #activator="{ open }">
           <FilterButton @click="open()" />
         </template>
-        <!-- <div class="flex flex-col gap-5">
-            <div class="w-fit">
-              <LabelField
-                label="สถานะ" />
-            </div>
-          </div> -->
+        <LabelField
+          label="สถานะ">
+          <CustomerStatusSelection
+            v-model="filters.status"
+            placeholder="ทั้งหมด"
+            show-clear />
+        </LabelField>
         <template #footer="{ close }">
           <FormActionFilter
             @clear="onClear(close)"
@@ -38,9 +39,10 @@ import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
 import Spacer from '@/components/flex/Spacer.vue'
-// import LabelField from '@/components/input/LabelField.vue'
 import SearchInput from '@/components/input/SearchInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
+import CustomerStatusSelection from '@/components/selection/modules/static/customer-status/CustomerStatusSelection.vue'
+import LabelField from '@/components/input/LabelField.vue'
 
 interface IEmits {
   search: []
@@ -50,8 +52,8 @@ interface IEmits {
 
 const emits = defineEmits<IEmits>()
 
-const model = defineModel<string>({ default: '' })
-defineModel<IEmployeeFilter>('filters', { default: (): IEmployeeFilter => ({}) })
+const model = defineModel<string>('search', { default: '' })
+const filters = defineModel<IEmployeeFilter>('filters', { default: (): IEmployeeFilter => ({}) })
 
 function onSearch (): void {
   emits('search')
