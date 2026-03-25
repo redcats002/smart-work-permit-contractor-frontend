@@ -11,6 +11,7 @@
           <LabelField label="ประเภทเงินกู้">
             <ContractLoanTypeSelection
               v-model="filters.loanTypeId"
+              placeholder="ทั้งหมด"
               show-clear />
           </LabelField>
         </div>
