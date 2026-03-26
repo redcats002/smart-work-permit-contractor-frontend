@@ -29,6 +29,7 @@ export interface IEmployeeProvider {
   getEmployeePaymentHistory (id: TBaseParamsId, query: IGetEmployeePaymentHistoryList): Promise<TGetEmployeePaymentHistoryListResponse>
   getEmployeeContactHistory (id: TBaseParamsId, query: IGetEmployeeContactHistoryList): Promise<TGetEmployeeContactHistoryListResponse>
   getEmployeeEstates (id: TBaseParamsId, query: IGetEmployeeEstateList): Promise<TGetEmployeeEstateListResponse>
+  resetPassword (id: TBaseParamsId): Promise<TActionEmployee>
 }
 
 class EmployeeProvider extends HttpRequest implements IEmployeeProvider {
@@ -51,6 +52,11 @@ class EmployeeProvider extends HttpRequest implements IEmployeeProvider {
 
   public async deleteEmployee (id: TBaseParamsId): Promise<TActionEmployee> {
     const response = await this.delete(`${this.urlPrefix}/${id}`)
+    return response
+  }
+
+  public async resetPassword (id: TBaseParamsId): Promise<TActionEmployee> {
+    const response = await this.patch(`${this.urlPrefix}/${id}/reset-password`)
     return response
   }
 
