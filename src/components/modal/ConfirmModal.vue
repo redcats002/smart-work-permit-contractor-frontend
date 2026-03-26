@@ -19,6 +19,7 @@
       <FormAction
         confirm-label="ยืนยัน"
         mode="submit"
+        fluid
         @cancel="close()"
         @confirm="onConfirm(close)" />
     </template>
