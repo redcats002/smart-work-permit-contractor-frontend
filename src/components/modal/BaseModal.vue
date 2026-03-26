@@ -13,7 +13,7 @@
           :class="headerAlign === 'center'
             ? 'flex justify-center'
             : 'flex items-center justify-between'"
-          class="px-8 pt-6 mb-5 relative">
+          class="px-8 pt-10 mb-5 relative">
           <label
             :class="headerAlign === 'center' ? 'text-center' : ''"
             class="text-[20px] font-bold text-[#333333]">
@@ -21,18 +21,18 @@
           </label>
           <Icon
             v-if="headerAlign !== 'center'"
-            class="cursor-pointer size-6 text-[#62748E] hover:text-black transition-all duration-200"
+            class="cursor-pointer size-6 text-[#62748E] hover:text-black transition-all duration-200 absolute top-4 right-4"
             icon="mdi:close"
             @click="closeCallback()" />
         </div>
-        <div class="px-8 pb-6 overflow-y-auto flex-1">
+        <div class="px-8 pb-10 overflow-y-auto flex-1">
           <slot
             :close="close"
             :open="open" />
         </div>
         <div
           v-if="$slots.footer"
-          class="px-8 pb-6 pt-4 border-t overflow-hidden border-surface-100 bg-white">
+          class="px-8 pb-10 pt-4 border-t overflow-hidden border-surface-100 bg-white">
           <slot
             :close="close"
             :open="open"
