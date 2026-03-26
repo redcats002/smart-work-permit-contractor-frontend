@@ -1,9 +1,5 @@
 <template>
   <div>
-    <p class="text-base font-bold mb-5">
-      รูปหลักทรัพย์
-    </p>
-
     <UploadInput
       v-model="newFiles"
       v-model:preview-urls="previewUrls"

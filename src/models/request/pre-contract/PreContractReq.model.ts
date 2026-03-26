@@ -3,7 +3,7 @@ import type { PreContractFormValues } from '@/pages/contract/pages/create/schema
 import type { AppraisalPriceFormValues } from '@/pages/contract/pages/pre-contract-detail/schema/appraisal-price.schema'
 import type { AssetValuationFormValues } from '@/pages/contract/pages/pre-contract-detail/schema/asset-valuation.schema'
 import type { ConfirmAppraisalFormValues } from '@/pages/contract/pages/pre-contract-detail/schema/confirm-appraisal.schema'
-import type { InstallmentFormValues } from '@/pages/contract/pages/pre-contract-detail/schema/installment.schema'
+import type { MakeContractFormValues } from '@/pages/contract/pages/pre-contract-detail/schema/make-contract.schema'
 import type { MortgageFormValues } from '@/pages/contract/pages/pre-contract-detail/schema/mortgage.schema'
 import type { PreAssetUpdateValues } from '@/pages/contract/pages/pre-contract-detail/schema/pre-asset.schema'
 import type { IBasePaginationRequest } from '../Request.model'
@@ -23,4 +23,4 @@ export interface IConfirmAppraisalPayload extends ConfirmAppraisalFormValues {}
 export interface IAppraisalPricePayload extends AppraisalPriceFormValues {}
 export interface IConfirmMortgagePayload extends MortgageFormValues {}
 export interface IUpdatePreAssetPayload extends PreAssetUpdateValues {}
-export interface IMakeAContractPayload extends Omit<InstallmentFormValues, 'loanAmount' | 'lateFee'> {}
+export interface IMakeAContractPayload extends Omit<MakeContractFormValues, 'loanAmount' | 'lateFee'> {}

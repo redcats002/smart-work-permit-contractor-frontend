@@ -1,70 +1,87 @@
 <template>
   <Form
+    :key="formKey"
     ref="formRef"
     v-slot="$form"
-    :initial-values="preAsset"
+    :initial-values="preAssets"
     :resolver="resolver"
-    class="grid grid-cols-1 gap-4"
     @submit="onSubmit($event)">
-    <LabelField
-      :form="$form"
-      label="เอกสารหลักทรัพย์"
-      name="files"
-      tag="div"
-      hide-error
-      required>
-      <UploadInput
-        v-model="uploadFiles"
-        v-model:preview-urls="previewUrls" />
-    </LabelField>
-    <LabelField
-      v-if="preAsset?.locationId !== undefined"
-      :form="$form"
-      label="จุดจัดเก็บ"
-      name="locationId"
-      tag="div"
-      required>
-      <LocationSelection v-model="preAsset.locationId" />
-    </LabelField>
+    <div
+      v-for="(_, i) in preAssets"
+      v-show="activeIndex === i"
+      :key="`asset-warehouse-form-${i}`"
+      class="grid grid-cols-1 gap-4">
+      <!-- <LabelField
+        v-if="false"
+        :form="$form"
+        label="เอกสารหลักทรัพย์"
+        name="files"
+        tag="div"
+        hide-error
+        required>
+        <UploadInput
+          v-model="uploadFiles"
+          v-model:preview-urls="previewUrls" />
+      </LabelField> -->
+      <LabelField
+        v-slot="{ invalid }"
+        :form="$form"
+        label="จุดจัดเก็บ"
+        name="locationId"
+        hide-error
+        required>
+        <LocationSelection
+          v-model="preAssets[activeIndex].locationId"
+          :invalid="invalid"
+          name="locationId" />
+      </LabelField>
+    </div>
   </Form>
 </template>
 
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue'
-import { scrollToFirstError } from '@/utils/HandleSubmit'
+import { useTemplateRef } from 'vue'
+import { handleValidate, scrollToFirstError } from '@/utils/HandleSubmit'
+import type { IFormType } from '@/models/Form.model'
 import LabelField from '@/components/input/LabelField.vue'
-import UploadInput from '@/components/input/UploadInput.vue'
+// import UploadInput from '@/components/input/UploadInput.vue'
 import LocationSelection from '@/components/selection/modules/location/LocationSelection.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import { type PreAssetMakeAContractFormValues, PreAssetMakeAContractSchema } from '../schema/installment.schema'
+import { type PreAssetWarehouseListFormValues, PreAssetWarehouseSchema } from '../schema/make-contract.schema'
 
+interface IProps {
+  formKey: number
+  activeIndex: number
+}
 interface IEmits {
-  confirmed: []
+  submit: []
 }
 interface IExposes {
-  submit: () => void
+  submit: () => Promise<boolean>
 }
 
-const emit = defineEmits<IEmits>()
+defineEmits<IEmits>()
+withDefaults(defineProps<IProps>(), {})
 
-const preAsset = defineModel<PreAssetMakeAContractFormValues>({ required: true })
+const preAssets = defineModel<PreAssetWarehouseListFormValues>({ required: true })
 
-const resolver = zodResolver(PreAssetMakeAContractSchema)
-const formRef = useTemplateRef<any>('formRef')
-const uploadFiles = ref<File[]>([])
-const previewUrls = ref<string[]>([])
+const resolver = zodResolver(PreAssetWarehouseSchema)
+const formRef = useTemplateRef<IFormType>('formRef')
+// const uploadFiles = ref<File[]>([])
+// const previewUrls = ref<string[]>([])
 
 function onSubmit (event: FormSubmitEvent): void {
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return
   }
-  emit('confirmed')
 }
 
-function submit (): void {
-  formRef.value?.submit()
+async function submit (): Promise<boolean> {
+  const event = await handleValidate(formRef)
+  onSubmit(event)
+  return event.valid || false
 }
 
 defineExpose<IExposes>({ submit })

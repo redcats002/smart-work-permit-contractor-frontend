@@ -5,7 +5,7 @@
       'h-10 w-10': !label
     }"
     :to="to"
-    class="flex items-center rounded-sm"
+    class="flex items-center rounded-sm w-full md:w-fit"
     outlined>
     <Icon
       :icon="icon"

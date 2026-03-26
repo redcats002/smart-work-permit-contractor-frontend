@@ -5,10 +5,12 @@ import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IMakeAContractPayload } from '@/models/request/pre-contract/PreContractReq.model'
 import PreContractProvider, { type IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
-import { type InstallmentFormValues, type PreAssetMakeAContractFormValues, useFormInitialValues } from '../schema/installment.schema'
+import { type MakeContractFormValues, type PreAssetWarehouseFormValues, useFormInitialValues } from '../schema/make-contract.schema'
 
 interface IUseMakeContract {
-  formMakeContract: Ref<InstallmentFormValues>
+  formMakeContract: Ref<MakeContractFormValues>
+  formKey: Ref<number>
+  mount: () => void
   onConfirmMakeContract (): void
 }
 
@@ -18,7 +20,8 @@ export function useMakeContract (useFetch: () => Promise<void>): IUseMakeContrac
   const route = useRoute()
   const router = useRouter()
 
-  const formMakeContract = ref<InstallmentFormValues>(useFormInitialValues())
+  const formMakeContract = ref<MakeContractFormValues>(useFormInitialValues())
+  const formKey = ref<number>(0)
 
   const contractId = computed((): string | string[] => route.params.id)
 
@@ -27,7 +30,7 @@ export function useMakeContract (useFetch: () => Promise<void>): IUseMakeContrac
       annualInterestRate: formatter.numberParseFloat(formMakeContract.value?.annualInterestRate || 0),
       installmentCount: formatter.numberParseFloat(formMakeContract.value?.installmentCount || 0),
       interestType: formMakeContract.value?.interestType,
-      preAssets: formMakeContract.value?.preAssets.map((e: PreAssetMakeAContractFormValues) => ({
+      preAssets: formMakeContract.value?.preAssets.map((e: PreAssetWarehouseFormValues) => ({
         id: e.id,
         files: e?.files || [],
         locationId: e.locationId
@@ -42,6 +45,9 @@ export function useMakeContract (useFetch: () => Promise<void>): IUseMakeContrac
     router.push({ name: 'ContractListPage' })
   }
 
+  function mount (): void {
+    formKey.value += 1
+  }
 
   function onConfirmMakeContract (): void {
     handleLoading(useConfirmMakeContract)
@@ -49,6 +55,8 @@ export function useMakeContract (useFetch: () => Promise<void>): IUseMakeContrac
 
   return {
     formMakeContract,
+    formKey,
+    mount,
     onConfirmMakeContract
   }
 }

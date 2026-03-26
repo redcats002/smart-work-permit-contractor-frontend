@@ -17,28 +17,36 @@
         v-slot="$form"
         :initial-values="form"
         :resolver="resolver"
-        class="grid grid-cols-1 gap-6"
         @submit="onSubmit($event, close)">
-        <LabelField
-          v-slot="{ invalid }"
-          :form="$form"
-          label="กลุ่มผู้ตีราคา"
-          name="evaluatorLevel"
-          hide-error
-          required>
-          <EvaluatorLevelSelection
-            v-model="form.evaluatorLevel"
-            :existed-group="existedGroup"
-            :invalid="invalid"
-            name="evaluatorLevel" />
-        </LabelField>
-        <LabelField
-          v-model="form.detail"
-          :form="$form"
-          label="รายละเอียดเพิ่มเติม"
-          name="detail"
-          hide-error
-          required />
+        <Card>
+          <template #title>
+            <span class="font-bold text-base">เลือกผู้ตีราคา</span>
+          </template>
+          <template #content>
+            <div class="grid grid-cols-1 gap-6">
+              <LabelField
+                v-slot="{ invalid }"
+                :form="$form"
+                label="กลุ่มผู้ตีราคา"
+                name="evaluatorLevel"
+                hide-error
+                required>
+                <EvaluatorLevelSelection
+                  v-model="form.evaluatorLevel"
+                  :existed-group="existedGroup"
+                  :invalid="invalid"
+                  name="evaluatorLevel" />
+              </LabelField>
+              <LabelField
+                v-model="form.detail"
+                :form="$form"
+                label="รายละเอียดเพิ่มเติม"
+                name="detail"
+                hide-error
+                required />
+            </div>
+          </template>
+        </Card>
         <FormAction
           class="mt-6"
           confirm-label="ยืนยันขอราคา"

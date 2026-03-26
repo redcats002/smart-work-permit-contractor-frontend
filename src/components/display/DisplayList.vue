@@ -5,7 +5,8 @@
       :key="`item-${String(item.key)}-${i}`">
       <div
         v-if="!item.hidden"
-        class="grid grid-cols-3 gap-2.5">
+        :class="rowClass"
+        class="grid gap-2.5">
         <div class="text-sm font-bold text-gray-500">
           <slot
             v-if="$slots[`label.${String(item.key)}`]"
@@ -14,7 +15,7 @@
             :value="item.value" />
           <span v-else>{{ item.label }}</span>
         </div>
-        <div class="text-sm col-span-2 flex items-center gap-2.5">
+        <div class="text-sm flex items-center gap-2.5 md:col-span-2">
           <span v-if="!item?.hideColon">:</span>
           <slot
             v-if="$slots[`value.${String(item.key)}`]"
@@ -49,10 +50,12 @@ export interface IDisplayList<T = any> {
 
 interface IProps<T = any> {
   items?: IDisplayList<T>[]
+  rowClass?: string
 }
 
 withDefaults(defineProps<IProps>(), {
-  items: (): IDisplayList[] => []
+  items: (): IDisplayList[] => [],
+  rowClass: 'grid-cols-2 md:grid-cols-3'
 })
 
 function go (url: string): void {

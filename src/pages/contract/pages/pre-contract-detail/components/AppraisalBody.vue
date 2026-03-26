@@ -1,6 +1,8 @@
 <template>
   <div class="grid grid-cols-1 gap-2.5">
-    <DisplayList :items="items" />
+    <DisplayList
+      :items="items"
+      row-class="md:grid-cols-4" />
     <AppraisalTable
       v-model:pagination="pagination"
       :count="count"

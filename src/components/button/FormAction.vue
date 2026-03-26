@@ -1,5 +1,5 @@
 <template>
-  <div class="flex justify-start gap-2.5">
+  <div class="flex justify-start gap-2.5 w-full md:w-auto">
     <ConfirmButton
       :disabled="confirmDisabled"
       :label="confirmLabel"

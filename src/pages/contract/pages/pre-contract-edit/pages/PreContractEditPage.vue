@@ -67,23 +67,9 @@
             icon="mdi:plus" />
           เพิ่มหลักทรัพย์ในสัญญา
         </Button>
-        <div class="flex gap-3 flex-wrap">
-          <ConfirmButton
-            label="ยืนยัน/สั่งงานประเมิน"
-            type="submit"
-            @click="setSubmitMode('PENDING_EVALUATION')" />
-          <Button
-            class="bg-white! text-[#333333]! border-gray-400! flex items-center hover:bg-gray-100! w-49.5"
-            label="ร่าง"
-            type="submit"
-            outlined
-            @click="setSubmitMode('DRAFT')" />
-          <Button
-            class="w-49.5"
-            label="ยกเลิก"
-            outlined
-            @click="onCancel()" />
-        </div>
+        <PreContractDraftAction
+          @cancel="onCancel()"
+          @set-submit-mode="setSubmitMode($event)" />
       </Form>
     </BasePage>
   </section>
@@ -95,7 +81,6 @@ import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
-import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import DevButton from '@/components/button/DevButton.vue'
 import Spacer from '@/components/flex/Spacer.vue'
 import LabelField from '@/components/input/LabelField.vue'
@@ -106,6 +91,7 @@ import { Icon } from '@iconify/vue'
 import { Form } from '@primevue/forms'
 import AssetFormSection from '../../create/components/AssetFormSection.vue'
 import CustomerCard from '../../create/components/CustomerCard.vue'
+import PreContractDraftAction from '../../create/components/PreContractDraftAction.vue'
 import { useInit } from '../composables/useInit'
 
 const {

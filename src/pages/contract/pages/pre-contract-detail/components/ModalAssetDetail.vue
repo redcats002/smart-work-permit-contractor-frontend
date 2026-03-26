@@ -13,31 +13,44 @@
           :initial-values="activeForm"
           :resolver="activeResolver"
           @submit="onSubmit($event)">
-          <div>
-            <p class="text-base font-bold mb-5">
-              รายละเอียดหลักทรัพย์
-            </p>
-            <VehicleForm
-              v-if="isVehicle"
-              v-model="form.vehicleForm!"
-              v-model:detail="form.detail"
-              v-model:type="form.type"
-              :asset="asset"
-              :form="$form" />
-            <LandForm
-              v-else-if="isLand"
-              v-model="form.realEstateForm!"
-              v-model:detail="form.detail"
-              v-model:type="form.type"
-              :asset="asset"
-              :form="$form" />
-          </div>
+          <Card>
+            <template #title>
+              <span class="font-bold text-base">
+                รายละเอียดหลักทรัพย์
+              </span>
+            </template>
+            <template #content>
+              <VehicleForm
+                v-if="isVehicle"
+                v-model="form.vehicleForm!"
+                v-model:detail="form.detail"
+                v-model:type="form.type"
+                :asset="asset"
+                :form="$form" />
+              <LandForm
+                v-else-if="isLand"
+                v-model="form.realEstateForm!"
+                v-model:detail="form.detail"
+                v-model:type="form.type"
+                :asset="asset"
+                :form="$form" />
+            </template>
+          </Card>
         </Form>
-        <ImageSection
-          v-model:existing-images="existingImages"
-          v-model:new-files="newFiles"
-          v-model:preview-urls="previewUrls"
-          v-model:removed-image-ids="removedImageIds" />
+        <Card>
+          <template #title>
+            <span class="font-bold text-base">
+              รูปหลักทรัพย์
+            </span>
+          </template>
+          <template #content>
+            <ImageSection
+              v-model:existing-images="existingImages"
+              v-model:new-files="newFiles"
+              v-model:preview-urls="previewUrls"
+              v-model:removed-image-ids="removedImageIds" />
+          </template>
+        </Card>
       </div>
     </template>
 
@@ -48,7 +61,7 @@
           @cancel="close()"
           @confirm="onSave(close)">
           <Button
-            class="text-sm text-red-500 hover:text-red-700 transition-colors"
+            class="text-sm text-red-500 hover:text-red-700 transition-colors h-10.5"
             type="button"
             text
             @click="onClear()">
@@ -65,6 +78,7 @@ import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
+import type { IFormType } from '@/models/Form.model'
 import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import type { TBaseParamsId } from '@/models/response/Response.model'
 import { isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
@@ -97,7 +111,7 @@ const emits = defineEmits<IEmits>()
 const visible = defineModel<boolean>({ default: false })
 const form = defineModel<PreAssetUpdateValues>('form', { required: true })
 
-const formRef = useTemplateRef<InstanceType<typeof Form> | any>('formRef')
+const formRef = useTemplateRef<IFormType>('formRef')
 
 const vehicleResolver = zodResolver(ModalVehicleSchema)
 const landResolver = zodResolver(ModalLandSchema)

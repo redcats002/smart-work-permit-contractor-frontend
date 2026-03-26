@@ -2,7 +2,7 @@
   <BaseContainer>
     <div
       :class="{
-        'grid-cols-[200px_1fr]': isLand,
+        'grid-cols=1 md:grid-cols-[180px_1fr]': isLand,
         'grid-cols-1': !isLand
       }"
       class="grid gap-6 min-h-80">
@@ -29,13 +29,7 @@
             class="grid gap-3 mt-2">
             <BaseGalleria :images="activeAsset.images" />
           </div>
-          <div
-            v-else
-            class="flex items-center justify-center h-48 bg-surface-50 rounded-md border border-surface-200">
-            <p class="text-xl text-surface-400">
-              ไม่มีข้อมูล
-            </p>
-          </div>
+          <AssetEmpty v-else />
         </div>
         <div>
           <div class="mb-4">
@@ -45,12 +39,12 @@
             <DisplayList :items="items" />
             <template v-if="status === 'PENDING_CONTRACT'">
               <AssetWarehouseForm
-                v-for="(_, i) in preAssets"
-                v-show="activeIndex === i"
-                :key="i"
-                :ref="(el: any) => setWarehouseFormRef(i, el)"
-                v-model="preAssets[i]"
-                @confirmed="onWarehouseConfirmed()" />
+                v-if="activeIndex !== undefined && activeIndex !== null"
+                ref="assetWarehouseFormRef"
+                v-model="preAssets"
+                :active-index="activeIndex"
+                :form-key="formKey"
+                @submit="submit()" />
             </template>
           </div>
           <Button
@@ -58,7 +52,7 @@
             class="flex items-center gap-1.5 border border-surface-700! rounded-sm px-4 h-9 text-sm text-surface-700! hover:bg-surface-50! transition-colors w-fit"
             type="button"
             outlined
-            @click="openModal(activeAsset)">
+            @click="onOpen(activeAsset)">
             {{ btnText }}
           </Button>
         </div>
@@ -68,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, useTemplateRef } from 'vue'
 import { formatter } from '@/utils/Formatter'
 import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import { formatTitle } from '@/enums/modules/asset/AssetType.enum'
@@ -77,28 +71,29 @@ import BaseContainer from '@/components/base/BaseContainer.vue'
 import BaseGalleria from '@/components/base/BaseGalleria.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
 import type { TAssetCategory } from '../../create/schema/pre-contract.schema'
-import type { PreAssetMakeAContractFormValues } from '../schema/installment.schema'
 import { readyForAppraisal as readyForLandAppraisal } from '../schema/land.schema'
+import type { PreAssetWarehouseFormValues } from '../schema/make-contract.schema'
 import { readyForAppraisal as readyForVehicleAppraisal } from '../schema/vehicle.schema'
+import AssetEmpty from './AssetEmpty.vue'
 import AssetWarehouseForm from './AssetWarehouseForm.vue'
 
 interface IProps {
+  formKey?: number
   activeIndex?: number
   activeAsset?: IPreAssetList | null
   assetCategory?: TAssetCategory
   status?: TPreContractStatus
 }
-
 interface IEmits {
   active: [index: number]
   open: [assets: IPreAssetList]
-  allConfirmed: []
 }
 interface IExposes {
-  submitAll: () => void
+  submit: () => Promise<boolean>
 }
 
 const props = withDefaults(defineProps<IProps>(), {
+  formKey: 0,
   activeAsset: undefined,
   activeIndex: undefined,
   assetCategory: null,
@@ -107,7 +102,9 @@ const props = withDefaults(defineProps<IProps>(), {
 
 const emits = defineEmits<IEmits>()
 
-const preAssets = defineModel<PreAssetMakeAContractFormValues[]>('preAssets', { required: true })
+const assetWarehouseFormRef = useTemplateRef<InstanceType<typeof AssetWarehouseForm>>('assetWarehouseFormRef')
+
+const preAssets = defineModel<PreAssetWarehouseFormValues[]>('preAssets', { required: true })
 
 const isLand = computed((): boolean => props.assetCategory === 'LAND')
 const btnText = computed((): string => {
@@ -131,65 +128,19 @@ const items = computed((): IDisplayList[] => {
       urlGoogleMap: props.activeAsset?.realEstateForm.urlGoogleMap || ''
     })
     return [
-      {
-        label: 'เลขที่ดิน',
-        value: props.activeAsset?.realEstateForm.landNo || '-',
-        key: 'landNo',
-        hidden: !props.activeAsset?.realEstateForm.landNo
-      },
-      {
-        label: 'เลขหน้าสำรวจ',
-        value: props.activeAsset?.realEstateForm.surveyNo || '-',
-        key: 'surveyNo',
-        hidden: !props.activeAsset?.realEstateForm.surveyNo
-      },
-      {
-        label: 'ที่อยู่หลักทรัพย์',
-        value: fullAddress,
-        key: 'address',
-        extUrl: props.activeAsset?.realEstateForm.urlGoogleMap || '',
-        hidden: !fullAddress
-      },
-      {
-        label: 'ระวางรูปถ่ายทางอากาศ',
-        value: `หมายเลข ${props.activeAsset?.realEstateForm.aerialPhotoMapNo || '-'} แผ่นที่ ${props.activeAsset?.realEstateForm.aerialPhotoSheet || '-'}`,
-        key: 'aerialPhotoMapNo',
-        hidden: !props.activeAsset?.realEstateForm.aerialPhotoMapNo && !props.activeAsset?.realEstateForm.aerialPhotoSheet
-      }
+      { label: 'เลขที่ดิน', value: props.activeAsset?.realEstateForm.landNo || '-', key: 'landNo', hidden: !props.activeAsset?.realEstateForm.landNo },
+      { label: 'เลขหน้าสำรวจ', value: props.activeAsset?.realEstateForm.surveyNo || '-', key: 'surveyNo', hidden: !props.activeAsset?.realEstateForm.surveyNo },
+      { label: 'ที่อยู่หลักทรัพย์', value: fullAddress, key: 'address', extUrl: props.activeAsset?.realEstateForm.urlGoogleMap || '', hidden: !fullAddress },
+      { label: 'ระวางรูปถ่ายทางอากาศ', value: `หมายเลข ${props.activeAsset?.realEstateForm.aerialPhotoMapNo || '-'} แผ่นที่ ${props.activeAsset?.realEstateForm.aerialPhotoSheet || '-'}`, key: 'aerialPhotoMapNo', hidden: !props.activeAsset?.realEstateForm.aerialPhotoMapNo && !props.activeAsset?.realEstateForm.aerialPhotoSheet }
     ]
   }
   return [
     { label: 'รายละเอียดหลักทรัพย์', value: props.activeAsset?.detail || '-', key: 'detail', hidden: !props.activeAsset?.detail },
-    {
-      label: 'เลขทะเบียนรถ',
-      value: props.activeAsset?.vehicleForm?.plateNo || '-',
-      key: 'plateNo',
-      hidden: !props.activeAsset?.vehicleForm?.plateNo
-    },
-    {
-      label: 'ปีที่ผลิต',
-      value: props.activeAsset?.vehicleForm?.manufactureYear || '-',
-      key: 'manufactureYear',
-      hidden: !props.activeAsset?.vehicleForm?.manufactureYear
-    },
-    {
-      label: 'ปีที่จดทะเบียน',
-      value: props.activeAsset?.vehicleForm?.registrationYear || '-',
-      key: 'registrationYear',
-      hidden: !props.activeAsset?.vehicleForm?.registrationYear
-    },
-    {
-      label: 'หมายเลขตัวถัง',
-      value: props.activeAsset?.vehicleForm?.vehicleIdentificationNo || '-',
-      key: 'vehicleIdentificationNo',
-      hidden: !props.activeAsset?.vehicleForm?.vehicleIdentificationNo
-    },
-    {
-      label: 'เลขไมล์ (กม.)',
-      value: props.activeAsset?.vehicleForm?.mileage || '-',
-      key: 'mileage',
-      hidden: !props.activeAsset?.vehicleForm?.mileage
-    }
+    { label: 'เลขทะเบียนรถ', value: props.activeAsset?.vehicleForm?.plateNo || '-', key: 'plateNo', hidden: !props.activeAsset?.vehicleForm?.plateNo },
+    { label: 'ปีที่ผลิต', value: props.activeAsset?.vehicleForm?.manufactureYear || '-', key: 'manufactureYear', hidden: !props.activeAsset?.vehicleForm?.manufactureYear },
+    { label: 'ปีที่จดทะเบียน', value: props.activeAsset?.vehicleForm?.registrationYear || '-', key: 'registrationYear', hidden: !props.activeAsset?.vehicleForm?.registrationYear },
+    { label: 'หมายเลขตัวถัง', value: props.activeAsset?.vehicleForm?.vehicleIdentificationNo || '-', key: 'vehicleIdentificationNo', hidden: !props.activeAsset?.vehicleForm?.vehicleIdentificationNo },
+    { label: 'เลขไมล์ (กม.)', value: props.activeAsset?.vehicleForm?.mileage || '-', key: 'mileage', hidden: !props.activeAsset?.vehicleForm?.mileage }
   ]
 })
 
@@ -197,37 +148,16 @@ function onActiveAsset (index: number): void {
   emits('active', index)
 }
 
-function openModal (asset: IPreAssetList): void {
+function onOpen (asset: IPreAssetList): void {
   emits('open', asset)
 }
 
-const warehouseForms = ref<Array<{ submit: () => void } | null>>([])
-const pendingConfirmations = ref<number>(0)
-
-function setWarehouseFormRef (i: number, el: { submit: () => void } | null): void {
-  warehouseForms.value[i] = el
+async function submit (): Promise<boolean> {
+  const valid = await assetWarehouseFormRef.value?.submit()
+  return valid || false
 }
 
-function onWarehouseConfirmed (): void {
-  pendingConfirmations.value--
-  if (pendingConfirmations.value <= 0) {
-    emits('allConfirmed')
-  }
-}
-
-function submitAll (): void {
-  const forms = warehouseForms.value.filter(Boolean)
-  pendingConfirmations.value = forms.length
-  if (forms.length === 0) {
-    emits('allConfirmed')
-    return
-  }
-  forms.forEach((form: { submit: () => void } | null): void => {
-    form?.submit()
-  })
-}
-
-defineExpose<IExposes>({ submitAll })
+defineExpose<IExposes>({ submit })
 </script>
 
 <style scoped></style>

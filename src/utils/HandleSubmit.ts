@@ -1,4 +1,6 @@
-import type { Ref } from 'vue'
+import type { Ref, ShallowRef } from 'vue'
+import type { IFormType } from '@/models/Form.model'
+import type { FormSubmitEvent } from '@primevue/forms'
 
 interface IIsValid {
   valid: boolean
@@ -52,4 +54,10 @@ export function scrollToFirstError (errors: Record<string, any>): void {
       firstElement.focus({ preventScroll: true })
     }
   }
+}
+
+export async function handleValidate (formRef: ShallowRef<IFormType | null>): Promise<FormSubmitEvent> {
+  const event = await formRef.value?.validate()
+  if (!event) return { valid: true } as FormSubmitEvent
+  return { ...event, valid: Object.keys(event?.errors || []).length === 0 } as FormSubmitEvent
 }

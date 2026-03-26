@@ -5,7 +5,6 @@
     <div>
       <slot />
     </div>
-    <ProfileCard />
   </BaseTopSticky>
 </template>
 
@@ -14,7 +13,6 @@ import { computed } from 'vue'
 import { type RouteLocationNormalizedLoadedGeneric, useRoute } from 'vue-router'
 import BaseTopSticky from '../base/BaseTopSticky.vue'
 import Breadcrumb, { type BreadcrumbItem } from './Breadcrumb.vue'
-import ProfileCard from './ProfileCard.vue'
 
 interface IProps {
   items?: BreadcrumbItem[]

@@ -13,7 +13,7 @@ import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import type { IColumn } from '@/models/Table.model'
 import BaseTable from '@/components/table/BaseTable.vue'
-import type { IInstallmentRow } from '../schema/installment.schema'
+import type { IInstallmentRow } from '../schema/make-contract.schema'
 
 interface IProps {
   items: IInstallmentRow[]

@@ -30,15 +30,15 @@
           v-else
           :data="contract" />
         <AssetSection
-          v-if="contract?.preAssets.length"
+          v-if="formMakeContract?.preAssets?.length"
           ref="assetSectionRef"
           v-model:pre-assets="formMakeContract.preAssets"
           :active-asset="activeAsset"
           :active-index="activeIndex"
           :asset-category="assetCategory"
-          :status="contract.status"
+          :form-key="formKeyMakeAContract"
+          :status="contract?.status"
           @active="onActiveAsset($event)"
-          @all-confirmed="onAssetsAllConfirmed()"
           @open="openModal($event)" />
         <AppraisalSection
           v-if="contract?.status === 'UNDER_EVALUATION'"
@@ -49,8 +49,7 @@
           v-if="contract?.status === 'PENDING_CONTRACT'"
           ref="installmentSectionRef"
           v-model="formMakeContract"
-          :contract="contract"
-          @confirmed="onInstallmentConfirmed()" />
+          :contract="contract" />
         <PreContractAction
           v-if="contract?.status"
           v-model:confirm-appraisal="formConfirmAppraisal"
@@ -73,7 +72,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, useTemplateRef } from 'vue'
+import { computed, onMounted, useTemplateRef } from 'vue'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
@@ -123,12 +122,10 @@ const {
   onConfirmAppraisal
 } = useAppraisal(useFetch)
 const { formMortgage, isMortgageFormVisible, onConfirmMortgage, onSubmitMortgage } = useMortgage(useFetch)
-const { formMakeContract, onConfirmMakeContract } = useMakeContract(useFetch)
-const mortgageFormRef = useTemplateRef<{ submit: () => void }>('mortgageFormRef')
-const installmentSectionRef = useTemplateRef<{ submit: () => void }>('installmentSectionRef')
-const assetSectionRef = useTemplateRef<{ submitAll: () => void }>('assetSectionRef')
-
-const makeContractPending = ref({ assets: false, installment: false })
+const { formMakeContract, formKey: formKeyMakeAContract, mount: mountMakeAContract, onConfirmMakeContract } = useMakeContract(useFetch)
+const mortgageFormRef = useTemplateRef<InstanceType<typeof MortgageForm>>('mortgageFormRef')
+const installmentSectionRef = useTemplateRef<InstanceType<typeof InstallmentSection>>('installmentSectionRef')
+const assetSectionRef = useTemplateRef<InstanceType<typeof AssetSection>>('assetSectionRef')
 
 const primaryCustomer = computed((): ICustomerById | null => {
   if (!contract.value?.customer) return null
@@ -139,27 +136,16 @@ function onTriggerConfirmMortgage (): void {
   mortgageFormRef.value?.submit()
 }
 
-function onTriggerMakeContract (): void {
-  makeContractPending.value = { assets: !assetSectionRef.value, installment: false }
-  assetSectionRef.value?.submitAll()
-  installmentSectionRef.value?.submit()
-}
-
-function onAssetsAllConfirmed (): void {
-  makeContractPending.value.assets = true
-  if (makeContractPending.value.assets && makeContractPending.value.installment) {
-    onConfirmMakeContract()
-  }
-}
-
-function onInstallmentConfirmed (): void {
-  makeContractPending.value.installment = true
-  if (makeContractPending.value.assets && makeContractPending.value.installment) {
-    onConfirmMakeContract()
-  }
+async function onTriggerMakeContract (): Promise<void> {
+  const [validInstallment, validAsset] = await Promise.all([
+    installmentSectionRef.value?.submit(),
+    assetSectionRef.value?.submit()
+  ])
+  if (!validInstallment || !validAsset) return
+  onConfirmMakeContract()
 }
 
 onMounted((): void => {
-  fetch(formMakeContract)
+  fetch(formMakeContract, mountMakeAContract)
 })
 </script>

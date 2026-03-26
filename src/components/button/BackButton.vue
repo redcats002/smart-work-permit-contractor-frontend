@@ -3,7 +3,9 @@
     v-bind="$attrs"
     :as="isBack ? RouterLink : 'button'"
     :to="isBack ? route.meta.back : {}"
-    class="bg-transparent! text-[#333333]! px-4 border-none flex items-center hover:bg-gray-100!"
+    class="bg-white! md:bg-transparent! text-[#333333]! px-4
+    border! border-gray-200! md:border-none
+    flex items-center hover:bg-gray-100!"
     text
     @click="validate()">
     <Icon

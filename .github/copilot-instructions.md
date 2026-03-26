@@ -109,7 +109,7 @@ const props = defineProps<{
 }>()
 
 // emits
-const emit = defineEmits<{
+const emits = defineEmits<{
   (e: 'submit', value: IExample): void
   (e: 'cancel'): void
 }>()
@@ -323,20 +323,22 @@ import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import { handleLoading } from '@/utils/HandleLoading'
 import { FeatureSchema, useFormInitialValues, type FeatureFormValues } from './schema/feature.schema'
+import type { IFormType } from '@/models/Form.model'
 
-const formRef = useTemplateRef<any>('formRef')
+const formRef = useTemplateRef<IFormType>('formRef')
 const resolver = zodResolver(FeatureSchema)
 const formData = ref<FeatureFormValues>(useFormInitialValues())
+
+async function useSubmit(): Promise<void> {
+    await provider.createFeature(event.values as FeatureFormValues)
+}
 
 function onSubmit (event: FormSubmitEvent): void {
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return
   }
-  handleLoading(async (): Promise<void> => {
-    await provider.createFeature(event.values as FeatureFormValues)
-    // handle success
-  })
+  handleLoading(useSubmit)
 }
 ```
 
@@ -381,13 +383,17 @@ For forms inside child components submitted programmatically by a parent:
 </Form>
 
 <script setup lang="ts">
-const formRef = useTemplateRef<any>('formRef')
-const emit = defineEmits<{ confirmed: [] }>()
+import type { IFormType } from '@/models/Form.model'
+import type { FormSubmitEvent } from '@primevue/forms'
+
+
+const formRef = useTemplateRef<IFormType>('formRef')
+const emits = defineEmits<{ confirmed: [] }>()
 
 function onSubmit (event: FormSubmitEvent): void {
   if (!event.valid) { scrollToFirstError(event.errors); return }
   model.value = event.values as FormValues
-  emit('confirmed')
+  emits('confirmed')
 }
 
 function submit (): void { formRef.value?.submit() }
