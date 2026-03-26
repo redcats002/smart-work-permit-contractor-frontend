@@ -4,16 +4,44 @@
     :pt-options="{ mergeProps: ptViewMerge }"
     preview
     unstyled
-    v-bind="attrs" />
+    v-bind="attrs">
+    <template #image>
+      <img
+        :alt="attrs?.alt ? String(attrs?.alt) : computedSrc"
+        :src="computedSrc"
+        v-bind="safeAttrs"
+        @error="onError()">
+    </template>
+  </Image>
 </template>
 
 <script setup lang="ts">
-import { ref, useAttrs } from 'vue'
+import { type Attrs, computed, nextTick, ref, useAttrs } from 'vue'
 import { ptViewMerge } from '@/volt/utils'
 import type { ImagePassThroughOptions } from 'primevue'
 import Image from 'primevue/image'
 
+const FALLBACK_IMAGE = '/assets/images/logo.png'
 const attrs = useAttrs()
+
+const fallback = ref<boolean>(false)
+
+
+const src = computed((): string => attrs.src as string || '')
+const computedSrc = computed((): string => {
+  if (fallback.value || !src.value) return FALLBACK_IMAGE
+  return src.value
+})
+const safeAttrs = computed((): Attrs => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { src, ...rest } = attrs
+  return rest
+})
+
+function onError (): void {
+  fallback.value = true
+  nextTick()
+}
 
 const theme = ref<ImagePassThroughOptions>({
   root: 'relative inline-flex',
