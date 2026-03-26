@@ -146,6 +146,13 @@
   interpolate-size: allow-keywords;
 }
 
+@theme {
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 772px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+}
+
 @layer base {
   html {
     color: #333333;
