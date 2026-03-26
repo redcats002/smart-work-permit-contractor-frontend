@@ -38,7 +38,7 @@ const theme = computed((): AutoCompletePassThroughOptions => {
 	}
 
 	return {
-		root: `group inline-flex p-fluid:flex group`,
+		root: `group inline-flex p-fluid:flex`,
 		pcInputText: {
 			root: `cursor-pointer appearance-none rounded-sm outline-hidden 
             bg-surface-0 dark:bg-surface-950
@@ -46,7 +46,7 @@ const theme = computed((): AutoCompletePassThroughOptions => {
             text-surface-700 dark:text-surface-0
             placeholder:text-surface-500 dark:placeholder:text-surface-400
             border ${borderRight} border-surface-300 dark:border-surface-700
-            group-hover:border-surface-400! dark:group-hover:border-surface-600!
+            group-hover:border-surface-400 dark:group-hover:border-surface-600
             enabled:focus:border-primary group-focus-within:border-primary
             disabled:bg-surface-200 disabled:text-surface-500
             dark:disabled:bg-surface-700 dark:disabled:text-surface-400
@@ -63,6 +63,8 @@ const theme = computed((): AutoCompletePassThroughOptions => {
         border ${borderRight} border-surface-300 dark:border-surface-700 rounded-sm p-has-dropdown:rounded-e-none w-full
         group-hover:border-surface-400 dark:group-hover:border-surface-600 p-focus:border-primary group-focus-within:border-primary
         p-invalid:border-red-400 dark:p-invalid:border-red-300
+				p-invalid:placeholder:text-red-600! dark:p-invalid:placeholder:text-red-400!
+				[.p-invalid_&]:placeholder:text-red-600! dark:[.p-invalid_&]:placeholder:text-red-400!
         p-filled:bg-surface-50 dark:p-filled:bg-surface-800
         p-disabled:pointer-events-none p-disabled:bg-surface-200 p-disabled:text-surface-500 dark:p-disabled:bg-surface-700 dark:p-disabled:text-surface-400
         shadow-[0_1px_2px_0_rgba(18,18,23,0.05)]
@@ -85,9 +87,11 @@ const theme = computed((): AutoCompletePassThroughOptions => {
 		chipIcon: ``,
 		inputChip: `flex-auto inline-flex py-1 max-w-30 h-6! ${isHaveValue ? 'hidden' : ''}`,
 		input: `border-none outline-none bg-transparent m-0 p-0 shadow-none rounded-none w-full text-inherit
-        placeholder:text-surface-500 dark:placeholder:text-surface-400`,
+				placeholder:text-surface-500 dark:placeholder:text-surface-400
+				[[data-p~="invalid"]_&]:placeholder:text-red-600!
+				dark:[[data-p~="invalid"]_&]:placeholder:text-red-400!`,
 		loader: `absolute top-1/2 -mt-2 end-3 p-has-dropdown:end-[3.25rem]`,
-		dropdown: `cursor-pointer inline-flex items-center justify-center select-none overflow-hidden relative w-10 shrink-0 rounded-e-md
+		dropdown: `group cursor-pointer inline-flex items-center justify-center select-none overflow-hidden relative w-10 shrink-0 rounded-e-md
         border border-s-0 border-surface-300 dark:border-surface-700
         group-hover:border-surface-400 dark:group-hover:border-surface-600
         group-focus-within:!border-primary
