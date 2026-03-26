@@ -1,19 +1,19 @@
 import type { TBaseOption } from '@/models/Global.model'
 
 export enum DocumentTypeEnum {
-  LOAN_AGREEMENT = 'LOAN_AGREEMENT',
+  LOAN_CONTRACT = 'LOAN_CONTRACT',
   POWER_OF_ATTORNEY = 'POWER_OF_ATTORNEY',
-  AGENDA = 'AGENDA',
-  ASSET_DOCUMENT = 'ASSET_DOCUMENT',
+  AGENDA_DOCUMENT = 'AGENDA_DOCUMENT',
+  COLLATERAL_DOCUMENT = 'COLLATERAL_DOCUMENT',
   OTHER_DOCUMENT = 'OTHER_DOCUMENT'
 }
 export type TDocumentType = keyof typeof DocumentTypeEnum
 
 const titleMap: Record<TDocumentType, string> = {
-  [DocumentTypeEnum.LOAN_AGREEMENT]: 'สัญญาเงินกู้',
+  [DocumentTypeEnum.LOAN_CONTRACT]: 'สัญญาเงินกู้',
   [DocumentTypeEnum.POWER_OF_ATTORNEY]: 'หนังสือมอบอำนาจ',
-  [DocumentTypeEnum.AGENDA]: 'หนังสือวาระ',
-  [DocumentTypeEnum.ASSET_DOCUMENT]: 'เอกสารทรัพย์สิน',
+  [DocumentTypeEnum.AGENDA_DOCUMENT]: 'หนังสือวาระ',
+  [DocumentTypeEnum.COLLATERAL_DOCUMENT]: 'เอกสารทรัพย์สิน',
   [DocumentTypeEnum.OTHER_DOCUMENT]: 'เอกสารอื่น ๆ'
 }
 
