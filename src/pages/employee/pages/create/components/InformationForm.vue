@@ -14,7 +14,6 @@
         name="idCard"
         hide-error
         required />
-
       <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
         <LabelField
           v-slot="{ invalid }"
@@ -36,7 +35,6 @@
           hide-error
           required />
       </div>
-
       <LabelField
         v-model="model.lastName"
         :form="form"
@@ -44,7 +42,6 @@
         name="lastName"
         hide-error
         required />
-
       <LabelField
         v-slot="{ invalid }"
         :form="form"
@@ -58,7 +55,6 @@
           :max-date="dayjs().toDate()"
           name="dateOfBirth" />
       </LabelField>
-
       <LabelField
         v-model="model.email"
         :form="form"
@@ -66,7 +62,6 @@
         name="email"
         hide-error
         @keypress="keypress.emailNoThai($event)" />
-
       <LabelField
         v-slot="{ invalid }"
         :form="form"
@@ -79,7 +74,6 @@
           :invalid="invalid"
           name="phoneNumber" />
       </LabelField>
-
       <LabelField
         v-slot="{ invalid }"
         :form="form"
@@ -94,7 +88,6 @@
           name="role"
           placeholder="เลือกตำแหน่ง" />
       </LabelField>
-
       <LabelField
         v-slot="{ invalid }"
         :form="form"

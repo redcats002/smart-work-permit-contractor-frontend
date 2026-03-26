@@ -23,7 +23,7 @@
         name="password" />
     </LabelField>
     <ConfirmButton
-      class="w-full mt-4"
+      class="w-full! mt-4"
       label="ถัดไป" />
   </Form>
 </template>

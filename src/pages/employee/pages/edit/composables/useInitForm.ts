@@ -11,7 +11,7 @@ export function useInitForm (form: Ref<EmployeeFormValues>, data: IEmployeeById)
   form.value = {
     ...data,
     branchIds: data?.branches.map((b: IBranchList): string => typeof b.id === 'string' ? b.id : String(b.id)) || [],
-    image: data?.image as any,
+    image: data?.image,
     currentAddress: data?.currentAddress || '',
     dateOfBirth: data?.dateOfBirth ? dayjs(data.dateOfBirth).toDate() : undefined,
     email: data?.email || '',

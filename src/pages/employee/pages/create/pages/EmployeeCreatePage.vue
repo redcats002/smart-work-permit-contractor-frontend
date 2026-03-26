@@ -11,14 +11,14 @@
     <BasePage class="flex flex-col md:grid md:grid-cols-3 gap-4">
       <BaseContainer class="h-fit md:order-2 md:col-span-1">
         <UploadInput
-          v-model="uploadFiles"
-          v-model:preview-urls="uploadPreviewUrls"
-          v-model:profile-preview="form.image"
-          :hidden-icon-button="true"
-          :is-fro-profile="true"
+          v-model="files"
+          v-model:preview-urls="previewUrls"
+          :model-image="form.image"
+          :single="true"
           button-upload-class="bg-primary text-white"
           detail="ไฟล์ JPG, JPEG และ PNG ได้รับอนุญาต"
           label="เลือกเพื่ออัปโหลดหรือลากและวาง"
+          hidden-icon-button
           @upload="onHandleUpload($event)" />
       </BaseContainer>
       <Form
@@ -70,14 +70,15 @@ import DevButton from '@/components/button/DevButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
 import ReadIdentificationCardButton from '@/components/button/ReadIdentificationCardButton.vue'
 import Spacer from '@/components/flex/Spacer.vue'
+import UploadInput from '@/components/input/UploadInput.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import AddressForm from '../components/AddressForm.vue'
 import InformationForm from '../components/InformationForm.vue'
+import useUpload from '@/composables/useUpload'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { usePayload } from '../composables/usePayload'
 import { type EmployeeFormValues, EmployeeSchema, useDev, useFormInitialValues } from '../schema/employee.schema'
-import UploadInput from '@/components/input/UploadInput.vue'
 
 const router = useRouter()
 
@@ -86,8 +87,7 @@ const EmployeeService: IEmployeeProvider = new EmployeeProvider()
 const formKey = ref<number>(0)
 const form = ref<EmployeeFormValues>(useFormInitialValues())
 const resolver = zodResolver(EmployeeSchema)
-const uploadFiles = ref<File[]>([])
-const uploadPreviewUrls = ref<string[]>([])
+const { files, previewUrls, getUploadImages } = useUpload()
 
 const mainAddress = computed({
   get (): IAddressRequest {
@@ -131,8 +131,8 @@ const currentAddress = computed({
 })
 
 async function useSubmit (): Promise<void> {
-  form.value.password = form.value.idCard
-  await EmployeeService.createEmployee(usePayload(form.value))
+  const images = await getUploadImages()
+  await EmployeeService.createEmployee(usePayload(form.value, images))
   toast.success('ดำเนินการสำเร็จ')
   router.push({ name: 'EmployeeListPage' })
 }
