@@ -2,7 +2,7 @@
   <BaseContainer>
     <div
       :class="{
-        'grid-cols-[200px_1fr]': isLand,
+        'grid-cols=1 md:grid-cols-[180px_1fr]': isLand,
         'grid-cols-1': !isLand
       }"
       class="grid gap-6 min-h-80">
@@ -29,13 +29,7 @@
             class="grid gap-3 mt-2">
             <BaseGalleria :images="activeAsset.images" />
           </div>
-          <div
-            v-else
-            class="flex items-center justify-center h-48 bg-surface-50 rounded-md border border-surface-200">
-            <p class="text-xl text-surface-400">
-              ไม่มีข้อมูล
-            </p>
-          </div>
+          <AssetEmpty v-else />
         </div>
         <div>
           <div class="mb-4">
@@ -80,6 +74,7 @@ import type { TAssetCategory } from '../../create/schema/pre-contract.schema'
 import { readyForAppraisal as readyForLandAppraisal } from '../schema/land.schema'
 import type { PreAssetWarehouseFormValues } from '../schema/make-contract.schema'
 import { readyForAppraisal as readyForVehicleAppraisal } from '../schema/vehicle.schema'
+import AssetEmpty from './AssetEmpty.vue'
 import AssetWarehouseForm from './AssetWarehouseForm.vue'
 
 interface IProps {
