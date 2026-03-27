@@ -100,7 +100,8 @@
           :invalid="invalid"
           name="branchIds"
           placeholder="เลือกสาขา"
-          multiple />
+          multiple
+          @update:model-value="emits('mount')" />
       </LabelField>
     </div>
   </div>
@@ -125,7 +126,10 @@ import { useFormInitialValues } from '../schema/employee.schema'
 interface IProps {
   form?: IFormState
 }
-
+interface IEmits {
+  mount: []
+}
+const emits = defineEmits<IEmits>()
 defineProps<IProps>()
 
 const dayjs = useDayjs()

@@ -37,7 +37,7 @@
             </template>
           </Card>
         </Form>
-        <Card>
+        <Card class="h-fit">
           <template #title>
             <span class="font-bold text-base">
               รูปหลักทรัพย์
@@ -45,15 +45,11 @@
           </template>
           <template #content>
             <ImageSection
-              v-model:existing-images="existingImages"
-              v-model:new-files="newFiles"
-              v-model:preview-urls="previewUrls"
-              v-model:removed-image-ids="removedImageIds" />
+              v-model="form.images" />
           </template>
         </Card>
       </div>
     </template>
-
     <template #footer="{ close }">
       <div class="flex items-center gap-3">
         <FormAction
@@ -82,7 +78,6 @@ import type { IFormType } from '@/models/Form.model'
 import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import type { TBaseParamsId } from '@/models/response/Response.model'
 import { isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
-import type { IMedia } from '@/resources/provider/Upload.provider'
 import FormAction from '@/components/button/FormAction.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
@@ -118,11 +113,6 @@ const landResolver = zodResolver(ModalLandSchema)
 
 const pendingClose = ref<(() => void) | null>(null)
 const formKey = ref<number>(0)
-
-const existingImages = ref<IMedia[]>([...(props.asset.images || [])])
-const newFiles = ref<File[]>([])
-const previewUrls = ref<string[]>([])
-const removedImageIds = ref<string[]>([])
 
 const activeResolver = computed((): ReturnType<typeof zodResolver> => isVehicle.value ? vehicleResolver : landResolver)
 const activeForm = computed((): ModalVehicleFormValues | ModalLandFormValues => {
@@ -179,30 +169,11 @@ function buildLandForm (): ModalLandFormValues {
 
 function onClear (): void {
   form.value = useInitForm()
-  newFiles.value = []
-  previewUrls.value = []
-  removedImageIds.value = []
-  existingImages.value = [...(props.asset.images || [])]
   toast.success('ล้างข้อมูลสำเร็จ')
   mount()
 }
 
-async function useSave (): Promise<void> {
-  const formData = new FormData()
-  const currentForm = isVehicle.value ? form.value.vehicleForm! : form.value.realEstateForm!
-
-  Object.entries(currentForm).forEach(([key, val]: [string, unknown]): void => {
-    if (val !== null && val !== undefined) {
-      formData.append(key, String(val))
-    }
-  })
-
-  removedImageIds.value.forEach((id: string): void => {
-    formData.append('removedImageIds[]', id)
-  })
-  newFiles.value.forEach((file: File): void => {
-    formData.append('images', file)
-  })
+function useSave (): void {
   emits('saved')
 }
 
@@ -216,8 +187,8 @@ function onSubmit (event: FormSubmitEvent): void {
     scrollToFirstError(event.errors)
     return
   }
-  handleLoading(async (): Promise<void> => {
-    await useSave()
+  handleLoading((): void => {
+    useSave()
     pendingClose.value?.()
     pendingClose.value = null
   })
@@ -245,10 +216,6 @@ onMounted((): void => {
 watch((): IPreAssetList => props.asset, (): void => {
   form.value.vehicleForm = buildVehicleForm()
   form.value.realEstateForm = buildLandForm()
-  existingImages.value = [...(props.asset.images || [])]
-  newFiles.value = []
-  previewUrls.value = []
-  removedImageIds.value = []
   mount()
 })
 </script>

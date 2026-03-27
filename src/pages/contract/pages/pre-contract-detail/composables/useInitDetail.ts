@@ -16,7 +16,7 @@ export interface IUseInitDetail {
   contractId: ComputedRef<string | string[]>
   contract: Ref<IPreContractById | null>
   activeAsset: ComputedRef<IPreAssetList | null>
-  activeIndex: Ref<number>
+  activeIndex: Ref<number | undefined>
   modalVisible: Ref<boolean>
   modalAsset: Ref<IPreAssetList | null>
   assetCategory: ComputedRef<TAssetCategory>
@@ -24,7 +24,7 @@ export interface IUseInitDetail {
   existedGroup: ComputedRef<TEvaluatorLevel[]>
   onEdit(): void
   onCancel(): void
-  onActiveAsset(index: number): void
+  onActiveAsset(index?: number): void
   openModal(asset: IPreAssetList): void
   useFetch(): Promise<void>
   fetch(formMakeContract: Ref<MakeContractFormValues>, mount: () => void): void
@@ -39,8 +39,10 @@ export function useInitDetail (): IUseInitDetail {
   const contractId = computed((): string | string[] => route.params.id)
   const contract = ref<IPreContractById | null>(null)
 
-  const activeIndex = ref<number>(0)
-  const activeAsset = computed((): IPreAssetList | null => contract.value?.preAssets[activeIndex.value] || null)
+  const activeIndex = ref<number | undefined>(0)
+  const activeAsset = computed((): IPreAssetList | null =>
+    activeIndex.value !== undefined && contract.value ? contract.value.preAssets[activeIndex.value] : null
+  )
 
   const modalVisible = ref<boolean>(false)
   const modalAsset = ref<IPreAssetList | null>(null)
@@ -60,14 +62,15 @@ export function useInitDetail (): IUseInitDetail {
     return group
   })
 
-
   const filledAllRequired = computed((): boolean => {
     if (!contract.value) return false
-    return contract.value?.preAssets.every((preAsset: IPreAssetList): boolean => {
-      if (readyForVehicleAppraisal(preAsset) && assetCategory.value !== 'LAND') return true
-      if (readyForLandAppraisal(preAsset) && assetCategory.value === 'LAND') return true
-      return false
-    }) ?? false
+    return (
+      contract.value?.preAssets.every((preAsset: IPreAssetList): boolean => {
+        if (readyForVehicleAppraisal(preAsset) && assetCategory.value !== 'LAND') return true
+        if (readyForLandAppraisal(preAsset) && assetCategory.value === 'LAND') return true
+        return false
+      }) ?? false
+    )
   })
 
   async function useFetch (): Promise<void> {
@@ -83,7 +86,7 @@ export function useInitDetail (): IUseInitDetail {
     router.push({ name: 'ContractListPage' })
   }
 
-  function onActiveAsset (index: number): void {
+  function onActiveAsset (index?: number): void {
     activeIndex.value = index
   }
 
@@ -93,11 +96,13 @@ export function useInitDetail (): IUseInitDetail {
   }
 
   function onInitFormMakeContract (formMakeContract: Ref<MakeContractFormValues>): void {
-    formMakeContract.value.preAssets = (contract.value?.preAssets || []).map((e: IPreAssetList): PreAssetWarehouseFormValues => ({
-      id: e.id,
-      locationId: e.location?.id,
-      files: e?.files
-    }))
+    formMakeContract.value.preAssets = (contract.value?.preAssets || []).map(
+      (e: IPreAssetList): PreAssetWarehouseFormValues => ({
+        id: e.id,
+        locationId: e.location?.id,
+        files: e?.files || []
+      })
+    )
   }
 
   function fetch (formMakeContract: Ref<MakeContractFormValues>, mount: () => void): void {

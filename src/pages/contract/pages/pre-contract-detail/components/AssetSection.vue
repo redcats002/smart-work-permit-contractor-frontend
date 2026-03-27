@@ -20,43 +20,55 @@
           หลักทรัพย์ที่{{ i + 1 }}
         </Button>
       </div>
-      <div
-        v-if="activeAsset"
-        class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <div
-            v-if="activeAsset.images?.length"
-            class="grid gap-3 mt-2">
-            <BaseGalleria :images="activeAsset.images" />
+      <Transition
+        enter-active-class="transition-all duration-300 ease-out"
+        enter-from-class="opacity-0 translate-y-2"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition-all duration-200 ease-in"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 -translate-y-2"
+        mode="out-in">
+        <div
+          v-if="activeAsset"
+          class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <div
+              v-if="activeAsset.images?.length"
+              class="grid gap-3">
+              <BaseGalleria :images="activeAsset.images" />
+            </div>
+            <AssetEmpty v-else />
           </div>
-          <AssetEmpty v-else />
-        </div>
-        <div>
-          <div class="mb-4">
-            <p class="font-bold text-xl text-surface-800 mb-2">
-              {{ formatTitle(activeAsset.type) }}
-            </p>
-            <DisplayList :items="items" />
-            <template v-if="status === 'PENDING_CONTRACT'">
-              <AssetWarehouseForm
-                v-if="activeIndex !== undefined && activeIndex !== null"
-                ref="assetWarehouseFormRef"
-                v-model="preAssets"
-                :active-index="activeIndex"
-                :form-key="formKey"
-                @submit="submit()" />
-            </template>
+          <div>
+            <div class="mb-4">
+              <p class="font-bold text-xl text-surface-800 mb-2">
+                {{ formatTitle(activeAsset.type) }}
+              </p>
+              <DisplayList
+                :items="items"
+                label-class="text-font-gray!" />
+              <template v-if="status === 'PENDING_CONTRACT'">
+                <AssetWarehouseForm
+                  v-if="activeIndex !== undefined && activeIndex !== null"
+                  ref="assetWarehouseFormRef"
+                  v-model="preAssets"
+                  :active-index="activeIndex"
+                  :form-key="formKey"
+                  class="mt-4"
+                  @submit="submit()" />
+              </template>
+            </div>
+            <Button
+              v-if="isShowEdit"
+              class="flex items-center gap-1.5 border border-surface-700! rounded-sm px-4 h-9 text-sm text-surface-700! hover:bg-surface-50! transition-colors w-fit"
+              type="button"
+              outlined
+              @click="onOpen(activeAsset)">
+              {{ btnText }}
+            </Button>
           </div>
-          <Button
-            v-if="isShowEdit"
-            class="flex items-center gap-1.5 border border-surface-700! rounded-sm px-4 h-9 text-sm text-surface-700! hover:bg-surface-50! transition-colors w-fit"
-            type="button"
-            outlined
-            @click="onOpen(activeAsset)">
-            {{ btnText }}
-          </Button>
         </div>
-      </div>
+      </Transition>
     </div>
   </BaseContainer>
 </template>
@@ -85,7 +97,7 @@ interface IProps {
   status?: TPreContractStatus
 }
 interface IEmits {
-  active: [index: number]
+  active: [index?: number]
   open: [assets: IPreAssetList]
 }
 interface IExposes {
@@ -145,7 +157,10 @@ const items = computed((): IDisplayList[] => {
 })
 
 function onActiveAsset (index: number): void {
-  emits('active', index)
+  emits('active', undefined)
+  setTimeout((): void => {
+    emits('active', index)
+  }, 200)
 }
 
 function onOpen (asset: IPreAssetList): void {

@@ -3,7 +3,7 @@
     <div
       class="flex items-center justify-center
     flex-wrap relative
-    w-full aspect-square bg-white rounded-sm
+    w-full aspect-square bg-white
     border border-surface-200 mb-4">
       <span class="text-base text-(--p-gray-5) font-bold basis-full text-center">ไม่มีข้อมูล</span>
       <div>
@@ -16,7 +16,7 @@
       <div
         v-for="i in 4"
         :key="`box-empty-${i}`"
-        class="w-23 aspect-square bg-white rounded-sm" />
+        class="w-23 aspect-square bg-white" />
     </div>
   </div>
 </template>
