@@ -74,8 +74,7 @@
           hide-error
           required>
           <UploadInput
-            v-model="uploadFiles"
-            v-model:preview-urls="uploadPreviewUrlsMap"
+            v-model="formData.file"
             name="url" />
         </LabelField>
 
@@ -123,7 +122,7 @@
         </div>
         <img
           v-if="formRead?.file.length"
-          :src="formRead.file[0]?.url"
+          :src="formRead.file[0]?.fileUrl"
           alt="หลักฐานการชำระ"
           class="w-full rounded-lg object-contain max-h-80">
       </div>
@@ -159,8 +158,8 @@ import type { IContractIncomeList } from '@/models/response/contract/ContractRes
 import { EVatType, formatTitle as formatVatTitle, VatTypeItems } from '@/enums/modules/Vat.enum'
 import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
 import UploadProvider, {
-  type IUploadProvider,
-  type IUploadResponse
+  type IMedia,
+  type IUploadProvider
 } from '@/resources/provider/Upload.provider'
 import type { IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import BaseActionMenu from '@/components/base/BaseActionMenu.vue'
@@ -202,9 +201,6 @@ const currentMode = ref<TIncomeModalMode>(props.mode)
 const formRead = useInitDetail()
 const resolver = zodResolver(IncomeSchema)
 const formData = ref<IncomeFormValues>(useFormInitialValues())
-const uploadFiles = ref<File[]>([])
-const uploadPreviewUrls = ref<IUploadResponse[]>([])
-const uploadPreviewUrlsMap = computed((): string[] => uploadPreviewUrls.value.map((i: IUploadResponse): string => i.url))
 const vatTypeItems = VatTypeItems
 
 const isFormMode = computed((): boolean => currentMode.value === 'create' || currentMode.value === 'edit')
@@ -243,8 +239,7 @@ async function populateForm (): Promise<void> {
     file: formRead.value.file || [],
     vatType: formRead.value.vatType ? EVatType[formRead.value.vatType] : EVatType.VAT
   }
-  uploadFiles.value = []
-  uploadPreviewUrls.value = props.item.file?.length ? props.item.file : []
+  formData.value.file = []
   await nextTick()
   formData.value.incomeTypeId = Number(formRead.value.incomeType?.id)
   await nextTick()
@@ -255,8 +250,7 @@ async function onOpen (): Promise<void> {
   currentMode.value = props.mode
   if (props.mode === 'create') {
     formData.value = useFormInitialValues()
-    uploadFiles.value = []
-    uploadPreviewUrls.value = []
+    formData.value.file = []
     return
   }
 
@@ -278,17 +272,18 @@ function onCategoryChange (): void {
   formData.value.incomeTypeId = undefined
 }
 
-async function uploadAndSetFile (file: File): Promise<void> {
+async function uploadAndSetFile (file?: File): Promise<void> {
+  if (!file) return
   const response = await UploadService.uploadFile(file)
   formData.value.file = [response.data]
 }
 
-watch(uploadFiles, (files: File[]): void => {
+watch(formData.value.file, (files: IMedia[]): void => {
   if (files.length === 0) {
     formData.value.file = []
     return
   }
-  handleLoading((): Promise<void> => uploadAndSetFile(files[files.length - 1]))
+  handleLoading((): Promise<void> => uploadAndSetFile(files[files.length - 1]?.file))
 }, { deep: true })
 
 function onSubmit (event: FormSubmitEvent, close: () => void): void {

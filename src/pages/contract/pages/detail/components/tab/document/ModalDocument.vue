@@ -47,8 +47,7 @@
           hide-error
           required>
           <UploadInput
-            v-model="uploadFiles"
-            v-model:preview-urls="uploadPreviewUrls" />
+            v-model="media" />
         </LabelField>
 
         <LabelField
@@ -117,7 +116,10 @@ import type { ICreateDocument } from '@/models/request/contract/ContractReq.mode
 import type { IContractDocumentList } from '@/models/response/contract/ContractRes.model'
 import { DocumentTypeEnum, formatTitle as formatDocumentType } from '@/enums/modules/contract/DocumentType.enum'
 import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
-import UploadProvider, { type IUploadProvider } from '@/resources/provider/Upload.provider'
+import UploadProvider, {
+  type IMedia,
+  type IUploadProvider
+} from '@/resources/provider/Upload.provider'
 import type { IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import BaseActionMenu from '@/components/base/BaseActionMenu.vue'
 import FormAction from '@/components/button/FormAction.vue'
@@ -126,6 +128,7 @@ import UploadInput from '@/components/input/UploadInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import DocumentTypeSelection from '@/components/selection/modules/document-type/DocumentTypeSelection.vue'
 import WarehouseSelection from '@/components/selection/modules/warehouse/WarehouseSelection.vue'
+import useUpload from '@/composables/useUpload'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { type DocumentFormValues, DocumentSchema, useFormInitialValues } from './schema/document.schema'
@@ -154,8 +157,7 @@ const currentMode = ref<TDocumentModalMode>(props.mode)
 // const formRead = useInitDetail()
 const resolver = zodResolver(DocumentSchema)
 const formData = ref<DocumentFormValues>(useFormInitialValues())
-const uploadFiles = ref<File[]>([])
-const uploadPreviewUrls = ref<string[]>([])
+const { media } = useUpload()
 
 const isFormMode = computed((): boolean => currentMode.value === 'create' || currentMode.value === 'edit')
 
@@ -191,16 +193,15 @@ function populateForm (): void {
     files: [],
     note: props.item.note || ''
   }
-  uploadFiles.value = []
-  uploadPreviewUrls.value = props.item.files ? [props.item.files] : []
+  media.value = []
+  // media.value = props.item.files ? [props.item.files] : []
 }
 
 function onOpen (): void {
   currentMode.value = props.mode
   if (props.mode === 'create') {
     formData.value = useFormInitialValues()
-    uploadFiles.value = []
-    uploadPreviewUrls.value = []
+    media.value = []
   } else if (props.mode === 'edit') {
     populateForm()
   }
@@ -210,17 +211,18 @@ watch((): TDocumentModalMode => props.mode, (val: TDocumentModalMode): void => {
   currentMode.value = val
 })
 
-async function uploadAndSetFile (file: File): Promise<void> {
+async function uploadAndSetFile (file?: File): Promise<void> {
+  if (!file) return
   const response = await UploadService.uploadFile(file)
-  formData.value.files = [response.data]
+  formData.value.files = [{ name: file.name, url: response.data.fileUrl, path: response.data.filePath }]
 }
 
-watch(uploadFiles, (files: File[]): void => {
+watch(media, (files: IMedia[]): void => {
   if (files.length === 0) {
     formData.value.files = []
     return
   }
-  handleLoading((): Promise<void> => uploadAndSetFile(files[files.length - 1]))
+  handleLoading((): Promise<void> => uploadAndSetFile(files[files.length - 1].file))
 }, { deep: true })
 
 function onSubmit (event: FormSubmitEvent, close: () => void): void {

@@ -29,9 +29,9 @@ const ContractService: IContractProvider = new ContractProvider()
 const contractId = computed((): string | string[] => route.params.id)
 const assets = ref<IContractAssetList[]>([])
 
-const activeIndex = ref<number>(0)
+const activeIndex = ref<number | undefined>(0)
 const activeAsset = computed((): IContractAssetList | null => {
-  if (!assets.value?.[activeIndex.value]) return null
+  if (activeIndex.value === undefined || !assets.value?.[activeIndex.value]) return null
   return assets.value?.[activeIndex.value]
 })
 
@@ -50,7 +50,7 @@ async function useFetch (): Promise<void> {
 }
 
 
-function onActiveAsset (index: number): void {
+function onActiveAsset (index?: number): void {
   activeIndex.value = index
 }
 

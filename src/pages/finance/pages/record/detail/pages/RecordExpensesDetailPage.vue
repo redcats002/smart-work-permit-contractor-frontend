@@ -6,8 +6,7 @@
     </BaseTop>
     <BasePage>
       <BaseContainer class="mb-4">
-        <ExpensesDetailForm
-          :data="expenses" />
+        <ExpensesDetailForm :data="expenses" />
       </BaseContainer>
     </BasePage>
   </section>
@@ -31,7 +30,7 @@ const route = useRoute()
 const ExpensesService: IExpensesProvider = new ExpensesProvider()
 
 const expenses = useInitDetail()
-const expensesId = computed((): number => Number(route?.params?.id as string ?? ''))
+const expensesId = computed((): number => Number((route?.params?.id as string) ?? ''))
 
 async function useFetch (): Promise<void> {
   const isNoApi = true
@@ -50,18 +49,7 @@ async function useFetch (): Promise<void> {
       category: 'A001-1 ค่าน้ำ',
       note: '',
       totalValue: 350,
-      files: [
-        {
-          url: 'https://media.newyorker.com/photos/59095bb86552fa0be682d9d0/master/pass/Monkey-Selfie.jpg',
-          path: '',
-          name: 'บิลการประปา.pdf'
-        },
-        {
-          url: 'https://media.newyorker.com/photos/59095bb86552fa0be682d9d0/master/pass/Monkey-Selfie.jpg',
-          path: '',
-          name: 'บิลการประปา.pdf'
-        }
-      ]
+      files: []
     }
   } else {
     const { data } = await ExpensesService.getExpensesById(expensesId.value)
