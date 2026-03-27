@@ -88,7 +88,7 @@ async function useLogin (): Promise<void> {
   const responseLogin = await AuthPublicService.login(useLoginPayload(form.value))
   const responseBranch = await AuthPrivateService.getBranch()
   setBranchState(responseLogin.data, responseBranch.data || [])
-  toast.success('เข้าสู่ระบบสำเร็จ')
+  toast.success('กรุณาเลือกสาขาที่ต้องการเข้าใช้งาน')
 }
 
 async function useRegister (): Promise<void> {
