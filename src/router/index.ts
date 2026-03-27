@@ -1,5 +1,5 @@
 import type { ComponentOptions } from 'vue'
-import type { NavigationGuardNext, RouteLocationNormalized, Router, RouteRecordRaw } from 'vue-router'
+import type { RouteLocationNormalized, Router, RouteRecordRaw } from 'vue-router'
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/Auth'
 import { updateFromRoute } from '@/utils/RouterHeader'
@@ -77,15 +77,14 @@ router.afterEach((to: RouteLocationNormalized): void => {
   void updateFromRoute(to)
 })
 
-router.beforeEach((to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext): void => {
+router.beforeEach((to: RouteLocationNormalized) => {
   const userStore = useAuthStore()
   const userToken: string = userStore?.userToken.accessToken
 
   if (to?.meta?.auth && !userToken) {
-    router.replace({ name: 'LoginPage' })
-    return
+    return { name: 'LoginPage' }
   }
-  next()
+  return true
 })
 
 export default router
