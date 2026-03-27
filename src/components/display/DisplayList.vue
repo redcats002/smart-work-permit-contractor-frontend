@@ -7,7 +7,7 @@
         v-if="!item.hidden"
         :class="rowClass"
         class="grid gap-2.5">
-        <div class="text-sm font-bold text-gray-500">
+        <div :class="['text-sm font-bold text-gray-500', labelClass]">
           <slot
             v-if="$slots[`label.${String(item.key)}`]"
             :label="item.label"
@@ -51,11 +51,14 @@ export interface IDisplayList<T = any> {
 interface IProps<T = any> {
   items?: IDisplayList<T>[]
   rowClass?: string
+  labelClass?: string
 }
 
 withDefaults(defineProps<IProps>(), {
   items: (): IDisplayList[] => [],
-  rowClass: 'grid-cols-2 md:grid-cols-3'
+  rowClass: 'grid-cols-2 md:grid-cols-3',
+  labelClass: ''
+
 })
 
 function go (url: string): void {
