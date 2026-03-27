@@ -46,7 +46,6 @@ const theme = computed((): AutoCompletePassThroughOptions => {
             text-surface-700 dark:text-surface-0
             placeholder:text-surface-500 dark:placeholder:text-surface-400
             border ${borderRight} border-surface-300 dark:border-surface-700
-            group-hover:border-surface-400 dark:group-hover:border-surface-600
             enabled:focus:border-primary group-focus-within:border-primary
             disabled:bg-surface-200 disabled:text-surface-500
             dark:disabled:bg-surface-700 dark:disabled:text-surface-400
@@ -57,6 +56,7 @@ const theme = computed((): AutoCompletePassThroughOptions => {
             p-large:text-lg p-large:px-[0.875rem] p-large:py-[0.625rem]
             p-has-dropdown:flex-auto p-has-dropdown:w-[1%] p-has-dropdown:rounded-e-none
             transition-colors duration-200 shadow-[0_1px_2px_0_rgba(18,18,23,0.05)]`
+            // group-hover:border-surface-400 dark:group-hover:border-surface-600 //TODO: (put it on root) but it not group with dropdown
 		},
 		inputMultiple: `m-0 list-none cursor-text overflow-visible flex items-center flex-wrap
         px-3! py-1 not-p-empty:px-1 gap-1 text-surface-700 dark:text-surface-0 bg-surface-0 dark:bg-surface-950

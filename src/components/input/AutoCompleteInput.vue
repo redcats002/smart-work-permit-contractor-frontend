@@ -93,7 +93,7 @@ const dropdownClass = computed((): string => {
         bg-white dark:bg-surface-800
         text-surface-600 dark:text-surface-300
         transition-colors duration-200`
-  // group-hover:border-surface-400 dark:group-hover:border-surface-600
+  // group-hover:border-surface-400 dark:group-hover:border-surface-600  //TODO: (put it on root) but it not group with dropdown
 })
 
 function isSelected (option: TBaseModel): boolean {
