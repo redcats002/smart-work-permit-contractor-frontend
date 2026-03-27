@@ -42,12 +42,12 @@
           :key="_i">
           <a
             :href="file.url"
-            class="border border-[#BDBDBD] rounded-lg p-3 flex flex-col items-center justify-center"
+            class="border border-[#BDBDBD] rounded-lg p-3 flex flex-col items-center justify-center max-w-40 overflow-hidden"
             target="_blank">
             <Icon
               icon="material-icon-theme:pdf"
               style="font-size: 90px;" />
-            <div class="text-sm">
+            <div class="text-sm text-center mt-2 truncate w-full">
               {{ file.name }}
             </div>
           </a>

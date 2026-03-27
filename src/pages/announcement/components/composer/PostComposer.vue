@@ -12,18 +12,15 @@
           <div class="flex-1">
             <div class="relative">
               <BaseEditor v-model="form.content" />
-
               <span
                 v-if="!form.content"
                 class="absolute left-3 top-2 text-gray-400 pointer-events-none">
                 เขียนประกาศ...
               </span>
             </div>
-
             <FileInput
+              v-model="form.attachments"
               class="mt-4" />
-
-
             <Button
               class="mt-4 bg-primary px-10 py-2 text-base"
               label="โพสต์"
@@ -36,13 +33,14 @@
 </template>
 
 <script setup lang="ts">
-import BaseEditor from '@/components/base/BaseEditor.vue'
-import FileInput from '@/components/input/FileInput.vue'
-import BasePage from '@/components/base/BasePage.vue'
-import { AnnouncementSchema, type AnnouncementCreateAnnouncement } from '../../schemas/announcement.schema'
-import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
+import BaseEditor from '@/components/base/BaseEditor.vue'
+import BasePage from '@/components/base/BasePage.vue'
+import FileInput from '@/components/input/FileInput.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
+import { zodResolver } from '@primevue/forms/resolvers/zod'
+import { type AnnouncementCreateAnnouncement, AnnouncementSchema } from '../../schemas/announcement.schema'
+
 interface IEmit {
   created: []
 }

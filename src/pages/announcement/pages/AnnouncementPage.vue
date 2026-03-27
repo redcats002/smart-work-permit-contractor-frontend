@@ -16,28 +16,27 @@ import { onMounted, ref } from 'vue'
 import { toast } from '@/plugins/toast'
 import type { IAnnouncementProvider } from '@/resources/provider/announcement/Announcement.provider'
 import AnnouncementProvider from '@/resources/provider/announcement/Announcement.provider'
+import PageTitle from '@/components/nav/PageTitle.vue'
 import PostComposer from '../components/composer/PostComposer.vue'
 import FeedList from '../components/feed/FeedList.vue'
 import useList from '../composables/useList'
 import { usePayload } from '../composables/usePayload'
 import type { AnnouncementCreateAnnouncement } from '../schemas/announcement.schema'
-import PageTitle from '@/components/nav/PageTitle.vue'
 
 const list = useList()
 const form = ref<AnnouncementCreateAnnouncement>({
   content: '',
   attachments: []
 })
-onMounted((): void => {
-  list.fetch()
-})
-async function handleCreated (): Promise<void> {
+
+function handleCreated (): void {
   list.reset()
   list.fetch()
 }
 const AnnouncementService: IAnnouncementProvider = new AnnouncementProvider()
+
 async function useSubmit (): Promise<void> {
-  await AnnouncementService.createAnnouncement(usePayload(form.value))
+  await AnnouncementService.createAnnouncement(await usePayload(form.value))
   toast.success('ดำเนินการสำเร็จ')
 
   form.value = {
@@ -47,5 +46,8 @@ async function useSubmit (): Promise<void> {
   handleCreated()
 }
 
+onMounted((): void => {
+  list.fetch()
+})
 
 </script>
