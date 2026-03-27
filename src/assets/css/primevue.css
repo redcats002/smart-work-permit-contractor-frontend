@@ -59,6 +59,7 @@
 
     /* Gray */
     --p-gray-5:      #e0e0e0;   /* border / divider */
+    --p-gray-4:      #BDBDBD;   /* border / action button */
     --p-gray-2:      #4f4f4f;   /* secondary text */
 }
 
