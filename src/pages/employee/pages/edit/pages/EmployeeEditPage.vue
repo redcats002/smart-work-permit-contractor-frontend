@@ -27,8 +27,7 @@
         <BaseContainer>
           <InformationForm
             v-model="form"
-            :form="$form"
-            @mount="mount()" />
+            :form="$form" />
         </BaseContainer>
         <BaseContainer>
           <AddressForm
@@ -74,9 +73,9 @@ import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import AddressForm from '../../create/components/AddressForm.vue'
 import InformationForm from '../../create/components/InformationForm.vue'
-import { usePayload } from '../../create/composables/usePayload'
 import { type EmployeeFormValues, EmployeeSchema, useFormInitialValues } from '../../create/schema/employee.schema'
 import { useInitForm } from '../composables/useInitForm'
+import { usePayload } from '../composables/usePayload'
 
 const route = useRoute()
 const router = useRouter()
@@ -146,7 +145,7 @@ async function useSubmit (): Promise<void> {
 
 async function onSubmit (event: FormSubmitEvent): Promise<void> {
   if (!event.valid) {
-    scrollToFirstError(event.errors)
+    scrollToFirstError(event.errors, true)
     return
   }
   await handleLoading(useSubmit)

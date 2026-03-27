@@ -6,7 +6,6 @@
         class="col-span-1 md:col-span-3"
         false-label="ปิดใช้งาน"
         true-label="ใช้งาน" />
-
       <LabelField
         v-model="model.idCard"
         :form="form"
@@ -61,6 +60,7 @@
         label="อีเมล"
         name="email"
         hide-error
+        required
         @keypress="keypress.emailNoThai($event)" />
       <LabelField
         v-slot="{ invalid }"

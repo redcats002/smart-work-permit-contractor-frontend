@@ -30,8 +30,7 @@
           <InformationForm
             v-model="form"
             v-model:form-key="formKey"
-            :form="$form"
-            @mount="mount()" />
+            :form="$form" />
         </BaseContainer>
         <BaseContainer>
           <AddressForm
@@ -138,9 +137,7 @@ async function useSubmit (): Promise<void> {
 
 async function onSubmit (event: FormSubmitEvent): Promise<void> {
   if (!event.valid) {
-    const firstErrorMessage = Object.values(event.errors).flat()[0]?.message
-    toast.error(firstErrorMessage || 'กรุณาตรวจสอบข้อมูลให้ถูกต้อง')
-    scrollToFirstError(event.errors)
+    scrollToFirstError(event.errors, true)
     return
   }
   await handleLoading(useSubmit)
