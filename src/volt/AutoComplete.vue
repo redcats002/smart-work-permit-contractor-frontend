@@ -29,6 +29,7 @@ const attrs = useAttrs()
 
 const theme = computed((): AutoCompletePassThroughOptions => {
 	const borderRight = attrs?.dropdown ? 'border-r-0' : ''
+	const invalidClass = attrs?.invalid ? 'p-invalid' : ''
 	let isHaveValue = false
 	if (attrs?.multiple) {
 		const value = Array.isArray(attrs?.modelValue) ? attrs?.modelValue : []
@@ -38,7 +39,7 @@ const theme = computed((): AutoCompletePassThroughOptions => {
 	}
 
 	return {
-		root: `group inline-flex p-fluid:flex`,
+		root: `group ${invalidClass} inline-flex p-fluid:flex`,
 		pcInputText: {
 			root: `cursor-pointer appearance-none rounded-sm outline-hidden 
             bg-surface-0 dark:bg-surface-950
@@ -47,6 +48,7 @@ const theme = computed((): AutoCompletePassThroughOptions => {
             placeholder:text-surface-500 dark:placeholder:text-surface-400
             border ${borderRight} border-surface-300 dark:border-surface-700
             enabled:focus:border-primary group-focus-within:border-primary
+            group-[.p-invalid]:border-red-400! dark:group-[.p-invalid]:border-red-300!
             disabled:bg-surface-200 disabled:text-surface-500
             dark:disabled:bg-surface-700 dark:disabled:text-surface-400
             p-invalid:border-red-400 dark:p-invalid:border-red-300
@@ -61,6 +63,7 @@ const theme = computed((): AutoCompletePassThroughOptions => {
 		inputMultiple: `m-0 list-none cursor-text overflow-visible flex items-center flex-wrap
         px-3! py-1 not-p-empty:px-1 gap-1 text-surface-700 dark:text-surface-0 bg-surface-0 dark:bg-surface-950
         border ${borderRight} border-surface-300 dark:border-surface-700 rounded-sm p-has-dropdown:rounded-e-none w-full
+        group-[.p-invalid]:border-red-400! dark:group-[.p-invalid]:border-red-300!
         p-invalid:border-red-400 dark:p-invalid:border-red-300
 				p-invalid:placeholder:text-red-600! dark:p-invalid:placeholder:text-red-400!
 				[.p-invalid_&]:placeholder:text-red-600! dark:[.p-invalid_&]:placeholder:text-red-400!
@@ -96,8 +99,9 @@ const theme = computed((): AutoCompletePassThroughOptions => {
 		dropdown: `group cursor-pointer inline-flex items-center justify-center select-none overflow-hidden relative w-10 shrink-0 rounded-e-md
         border border-s-0 border-surface-300 dark:border-surface-700
         group-focus-within:!border-primary
-				p-invalid:border-red-400 dark:p-invalid:border-red-300
-        p-invalid:placeholder:text-red-600 dark:p-invalid:placeholder:text-red-400
+				group-[.p-invalid]:border-red-400! dark:group-[.p-invalid]:border-red-300!
+				p-invalid:border-red-400! dark:p-invalid:border-red-300!
+        p-invalid:placeholder:text-red-600! dark:p-invalid:placeholder:text-red-400!
         bg-surface-100 dark:bg-surface-800
         text-surface-600 dark:text-surface-300
         transition-colors duration-200`,
@@ -130,3 +134,5 @@ const theme = computed((): AutoCompletePassThroughOptions => {
 	}
 })
 </script>
+<style>
+</style>

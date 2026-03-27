@@ -2,6 +2,7 @@
   <AutoComplete
     v-bind="$attrs"
     v-model="model"
+    :autocomplete="autocomplete"
     :class="$attrs.multiple ? 'min-h-9 shadow-none!' : 'h-9 shadow-none!'"
     :dropdown="dropdown"
     :name="name"
@@ -76,12 +77,14 @@ interface IProps {
   name?: string
   dropdown?: boolean
   placeholder?: string
+  autocomplete?: string
 }
 
 withDefaults(defineProps<IProps>(), {
-  name: undefined,
+  name: '',
   dropdown: true,
-  placeholder: ''
+  placeholder: '',
+  autocomplete: 'off'
 })
 
 const model = defineModel<TBaseModel | TBaseModel[] | null>()
