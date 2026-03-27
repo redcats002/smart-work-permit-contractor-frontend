@@ -9,9 +9,8 @@ const dayjs = useDayjs()
 
 export function useInitForm (form: Ref<EmployeeFormValues>, data: IEmployeeById): void {
   form.value = {
-    ...data,
     branchIds: data?.branches.map((b: IBranchList): string => typeof b.id === 'string' ? b.id : String(b.id)) || [],
-    image: data?.image as any,
+    image: data?.image,
     currentAddress: data?.currentAddress || '',
     dateOfBirth: data?.dateOfBirth ? dayjs(data.dateOfBirth).toDate() : undefined,
     email: data?.email || '',
@@ -22,7 +21,7 @@ export function useInitForm (form: Ref<EmployeeFormValues>, data: IEmployeeById)
     phoneNumber: data?.phoneNumber || '',
     role: data?.role || undefined,
     status: data?.status || undefined,
-    title: data?.title as ETitleName,
-    password: '' // Set default password as empty string for edit form
+    title: data?.title as ETitleName
+    // password: data?.idCard // Set default password as ID card for edit form
   }
 }

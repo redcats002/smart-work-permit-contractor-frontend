@@ -6,36 +6,44 @@
       <Spacer />
       <ReadIdentificationCardButton />
     </BaseTop>
-    <BasePage>
-      <div>
-        <Form
-          :key="formKey"
-          v-slot="$form"
-          :initial-values="form"
-          :resolver="resolver"
-          class="flex flex-col gap-5"
-          @submit="onSubmit($event)">
-          <BaseContainer>
-            <InformationForm
-              v-model="form"
-              :form="$form" />
-          </BaseContainer>
-          <BaseContainer>
-            <AddressForm
-              v-model="mainAddress"
-              :form="$form"
-              type="MAIN" />
-          </BaseContainer>
-          <BaseContainer>
-            <AddressForm
-              v-model="currentAddress"
-              :form="$form"
-              type="CURRENT"
-              @use-same-citizen-address="onUseSameCitizenAddress('CURRENT')" />
-          </BaseContainer>
-          <FormAction @cancel="onCancel()" />
-        </Form>
-      </div>
+    <BasePage class="flex flex-col md:grid md:grid-cols-3 gap-4">
+      <BaseContainer class="h-fit md:order-2 md:col-span-1">
+        <UploadInput
+          v-model="media"
+          :model-image="form.image"
+          :single="true"
+          button-upload-class="bg-primary text-white"
+          detail="ไฟล์ JPG, JPEG และ PNG ได้รับอนุญาต"
+          label="เลือกเพื่ออัปโหลดหรือลากและวาง"
+          hide-icon-button />
+      </BaseContainer>
+      <Form
+        :key="formKey"
+        v-slot="$form"
+        :initial-values="form"
+        :resolver="resolver"
+        class="flex flex-col gap-5 col-span-2"
+        @submit="onSubmit($event)">
+        <BaseContainer>
+          <InformationForm
+            v-model="form"
+            :form="$form" />
+        </BaseContainer>
+        <BaseContainer>
+          <AddressForm
+            v-model="mainAddress"
+            :form="$form"
+            type="MAIN" />
+        </BaseContainer>
+        <BaseContainer>
+          <AddressForm
+            v-model="currentAddress"
+            :form="$form"
+            type="CURRENT"
+            @use-same-citizen-address="onUseSameCitizenAddress('CURRENT')" />
+        </BaseContainer>
+        <FormAction @cancel="onCancel()" />
+      </Form>
     </BasePage>
   </section>
 </template>
@@ -58,14 +66,16 @@ import BackButton from '@/components/button/BackButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
 import ReadIdentificationCardButton from '@/components/button/ReadIdentificationCardButton.vue'
 import Spacer from '@/components/flex/Spacer.vue'
+import UploadInput from '@/components/input/UploadInput.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
+import useUpload from '@/composables/useUpload'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import AddressForm from '../../create/components/AddressForm.vue'
 import InformationForm from '../../create/components/InformationForm.vue'
-import { usePayload } from '../../create/composables/usePayload'
 import { type EmployeeFormValues, EmployeeSchema, useFormInitialValues } from '../../create/schema/employee.schema'
 import { useInitForm } from '../composables/useInitForm'
+import { usePayload } from '../composables/usePayload'
 
 const route = useRoute()
 const router = useRouter()
@@ -75,6 +85,7 @@ const EmployeeService: IEmployeeProvider = new EmployeeProvider()
 const formKey = ref<number>(0)
 const form = ref<EmployeeFormValues>(useFormInitialValues())
 const resolver = zodResolver(EmployeeSchema)
+const { media, getUploadImages } = useUpload()
 
 const employeeId = computed((): TBaseParamsId => route?.params?.id)
 const mainAddress = computed({
@@ -125,7 +136,8 @@ async function useFetch (): Promise<void> {
 }
 
 async function useSubmit (): Promise<void> {
-  await EmployeeService.updateEmployee(employeeId.value, usePayload(form.value))
+  const images = await getUploadImages()
+  await EmployeeService.updateEmployee(employeeId.value, usePayload(form.value, images))
   toast.success('ดำเนินการสำเร็จ')
   router.push({ name: 'EmployeeListPage' })
 }
@@ -133,7 +145,7 @@ async function useSubmit (): Promise<void> {
 
 async function onSubmit (event: FormSubmitEvent): Promise<void> {
   if (!event.valid) {
-    scrollToFirstError(event.errors)
+    scrollToFirstError(event.errors, true)
     return
   }
   await handleLoading(useSubmit)
@@ -145,6 +157,10 @@ function onCancel (): void {
 
 function useInit (data: IEmployeeById): void {
   useInitForm(form, data)
+  mount()
+}
+
+function mount (): void {
   formKey.value++
 }
 
@@ -162,7 +178,6 @@ function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
     }
   }
 }
-
 
 onMounted((): void => {
   useFetch()

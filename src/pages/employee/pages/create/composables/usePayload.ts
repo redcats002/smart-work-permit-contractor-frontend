@@ -1,9 +1,11 @@
 import type { ICreateEmployeePayload } from '@/models/request/employee/EmployeeReq.model'
+import type { IMedia } from '@/resources/provider/Upload.provider'
 import type { EmployeeFormValues } from '../schema/employee.schema'
 
-export function usePayload (form: EmployeeFormValues): ICreateEmployeePayload {
+export function usePayload (form: EmployeeFormValues, images: IMedia[]): ICreateEmployeePayload {
   return {
     ...form,
-    password: form.password || 'Password1' // Set default password if not provided,
+    image: images?.[0]?.url,
+    password: form.idCard
   }
 }

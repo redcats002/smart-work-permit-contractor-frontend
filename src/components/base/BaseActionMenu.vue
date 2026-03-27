@@ -34,20 +34,26 @@
       </template>
     </Menu>
     <DeleteModal
-      v-model="deleteModalVisible"
-      @confirm="onDeleteConfirm()" />
+      v-if="modalType === 'DELETE'"
+      v-model="modalVisible"
+      @confirm="onModalConfirm()" />
+    <ConfirmModal
+      v-else-if="modalType === 'CONFIRM'"
+      v-model="modalVisible"
+      @confirm="onModalConfirm()" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, useTemplateRef } from 'vue'
 import { Icon } from '@iconify/vue'
+import ConfirmModal from '../modal/ConfirmModal.vue'
 import DeleteModal from '../modal/DeleteModal.vue'
 
 export interface IMenuItemAction {
   label: string
   key: string
-  type: 'TEXT' | 'DELETE'
+  type?: 'TEXT' | 'DELETE' | 'CONFIRM'
   icon?: string
   disabled?: boolean
   action?: () => void
@@ -59,7 +65,7 @@ interface IMenuItem {
   label?: string
   icon?: string
   disabled?: boolean
-  type?: 'TEXT' | 'DELETE'
+  type?: 'TEXT' | 'DELETE' | 'CONFIRM'
   separator?: boolean
   command?: () => void | any
 }
@@ -79,8 +85,9 @@ const props = withDefaults(defineProps<IProps>(), {
 
 const menuRef = useTemplateRef('menu')
 
-const deleteModalVisible = ref<boolean>(false)
-const pendingDeleteAction = ref<(() => void) | undefined>(undefined)
+const modalVisible = ref<boolean>(false)
+const modalType = ref<'DELETE' | 'CONFIRM' | null>(null)
+const pendingModalAction = ref<(() => void) | undefined>(undefined)
 
 const menuItems = computed((): IMenuItem[] =>
   props.items.map((item: IMenuItemAction): IMenuItem => {
@@ -95,10 +102,10 @@ const menuItems = computed((): IMenuItem[] =>
       key: item.key,
       type: item.type,
       command: (): void => {
-        if (item.type === 'DELETE') {
-          // Store the action and open the modal after the menu has closed
-          pendingDeleteAction.value = item.action
-          deleteModalVisible.value = true
+        if (item.type === 'DELETE' || item.type === 'CONFIRM') {
+          pendingModalAction.value = item.action
+          modalType.value = item.type
+          modalVisible.value = true
         } else {
           item.action?.()
         }
@@ -107,10 +114,11 @@ const menuItems = computed((): IMenuItem[] =>
   })
 )
 
-function onDeleteConfirm (): void {
-  pendingDeleteAction.value?.()
-  pendingDeleteAction.value = undefined
-  deleteModalVisible.value = false
+function onModalConfirm (): void {
+  pendingModalAction.value?.()
+  pendingModalAction.value = undefined
+  modalVisible.value = false
+  modalType.value = null
 }
 
 function toggle (event: Event): void {

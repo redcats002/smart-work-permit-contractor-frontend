@@ -1,15 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import {
-  computeInstallmentSchedule,
-  computeMonthlyPayment,
-  computeTotalInterest,
-  type IInstallmentRow,
-  type InstallmentFormValues
-} from './make-contract.schema'
+import type { InstallmentFormValues } from '../schema/make-contract.schema'
+import useInstallment, { type IInstallmentRow } from './useInstallment'
 
 const FIXED_DATE = new Date('2025-01-01T00:00:00.000Z')
 
 // ─── computeInstallmentSchedule ──────────────────────────────────────────────
+const { computeInstallmentSchedule, computeMonthlyPayment, computeTotalInterest } = useInstallment()
 
 describe('computeInstallmentSchedule', (): void => {
   it('returns empty array when loanAmount is 0', (): void => {

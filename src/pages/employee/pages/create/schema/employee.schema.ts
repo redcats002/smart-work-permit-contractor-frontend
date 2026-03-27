@@ -10,11 +10,11 @@ export const EmployeeSchema = z.object({
 
   // ── Personal Information ─────────────────────────────────────────────────
   idCard: z.string().min(13, 'กรุณากรอกเลขบัตรประชาชน 13 หลัก').max(13, 'เลขบัตรประชาชนต้องมี 13 หลัก'),
-  title: z.enum(ETitleName, 'กรุณาเลือกคำนำหน้าชื่อ'),
+  title: schema.enum(ETitleName, 'กรุณาเลือกคำนำหน้าชื่อ'),
   firstName: z.string().min(1, 'กรุณากรอกชื่อ'),
   lastName: z.string().min(1, 'กรุณากรอกนามสกุล'),
   phoneNumber: z.string().min(1, 'กรุณากรอกเบอร์โทรศัพท์'),
-  email: z.email('รูปแบบอีเมลไม่ถูกต้อง').or(z.literal('')).optional(),
+  email: z.email('รูปแบบอีเมลไม่ถูกต้อง').min(1, 'กรุณากรอกอีเมล'),
   dateOfBirth: schema.date('วันเกิด'),
   // image: z.instanceof(File).optional().nullable(),
   image: z.string().optional().nullable(),
@@ -33,7 +33,7 @@ export const EmployeeSchema = z.object({
   // ── Classification ───────────────────────────────────────────────────────
   status: schema.enum(EmployeeStatusEnum, 'กรุณาเลือกสถานะลูกค้า'),
   role: schema.enum(EmployeeRoleEnum, 'ตำแหน่ง'),
-  branchIds: z.array(z.string()).min(1, 'กรุณาเลือกสาขา'),
+  branchIds: z.array(schema.id('สาขา')).min(1, 'กรุณาเลือกสาขาอย่างน้อย 1 สาขา').optional().default([]),
 
   // ── Citizen / Home Address ───────────────────────────────────────────────
   mainAddress: z.object({
@@ -120,7 +120,7 @@ export function useFormInitialValues (): EmployeeFormValues {
     role: '',
     branchIds: [],
     // Classification
-    status: EmployeeStatusEnum.INACTIVE,
+    status: EmployeeStatusEnum.ACTIVE,
     // Citizen / Home address
     mainAddress: {
       address: '',

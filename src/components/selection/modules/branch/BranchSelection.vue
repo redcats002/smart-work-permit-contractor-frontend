@@ -1,8 +1,17 @@
 <template>
-  <AutoCompleteInput
+  <MultiSelectInput
+    v-if="isMultiple"
+    v-bind="attrs"
     v-model="innerModel"
     :invalid="invalid"
-    :multiple="multiple"
+    :options="suggestions"
+    :placeholder="placeholderText"
+    option-label="name" />
+  <AutoCompleteInput
+    v-else
+    v-bind="attrs"
+    v-model="innerModel"
+    :invalid="invalid"
     :placeholder="placeholderText"
     :suggestions="suggestions"
     option-label="name"
@@ -12,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, useAttrs, watch } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel } from '@/models/Global.model'
 import type { IBranchList } from '@/models/response/branch/BranchRes.model'
@@ -20,6 +29,7 @@ import type { TBaseParamsId } from '@/models/response/Response.model'
 import type { IBranchProvider } from '@/resources/provider/branch/Branch.provider'
 import BranchProvider from '@/resources/provider/branch/Branch.provider'
 import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
+import MultiSelectInput from '@/components/input/MultiSelectInput.vue'
 import usePagination from '@/composables/usePagination'
 
 interface IProps {
@@ -28,14 +38,20 @@ interface IProps {
   placeholder?: string
 }
 
+defineOptions({
+  inheritAttrs: false
+})
+
 const props = defineProps<IProps>()
+const attrs = useAttrs()
 
 const BranchService: IBranchProvider = new BranchProvider()
 
 const model = defineModel<TBaseParamsId | TBaseParamsId[] | null>()
 const selectedName = defineModel<string | null>('selectedName', { default: null })
 
-const innerModel = ref<TBaseModel | TBaseModel[] | null>(props.multiple ? [] : null)
+const isMultiple = computed((): boolean => Boolean(props.multiple))
+const innerModel = ref<TBaseModel | TBaseModel[] | null>(isMultiple.value ? [] : null)
 
 const { pagination } = usePagination()
 
@@ -71,7 +87,7 @@ function search (): void {
 }
 
 function syncInnerFromId (): void {
-  if (props.multiple) {
+  if (isMultiple.value) {
     const ids = Array.isArray(model.value) ? model.value.map((id: TBaseParamsId): string => String(id)) : []
     const newItems = ids.length > 0
       ? suggestions.value.filter((i: TBaseModel): boolean => ids.includes(String(i.id)))
@@ -94,7 +110,7 @@ function syncInnerFromId (): void {
 }
 
 watch(innerModel, (val: TBaseModel | TBaseModel[] | null): void => {
-  if (props.multiple) {
+  if (isMultiple.value) {
     const items = Array.isArray(val) ? val : []
     const newIds = items.filter(Boolean).map((item: TBaseModel): string => item.id ? String(item.id) : '') as TBaseParamsId[]
     const currentIds = Array.isArray(model.value) ? model.value.map((id: TBaseParamsId): string => String(id)) : []

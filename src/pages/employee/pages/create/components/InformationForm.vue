@@ -6,7 +6,6 @@
         class="col-span-1 md:col-span-3"
         false-label="ปิดใช้งาน"
         true-label="ใช้งาน" />
-
       <LabelField
         v-model="model.idCard"
         :form="form"
@@ -14,7 +13,6 @@
         name="idCard"
         hide-error
         required />
-
       <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
         <LabelField
           v-slot="{ invalid }"
@@ -36,7 +34,6 @@
           hide-error
           required />
       </div>
-
       <LabelField
         v-model="model.lastName"
         :form="form"
@@ -44,7 +41,6 @@
         name="lastName"
         hide-error
         required />
-
       <LabelField
         v-slot="{ invalid }"
         :form="form"
@@ -58,15 +54,14 @@
           :max-date="dayjs().toDate()"
           name="dateOfBirth" />
       </LabelField>
-
       <LabelField
         v-model="model.email"
         :form="form"
         label="อีเมล"
         name="email"
         hide-error
+        required
         @keypress="keypress.emailNoThai($event)" />
-
       <LabelField
         v-slot="{ invalid }"
         :form="form"
@@ -79,7 +74,6 @@
           :invalid="invalid"
           name="phoneNumber" />
       </LabelField>
-
       <LabelField
         v-slot="{ invalid }"
         :form="form"
@@ -94,7 +88,6 @@
           name="role"
           placeholder="เลือกตำแหน่ง" />
       </LabelField>
-
       <LabelField
         v-slot="{ invalid }"
         :form="form"
@@ -107,7 +100,8 @@
           :invalid="invalid"
           name="branchIds"
           placeholder="เลือกสาขา"
-          multiple />
+          multiple
+          @update:model-value="emits('mount')" />
       </LabelField>
     </div>
   </div>
@@ -132,7 +126,10 @@ import { useFormInitialValues } from '../schema/employee.schema'
 interface IProps {
   form?: IFormState
 }
-
+interface IEmits {
+  mount: []
+}
+const emits = defineEmits<IEmits>()
 defineProps<IProps>()
 
 const dayjs = useDayjs()

@@ -1,3 +1,4 @@
+import type { IMedia } from '@/resources/provider/Upload.provider'
 import z from 'zod'
 import { useDayjs } from './Dayjs'
 
@@ -5,6 +6,7 @@ interface ISchema {
   id: (label: string) => z.ZodOptional<z.ZodType<number | string, any, any>>
   enum: (enumObj: object, label: string) => z.ZodType<any, any, any>
   date: (label: string) => z.ZodType<string, any, any>
+  media: z.ZodType<IMedia, any, any>
 }
 
 const id = (label: string): z.ZodOptional<z.ZodType<number | string, any, any>> =>
@@ -55,8 +57,24 @@ const date = (label: string): z.ZodType<string, any, any> =>
       return dayjs(val).isValid() ? parse : val.toString()
     })
 
+const media = z.object({
+  url: z.string().min(1, 'URL รูปภาพไม่ถูกต้อง'),
+  path: z.string().min(1, 'PATH รูปภาพไม่ถูกต้อง'),
+  name: z.string().min(1, 'ชื่อรูปภาพไม่ถูกต้อง'),
+  file: z
+    .instanceof(File)
+    .optional()
+    .refine((file: File | undefined): boolean => {
+      if (!file) return true
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf']
+      return validTypes.includes(file.type)
+    }, 'ไฟล์ต้องเป็นรูปภาพหรือ PDF'),
+  isNew: z.boolean().optional()
+})
+
 export const schema: ISchema = {
   id,
   enum: enumSchema,
-  date
+  date,
+  media
 }

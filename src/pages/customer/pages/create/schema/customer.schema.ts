@@ -8,7 +8,7 @@ export const CustomerSchema = z.object({
 
   // ── Personal Information ─────────────────────────────────────────────────
   idCard: z.string().min(13, 'กรุณากรอกเลขบัตรประชาชน 13 หลัก').max(13, 'เลขบัตรประชาชนต้องมี 13 หลัก'),
-  titleName: z.enum(ETitleName, 'กรุณาเลือกคำนำหน้าชื่อ'),
+  titleName: schema.enum(ETitleName, 'คำนำหน้าชื่อ'),
   firstName: z.string().min(1, 'กรุณากรอกชื่อ'),
   lastName: z.string().min(1, 'กรุณากรอกนามสกุล'),
   phoneNumber: z.string().min(1, 'กรุณากรอกเบอร์โทรศัพท์'),
@@ -17,7 +17,7 @@ export const CustomerSchema = z.object({
   email: z.email('รูปแบบอีเมลไม่ถูกต้อง').or(z.literal('')).optional(),
 
   // ── Classification ───────────────────────────────────────────────────────
-  status: z.enum(CustomerStatusEnum, 'กรุณาเลือกสถานะลูกค้า'),
+  status: schema.enum(CustomerStatusEnum, 'สถานะลูกค้า'),
   customerGroupId: z.number().optional(),
   occupationId: z.number().optional(),
 

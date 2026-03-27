@@ -2,6 +2,7 @@ import { computed, ref, type Ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
+import { scrollToTop } from '@/utils/ScrollToTop'
 import type { IConfirmMortgagePayload } from '@/models/request/pre-contract/PreContractReq.model'
 import PreContractProvider, { type IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
 import { useFormInitialValues } from '../schema/mortgage.schema'
@@ -13,7 +14,7 @@ interface IUseMortgage {
   onConfirmMortgage (): void
 }
 
-export function useMortgage (useFetch: () => Promise<void>): IUseMortgage {
+export function useMortgage (useFetch: () => void): IUseMortgage {
   const PreContractService: IPreContractProvider = new PreContractProvider()
 
   const route = useRoute()
@@ -27,11 +28,12 @@ export function useMortgage (useFetch: () => Promise<void>): IUseMortgage {
   async function useConfirmMortgage (): Promise<void> {
     await PreContractService.confirmMortgage(contractId.value, formMortgage.value)
     toast.success('ยืนยันการจำนองสำเร็จ')
-    await useFetch()
+    useFetch()
   }
 
   function onSubmitMortgage (): void {
     isMortgageFormVisible.value = true
+    scrollToTop()
   }
 
   function onConfirmMortgage (): void {

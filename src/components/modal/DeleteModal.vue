@@ -16,6 +16,7 @@
     <FormAction
       confirm-label="ใช่, ฉันต้องการลบ"
       mode="delete"
+      fluid
       @cancel="visible = false"
       @confirm="emits('confirm')" />
   </BaseModal>

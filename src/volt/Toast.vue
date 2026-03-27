@@ -16,16 +16,19 @@
 </template>
 
 <script setup lang="ts">
-import TimesIcon from '@primevue/icons/times';
-import Toast, { type ToastPassThroughOptions, type ToastProps } from 'primevue/toast';
-import { ref } from 'vue';
-import { ptViewMerge } from './utils';
+import { ref } from 'vue'
+import TimesIcon from '@primevue/icons/times'
+import Toast, {
+  type ToastPassThroughOptions,
+  type ToastProps
+} from 'primevue/toast'
+import { ptViewMerge } from './utils'
 
 interface Props extends /* @vue-ignore */ ToastProps {}
 defineProps<Props>();
 
 const theme = ref<ToastPassThroughOptions>({
-    root: `w-96 rounded-md whitespace-pre-line break-words
+    root: `max-w-screen md:w-96 rounded-md whitespace-pre-line break-words
         p-top-center:-translate-x-1/2 p-bottom-center:-translate-x-1/2
         p-center:min-w-[20vw] p-center:-translate-x-1/2 p-center:-translate-y-1/2`,
     message: `mb-4 not-p-custom:border not-p-custom:backdrop-blur-sm dark:not-p-custom:backdrop-blur-md not-p-custom:rounded-md

@@ -1,6 +1,8 @@
 <template>
   <AutoCompleteInput
     v-model="innerModel"
+    :invalid="invalid"
+    :name="name"
     :suggestions="suggestions"
     option-label="name"
     complete-on-focus
@@ -21,9 +23,15 @@ const WarehouseService: IWarehouseProvider = new WarehouseProvider()
 
 interface IProps {
   warehouseId?: number | null
+  name?: string
+  invalid?: boolean
 }
 
-const props = defineProps<IProps>()
+const props = withDefaults(defineProps<IProps>(), {
+  warehouseId: null,
+  name: undefined,
+  invalid: false
+})
 
 const model = defineModel<number | null>()
 const selectedName = defineModel<string | null>('selectedName', { default: null })

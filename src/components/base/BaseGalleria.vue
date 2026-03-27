@@ -1,22 +1,37 @@
 <template>
   <Galleria
+    v-model:active-index="activeIndex"
     :pt="theme"
     :pt-options="{ mergeProps: ptViewMerge }"
     :responsive-options="responsiveOptions"
     :value="images"
-    container-style="width:100%; background-color: #FAFAFE; padding: 0.5rem; border-radius: 0.5rem;"
-    unstyled>
+    container-style="width:100%; background-color: #E0E0E0; padding: 1.05rem;"
+    circular
+    unstyled
+    @update:active-index="console.log($event)">
     <template #item="slotProps">
       <img
-        :alt="slotProps.item.originalName"
-        :src="slotProps.item.fileUrl"
-        class="w-full h-96 max-h-96 object-contain rounded-lg">
+        :alt="slotProps.item.name"
+        :src="slotProps.item.url"
+        class="w-full h-96 max-h-96 object-contain bg-white p-2">
     </template>
     <template #thumbnail="slotProps">
-      <img
-        :alt="slotProps.item.originalName"
-        :src="slotProps.item.fileUrl"
-        class="w-full h-16 object-cover rounded cursor-pointer">
+      <div class="bg-white grid place-content-center">
+        <img
+          :alt="slotProps.item.name"
+          :src="slotProps.item.url"
+          class="aspect-square h-16 object-contain cursor-pointer">
+      </div>
+    </template>
+    <template #previousthumbnailicon>
+      <div @click="prev()">
+        <Icon icon="mdi-chevron-left" />
+      </div>
+    </template>
+    <template #nextthumbnailicon>
+      <div @click="next()">
+        <Icon icon="mdi-chevron-right" />
+      </div>
     </template>
   </Galleria>
 </template>
@@ -25,6 +40,7 @@
 import { ref } from 'vue'
 import type { IMedia } from '@/resources/provider/Upload.provider'
 import { ptViewMerge } from '@/volt/utils'
+import { Icon } from '@iconify/vue'
 import type { GalleriaPassThroughOptions, GalleriaResponsiveOptions } from 'primevue'
 import Galleria from 'primevue/galleria'
 
@@ -32,13 +48,14 @@ interface IProps {
   images?: IMedia[]
 }
 
-withDefaults(defineProps<IProps>(), {
+const props = withDefaults(defineProps<IProps>(), {
   images: (): IMedia[] => []
 })
 
+const activeIndex = ref<number>(0)
 const responsiveOptions = ref<GalleriaResponsiveOptions[]>([
-  { breakpoint: '1300px', numVisible: 4 },
-  { breakpoint: '575px', numVisible: 1 }
+  { breakpoint: '1080px', numVisible: 2 },
+  { breakpoint: '768px', numVisible: 1 }
 ])
 
 const theme = ref<GalleriaPassThroughOptions>({
@@ -54,18 +71,26 @@ const theme = ref<GalleriaPassThroughOptions>({
     size-9 rounded-full bg-black/40 hover:bg-black/60 text-white transition-colors`,
   nextIcon: 'size-5',
   caption: 'bg-black/50 text-white text-sm px-4 py-2',
-  thumbnails: 'flex flex-col gap-2',
-  thumbnailContent: 'relative flex items-center',
+  thumbnails: 'flex flex-col justify-center items-center',
+  thumbnailContent: 'relative flex items-center w-fit',
   thumbnailPrevButton: `flex items-center justify-center cursor-pointer size-6 rounded-lg
-    bg-black/30 hover:bg-black/50 text-white transition-colors`,
+    bg-white hover:bg-white/50 text-black transition-colors border border-black`,
   thumbnailPrevIcon: 'size-4',
   thumbnailNextButton: `flex items-center justify-center cursor-pointer size-6 rounded-lg
-    bg-black/30 hover:bg-black/50 text-white transition-colors`,
+    bg-white hover:bg-white/50 text-black transition-colors border border-black`,
   thumbnailNextIcon: 'size-4',
-  thumbnailsViewport: 'overflow-hidden flex-1',
-  thumbnailItems: 'flex px-2 gap-1',
-  thumbnailItem: `cursor-pointer opacity-60 hover:opacity-100 transition-opacity
-    data-[p-active=true]:opacity-100 data-[p-active=true]:ring-2 data-[p-active=true]:ring-primary rounded my-2`,
+  thumbnailsViewport: 'overflow-hidden flex-1 mx-2',
+  thumbnailItems: `w-full
+  flex items-center p-2
+  transition-transform duration-300 ease-out`,
+  thumbnailItem: `cursor-pointer opacity-60 hover:opacity-100
+  transition-all
+  data-[p-active=true]:z-2
+  data-[p-active=true]:opacity-100
+  data-[p-active=true]:ring-3
+  data-[p-active=true]:ring-primary
+  data-[p-active=true]:ring-offset-2
+  data-[p-active=true]:ring-offset-white`,
   indicatorList: 'flex items-center justify-center gap-2 py-2',
   indicator: '',
   indicatorButton: `size-2.5 rounded-full bg-surface-300 transition-colors
@@ -75,4 +100,13 @@ const theme = ref<GalleriaPassThroughOptions>({
     size-9 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors`,
   closeIcon: 'size-5'
 })
+
+function next (): void {
+  if (props.images.length > 3) return
+  activeIndex.value = activeIndex.value === props.images?.length - 1 ? 0 : activeIndex.value + 1
+};
+function prev (): void {
+  if (props.images.length > 3) return
+  activeIndex.value = activeIndex.value === 0 ? props.images?.length - 1 : activeIndex.value - 1
+};
 </script>

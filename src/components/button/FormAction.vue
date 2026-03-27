@@ -1,13 +1,15 @@
 <template>
-  <div class="flex justify-start gap-2.5 w-full md:w-auto">
+  <div class="flex gap-2.5 w-full md:w-auto">
     <ConfirmButton
       :disabled="confirmDisabled"
+      :fluid="fluid"
       :label="confirmLabel"
       :mode="mode"
       type="submit"
       @click="emits('confirm')" />
     <CancelButton
       :disabled="cancelDisabled"
+      :fluid="fluid"
       :to="cancelTo"
       @click="emits('cancel')" />
     <slot />
@@ -25,6 +27,7 @@ interface IProps {
   mode?: 'delete' | 'submit' | ''
   cancelDisabled?: boolean
   confirmDisabled?: boolean
+  fluid?: boolean
 }
 
 interface IEmits {
@@ -39,7 +42,9 @@ withDefaults(defineProps<IProps>(), {
   confirmLabel: 'ยืนยัน',
   mode: '',
   cancelDisabled: false,
-  confirmDisabled: false
+  confirmDisabled: false,
+  fluid: false
+
 })
 </script>
 

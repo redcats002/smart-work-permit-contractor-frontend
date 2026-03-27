@@ -40,7 +40,8 @@
               :class="invalid ? 'border-red-400!' : ''"
               :invalid="invalid"
               :max-fraction-digits="0"
-              :min="1"
+              :min="0"
+              :use-grouping="false"
               class="h-9 shadow-none!"
               name="installmentCount"
               fluid
@@ -126,14 +127,8 @@ import LabelField from '@/components/input/LabelField.vue'
 import InterestTypeSelection from '@/components/selection/modules/static/interest-type/InterestTypeSelection.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import {
-  computeInstallmentSchedule,
-  computeMonthlyPayment,
-  computeTotalInterest,
-  type IInstallmentRow,
-  type InstallmentFormValues,
-  InstallmentSchema
-} from '../schema/make-contract.schema'
+import useInstallment, { type IInstallmentRow } from '../composables/useInstallment'
+import { type InstallmentFormValues, InstallmentSchema } from '../schema/make-contract.schema'
 import InstallmentTable from './InstallmentTable.vue'
 
 interface IExposes {
@@ -142,8 +137,9 @@ interface IExposes {
 interface IProps {
   contract: IPreContractById
 }
-
 const props = withDefaults(defineProps<IProps>(), {})
+
+const { computeInstallmentSchedule, computeMonthlyPayment, computeTotalInterest } = useInstallment()
 
 
 const form = defineModel<InstallmentFormValues>({ required: true })

@@ -121,7 +121,7 @@ const {
   onRequestAppraisal,
   onConfirmAppraisal
 } = useAppraisal(useFetch)
-const { formMortgage, isMortgageFormVisible, onConfirmMortgage, onSubmitMortgage } = useMortgage(useFetch)
+const { formMortgage, isMortgageFormVisible, onConfirmMortgage, onSubmitMortgage } = useMortgage(fetchMakeContract)
 const { formMakeContract, formKey: formKeyMakeAContract, mount: mountMakeAContract, onConfirmMakeContract } = useMakeContract(useFetch)
 const mortgageFormRef = useTemplateRef<InstanceType<typeof MortgageForm>>('mortgageFormRef')
 const installmentSectionRef = useTemplateRef<InstanceType<typeof InstallmentSection>>('installmentSectionRef')
@@ -132,10 +132,6 @@ const primaryCustomer = computed((): ICustomerById | null => {
   return contract.value?.customer
 })
 
-function onTriggerConfirmMortgage (): void {
-  mortgageFormRef.value?.submit()
-}
-
 async function onTriggerMakeContract (): Promise<void> {
   const [validInstallment, validAsset] = await Promise.all([
     installmentSectionRef.value?.submit(),
@@ -145,7 +141,15 @@ async function onTriggerMakeContract (): Promise<void> {
   onConfirmMakeContract()
 }
 
-onMounted((): void => {
+function onTriggerConfirmMortgage (): void {
+  mortgageFormRef.value?.submit()
+}
+
+function fetchMakeContract (): void {
   fetch(formMakeContract, mountMakeAContract)
+}
+
+onMounted((): void => {
+  fetchMakeContract()
 })
 </script>

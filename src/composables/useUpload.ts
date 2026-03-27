@@ -1,43 +1,55 @@
-import { type Ref } from 'vue'
-import UploadProvider, { type IMedia } from '@/resources/provider/Upload.provider'
+import { ref, type Ref } from 'vue'
+import { toast } from '@/plugins/toast'
+import UploadProvider, {
+  type IMedia,
+  type IUploadProvider,
+  type IUploadResponse
+} from '@/resources/provider/Upload.provider'
 
 export interface IUseUpload {
-  uploadAndReplaceImages (images: Ref<IMedia[]>): Promise<Ref<IMedia[]>>
-  getUploadImages (images: IMedia[]): Promise<IMedia[]>
+  media: Ref<IMedia[]>
+  getUploadImages (_media?: IMedia[]): Promise<IMedia[]>
 }
 
 export default function useUpload (): IUseUpload {
-  const UploadService = new UploadProvider()
+  const storageUrl = 'https://storage.googleapis.com/mittae-siam-bucket'
+  const UploadService: IUploadProvider = new UploadProvider()
 
-  async function uploadAndReplaceImages (images: Ref<IMedia[]>): Promise<Ref<IMedia[]>> {
-    for (const i in images.value) {
-      const image = images.value?.[i]
-      if (!image) continue
-      if (image?.file) {
-        const response = await UploadService.uploadFile(image.file)
-        if (!response?.data?.url) continue
-        images.value?.splice(Number(i), 1, { ...image, ...response.data })
+  const media = ref<IMedia[]>([])
+
+  async function getUploadImages (_images: IMedia[]): Promise<IMedia[]> {
+    const actualImages = _images || media.value
+    for (const i in actualImages) {
+      const e = actualImages?.[i]
+      if (!e) continue
+      if (!e?.isNew && (e.url.startsWith(storageUrl) || e.url.startsWith('http'))) continue
+      if (e?.file) {
+        const data = await upload(e.file)
+        if (!data?.originalName) continue
+        actualImages?.splice(Number(i), 1, {
+          name: data.originalName,
+          url: data.fileUrl,
+          path: data.filePath,
+          file: e.file
+        })
       }
     }
-    return images
+    return actualImages
   }
 
-
-  async function getUploadImages (images: IMedia[]): Promise<IMedia[]> {
-    for (const i in images) {
-      const image = images?.[i]
-      if (!image) continue
-      if (image?.file) {
-        const response = await UploadService.uploadFile(image.file as any)
-        if (!response.data?.name) continue
-        images?.splice(Number(i), 1, { ...image, ...response.data })
-      }
+  async function upload (file: File): Promise<IUploadResponse> {
+    try {
+      const { data } = await UploadService.uploadFile(file)
+      return data
+    } catch (error: unknown) {
+      toast.warn('ตรวจสอบ billing ของ Google Cloud Storage ด้วยครับ')
+      console.error('Error uploading file:', error)
+      return { fileUrl: '/assets/images/logo.png', filePath: '', fileType: 'image/jpeg', originalName: file?.name || 'unknown' }
     }
-    return images
   }
 
   return {
-    uploadAndReplaceImages,
+    media,
     getUploadImages
   }
 }

@@ -2,6 +2,7 @@
   <AutoComplete
     v-bind="$attrs"
     v-model="model"
+    :autocomplete="autocomplete"
     :class="$attrs.multiple ? 'min-h-9 shadow-none!' : 'h-9 shadow-none!'"
     :dropdown="dropdown"
     :name="name"
@@ -9,7 +10,7 @@
     dropdown-class="bg-white"
     fluid>
     <template #clearicon="{ clearCallback }">
-      <div class="flex justify-center items-center border border-l-0 border-r-0 border-surface-300">
+      <div class="flex justify-center items-center border-surface-300">
         <Icon
           class="size-5 text-[rgb(164,176,193)] cursor-pointer hover:text-black transition-all duration-200"
           icon="mdi:close"
@@ -30,30 +31,15 @@
           @click="removeCallback($event)" />
       </span>
     </template>
-    <template
-      v-if="dropdown"
-      #dropdown>
-      <div
-        :class="dropdownClass"
-        :data-p="$attrs?.invalid ? 'invalid' : ''">
-        <Icon
-          class="size-5"
-          icon="mdi:chevron-down" />
-      </div>
-    </template>
-    <!-- <template #dropdownicon>
-      <Icon
-        class="size-5 text-[#A4B0C1]"
-        icon="mdi:chevron-down" />
-    </template> -->
+    <!-- !DEPRECATED better use MultiSelectInput -->
     <template
       v-if="$attrs?.multiple"
       #option="{ option }">
       <div
-        class="flex gap-1.5 items-center"
-        @click="onSelect(option)">
+        class="flex gap-1.5 items-center w-full">
         <CheckboxInput
           :model-value="isSelected(option)"
+          class="pointer-events-none"
           readonly />
         {{ option[String($attrs?.optionLabel || 'name')] }}
       </div>
@@ -65,7 +51,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import type { TBaseModel } from '@/models/Global.model'
 import AutoComplete from '@/volt/AutoComplete.vue'
 import { Icon } from '@iconify/vue'
@@ -75,41 +60,21 @@ interface IProps {
   name?: string
   dropdown?: boolean
   placeholder?: string
+  autocomplete?: string
 }
 
 withDefaults(defineProps<IProps>(), {
-  name: undefined,
+  name: '',
   dropdown: true,
-  placeholder: ''
+  placeholder: '',
+  autocomplete: 'off'
 })
 
 const model = defineModel<TBaseModel | TBaseModel[] | null>()
 
-const dropdownClass = computed((): string => {
-  return `cursor-pointer inline-flex items-center justify-center select-none overflow-hidden relative w-10 shrink-0 rounded-e-md
-        border border-s-0 border-surface-300 dark:border-surface-700
-        group-hover:border-surface-400! dark:group-hover:border-surface-600
-        group-focus-within:!border-primary
-				p-invalid:border-red-400 dark:p-invalid:border-red-300
-        p-invalid:placeholder:text-red-600 dark:p-invalid:placeholder:text-red-400
-        bg-white dark:bg-surface-800
-        text-surface-600 dark:text-surface-300
-        transition-colors duration-200`
-})
-
 function isSelected (option: TBaseModel): boolean {
   if (Array.isArray(model.value)) return model.value.some((item: TBaseModel): boolean => item?.id === option.id)
   return model.value?.id === option?.id
-}
-
-function onSelect (value: TBaseModel): void {
-  if (!Array.isArray(model.value)) return
-  const exists = model.value.some((item: TBaseModel): boolean => item?.id === value?.id)
-  if (exists) {
-    model.value = model.value.filter((item: TBaseModel): boolean => item?.id !== value?.id).slice()
-  } else {
-    model.value = [...model.value, value]
-  }
 }
 </script>
 

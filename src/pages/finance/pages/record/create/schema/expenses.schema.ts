@@ -3,7 +3,7 @@ import { ExpensesTypeEnum } from '@/enums/modules/finance/ExpenseType.enum'
 import { z } from 'zod'
 
 export const ExpensesSchema = z.object({
-  expensesType: z.enum(ExpensesTypeEnum, 'กรุณาเลือกคำนำหน้าชื่อ'),
+  expensesType: schema.enum(ExpensesTypeEnum, 'ประเภทค่าใช้จ่าย'),
   expensesId: z.number().min(1, 'กรุณาเลือกค่าใช้จ่าย').nullable(),
   categoryId: z.number().min(1, 'กรุณาเลือกหมวดหมู่ค่าใช้จ่าย').nullable(),
   amount: z.number().min(1, 'กรุณาเลือกกรอกจำนวนเงิน'),

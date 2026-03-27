@@ -10,7 +10,8 @@
         <InformationDetail
           :data="employee"
           @delete="onDelete()"
-          @edit="onEdit()" />
+          @edit="onEdit()"
+          @reset-password="onResetPassword()" />
       </div>
     </BasePage>
   </section>
@@ -52,6 +53,15 @@ async function useDelete (): Promise<void> {
   router.push({ name: 'EmployeeListPage' })
 }
 
+async function useResetPassword (): Promise<void> {
+  const mock = true // TODO: remove mock and uncomment code below when API is ready
+
+  if (mock) return toast.warn('ฟีเจอร์นี้ยังไม่พร้อมใช้งานในขณะนี้')
+  if (!employeeId.value) throw new Error('Employee ID is required for password reset')
+  await EmployeeService.resetPassword(employeeId.value)
+  toast.success('รีเซ็ตรหัสผ่านสำเร็จ')
+}
+
 function fetch (): void {
   handleLoading(useFetch)
 }
@@ -62,6 +72,10 @@ function onEdit (): void {
 
 function onDelete (): void {
   handleLoading(useDelete)
+}
+
+function onResetPassword (): void {
+  handleLoading(useResetPassword)
 }
 
 onMounted((): void => {

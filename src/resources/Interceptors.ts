@@ -34,8 +34,9 @@ export function onResponse (response: AxiosResponse): Promise<any> {
 export async function onResponseError (error: AxiosError): Promise<any> {
   const AuthStore = useAuthStore()
   const newError = error
+  const unauthorized = newError?.status === 401
   if (
-    error.request.responseType === 'blob'
+    error.request && error.request.responseType === 'blob'
     && error?.response?.data instanceof Blob
     && error?.response?.data?.type
     && error?.response?.data?.type.toLowerCase().indexOf('json') !== -1
@@ -57,14 +58,14 @@ export async function onResponseError (error: AxiosError): Promise<any> {
 
     return Promise.reject(newError?.response?.data)
   }
-  if (newError?.response?.data) {
-    return Promise.reject(newError.response.data)
-  }
-  if (newError.response?.status === 401) {
+  if (newError.response?.status === 401 || unauthorized) {
     const baseUrl = window.location.origin
     AuthStore.logout()
     window.location.href = `${baseUrl}/auth/login`
     return Promise.reject(newError.response?.data)
+  }
+  if (newError?.response?.data) {
+    return Promise.reject(newError.response.data)
   }
 
   return Promise.reject(newError)

@@ -31,8 +31,8 @@
     <!-- Attachments -->
     <div class="space-y-2">
       <div
-        class="text-sm"
-        v-html="content" />
+        v-sanitize.BaseContainer="content"
+        class="text-sm" />
 
       <div
         v-if="files.length"
@@ -58,13 +58,13 @@
 </template>
 
 <script setup lang="ts">
-import type { IUploadResponse } from '@/resources/provider/Upload.provider'
 import { useDayjs } from '@/utils/Dayjs'
+import type { IAttachments } from '@/models/response/announcement/AnnouncementRes.model'
 import { Icon } from '@iconify/vue'
 
 interface IProps {
   content: string
-  files?: IUploadResponse[]
+  files?: IAttachments[]
   authorName: string
   role: string
   createdAt: string
@@ -72,7 +72,7 @@ interface IProps {
 const dayjs = useDayjs()
 
 withDefaults(defineProps<IProps>(), {
-  files: (): IUploadResponse[] => []
+  files: (): IAttachments[] => []
 })
 
 </script>

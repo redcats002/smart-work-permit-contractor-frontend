@@ -29,6 +29,7 @@
         <InputNumber
           v-model="model.options[i].maxLimit"
           :invalid="invalid"
+          :max="100"
           :name="`options.${i}.maxLimit`"
           class="h-9 w-full" />
       </LabelField>

@@ -1,23 +1,27 @@
 import type { IBaseSuccessResponse } from '@/models/response/Response.model'
 import HttpRequest from '../HttpRequest'
 
-// export interface IUploadResponse {
-//   fileUrl: string
-//   filePath: string
-//   fileType: string | null
-//   originalName: string
-// }
 export interface IUploadResponse {
-  name: string
-  url: string
-  path: string
+  fileUrl: string
+  filePath: string
+  fileType: string | null
+  originalName: string
 }
+// export interface IUploadResponse {
+//   name: string
+//   url: string
+//   path: string
+// }
 
 
 type TUploadResponse = IBaseSuccessResponse<IUploadResponse>
 
-export interface IMedia extends IUploadResponse {
+export interface IMedia {
   file?: File
+  isNew?: boolean
+  name: string
+  url: string
+  path: string
 }
 
 export interface IUploadProvider {
@@ -25,12 +29,12 @@ export interface IUploadProvider {
 }
 
 class UploadProvider extends HttpRequest implements IUploadProvider {
-  private urlPrefix: string = '/v1/api/storage/upload'
+  private urlPrefix: string = '/api/v1/upload'
 
   public async uploadFile (file: File): Promise<TUploadResponse> {
-    this.setLogHeader()
     const form = new FormData()
-    form.append('file', file, encodeURIComponent(file.name))
+    const fileName = encodeURIComponent(file.name)
+    form.append('file', file, fileName)
     const response = await this.post(`${this.urlPrefix}`, form, {
       headers: {
         'Content-Type': 'multipart/form-data'

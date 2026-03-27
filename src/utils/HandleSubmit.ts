@@ -1,4 +1,5 @@
 import type { Ref, ShallowRef } from 'vue'
+import { toast } from '@/plugins/toast'
 import type { IFormType } from '@/models/Form.model'
 import type { FormSubmitEvent } from '@primevue/forms'
 
@@ -35,9 +36,14 @@ export async function handleSubmit (formRef?: Ref<any>): Promise<boolean> {
   return true
 }
 
-export function scrollToFirstError (errors: Record<string, any>): void {
+export function scrollToFirstError (errors: Record<string, any>, showToast: boolean = true): void {
   const keys = Object.keys(errors)
   if (keys.length === 0) return
+
+  if (showToast) {
+    const firstErrorMessage = Object.values(errors).flat()[0]?.message
+    toast.error(firstErrorMessage || 'กรุณาตรวจสอบข้อมูลให้ถูกต้อง')
+  }
 
   const selector = keys.map((key: string): string => `[name="${key}"]`).join(',')
   const firstElement = document.querySelector(selector)

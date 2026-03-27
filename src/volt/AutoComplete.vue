@@ -29,6 +29,7 @@ const attrs = useAttrs()
 
 const theme = computed((): AutoCompletePassThroughOptions => {
 	const borderRight = attrs?.dropdown ? 'border-r-0' : ''
+	const invalidClass = attrs?.invalid ? 'p-invalid' : ''
 	let isHaveValue = false
 	if (attrs?.multiple) {
 		const value = Array.isArray(attrs?.modelValue) ? attrs?.modelValue : []
@@ -38,7 +39,7 @@ const theme = computed((): AutoCompletePassThroughOptions => {
 	}
 
 	return {
-		root: `group inline-flex p-fluid:flex group`,
+		root: `group ${invalidClass} inline-flex p-fluid:flex`,
 		pcInputText: {
 			root: `cursor-pointer appearance-none rounded-sm outline-hidden 
             bg-surface-0 dark:bg-surface-950
@@ -46,8 +47,8 @@ const theme = computed((): AutoCompletePassThroughOptions => {
             text-surface-700 dark:text-surface-0
             placeholder:text-surface-500 dark:placeholder:text-surface-400
             border ${borderRight} border-surface-300 dark:border-surface-700
-            group-hover:border-surface-400! dark:group-hover:border-surface-600!
             enabled:focus:border-primary group-focus-within:border-primary
+            group-[.p-invalid]:border-red-400! dark:group-[.p-invalid]:border-red-300!
             disabled:bg-surface-200 disabled:text-surface-500
             dark:disabled:bg-surface-700 dark:disabled:text-surface-400
             p-invalid:border-red-400 dark:p-invalid:border-red-300
@@ -57,16 +58,22 @@ const theme = computed((): AutoCompletePassThroughOptions => {
             p-large:text-lg p-large:px-[0.875rem] p-large:py-[0.625rem]
             p-has-dropdown:flex-auto p-has-dropdown:w-[1%] p-has-dropdown:rounded-e-none
             transition-colors duration-200 shadow-[0_1px_2px_0_rgba(18,18,23,0.05)]`
+			// group-hover:border-surface-400 dark:group-hover:border-surface-600 //TODO: (put it on root) but it not group with dropdown
 		},
 		inputMultiple: `m-0 list-none cursor-text overflow-visible flex items-center flex-wrap
         px-3! py-1 not-p-empty:px-1 gap-1 text-surface-700 dark:text-surface-0 bg-surface-0 dark:bg-surface-950
         border ${borderRight} border-surface-300 dark:border-surface-700 rounded-sm p-has-dropdown:rounded-e-none w-full
-        group-hover:border-surface-400 dark:group-hover:border-surface-600 p-focus:border-primary group-focus-within:border-primary
+        group-[.p-invalid]:border-red-400! dark:group-[.p-invalid]:border-red-300!
         p-invalid:border-red-400 dark:p-invalid:border-red-300
+				p-invalid:placeholder:text-red-600! dark:p-invalid:placeholder:text-red-400!
+				[.p-invalid_&]:placeholder:text-red-600! dark:[.p-invalid_&]:placeholder:text-red-400!
         p-filled:bg-surface-50 dark:p-filled:bg-surface-800
         p-disabled:pointer-events-none p-disabled:bg-surface-200 p-disabled:text-surface-500 dark:p-disabled:bg-surface-700 dark:p-disabled:text-surface-400
+				enabled:focus:border-primary group-focus-within:border-primary
         shadow-[0_1px_2px_0_rgba(18,18,23,0.05)]
         transition-colors duration-200 outline-none`,
+		// group-hover:border-surface-400 dark:group-hover:border-surface-600 p-focus:border-primary group-focus-within:border-primary //TODO: (put it on root) but it not group with dropdown
+
 		chipItem: ``,
 		pcChip: {
 			root: `inline-flex items-center rounded-sm gap-2 px-3 py-1
@@ -85,17 +92,20 @@ const theme = computed((): AutoCompletePassThroughOptions => {
 		chipIcon: ``,
 		inputChip: `flex-auto inline-flex py-1 max-w-30 h-6! ${isHaveValue ? 'hidden' : ''}`,
 		input: `border-none outline-none bg-transparent m-0 p-0 shadow-none rounded-none w-full text-inherit
-        placeholder:text-surface-500 dark:placeholder:text-surface-400`,
+				placeholder:text-surface-500 dark:placeholder:text-surface-400
+				[[data-p~="invalid"]_&]:placeholder:text-red-600!
+				dark:[[data-p~="invalid"]_&]:placeholder:text-red-400!`,
 		loader: `absolute top-1/2 -mt-2 end-3 p-has-dropdown:end-[3.25rem]`,
-		dropdown: `cursor-pointer inline-flex items-center justify-center select-none overflow-hidden relative w-10 shrink-0 rounded-e-md
+		dropdown: `group cursor-pointer inline-flex items-center justify-center select-none overflow-hidden relative w-10 shrink-0 rounded-e-md
         border border-s-0 border-surface-300 dark:border-surface-700
-        group-hover:border-surface-400 dark:group-hover:border-surface-600
         group-focus-within:!border-primary
-				p-invalid:border-red-400 dark:p-invalid:border-red-300
-        p-invalid:placeholder:text-red-600 dark:p-invalid:placeholder:text-red-400
+				group-[.p-invalid]:border-red-400! dark:group-[.p-invalid]:border-red-300!
+				p-invalid:border-red-400! dark:p-invalid:border-red-300!
+        p-invalid:placeholder:text-red-600! dark:p-invalid:placeholder:text-red-400!
         bg-surface-100 dark:bg-surface-800
         text-surface-600 dark:text-surface-300
         transition-colors duration-200`,
+        // group-hover:border-surface-400 dark:group-hover:border-surface-600  //TODO: (put it on root) but it not group with dropdown
 		dropdownIcon: ``,
 		overlay: `p-portal-self:min-w-full absolute top-0 left-0 rounded-sm
         bg-surface-0 dark:bg-surface-900
@@ -124,3 +134,5 @@ const theme = computed((): AutoCompletePassThroughOptions => {
 	}
 })
 </script>
+<style>
+</style>
