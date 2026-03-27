@@ -1,84 +1,42 @@
 <template>
-  <AutoCompleteInput
-    v-model="innerModel"
-    :invalid="props.invalid"
-    :suggestions="suggestions"
-    option-label="name"
-    complete-on-focus
-    force-selection
-    @complete="search()" />
+  <BaseSelection
+    v-bind="{
+      ...props,
+      ...attrs
+    }"
+    v-model="modelValue"
+    v-model:selected-name="selectedNameValue"
+    :empty-model-value="undefined"
+    :fetch-suggestions="fetchSuggestions"
+    :map-option-to-model="mapOptionToModel"
+    option-label="name" />
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { useAttrs } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel, TBaseOption } from '@/models/Global.model'
 import { DocumentTypeItems, type TDocumentType } from '@/enums/modules/contract/DocumentType.enum'
-import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
-import usePagination from '@/composables/usePagination'
+import BaseSelection from '@/components/selection/modules/BaseSelection.vue'
 
 interface IProps {
   invalid?: boolean
 }
 
 const props = defineProps<IProps>()
-const model = defineModel<TDocumentType>()
-const selectedName = defineModel<string | null>('selectedName', { default: null })
+const attrs = useAttrs()
 
-const innerModel = ref<TBaseModel | null>(null)
+const modelValue = defineModel<TDocumentType>()
+const selectedNameValue = defineModel<string | null>('selectedName', { default: null })
 
-const { pagination } = usePagination()
-
-const suggestions = ref<TBaseModel[]>([])
-
-async function useFetch (): Promise<void> {
-  const items = DocumentTypeItems
-
-  suggestions.value = (items ?? []).map((item: TBaseOption): TBaseModel => ({
+const fetchSuggestions = async (): Promise<TBaseModel[]> => await handleLoading(async (): Promise<TBaseModel[]> => (
+  (DocumentTypeItems ?? []).map((item: TBaseOption): TBaseModel => ({
     id: item.value!,
     name: item?.label
   }))
-}
+)) ?? []
 
-function fetch (): void {
-  handleLoading(useFetch)
-}
-
-function search (): void {
-  pagination.value.page = 1
-  fetch()
-}
-
-function syncInnerFromId (): void {
-  if (model.value == null) {
-    innerModel.value = null
-    selectedName.value = null
-    return
-  }
-
-  innerModel.value
-    = suggestions.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
-  selectedName.value = innerModel.value?.name ?? null
-}
-
-watch(innerModel, (val: TBaseModel | null): void => {
-  model.value = val?.id ? val.id as TDocumentType : undefined
-  selectedName.value = val?.name ?? null
-})
-
-watch(model, (): void => {
-  syncInnerFromId()
-})
-
-watch(
-  suggestions, (): void => {
-    syncInnerFromId()
-  }, { immediate: true }
-)
-
-onMounted((): void => {
-  fetch()
-})
+const mapOptionToModel = (item: TBaseModel): TDocumentType | undefined => item?.id ? item.id as TDocumentType : undefined
 </script>
 
 <style scoped></style>

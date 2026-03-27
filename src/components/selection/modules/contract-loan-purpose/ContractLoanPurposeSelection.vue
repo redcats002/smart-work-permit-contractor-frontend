@@ -1,72 +1,43 @@
 <template>
-  <AutoCompleteInput
-    v-model="innerModel"
-    :suggestions="suggestions"
-    option-label="name"
-    complete-on-focus
-    force-selection
-    @complete="search()" />
+  <BaseSelection
+    v-bind="attrs"
+    v-model="modelValue"
+    v-model:selected-name="selectedNameValue"
+    :fetch-suggestions="fetchSuggestions"
+    :map-option-to-model="mapOptionToModel"
+    option-label="name" />
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { useAttrs } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel } from '@/models/Global.model'
 import type { IContractLoanPurposeList } from '@/models/response/contract-loan-purpose/ContractLoanPurposeRes.model'
 import ContractLoanPurposeProvider, { type IContractLoanPurposeProvider } from '@/resources/provider/contract-loan-purpose/ContractLoanPurpose.provider'
-import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
+import BaseSelection from '@/components/selection/modules/BaseSelection.vue'
 import usePagination from '@/composables/usePagination'
 
+const attrs = useAttrs()
 const ContractLoanPurposeService: IContractLoanPurposeProvider = new ContractLoanPurposeProvider()
 
-const model = defineModel<number | null>()
-const selectedName = defineModel<string | null>('selectedName', { default: null })
+const modelValue = defineModel<number | null>()
+const selectedNameValue = defineModel<string | null>('selectedName', { default: null })
 
-const innerModel = ref<TBaseModel | null>(null)
 const { pagination } = usePagination()
-const suggestions = ref<TBaseModel[]>([])
 
-async function useFetch (): Promise<void> {
+const fetchSuggestions = async (): Promise<TBaseModel[]> => await handleLoading(async (): Promise<TBaseModel[]> => {
   const response = await ContractLoanPurposeService.getContractLoanPurposePaginate({
     page: pagination.value.page,
     limit: 9999
   })
-  suggestions.value = (response.data ?? []).map((item: IContractLoanPurposeList): TBaseModel => ({
+
+  return (response.data ?? []).map((item: IContractLoanPurposeList): TBaseModel => ({
     id: item.id!,
     name: item.name
   }))
-}
+}) ?? []
 
-function fetch (): void {
-  handleLoading(useFetch)
-}
-
-function search (): void {
-  pagination.value.page = 1
-  fetch()
-}
-
-function syncInnerFromId (): void {
-  if (model.value == null) {
-    innerModel.value = null
-    selectedName.value = null
-    return
-  }
-  innerModel.value = suggestions.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
-  selectedName.value = innerModel.value?.name ?? null
-}
-
-watch(innerModel, (val: TBaseModel | null): void => {
-  model.value = val?.id ? Number(val.id) : null
-  selectedName.value = val?.name ?? null
-})
-watch(model, (): void => {
-  syncInnerFromId()
-})
-watch(suggestions, (): void => {
-  syncInnerFromId()
-}, { immediate: true })
-onMounted((): void => {
-  fetch()
-})
+const mapOptionToModel = (item: TBaseModel): number | null => item?.id != null ? Number(item.id) : null
 </script>
+
+<style scoped></style>

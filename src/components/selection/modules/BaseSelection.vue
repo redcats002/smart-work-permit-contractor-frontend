@@ -25,10 +25,15 @@ interface IBaseSelectionProps<T> {
   multiple?: boolean
   placeholder?: string
   optionLabel?: string
-  fetchSuggestions: () => Promise<T[]>
+  fetchSuggestions: (query?: string) => Promise<T[]>
   completeOnFocus?: boolean
   forceSelection?: boolean
   showClear?: boolean
+  mapOptionToModel?: (item: T) => any
+  getOptionValue?: (item: T) => any
+  refreshDeps?: unknown[]
+  emptyModelValue?: any
+  isEmptyModelValue?: (value: any) => boolean
 }
 
 defineOptions({
@@ -40,7 +45,12 @@ const props = withDefaults(defineProps<IBaseSelectionProps<T>>(), {
   optionLabel: 'name',
   completeOnFocus: true,
   forceSelection: true,
-  multiple: false
+  multiple: false,
+  mapOptionToModel: undefined,
+  getOptionValue: undefined,
+  refreshDeps: undefined,
+  emptyModelValue: undefined,
+  isEmptyModelValue: undefined
 })
 const attrs = useAttrs()
 
@@ -50,6 +60,10 @@ const selectedName = defineModel<string | null>('selectedName', { default: null 
 const innerModel = ref<any | any[] | null>(props.multiple ? [] : null)
 const suggestions = ref<any[]>([])
 const optionLabel = computed((): string => props.optionLabel ?? 'name')
+const getOptionValue = (item: T): any => props.getOptionValue?.(item) ?? (item as any)?.id
+const mapOptionToModel = (item: T): any => props.mapOptionToModel?.(item) ?? getOptionValue(item)
+const emptyModelValue = computed((): any => props.emptyModelValue ?? null)
+const isEmptyModelValue = (value: any): boolean => props.isEmptyModelValue?.(value) ?? value == null
 
 const placeholderText = computed((): string | undefined => {
   if (props.placeholder) {
@@ -64,7 +78,7 @@ async function fetch (): Promise<void> {
 }
 
 async function search (query?: string): Promise<void> {
-  await fetch()
+  suggestions.value = await props.fetchSuggestions(query)
 
   const normalizedQuery = query?.trim().toLowerCase()
 
@@ -84,22 +98,24 @@ async function search (query?: string): Promise<void> {
 function syncInnerFromId (): void {
   if (props.multiple) {
     const ids = Array.isArray(model.value) ? model.value.map((id: any): string => String(id)) : []
-    const newItems = ids.length > 0
-      ? suggestions.value.filter((i: any): boolean => ids.includes(String(i.id)))
-      : []
+    const newItems = ids.length > 0 ? suggestions.value.filter((item: T): boolean => ids.includes(String(getOptionValue(item)))) : []
     const current = Array.isArray(innerModel.value) ? innerModel.value : []
-    if (current.length === newItems.length && current.every((item: any, i: number): boolean => item.id === newItems[i].id)) return
+    if (
+      current.length === newItems.length
+      && current.every((item: T, i: number): boolean => String(getOptionValue(item)) === String(getOptionValue(newItems[i])))
+    )
+      return
     innerModel.value = newItems
     return
   }
-  if (model.value == null || Array.isArray(model.value)) {
-    if (innerModel.value === null) return
+  if (isEmptyModelValue(model.value) || Array.isArray(model.value)) {
+    if (innerModel.value === null || innerModel.value === emptyModelValue.value) return
     innerModel.value = null
     selectedName.value = null
     return
   }
-  const found = suggestions.value.find((i: any): boolean => i.id === model.value) ?? null
-  if ((innerModel.value as any | null)?.id === found?.id) return
+  const found = suggestions.value.find((item: T): boolean => String(getOptionValue(item)) === String(model.value)) ?? null
+  if (String(getOptionValue(innerModel.value as T)) === String(getOptionValue(found as T))) return
   innerModel.value = found
   selectedName.value = found?.[optionLabel.value] ?? null
 }
@@ -107,14 +123,14 @@ function syncInnerFromId (): void {
 watch(innerModel, (val: any | any[] | null): void => {
   if (props.multiple) {
     const items = Array.isArray(val) ? val : []
-    const newIds = items.filter(Boolean).map((item: any): string => item.id ? String(item.id) : '')
+    const newIds = items.filter(Boolean).map((item: T): any => mapOptionToModel(item))
     const currentIds = Array.isArray(model.value) ? model.value.map((id: any): string => String(id)) : []
     if (newIds.length === currentIds.length && newIds.every((id: any, i: number): boolean => String(id) === currentIds[i])) return
     model.value = newIds
     return
   }
   const item = val as any | null
-  model.value = item?.id ? String(item.id) : null
+  model.value = item ? mapOptionToModel(item) : emptyModelValue.value
   selectedName.value = item?.[optionLabel.value] ?? null
 })
 
@@ -122,9 +138,21 @@ watch(model, (): void => {
   syncInnerFromId()
 })
 
-watch(suggestions, (): void => {
-  syncInnerFromId()
-}, { immediate: true })
+watch(
+  suggestions, (): void => {
+    syncInnerFromId()
+  }, { immediate: true }
+)
+
+watch(
+  (): unknown[] | undefined => props.refreshDeps, (): void => {
+    model.value = props.multiple ? [] : emptyModelValue.value
+    innerModel.value = props.multiple ? [] : null
+    selectedName.value = null
+    suggestions.value = []
+    fetch()
+  }, { deep: true }
+)
 
 onMounted((): void => {
   fetch()

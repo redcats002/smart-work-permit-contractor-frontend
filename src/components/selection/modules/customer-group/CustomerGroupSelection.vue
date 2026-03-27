@@ -1,85 +1,44 @@
 <template>
-  <AutoCompleteInput
-    v-model="innerModel"
-    :suggestions="suggestions"
-    option-label="name"
-    complete-on-focus
-    force-selection
-    @complete="search()" />
+  <BaseSelection
+    v-bind="attrs"
+    v-model="modelValue"
+    v-model:selected-name="selectedNameValue"
+    :fetch-suggestions="fetchSuggestions"
+    :map-option-to-model="mapOptionToModel"
+    option-label="name" />
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { useAttrs } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel } from '@/models/Global.model'
 import type { ICustomerGroupList } from '@/models/response/customer-group/CustomerGroupRes.model'
 import type { ICustomerGroupProvider } from '@/resources/provider/customer-group/CustomerGroup.provider'
 import CustomerGroupProvider from '@/resources/provider/customer-group/CustomerGroup.provider'
-import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
+import BaseSelection from '@/components/selection/modules/BaseSelection.vue'
 import usePagination from '@/composables/usePagination'
 
+const attrs = useAttrs()
 const CustomerGroupService: ICustomerGroupProvider = new CustomerGroupProvider()
 
-const model = defineModel<number | null>()
-const selectedName = defineModel<string | null>('selectedName', { default: null })
-
-const innerModel = ref<TBaseModel | null>(null)
+const modelValue = defineModel<number | null>()
+const selectedNameValue = defineModel<string | null>('selectedName', { default: null })
 
 const { pagination } = usePagination()
 
-const suggestions = ref<TBaseModel[]>([])
-
-async function useFetch (): Promise<void> {
+const fetchSuggestions = async (): Promise<TBaseModel[]> => await handleLoading(async (): Promise<TBaseModel[]> => {
   const response = await CustomerGroupService.getCustomerGroupPaginate({
     page: pagination.value.page,
     limit: 9999
   })
 
-  suggestions.value = (response.data ?? []).map((item: ICustomerGroupList): TBaseModel => ({
+  return (response.data ?? []).map((item: ICustomerGroupList): TBaseModel => ({
     id: item.id ?? null,
     name: item.name ?? ''
   }))
-}
+}) ?? []
 
-function fetch (): void {
-  handleLoading(useFetch)
-}
-
-function search (): void {
-  pagination.value.page = 1
-  fetch()
-}
-
-function syncInnerFromId (): void {
-  if (model.value == null) {
-    innerModel.value = null
-    selectedName.value = null
-    return
-  }
-
-  innerModel.value
-    = suggestions.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
-  selectedName.value = innerModel.value?.name ?? null
-}
-
-watch(innerModel, (val: TBaseModel | null): void => {
-  model.value = val?.id ? Number(val.id) : null
-  selectedName.value = val?.name ?? null
-})
-
-watch(model, (): void => {
-  syncInnerFromId()
-})
-
-watch(
-  suggestions, (): void => {
-    syncInnerFromId()
-  }, { immediate: true }
-)
-
-onMounted((): void => {
-  fetch()
-})
+const mapOptionToModel = (item: TBaseModel): number | null => item?.id != null ? Number(item.id) : null
 </script>
 
 <style scoped></style>
