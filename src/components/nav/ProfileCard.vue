@@ -1,10 +1,10 @@
 <template>
   <div
-    class="h-12 border border-gray-300 rounded-md px-2 py-1 md:px-3 flex items-center gap-2 min-w-fit md:min-w-50">
+    class="h-10 border border-gray-300 rounded-md px-2 py-1 md:px-3 flex items-center gap-2 min-w-fit md:min-w-50">
     <div class="flex items-center gap-2 w-full">
       <Avatar
         :image="authStore.user?.image"
-        class="shrink-0 border border-gray-300 h-9 w-9"
+        class="shrink-0 border border-gray-300 h-7! w-7!"
         shape="circle"
         size="normal">
         <Icon
@@ -12,10 +12,10 @@
           icon="solar:user-bold" />
       </Avatar>
       <div class="hidden md:block">
-        <p class="text-sm font-medium line-clamp-1">
+        <p class="text-xs font-medium line-clamp-1">
           {{ formatter.fullName(authStore.user) }}
         </p>
-        <p class="text-xs text-gray-500 line-clamp-1">
+        <p class="text-2xs text-gray-500 line-clamp-1">
           {{ formatter.stringFormatToCapitalize(authStore.user?.role || '') }}
         </p>
       </div>
