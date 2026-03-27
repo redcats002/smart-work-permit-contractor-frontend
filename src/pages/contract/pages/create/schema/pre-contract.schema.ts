@@ -43,11 +43,7 @@ const PreAssetBaseSchema = z.object({
   detail: z.string().default(''),
   realEstateForm: LandSchema.optional(),
   vehicleForm: VehicleSchema.optional(),
-  images: z.array(z.object({
-    id: schema.id('รหัสรูปภาพ'),
-    path: z.string().min(1, 'PATH รูปภาพไม่ถูกต้อง'),
-    url: z.string().min(1, 'URL รูปภาพไม่ถูกต้อง')
-  })).optional().default([])
+  images: z.array(schema.media).optional().default([])
 })
 
 type IPreAssetBase = z.infer<typeof PreAssetBaseSchema>
