@@ -18,6 +18,7 @@ type TUploadResponse = IBaseSuccessResponse<IUploadResponse>
 
 export interface IMedia {
   file?: File
+  isNew?: boolean
   name: string
   url: string
   path: string
@@ -32,8 +33,8 @@ class UploadProvider extends HttpRequest implements IUploadProvider {
 
   public async uploadFile (file: File): Promise<TUploadResponse> {
     const form = new FormData()
-    // const fileName= encodeURIComponent(file.name)
-    form.append('file', file)
+    const fileName = encodeURIComponent(file.name)
+    form.append('file', file, fileName)
     const response = await this.post(`${this.urlPrefix}`, form, {
       headers: {
         'Content-Type': 'multipart/form-data'
