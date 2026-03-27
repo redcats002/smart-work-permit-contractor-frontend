@@ -49,8 +49,11 @@ const theme = ref<MultiSelectPassThroughOptions>({
         p-disabled:bg-surface-200 p-disabled:text-surface-500 dark:p-disabled:bg-surface-700 dark:p-disabled:text-surface-400 p-disabled:pointer-events-none
         shadow-[0_1px_2px_0_rgba(18,18,23,0.05)]
         transition-colors duration-200`,
-    labelContainer: `overflow-hidden flex-auto`,
-    label: `flex items-center gap-1 whitespace-nowrap overflow-hidden text-ellipsis px-3 py-2 p-has-chip:py-1 p-has-chip:px-[0.375rem]
+    labelContainer: `overflow-visible flex-auto`,
+    label: `flex items-center gap-1 whitespace-nowrap overflow-hidden text-ellipsis px-3 py-2
+        p-has-chip:flex-wrap p-has-chip:items-start p-has-chip:gap-1 p-has-chip:whitespace-normal p-has-chip:overflow-visible
+        p-has-chip:px-1.5 p-has-chip:py-1
+        h-[34px]! p-has-chip:h-auto!
         text-surface-700 dark:text-surface-0 
         p-placeholder:text-surface-500 dark:p-placeholder:text-surface-400
         p-disabled:text-surface-500 dark:p-disabled:text-surface-400
@@ -59,12 +62,11 @@ const theme = ref<MultiSelectPassThroughOptions>({
         p-large:text-lg p-large:px-[0.875rem] p-large:py-[0.625rem]`,
     chipItem: ``,
     pcChip: {
-        root: `inline-flex items-center gap-2 px-3 py-1 rounded-sm
-            bg-surface-100 dark:bg-surface-800
-            text-surface-800 dark:text-surface-0
+        root: `inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-sm leading-5
+            bg-[#E7F4FF] text-[#027CE9]
             has-[img]:pt-1 has-[img]:pb-1
             p-removable:pe-2`,
-        removeIcon: `cursor-pointer text-base w-4 h-4 rounded-full text-surface-800 dark:text-surface-0`
+        removeIcon: `cursor-pointer text-sm w-4 h-4 rounded-full text-[#62748E]`
     },
     dropdown: `flex items-center justify-center shrink-0 bg-transparent
         text-surface-400 w-10 rounded-e-md`,
