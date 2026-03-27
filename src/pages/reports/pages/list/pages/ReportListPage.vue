@@ -48,22 +48,21 @@ const reportItems: IReportItem[] = [
   { label: 'รายงานสรุปประจำวันรวมทุกสาขา', to: { name: 'DailyBranchSummaryPage' } },
   { label: 'รายงานลูกหนี้คงเหลือ', to: { name: 'OutstandingDebtorPage' } },
   { label: 'รายงานรับชำระค่างวดประจำวัน', to: { name: 'DailyInstallmentListPage' } },
-  { label: 'รายงานปล่อยสินเชื่อประจำวัน', to: { name: 'DailyLoanDisbursementPage' } },
   { label: 'รายงานรับชำระค่างวดคิดเป็นเปอร์เซ็นต์', to: { name: 'PercentInstallmentPage' } },
   { label: 'รายงานกำไรตามการรับชำระจริง', to: { name: 'ProfitBasedOnActualPaymentPage' } },
   { label: 'รายงานสรุปรับไฟแนนซ์ประจำปี', to: { name: 'AnnualFinanceReceiptPage' } },
   { label: 'รายงานสรุปการปล่อยสินเชื่อ', to: { name: 'LoanDisbursementSummaryPage' } },
+  { label: 'รายงานปล่อยสินเชื่อประจำวัน', to: { name: 'DailyLoanDisbursementPage' } },
   { label: 'รายงานการรับ/จ่ายประจำสาขา', to: { name: 'BranchIncomeExpensePage' } },
   { label: 'รายงานการรับชำระเงินลูกหนี้ปิดบัญชี', to: { name: 'PaymentsForAccountClosurePage' } },
   { label: 'รายงานสรุปรับ / ปล่อยสินเชื่อ / ค่าใช้จ่าย', to: { name: 'FinancialSummaryPage' } },
   { label: 'รายงานอันดับ 1-25 การปล่อยสินเชื่อ', to: { name: 'RankingLendingPage' } },
   { label: 'รายงาน 1 - 25 การรับสินเชื่อ', to: { name: 'RankingLoanPage' } },
-  { label: 'รายงานสัญญาและเอกสารหลักทรัพย์', to: { name: 'NotAvailablePage' }, disabled: true },
+  { label: 'รายงานสัญญาและเอกสารหลักทรัพย์', to: { name: 'ContractSecurityDocumentPage' } },
   { label: 'รายงานสรุปสต็อกสินค้ารวม', to: { name: 'AllStockPage' } },
   { label: 'รายงานสาขา', to: { name: 'BranchSummaryPage' } },
   { label: 'รายงานลูกค้าค้างชำระ', to: { name: 'OverdueCustomerPage' } },
-  { label: 'รายงานหัวหน้าสาขา', to: { name: 'BranchHeadSummaryPage' } },
-  { label: 'รายงานสัญญาและเอกสารหลักทรัพย์', to: { name: 'ContractSecurityDocumentPage' } }
+  { label: 'รายงานหัวหน้าสาขา', to: { name: 'BranchHeadSummaryPage' } }
 ]
 </script>
 
