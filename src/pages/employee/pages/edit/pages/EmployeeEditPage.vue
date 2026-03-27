@@ -9,14 +9,13 @@
     <BasePage class="flex flex-col md:grid md:grid-cols-3 gap-4">
       <BaseContainer class="h-fit md:order-2 md:col-span-1">
         <UploadInput
-          v-model="files"
-          v-model:preview-urls="previewUrls"
+          v-model="media"
           :model-image="form.image"
           :single="true"
           button-upload-class="bg-primary text-white"
           detail="ไฟล์ JPG, JPEG และ PNG ได้รับอนุญาต"
           label="เลือกเพื่ออัปโหลดหรือลากและวาง"
-          hidden-icon-button />
+          hide-icon-button />
       </BaseContainer>
       <Form
         :key="formKey"
@@ -28,7 +27,8 @@
         <BaseContainer>
           <InformationForm
             v-model="form"
-            :form="$form" />
+            :form="$form"
+            @mount="mount()" />
         </BaseContainer>
         <BaseContainer>
           <AddressForm
@@ -86,7 +86,7 @@ const EmployeeService: IEmployeeProvider = new EmployeeProvider()
 const formKey = ref<number>(0)
 const form = ref<EmployeeFormValues>(useFormInitialValues())
 const resolver = zodResolver(EmployeeSchema)
-const { files, previewUrls, getUploadImages } = useUpload()
+const { media, getUploadImages } = useUpload()
 
 const employeeId = computed((): TBaseParamsId => route?.params?.id)
 const mainAddress = computed({

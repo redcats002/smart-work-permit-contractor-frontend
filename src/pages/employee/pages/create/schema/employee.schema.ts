@@ -33,7 +33,7 @@ export const EmployeeSchema = z.object({
   // ── Classification ───────────────────────────────────────────────────────
   status: schema.enum(EmployeeStatusEnum, 'กรุณาเลือกสถานะลูกค้า'),
   role: schema.enum(EmployeeRoleEnum, 'ตำแหน่ง'),
-  branchIds: z.array(z.string()).min(1, 'กรุณาเลือกสาขา'),
+  branchIds: z.array(schema.id('สาขา')).length(1, 'กรุณาเลือกสาขาอย่างน้อย 1 สาขา').optional().default([]),
 
   // ── Citizen / Home Address ───────────────────────────────────────────────
   mainAddress: z.object({

@@ -11,15 +11,13 @@
     <BasePage class="flex flex-col md:grid md:grid-cols-3 gap-4">
       <BaseContainer class="h-fit md:order-2 md:col-span-1">
         <UploadInput
-          v-model="files"
-          v-model:preview-urls="previewUrls"
+          v-model="media"
           :model-image="form.image"
           :single="true"
           button-upload-class="bg-primary text-white"
           detail="ไฟล์ JPG, JPEG และ PNG ได้รับอนุญาต"
           label="เลือกเพื่ออัปโหลดหรือลากและวาง"
-          hidden-icon-button
-          @upload="onHandleUpload($event)" />
+          hide-icon-button />
       </BaseContainer>
       <Form
         :key="formKey"
@@ -32,7 +30,8 @@
           <InformationForm
             v-model="form"
             v-model:form-key="formKey"
-            :form="$form" />
+            :form="$form"
+            @mount="mount()" />
         </BaseContainer>
         <BaseContainer>
           <AddressForm
@@ -87,7 +86,7 @@ const EmployeeService: IEmployeeProvider = new EmployeeProvider()
 const formKey = ref<number>(0)
 const form = ref<EmployeeFormValues>(useFormInitialValues())
 const resolver = zodResolver(EmployeeSchema)
-const { files, previewUrls, getUploadImages } = useUpload()
+const { media, getUploadImages } = useUpload()
 
 const mainAddress = computed({
   get (): IAddressRequest {
@@ -167,18 +166,13 @@ function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
   }
 }
 
-function onHandleUpload (files: File[]): void {
-  if (files.length > 0) {
-    form.value.image = ''
-  } else {
-    form.value.image = ''
-  }
+function mount (): void {
+  formKey.value++
 }
 
 function onAuto (): void {
   form.value = { ...useDev() }
-  // Remount <Form> so it picks up the new initial-values without stale error state
-  formKey.value++
+  mount()
 }
 
 </script>
