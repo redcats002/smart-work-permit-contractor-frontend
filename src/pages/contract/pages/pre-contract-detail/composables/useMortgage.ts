@@ -2,6 +2,7 @@ import { computed, ref, type Ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
+import { scrollToTop } from '@/utils/ScrollToTop'
 import type { IConfirmMortgagePayload } from '@/models/request/pre-contract/PreContractReq.model'
 import PreContractProvider, { type IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
 import { useFormInitialValues } from '../schema/mortgage.schema'
@@ -32,6 +33,7 @@ export function useMortgage (useFetch: () => void): IUseMortgage {
 
   function onSubmitMortgage (): void {
     isMortgageFormVisible.value = true
+    scrollToTop()
   }
 
   function onConfirmMortgage (): void {
