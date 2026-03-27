@@ -2,7 +2,8 @@
   <div class="flex items-center gap-2.5">
     <ToggleSwitch
       v-model="checked"
-      :readonly="readonly">
+      :readonly="readonly"
+      data-testid="toggle-switch">
       <template
         v-if="handle"
         #handle="{ checked: checkedValue }">
@@ -14,7 +15,8 @@
     <span
       v-if="trueLabel || falseLabel"
       :class="labelClass"
-      class="duration-300 text-base">{{ checked ? trueLabel : falseLabel }}
+      class="duration-300 text-base"
+      data-testid="switch-label">{{ checked ? trueLabel : falseLabel }}
     </span>
   </div>
 </template>
