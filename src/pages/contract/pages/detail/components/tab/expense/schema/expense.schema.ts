@@ -10,7 +10,7 @@ export const ExpenseSchema = z.object({
     .number({ message: 'กรุณากรอกจำนวนเงิน' })
     .min(1, 'กรุณากรอกจำนวนเงิน'),
   file: z.array(schema.media),
-  vatType: z.enum(EVatType, { message: 'กรุณาเลือกประเภท VAT' })
+  vatType: schema.enum(EVatType, 'ประเภทVAT')
 })
 
 export type ExpenseFormValues = z.infer<typeof ExpenseSchema>

@@ -15,7 +15,7 @@ export const DocumentAssetSchema = z.object({
   contract: z.object({
     id: schema.id('สัญญา'),
     idNo: z.string().optional(),
-    status: z.enum(ContractStatusEnum, 'สถานะสัญญา').optional(),
+    status: schema.enum(ContractStatusEnum, 'สถานะสัญญา').optional(),
     customer: z.object({
       id: schema.id('สัญญา'),
       titleName: schema.enum(ETitleName, 'คำนำหน้าชื่อ').optional(),
@@ -23,7 +23,7 @@ export const DocumentAssetSchema = z.object({
       firstName: z.string().optional(),
       lastName: z.string().optional(),
       phoneNumber: z.string().optional(),
-      status: z.enum(CustomerStatusEnum, 'สถานะลูกค้า').optional()
+      status: schema.enum(CustomerStatusEnum, 'สถานะลูกค้า').optional()
     })
   }),
   location: z.object({
@@ -32,7 +32,7 @@ export const DocumentAssetSchema = z.object({
     warehouse: z.object({
       id: schema.id('คลังสินค้า'),
       name: z.string().optional(),
-      status: z.enum(WarehouseStatusEnum, 'สถานะคลังสินค้า')
+      status: schema.enum(WarehouseStatusEnum, 'สถานะคลังสินค้า')
     }).optional()
   })
 })

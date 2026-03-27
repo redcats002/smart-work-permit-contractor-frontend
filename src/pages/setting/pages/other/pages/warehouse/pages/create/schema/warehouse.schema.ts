@@ -1,3 +1,4 @@
+import { schema } from '@/utils/Schema'
 import { LocationStatusEnum } from '@/enums/modules/warehouse/LocationStatus.enum'
 import { WarehouseStatusEnum } from '@/enums/modules/warehouse/WarehouseStatus.enum'
 import { z } from 'zod'
@@ -12,12 +13,12 @@ export const WarehouseOptionSchema = z.object({
 export const WarehouseLocationSchema = z.object({
   id: z.number().optional(),
   name: z.string().min(1, 'กรุณากรอกชื่อสถานที่'),
-  status: z.enum(Object.values(LocationStatusEnum)),
+  status: schema.enum(LocationStatusEnum, 'สถานะสถานที่'),
   optionIds: z.string().optional()
 })
 
 export const WarehouseSchema = z.object({
-  status: z.enum(Object.values(WarehouseStatusEnum)),
+  status: schema.enum(WarehouseStatusEnum, 'สถานะคลังสินค้า'),
   name: z.string().min(1, 'กรุณากรอกชื่อคลังสินค้า'),
   prefix: z.string().min(1, 'กรุณากรอกคำนำหน้าตำแหน่ง'),
   options: z.array(WarehouseOptionSchema),
