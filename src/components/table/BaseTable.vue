@@ -16,6 +16,7 @@
       :table-class="resolvedTableClass"
       :table-style="tableStyle"
       :value="items"
+      :virtual-scroller-options="{ itemSize: pagination.limit || 44 }"
       scrollable
       unstyled>
       <!-- Checkbox Column -->
@@ -173,7 +174,7 @@ const props = withDefaults(defineProps<IProps>(), {
   footerBgClass: 'bg-(--p-gray-5)',
   itemsFooter: undefined,
   showFooter: false,
-  scrollHeight: undefined
+  scrollHeight: '500px'
 })
 
 const emits = defineEmits<{
