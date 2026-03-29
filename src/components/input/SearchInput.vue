@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-stretch flex-auto relative w-full md:w-75">
+  <div class="flex items-stretch relative w-full flex-auto md:w-75 md:flex-none">
     <Icon
       class="size-5 absolute top-1/2 rounded-sm! -translate-y-1/2 text-surface-400 inset-s-3 pointer-events-none"
       icon="system-uicons:search" />
