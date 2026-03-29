@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-xl p-5 space-y-4 shadow-md ">
+  <BaseContainer class="bg-white rounded-xl p-5 space-y-4 ">
     <!-- Header -->
     <div class="flex items-start justify-between">
       <div class="flex gap-3">
@@ -31,7 +31,7 @@
     <!-- Attachments -->
     <div class="space-y-2">
       <div
-        v-sanitize.BaseContainer="content"
+        v-sanitize.basic="content"
         class="text-sm" />
 
       <div
@@ -54,12 +54,13 @@
         </template>
       </div>
     </div>
-  </div>
+  </BaseContainer>
 </template>
 
 <script setup lang="ts">
 import { useDayjs } from '@/utils/Dayjs'
 import type { IAttachments } from '@/models/response/announcement/AnnouncementRes.model'
+import BaseContainer from '@/components/base/BaseContainer.vue'
 import { Icon } from '@iconify/vue'
 
 interface IProps {

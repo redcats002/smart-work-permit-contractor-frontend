@@ -1,13 +1,15 @@
 <template>
   <section id="announcement-page">
     <PageTitle />
-    <PostComposer
-      v-model="form"
-      @created="useSubmit()" />
-    <FeedList
-      :is-finished="list.isFinished.value"
-      :items="list.items.value"
-      :load-more="list.loadMore" />
+    <BasePage>
+      <PostComposer
+        v-model="form"
+        @created="useSubmit()" />
+      <FeedList
+        :is-finished="list.isFinished.value"
+        :items="list.items.value"
+        :load-more="list.loadMore" />
+    </BasePage>
   </section>
 </template>
 
@@ -16,6 +18,7 @@ import { onMounted, ref } from 'vue'
 import { toast } from '@/plugins/toast'
 import type { IAnnouncementProvider } from '@/resources/provider/announcement/Announcement.provider'
 import AnnouncementProvider from '@/resources/provider/announcement/Announcement.provider'
+import BasePage from '@/components/base/BasePage.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import PostComposer from '../components/composer/PostComposer.vue'
 import FeedList from '../components/feed/FeedList.vue'
