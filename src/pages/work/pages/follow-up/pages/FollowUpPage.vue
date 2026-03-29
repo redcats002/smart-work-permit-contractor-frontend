@@ -6,25 +6,26 @@
       v-model:search="search"
       @clear="onClearFilters()"
       @search="fetch()" />
-    <BasePage />
-    <BaseTab
-      v-model="tab"
-      :items="tabItems"
-      full />
-    <BaseTabWindow
-      v-slot="{ component, item }"
-      v-model="tab"
-      :items="tabItems"
-      class="mt-4">
-      <component
-        :is="component"
-        :key="item?.value"
-        v-model:pagination="pagination"
-        v-model:sort-by="sortBy"
-        v-model:sort-order="sortOrder"
-        :items="items"
-        class="animate-fade-in" />
-    </BaseTabWindow>
+    <BasePage>
+      <BaseTab
+        v-model="tab"
+        :items="tabItems"
+        full />
+      <BaseTabWindow
+        v-slot="{ component, item }"
+        v-model="tab"
+        :items="tabItems"
+        class="mt-4">
+        <component
+          :is="component"
+          :key="item?.value"
+          v-model:pagination="pagination"
+          v-model:sort-by="sortBy"
+          v-model:sort-order="sortOrder"
+          :items="items"
+          class="animate-fade-in" />
+      </BaseTabWindow>
+    </BasePage>
   </section>
 </template>
 

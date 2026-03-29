@@ -1,84 +1,39 @@
 <template>
-  <SelectInput
-    v-model="innerModel"
-    :invalid="invalid"
-    :options="options"
-    option-label="name"
-    complete-on-focus
-    force-selection
-    @complete="search()" />
+  <BaseStaticSelection
+    v-bind="attrs"
+    v-model="modelValue"
+    v-model:selected-name="selectedNameValue"
+    :fetch-options="fetchOptions"
+    :invalid="props.invalid"
+    :map-option-to-model="mapOptionToModel"
+    option-label="name" />
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { useAttrs } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel, TBaseOption } from '@/models/Global.model'
 import { TransactionTypeItems, type TTransactionType } from '@/enums/modules/report/branch-income-expense/TransactionType.enum'
-import SelectInput from '@/components/input/SelectInput.vue'
-import usePagination from '@/composables/usePagination'
+import BaseStaticSelection from '@/components/selection/modules/static/BaseStaticSelection.vue'
 
 interface IProps {
   invalid?: boolean
 }
 
-defineProps<IProps>()
-const model = defineModel<TTransactionType>()
-const selectedName = defineModel<string | null>('selectedName', { default: null })
+const props = defineProps<IProps>()
+const attrs = useAttrs()
 
-const innerModel = ref<TBaseModel | null>(null)
+const modelValue = defineModel<TTransactionType>()
+const selectedNameValue = defineModel<string | null>('selectedName', { default: null })
 
-const { pagination } = usePagination()
-
-const options = ref<TBaseModel[]>([])
-
-async function useFetch (): Promise<void> {
-  const items = TransactionTypeItems
-
-  options.value = (items ?? []).map((item: TBaseOption): TBaseModel => ({
+const fetchOptions = async (): Promise<TBaseModel[]> => await handleLoading(async (): Promise<TBaseModel[]> => (
+  (TransactionTypeItems ?? []).map((item: TBaseOption): TBaseModel => ({
     id: item.value!,
     name: item?.label
   }))
-}
+)) ?? []
 
-function fetch (): void {
-  handleLoading(useFetch)
-}
-
-function search (): void {
-  pagination.value.page = 1
-  fetch()
-}
-
-function syncInnerFromId (): void {
-  if (model.value == null) {
-    innerModel.value = null
-    selectedName.value = null
-    return
-  }
-
-  innerModel.value
-    = options.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
-  selectedName.value = innerModel.value?.name ?? null
-}
-
-watch(innerModel, (val: TBaseModel | null): void => {
-  model.value = val?.id ? val.id as TTransactionType : undefined
-  selectedName.value = val?.name ?? null
-})
-
-watch(model, (): void => {
-  syncInnerFromId()
-})
-
-watch(
-  options, (): void => {
-    syncInnerFromId()
-  }, { immediate: true }
-)
-
-onMounted((): void => {
-  fetch()
-})
+const mapOptionToModel = (item: TBaseModel): TTransactionType | undefined => item?.id ? item.id as TTransactionType : undefined
 </script>
 
 <style scoped></style>

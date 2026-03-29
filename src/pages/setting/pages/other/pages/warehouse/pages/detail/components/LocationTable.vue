@@ -20,10 +20,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { IWarehouseLocation } from '@/models/modules/warehouse/WarehouseLocation.model'
 import type { IColumn } from '@/models/Table.model'
 import Switch from '@/components/input/Switch.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
+import type { WarehouseLocationFormValues } from '../../create/schema/warehouse.schema'
 
 interface IProps {
   readonly?: boolean
@@ -40,10 +40,10 @@ interface IEmits {
 
 const emits = defineEmits<IEmits>()
 
-const items = defineModel<IWarehouseLocation[]>('items', {
+const items = defineModel<WarehouseLocationFormValues[]>('items', {
   default: []
 })
-const columns = ref<IColumn<IWarehouseLocation>[]>([
+const columns = ref<IColumn<WarehouseLocationFormValues>[]>([
   { field: 'status', header: 'สถานะ' },
   { field: 'name', header: 'จุดจัดเก็บ' }
 ])

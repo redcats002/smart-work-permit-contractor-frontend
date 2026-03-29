@@ -30,7 +30,7 @@ export default function useContractList (): IUseContractList {
     sortBy: sortBy.value || undefined,
     sortOrder: sortOrder.value,
     status: filters.value.status,
-    loanTypeId: filters.value.loanTypeId
+    contractLoanTypeId: filters.value.contractLoanTypeId
   }))
 
   async function useFetch (): Promise<void> {
@@ -39,7 +39,7 @@ export default function useContractList (): IUseContractList {
     pagination.value = extractPagination(response)
     syncQuery({
       status: filters.value.status,
-      loanTypeId: filters.value.loanTypeId
+      contractLoanTypeId: filters.value.contractLoanTypeId
     })
   }
 
@@ -51,6 +51,7 @@ export default function useContractList (): IUseContractList {
   function onClearFilters (): void {
     reset()
     filters.value = {}
+    fetch()
   }
 
   return {

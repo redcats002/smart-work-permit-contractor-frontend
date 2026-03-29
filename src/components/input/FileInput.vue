@@ -11,12 +11,12 @@
 
     <div
       :class="files.length ? 'py-1' : 'py-2'"
-      class="border rounded-lg px-3 flex items-center gap-2 cursor-pointer"
+      class="border rounded-lg px-3 flex items-center gap-2 cursor-pointer border-surface-200
+      hover:bg-surface-50 transition-all"
       @click="fileInput?.click()">
       <Icon
         class="text-gray-500"
         icon="mdi-paperclip" />
-
       <div
         v-for="(file,index) in files"
         :key="index"
@@ -27,7 +27,6 @@
           target="_blank">
           {{ file.name }}
         </a>
-
         <Icon
           class="cursor-pointer text-red-500"
           icon="mdi-close"
@@ -44,17 +43,12 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import type { IMedia } from '@/resources/provider/Upload.provider'
 import { Icon } from '@iconify/vue'
-
-interface FileItem {
-  name: string
-  url: string
-  file: File
-}
 
 const fileInput = ref<HTMLInputElement | null>(null)
 
-const files = ref<FileItem[]>([])
+const files = defineModel<IMedia[]>({ default: (): IMedia[] => [] })
 
 function onFileChange (e: Event): void {
   const selected = (e.target as HTMLInputElement).files
@@ -65,7 +59,9 @@ function onFileChange (e: Event): void {
     files.value.push({
       name: file.name,
       url: URL.createObjectURL(file),
-      file
+      file,
+      path: file?.webkitRelativePath || file.name,
+      isNew: true
     })
   }
 

@@ -59,7 +59,7 @@ import DatePickerInput from '@/components/input/DatePickerInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import SearchInput from '@/components/input/SearchInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
-import BranchSelection from '@/components/selection/modules/branch/BranchSelection.vue'
+import BranchSelection from '@/components/selection/modules/api/branch/BranchSelection.vue'
 
 interface IEmits {
   search: []

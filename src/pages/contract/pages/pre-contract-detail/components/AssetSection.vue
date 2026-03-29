@@ -30,13 +30,11 @@
         mode="out-in">
         <div
           v-if="activeAsset"
-          class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          class="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
           <div>
-            <div
+            <BaseGalleria
               v-if="activeAsset.images?.length"
-              class="grid gap-3">
-              <BaseGalleria :images="activeAsset.images" />
-            </div>
+              :images="activeAsset.images" />
             <AssetEmpty v-else />
           </div>
           <div>

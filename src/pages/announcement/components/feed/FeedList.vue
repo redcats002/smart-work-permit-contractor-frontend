@@ -1,30 +1,26 @@
 <template>
-  <BasePage>
-    <div class="space-y-4">
-      <PostCard
-        v-for="post in items"
-        :key="post.id"
-        :author-name="post.author.name"
-        :content="post.content"
-        :created-at="post.createdAt"
-        :files="post.attachments"
-        :role="post.author.role" />
-      <div
-        ref="loadMoreRef"
-        class="h-10 flex items-center justify-center">
-        <span v-if="!isFinished">กำลังโหลด...</span>
-        <span v-else>หมดแล้ว</span>
-      </div>
+  <div class="space-y-4">
+    <PostCard
+      v-for="post in items"
+      :key="post.id"
+      :author-name="post.author.name"
+      :content="post.content"
+      :created-at="post.createdAt"
+      :files="post.attachments"
+      :role="post.author.role" />
+    <div
+      ref="loadMoreRef"
+      class="h-10 flex items-center justify-center">
+      <span v-if="!isFinished">กำลังโหลด...</span>
+      <span v-else>หมดแล้ว</span>
     </div>
-  </BasePage>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
-
-import BasePage from '@/components/base/BasePage.vue'
-import PostCard from './PostCard.vue'
 import type { IAnnouncementList } from '@/models/response/announcement/AnnouncementRes.model'
+import PostCard from './PostCard.vue'
 
 interface IProps {
   items: IAnnouncementList[]

@@ -1,3 +1,4 @@
+import { schema } from '@/utils/Schema'
 import { z } from 'zod'
 
 export const AnnouncementSchema = z.object({
@@ -6,14 +7,10 @@ export const AnnouncementSchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string()
 })
-export const attachmentsSchema = z.object({
-  name: z.string(),
-  file: z.string(),
-  url: z.string()
-})
+
 export const CreateAnnouncementSchema = z.object({
   content: z.string().min(1),
-  attachments: z.array(attachmentsSchema).optional()
+  attachments: z.array(schema.media).optional()
 })
 
 export type AnnouncementFormValues = z.infer<typeof AnnouncementSchema>

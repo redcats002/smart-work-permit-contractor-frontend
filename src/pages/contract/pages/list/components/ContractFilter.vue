@@ -39,8 +39,8 @@ import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
-import ContractLoanTypeSelection from '@/components/selection/modules/contract-loan-type/ContractLoanTypeSelection.vue'
-import ContractStatusSelection from '@/components/selection/modules/contract/ContractStatusSelection.vue'
+import ContractLoanTypeSelection from '@/components/selection/modules/api/contract-loan-type/ContractLoanTypeSelection.vue'
+import ContractStatusSelection from '@/components/selection/modules/static/contract/ContractStatusSelection.vue'
 
 interface IProps {}
 withDefaults(defineProps<IProps>(), {})

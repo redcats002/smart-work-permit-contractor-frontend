@@ -46,7 +46,7 @@ import { ref } from 'vue'
 import type { IFormState } from '@/models/Form.model'
 import LabelField from '@/components/input/LabelField.vue'
 import ConfirmModal from '@/components/modal/ConfirmModal.vue'
-import WarehouseSelection from '@/components/selection/modules/warehouse/WarehouseSelection.vue'
+import WarehouseSelection from '@/components/selection/modules/api/warehouse/WarehouseSelection.vue'
 import { type DocumentMovementFormValues, useFormInitialValues } from '../schema/document-movement'
 
 interface IProps {

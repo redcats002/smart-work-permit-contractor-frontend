@@ -53,7 +53,7 @@ import Spacer from '@/components/flex/Spacer.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import SearchInput from '@/components/input/SearchInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
-import AssetTypeSelection from '@/components/selection/modules/asset-type/AssetTypeSelection.vue'
+import AssetTypeSelection from '@/components/selection/modules/static/asset-type/AssetTypeSelection.vue'
 import PreContractStatusSelection from '@/components/selection/modules/static/pre-contract-status/PreContractStatusSelection.vue'
 
 interface IEmits {

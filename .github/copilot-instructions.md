@@ -46,7 +46,7 @@ src/
     modal/             # Dialog wrappers
     nav/               # Navigation components
     progress/          # Progress indicators
-    selection/         # Selection UI: TitleNameSelection, modules/<feature>/<Name>Selection.vue
+    selection/         # Selection UI: TitleNameSelection, modules/<static | api>/<feature>/<Name>Selection.vue
     table/             # Table helpers
     transition/        # Vue transition wrappers
   composables/         # Shared composables (useAppDrawer, usePagination, useTabItems, useCopy)
@@ -687,7 +687,7 @@ bun run test       # Vitest
 | Drawer state | `useAppDrawer()` composable |
 | Tab pages | `useTabItems()` composable |
 | Copy to clipboard | `useCopy()` composable |
-| Selection input (API-backed) | `src/components/selection/modules/<feature>/<Name>Selection.vue` |
+| Selection input (API-backed) | `src/components/selection/modules/<api | static>/<feature>/<Name>Selection.vue` |
 | Input validation | `@keypress` guards from `src/utils/Keypress.ts` |
 | Scroll to top | `scrollToTop()` from `src/utils/ScrollToTop.ts` |
 | Thai address | `thai-address-universal` package |
@@ -705,71 +705,70 @@ If a form needs to select an entity (e.g. loan type, staff, customer group) and 
 ### Location
 
 ```
-src/components/selection/
+src/components/selection/static/<feature>/
   TitleNameSelection.vue              ← enum-backed (no API)
-  modules/
-    <feature>/
+  modules/api/<feature>/
       <Name>Selection.vue             ← API-backed
 ```
 
 ### API-backed Selection pattern
 
 ```vue
-<!-- src/components/selection/modules/loan-type/LoanTypeSelection.vue -->
+<!-- src/components/selection/modules/api/warehouse/WarehouseSelection.vue -->
 <template>
-  <AutoCompleteInput
-    v-model="innerModel"
-    :suggestions="suggestions"
-    option-label="name"
-    complete-on-focus
-    force-selection
-    @complete="search()" />
+  <BaseSelection
+    v-bind="{
+      ...props,
+      ...attrs
+    }"
+    v-model="modelValue"
+    v-model:selected-name="selectedNameValue"
+    :fetch-suggestions="fetchSuggestions"
+    :map-option-to-model="mapOptionToModel"
+    option-label="name" />
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { useAttrs } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel } from '@/models/Global.model'
-import LoanTypeProvider from '@/resources/provider/loan-type/LoanType.provider'
-import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
+import type { IWarehouseList } from '@/models/response/warehouse/WarehouseRes.model'
+import WarehouseProvider, { type IWarehouseProvider } from '@/resources/provider/warehouse/Warehouse.provider'
+import BaseSelection from '@/components/selection/modules/BaseSelection.vue'
 import usePagination from '@/composables/usePagination'
 
-const service = new LoanTypeProvider()
+interface IProps {
+  invalid?: boolean
+  disabledIds?: number[]
+  showClear?: boolean
+}
 
-const model = defineModel<number | null>()
-const selectedName = defineModel<string | null>('selectedName', { default: null })
+const props = defineProps<IProps>()
+const attrs = useAttrs()
+const WarehouseService: IWarehouseProvider = new WarehouseProvider()
 
-const innerModel = ref<TBaseModel | null>(null)
+const modelValue = defineModel<number | null>()
+const selectedNameValue = defineModel<string | null>('selectedName', { default: null })
+
 const { pagination } = usePagination()
-const suggestions = ref<TBaseModel[]>([])
 
-async function useFetch(): Promise<void> {
-  const response = await service.getLoanTypePaginate({ page: pagination.value.page, limit: 9999 })
-  suggestions.value = response.data ?? []
-}
+const fetchSuggestions = async (): Promise<TBaseModel[]> => await handleLoading(async (): Promise<TBaseModel[]> => {
+  const response = await WarehouseService.getWarehousePaginate({
+    page: pagination.value.page,
+    limit: 9999
+  })
 
-function fetch(): void { handleLoading(useFetch) }
+  return (response.data ?? []).map((item: IWarehouseList): TBaseModel => ({
+    id: item.id!,
+    name: item.name,
+    disabled: props.disabledIds?.includes(Number(item?.id)) ?? false
+  }))
+}) ?? []
 
-function search(): void {
-  pagination.value.page = 1
-  fetch()
-}
-
-function syncInnerFromId(): void {
-  if (model.value == null) { innerModel.value = null; selectedName.value = null; return }
-  innerModel.value = suggestions.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
-  selectedName.value = innerModel.value?.name ?? null
-}
-
-watch(innerModel, (val: TBaseModel | null): void => {
-  model.value = val?.id ? Number(val.id) : null
-  selectedName.value = val?.name ?? null
-})
-watch(model, (): void => { syncInnerFromId() })
-watch(suggestions, (): void => { syncInnerFromId() }, { immediate: true })
-
-onMounted((): void => { fetch() })
+const mapOptionToModel = (item: TBaseModel): number | null => item?.id != null ? Number(item.id) : null
 </script>
+
+<style scoped></style>
 ```
 
 ### Models exposed
@@ -785,14 +784,9 @@ For static enums, map enum items to `TBaseModel[]` inside `useFetch` instead of 
 
 ### Existing Selection components
 
-| Component | Path | Source |
-|---|---|---|
-| `TitleNameSelection` | `selection/TitleNameSelection.vue` | `TitleNameItems` enum |
-| `BranchSelection` | `selection/modules/branch/BranchSelection.vue` | `BranchProvider` |
-| `CustomerGroupSelection` | `selection/modules/customer-group/CustomerGroupSelection.vue` | API |
-| `CustomerOccupationSelection` | `selection/modules/customer-occupation/CustomerOccupationSelection.vue` | API |
-| `ExternalInternalExpenseSelection` | `selection/modules/external-internal-expense/` | API |
-
+search into `src/components/selection/` for existing components to reuse before creating new ones. Examples:
+- `TitleNameSelection.vue` — enum-backed selection for Thai title names (นาย, นาง, etc.)
+- `BranchSelection.vue` — API-backed selection for branches
 ---
 
 ## Buddhist Era Date Convention

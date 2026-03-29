@@ -7,7 +7,7 @@ import type { IBasePaginationRequest } from '../Request.model'
 
 export interface IGetContractList extends IBasePaginationRequest {
   status?: TContractStatus
-  loanTypeId?: number
+  contractLoanTypeId?: number
 }
 export interface IGetAssetContract {}
 

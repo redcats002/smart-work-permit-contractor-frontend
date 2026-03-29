@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-xl p-5 space-y-4 shadow-md ">
+  <BaseContainer class="bg-white rounded-xl p-5 space-y-4 ">
     <!-- Header -->
     <div class="flex items-start justify-between">
       <div class="flex gap-3">
@@ -31,7 +31,7 @@
     <!-- Attachments -->
     <div class="space-y-2">
       <div
-        v-sanitize.BaseContainer="content"
+        v-sanitize.basic="content"
         class="text-sm" />
 
       <div
@@ -42,24 +42,25 @@
           :key="_i">
           <a
             :href="file.url"
-            class="border border-[#BDBDBD] rounded-lg p-3 flex flex-col items-center justify-center"
+            class="border border-[#BDBDBD] rounded-lg p-3 flex flex-col items-center justify-center max-w-40 overflow-hidden"
             target="_blank">
             <Icon
               icon="material-icon-theme:pdf"
               style="font-size: 90px;" />
-            <div class="text-sm">
+            <div class="text-sm text-center mt-2 truncate w-full">
               {{ file.name }}
             </div>
           </a>
         </template>
       </div>
     </div>
-  </div>
+  </BaseContainer>
 </template>
 
 <script setup lang="ts">
 import { useDayjs } from '@/utils/Dayjs'
 import type { IAttachments } from '@/models/response/announcement/AnnouncementRes.model'
+import BaseContainer from '@/components/base/BaseContainer.vue'
 import { Icon } from '@iconify/vue'
 
 interface IProps {

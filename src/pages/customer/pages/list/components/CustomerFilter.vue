@@ -51,7 +51,7 @@ import Spacer from '@/components/flex/Spacer.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import SearchInput from '@/components/input/SearchInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
-import CustomerGroupSelection from '@/components/selection/modules/customer-group/CustomerGroupSelection.vue'
+import CustomerGroupSelection from '@/components/selection/modules/api/customer-group/CustomerGroupSelection.vue'
 import CustomerStatusSelection from '@/components/selection/modules/static/customer-status/CustomerStatusSelection.vue'
 
 interface IEmits {

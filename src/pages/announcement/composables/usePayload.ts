@@ -1,8 +1,12 @@
-import type { AnnouncementCreateAnnouncement } from '../schemas/announcement.schema'
 import type { ICreateAnnouncementPayload } from '@/models/request/announcement/AnnouncementReq.model'
+import useUpload from '@/composables/useUpload'
+import type { AnnouncementCreateAnnouncement } from '../schemas/announcement.schema'
 
-export function usePayload (form: AnnouncementCreateAnnouncement): ICreateAnnouncementPayload {
-  return {
-    ...form
+export async function usePayload (form: AnnouncementCreateAnnouncement): Promise<ICreateAnnouncementPayload> {
+  const { getUploadImages } = useUpload()
+  const payload: ICreateAnnouncementPayload = {
+    content: form.content,
+    attachments: await getUploadImages(form.attachments)
   }
+  return payload
 }

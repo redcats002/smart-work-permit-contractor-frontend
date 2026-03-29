@@ -33,14 +33,17 @@
       <router-link
         v-for="child in children"
         :key="child.label"
-        v-slot="{ isActive }"
-        :disabled="disabled"
-        :to="child.to">
+        v-slot="{ isActive, isExactActive, navigate }"
+        :disabled="disabled || child?.disabled"
+        :to="child.to"
+        custom>
         <div
           :class="[
             'pl-9 pr-2 py-1.5 rounded text-sm duration-200 hover:bg-(--p-gray-5) cursor-pointer',
-            isActive ? 'text-(--p-red) font-semibold' : 'text-surface-700'
-          ]">
+            (isActive || isExactActive) && !disabled && !child?.disabled ? 'text-(--p-red) font-semibold' : 'text-surface-700',
+            (disabled || child?.disabled) && 'cursor-not-allowed opacity-50 pointer-events-none'
+          ]"
+          @click="!disabled && navigate($event)">
           {{ child.label }}
         </div>
       </router-link>
@@ -54,9 +57,10 @@ import type { RouteLocationRaw } from 'vue-router'
 import { useRoute } from 'vue-router'
 import { Icon } from '@iconify/vue'
 
-interface ISubMenuItem {
+export interface ISubMenuItem {
   label: string
   to: RouteLocationRaw
+  disabled?: boolean
 }
 
 interface IProps {
