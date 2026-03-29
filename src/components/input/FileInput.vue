@@ -11,7 +11,8 @@
 
     <div
       :class="files.length ? 'py-1' : 'py-2'"
-      class="border rounded-lg px-3 flex items-center gap-2 cursor-pointer"
+      class="border rounded-lg px-3 flex items-center gap-2 cursor-pointer border-surface-200
+      hover:bg-surface-50 transition-all"
       @click="fileInput?.click()">
       <Icon
         class="text-gray-500"
