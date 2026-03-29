@@ -5,7 +5,7 @@
     :pt-options="{ mergeProps: ptViewMerge }"
     :responsive-options="responsiveOptions"
     :value="images"
-    container-style="width:100%; background-color: #E0E0E0; padding: 1.05rem;"
+    container-style="width:100%; background-color: #E0E0E0; padding: 1.05rem; position: relative;"
     circular
     unstyled
     @update:active-index="console.log($event)">
@@ -13,14 +13,14 @@
       <img
         :alt="slotProps.item.name"
         :src="slotProps.item.url"
-        class="w-full h-96 max-h-96 object-contain bg-white p-2">
+        class="aspect-square object-contain bg-white p-2">
     </template>
     <template #thumbnail="slotProps">
       <div class="bg-white grid place-content-center">
         <img
           :alt="slotProps.item.name"
           :src="slotProps.item.url"
-          class="aspect-square h-16 object-contain cursor-pointer">
+          class="aspect-square h-16 w-16 object-contain cursor-pointer">
       </div>
     </template>
     <template #previousthumbnailicon>
@@ -63,7 +63,7 @@ const theme = ref<GalleriaPassThroughOptions>({
   content: 'flex flex-col gap-2',
   itemsContainer: 'relative flex flex-col',
   items: 'relative overflow-hidden w-full',
-  item: 'flex items-center justify-center w-full',
+  item: 'flex items-center justify-center w-fit relative',
   prevButton: `absolute top-1/2 left-2 -translate-y-1/2 z-10 flex items-center justify-center
     size-9 rounded-full bg-black/40 hover:bg-black/60 text-white transition-colors`,
   prevIcon: 'size-5',

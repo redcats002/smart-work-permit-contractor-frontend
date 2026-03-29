@@ -21,7 +21,7 @@ import { ptViewMerge } from '@/volt/utils'
 import type { ImagePassThroughOptions } from 'primevue'
 import Image from 'primevue/image'
 
-const FALLBACK_IMAGE = '/assets/images/logo.png'
+const FALLBACK_IMAGE = '/assets/images/logo-no-color.png'
 const attrs = useAttrs()
 
 const fallback = ref<boolean>(false)
