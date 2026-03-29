@@ -10,7 +10,7 @@
     dropdown-class="bg-white"
     fluid>
     <template #clearicon="{ clearCallback }">
-      <div class="flex justify-center items-center border-surface-300">
+      <div :class="clearIconClass">
         <Icon
           class="size-5 text-[rgb(164,176,193)] cursor-pointer hover:text-black transition-all duration-200"
           icon="mdi:close"
@@ -32,7 +32,7 @@
       </span>
     </template>
     <!-- !DEPRECATED better use MultiSelectInput -->
-    <template
+    <!-- <template
       v-if="$attrs?.multiple"
       #option="{ option }">
       <div
@@ -43,7 +43,7 @@
           readonly />
         {{ option[String($attrs?.optionLabel || 'name')] }}
       </div>
-    </template>
+    </template> -->
     <template #empty>
       ไม่พบข้อมูล
     </template>
@@ -51,10 +51,12 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { TBaseModel } from '@/models/Global.model'
 import AutoComplete from '@/volt/AutoComplete.vue'
 import { Icon } from '@iconify/vue'
-import CheckboxInput from './CheckboxInput.vue'
+
+// import CheckboxInput from './CheckboxInput.vue'
 
 interface IProps {
   name?: string
@@ -63,19 +65,32 @@ interface IProps {
   autocomplete?: string
 }
 
-withDefaults(defineProps<IProps>(), {
+const props = withDefaults(defineProps<IProps>(), {
   name: '',
   dropdown: true,
   placeholder: '',
   autocomplete: 'off'
 })
 
+// const attrs = useAttrs()
 const model = defineModel<TBaseModel | TBaseModel[] | null>()
 
-function isSelected (option: TBaseModel): boolean {
-  if (Array.isArray(model.value)) return model.value.some((item: TBaseModel): boolean => item?.id === option.id)
-  return model.value?.id === option?.id
-}
+const clearIconClass = computed((): string => {
+  const hasDropdown = props.dropdown
+
+  return `flex h-full shrink-0 items-center justify-center px-2
+    border border-x-0 border-surface-300 dark:border-surface-700
+    bg-surface-0 dark:bg-surface-950
+    transition-colors duration-200
+    group-focus-within:border-primary
+    group-[.p-invalid]:border-red-400! dark:group-[.p-invalid]:border-red-300!
+    ${hasDropdown ? '' : 'rounded-e-sm'}`
+})
+
+// function isSelected (option: TBaseModel): boolean {
+//   if (Array.isArray(model.value)) return model.value.some((item: TBaseModel): boolean => item?.id === option.id)
+//   return model.value?.id === option?.id
+// }
 </script>
 
 <style scoped></style>
