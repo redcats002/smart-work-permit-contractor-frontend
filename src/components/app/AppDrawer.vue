@@ -5,11 +5,7 @@
   -->
   <aside
     :class="isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
-    class="fixed md:relative inset-y-0 left-0 z-50
-           w-64 h-screen
-           bg-white border-r border-r-(--p-gray-5)
-           flex flex-col p-4
-           transition-transform duration-300 ease-in-out">
+    class="fixed md:relative inset-y-0 left-0 z-50 w-64 h-screen bg-white border-r border-r-(--p-gray-5) flex flex-col p-4 transition-transform duration-300 ease-in-out">
     <!-- Logo Section -->
     <div class="border-b border-b-(--p-red)">
       <!-- Mobile close button -->
@@ -26,7 +22,8 @@
           src="/logo.svg">
       </div>
       <p class="text-sm text-(--p-red) flex justify-center items-center gap-2 my-2">
-        สาขา : <span>{{ authStore.branch?.name || 'BY_PASS' }}</span>
+        สาขา :
+        <span>{{ authStore.branch?.name || 'BY_PASS' }}</span>
         <Icon
           class="text-font-gray cursor-pointer hover:text-black transition-all duration-200"
           icon="iconamoon:exit"
@@ -80,7 +77,7 @@ import { useAppDrawer } from '@/composables/useAppDrawer'
 import { routes } from '@/router'
 import { Icon } from '@iconify/vue'
 import AppDrawerMenu from './AppDrawerMenu.vue'
-import AppDrawerSubMenu from './AppDrawerSubMenu.vue'
+import AppDrawerSubMenu, { type ISubMenuItem } from './AppDrawerSubMenu.vue'
 
 const { isOpen, close } = useAppDrawer()
 
@@ -92,19 +89,21 @@ interface IMenuItem {
   key: string
   to?: string
   disabled?: boolean
-  children?: { label: string, to: string }[]
+  children?: ISubMenuItem[]
 }
 
 interface IRouteMeta {
   title?: string
   icon?: string
   menu?: boolean
+  disabled?: boolean
 }
 
 interface IMenuRouteItem {
   label: string
   to: string
   icon?: string
+  disabled?: boolean
 }
 
 const authStore = useAuthStore()
@@ -130,23 +129,28 @@ const menuItems = computed<IMenuItem[]>((): IMenuItem[] => {
     const key = String(route.name ?? route.path)
 
     if (childMenuItems.length === 1) {
-      return [{
+      return [
+        {
+          label: routeMeta.title ?? childMenuItems[0].label,
+          icon,
+          key,
+          to: childMenuItems[0].to
+        }
+      ]
+    }
+
+    return [
+      {
         label: routeMeta.title ?? childMenuItems[0].label,
         icon,
         key,
-        to: childMenuItems[0].to
-      }]
-    }
-
-    return [{
-      label: routeMeta.title ?? childMenuItems[0].label,
-      icon,
-      key,
-      children: childMenuItems.map((item: IMenuRouteItem): { label: string, to: string } => ({
-        label: item.label,
-        to: item.to
-      }))
-    }]
+        children: childMenuItems.map((item: IMenuRouteItem): ISubMenuItem => ({
+          label: item.label,
+          to: item.to,
+          disabled: item?.disabled
+        }))
+      }
+    ]
   })
 })
 
@@ -168,13 +172,17 @@ function getRouteMeta (route: RouteRecordRaw): IRouteMeta {
 
 function collectMenuRouteItems (route: RouteRecordRaw, fullPath: string): IMenuRouteItem[] {
   const meta = getRouteMeta(route)
-  const currentItems = meta.menu && meta.title
-    ? [{
-      label: meta.title,
-      to: fullPath,
-      icon: meta.icon
-    }]
-    : []
+  const currentItems
+    = meta.menu && meta.title
+      ? [
+        {
+          label: meta.title,
+          to: fullPath,
+          icon: meta.icon,
+          disabled: meta.disabled
+        }
+      ]
+      : []
 
   const childItems = (route.children ?? []).flatMap((child: RouteRecordRaw): IMenuRouteItem[] => {
     const childPath = normalizePath(fullPath, child.path)
@@ -184,8 +192,5 @@ function collectMenuRouteItems (route: RouteRecordRaw, fullPath: string): IMenuR
   return [...currentItems, ...childItems]
 }
 
-const bottomMenuItems: IMenuItem[] = [
-  { label: 'ตั่งค่า', icon: 'lsicon:setting-outline', key: 'setting', to: '/setting' }
-]
-
+const bottomMenuItems: IMenuItem[] = [{ label: 'ตั่งค่า', icon: 'lsicon:setting-outline', key: 'setting', to: '/setting' }]
 </script>
