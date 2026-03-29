@@ -8,37 +8,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import Editor from 'primevue/editor'
-import type { EditorPassThroughOptions } from 'primevue/editor'
-import { ptViewMerge } from '@/volt/utils'
 import 'quill/dist/quill.snow.css'
+import { ref } from 'vue'
+import { ptViewMerge } from '@/volt/utils'
+import type { EditorPassThroughOptions } from 'primevue/editor'
+import Editor from 'primevue/editor'
 
 interface Props {
-  modelValue?: string
   editorStyle?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  modelValue: '',
+withDefaults(defineProps<Props>(), {
   editorStyle: 'height:120px'
 })
 
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void
-}>()
-
-const model = computed<string>({
-  get (): string {
-    return props.modelValue
-  },
-  set (val: string): void {
-    emit('update:modelValue', val)
-  }
-})
+const model = defineModel<string>({ default: '' })
 
 const theme = ref<EditorPassThroughOptions>({
-  root: 'flex flex-col border border-surface-200 rounded-lg overflow-hidden',
+  root: 'flex flex-col border border-surface-200! rounded-lg overflow-hidden',
 
   toolbar: `
     border-b
