@@ -5,12 +5,12 @@
         class="flex items-center justify-between gap-2.5
       flex-col md:flex-row">
         <SearchInput
-          v-model="asset.search.value"
-          @search="asset.fetch()" />
+          v-model="search"
+          @search="fetch()" />
         <PreContractFilter
-          v-model:filters="asset.filters.value"
-          @clear="asset.onClearFilters()"
-          @search="asset.fetch()" />
+          v-model:filters="filters"
+          @clear="onClearFilters()"
+          @search="fetch()" />
         <Spacer class="hidden md:flex" />
         <CreateButton
           :to="{ name: 'PreContractCreatePage' }"
@@ -20,11 +20,11 @@
     <BasePage>
       <div class="mt-5">
         <PreContractTable
-          v-model:pagination="asset.pagination.value"
-          v-model:sort-by="asset.sortBy.value"
-          v-model:sort-order="asset.sortOrder.value"
-          :items="asset.items.value"
-          @update="asset.fetch()" />
+          v-model:pagination="pagination"
+          v-model:sort-by="sortBy"
+          v-model:sort-order="sortOrder"
+          :items="items"
+          @update="fetch()" />
       </div>
     </BasePage>
   </div>
@@ -40,9 +40,9 @@ import usePreContractList from '../../composables/usePreContractList'
 import PreContractFilter from '../PreContractFilter.vue'
 import PreContractTable from '../PreContractTable.vue'
 
-const asset = usePreContractList()
+const { search, filters, items, sortBy, sortOrder, pagination, fetch, onClearFilters } = usePreContractList()
 
 onMounted((): void => {
-  asset.fetch()
+  fetch()
 })
 </script>

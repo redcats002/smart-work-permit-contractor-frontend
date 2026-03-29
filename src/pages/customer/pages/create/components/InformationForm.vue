@@ -124,9 +124,9 @@ import DatePickerInput from '@/components/input/DatePickerInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import PhoneNumberInput from '@/components/input/PhoneNumberInput.vue'
 import Switch from '@/components/input/Switch.vue'
-import CustomerGroupSelection from '@/components/selection/modules/customer-group/CustomerGroupSelection.vue'
-import CustomerOccupationSelection from '@/components/selection/modules/customer-occupation/CustomerOccupationSelection.vue'
-import TitleNameSelection from '@/components/selection/TitleNameSelection.vue'
+import CustomerGroupSelection from '@/components/selection/modules/api/customer-group/CustomerGroupSelection.vue'
+import CustomerOccupationSelection from '@/components/selection/modules/api/customer-occupation/CustomerOccupationSelection.vue'
+import TitleNameSelection from '@/components/selection/modules/static/TitleNameSelection.vue'
 import { useFormInitialValues } from '../schema/customer.schema'
 
 interface IProps {

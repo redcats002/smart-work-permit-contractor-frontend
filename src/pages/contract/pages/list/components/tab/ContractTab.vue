@@ -5,12 +5,12 @@
         class="flex items-center justify-between gap-2.5
       flex-col md:flex-row">
         <SearchInput
-          v-model="contract.search.value"
-          @search="contract.fetch()" />
+          v-model="search"
+          @search="fetch()" />
         <ContractFilter
-          v-model:filters="contract.filters.value"
-          @clear="contract.onClearFilters()"
-          @search="contract.fetch()" />
+          v-model:filters="filters"
+          @clear="onClearFilters()"
+          @search="fetch()" />
         <Spacer class="hidden md:flex" />
         <CreateButton
           :to="{ name: 'PreContractCreatePage' }"
@@ -20,11 +20,11 @@
     <BasePage>
       <div class="mt-5">
         <ContractTable
-          v-model:pagination="contract.pagination.value"
-          v-model:sort-by="contract.sortBy.value"
-          v-model:sort-order="contract.sortOrder.value"
-          :items="contract.items.value"
-          @update="contract.fetch()" />
+          v-model:pagination="pagination"
+          v-model:sort-by="sortBy"
+          v-model:sort-order="sortOrder"
+          :items="items"
+          @update="fetch()" />
       </div>
     </BasePage>
   </div>
@@ -40,9 +40,9 @@ import useContractList from '../../composables/useContractList'
 import ContractFilter from '../ContractFilter.vue'
 import ContractTable from '../ContractTable.vue'
 
-const contract = useContractList()
+const { search, fetch, onClearFilters, filters, pagination, sortBy, sortOrder, items } = useContractList()
 
 onMounted((): void => {
-  contract.fetch()
+  fetch()
 })
 </script>
