@@ -1,19 +1,22 @@
 <template>
-  <SelectInput
-    v-model="innerModel"
-    :options="options"
+  <BaseStaticSelection
+    v-bind="attrs"
+    v-model="modelValue"
+    v-model:selected-name="selectedNameValue"
+    :fetch-options="fetchOptions"
+    :filter-options="filterOptions"
+    :map-option-to-model="mapOptionToModel"
+    :refresh-deps="[props.existedGroup]"
     option-disabled="disabled"
     option-label="name"
-    complete-on-focus
-    force-selection
-    @complete="search($event.query)" />
+    local-filter />
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { useAttrs } from 'vue'
 import type { TBaseModel, TBaseOption } from '@/models/Global.model'
 import { EvaluatorLevelItems, EvaluatorLevelPriority, type TEvaluatorLevel } from '@/enums/modules/contract/EvaluatorLevel.enum'
-import SelectInput from '@/components/input/SelectInput.vue'
+import BaseStaticSelection from '@/components/selection/modules/static/BaseStaticSelection.vue'
 
 interface IProps {
   existedGroup?: TEvaluatorLevel[]
@@ -22,13 +25,10 @@ interface IProps {
 const props = withDefaults(defineProps<IProps>(), {
   existedGroup: (): TEvaluatorLevel[] => []
 })
+const attrs = useAttrs()
 
-const model = defineModel<TEvaluatorLevel>()
-const selectedName = defineModel<string | null>('selectedName', { default: null })
-
-const innerModel = ref<TBaseModel | null>(null)
-const allSuggestions = ref<TBaseModel[]>([])
-const options = ref<TBaseModel[]>([])
+const modelValue = defineModel<TEvaluatorLevel>()
+const selectedNameValue = defineModel<string | null>('selectedName', { default: null })
 
 function isLevelDisabled (level: TEvaluatorLevel): boolean {
   const priority = EvaluatorLevelPriority[level]
@@ -37,50 +37,17 @@ function isLevelDisabled (level: TEvaluatorLevel): boolean {
   )
 }
 
-function loadSuggestions (): void {
-  allSuggestions.value = EvaluatorLevelItems.map((item: TBaseOption): TBaseModel => ({
-    id: item.value!,
-    name: item.label,
-    disabled: isLevelDisabled(item.value as TEvaluatorLevel)
-  }))
-  options.value = allSuggestions.value
+const fetchOptions = async (): Promise<TBaseModel[]> => EvaluatorLevelItems.map((item: TBaseOption): TBaseModel => ({
+  id: item.value!,
+  name: item.label,
+  disabled: isLevelDisabled(item.value as TEvaluatorLevel)
+}))
+
+function filterOptions (items: TBaseModel[], query: string): TBaseModel[] {
+  return items.filter((item: TBaseModel): boolean => item.name.toLowerCase().includes(query))
 }
 
-function search (query: string): void {
-  const q = query.trim().toLowerCase()
-  options.value = q
-    ? allSuggestions.value.filter((i: TBaseModel): boolean => i.name.toLowerCase().includes(q))
-    : allSuggestions.value
-}
-
-function syncInnerFromId (): void {
-  if (!model.value) {
-    innerModel.value = null
-    selectedName.value = null
-    return
-  }
-  innerModel.value = allSuggestions.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
-  selectedName.value = innerModel.value?.name ?? null
-}
-
-watch(innerModel, (val: TBaseModel | null): void => {
-  model.value = (val?.id || '') as TEvaluatorLevel
-  selectedName.value = val?.name ?? null
-})
-
-watch(model, (): void => {
-  syncInnerFromId()
-})
-
-watch(allSuggestions, (): void => {
-  syncInnerFromId()
-}, { immediate: true })
-
-watch((): TEvaluatorLevel[] => props.existedGroup, (): void => {
-  loadSuggestions()
-})
-
-onMounted((): void => {
-  loadSuggestions()
-})
+const mapOptionToModel = (item: TBaseModel): TEvaluatorLevel => String(item?.id ?? '') as TEvaluatorLevel
 </script>
+
+<style scoped></style>

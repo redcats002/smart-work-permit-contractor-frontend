@@ -126,7 +126,7 @@ import PhoneNumberInput from '@/components/input/PhoneNumberInput.vue'
 import Switch from '@/components/input/Switch.vue'
 import CustomerGroupSelection from '@/components/selection/modules/api/customer-group/CustomerGroupSelection.vue'
 import CustomerOccupationSelection from '@/components/selection/modules/api/customer-occupation/CustomerOccupationSelection.vue'
-import TitleNameSelection from '@/components/selection/modules/static/TitleNameSelection.vue'
+import TitleNameSelection from '@/components/selection/modules/static/title-name/TitleNameSelection.vue'
 import { useFormInitialValues } from '../schema/customer.schema'
 
 interface IProps {

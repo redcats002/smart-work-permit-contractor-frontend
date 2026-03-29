@@ -120,7 +120,7 @@ import PhoneNumberInput from '@/components/input/PhoneNumberInput.vue'
 import Switch from '@/components/input/Switch.vue'
 import BranchSelection from '@/components/selection/modules/api/branch/BranchSelection.vue'
 import RoleSelection from '@/components/selection/modules/static/role/RoleSelection.vue'
-import TitleNameSelection from '@/components/selection/modules/static/TitleNameSelection.vue'
+import TitleNameSelection from '@/components/selection/modules/static/title-name/TitleNameSelection.vue'
 import { useFormInitialValues } from '../schema/employee.schema'
 
 interface IProps {

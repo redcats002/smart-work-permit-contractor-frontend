@@ -1,10 +1,10 @@
 <template>
-  <BaseSelection
+  <BaseStaticSelection
     v-bind="attrs"
     v-model="modelValue"
     v-model:selected-name="selectedNameValue"
     :empty-model-value="undefined"
-    :fetch-suggestions="fetchSuggestions"
+    :fetch-options="fetchOptions"
     :map-option-to-model="mapOptionToModel"
     option-label="name" />
 </template>
@@ -14,14 +14,14 @@ import { useAttrs } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel, TBaseOption } from '@/models/Global.model'
 import { ExpensePayItems, type TExpensesType } from '@/enums/modules/finance/ExpenseType.enum'
-import BaseSelection from '@/components/selection/modules/BaseSelection.vue'
+import BaseStaticSelection from '@/components/selection/modules/static/BaseStaticSelection.vue'
 
 const attrs = useAttrs()
 
 const modelValue = defineModel<TExpensesType>()
 const selectedNameValue = defineModel<string | null>('selectedName', { default: null })
 
-const fetchSuggestions = async (): Promise<TBaseModel[]> => await handleLoading(async (): Promise<TBaseModel[]> => (
+const fetchOptions = async (): Promise<TBaseModel[]> => await handleLoading(async (): Promise<TBaseModel[]> => (
   (ExpensePayItems ?? []).map((item: TBaseOption): TBaseModel => ({
     id: item.value!,
     name: item?.label
