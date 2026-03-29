@@ -4,8 +4,11 @@
       v-if="modalAsset"
       v-model="modalVisible"
       v-model:form="formPreAsset"
+      v-model:form-key="formKeyPreAsset"
       :asset="modalAsset"
       :contract-id="contractId"
+      @mount="mountPreAsset()"
+      @open="onInitPreAsset($event)"
       @saved="onUpdatePreAsset(modalAsset.id)" />
   </Teleport>
   <section>
@@ -110,7 +113,7 @@ const {
   useFetch,
   fetch
 } = useInitDetail()
-const { formPreAsset, onUpdatePreAsset } = usePreAsset(useFetch)
+const { formPreAsset, formKey: formKeyPreAsset, onUpdatePreAsset, onInitPreAsset, mount: mountPreAsset } = usePreAsset(useFetch)
 const {
   formRequestReappraisal,
   formRequestAppraisal,

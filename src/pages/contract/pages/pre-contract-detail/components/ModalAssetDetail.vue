@@ -3,49 +3,57 @@
     v-model="visible"
     class="md:w-240!"
     label="กรอกข้อมูลหลักทรัพย์"
-    @open="useInit()">
+    @open="emits('open', asset)">
     <template #default>
       <div class="grid grid-cols-1 md:grid-cols-[1fr_300px] gap-8">
         <Form
+          v-if="isVehicle"
           :key="formKey"
           ref="formRef"
           v-slot="$form"
-          :initial-values="activeForm"
-          :resolver="activeResolver"
+          :initial-values="form.vehicleForm"
+          :resolver="vehicleResolver"
           @submit="onSubmit($event)">
           <Card>
             <template #title>
-              <span class="font-bold text-base">
-                รายละเอียดหลักทรัพย์
-              </span>
+              <span class="font-bold text-base">รายละเอียดหลักทรัพย์</span>
             </template>
             <template #content>
               <VehicleForm
-                v-if="isVehicle"
-                v-model="form.vehicleForm!"
+                v-model="form.vehicleForm"
                 v-model:detail="form.detail"
                 v-model:type="form.type"
-                :asset="asset"
                 :form="$form" />
+            </template>
+          </Card>
+        </Form>
+        <Form
+          v-if="isLand"
+          :key="formKey"
+          ref="formRef"
+          v-slot="$form"
+          :initial-values="form.realEstateForm"
+          :resolver="landResolver"
+          @submit="onSubmit($event)">
+          <Card>
+            <template #title>
+              <span class="font-bold text-base">รายละเอียดหลักทรัพย์</span>
+            </template>
+            <template #content>
               <LandForm
-                v-else-if="isLand"
-                v-model="form.realEstateForm!"
+                v-model="form.realEstateForm"
                 v-model:detail="form.detail"
                 v-model:type="form.type"
-                :asset="asset"
                 :form="$form" />
             </template>
           </Card>
         </Form>
         <Card class="h-fit">
           <template #title>
-            <span class="font-bold text-base">
-              รูปหลักทรัพย์
-            </span>
+            <span class="font-bold text-base">รูปหลักทรัพย์</span>
           </template>
           <template #content>
-            <ImageSection
-              v-model="form.images" />
+            <ImageSection v-model="form.images" />
           </template>
         </Card>
       </div>
@@ -70,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
@@ -82,10 +90,8 @@ import FormAction from '@/components/button/FormAction.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import type { ModalLandFormValues } from '../schema/land.schema'
 import { ModalLandSchema } from '../schema/land.schema'
 import { type PreAssetUpdateValues, useInitForm } from '../schema/pre-asset.schema'
-import type { ModalVehicleFormValues } from '../schema/vehicle.schema'
 import { ModalVehicleSchema } from '../schema/vehicle.schema'
 import ImageSection from './ImageSection.vue'
 import LandForm from './LandForm.vue'
@@ -97,7 +103,9 @@ interface IProps {
 }
 
 interface IEmits {
+  open: [asset: IPreAssetList]
   saved: []
+  mount: []
 }
 
 const props = defineProps<IProps>()
@@ -105,6 +113,7 @@ const emits = defineEmits<IEmits>()
 
 const visible = defineModel<boolean>({ default: false })
 const form = defineModel<PreAssetUpdateValues>('form', { required: true })
+const formKey = defineModel<number>('formKey', { required: true })
 
 const formRef = useTemplateRef<IFormType>('formRef')
 
@@ -112,65 +121,16 @@ const vehicleResolver = zodResolver(ModalVehicleSchema)
 const landResolver = zodResolver(ModalLandSchema)
 
 const pendingClose = ref<(() => void) | null>(null)
-const formKey = ref<number>(0)
 
-const activeResolver = computed((): ReturnType<typeof zodResolver> => isVehicle.value ? vehicleResolver : landResolver)
-const activeForm = computed((): ModalVehicleFormValues | ModalLandFormValues => {
-  if (isVehicle.value) {
-    return {
-      ...form.value.vehicleForm!,
-      detail: form.value.detail,
-      type: form.value.type
-    }
-  }
-  return {
-    ...form.value.realEstateForm!,
-    detail: form.value.detail,
-    type: form.value.type
-  }
-})
 const isVehicle = computed((): boolean => isVehicleAsset(props.asset.type))
 const isLand = computed((): boolean => isLandAsset(props.asset.type))
 
 
-function buildVehicleForm (): ModalVehicleFormValues {
-  return {
-    ...props.asset.vehicleForm,
-    plateNo: props.asset.vehicleForm?.plateNo || '',
-    province: props.asset.vehicleForm?.province || '',
-    manufactureYear: props.asset.vehicleForm?.manufactureYear || '',
-    registrationYear: props.asset.vehicleForm?.registrationYear || '',
-    vehicleIdentificationNo: props.asset.vehicleForm?.vehicleIdentificationNo || '',
-    mileage: props.asset.vehicleForm?.mileage || 0,
-    type: props.asset?.type,
-    detail: props.asset?.detail || ''
-  }
-}
-
-function buildLandForm (): ModalLandFormValues {
-  return {
-    ...props.asset?.realEstateForm,
-    subDistrict: props.asset.realEstateForm?.subDistrict || '',
-    district: props.asset.realEstateForm?.district || '',
-    province: props.asset.realEstateForm?.province || '',
-    postCode: props.asset.realEstateForm?.postCode || '',
-    urlGoogleMap: props.asset.realEstateForm?.urlGoogleMap || '',
-    type: props.asset?.type,
-    detail: props.asset?.detail || '',
-    landNo: props.asset.realEstateForm?.landNo || '',
-    surveyNo: props.asset.realEstateForm?.surveyNo || '',
-    aerialPhotoMapNo: props.asset.realEstateForm?.aerialPhotoMapNo || '',
-    aerialPhotoSheet: props.asset.realEstateForm?.aerialPhotoSheet || '',
-    landAreaRai: props.asset.realEstateForm?.landAreaRai || 0,
-    landAreaNgan: props.asset.realEstateForm?.landAreaNgan || 0,
-    landAreaSquareWah: props.asset.realEstateForm?.landAreaSquareWah || 0
-  }
-}
-
 function onClear (): void {
-  form.value = useInitForm()
+  const initialForm = useInitForm()
+  form.value = initialForm
   toast.success('ล้างข้อมูลสำเร็จ')
-  mount()
+  emits('mount')
 }
 
 function useSave (): void {
@@ -194,28 +154,5 @@ function onSubmit (event: FormSubmitEvent): void {
   })
 }
 
-function useInit (): void {
-  form.value = {
-    vehicleForm: buildVehicleForm(),
-    realEstateForm: buildLandForm(),
-    detail: props.asset.detail,
-    type: props.asset.type,
-    images: props.asset.images || []
-  }
-  mount()
-}
 
-function mount (): void {
-  formKey.value++
-}
-
-onMounted((): void => {
-  useInit()
-})
-
-watch((): IPreAssetList => props.asset, (): void => {
-  form.value.vehicleForm = buildVehicleForm()
-  form.value.realEstateForm = buildLandForm()
-  mount()
-})
 </script>
