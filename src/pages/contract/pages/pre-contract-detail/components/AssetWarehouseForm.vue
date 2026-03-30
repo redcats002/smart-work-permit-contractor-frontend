@@ -30,7 +30,8 @@
           touchable>
           <template #label>
             <span>
-              ลากและวางไฟล์ที่นี่ หรือ <span class="font-bold underline">เลือกไฟล์</span>
+              ลากและวางไฟล์ที่นี่ หรือ
+              <span class="font-bold underline">เลือกไฟล์</span>
             </span>
           </template>
         </UploadInput>
@@ -96,22 +97,29 @@ function invalid (index: number): boolean {
 }
 
 function manualValidateLocation (): boolean {
-  preAssets.value.forEach((asset: PreAssetWarehouseFormValues, index: number): void => {
-    if (!asset.locationId) {
-      errors.value.push({
-        code: 'custom',
-        path: `${index}.locationId`,
-        message: `กรุณาเลือกจุดจัดเก็บสำหรับหลักทรัพย์ที่ ${index + 1}`
-      })
-    }
-  })
-  if (errors.value.length) {
-    errors.value.forEach((error: Record<string, any>): void => {
-      toast.error(error.message)
+  try {
+    preAssets.value.forEach((asset: PreAssetWarehouseFormValues, index: number): void => {
+      if (!asset.locationId) {
+        errors.value.push({
+          code: 'custom',
+          path: `${index}.locationId`,
+          message: `กรุณาเลือกจุดจัดเก็บสำหรับหลักทรัพย์ที่ ${index + 1}`
+        })
+      }
     })
+    if (errors.value.length) {
+      errors.value.forEach((error: Record<string, any>): void => {
+        toast.error(error.message)
+      })
+      return false
+    }
+    return true
+  } catch (error: unknown) {
+    toast.error(`เกิดข้อผิดพลาดในการตรวจสอบข้อมูลจุดจัดเก็บ ${error}`)
     return false
+  } finally {
+    errors.value = []
   }
-  return true
 }
 
 async function submit (): Promise<boolean> {
