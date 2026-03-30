@@ -6,7 +6,6 @@
         :form="form"
         label="ประเภทหลักทรัพย์"
         name="type"
-        tag="div"
         hide-error
         required>
         <SelectInput
@@ -57,7 +56,6 @@
         :form="form"
         label="ตำบล"
         name="subDistrict"
-        tag="div"
         hide-error
         required>
         <AddressFieldInput
@@ -73,7 +71,6 @@
         :form="form"
         label="อำเภอ"
         name="district"
-        tag="div"
         hide-error
         required>
         <AddressFieldInput
@@ -89,7 +86,6 @@
         :form="form"
         label="จังหวัด"
         name="province"
-        tag="div"
         hide-error
         required>
         <AddressFieldInput
@@ -105,7 +101,6 @@
         :form="form"
         label="รหัสไปรษณีย์"
         name="postCode"
-        tag="div"
         hide-error
         required>
         <AddressFieldInput
@@ -148,61 +143,39 @@
     <span class="text-sm font-bold text-surface-600">เนื้อที่</span>
     <div class="grid grid-cols-3 gap-4">
       <LabelField
-        v-slot="{ invalid }"
+        v-model="model.landAreaRai"
         :form="form"
         label="ไร่"
         name="landAreaRai"
-        tag="div"
         hide-error
-        required>
-        <InputNumber
-          v-model="model.landAreaRai"
-          :invalid="invalid"
-          class="h-9! shadow-none!"
-          input-id="landAreaRai"
-          name="landAreaRai"
-          placeholder="0"
-          fluid />
-      </LabelField>
+        required
+        @keypress="keypress.number"
+        @paste="paste.number" />
       <LabelField
-        v-slot="{ invalid }"
+        v-model="model.landAreaNgan"
         :form="form"
         label="งาน"
         name="landAreaNgan"
-        tag="div"
         hide-error
-        required>
-        <InputNumber
-          v-model="model.landAreaNgan"
-          :invalid="invalid"
-          class="h-9! shadow-none!"
-          input-id="landAreaNgan"
-          name="landAreaNgan"
-          placeholder="0"
-          fluid />
-      </LabelField>
+        required
+        @keypress="keypress.number"
+        @paste="paste.number" />
       <LabelField
-        v-slot="{ invalid }"
+        v-model="model.landAreaSquareWah"
         :form="form"
         label="ตารางวา"
         name="landAreaSquareWah"
-        tag="div"
         hide-error
-        required>
-        <InputNumber
-          v-model="model.landAreaSquareWah"
-          :invalid="invalid"
-          class="h-9! shadow-none!"
-          input-id="landAreaSquareWah"
-          name="landAreaSquareWah"
-          placeholder="0"
-          fluid />
-      </LabelField>
+        required
+        @keypress="keypress.number"
+        @paste="paste.number" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import keypress from '@/utils/Keypress'
+import paste from '@/utils/Paste'
 import type { IFormState } from '@/models/Form.model'
 import { LandAssetTypeItems, type TAssetType } from '@/enums/modules/asset/AssetType.enum'
 import AddressFieldInput, { type IAddressData } from '@/components/input/AddressFieldInput.vue'

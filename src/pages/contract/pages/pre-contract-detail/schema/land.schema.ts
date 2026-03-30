@@ -1,7 +1,19 @@
+import { formatter } from '@/utils/Formatter'
 import { schema } from '@/utils/Schema'
 import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import { z } from 'zod'
 import { LandSchema as FormValues } from '../../create/schema/pre-contract.schema'
+
+function numericField (message: string) {
+  return z.preprocess((value: unknown): unknown => {
+    if (value == null || value === '') return 0
+    if (typeof value === 'string') {
+      const parsed = formatter.numberParseFloat(value)
+      return Number.isNaN(parsed) ? value : parsed
+    }
+    return value
+  }, z.number().min(0, message).default(0))
+}
 
 export const LandFormSchema = z.object({
   ...FormValues.shape,
@@ -10,9 +22,9 @@ export const LandFormSchema = z.object({
   surveyNo: z.string().min(1, 'กรุณากรอกเลขที่สำรวจ'),
   aerialPhotoMapNo: z.string().min(1, 'กรุณากรอกหมายเลข'),
   aerialPhotoSheet: z.string().min(1, 'กรุณากรอกเลขที่แผ่น'),
-  landAreaRai: z.number().min(0, 'กรุณากรอกจำนวนไร่').default(0),
-  landAreaNgan: z.number().min(0, 'กรุณากรอกจำนวนงาน').default(0),
-  landAreaSquareWah: z.number().min(0, 'กรุณากรอกจำนวนตารางวา').default(0)
+  landAreaRai: numericField('กรุณากรอกจำนวนไร่'),
+  landAreaNgan: numericField('กรุณากรอกจำนวนงาน'),
+  landAreaSquareWah: numericField('กรุณากรอกจำนวนตารางวา')
 })
 
 export type LandFormValues = z.infer<typeof LandFormSchema>
@@ -30,9 +42,9 @@ export const ModalLandSchema = z.object({
   urlGoogleMap: z.string().optional(),
   aerialPhotoMapNo: z.string().min(1, 'กรุณากรอกหมายเลข'),
   aerialPhotoSheet: z.string().min(1, 'กรุณากรอกเลขที่แผ่น'),
-  landAreaRai: z.number().min(0, 'กรุณากรอกจำนวนไร่'),
-  landAreaNgan: z.number().min(0, 'กรุณากรอกจำนวนงาน'),
-  landAreaSquareWah: z.number().min(0, 'กรุณากรอกจำนวนตารางวา')
+  landAreaRai: numericField('กรุณากรอกจำนวนไร่'),
+  landAreaNgan: numericField('กรุณากรอกจำนวนงาน'),
+  landAreaSquareWah: numericField('กรุณากรอกจำนวนตารางวา')
 })
 
 export type ModalLandFormValues = z.infer<typeof ModalLandSchema>

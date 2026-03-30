@@ -25,7 +25,7 @@
             class="absolute top-1/2 -mt-2 text-surface-400 leading-none inset-s-3 z-1" />
         </slot>
         <InputText
-          v-model="model"
+          v-model="inputModel"
           :class="isInvalid ? 'border-red-400!' : ''"
           :invalid="isInvalid"
           :name="name"
@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useAttrs } from 'vue'
 import { Icon } from '@iconify/vue'
 
 type TInputTag = 'label' | 'div'
@@ -90,7 +90,8 @@ interface IProps {
   prependIcon?: string
 }
 
-const model = defineModel<string>({ default: '' })
+const model = defineModel<string | number | null>({ default: '' })
+const attrs = useAttrs()
 
 const props = withDefaults(defineProps<IProps>(), {
   tag: 'label',
@@ -105,6 +106,20 @@ const props = withDefaults(defineProps<IProps>(), {
   invalid: undefined,
   appendIcon: undefined,
   prependIcon: undefined
+})
+
+const inputModel = computed<string>({
+  get: (): string => {
+    if (model.value == null) return ''
+    return String(model.value)
+  },
+  set: (value: string): void => {
+    if (attrs.type === 'number') {
+      model.value = value === '' ? null : Number(value)
+      return
+    }
+    model.value = value
+  }
 })
 
 function resolveFormField (form: IFormState, name: string): IFormState[string] | undefined {
