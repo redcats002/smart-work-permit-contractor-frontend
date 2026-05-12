@@ -7,6 +7,7 @@ interface ISchema {
   enum: (enumObj: object, label: string) => z.ZodType<any, any, any>
   date: (label: string) => z.ZodType<string, any, any>
   media: z.ZodType<IMedia, any, any>
+  richText: (label: string) => z.ZodType<string, any, any>
 }
 
 const id = (label: string): z.ZodOptional<z.ZodType<number | string, any, any>> =>
@@ -49,13 +50,26 @@ const enumSchema = (enumObj: object, label: string): z.ZodType<any, any, any> =>
 
 const date = (label: string): z.ZodType<string, any, any> =>
   z
-    .date()
-    .min(1, `กรุณาเลือก${label}`)
+    .preprocess((val: unknown): unknown => {
+      if (typeof val === 'string' && val !== '') {
+        const d = new Date(val)
+        return isNaN(d.getTime()) ? val : d
+      }
+      return val
+    }, z.date({ message: `กรุณาเลือก${label}` }))
     .transform((val: Date): string => {
       const dayjs = useDayjs()
       const parse = dayjs(val).toISOString()
       return dayjs(val).isValid() ? parse : val.toString()
     })
+
+const richText = (label: string): z.ZodType<string, any, any> =>
+  z.preprocess(
+    (val: unknown): unknown => (val === undefined || val === null ? '' : val), z.string().refine((val: string): boolean => {
+      const text = val.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim()
+      return text.length > 0
+    }, { message: `กรุณาระบุ${label}` })
+  ) as z.ZodType<string, any, any>
 
 const media = z.object({
   url: z.string().min(1, 'URL รูปภาพไม่ถูกต้อง'),
@@ -76,5 +90,6 @@ export const schema: ISchema = {
   id,
   enum: enumSchema,
   date,
-  media
+  media,
+  richText
 }

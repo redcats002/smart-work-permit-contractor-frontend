@@ -19,7 +19,7 @@ defineProps<IProps>()
 const emits = defineEmits<IEmits>()
 
 const items = ref<IMenuItemAction[]>([
-  // { label: 'แก้ไข', key: 'edit', type: 'TEXT', action: (): void => { emits('edit') } },
+  { label: 'แก้ไข', key: 'edit', type: 'TEXT', action: (): void => { emits('edit') } },
   { label: 'ลบ', key: 'delete', action: (): void => { emits('delete') }, type: 'DELETE' }
 ])
 
