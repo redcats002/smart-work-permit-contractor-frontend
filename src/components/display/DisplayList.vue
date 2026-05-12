@@ -15,7 +15,7 @@
             :value="item.value" />
           <span v-else>{{ item.label }}</span>
         </div>
-        <div :class="['text-sm flex items-center gap-2.5', valueClass]">
+        <div :class="['text-sm flex items-start gap-2.5', valueClass]">
           <span v-if="!item?.hideColon">:</span>
           <slot
             v-if="$slots[`value.${String(item.key)}`]"
