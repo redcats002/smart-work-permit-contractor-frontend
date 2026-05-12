@@ -14,20 +14,21 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { ptViewMerge } from './utils'
 import Card, {
   type CardPassThroughOptions,
   type CardProps
 } from 'primevue/card'
+import { ptViewMerge } from './utils'
 
 interface Props extends /* @vue-ignore */ CardProps {}
 defineProps<Props>();
 
 const theme = ref<CardPassThroughOptions>({
-    root: `flex flex-col rounded-xl
-        bg-surface-0 dark:bg-surface-900 
+    // border border-surface-300 dark:border-surface-700
+    root: `flex flex-col rounded-lg
+        bg-white dark:bg-surface-900 
         text-surface-700 dark:text-surface-0
-        shadow-md`,
+        shadow-[0_0_10px_4px_rgba(16,69,212,0.10)]`,
     header: ``,
     body: `p-5 flex flex-col gap-2`,
     caption: `flex flex-col gap-2`,
