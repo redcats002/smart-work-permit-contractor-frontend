@@ -15,7 +15,7 @@
             :value="item.value" />
           <span v-else>{{ item.label }}</span>
         </div>
-        <div class="text-sm flex items-center gap-2.5 md:col-span-2">
+        <div :class="['text-sm flex items-center gap-2.5', valueClass]">
           <span v-if="!item?.hideColon">:</span>
           <slot
             v-if="$slots[`value.${String(item.key)}`]"
@@ -52,13 +52,14 @@ interface IProps<T = any> {
   items?: IDisplayList<T>[]
   rowClass?: string
   labelClass?: string
+  valueClass?: string
 }
 
 withDefaults(defineProps<IProps>(), {
   items: (): IDisplayList[] => [],
   rowClass: 'grid-cols-2 md:grid-cols-3',
-  labelClass: ''
-
+  labelClass: '',
+  valueClass: 'md:col-span-2'
 })
 
 function go (url: string): void {
