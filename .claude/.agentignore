@@ -1,0 +1,52 @@
+# =============================================
+# AI Agent Ignore File
+# Applies to: GitHub Copilot, Claude, Gemini, Cursor, Codeium, etc.
+# =============================================
+
+# Environment & Secrets — NEVER read or suggest contents
+.env
+.env.*
+.env.local
+.env.*.local
+.env.development
+.env.staging
+.env.production
+.env.test
+*.pem
+*.key
+*.cert
+*.p12
+*.pfx
+secrets/
+credentials/
+
+# Build outputs
+dist/
+dist-ssr/
+.output/
+build/
+
+# Dependencies
+node_modules/
+.bun/
+
+# Cache & Temp
+.cache/
+.temp/
+.tmp/
+*.log
+logs/
+
+# Coverage & Test artifacts
+coverage/
+.nyc_output/
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# Lock files (read-only references only)
+bun.lockb
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

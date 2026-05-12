@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "type": "command",
+        "bash": "say 'Copilot session started'",
+        "cwd": ".",
+        "timeoutSec": 30
+      }
+    ],
+    "sessionEnd": [
+      {
+        "type": "command",
+        "bash": "say 'Goodbye, Copilot session ended'",
+        "cwd": ".",
+        "timeoutSec": 30
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "type": "command",
+        "bash": "say 'I need a permission'",
+        "cwd": ".",
+        "timeoutSec": 30
+      }
+    ],
+    "agentStop": [
+      {
+        "type": "command",
+        "bash": "say 'Copilot has finished their work'",
+        "cwd": ".",
+        "timeoutSec": 30
+      }
+    ]
+  }
+}
