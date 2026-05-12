@@ -42,29 +42,37 @@ export const generateTableFooter = <TSummary extends Record<string, any>, TItem 
   summary: TSummary | null | undefined,
   config: Partial<Record<keyof TItem | (string & {}), IFooterColConfig<TSummary>>> = {}
 ): IFooter[] => {
-  if (!summary) return []
+  const result: IFooter[] = []
+  let i = 0
 
-  return columns.map((col: IColumn): IFooter => {
+  while (i < columns.length) {
+    const col = columns[i] as IColumn
     const field = String(col.field)
     const colConfig = config[field]
+    const colspan = colConfig?.colspan ?? 1
 
-    let value: string
+    let value: string = ''
     if (colConfig?.value) {
       if (typeof colConfig.value === 'string') {
         value = colConfig.value
       } else {
-        value = colConfig.value(summary)
+        if (summary) value = colConfig.value(summary)
       }
-    } else if (field in summary) {
+    } else if (summary && field in summary) {
       const raw = summary[field as keyof TSummary]
       value = colConfig?.format ? colConfig.format(raw) : String(raw ?? '')
     } else {
       value = ''
     }
 
-    const footer: IFooter = { colspan: colConfig?.colspan ?? 1, field, value }
+    const footer: IFooter = { colspan, field, value }
     if (colConfig?.footerClass) footer.footerClass = colConfig.footerClass
     if (colConfig?.footerStyle) footer.footerStyle = colConfig.footerStyle
-    return footer
-  })
+    result.push(footer)
+
+    // Advance by colspan so that columns absorbed by this cell are skipped
+    i += colspan
+  }
+
+  return result
 }
