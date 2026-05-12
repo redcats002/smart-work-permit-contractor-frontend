@@ -13,6 +13,7 @@ interface IUseInstallment {
   computeInstallmentSchedule: (values: InstallmentFormValues, startDate?: Date) => IInstallmentRow[]
   computeMonthlyPayment: (values: InstallmentFormValues) => number
   computeTotalInterest: (values: InstallmentFormValues) => number
+  computeLateFee: (values: InstallmentFormValues) => number
 }
 export default function useInstallment (): IUseInstallment {
   function computeInstallmentSchedule (
@@ -107,9 +108,19 @@ export default function useInstallment (): IUseInstallment {
     return payment * installments - loanAmount
   }
 
+  function computeLateFee (values: InstallmentFormValues): number {
+    const { loanAmount } = values
+    if (!loanAmount) return 0
+    // For demonstration, let's assume late fee is 5% of the loan amount
+    const lateFeeRate = 0.05
+    const lateFeeFull = loanAmount * lateFeeRate
+    return Math.floor(lateFeeFull / 365)
+  }
+
   return {
     computeInstallmentSchedule,
     computeMonthlyPayment,
-    computeTotalInterest
+    computeTotalInterest,
+    computeLateFee
   }
 }

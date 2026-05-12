@@ -24,8 +24,8 @@
               :max-fraction-digits="0"
               class="h-9 shadow-none!"
               name="loanAmount"
+              disabled
               fluid
-              readonly
               @update:model-value="recalculate()" />
           </LabelField>
           <LabelField
@@ -39,6 +39,7 @@
               v-model="form.installmentCount"
               :class="invalid ? 'border-red-400!' : ''"
               :invalid="invalid"
+              :max="720"
               :max-fraction-digits="0"
               :min="0"
               :use-grouping="false"
@@ -94,8 +95,8 @@
               :min="0"
               class="h-9 shadow-none!"
               name="lateFee"
-              fluid
-              readonly />
+              disabled
+              fluid />
           </LabelField>
         </Form>
       </BaseContainer>
@@ -117,7 +118,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, useTemplateRef, watch } from 'vue'
+import { nextTick, ref, useTemplateRef, watch } from 'vue'
 import { formatter } from '@/utils/Formatter'
 import { handleValidate, scrollToFirstError } from '@/utils/HandleSubmit'
 import type { IFormType } from '@/models/Form.model'
@@ -139,7 +140,7 @@ interface IProps {
 }
 const props = withDefaults(defineProps<IProps>(), {})
 
-const { computeInstallmentSchedule, computeMonthlyPayment, computeTotalInterest } = useInstallment()
+const { computeInstallmentSchedule, computeMonthlyPayment, computeTotalInterest, computeLateFee } = useInstallment()
 
 
 const form = defineModel<InstallmentFormValues>({ required: true })
@@ -150,7 +151,8 @@ const monthlyPayment = ref<number>(0)
 const totalInterest = ref<number>(0)
 const formKey = ref<number>(0)
 
-function recalculate (): void {
+async function recalculate (): Promise<void> {
+  await nextTick()
   const v = form.value
   if (!v.loanAmount || !v.installmentCount || v.installmentCount <= 0) {
     schedule.value = []
@@ -161,6 +163,7 @@ function recalculate (): void {
   monthlyPayment.value = computeMonthlyPayment(v)
   totalInterest.value = computeTotalInterest(v)
   schedule.value = computeInstallmentSchedule(v)
+  form.value.lateFee = computeLateFee(v)
   mount()
 }
 
