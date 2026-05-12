@@ -9,6 +9,7 @@
     :refresh-deps="[props.existedGroup]"
     option-disabled="disabled"
     option-label="name"
+    placeholder="กรุณาเลือกกลุ่มผู้ตีราคา"
     local-filter />
 </template>
 

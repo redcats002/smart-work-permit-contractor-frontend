@@ -42,6 +42,7 @@
                 :form="$form"
                 label="รายละเอียดเพิ่มเติม"
                 name="detail"
+                placeholder="กรุณากรอกรายละเอียดเพิ่มเติม"
                 hide-error
                 required />
             </div>

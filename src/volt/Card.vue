@@ -28,6 +28,7 @@ const theme = ref<CardPassThroughOptions>({
     root: `flex flex-col rounded-lg
         bg-white dark:bg-surface-900 
         text-surface-700 dark:text-surface-0
+        my-2
         shadow-[0_0_10px_4px_rgba(16,69,212,0.10)]`,
     header: ``,
     body: `p-5 flex flex-col gap-2`,
