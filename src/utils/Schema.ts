@@ -10,43 +10,43 @@ interface ISchema {
   richText: (label: string) => z.ZodType<string, any, any>
 }
 
-const id = (label: string): z.ZodOptional<z.ZodType<number | string, any, any>> =>
-  z
-    .preprocess(
-      (val: unknown): unknown => {
-        if (val === null || val === undefined || val === '' || val === 0) return undefined
-        if (val && typeof val === 'object' && 'id' in val) {
-          const inner = (val as { id?: unknown }).id
-          if (inner === null || inner === undefined || inner === '' || inner === 0) return undefined
-          if (typeof inner === 'string' && inner.trim() !== '') {
-            const num = Number(inner)
-            return isNaN(num) ? inner : num
-          }
-          return inner
-        }
-        if (typeof val === 'string' && val.trim() !== '') {
-          const num = Number(val)
-          return isNaN(num) ? val : num
-        }
-        // Accept number 1 or greater
-        if (typeof val === 'number' && val >= 1) return val
-        return undefined
-      }, z.union([z.number().min(1, `กรุณาเลือก${label}`), z.string().min(1, `กรุณาเลือก${label}`)])
-    )
+const id = (label: string): z.ZodOptional<z.ZodType<number | string, any, any>> => {
+  const idPreprocess = (val: unknown): unknown => {
+    if (val === null || val === undefined || val === '' || val === 0) return undefined
+    if (val && typeof val === 'object' && 'id' in val) {
+      const inner = (val as { id?: unknown }).id
+      if (inner === null || inner === undefined || inner === '' || inner === 0) return undefined
+      if (typeof inner === 'string' && inner.trim() !== '') {
+        const num = Number(inner)
+        return isNaN(num) ? inner : num
+      }
+      return inner
+    }
+    if (typeof val === 'string' && val.trim() !== '') {
+      const num = Number(val)
+      return isNaN(num) ? val : num
+    }
+    // Accept number 1 or greater
+    if (typeof val === 'number' && val >= 1) return val
+    return undefined
+  }
+  const idUnion = z.union([z.number().min(1, `กรุณาเลือก${label}`), z.string().min(1, `กรุณาเลือก${label}`), z.undefined()])
+  return z
+    .preprocess(idPreprocess, idUnion)
     .optional()
-    .refine((val: number | string | undefined): boolean => val !== undefined && val !== '', `กรุณาเลือก${label}`)
-
+    .refine((val: unknown): boolean => val !== undefined && val !== '', `กรุณาเลือก${label}`) as any
+}
 const enumSchema = (enumObj: object, label: string): z.ZodType<any, any, any> =>
   z
-    .preprocess(
-      (value: unknown): unknown => {
-        if (typeof value === 'string') return value
-        if (value && typeof value === 'object' && 'id' in value) return (value as { id?: unknown }).id ?? ''
-        return value ?? ''
-      }, z.enum(enumObj as Readonly<Record<string, string | number>>)
-    )
-    .optional()
-    .refine((val: string | number | undefined): boolean => val !== '', `กรุณาเลือก${label}`)
+    .preprocess((value: unknown): unknown => {
+      if (typeof value === 'string') return value
+      if (value && typeof value === 'object') {
+        if ('value' in value) return (value as { value?: unknown }).value ?? ''
+        if ('id' in value) return (value as { id?: unknown }).id ?? ''
+      }
+      return value
+    }, z.enum(enumObj as Readonly<Record<string, string | number>>, `กรุณาเลือก${label}`))
+    .refine((val: string | number | undefined): boolean => (val !== '' || val !== null || val !== undefined), `กรุณาเลือก${label}`)
 
 const date = (label: string): z.ZodType<string, any, any> =>
   z
