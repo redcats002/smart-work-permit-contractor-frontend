@@ -62,7 +62,7 @@ const theme = ref<GalleriaPassThroughOptions>({
   root: 'flex flex-col gap-2',
   content: 'flex flex-col gap-2',
   itemsContainer: 'relative flex flex-col',
-  items: 'relative overflow-hidden w-full',
+  items: 'relative overflow-hidden w-full grid place-content-center',
   item: 'flex items-center justify-center w-fit relative',
   prevButton: `absolute top-1/2 left-2 -translate-y-1/2 z-10 flex items-center justify-center
     size-9 rounded-full bg-black/40 hover:bg-black/60 text-white transition-colors`,
