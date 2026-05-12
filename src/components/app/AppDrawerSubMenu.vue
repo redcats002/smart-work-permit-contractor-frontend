@@ -40,7 +40,7 @@
         <div
           :class="[
             'pl-9 pr-2 py-1.5 rounded text-sm duration-200 hover:bg-(--p-gray-5) cursor-pointer',
-            (isActive || isExactActive) && !disabled && !child?.disabled ? 'text-(--p-red) font-semibold' : 'text-surface-700',
+            (isActive || isExactActive || isChildActiveByBack(child.to)) && !disabled && !child?.disabled ? 'text-(--p-red) font-semibold' : 'text-surface-700',
             (disabled || child?.disabled) && 'cursor-not-allowed opacity-50 pointer-events-none'
           ]"
           @click="!disabled && navigate($event)">
@@ -54,7 +54,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 
 export interface ISubMenuItem {
@@ -73,14 +73,28 @@ interface IProps {
 const props = defineProps<IProps>()
 
 const route = useRoute()
+const router = useRouter()
+
+const backListPath = computed((): string | null => {
+  const backMeta = route.meta.back as { name?: string } | undefined
+  if (!backMeta?.name) return null
+  return router.resolve({ name: backMeta.name }).path
+})
 
 const isAnyChildActive = computed((): boolean => {
   return props.children.some((child: ISubMenuItem): boolean => {
     if (typeof child.to === 'string') return route.path.startsWith(child.to)
     if (typeof child.to === 'object' && 'path' in child.to) return route.path.startsWith(child.to.path as string)
     return false
-  })
+  }) || (backListPath.value !== null && props.children.some((child: ISubMenuItem): boolean => {
+    return router.resolve(child.to).path === backListPath.value
+  }))
 })
+
+function isChildActiveByBack (childTo: RouteLocationRaw): boolean {
+  if (backListPath.value === null) return false
+  return router.resolve(childTo).path === backListPath.value
+}
 
 const isExpanded = ref<boolean>(isAnyChildActive.value)
 const isImageIcon = computed((): boolean => props.icon.startsWith('/'))
