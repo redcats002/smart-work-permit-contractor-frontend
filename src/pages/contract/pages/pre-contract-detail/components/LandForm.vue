@@ -147,6 +147,7 @@
         :form="form"
         label="ไร่"
         name="landAreaRai"
+        placeholder="กรุณากรอกไร่"
         hide-error
         required
         @keypress="keypress.number"
@@ -156,6 +157,7 @@
         :form="form"
         label="งาน"
         name="landAreaNgan"
+        placeholder="กรุณากรอกงาน"
         hide-error
         required
         @keypress="keypress.number"
@@ -165,6 +167,7 @@
         :form="form"
         label="ตารางวา"
         name="landAreaSquareWah"
+        placeholder="กรุณากรอกตารางวา"
         hide-error
         required
         @keypress="keypress.number"

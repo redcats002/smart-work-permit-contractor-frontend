@@ -5,7 +5,7 @@
     label="กรอกข้อมูลหลักทรัพย์"
     @open="emits('open', asset)">
     <template #default>
-      <div class="grid grid-cols-1 md:grid-cols-[1fr_300px] gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-[1fr_300px] gap-8 my-2">
         <Form
           v-if="isVehicle"
           :key="formKey"
