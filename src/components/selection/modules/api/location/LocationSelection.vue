@@ -8,12 +8,12 @@
     v-model:selected-name="selectedNameValue"
     :fetch-suggestions="fetchSuggestions"
     :map-option-to-model="mapOptionToModel"
-    :refresh-deps="[warehouseId]"
+    :refresh-deps="refreshDeps"
     option-label="name" />
 </template>
 
 <script setup lang="ts">
-import { useAttrs } from 'vue'
+import { computed, useAttrs } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel } from '@/models/Global.model'
 import type { ILocationList } from '@/models/response/warehouse/WarehouseRes.model'
@@ -37,6 +37,8 @@ const WarehouseService: IWarehouseProvider = new WarehouseProvider()
 
 const modelValue = defineModel<number | null>()
 const selectedNameValue = defineModel<string | null>('selectedName', { default: null })
+
+const refreshDeps = computed((): (number | null)[] => [props.warehouseId])
 
 const { pagination } = usePagination()
 
