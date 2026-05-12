@@ -40,7 +40,7 @@ interface Props extends /* @vue-ignore */ MultiSelectProps {}
 defineProps<Props>();
 
 const theme = ref<MultiSelectPassThroughOptions>({
-    root: `inline-flex cursor-pointer relative select-none rounded-md p-fluid:flex
+    root: `group/multiselect inline-flex cursor-pointer relative select-none rounded-md p-fluid:flex
         bg-surface-0 dark:bg-surface-950
         border border-surface-300 hover:border-surface-400 dark:border-surface-600 dark:hover:border-surface-700
         p-focus:border-primary
@@ -56,6 +56,7 @@ const theme = ref<MultiSelectPassThroughOptions>({
         h-[34px]! p-has-chip:h-auto!
         text-surface-700 dark:text-surface-0 
         p-placeholder:text-surface-500 dark:p-placeholder:text-surface-400
+        group-data-[p~=invalid]/multiselect:data-[p~=placeholder]:text-red-600 dark:group-data-[p~=invalid]/multiselect:data-[p~=placeholder]:text-red-300
         p-disabled:text-surface-500 dark:p-disabled:text-surface-400
         p-empty:overflow-hidden p-empty:opacity-0
         p-small:text-sm p-small:px-[0.625rem] p-small:py-[0.375rem]
