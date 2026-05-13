@@ -3,38 +3,36 @@ import z from 'zod'
 import { useDayjs } from './Dayjs'
 
 interface ISchema {
-  id: (label: string) => z.ZodOptional<z.ZodType<number | string, any, any>>
+  id: (label: string) => z.ZodType<number | undefined>
   enum: (enumObj: object, label: string) => z.ZodType<any, any, any>
   date: (label: string) => z.ZodType<string, any, any>
   media: z.ZodType<IMedia, any, any>
   richText: (label: string) => z.ZodType<string, any, any>
 }
 
-const id = (label: string): z.ZodOptional<z.ZodType<number | string, any, any>> => {
-  const idPreprocess = (val: unknown): unknown => {
+const id = (label: string): z.ZodType<number | undefined> => {
+  const idPreprocess = (val: unknown): number | undefined => {
     if (val === null || val === undefined || val === '' || val === 0) return undefined
     if (val && typeof val === 'object' && 'id' in val) {
       const inner = (val as { id?: unknown }).id
       if (inner === null || inner === undefined || inner === '' || inner === 0) return undefined
-      if (typeof inner === 'string' && inner.trim() !== '') {
-        const num = Number(inner)
-        return isNaN(num) ? inner : num
-      }
-      return inner
+      const num = Number(inner)
+      return isNaN(num) || num < 1 ? undefined : num
     }
     if (typeof val === 'string' && val.trim() !== '') {
       const num = Number(val)
-      return isNaN(num) ? val : num
+      return isNaN(num) || num < 1 ? undefined : num
     }
-    // Accept number 1 or greater
     if (typeof val === 'number' && val >= 1) return val
     return undefined
   }
-  const idUnion = z.union([z.number().min(1, `กรุณาเลือก${label}`), z.string().min(1, `กรุณาเลือก${label}`), z.undefined()])
   return z
-    .preprocess(idPreprocess, idUnion)
-    .optional()
-    .refine((val: unknown): boolean => val !== undefined && val !== '', `กรุณาเลือก${label}`) as any
+    .preprocess(
+      idPreprocess, z.number({ error: `กรุณาเลือก${label}` })
+        .min(1, `กรุณาเลือก${label}`)
+        .optional()
+    )
+    .refine((val: unknown): boolean => val !== undefined, `กรุณาเลือก${label}`) as z.ZodType<number | undefined>
 }
 const enumSchema = (enumObj: object, label: string): z.ZodType<any, any, any> =>
   z
