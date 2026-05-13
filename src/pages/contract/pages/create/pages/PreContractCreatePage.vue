@@ -23,6 +23,7 @@
             name="sellManId"
             placeholder="เลือกพนักงานประเมิน"
             hide-error
+            hide-filter
             required />
         </BaseContainer>
         <BaseContainer>
