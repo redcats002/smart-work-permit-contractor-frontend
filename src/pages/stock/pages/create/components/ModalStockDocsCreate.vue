@@ -37,9 +37,9 @@
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue'
 import type { IDocumentAssetList } from '@/models/response/document-storage/DocumentStorageRes.model'
+import type { TAssetStatus } from '@/enums/modules/asset/AssetStatus.enum'
 import type { AssetTypeEnum } from '@/enums/modules/asset/AssetType.enum'
 import type { CustomerStatusEnum } from '@/enums/modules/customer/CustomerStatus.enum'
-import type { DocumentStorageAssetStatusEnum } from '@/enums/modules/document-storage/DocumentStorageAssetStatus.enum'
 import type { WarehouseStatusEnum } from '@/enums/modules/warehouse/WarehouseStatus.enum'
 import BasePage from '@/components/base/BasePage.vue'
 import CreateButton from '@/components/button/CreateButton.vue'
@@ -91,7 +91,7 @@ function onConfirm (close: () => void): void {
         status: asset.location?.warehouse?.status as WarehouseStatusEnum
       }
     },
-    status: asset?.status as DocumentStorageAssetStatusEnum,
+    status: asset?.status as TAssetStatus,
     type: asset?.type as AssetTypeEnum,
     contract: {
       id: asset?.contract?.id || '',
@@ -124,7 +124,7 @@ function onOpen (open: () => void): void {
         status: asset.location?.warehouse?.status as WarehouseStatusEnum
       }
     },
-    status: asset?.status as DocumentStorageAssetStatusEnum,
+    status: asset?.status as TAssetStatus,
     type: asset?.type as AssetTypeEnum,
     contract: {
       id: asset?.contract?.id || '',

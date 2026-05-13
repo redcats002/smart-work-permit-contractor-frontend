@@ -7,9 +7,14 @@
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         <div
           v-for="image in images"
-          :key="image.id"
-          class="h-28 rounded-lg border border-surface-200 bg-surface-50 flex items-center justify-center text-xs text-surface-500">
-          {{ image.label }}
+          :key="image.path"
+          class="h-28 rounded-lg border border-surface-200 bg-surface-50 flex items-center justify-center text-xs text-surface-500 overflow-hidden">
+          <img
+            v-if="image.url"
+            :alt="image.name"
+            :src="image.url"
+            class="object-cover w-full h-full">
+          <span v-else>{{ image.name }}</span>
         </div>
       </div>
     </div>
@@ -20,14 +25,14 @@
       </div>
       <div class="flex flex-wrap gap-4">
         <div
-          v-for="doc in documents"
-          :key="doc.id"
+          v-for="file in files"
+          :key="file.path"
           class="w-32 rounded-lg border border-surface-200 bg-white p-3 flex flex-col items-center gap-2">
           <Icon
             class="size-12 text-red-500"
             icon="mdi:file-pdf-box" />
           <div class="text-xs text-center text-surface-600">
-            {{ doc.name }}
+            {{ file.name }}
           </div>
         </div>
       </div>
@@ -36,12 +41,12 @@
 </template>
 
 <script setup lang="ts">
-import type { IAssetDocument, IAssetMedia } from '@/models/asset/AssetDetail.model'
+import type { IContractAssetFile } from '@/models/response/contract-asset/ContractAssetRes.model'
 import { Icon } from '@iconify/vue'
 
 interface IProps {
-  images: IAssetMedia[]
-  documents: IAssetDocument[]
+  images: IContractAssetFile[]
+  files: IContractAssetFile[]
 }
 
 defineProps<IProps>()

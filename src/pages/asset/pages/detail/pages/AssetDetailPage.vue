@@ -6,21 +6,28 @@
       <Spacer />
     </BaseTop>
     <BasePage>
-      <div class="grid grid-cols-1 gap-4">
+      <div
+        v-if="detail"
+        class="grid grid-cols-1 gap-4">
         <AssetInfoSection
-          :asset-info="assetInfo"
-          :contract-info="contractInfo"
-          @update:asset-status="onUpdateAssetStatus($event)" />
+          :detail="detail"
+          @update:asset-status="updateStatus($event)" />
         <AssetMediaSection
-          :documents="documents"
-          :images="images" />
-        <AssetHistorySection :items="history" />
+          :files="detail.files"
+          :images="detail.images" />
+        <AssetHistorySection
+          :items="[]"
+          :loan-amount="detail.contract.loanAmount"
+          :sale-date="detail.saleDate"
+          :sale-price="detail.salePrice"
+          @sell="sell($event)" />
       </div>
     </BasePage>
   </section>
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
@@ -34,11 +41,11 @@ import { useDetail } from '../composables/useDetail'
 
 const route = useRoute()
 const assetId = Number(route.params?.id || 0)
-const { assetInfo, contractInfo, images, documents, history } = useDetail(assetId)
+const { detail, fetch, sell, updateStatus } = useDetail(assetId)
 
-function onUpdateAssetStatus (status: string): void {
-  assetInfo.value.status = status
-}
+onMounted((): void => {
+  void fetch()
+})
 </script>
 
 <style scoped></style>

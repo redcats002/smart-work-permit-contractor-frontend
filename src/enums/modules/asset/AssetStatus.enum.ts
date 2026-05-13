@@ -32,8 +32,12 @@ export function getStatusClass (value?: TAssetStatus): string {
   switch (value) {
     case AssetStatusEnum.ACTIVE:
       return 'bg-green-brand-light text-green-brand border-none'
+    case AssetStatusEnum.PENDING_SALE:
+      return 'bg-yellow-50 text-yellow-600 border-none'
     case AssetStatusEnum.SOLD:
       return 'bg-gray-100 text-gray-600 border-none'
+    case AssetStatusEnum.DONE:
+      return 'bg-gray-200 text-gray-500 border-none'
     default:
       return 'bg-gray-100 text-gray-600 border-none'
   }
@@ -43,7 +47,11 @@ export function getIcon (value?: TAssetStatus): string {
   switch (value) {
     case AssetStatusEnum.ACTIVE:
       return 'icon-park-outline:check-one'
+    case AssetStatusEnum.PENDING_SALE:
+      return 'solar:clock-circle-linear'
     case AssetStatusEnum.SOLD:
+      return 'mdi:tag-outline'
+    case AssetStatusEnum.DONE:
       return 'material-symbols:close-rounded'
     default:
       return 'mdi:help-circle-outline'

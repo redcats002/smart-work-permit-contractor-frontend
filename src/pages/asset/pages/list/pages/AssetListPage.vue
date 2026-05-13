@@ -7,14 +7,12 @@
       @clear="onClearFilters()"
       @search="fetch()" />
     <BasePage>
-      <div class="mt-5">
-        <AssetTable
-          v-model:pagination="pagination"
-          v-model:sort-by="sortBy"
-          v-model:sort-order="sortOrder"
-          :items="items"
-          @update="fetch()" />
-      </div>
+      <AssetTable
+        v-model:pagination="pagination"
+        v-model:sort-by="sortBy"
+        v-model:sort-order="sortOrder"
+        :items="items"
+        @update="fetch()" />
     </BasePage>
   </section>
 </template>

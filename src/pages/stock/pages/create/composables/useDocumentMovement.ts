@@ -1,8 +1,8 @@
 import { ref, type Ref } from 'vue'
 import type { IDocumentAssetList } from '@/models/response/document-storage/DocumentStorageRes.model'
+import type { TAssetStatus } from '@/enums/modules/asset/AssetStatus.enum'
 import type { AssetTypeEnum } from '@/enums/modules/asset/AssetType.enum'
 import type { CustomerStatusEnum } from '@/enums/modules/customer/CustomerStatus.enum'
-import type { DocumentStorageAssetStatusEnum } from '@/enums/modules/document-storage/DocumentStorageAssetStatus.enum'
 import type { WarehouseStatusEnum } from '@/enums/modules/warehouse/WarehouseStatus.enum'
 import type { DocumentAssetFormValues } from '@/pages/stock/pages/create/schema/document-asset.schema'
 import { type DocumentMovementFormValues, useDev, useFormInitialValues } from '../schema/document-movement'
@@ -44,7 +44,7 @@ export function useDocumentMovement (): IUseDocumentMovement {
             status: item.location?.warehouse?.status as WarehouseStatusEnum
           }
         },
-        status: item?.status as DocumentStorageAssetStatusEnum,
+        status: item?.status as TAssetStatus,
         type: item?.type as AssetTypeEnum,
         contract: {
           id: item?.contract?.id || '',

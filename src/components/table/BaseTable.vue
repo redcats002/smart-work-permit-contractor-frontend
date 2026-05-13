@@ -161,7 +161,7 @@ interface IProps {
 const props = withDefaults(defineProps<IProps>(), {
   selectable: false,
   dataKey: 'id',
-  lazy: false,
+  lazy: true,
   customSort: false,
   tableClass: '',
   tableStyle: '',
