@@ -97,7 +97,8 @@
           class="md:col-span-2"
           label="URL Google Map"
           placeholder="https://maps.app.goo.gl/"
-          hide-error />
+          hide-error
+          @update:model-value="onUpdate()" />
       </div>
     </div>
   </div>
@@ -139,9 +140,18 @@ const model = defineModel<IAddressRequest>({ default: (): IAddressRequest => ({
   district: '',
   province: '',
   postCode: '',
+  urlGoogleMap: '',
   isSameCitizenAddress: false,
   isSameCurrentAddress: false
 }) })
+
+const BLANK_ADDRESS = {
+  address: '',
+  subDistrict: '',
+  district: '',
+  province: '',
+  postCode: ''
+}
 
 const labelType = computed((): string => {
   if (props.type === 'CURRENT') return 'ที่อยู่ปัจจุบัน'
@@ -205,10 +215,23 @@ function onAddressSelect (address: Partial<IAddressData>): void {
 }
 
 function onUseSameCitizenAddress (isChecked: boolean): void {
-  if (isChecked) emits('useSameCitizenAddress')
+  if (isChecked) {
+    emits('useSameCitizenAddress')
+  } else {
+    model.value = { ...model.value, ...BLANK_ADDRESS }
+  }
 }
+
 function onUseSameCurrentAddress (isChecked: boolean): void {
-  if (isChecked) emits('useSameCurrentAddress')
+  if (isChecked) {
+    emits('useSameCurrentAddress')
+  } else {
+    model.value = { ...model.value, ...BLANK_ADDRESS }
+  }
+}
+
+function onUpdate (): void {
+  model.value = { ...model.value }
 }
 </script>
 

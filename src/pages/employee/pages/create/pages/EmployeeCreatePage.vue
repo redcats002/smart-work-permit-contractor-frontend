@@ -71,7 +71,7 @@ import ReadIdentificationCardButton from '@/components/button/ReadIdentification
 import Spacer from '@/components/flex/Spacer.vue'
 import UploadInput from '@/components/input/UploadInput.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
-import AddressForm from '../components/AddressForm.vue'
+import AddressForm from '@/components/input/AddressForm.vue'
 import InformationForm from '../components/InformationForm.vue'
 import useUpload from '@/composables/useUpload'
 import { Form, type FormSubmitEvent } from '@primevue/forms'

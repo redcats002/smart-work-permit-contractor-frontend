@@ -17,7 +17,7 @@ export const CustomerSchema = z.object({
   email: z.email('รูปแบบอีเมลไม่ถูกต้อง').or(z.literal('')).optional(),
 
   // ── Classification ───────────────────────────────────────────────────────
-  status: schema.enum(CustomerStatusEnum, 'สถานะลูกค้า'),
+  status: schema.enum(CustomerStatusEnum, 'สถานะลูกค้า').default(CustomerStatusEnum.ACTIVE),
   customerGroupId: z.number().optional(),
   occupationId: z.number().optional(),
 
