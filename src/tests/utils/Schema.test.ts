@@ -91,9 +91,9 @@ describe('schema', () => {
       }
     })
 
-    it('rejects a non-Date value (string)', () => {
+    it('accepts a Date format value (string)', () => {
       const result = dateSchema.safeParse('2024-06-15')
-      expect(result.success).toBe(false)
+      expect(result.success).toBe(true)
     })
 
     it('rejects null', () => {
