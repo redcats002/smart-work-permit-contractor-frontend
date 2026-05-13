@@ -83,3 +83,4 @@ export type TGetCustomerEstateListResponse = IBasePaginationResponse<ICustomerEs
 
 export type TGetCustomerDocumentByIdResponse = IBaseSuccessResponse<ICustomerDocumentById>
 export type TGetCustomerDocumentListResponse = IBasePaginationResponse<ICustomerDocumentById>
+export type TActionCustomerDocument = IBaseSuccessResponse<boolean>

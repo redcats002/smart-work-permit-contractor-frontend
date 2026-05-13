@@ -119,6 +119,50 @@ defineExpose({ submit })
 
 Parent uses `const childRef = useTemplateRef<{ submit: () => void }>('childRef')` and calls `childRef.value?.submit()` to trigger validation.
 
+## API Action Separation in Form Modals
+
+In modal components that handle CREATE / UPDATE / DELETE, separate each API call into its own named async function (`useCreate`, `useUpdate`, `useDelete`). `onSubmit` and `onDelete` only resolve which action to run and pass it to `handleLoading`.
+
+```typescript
+async function useCreate (): Promise<void> {
+  await ProviderService.createItem({ ...formData.value, parentId: props.parentId })
+}
+
+async function useUpdate (): Promise<void> {
+  if (!props.item?.id) return
+  await ProviderService.updateItem(props.item.id, { ...formData.value })
+}
+
+async function useDelete (): Promise<void> {
+  if (!props.item?.id) return
+  await ProviderService.deleteItem(props.item.id)
+  deleteVisible.value = false
+  visible.value = false
+}
+
+function onSubmit (event: FormSubmitEvent, close: () => void): void {
+  if (!event.valid) { scrollToFirstError(event.errors); return }
+  const action = currentMode.value === 'CREATE' ? useCreate : useUpdate
+  handleLoading(async (): Promise<void> => {
+    await action()
+    emits('update')
+    close()
+  })
+}
+
+function onDelete (): void {
+  handleLoading(async (): Promise<void> => {
+    await useDelete()
+    emits('update')
+  })
+}
+```
+
+**Rules:**
+- `useCreate` / `useUpdate` / `useDelete` contain **only** the API call + any pre/post state that belongs to that action.
+- `onSubmit` / `onDelete` contain **only** `handleLoading` + the emit + close. No API calls directly inside them.
+- `onSubmit` picks the action with a ternary, never an `if/else` block that duplicates `handleLoading`.
+
 ## `handleLoading` Signature
 
 ```typescript

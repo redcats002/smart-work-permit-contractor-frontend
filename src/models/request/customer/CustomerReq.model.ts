@@ -17,3 +17,18 @@ export interface IGetCustomerEstateList extends IBasePaginationRequest {}
 export interface IGetCustomerDocumentList extends IBasePaginationRequest {
   customerId?: number
 }
+
+export interface ICreateCustomerDocumentPayload {
+  name: string
+  fileName: string
+  image: string
+  locationId: number
+  customerId: number
+}
+
+export interface IUpdateCustomerDocumentPayload {
+  name: string
+  fileName: string
+  image: string
+  locationId: number
+}

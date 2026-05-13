@@ -27,3 +27,5 @@ export interface IBaseModel<T = string | number> {
   disabled?: boolean
 }
 export type TBaseModel<T = string | number> = IBaseModel<T>
+
+export type TActionMode = 'CREATE' | 'READ' | 'UPDATE' | 'DELETE'

@@ -103,7 +103,8 @@
             <DatePickerInput
               v-model="model.contractedAt"
               :invalid="invalid"
-              name="contractedAt" />
+              name="contractedAt"
+              placeholder="กรุณากรอกวันที่ทำสัญญา" />
           </template>
         </LabelField>
 

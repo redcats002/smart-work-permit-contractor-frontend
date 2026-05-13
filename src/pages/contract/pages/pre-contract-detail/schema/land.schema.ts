@@ -6,7 +6,7 @@ import { LandSchema as FormValues } from '../../create/schema/pre-contract.schem
 
 function numericField (message: string) {
   return z.preprocess((value: unknown): unknown => {
-    if (value == null || value === '') return 0
+    if (value == null || value === '') return ''
     if (typeof value === 'string') {
       const parsed = formatter.numberParseFloat(value)
       return Number.isNaN(parsed) ? value : parsed

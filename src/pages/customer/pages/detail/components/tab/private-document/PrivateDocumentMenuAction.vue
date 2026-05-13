@@ -5,25 +5,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
 import BaseActionMenu, { type IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 
-interface IProps {}
-
 interface IEmits {
+  read: []
   edit: []
   delete: []
 }
 
-defineProps<IProps>()
 const emits = defineEmits<IEmits>()
 
-const items = ref<IMenuItemAction[]>([
+const items = computed((): IMenuItemAction[] => [
+  { label: 'ดู', key: 'read', type: 'TEXT', action: (): void => { emits('read') } },
   { label: 'แก้ไข', key: 'edit', type: 'TEXT', action: (): void => { emits('edit') } },
-  { label: 'ลบ', key: 'delete', action: (): void => { emits('delete') }, type: 'DELETE' }
+  { label: 'ลบ', key: 'delete', type: 'TEXT', action: (): void => { emits('delete') } }
 ])
-
-
 </script>
 
 <style scoped></style>

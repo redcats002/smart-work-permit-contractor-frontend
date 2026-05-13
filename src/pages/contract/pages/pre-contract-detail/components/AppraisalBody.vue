@@ -2,7 +2,8 @@
   <div class="grid grid-cols-1 gap-2.5">
     <DisplayList
       :items="items"
-      row-class="md:grid-cols-4" />
+      row-class="md:grid-cols-8 mt-2"
+      value-class="md:col-span-7" />
     <AppraisalTable
       v-model:pagination="pagination"
       :count="count"
