@@ -161,6 +161,7 @@ function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
       postCode: mainAddress.value.postCode
     }
   }
+  mount()
 }
 
 function mount (): void {

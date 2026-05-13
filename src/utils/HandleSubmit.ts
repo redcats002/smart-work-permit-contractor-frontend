@@ -36,12 +36,24 @@ export async function handleSubmit (formRef?: Ref<any>): Promise<boolean> {
   return true
 }
 
+
 export function scrollToFirstError (errors: Record<string, any>, showToast: boolean = true): void {
+  function getFirstErrorMessage (errors: Record<string, any>): string {
+    const firstError = Object.values(errors).flat()[0]
+    if (typeof firstError === 'object' && firstError !== null && 'message' in firstError) {
+      return (firstError as { message: string }).message
+    }
+    const nestedFirstError = Object.values(firstError).flat()?.[0]
+    return typeof nestedFirstError === 'object' && nestedFirstError !== null && 'message' in nestedFirstError
+      ? (nestedFirstError as { message: string }).message
+      : 'เกิดข้อผิดพลาดในการส่งข้อมูล'
+  }
+
   const keys = Object.keys(errors)
   if (keys.length === 0) return
 
   if (showToast) {
-    const firstErrorMessage = Object.values(errors).flat()[0]?.message
+    const firstErrorMessage = getFirstErrorMessage(errors)
     toast.error('', firstErrorMessage)
   }
 
