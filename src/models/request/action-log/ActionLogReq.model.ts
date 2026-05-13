@@ -1,6 +1,6 @@
 import type { IBasePaginationRequest } from '../Request.model'
 
-export interface IGetAccessLogList extends IBasePaginationRequest {
+export interface IGetActionLogList extends IBasePaginationRequest {
   branchId?: number
   startDate?: string
   endDate?: string

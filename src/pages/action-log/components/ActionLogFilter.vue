@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import type { IAccessLogFilter } from '@/models/modules/access-log/Filter.model'
+import type { IActionLogFilter } from '@/models/modules/action-log/Filter.model'
 import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
@@ -62,7 +62,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>('search', { default: '' })
-const filter = defineModel<IAccessLogFilter>('filters', { default: (): IAccessLogFilter => ({}) })
+const filter = defineModel<IActionLogFilter>('filters', { default: (): IActionLogFilter => ({}) })
 
 function onSearch (): void {
   emits('search')
