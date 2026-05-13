@@ -1,10 +1,12 @@
 import { computed, ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IGetAnnouncementList } from '@/models/request/announcement/AnnouncementReq.model'
+import type { IGetAnnouncementList, IUpdateAnnouncementPayload } from '@/models/request/announcement/AnnouncementReq.model'
 import type { IAnnouncementList } from '@/models/response/announcement/AnnouncementRes.model'
 import type { IAnnouncementProvider } from '@/resources/provider/announcement/Announcement.provider'
 import AnnouncementProvider from '@/resources/provider/announcement/Announcement.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
+import { toast } from '@/plugins/toast'
+
 
 interface IUseList extends IUsePagination {
   filters: Ref<IGetAnnouncementList>
@@ -14,6 +16,7 @@ interface IUseList extends IUsePagination {
   onClearFilters(): void
   loadMore(): Promise<void>
   reset(): void
+  onUpdate(id: number, body: IUpdateAnnouncementPayload): void
 }
 const DEFAULT_LIMIT = 3
 export default function useList (): IUseList {
@@ -65,6 +68,16 @@ export default function useList (): IUseList {
     isLoading.value = false
   }
 
+  async function useUpdate (id: number, payload: IUpdateAnnouncementPayload): Promise <void> {
+    await AnnouncementService.updateAnnouncement(id, payload)
+    toast.success('ดำเนินการสำเร็จ')
+    await useFetch()
+  }
+
+  function onUpdate (id: number, payload: IUpdateAnnouncementPayload): void {
+    handleLoading((): Promise<void> => useUpdate(id, payload))
+  }
+
 
   function normalizeFilters (value: IGetAnnouncementList): Partial<IGetAnnouncementList> {
     return {
@@ -113,6 +126,7 @@ export default function useList (): IUseList {
     onClearFilters,
     extractPagination,
     syncQuery,
-    reset
+    reset,
+    onUpdate
   }
 }

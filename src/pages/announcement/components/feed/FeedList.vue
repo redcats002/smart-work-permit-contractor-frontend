@@ -2,12 +2,15 @@
   <div class="space-y-4">
     <PostCard
       v-for="post in items"
+      :id="Number(post.id)"
       :key="post.id"
       :author-name="post.author.name"
       :content="post.content"
       :created-at="post.createdAt"
       :files="post.attachments"
-      :role="post.author.role" />
+      :role="post.author.role"
+      @deleted="emits('refresh')"
+      @updated="emits('refresh')" />
     <div
       ref="loadMoreRef"
       class="h-10 flex items-center justify-center">
@@ -27,7 +30,13 @@ interface IProps {
   loadMore: () => Promise<void>
   isFinished: boolean
 }
+
+interface IEmits {
+  refresh: []
+}
+
 const props = defineProps<IProps>()
+const emits = defineEmits<IEmits>()
 
 const loadMoreRef = ref<HTMLElement | null>(null)
 const observer = ref<IntersectionObserver | null>(null)
