@@ -206,6 +206,7 @@ function onUseSameCurrentAddress (type: 'WORK'): void {
       postCode: currentAddress.value.postCode
     }
   }
+  mount()
 }
 
 function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
@@ -232,6 +233,12 @@ function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
       postCode: mainAddress.value.postCode
     }
   }
+  mount()
+}
+
+
+function mount (): void {
+  formKey.value++
 }
 
 onMounted((): void => {
