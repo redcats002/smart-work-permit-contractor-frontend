@@ -45,6 +45,18 @@ src/pages/<Domain>/
 └── models/                        # Domain-specific model extensions (if needed)
 ```
 
+## Delete Actions
+
+Use `@/components/modal/DeleteModal.vue` for all delete confirmations. Never inline a delete confirmation inside another modal or page — always compose `DeleteModal` alongside the parent modal/view.
+
+```vue
+<DeleteModal
+  v-model="deleteVisible"
+  @confirm="onDelete()" />
+```
+
+Open it by setting `deleteVisible.value = true`. On confirm, close both `DeleteModal` and the parent modal if applicable, then emit `update`.
+
 ## Layout Selection
 
 Route meta `layout` field drives layout in `App.vue`:

@@ -91,11 +91,12 @@ Satisfy these up front when writing code — Vite will fail loudly via `vite-plu
 
 Consult the topic file under `.claude/skills/project-conventions/reference/`. Quick map:
 
-- Forms → `form-patterns.md` (`@primevue/forms` + `zodResolver` — never raw `safeParse`)
+- Forms → `form-patterns.md` (`@primevue/forms` + `zodResolver` — never raw `safeParse`; `useCreate`/`useUpdate`/`useDelete` pattern for API actions)
 - Pagination, date, copy, tabs, debounce → `composables.md`
 - Formatter, keypress guards → `utility-functions.md`
 - Responsive Tailwind, PT wrappers → `styling-rules.md`
 - Domain page layout → `directory-structure-conventions.md` and `component-patterns.md`
+- Delete confirmations → `component-patterns.md` (`DeleteModal` — never inline)
 - API providers → `resources-api-layer.md` and `provider-pattern.md`
 - Models → `model-conventions.md`
 - TypeScript rules → `typescript-rules.md`
