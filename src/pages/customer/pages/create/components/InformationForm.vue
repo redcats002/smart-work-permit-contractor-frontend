@@ -26,6 +26,7 @@
           <TitleNameSelection
             v-model="model.titleName"
             :invalid="invalid"
+            name="titleName"
             dropdown />
         </LabelField>
         <LabelField

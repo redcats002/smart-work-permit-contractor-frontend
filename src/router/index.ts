@@ -3,7 +3,7 @@ import type { RouteLocationNormalized, Router, RouteRecordRaw } from 'vue-router
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/Auth'
 import { updateFromRoute } from '@/utils/RouterHeader'
-import AccessLogRouter from './modules/access-log'
+import ActionLogRouter from './modules/action-log'
 import AnnouncementRouter from './modules/announcement'
 import AssetRouter from './modules/asset'
 import AuthRouter from './modules/Auth.router'
@@ -52,7 +52,7 @@ export const routes: RouteRecordRaw[] = [
   AssetRouter,
   FinanceRouter,
   StockRouter,
-  AccessLogRouter,
+  ActionLogRouter,
   SettingRouter,
   {
     // Catch-all route for 404

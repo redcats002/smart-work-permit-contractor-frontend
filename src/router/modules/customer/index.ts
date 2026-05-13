@@ -54,7 +54,7 @@ export default {
       component: (): ComponentOptions => import('@/pages/customer/pages/edit/pages/CustomerEditPage.vue'),
       meta: {
         auth: true,
-        title: 'แก้ไขลูกค้า',
+        title: 'แก้ไขรายละเอียดลูกค้า',
         icon: 'mdi-account',
         back: { name: 'CustomerDetailPage' }
       }

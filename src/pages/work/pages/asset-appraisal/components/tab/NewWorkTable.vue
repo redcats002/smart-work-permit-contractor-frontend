@@ -47,8 +47,8 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IAssetAppraisalNewWorkList>[]>([
   { field: 'idNo', header: 'เลขที่สัญญา', sortable: true, align: 'left', value: (e: IAssetAppraisalNewWorkList): string => e.idNo ?? '' },
-  { field: 'customer', header: 'ชื่อลูกค้า', sortable: true, align: 'left', value: (e: IAssetAppraisalNewWorkList): string => formatter.fullName(e.customer) ?? '' },
-  { field: 'types', header: 'หมวดหมู่หลักทรัพย์', align: 'left', value: (e: IAssetAppraisalNewWorkList): string => e?.types?.map(formatTitleAssetType).join(', ') || '-' },
-  { field: 'status', header: 'สถานะ', align: 'left', value: (e: IAssetAppraisalNewWorkList): string => formatTitlePreContractStatus(e.status) || '-' }
+  { field: 'customer', header: 'ชื่อลูกค้า', align: 'left', value: (e: IAssetAppraisalNewWorkList): string => formatter.fullName(e.customer) ?? '' },
+  { field: 'types', header: 'หมวดหมู่หลักทรัพย์', align: 'left', value: (e: IAssetAppraisalNewWorkList): string => e?.types?.map(formatTitleAssetType).join(', ') || '-', style: { maxWidth: '200px', whiteSpace: 'inherit' } },
+  { field: 'status', header: 'สถานะ', sortable: true, align: 'left', value: (e: IAssetAppraisalNewWorkList): string => formatTitlePreContractStatus(e.status) || '-' }
 ])
 </script>

@@ -13,21 +13,19 @@
           <FilterButton @click="open()" />
         </template>
         <div class="flex flex-col gap-5">
-          <div class="w-fit">
-            <LabelField label="สาขา">
-              <BranchSelection v-model="filter.branchId" />
-            </LabelField>
-          </div>
-          <div class="w-fit">
-            <LabelField label="วันที่เริ่มต้น">
-              <DatePickerInput v-model="filter.startDate" />
-            </LabelField>
-          </div>
-          <div class="w-fit">
-            <LabelField label="วันที่สิ้นสุด">
-              <DatePickerInput v-model="filter.endDate" />
-            </LabelField>
-          </div>
+          <LabelField label="สาขา">
+            <BranchSelection v-model="filter.branchId" />
+          </LabelField>
+          <LabelField label="วันที่เริ่มต้น">
+            <DatePickerInput
+              v-model="filter.startDate"
+              placeholder="เลือกวันที่เริ่มต้น" />
+          </LabelField>
+          <LabelField label="วันที่สิ้นสุด">
+            <DatePickerInput
+              v-model="filter.endDate"
+              placeholder="เลือกวันที่สิ้นสุด" />
+          </LabelField>
         </div>
         <template #footer="{ close }">
           <FormActionFilter
@@ -44,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import type { IAccessLogFilter } from '@/models/modules/access-log/Filter.model'
+import type { IActionLogFilter } from '@/models/modules/action-log/Filter.model'
 import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
@@ -64,7 +62,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>('search', { default: '' })
-const filter = defineModel<IAccessLogFilter>('filters', { default: (): IAccessLogFilter => ({}) })
+const filter = defineModel<IActionLogFilter>('filters', { default: (): IActionLogFilter => ({}) })
 
 function onSearch (): void {
   emits('search')

@@ -1,26 +1,26 @@
 import { computed, ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IAccessLogFilter } from '@/models/modules/access-log/Filter.model'
-import type { IGetAccessLogList } from '@/models/request/access-log/AccessLogReq.model'
-import type { IAccessLogList } from '@/models/response/access-log/AccessLogRes.model'
-import AccessLogProvider, { type IAccessLogProvider } from '@/resources/provider/access-log/AccessLog.provider'
+import type { IActionLogFilter } from '@/models/modules/action-log/Filter.model'
+import type { IGetActionLogList } from '@/models/request/action-log/ActionLogReq.model'
+import type { IActionLogList } from '@/models/response/action-log/ActionLogRes.model'
+import ActionLogProvider, { type IActionLogProvider } from '@/resources/provider/action-log/ActionLog.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
 interface IUseList extends IUsePagination {
-  filters: Ref<IAccessLogFilter>
-  items: Ref<IAccessLogList[]>
+  filters: Ref<IActionLogFilter>
+  items: Ref<IActionLogList[]>
   fetch(): void
   onClearFilters(): void
 }
 export default function useList (): IUseList {
-  const AccessLogService: IAccessLogProvider = new AccessLogProvider()
+  const ActionLogService: IActionLogProvider = new ActionLogProvider()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
-  const filters = ref<IAccessLogFilter>({})
-  const items = ref<IAccessLogList[]>([])
+  const filters = ref<IActionLogFilter>({})
+  const items = ref<IActionLogList[]>([])
 
-  const paginateQuery = computed((): IGetAccessLogList => {
+  const paginateQuery = computed((): IGetActionLogList => {
     const normalizedFilters = normalizeFilters(filters.value)
     return {
       search: search.value,
@@ -33,13 +33,13 @@ export default function useList (): IUseList {
   })
 
   async function useFetch (): Promise<void> {
-    const response = await AccessLogService.getAccessLogPaginate(paginateQuery.value)
+    const response = await ActionLogService.getActionLogPaginate(paginateQuery.value)
     items.value = response?.data || []
     pagination.value = extractPagination(response)
     syncQuery({ ...normalizeFilters(filters.value) })
   }
 
-  function normalizeFilters (value: IGetAccessLogList): Partial<IGetAccessLogList> {
+  function normalizeFilters (value: IGetActionLogList): Partial<IGetActionLogList> {
     return {
       ...value
     }

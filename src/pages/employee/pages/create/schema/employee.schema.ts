@@ -10,7 +10,7 @@ export const EmployeeSchema = z.object({
 
   // ── Personal Information ─────────────────────────────────────────────────
   idCard: z.string().min(13, 'กรุณากรอกเลขบัตรประชาชน 13 หลัก').max(13, 'เลขบัตรประชาชนต้องมี 13 หลัก'),
-  title: schema.enum(ETitleName, 'กรุณาเลือกคำนำหน้าชื่อ'),
+  title: schema.enum(ETitleName, 'คำนำหน้าชื่อ'),
   firstName: z.string().min(1, 'กรุณากรอกชื่อ'),
   lastName: z.string().min(1, 'กรุณากรอกนามสกุล'),
   phoneNumber: z.string().min(1, 'กรุณากรอกเบอร์โทรศัพท์'),
@@ -31,7 +31,7 @@ export const EmployeeSchema = z.object({
   //   }),
   // password no require
   // ── Classification ───────────────────────────────────────────────────────
-  status: schema.enum(EmployeeStatusEnum, 'กรุณาเลือกสถานะลูกค้า'),
+  status: schema.enum(EmployeeStatusEnum, 'กรุณาเลือกสถานะลูกค้า').default(EmployeeStatusEnum.INACTIVE),
   role: schema.enum(EmployeeRoleEnum, 'ตำแหน่ง'),
   branchIds: z.array(schema.id('สาขา')).min(1, 'กรุณาเลือกสาขาอย่างน้อย 1 สาขา').optional().default([]),
 

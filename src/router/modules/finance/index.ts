@@ -14,7 +14,7 @@ export default {
       path: 'invoice/list',
       name: 'InvoiceListPage',
       component: (): ComponentOptions => import('@/pages/finance/pages/invoice/pages/InvoiceListPage.vue'),
-      meta: { auth: true, menu: true, title: 'รายการใบแจ้งหนี้', icon: 'solar:bill-list-bold' }
+      meta: { auth: true, menu: true, menuTitle: 'ใบแจ้งหนี้', title: 'รายการใบแจ้งหนี้', icon: 'solar:bill-list-bold' }
     },
     {
       path: 'invoice/detail/:id',
@@ -34,7 +34,7 @@ export default {
       path: 'receipt/list',
       name: 'ReceiptListPage',
       component: (): ComponentOptions => import('@/pages/finance/pages/receipt/list/pages/ReceiptListPage.vue'),
-      meta: { auth: true, menu: true, title: 'รายการใบเสร็จรับเงิน', icon: 'solar:bill-list-bold' }
+      meta: { auth: true, menu: true, menuTitle: 'ใบเสร็จรับเงิน', title: 'รายการใบเสร็จรับเงิน', icon: 'solar:bill-list-bold' }
     },
     {
       path: 'receipt/detail/:id',
@@ -65,6 +65,7 @@ export default {
         auth: true,
         menu: true,
         title: 'รายการบันทึกค่าใช้จ่าย',
+        menuTitle: 'บันทึกค่าใช้จ่าย',
         icon: 'solar:bill-list-bold'
       }
     },

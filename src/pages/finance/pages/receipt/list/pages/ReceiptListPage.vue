@@ -10,7 +10,7 @@
         :to="{
           name: 'ReceiptCreatePage'
         }"
-        label="สร้างใบเสร็จรับเงินใหม่" />
+        label="ชำระเงิน/ออกใบเสร็จใหม่" />
     </ReceiptFilter>
     <BasePage>
       <ReceiptTable

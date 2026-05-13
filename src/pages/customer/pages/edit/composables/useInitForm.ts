@@ -1,4 +1,5 @@
 import type { Ref } from 'vue'
+import { isSameAddress } from '@/utils/Address'
 import { useDayjs } from '@/utils/Dayjs'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import type { CustomerStatusEnum } from '@/enums/modules/customer/CustomerStatus.enum'
@@ -8,6 +9,7 @@ import type { CustomerFormValues } from '../../create/schema/customer.schema'
 const dayjs = useDayjs()
 
 export function useInitForm (form: Ref<CustomerFormValues>, data: ICustomerById): void {
+  const { mainAddress, currentAddress, workAddress } = data
   form.value = {
     ...data,
     idCard: data.idCard,
@@ -22,37 +24,37 @@ export function useInitForm (form: Ref<CustomerFormValues>, data: ICustomerById)
     customerGroupId: typeof data.customerGroup?.id === 'number' ? data.customerGroup.id : undefined,
     occupationId: typeof data.occupation?.id === 'number' ? data.occupation.id : undefined,
     mainAddress: {
-      id: data.mainAddress?.id,
-      address: data.mainAddress?.address ?? '',
-      subDistrict: data.mainAddress?.subDistrict ?? '',
-      district: data.mainAddress?.district ?? '',
-      province: data.mainAddress?.province ?? '',
-      postCode: data.mainAddress?.postCode ?? '',
-      urlGoogleMap: data.mainAddress?.urlGoogleMap ?? '',
-      isSameCitizenAddress: data.mainAddress?.isSameCitizenAddress ?? false,
-      isSameCurrentAddress: data.mainAddress?.isSameCurrentAddress ?? false
+      id: mainAddress?.id,
+      address: mainAddress?.address ?? '',
+      subDistrict: mainAddress?.subDistrict ?? '',
+      district: mainAddress?.district ?? '',
+      province: mainAddress?.province ?? '',
+      postCode: mainAddress?.postCode ?? '',
+      urlGoogleMap: mainAddress?.urlGoogleMap ?? '',
+      isSameCitizenAddress: false,
+      isSameCurrentAddress: isSameAddress(mainAddress, currentAddress)
     },
     currentAddress: {
-      id: data.currentAddress?.id,
-      address: data.currentAddress?.address ?? '',
-      subDistrict: data.currentAddress?.subDistrict ?? '',
-      district: data.currentAddress?.district ?? '',
-      province: data.currentAddress?.province ?? '',
-      postCode: data.currentAddress?.postCode ?? '',
-      urlGoogleMap: data.currentAddress?.urlGoogleMap ?? '',
-      isSameCitizenAddress: data.currentAddress?.isSameCitizenAddress ?? false,
-      isSameCurrentAddress: data.currentAddress?.isSameCurrentAddress ?? false
+      id: currentAddress?.id,
+      address: currentAddress?.address ?? '',
+      subDistrict: currentAddress?.subDistrict ?? '',
+      district: currentAddress?.district ?? '',
+      province: currentAddress?.province ?? '',
+      postCode: currentAddress?.postCode ?? '',
+      urlGoogleMap: currentAddress?.urlGoogleMap ?? '',
+      isSameCitizenAddress: isSameAddress(currentAddress, mainAddress),
+      isSameCurrentAddress: false
     },
     workAddress: {
-      id: data.workAddress?.id,
-      address: data.workAddress?.address ?? '',
-      subDistrict: data.workAddress?.subDistrict ?? '',
-      district: data.workAddress?.district ?? '',
-      province: data.workAddress?.province ?? '',
-      postCode: data.workAddress?.postCode ?? '',
-      urlGoogleMap: data.workAddress?.urlGoogleMap ?? '',
-      isSameCitizenAddress: data.workAddress?.isSameCitizenAddress ?? false,
-      isSameCurrentAddress: data.workAddress?.isSameCurrentAddress ?? false
+      id: workAddress?.id,
+      address: workAddress?.address ?? '',
+      subDistrict: workAddress?.subDistrict ?? '',
+      district: workAddress?.district ?? '',
+      province: workAddress?.province ?? '',
+      postCode: workAddress?.postCode ?? '',
+      urlGoogleMap: workAddress?.urlGoogleMap ?? '',
+      isSameCitizenAddress: isSameAddress(workAddress, mainAddress),
+      isSameCurrentAddress: isSameAddress(workAddress, currentAddress)
     }
   }
 }

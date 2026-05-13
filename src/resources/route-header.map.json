@@ -42,7 +42,7 @@
   { "path": "/setting/other/branch/edit/:id", "menu": "แก้ไขสาขา", "idProvider": "branch" },
   { "path": "/setting/other/branch/:id", "menu": "รายละเอียดสาขา", "idProvider": "branch" },
   { "path": "/setting/other/how-did-find-us/list", "menu": "รู้จักมิตรแท้จากที่ไหน" },
-  { "path": "/access-log/list", "menu": "บันทึกการเข้าถึงระบบ" },
+  { "path": "/action-log/list", "menu": "บันทึกการเข้าถึงระบบ" },
   { "path": "/work/asset-appraisal", "menu": "การประเมินทรัพย์สิน" },
   { "path": "/work/follow-up", "menu": "ติดตามงาน" }
 ]

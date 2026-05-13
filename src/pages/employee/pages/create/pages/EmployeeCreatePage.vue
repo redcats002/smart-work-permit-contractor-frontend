@@ -41,6 +41,7 @@
         <BaseContainer>
           <AddressForm
             v-model="currentAddress"
+            :citizen-address="mainAddress"
             :form="$form"
             type="CURRENT"
             @use-same-citizen-address="onUseSameCitizenAddress('CURRENT')" />
@@ -70,7 +71,7 @@ import ReadIdentificationCardButton from '@/components/button/ReadIdentification
 import Spacer from '@/components/flex/Spacer.vue'
 import UploadInput from '@/components/input/UploadInput.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
-import AddressForm from '../components/AddressForm.vue'
+import AddressForm from '@/components/input/AddressForm.vue'
 import InformationForm from '../components/InformationForm.vue'
 import useUpload from '@/composables/useUpload'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
@@ -88,44 +89,12 @@ const resolver = zodResolver(EmployeeSchema)
 const { media, getUploadImages } = useUpload()
 
 const mainAddress = computed({
-  get (): IAddressRequest {
-    return {
-      address: form.value.mainAddress?.address,
-      subDistrict: form.value.mainAddress?.subDistrict,
-      district: form.value.mainAddress?.district,
-      province: form.value.mainAddress?.province,
-      postCode: form.value.mainAddress?.postCode
-    }
-  },
-  set (e: IAddressRequest): void {
-    form.value.mainAddress.address = e.address
-    form.value.mainAddress.subDistrict = e.subDistrict
-    form.value.mainAddress.district = e.district
-    form.value.mainAddress.province = e.province
-    form.value.mainAddress.postCode = e.postCode
-  }
+  get (): IAddressRequest { return form.value.mainAddress },
+  set (e: IAddressRequest): void { form.value.mainAddress = e }
 })
 const currentAddress = computed({
-  get (): IAddressRequest {
-    return {
-      address: form.value.currentAddress?.address,
-      subDistrict: form.value.currentAddress?.subDistrict,
-      district: form.value.currentAddress?.district,
-      province: form.value.currentAddress?.province,
-      postCode: form.value.currentAddress?.postCode,
-      isSameCitizenAddress: form.value.currentAddress?.isSameCitizenAddress,
-      urlGoogleMap: form.value.currentAddress?.urlGoogleMap
-    }
-  },
-  set (e: IAddressRequest): void {
-    form.value.currentAddress.address = e.address
-    form.value.currentAddress.subDistrict = e.subDistrict
-    form.value.currentAddress.district = e.district
-    form.value.currentAddress.province = e.province
-    form.value.currentAddress.postCode = e.postCode
-    form.value.currentAddress.isSameCitizenAddress = e.isSameCitizenAddress
-    form.value.currentAddress.urlGoogleMap = e.urlGoogleMap
-  }
+  get (): IAddressRequest { return form.value.currentAddress },
+  set (e: IAddressRequest): void { form.value.currentAddress = e }
 })
 
 async function useSubmit (): Promise<void> {
@@ -161,6 +130,7 @@ function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
       postCode: mainAddress.value.postCode
     }
   }
+  mount()
 }
 
 function mount (): void {

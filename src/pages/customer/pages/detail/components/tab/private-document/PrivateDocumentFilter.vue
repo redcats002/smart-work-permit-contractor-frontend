@@ -7,7 +7,7 @@
     </div>
     <div>
       <BaseModal
-        class="md:w-250!"
+        class="md:w-100!"
         label="ตัวกรอง">
         <template #activator="{ open }">
           <FilterButton @click="open()" />

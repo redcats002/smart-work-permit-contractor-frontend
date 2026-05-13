@@ -7,17 +7,19 @@
     </div>
     <div>
       <BaseModal
-        class="md:w-250!"
+        class="md:w-100!"
         label="ตัวกรอง">
         <template #activator="{ open }">
           <FilterButton @click="open()" />
         </template>
-        <!-- <div class="flex flex-col gap-5">
-            <div class="w-fit">
-              <LabelField
-                label="สถานะ" />
-            </div>
-          </div> -->
+        <div class="flex flex-col gap-5">
+          <LabelField
+            label="สถานะ">
+            <ContractStatusSelection
+              v-model="filters!.status"
+              placeholder="เลือกสถานะ" />
+          </LabelField>
+        </div>
         <template #footer="{ close }">
           <FormActionFilter
             @clear="onClear(close)"
@@ -38,9 +40,11 @@ import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
 import Spacer from '@/components/flex/Spacer.vue'
+import LabelField from '@/components/input/LabelField.vue'
 // import LabelField from '@/components/input/LabelField.vue'
 import SearchInput from '@/components/input/SearchInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
+import ContractStatusSelection from '@/components/selection/modules/static/contract/ContractStatusSelection.vue'
 
 interface IEmits {
   search: []

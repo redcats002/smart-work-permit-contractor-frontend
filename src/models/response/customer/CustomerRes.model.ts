@@ -56,7 +56,7 @@ export interface ICustomerContactHistoryList extends IEntity {
   contract: TBaseModel
   employee: IEmployeeList
 }
-export interface ICustomerEstateList extends IEntity {
+export interface ICustomerAssetList extends IEntity {
   type: TAssetType
   detail: string
   status: TEstateStatus
@@ -79,7 +79,7 @@ export type TActionCustomer = IBaseSuccessResponse<boolean>
 export type TGetCustomerContractListResponse = IBasePaginationResponse<ICustomerContractList>
 export type TGetCustomerPaymentHistoryListResponse = IBasePaginationResponse<ICustomerPaymentHistoryList>
 export type TGetCustomerContactHistoryListResponse = IBasePaginationResponse<ICustomerContactHistoryList>
-export type TGetCustomerEstateListResponse = IBasePaginationResponse<ICustomerEstateList>
+export type TGetCustomerAssetListResponse = IBasePaginationResponse<ICustomerAssetList>
 
 export type TGetCustomerDocumentByIdResponse = IBaseSuccessResponse<ICustomerDocumentById>
 export type TGetCustomerDocumentListResponse = IBasePaginationResponse<ICustomerDocumentById>

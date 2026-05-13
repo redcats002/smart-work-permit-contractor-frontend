@@ -20,7 +20,7 @@ export default {
       path: 'follow-up',
       name: 'FollowUpPage',
       component: (): ComponentOptions => import('@/pages/work/pages/follow-up/pages/FollowUpPage.vue'),
-      meta: { auth: true, menu: true, title: 'ติดตามทวงถาม', icon: 'iconoir:box-iso', disabled: true }
+      meta: { auth: true, menu: true, title: 'ติดตามทวงถาม', icon: 'iconoir:box-iso' }
     }
   ]
 } as RouteRecordRaw
