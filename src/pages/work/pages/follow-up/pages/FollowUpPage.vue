@@ -23,7 +23,8 @@
           v-model:sort-by="sortBy"
           v-model:sort-order="sortOrder"
           :items="items"
-          class="animate-fade-in" />
+          class="animate-fade-in"
+          @update="fetch()" />
       </BaseTabWindow>
     </BasePage>
   </section>
