@@ -7,27 +7,24 @@
     </div>
     <div>
       <BaseModal
-        class="md:w-100!"
-        label="ตัวกรอง">
+        class="md:w-100!">
         <template #activator="{ open }">
           <FilterButton @click="open()" />
         </template>
         <div class="flex flex-col gap-5">
-          <div class="w-fit">
-            <LabelField label="สาขา">
-              <BranchSelection v-model="filter.branchId" />
-            </LabelField>
-          </div>
-          <div class="w-fit">
-            <LabelField label="วันที่เริ่มต้น">
-              <DatePickerInput v-model="filter.startDate" />
-            </LabelField>
-          </div>
-          <div class="w-fit">
-            <LabelField label="วันที่สิ้นสุด">
-              <DatePickerInput v-model="filter.endDate" />
-            </LabelField>
-          </div>
+          <LabelField label="สาขา">
+            <BranchSelection v-model="filter.branchId" />
+          </LabelField>
+          <LabelField label="วันที่เริ่มต้น">
+            <DatePickerInput
+              v-model="filter.startDate"
+              placeholder="เลือกวันที่เริ่มต้น" />
+          </LabelField>
+          <LabelField label="วันที่สิ้นสุด">
+            <DatePickerInput
+              v-model="filter.endDate"
+              placeholder="เลือกวันที่สิ้นสุด" />
+          </LabelField>
         </div>
         <template #footer="{ close }">
           <FormActionFilter
