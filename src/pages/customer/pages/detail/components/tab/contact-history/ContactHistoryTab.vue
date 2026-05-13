@@ -30,7 +30,7 @@ import ContactHistoryTable from './ContactHistoryTable.vue'
 const CustomerService: ICustomerProvider = new CustomerProvider()
 
 const route = useRoute()
-const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
+const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
 const filters = ref<IGetCustomerContactHistoryList>({})
 const items = ref<ICustomerContactHistoryList[]>([])
@@ -71,7 +71,12 @@ function fetch (): void {
   handleLoading(useFetch)
 }
 
-function onClearFilters (): void {}
+function onClearFilters (): void {
+  filters.value = {
+    userId: undefined
+  }
+  reset()
+}
 
 function onDelete (id: number): void {
   handleLoading((): Promise<void> => useDelete(id))

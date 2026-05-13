@@ -14,7 +14,9 @@ export interface IGetCustomerList extends Omit<IBasePaginationRequest, 'status'>
 }
 export interface IGetCustomerContractList extends IBasePaginationRequest {}
 export interface IGetCustomerPaymentHistoryList extends IBasePaginationRequest {}
-export interface IGetCustomerContactHistoryList extends IBasePaginationRequest {}
+export interface IGetCustomerContactHistoryList extends IBasePaginationRequest {
+  userId?: string
+}
 export interface IGetCustomerEstateList extends IBasePaginationRequest {
   type?: TAssetType
   status?: TAssetStatus
