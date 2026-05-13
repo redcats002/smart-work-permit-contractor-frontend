@@ -8,7 +8,8 @@
       <FeedList
         :is-finished="list.isFinished.value"
         :items="list.items.value"
-        :load-more="list.loadMore" />
+        :load-more="list.loadMore"
+        @refresh="handleCreated()" />
     </BasePage>
   </section>
 </template>
@@ -48,6 +49,7 @@ async function useSubmit (): Promise<void> {
   }
   handleCreated()
 }
+
 
 onMounted((): void => {
   list.fetch()

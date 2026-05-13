@@ -1,6 +1,7 @@
 <template>
   <BaseContainer class="bg-white rounded-xl p-5 space-y-4 ">
     <!-- Header -->
+
     <div class="flex items-start justify-between">
       <div class="flex gap-3">
         <img
@@ -23,8 +24,12 @@
           </div>
         </div>
       </div>
-
-      <i class="pi pi-ellipsis-v text-gray-500 cursor-pointer" />
+      <div class="pl-1 md:pl-2 h-full flex">
+        <BaseActionMenu
+          :items="items"
+          icon-class="text-font-gray!"
+          menu-class="mt-4" />
+      </div>
     </div>
 
 
@@ -55,25 +60,77 @@
       </div>
     </div>
   </BaseContainer>
+
+  <PostEditModal
+    :id="id"
+    v-model="editVisible"
+    :initial-content="content"
+    :initial-files="files"
+    @updated="emits('updated')" />
+
+  <DeleteModal
+    v-model="deleteVisible"
+    @confirm="onDelete()" />
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+import { toast } from '@/plugins/toast'
+import { handleLoading } from '@/utils/HandleLoading'
 import { useDayjs } from '@/utils/Dayjs'
 import type { IAttachments } from '@/models/response/announcement/AnnouncementRes.model'
+import type { IAnnouncementProvider } from '@/resources/provider/announcement/Announcement.provider'
+import AnnouncementProvider from '@/resources/provider/announcement/Announcement.provider'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import { Icon } from '@iconify/vue'
+import BaseActionMenu, { type IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
+import DeleteModal from '@/components/modal/DeleteModal.vue'
+import PostEditModal from '../composer/PostEditModal.vue'
+import { computed } from 'vue'
 
 interface IProps {
+  id: number
   content: string
   files?: IAttachments[]
   authorName: string
   role: string
   createdAt: string
 }
-const dayjs = useDayjs()
 
-withDefaults(defineProps<IProps>(), {
+interface IEmits {
+  updated: []
+  deleted: []
+}
+
+const props = withDefaults(defineProps<IProps>(), {
   files: (): IAttachments[] => []
 })
+const emits = defineEmits<IEmits>()
 
+const dayjs = useDayjs()
+const AnnouncementService: IAnnouncementProvider = new AnnouncementProvider()
+
+const editVisible = ref<boolean>(false)
+const deleteVisible = ref<boolean>(false)
+
+const items = computed((): IMenuItemAction[] => {
+  const base: IMenuItemAction[] = [
+    { label: 'แก้ไข', key: 'edit', type: 'TEXT', action: (): void => { editVisible.value = true } },
+    { label: 'ลบ', key: 'delete', type: 'TEXT', action: (): void => { deleteVisible.value = true } }
+  ]
+  return base
+})
+
+async function useDelete (): Promise<void> {
+  await AnnouncementService.deleteAnnouncement(props.id)
+  deleteVisible.value = false
+  toast.success('ดำเนินการสำเร็จ')
+}
+
+function onDelete (): void {
+  handleLoading(async (): Promise<void> => {
+    await useDelete()
+    emits('deleted')
+  })
+}
 </script>
