@@ -12,12 +12,22 @@
         <template #activator="{ open }">
           <FilterButton @click="open()" />
         </template>
-        <!-- <div class="flex flex-col gap-5">
-            <div class="w-fit">
-              <LabelField
-                label="สถานะ" />
-            </div>
-          </div> -->
+        <div class="flex flex-col gap-5">
+          <LabelField
+            label="หมวดหมู่">
+            <AssetTypeSelection
+              v-model="filters!.type"
+              :clearable="true"
+              :placeholder="'เลือกหมวดหมู่'" />
+          </LabelField>
+          <LabelField
+            label="สถานะ">
+            <AssetStatusSelection
+              v-model="filters!.status"
+              :clearable="true"
+              :placeholder="'เลือกสถานะ'" />
+          </LabelField>
+        </div>
         <template #footer="{ close }">
           <FormActionFilter
             @clear="onClear(close)"
@@ -38,9 +48,12 @@ import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
 import Spacer from '@/components/flex/Spacer.vue'
+import LabelField from '@/components/input/LabelField.vue'
 // import LabelField from '@/components/input/LabelField.vue'
 import SearchInput from '@/components/input/SearchInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
+import AssetStatusSelection from '@/components/selection/modules/static/asset-status/AssetStatusSelection.vue'
+import AssetTypeSelection from '@/components/selection/modules/static/asset-type/AssetTypeSelection.vue'
 
 interface IEmits {
   search: []

@@ -18,8 +18,11 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IGetCustomerEstateList, IGetCustomerList } from '@/models/request/customer/CustomerReq.model'
-import type { ICustomerEstateList } from '@/models/response/customer/CustomerRes.model'
+import type { ICustomerEstateFilter } from '@/models/modules/customer/estate/Filter.model'
+import type { IGetCustomerEstateList } from '@/models/request/customer/CustomerReq.model'
+import type { ICustomerAssetList } from '@/models/response/customer/CustomerRes.model'
+import type { TAssetStatus } from '@/enums/modules/asset/AssetStatus.enum'
+import type { TAssetType } from '@/enums/modules/asset/AssetType.enum'
 import CustomerProvider, { type ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import usePagination from '@/composables/usePagination'
 import EstateFilter from './EstateFilter.vue'
@@ -28,10 +31,13 @@ import EstateTable from './EstateTable.vue'
 const CustomerService: ICustomerProvider = new CustomerProvider()
 
 const route = useRoute()
-const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
+const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
-const filters = ref<IGetCustomerEstateList>({})
-const items = ref<ICustomerEstateList[]>([])
+const filters = ref<ICustomerEstateFilter>({
+  type: route?.query?.type ? route?.query?.type as TAssetType : undefined,
+  status: route?.query?.status ? route?.query?.status as TAssetStatus : undefined
+})
+const items = ref<ICustomerAssetList[]>([])
 const customerId = computed((): number => route?.params?.id ? Number(route.params.id) : 0)
 
 const paginateQuery = computed((): IGetCustomerEstateList => {
@@ -42,6 +48,8 @@ const paginateQuery = computed((): IGetCustomerEstateList => {
     limit: pagination.value.limit,
     sortBy: sortBy.value || undefined,
     sortOrder: sortOrder.value,
+    status: normalizedFilters.status,
+    type: normalizedFilters.type,
     ...normalizedFilters
   }
 })
@@ -54,7 +62,7 @@ async function useFetch (): Promise<void> {
 }
 
 
-function normalizeFilters (value: IGetCustomerList): Partial<IGetCustomerList> {
+function normalizeFilters (value: ICustomerEstateFilter): Partial<IGetCustomerEstateList> {
   return {
     ...value
   }
@@ -64,7 +72,13 @@ function fetch (): void {
   handleLoading(useFetch)
 }
 
-function onClearFilters (): void {}
+function onClearFilters (): void {
+  filters.value = {
+    type: undefined,
+    status: undefined
+  }
+  reset()
+}
 
 onMounted((): void => {
   fetch()
