@@ -6,9 +6,7 @@
       :aria-pressed="isSelected(item)"
       :class="[
         'cursor-pointer w-10 h-10 rounded-full border border-primary text-sm font-semibold flex items-center justify-center transition-colors duration-200',
-        isSelected(item)
-          ? 'bg-primary text-white'
-          : 'bg-white text-primary',
+        itemClass(item),
         props.readonly ? 'pointer-events-none' : ''
       ]"
       type="button"
@@ -52,6 +50,15 @@ function isNotAllow (day: string | TDays): boolean {
   // if (props.notAllowDays.length === 1) return false
   const index = props.notAllowDays.findIndex((_day: TDays): boolean => _day === day)
   return index !== -1
+}
+
+function itemClass (day: TDays): string {
+  if (isNotAllow(day) && !isSelected(day)) {
+    return 'bg-gray-300 text-gray-500 border-gray-400! cursor-not-allowed'
+  }
+  return isSelected(day)
+    ? 'bg-primary text-white'
+    : 'bg-white text-primary'
 }
 
 function onClickToggle (day: TDays): void {
