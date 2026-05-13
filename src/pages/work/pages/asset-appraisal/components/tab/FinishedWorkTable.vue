@@ -42,7 +42,7 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IAssetAppraisalCompleteWorkList>[]>([
   { field: 'idNo', header: 'เลขที่สัญญา', sortable: true, align: 'left', value: (e: IAssetAppraisalCompleteWorkList): string => e.idNo ?? '' },
-  { field: 'customer', header: 'ชื่อลูกค้า', sortable: true, align: 'left', value: (e: IAssetAppraisalCompleteWorkList): string => formatter.fullName(e.customer) ?? '' },
+  { field: 'customer', header: 'ชื่อลูกค้า', align: 'left', value: (e: IAssetAppraisalCompleteWorkList): string => formatter.fullName(e.customer) ?? '' },
   { field: 'types', header: 'หมวดหมู่หลักทรัพย์', align: 'left', value: (e: IAssetAppraisalCompleteWorkList): string => e?.types?.map(formatTitle).join(', ') || '-' }
 ])
 </script>
