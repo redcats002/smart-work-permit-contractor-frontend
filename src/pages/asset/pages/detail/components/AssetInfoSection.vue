@@ -12,9 +12,9 @@
       <DisplayList :items="assetItems">
         <template #[`value.status`]>
           <BaseChip
-            :append-icon="statusIcon(props.detail.status)"
-            :label="statusLabel(props.detail.status)"
-            :wrapper-class="statusWrapperClass(props.detail.status)" />
+            :append-icon="statusIcon(detail.status)"
+            :label="statusLabel(detail.status)"
+            :wrapper-class="statusWrapperClass(detail.status)" />
         </template>
       </DisplayList>
     </div>
@@ -30,7 +30,7 @@
         </template>
         <template #[`value.contractNo`]>
           <span class="underline text-surface-700">
-            {{ props.detail.contract.idNo }}
+            {{ detail.contract.idNo }}
           </span>
         </template>
       </DisplayList>
@@ -66,25 +66,26 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { formatter } from '@/utils/Formatter'
 import type { IContractAssetDetail } from '@/models/response/contract-asset/ContractAssetRes.model'
-import { AssetStatusEnum, formatTitle, getIcon, getStatusClass } from '@/enums/modules/asset/AssetStatus.enum'
 import type { TAssetStatus } from '@/enums/modules/asset/AssetStatus.enum'
+import { AssetStatusEnum, formatTitle, getIcon, getStatusClass } from '@/enums/modules/asset/AssetStatus.enum'
 import { formatTitle as formatTypeTitle } from '@/enums/modules/asset/AssetType.enum'
 import BaseChip from '@/components/chip/BaseChip.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
-import { Icon } from '@iconify/vue'
 import AssetStatusSelection from '@/components/selection/modules/static/asset-status/AssetStatusSelection.vue'
-import { formatter } from '@/utils/Formatter'
+import { Icon } from '@iconify/vue'
 
 interface IProps {
   detail: IContractAssetDetail
 }
+interface IEmits {
+  'update:asset-status': [status: TAssetStatus]
+}
 
 const props = defineProps<IProps>()
-const emit = defineEmits<{
-  'update:asset-status': [status: TAssetStatus]
-}>()
+const emits = defineEmits<IEmits>()
 
 const assetItems = computed((): IDisplayList[] => [
   { key: 'status', label: 'สถานะหลักทรัพย์', value: statusLabel(props.detail.status) },
@@ -117,7 +118,7 @@ function closeStatusModal (): void {
 
 function confirmStatusChange (): void {
   if (selectedStatus.value && selectedStatus.value !== props.detail.status) {
-    emit('update:asset-status', selectedStatus.value as TAssetStatus)
+    emits('update:asset-status', selectedStatus.value as TAssetStatus)
   }
   closeStatusModal()
 }
