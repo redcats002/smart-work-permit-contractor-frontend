@@ -1,4 +1,5 @@
 import type {
+  ICreateCustomerDocumentPayload,
   ICreateCustomerPayload,
   IGetCustomerContactHistoryList,
   IGetCustomerContractList,
@@ -6,10 +7,12 @@ import type {
   IGetCustomerEstateList,
   IGetCustomerList,
   IGetCustomerPaymentHistoryList,
+  IUpdateCustomerDocumentPayload,
   IUpdateCustomerPayload
 } from '@/models/request/customer/CustomerReq.model'
 import type {
   TActionCustomer,
+  TActionCustomerDocument,
   TGetCustomerByIdResponse,
   TGetCustomerContactHistoryListResponse,
   TGetCustomerContractListResponse,
@@ -34,6 +37,9 @@ export interface ICustomerProvider {
   getCustomerEstates (id: TBaseParamsId, query: IGetCustomerEstateList): Promise<TGetCustomerEstateListResponse>
   getCustomerDocumentFindOne (id: TBaseParamsId): Promise<TGetCustomerDocumentByIdResponse>
   getCustomerDocumentPaginate (query: IGetCustomerDocumentList): Promise<TGetCustomerDocumentListResponse>
+  createCustomerDocument (payload: ICreateCustomerDocumentPayload): Promise<TActionCustomerDocument>
+  updateCustomerDocument (id: TBaseParamsId, payload: IUpdateCustomerDocumentPayload): Promise<TActionCustomerDocument>
+  deleteCustomerDocument (id: TBaseParamsId): Promise<TActionCustomerDocument>
 }
 
 class CustomerProvider extends HttpRequest implements ICustomerProvider {
@@ -71,6 +77,21 @@ class CustomerProvider extends HttpRequest implements ICustomerProvider {
 
   public async getCustomerDocumentFindOne (id: TBaseParamsId): Promise<TGetCustomerDocumentByIdResponse> {
     const response = await this.get(`${this.urlPrefix}-document/${id}`)
+    return response
+  }
+
+  public async createCustomerDocument (payload: ICreateCustomerDocumentPayload): Promise<TActionCustomerDocument> {
+    const response = await this.post(`${this.urlPrefix}-document`, payload)
+    return response
+  }
+
+  public async updateCustomerDocument (id: TBaseParamsId, payload: IUpdateCustomerDocumentPayload): Promise<TActionCustomerDocument> {
+    const response = await this.put(`${this.urlPrefix}-document/${id}`, payload)
+    return response
+  }
+
+  public async deleteCustomerDocument (id: TBaseParamsId): Promise<TActionCustomerDocument> {
+    const response = await this.delete(`${this.urlPrefix}-document/${id}`)
     return response
   }
 
