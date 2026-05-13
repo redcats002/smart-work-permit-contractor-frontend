@@ -47,7 +47,7 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<ICustomerPaymentHistoryList>[]>([
-  { field: 'createdAt', header: 'วันที่ทำรายการ', align: 'left', value: (e: ICustomerPaymentHistoryList): string => dayjs.formatDate(e?.createdAt || '') },
+  { field: 'createdAt', header: 'วันที่ทำรายการ', sortable: true, align: 'left', value: (e: ICustomerPaymentHistoryList): string => dayjs.formatDate(e?.createdAt || '') },
   { field: 'idNo', header: 'เลขที่สัญญา', sortable: true, align: 'left' },
   { field: 'paymentAmount', header: 'ยอดชำระ (บาท)', align: 'right', value: (e: ICustomerPaymentHistoryList): string => formatter.numberFormat2Decimal(e?.paymentAmount || 0) },
   { field: 'paymentMethod', header: 'วิธีการชำระ', align: 'left', value: (e: ICustomerPaymentHistoryList): string => e?.paymentMethod?.name || '' }
