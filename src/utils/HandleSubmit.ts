@@ -42,7 +42,7 @@ export function scrollToFirstError (errors: Record<string, any>, showToast: bool
 
   if (showToast) {
     const firstErrorMessage = Object.values(errors).flat()[0]?.message
-    toast.error(firstErrorMessage || 'กรุณาตรวจสอบข้อมูลให้ถูกต้อง')
+    toast.error('', firstErrorMessage)
   }
 
   const selector = keys.map((key: string): string => `[name="${key}"]`).join(',')
