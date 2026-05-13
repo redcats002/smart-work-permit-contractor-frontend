@@ -1,5 +1,6 @@
 import type { TAssetStatus } from '@/enums/modules/asset/AssetStatus.enum'
 import type { TAssetType } from '@/enums/modules/asset/AssetType.enum'
+import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
 import type { TPaymentMethod } from '@/enums/modules/contract/PaymentMethod.enum'
 import type { TCustomerStatus } from '@/enums/modules/customer/CustomerStatus.enum'
 import type { CustomerFormValues } from '@/pages/customer/pages/create/schema/customer.schema'
@@ -13,12 +14,15 @@ export interface IGetCustomerList extends Omit<IBasePaginationRequest, 'status'>
   status?: TCustomerStatus
   customerGroupId?: number
 }
-export interface IGetCustomerContractList extends IBasePaginationRequest {}
+export interface IGetCustomerContractList extends Omit<IBasePaginationRequest, 'status'> {
+  status?: TContractStatus
+}
 export interface IGetCustomerPaymentHistoryList extends IBasePaginationRequest {
   paymentMethod?: TPaymentMethod
 }
 export interface IGetCustomerContactHistoryList extends IBasePaginationRequest {
   userId?: string
+  topic?: string
 }
 export interface IGetCustomerEstateList extends IBasePaginationRequest {
   type?: TAssetType

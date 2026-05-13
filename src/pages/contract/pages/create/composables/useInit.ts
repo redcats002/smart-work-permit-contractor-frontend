@@ -1,5 +1,5 @@
 import { computed, type ComputedRef, ref, type Ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { useAuthStore } from '@/stores/Auth'
 import { handleLoading } from '@/utils/HandleLoading'
@@ -39,10 +39,12 @@ export interface IUseInit {
   setSubmitMode: (mode: TPreContractStatus) => void
   onAuto: () => void
   onInitSellMan: () => void
+  onInitCustomer (): void
 }
 
 export function useInit (): IUseInit {
   const authStore = useAuthStore()
+  const route = useRoute()
   const router = useRouter()
 
   const CustomerService: ICustomerProvider = new CustomerProvider()
@@ -130,6 +132,13 @@ export function useInit (): IUseInit {
     formKey.value++
   }
 
+  function onInitCustomer (): void {
+    const customerId = route?.query?.customerId ? Number(route.query.customerId) : null
+    if (!customerId) return
+    form.value.customerId = customerId
+    onCustomerSelect(customerId)
+  }
+
   function mount (): void {
     formKey.value++
   }
@@ -150,6 +159,7 @@ export function useInit (): IUseInit {
     setSubmitMode,
     onAuto,
     onInitSellMan,
+    onInitCustomer,
     mount
   }
 }

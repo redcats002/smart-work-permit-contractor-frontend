@@ -15,6 +15,7 @@
         <div class="flex flex-col gap-5">
           <!-- TODO: wait for design -->
           <LabelField
+            v-model="filters!.topic"
             label="เรื่อง" />
           <LabelField
             label="โดยพนักงาน">

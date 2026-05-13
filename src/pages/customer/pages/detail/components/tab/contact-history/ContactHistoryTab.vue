@@ -32,7 +32,10 @@ const CustomerService: ICustomerProvider = new CustomerProvider()
 const route = useRoute()
 const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
-const filters = ref<IGetCustomerContactHistoryList>({})
+const filters = ref<IGetCustomerContactHistoryList>({
+  topic: route?.query?.topic ? String(route.query.topic) : undefined,
+  userId: route?.query?.userId ? String(route.query.userId) : undefined
+})
 const items = ref<ICustomerContactHistoryList[]>([])
 
 const customerId = computed((): number => route?.params?.id ? Number(route.params.id) : 0)
@@ -73,7 +76,8 @@ function fetch (): void {
 
 function onClearFilters (): void {
   filters.value = {
-    userId: undefined
+    userId: undefined,
+    topic: undefined
   }
   reset()
 }
