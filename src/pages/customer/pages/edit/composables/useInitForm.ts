@@ -1,23 +1,12 @@
 import type { Ref } from 'vue'
+import { isSameAddress } from '@/utils/Address'
 import { useDayjs } from '@/utils/Dayjs'
-import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import type { CustomerStatusEnum } from '@/enums/modules/customer/CustomerStatus.enum'
 import type { ETitleName } from '@/enums/TitleName.enum'
 import type { CustomerFormValues } from '../../create/schema/customer.schema'
 
 const dayjs = useDayjs()
-
-function isSameAddress (a: IAddressRequest | undefined, b: IAddressRequest | undefined): boolean {
-  if (!a || !b) return false
-  return (
-    a.address === b.address
-    && a.subDistrict === b.subDistrict
-    && a.district === b.district
-    && a.province === b.province
-    && a.postCode === b.postCode
-  )
-}
 
 export function useInitForm (form: Ref<CustomerFormValues>, data: ICustomerById): void {
   const { mainAddress, currentAddress, workAddress } = data

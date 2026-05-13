@@ -105,7 +105,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
+import { isSameAddress } from '@/utils/Address'
 import type { IFormState } from '@/models/Form.model'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import AddressFieldInput, { type IAddressData } from '@/components/input/AddressFieldInput.vue'
@@ -116,6 +117,8 @@ interface IProps {
   form?: IFormState
   type?: 'MAIN' | 'CURRENT' | 'WORK'
   hideError?: boolean
+  citizenAddress?: IAddressRequest
+  currentAddressRef?: IAddressRequest
 }
 interface IEmits {
   useSameCitizenAddress: []
@@ -125,7 +128,9 @@ interface IEmits {
 const props = withDefaults(defineProps<IProps>(), {
   form: undefined,
   type: 'CURRENT',
-  hideError: false
+  hideError: false,
+  citizenAddress: undefined,
+  currentAddressRef: undefined
 })
 const emits = defineEmits<IEmits>()
 
@@ -176,6 +181,23 @@ const googleMapUrl = computed((): string => {
   return 'workAddress.urlGoogleMap'
 })
 
+watch(
+  (): string[] => [
+    model.value.address,
+    model.value.subDistrict,
+    model.value.district,
+    model.value.province,
+    model.value.postCode
+  ], (): void => {
+    if (props.citizenAddress) {
+      model.value.isSameCitizenAddress = isSameAddress(model.value, props.citizenAddress)
+    }
+    if (props.currentAddressRef) {
+      model.value.isSameCurrentAddress = isSameAddress(model.value, props.currentAddressRef)
+    }
+  }
+)
+
 function onAddressSelect (address: Partial<IAddressData>): void {
   model.value = {
     ...model.value,
@@ -190,7 +212,7 @@ function onUseSameCitizenAddress (isChecked: boolean): void {
 function onUseSameCurrentAddress (isChecked: boolean): void {
   if (isChecked) emits('useSameCurrentAddress')
 }
-function onUpdate (): void { // for v-model update
+function onUpdate (): void {
   model.value = { ...model.value }
 }
 </script>
