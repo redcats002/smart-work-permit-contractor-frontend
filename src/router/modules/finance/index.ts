@@ -40,10 +40,22 @@ export default {
       path: 'receipt/detail/:id',
       name: 'ReceiptDetailPage',
       component: (): ComponentOptions => import('@/pages/finance/pages/receipt/detail/pages/ReceiptDetailPage.vue'),
-      meta: { auth: true,
+      meta: {
+        auth: true,
         title: 'รายละเอียดใบเสร็จรับเงิน',
         icon: 'solar:bill-list-bold',
         back: { name: 'ReceiptListPage' }
+      }
+    },
+    {
+      path: 'receipt/print/:id',
+      name: 'ReceiptPrintPage',
+      component: (): ComponentOptions => import('@/pages/finance/pages/receipt/detail/pages/ReceiptPrintPage.vue'),
+      meta: {
+        auth: true,
+        title: 'พิมพ์ใบเสร็จรับเงิน',
+        icon: 'solar:bill-list-bold',
+        back: { name: 'ReceiptDetailPage' }
       }
     },
     {

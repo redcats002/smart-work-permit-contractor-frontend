@@ -22,12 +22,18 @@ export default function useDetail (): IUseDetail {
     contractNo: null,
     dateOfPayment: null,
     branch: null,
+    paymentChannel: null,
     customer: {
       id: 0,
       idCard: '',
       titleName: ETitleName[''],
       firstName: '',
-      lastName: ''
+      lastName: '',
+      birthDate: null,
+      customerGroup: null,
+      occupation: null,
+      phoneNumber: null,
+      email: null
     },
     officer: {
       id: 0,
@@ -45,7 +51,8 @@ export default function useDetail (): IUseDetail {
     items: [],
     outstanding: null,
     interest: null,
-    principal: null
+    principal: null,
+    paymentGroups: []
   })
   function fetchById (): void {
     handleLoading(useFetchById)
@@ -55,18 +62,24 @@ export default function useDetail (): IUseDetail {
     const isNoApi = true
     if (isNoApi) {
       form.value = {
-        id: 0,
+        id: 124121221,
         contractId: null,
         receiptNo: 'RCPT-00001',
         contractNo: 'LC-00001',
-        dateOfPayment: '2012-04-23T18:25:43.511Z',
+        dateOfPayment: '2024-03-12T00:00:00.000Z',
         branch: 'ขอนแก่น',
+        paymentChannel: 'เงินสด',
         customer: {
-          id: 0,
-          idCard: '1-2345-67890-12-3',
+          id: 124121221,
+          idCard: '1233030390122',
           titleName: ETitleName.MR,
           firstName: 'จันทร์',
-          lastName: 'ทองเพิ่มเกรียม'
+          lastName: 'พงษ์พัฒนโยธิน',
+          birthDate: '1997-03-12T00:00:00.000Z',
+          customerGroup: { id: 1, name: 'ลูกค้าใหม่' },
+          occupation: { id: 1, name: 'พนักงานบริษัท' },
+          phoneNumber: '088-8888888',
+          email: 'Pichai@mail.com'
         },
         address: 'อาคารเลขที่ 128 ถนนพญาไท',
         subDistrict: 'แขวงถนนพญาไท',
@@ -74,30 +87,32 @@ export default function useDetail (): IUseDetail {
         province: 'กรุงเทพมหานคร',
         postCode: '10400',
         totalValue: 23000,
-        items: [
-          {
-            detail: 'เงินต้น งวดที่ 6/12',
-            price: 11500
-          },
-          {
-            detail: 'ดอกเบี้ย',
-            price: 1500
-          },
-          {
-            detail: 'ค่าติดตาม',
-            price: 10000
-          }
-        ],
+        items: [],
         officer: {
           id: 0,
           idCard: '1-2345-67890-12-3',
           titleName: ETitleName.MR,
-          firstName: 'จันทร์',
-          lastName: 'ทองเพิ่มเกรียม'
+          firstName: 'สมชาย',
+          lastName: 'ใจดี'
         },
         outstanding: 34500,
         interest: 120033,
-        principal: 30000
+        principal: 30000,
+        paymentGroups: [
+          {
+            contractNo: 'LC-00002',
+            rows: [
+              { installmentNo: 2, penalty: 120, tracking: 0, lawyer: 0, interest: 0, principal: 11000, total: 11120 },
+              { installmentNo: 3, penalty: 0, tracking: 0, lawyer: 0, interest: 0, principal: 11600, total: 11600 }
+            ]
+          },
+          {
+            contractNo: 'LC-00547',
+            rows: [
+              { installmentNo: 2, penalty: 120, tracking: 0, lawyer: 0, interest: 0, principal: 11000, total: 11120 }
+            ]
+          }
+        ]
       }
     } else {
       const response = await ReceiptService.getReceiptById(invoiceId.value)
