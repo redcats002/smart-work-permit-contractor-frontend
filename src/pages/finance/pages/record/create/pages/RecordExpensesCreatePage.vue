@@ -6,6 +6,7 @@
     </BaseTop>
     <BasePage>
       <Form
+        ref="formRef"
         v-slot="$form"
         :initial-values="form"
         :resolver="resolver"
@@ -18,7 +19,7 @@
                 v-slot="{ invalid }"
                 :form="$form"
                 class="col-span-1"
-                label="ประเภทค่าใช้จ่าย"
+                label="หมวดหมู่ค่าใช้จ่าย"
                 name="expensesType"
                 tag="div"
                 required>
@@ -31,29 +32,30 @@
                 v-slot="{ invalid }"
                 :form="$form"
                 class="col-span-3 mt-6"
-                name="expensesId"
+                name="categoryId"
                 tag="div">
-                <FinanceExpenseTypeSelection
-                  v-model="form.expensesId"
-                  :expense-category-id="form.categoryId"
+                <FinanceExpenseCategorySelection
+                  v-model="form.categoryId"
                   :invalid="invalid"
-                  name="expensesId"
-                  placeholder="กรุณาเลือกประเภทค่าใช้จ่าย" />
+                  name="categoryId"
+                  placeholder="กรุณาเลือกหมวดหมู่ค่าใช้จ่าย"
+                  @update:model-value="onCategoryChange()" />
               </LabelField>
             </div>
             <LabelField
               v-slot="{ invalid }"
               :form="$form"
-              label="หมวดหมู่ค่าใช้จ่าย"
-              name="categoryId"
+              label="ประเภทค่าใช้จ่าย"
+              name="expensesId"
               tag="div"
               required>
-              <FinanceExpenseCategorySelection
-                v-model="form.categoryId"
+              <FinanceExpenseTypeSelection
+                v-model="form.expensesId"
+                :disabled="!form.categoryId"
+                :expense-category-id="form.categoryId"
                 :invalid="invalid"
-                name="categoryId"
-                placeholder="กรุณาเลือกหมวดหมู่ค่าใช้จ่าย"
-                @update:model-value="onCategoryChange()" />
+                name="expensesId"
+                placeholder="กรุณาเลือกประเภทค่าใช้จ่าย" />
             </LabelField>
             <LabelField
               v-slot="{ invalid }"
@@ -71,6 +73,11 @@
                 fluid />
             </LabelField>
             <LabelField
+              label="ไฟล์"
+              tag="div">
+              <FileInput v-model="files" />
+            </LabelField>
+            <LabelField
               v-slot="{ invalid }"
               :form="$form"
               label="วันที่จ่าย"
@@ -81,11 +88,6 @@
                 v-model="form.payDate"
                 :invalid="invalid"
                 name="payDate" />
-            </LabelField>
-            <LabelField
-              label="ไฟล์"
-              tag="div">
-              <FileInput v-model="files" />
             </LabelField>
             <LabelField
               :form="$form"
@@ -131,10 +133,12 @@ import FinanceExpenseCategorySelection from '@/components/selection/modules/api/
 import FinanceExpenseTypeSelection from '@/components/selection/modules/api/finance-expense-type/FinanceExpenseTypeSelection.vue'
 import ExpensesTypeSelection from '@/components/selection/modules/static/expense-type/ExpensesTypeSelection.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
+import { type FormInstance } from '@primevue/forms/form'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { type ExpensesFormValues, ExpensesSchema, useFormInitialValues } from '../schema/expenses.schema'
 
 const router = useRouter()
+const formRef = ref<FormInstance | null>(null)
 const form = ref<ExpensesFormValues>(useFormInitialValues())
 const files = ref<IMedia[]>([])
 const resolver = zodResolver(ExpensesSchema)
@@ -148,6 +152,7 @@ function onCancel (): void {
 
 function onCategoryChange (): void {
   form.value.expensesId = undefined
+  formRef.value?.setFieldValue('expensesId', undefined)
 }
 
 async function uploadFiles (): Promise<IExpensesFile[]> {

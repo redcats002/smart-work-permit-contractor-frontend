@@ -8,6 +8,26 @@ export interface IReceiptCustomer {
   titleName: TTitleName
   firstName: string
   lastName: string
+  birthDate?: string | null
+  customerGroup?: { id: number, name: string } | null
+  occupation?: { id: number, name: string } | null
+  phoneNumber?: string | null
+  email?: string | null
+}
+
+export interface IReceiptPaymentRow {
+  installmentNo: number
+  penalty: number
+  tracking: number
+  lawyer: number
+  interest: number
+  principal: number
+  total: number
+}
+
+export interface IReceiptPaymentGroup {
+  contractNo: string
+  rows: IReceiptPaymentRow[]
 }
 
 export interface IReceiptList extends IEntity {
@@ -30,6 +50,7 @@ export interface IReceiptById extends IEntity {
   dateOfPayment: string | null
   officer: IReceiptCustomer
   branch: string | null
+  paymentChannel: string | null
   customer: IReceiptCustomer
   address: string
   subDistrict: string
@@ -41,6 +62,7 @@ export interface IReceiptById extends IEntity {
   interest: number | null
   principal: number | null
   outstanding: number | null
+  paymentGroups: IReceiptPaymentGroup[]
 }
 
 export interface IReceiptInstallment extends IEntity {

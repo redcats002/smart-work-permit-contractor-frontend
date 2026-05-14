@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/typedef */
 import { schema } from '@/utils/Schema'
 import { ExpensesTypeEnum } from '@/enums/modules/finance/ExpenseType.enum'
 import { z } from 'zod'
@@ -10,6 +11,14 @@ export const ExpensesSchema = z.object({
   payDate: schema.date('วันที่จ่าย'),
   note: z.string().optional(),
   files: z.array(z.object({ name: z.string(), url: z.string(), path: z.string() })).optional()
+}).superRefine((data, ctx) => {
+  if (data.categoryId && !data.expensesId) {
+    ctx.addIssue({
+      path: ['expensesId'],
+      code: 'custom',
+      message: 'กรุณาเลือกประเภทค่าใช้จ่าย'
+    })
+  }
 })
 
 export type ExpensesFormValues = z.infer<typeof ExpensesSchema>
