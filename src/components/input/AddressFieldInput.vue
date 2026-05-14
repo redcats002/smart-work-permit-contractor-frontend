@@ -1,5 +1,7 @@
 <template>
-  <div class="relative w-full">
+  <div
+    class="relative w-full"
+    @keydown.enter.prevent.stop>
     <AutoCompleteInput
       v-bind="attrs"
       :dropdown="false"

@@ -13,12 +13,12 @@ import type {
 import type {
   TActionCustomer,
   TActionCustomerDocument,
+  TGetCustomerAssetListResponse,
   TGetCustomerByIdResponse,
   TGetCustomerContactHistoryListResponse,
   TGetCustomerContractListResponse,
   TGetCustomerDocumentByIdResponse,
   TGetCustomerDocumentListResponse,
-  TGetCustomerEstateListResponse,
   TGetCustomerListResponse,
   TGetCustomerPaymentHistoryListResponse
 } from '@/models/response/customer/CustomerRes.model'
@@ -34,7 +34,7 @@ export interface ICustomerProvider {
   getCustomerContracts (id: TBaseParamsId, query: IGetCustomerContractList): Promise<TGetCustomerContractListResponse>
   getCustomerPaymentHistory (id: TBaseParamsId, query: IGetCustomerPaymentHistoryList): Promise<TGetCustomerPaymentHistoryListResponse>
   getCustomerContactHistory (id: TBaseParamsId, query: IGetCustomerContactHistoryList): Promise<TGetCustomerContactHistoryListResponse>
-  getCustomerEstates (id: TBaseParamsId, query: IGetCustomerEstateList): Promise<TGetCustomerEstateListResponse>
+  getCustomerEstates (id: TBaseParamsId, query: IGetCustomerEstateList): Promise<TGetCustomerAssetListResponse>
   getCustomerDocumentFindOne (id: TBaseParamsId): Promise<TGetCustomerDocumentByIdResponse>
   getCustomerDocumentPaginate (query: IGetCustomerDocumentList): Promise<TGetCustomerDocumentListResponse>
   createCustomerDocument (payload: ICreateCustomerDocumentPayload): Promise<TActionCustomerDocument>
@@ -110,7 +110,7 @@ class CustomerProvider extends HttpRequest implements ICustomerProvider {
     return response
   }
 
-  public async getCustomerEstates (id: TBaseParamsId, query: IGetCustomerEstateList): Promise<TGetCustomerEstateListResponse> {
+  public async getCustomerEstates (id: TBaseParamsId, query: IGetCustomerEstateList): Promise<TGetCustomerAssetListResponse> {
     const response = await this.get(`${this.urlPrefix}/${id}/assets`, query)
     return response
   }

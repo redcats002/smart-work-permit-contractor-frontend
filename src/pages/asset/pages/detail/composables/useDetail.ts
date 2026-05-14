@@ -1,34 +1,54 @@
 import { ref, type Ref } from 'vue'
-import { getAssetDetailMock } from '@/pages/asset/mock/assetMock'
-import type {
-  IAssetDetailInfo,
-  IAssetDocument,
-  IAssetHistoryItem,
-  IAssetMedia,
-  IContractDetailInfo
-} from '@/models/asset/AssetDetail.model'
+import { handleLoading } from '@/utils/HandleLoading'
+import type { IContractAssetDetail } from '@/models/response/contract-asset/ContractAssetRes.model'
+import type { TAssetStatus } from '@/enums/modules/asset/AssetStatus.enum'
+import ContractAssetProvider from '@/resources/provider/contract-asset/ContractAsset.provider'
 
-export interface IAssetDetailState {
-  assetInfo: Ref<IAssetDetailInfo>
-  contractInfo: Ref<IContractDetailInfo>
-  images: Ref<IAssetMedia[]>
-  documents: Ref<IAssetDocument[]>
-  history: Ref<IAssetHistoryItem[]>
+interface IUseDetail {
+  detail: Ref<IContractAssetDetail | null>
+  loading: Ref<boolean>
+  fetch(): void
+  onSell(salePrice: number): void
+  onUpdateStatus(status: TAssetStatus): void
 }
 
-export function useDetail (assetId?: number): IAssetDetailState {
-  const mock = getAssetDetailMock(assetId)
-  const assetInfo = ref<IAssetDetailInfo>(mock.assetInfo)
-  const contractInfo = ref<IContractDetailInfo>(mock.contractInfo)
-  const images = ref<IAssetMedia[]>(mock.images)
-  const documents = ref<IAssetDocument[]>(mock.documents)
-  const history = ref<IAssetHistoryItem[]>(mock.history)
+export function useDetail (assetId: number): IUseDetail {
+  const ContractAssetService = new ContractAssetProvider()
+  const detail = ref<IContractAssetDetail | null>(null)
+  const loading = ref<boolean>(false)
+
+  async function useFetch (): Promise<void> {
+    const res = await ContractAssetService.getContractAssetDetail(assetId)
+    detail.value = res.data
+  }
+
+  function fetch (): void {
+    handleLoading(useFetch, { loadingUnit: loading })
+  }
+
+  async function useSell (salePrice: number): Promise<void> {
+    await ContractAssetService.sellContractAsset(assetId, { salePrice })
+    await useFetch()
+  }
+
+  async function useUpdateStatus (status: TAssetStatus): Promise<void> {
+    await ContractAssetService.updateContractAssetStatus(assetId, { status })
+    await useFetch()
+  }
+
+  function onSell (salePrice: number): void {
+    handleLoading(() => useSell(salePrice))
+  }
+
+  function onUpdateStatus (status: TAssetStatus): void {
+    handleLoading(() => useUpdateStatus(status))
+  }
 
   return {
-    assetInfo,
-    contractInfo,
-    images,
-    documents,
-    history
+    detail,
+    loading,
+    fetch,
+    onSell,
+    onUpdateStatus
   }
 }

@@ -18,6 +18,7 @@ import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import BaseContainer from '@/components/base/BaseContainer.vue'
+import CitizenId from '@/components/display/CitizenId.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
 import ChipCustomerStatus from '@/pages/customer/pages/list/components/ChipCustomerStatus.vue'
 

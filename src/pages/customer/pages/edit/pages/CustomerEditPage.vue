@@ -30,6 +30,7 @@
           <BaseContainer>
             <AddressForm
               v-model="currentAddress"
+              :citizen-address="mainAddress"
               :form="$form"
               type="CURRENT"
               @use-same-citizen-address="onUseSameCitizenAddress('CURRENT')" />
@@ -37,6 +38,8 @@
           <BaseContainer>
             <AddressForm
               v-model="workAddress"
+              :citizen-address="mainAddress"
+              :current-address-ref="currentAddress"
               :form="$form"
               type="WORK"
               @use-same-citizen-address="onUseSameCitizenAddress('WORK')"
@@ -69,7 +72,7 @@ import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import AddressForm from '../../create/components/AddressForm.vue'
+import AddressForm from '@/components/input/AddressForm.vue'
 import InformationForm from '../../create/components/InformationForm.vue'
 import { type CustomerFormValues, CustomerSchema, useFormInitialValues } from '../../create/schema/customer.schema'
 import { useInitForm } from '../composables/useInitForm'
@@ -88,85 +91,24 @@ const resolver = zodResolver(CustomerSchema)
 const customerId = computed((): string => route?.params?.id as string ?? '')
 
 const mainAddress = computed({
-  get (): IAddressRequest {
-    return {
-      address: form.value.mainAddress.address,
-      subDistrict: form.value.mainAddress.subDistrict,
-      district: form.value.mainAddress.district,
-      province: form.value.mainAddress.province,
-      postCode: form.value.mainAddress.postCode,
-      urlGoogleMap: form.value.mainAddress.urlGoogleMap,
-      isSameCitizenAddress: form.value.mainAddress.isSameCitizenAddress,
-      isSameCurrentAddress: form.value.mainAddress.isSameCurrentAddress
-    }
-  },
-  set (e: IAddressRequest): void {
-    form.value.mainAddress.address = e.address
-    form.value.mainAddress.subDistrict = e.subDistrict
-    form.value.mainAddress.district = e.district
-    form.value.mainAddress.province = e.province
-    form.value.mainAddress.postCode = e.postCode
-    form.value.mainAddress.urlGoogleMap = e.urlGoogleMap
-    form.value.mainAddress.isSameCitizenAddress = e.isSameCitizenAddress
-    form.value.mainAddress.isSameCurrentAddress = e.isSameCurrentAddress
-  }
+  get (): IAddressRequest { return form.value.mainAddress },
+  set (e: IAddressRequest): void { form.value.mainAddress = e }
 })
 
 const currentAddress = computed({
-  get (): IAddressRequest {
-    return {
-      address: form.value.currentAddress.address,
-      subDistrict: form.value.currentAddress.subDistrict,
-      district: form.value.currentAddress.district,
-      province: form.value.currentAddress.province,
-      postCode: form.value.currentAddress.postCode,
-      isSameCitizenAddress: form.value.currentAddress.isSameCitizenAddress,
-      isSameCurrentAddress: form.value.currentAddress.isSameCurrentAddress,
-      urlGoogleMap: form.value.currentAddress.urlGoogleMap
-    }
-  },
-  set (e: IAddressRequest): void {
-    form.value.currentAddress.address = e.address
-    form.value.currentAddress.subDistrict = e.subDistrict
-    form.value.currentAddress.district = e.district
-    form.value.currentAddress.province = e.province
-    form.value.currentAddress.postCode = e.postCode
-    form.value.currentAddress.isSameCitizenAddress = e.isSameCitizenAddress
-    form.value.currentAddress.isSameCurrentAddress = e.isSameCurrentAddress
-    form.value.currentAddress.urlGoogleMap = e.urlGoogleMap
-  }
+  get (): IAddressRequest { return form.value.currentAddress },
+  set (e: IAddressRequest): void { form.value.currentAddress = e }
 })
 
 const workAddress = computed<IAddressRequest>({
-  get (): IAddressRequest {
-    return {
-      address: form.value.workAddress.address,
-      subDistrict: form.value.workAddress.subDistrict,
-      district: form.value.workAddress.district,
-      province: form.value.workAddress.province,
-      postCode: form.value.workAddress.postCode,
-      isSameCitizenAddress: form.value.workAddress.isSameCitizenAddress,
-      isSameCurrentAddress: form.value.workAddress.isSameCurrentAddress,
-      urlGoogleMap: form.value.workAddress.urlGoogleMap
-    }
-  },
-  set (e: IAddressRequest): void {
-    form.value.workAddress.address = e.address
-    form.value.workAddress.subDistrict = e.subDistrict
-    form.value.workAddress.district = e.district
-    form.value.workAddress.province = e.province
-    form.value.workAddress.postCode = e.postCode
-    form.value.workAddress.isSameCitizenAddress = e.isSameCitizenAddress
-    form.value.workAddress.isSameCurrentAddress = e.isSameCurrentAddress
-    form.value.workAddress.urlGoogleMap = e.urlGoogleMap
-  }
+  get (): IAddressRequest { return form.value.workAddress },
+  set (e: IAddressRequest): void { form.value.workAddress = e }
 })
 
 // Map the API response shape (ICustomerById) → CustomerFormValues
 function useInit (data: ICustomerById): void {
   useInitForm(form, data)
-  // Remount <Form> so it picks up the fetched initial-values without stale error state
-  formKey.value++
+  mount()
 }
 
 async function useFetch (): Promise<void> {
@@ -206,6 +148,7 @@ function onUseSameCurrentAddress (type: 'WORK'): void {
       postCode: currentAddress.value.postCode
     }
   }
+  mount()
 }
 
 function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
@@ -232,6 +175,12 @@ function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
       postCode: mainAddress.value.postCode
     }
   }
+  mount()
+}
+
+
+function mount (): void {
+  formKey.value++
 }
 
 onMounted((): void => {

@@ -6,7 +6,7 @@
       @clear="onClearFilters()"
       @search="fetch()">
       <CreateButton
-        :to="{}"
+        :to="{ name: 'PreContractCreatePage', query: { customerId: customerId } }"
         label="สร้างสัญญาใหม่" />
     </ContractFilter>
     <ContractTable
@@ -22,8 +22,10 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IGetCustomerContractList, IGetCustomerList } from '@/models/request/customer/CustomerReq.model'
+import type { ICustomerContractFilter } from '@/models/modules/customer/contract/Filter.model'
+import type { IGetCustomerContractList } from '@/models/request/customer/CustomerReq.model'
 import type { ICustomerContractList } from '@/models/response/customer/CustomerRes.model'
+import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
 import CustomerProvider, { type ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import CreateButton from '@/components/button/CreateButton.vue'
 import usePagination from '@/composables/usePagination'
@@ -33,9 +35,11 @@ import ContractTable from './ContractTable.vue'
 const CustomerService: ICustomerProvider = new CustomerProvider()
 
 const route = useRoute()
-const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
+const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
-const filters = ref<IGetCustomerContractList>({})
+const filters = ref<ICustomerContractFilter>({
+  status: route?.query?.status ? route.query.status as TContractStatus : undefined
+})
 const items = ref<ICustomerContractList[]>([])
 
 const customerId = computed((): number => route?.params?.id ? Number(route.params.id) : 0)
@@ -59,7 +63,7 @@ async function useFetch (): Promise<void> {
 }
 
 
-function normalizeFilters (value: IGetCustomerList): Partial<IGetCustomerList> {
+function normalizeFilters (value: ICustomerContractFilter): Partial<IGetCustomerContractList> {
   return {
     ...value
   }
@@ -69,7 +73,12 @@ function fetch (): void {
   handleLoading(useFetch)
 }
 
-function onClearFilters (): void {}
+function onClearFilters (): void {
+  reset()
+  filters.value = {
+    status: undefined
+  }
+}
 
 onMounted((): void => {
   fetch()

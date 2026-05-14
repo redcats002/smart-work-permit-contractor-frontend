@@ -94,6 +94,7 @@ interface IMenuItem {
 
 interface IRouteMeta {
   title?: string
+  menuTitle?: string
   icon?: string
   menu?: boolean
   disabled?: boolean
@@ -131,7 +132,7 @@ const menuItems = computed<IMenuItem[]>((): IMenuItem[] => {
     if (childMenuItems.length === 1) {
       return [
         {
-          label: routeMeta.title ?? childMenuItems[0].label,
+          label: (routeMeta?.menuTitle || routeMeta?.title) ?? childMenuItems[0].label,
           icon,
           key,
           to: childMenuItems[0].to
@@ -141,7 +142,7 @@ const menuItems = computed<IMenuItem[]>((): IMenuItem[] => {
 
     return [
       {
-        label: routeMeta.title ?? childMenuItems[0].label,
+        label: (routeMeta?.menuTitle || routeMeta?.title) ?? childMenuItems[0].label,
         icon,
         key,
         children: childMenuItems.map((item: IMenuRouteItem): ISubMenuItem => ({
@@ -173,10 +174,10 @@ function getRouteMeta (route: RouteRecordRaw): IRouteMeta {
 function collectMenuRouteItems (route: RouteRecordRaw, fullPath: string): IMenuRouteItem[] {
   const meta = getRouteMeta(route)
   const currentItems
-    = meta.menu && meta.title
+    = meta.menu && (meta?.menuTitle || meta?.title)
       ? [
         {
-          label: meta.title,
+          label: (meta?.menuTitle || meta?.title || ''),
           to: fullPath,
           icon: meta.icon,
           disabled: meta.disabled

@@ -23,6 +23,7 @@
             name="sellManId"
             placeholder="เลือกพนักงานประเมิน"
             hide-error
+            hide-filter
             required />
         </BaseContainer>
         <BaseContainer>
@@ -73,6 +74,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
@@ -89,6 +91,8 @@ import { Icon } from '@iconify/vue'
 import { Form } from '@primevue/forms'
 import { useInit } from '../composables/useInit'
 
+const router = useRouter()
+
 const {
   assetCategory,
   canAddAsset,
@@ -104,11 +108,14 @@ const {
   setSubmitMode,
   onAuto,
   onInitSellMan,
+  onInitCustomer,
   mount
 } = useInit()
 
 
-onMounted((): void => {
+onMounted(async (): Promise<void> => {
+  await router.isReady()
   onInitSellMan()
+  onInitCustomer()
 })
 </script>

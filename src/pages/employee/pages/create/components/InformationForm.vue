@@ -18,12 +18,12 @@
           v-slot="{ invalid }"
           :form="form"
           label="คำนำหน้า"
-          name="titleName"
+          name="title"
           hide-error>
           <TitleNameSelection
             v-model="model.title"
             :invalid="invalid"
-            name="titleName"
+            name="title"
             dropdown />
         </LabelField>
         <LabelField

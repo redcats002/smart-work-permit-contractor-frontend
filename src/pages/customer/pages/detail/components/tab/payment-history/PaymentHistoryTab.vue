@@ -28,7 +28,7 @@ import PaymentHistoryTable from './PaymentHistoryTable.vue'
 const CustomerService: ICustomerProvider = new CustomerProvider()
 
 const route = useRoute()
-const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
+const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
 const filters = ref<IGetCustomerPaymentHistoryList>({})
 const items = ref<ICustomerPaymentHistoryList[]>([])
@@ -68,7 +68,12 @@ function fetch (): void {
   handleLoading(useFetch)
 }
 
-function onClearFilters (): void {}
+function onClearFilters (): void {
+  filters.value = {
+    paymentMethod: undefined
+  }
+  reset()
+}
 
 </script>
 

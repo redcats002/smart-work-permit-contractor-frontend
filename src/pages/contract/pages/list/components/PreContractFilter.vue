@@ -32,9 +32,10 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { IBaseOption } from '@/models/Global.model'
 import type { IContractFilter } from '@/models/modules/contract/Filter.model'
-import { PreContractStatusItems } from '@/enums/modules/contract/PreContractStatus.enum'
+import { PreContractStatusEnum, PreContractStatusItems } from '@/enums/modules/contract/PreContractStatus.enum'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
 import LabelField from '@/components/input/LabelField.vue'
@@ -51,10 +52,12 @@ const filters = defineModel<IContractFilter>('filters', {
   default: (): IContractFilter => ({})
 })
 
-const statusOptions: IBaseOption[] = [
-  { label: 'ทั้งหมด', value: null },
-  ...PreContractStatusItems
-]
+const statusOptions = computed((): IBaseOption[] => {
+  return [
+    { label: 'ทั้งหมด', value: null },
+    ...PreContractStatusItems.filter((item: IBaseOption): boolean => item.value !== PreContractStatusEnum.DONE)
+  ]
+})
 
 function onSearch (close: () => void): void {
   emits('search')

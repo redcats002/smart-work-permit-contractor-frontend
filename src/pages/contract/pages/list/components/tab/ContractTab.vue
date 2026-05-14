@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="mx-auto max-w-6xl px-4 pt-4">
+    <BasePage>
       <div
         class="flex items-center justify-between gap-2.5
       flex-col md:flex-row">
@@ -16,8 +16,6 @@
           :to="{ name: 'PreContractCreatePage' }"
           label="สร้างสัญญาใหม่" />
       </div>
-    </div>
-    <BasePage>
       <div class="mt-5">
         <ContractTable
           v-model:pagination="pagination"

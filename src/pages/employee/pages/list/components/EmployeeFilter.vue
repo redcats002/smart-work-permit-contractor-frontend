@@ -5,7 +5,7 @@
         v-model="model"
         @search="onSearch()" />
     </div>
-    <div>
+    <div v-if="!hideFilter">
       <BaseModal
         class="md:w-100!"
         label="ตัวกรอง">
@@ -39,16 +39,23 @@ import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
 import Spacer from '@/components/flex/Spacer.vue'
+import LabelField from '@/components/input/LabelField.vue'
 import SearchInput from '@/components/input/SearchInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import CustomerStatusSelection from '@/components/selection/modules/static/customer-status/CustomerStatusSelection.vue'
-import LabelField from '@/components/input/LabelField.vue'
 
+interface IProps {
+  hideFilter?: boolean
+}
 interface IEmits {
   search: []
   modalSearch: []
   clear: []
 }
+
+withDefaults(defineProps<IProps>(), {
+  hideFilter: false
+})
 
 const emits = defineEmits<IEmits>()
 

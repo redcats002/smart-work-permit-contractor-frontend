@@ -1,8 +1,8 @@
 import { schema } from '@/utils/Schema'
+import { AssetStatusEnum } from '@/enums/modules/asset/AssetStatus.enum'
 import { AssetTypeEnum } from '@/enums/modules/asset/AssetType.enum'
 import { ContractStatusEnum } from '@/enums/modules/contract/ContractStatus.enum'
 import { CustomerStatusEnum } from '@/enums/modules/customer/CustomerStatus.enum'
-import { DocumentStorageAssetStatusEnum } from '@/enums/modules/document-storage/DocumentStorageAssetStatus.enum'
 import { WarehouseStatusEnum } from '@/enums/modules/warehouse/WarehouseStatus.enum'
 import { ETitleName } from '@/enums/TitleName.enum'
 import { z } from 'zod'
@@ -10,7 +10,7 @@ import { z } from 'zod'
 export const DocumentAssetSchema = z.object({
   id: schema.id('รหัสสินทรัพย์'),
   idNo: z.string().optional(),
-  status: schema.enum(DocumentStorageAssetStatusEnum, 'สถานะ'),
+  status: schema.enum(AssetStatusEnum, 'สถานะ'),
   type: schema.enum(AssetTypeEnum, 'ประเภทสินทรัพย์'),
   contract: z.object({
     id: schema.id('สัญญา'),
@@ -62,7 +62,7 @@ export function useFormInitialValues (): DocumentAssetFormValues {
 
 export function useDev (): DocumentAssetFormValues {
   return {
-    status: DocumentStorageAssetStatusEnum.ACTIVE,
+    status: AssetStatusEnum.ACTIVE,
     type: AssetTypeEnum.VEHICLE_CAR,
     contract: {
       id: 1,

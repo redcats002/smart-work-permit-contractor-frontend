@@ -5,14 +5,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import useDev from '@/composables/useDev'
 import ConfirmButton from './ConfirmButton.vue'
 
-const isDev = computed((): boolean => {
-  const devEnvs = ['local', 'dev']
-  const isLocalhost = window.location.hostname === 'localhost'
-  return import.meta.env.DEV || devEnvs.includes(import.meta.env.VITE_APP_ENV) || isLocalhost
-})
+const { isDev } = useDev()
 
 </script>
 

@@ -14,6 +14,7 @@
         <EmployeeFilter
           v-model:filters="filters"
           v-model:search="search"
+          :hide-filter="hideFilter"
           @clear="onClearFilters()"
           @search="fetchList()" />
         <EmployeeTable
@@ -44,6 +45,14 @@ import EmployeeFilter from '@/pages/employee/pages/list/components/EmployeeFilte
 import EmployeeTable from '@/pages/employee/pages/list/components/EmployeeTable.vue'
 import useList from '@/pages/employee/pages/list/composables/useList.ts'
 import type { DataTableRowClickEvent } from 'primevue'
+
+interface IProps {
+  hideFilter?: boolean
+}
+
+withDefaults(defineProps<IProps>(), {
+  hideFilter: false
+})
 
 const EmployeeService = new EmployeeProvider()
 
