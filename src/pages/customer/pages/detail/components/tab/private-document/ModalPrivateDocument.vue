@@ -106,7 +106,9 @@ import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { TActionMode } from '@/models/Global.model'
+import type { ICreateCustomerDocumentPayload, IUpdateCustomerDocumentPayload } from '@/models/request/customer/CustomerReq.model'
 import type { ICustomerDocumentById } from '@/models/response/customer/CustomerRes.model'
+import { findEnumByTitle, formatTitle } from '@/enums/modules/customer/CustomerDocumentType.enum'
 import CustomerProvider, { type ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import UploadProvider, { type IUploadProvider } from '@/resources/provider/Upload.provider'
 import FormAction from '@/components/button/FormAction.vue'
@@ -169,29 +171,34 @@ async function useResolveImageUrl (): Promise<string> {
   return lastMedia.url
 }
 
-async function useCreate (): Promise<void> {
+async function usePayload (): Promise<ICreateCustomerDocumentPayload | IUpdateCustomerDocumentPayload> {
   const values = formData.value
   const image = await useResolveImageUrl()
-  await CustomerService.createCustomerDocument({
-    name: values.name,
-    fileName: media.value[0]?.file?.name || values.name,
+  const nameLabel = formatTitle(values.name)
+  return {
+    name: nameLabel,
+    fileName: media.value[0]?.file?.name || nameLabel,
     image,
-    locationId: Number(values.locationId),
+    locationId: Number(values.locationId)
+  }
+}
+
+async function useCreate (): Promise<void> {
+  const payload = await usePayload()
+  await CustomerService.createCustomerDocument({
+    ...payload,
     customerId: props.customerId
   })
   toast.success('สร้างเอกสารสำเร็จ')
 }
 
 async function useUpdate (): Promise<void> {
-  const values = formData.value
   const itemId = props.item?.id
   if (!itemId) return
-  const image = await useResolveImageUrl()
+  const payload = await usePayload()
   await CustomerService.updateCustomerDocument(itemId, {
-    name: values.name,
-    fileName: media.value[0]?.file?.name || props.item?.fileName || values.name,
-    image,
-    locationId: Number(values.locationId)
+    ...payload,
+    fileName: media.value[0]?.file?.name || props.item?.fileName || payload.name
   })
   toast.success('แก้ไขเอกสารสำเร็จ')
 }
@@ -250,7 +257,7 @@ function onOpen (): void {
 function populateForm (): void {
   if (!props.item) return
   formData.value = {
-    name: props.item.name || '',
+    name: findEnumByTitle(props.item.name) || '',
     locationId: props.item.location?.id ? Number(props.item.location.id) : undefined
   }
   const imageUrl = props.item.image || ''
