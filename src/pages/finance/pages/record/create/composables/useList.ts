@@ -2,7 +2,7 @@ import { computed, ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IGetExpensesList } from '@/models/request/expenses/ExpensesReq.model'
 import type { IExpensesList } from '@/models/response/expenses/ExpensesRes.model'
-import ExpensesProvider, { type IExpensesProvider } from '@/resources/provider/expenses/expenses.provider'
+import ExpensesProvider, { type IExpensesProvider } from '@/resources/provider/expenses/Expenses.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
 interface IUseList extends IUsePagination {
