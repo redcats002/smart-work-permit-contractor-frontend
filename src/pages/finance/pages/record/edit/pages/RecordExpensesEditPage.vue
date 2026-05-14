@@ -1,11 +1,12 @@
 <template>
-  <section id="expenses-create-page">
+  <section id="expenses-edit-page">
     <PageTitle />
     <BaseTop>
       <BackButton />
     </BaseTop>
     <BasePage>
       <Form
+        :key="formKey"
         v-slot="$form"
         :initial-values="form"
         :resolver="resolver"
@@ -37,8 +38,7 @@
                   v-model="form.expensesId"
                   :expense-category-id="form.categoryId"
                   :invalid="invalid"
-                  name="expensesId"
-                  placeholder="กรุณาเลือกประเภทค่าใช้จ่าย" />
+                  name="expensesId" />
               </LabelField>
             </div>
             <LabelField
@@ -52,7 +52,6 @@
                 v-model="form.categoryId"
                 :invalid="invalid"
                 name="categoryId"
-                placeholder="กรุณาเลือกหมวดหมู่ค่าใช้จ่าย"
                 @update:model-value="onCategoryChange()" />
             </LabelField>
             <LabelField
@@ -110,11 +109,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { ICreateExpensesPayload, IExpensesFile } from '@/models/request/expenses/ExpensesReq.model'
+import type { IExpensesFile, IUpdateExpensesPayload } from '@/models/request/expenses/ExpensesReq.model'
+import type { TBaseParamsId } from '@/models/response/Response.model'
 import ExpensesProvider, { type IExpensesProvider } from '@/resources/provider/expenses/Expenses.provider'
 import type { IMedia } from '@/resources/provider/Upload.provider'
 import UploadProvider, { type IUploadProvider } from '@/resources/provider/Upload.provider'
@@ -132,22 +133,35 @@ import FinanceExpenseTypeSelection from '@/components/selection/modules/api/fina
 import ExpensesTypeSelection from '@/components/selection/modules/static/expense-type/ExpensesTypeSelection.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import { type ExpensesFormValues, ExpensesSchema, useFormInitialValues } from '../schema/expenses.schema'
+import { type ExpensesFormValues, ExpensesSchema, useFormInitialValues } from '../../create/schema/expenses.schema'
+import { useInitForm } from '../composables/useInitForm'
 
+const route = useRoute()
 const router = useRouter()
-const form = ref<ExpensesFormValues>(useFormInitialValues())
-const files = ref<IMedia[]>([])
-const resolver = zodResolver(ExpensesSchema)
 
 const expensesService: IExpensesProvider = new ExpensesProvider()
 const uploadService: IUploadProvider = new UploadProvider()
 
+const formKey = ref<number>(0)
+const form = ref<ExpensesFormValues>(useFormInitialValues())
+const files = ref<IMedia[]>([])
+const resolver = zodResolver(ExpensesSchema)
+
+const expensesId = computed((): TBaseParamsId => route?.params?.id as string ?? '')
+
 function onCancel (): void {
-  router.push({ name: 'ExpenseListPage' })
+  router.push({ name: 'ExpenseDetailPage', params: { id: expensesId.value } })
 }
 
 function onCategoryChange (): void {
   form.value.expensesId = undefined
+}
+
+async function useFetch (): Promise<void> {
+  const { data } = await expensesService.getExpensesById(expensesId.value)
+  useInitForm(form, data)
+  files.value = data.files.map((f: IExpensesFile): IMedia => ({ name: f.name, url: f.url, path: f.path }))
+  formKey.value++
 }
 
 async function uploadFiles (): Promise<IExpensesFile[]> {
@@ -172,7 +186,7 @@ async function onSubmit (event: FormSubmitEvent): Promise<void> {
     const uploadedFiles = await uploadFiles()
     const categoryState = event.states?.categoryId?.value
     const expensesState = event.states?.expensesId?.value
-    const payload: ICreateExpensesPayload = {
+    const payload: IUpdateExpensesPayload = {
       type: form.value.expensesType,
       expenseTypeId: expensesState?.id ? Number(expensesState.id) : Number(form.value.expensesId ?? 0),
       expenseCategoryId: categoryState?.id ? Number(categoryState.id) : Number(form.value.categoryId ?? 0),
@@ -181,8 +195,13 @@ async function onSubmit (event: FormSubmitEvent): Promise<void> {
       reason: form.value.note ?? '',
       files: uploadedFiles
     }
-    await expensesService.createExpenses(payload)
-    router.push({ name: 'ExpenseListPage' })
+    await expensesService.updateExpenses(expensesId.value, payload)
+    toast.success('ดำเนินการสำเร็จ')
+    router.push({ name: 'ExpenseDetailPage', params: { id: expensesId.value } })
   })
 }
+
+onMounted((): void => {
+  handleLoading(useFetch)
+})
 </script>
