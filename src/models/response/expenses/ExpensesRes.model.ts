@@ -11,6 +11,7 @@ export interface IExpensesList {
   id: number
   idNo: string
   createdAt: string
+  expenseDate: string
   type: ExpensesTypeEnum
   expenseType: string
   expenseCategory: string
