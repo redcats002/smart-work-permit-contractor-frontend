@@ -4,31 +4,23 @@ import { z } from 'zod'
 
 export const ExpensesSchema = z.object({
   expensesType: schema.enum(ExpensesTypeEnum, 'ประเภทค่าใช้จ่าย'),
-  expensesId: z.number().min(1, 'กรุณาเลือกค่าใช้จ่าย').nullable(),
-  categoryId: z.number().min(1, 'กรุณาเลือกหมวดหมู่ค่าใช้จ่าย').nullable(),
-  amount: z.number().min(1, 'กรุณาเลือกกรอกจำนวนเงิน'),
+  expensesId: schema.id('ประเภทค่าใช้จ่าย'),
+  categoryId: schema.id('หมวดหมู่ค่าใช้จ่าย'),
+  amount: z.number({ message: 'กรุณากรอกจำนวนเงิน' }).min(1, 'กรุณากรอกจำนวนเงิน'),
   payDate: schema.date('วันที่จ่าย'),
-  note: z.string().optional()
+  note: z.string().optional(),
+  files: z.array(z.object({ name: z.string(), url: z.string(), path: z.string() })).optional()
 })
 
 export type ExpensesFormValues = z.infer<typeof ExpensesSchema>
 
-export function useDev (): ExpensesFormValues {
-  return {
-    expensesType: ExpensesTypeEnum['PAY'],
-    expensesId: null,
-    categoryId: null,
-    amount: 0,
-    payDate: ''
-  }
-}
-
 export function useFormInitialValues (): ExpensesFormValues {
   return {
     expensesType: ExpensesTypeEnum['PAY'],
-    expensesId: null,
-    categoryId: null,
+    expensesId: undefined,
+    categoryId: undefined,
     amount: 0,
-    payDate: ''
+    payDate: '',
+    files: []
   }
 }

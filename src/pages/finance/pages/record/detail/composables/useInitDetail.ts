@@ -1,18 +1,22 @@
 import { ref, type Ref } from 'vue'
-import type { IExpensesById } from '@/models/response/expenses/ExpensesRes.model'
 import { ExpensesTypeEnum } from '@/enums/modules/finance/ExpenseType.enum'
+import type { IExpensesById } from '@/models/response/expenses/ExpensesRes.model'
 
 export function useInitDetail (data?: Partial<IExpensesById>): Ref<IExpensesById> {
   return ref<IExpensesById>({
     ...data,
     id: data?.id ?? 0,
-    expenseNo: data?.expenseNo ?? '',
-    expensesType: data?.expensesType ?? ExpensesTypeEnum.PAY,
-    date: data?.date ?? '',
-    type: data?.type ?? '',
-    category: data?.category ?? '',
-    note: data?.note ?? '',
-    totalValue: data?.totalValue ?? 0,
+    idNo: data?.idNo ?? '',
+    createdAt: data?.createdAt ?? '',
+    expenseDate: data?.expenseDate ?? '',
+    amount: data?.amount ?? 0,
+    createdBy: data?.createdBy ?? '',
+    type: data?.type ?? ExpensesTypeEnum.PAY,
+    expenseTypeId: data?.expenseTypeId ?? 0,
+    expenseType: data?.expenseType ?? '',
+    expenseCategoryId: data?.expenseCategoryId ?? 0,
+    expenseCategory: data?.expenseCategory ?? '',
+    reason: data?.reason ?? '',
     files: data?.files ?? []
   })
 }

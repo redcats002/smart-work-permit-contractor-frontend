@@ -89,6 +89,17 @@ export default {
         icon: 'solar:bill-list-bold',
         back: { name: 'ExpenseListPage' }
       }
+    },
+    {
+      path: 'expense/edit/:id',
+      name: 'ExpenseEditPage',
+      component: (): ComponentOptions => import('@/pages/finance/pages/record/edit/pages/RecordExpensesEditPage.vue'),
+      meta: {
+        auth: true,
+        title: 'แก้ไขค่าใช้จ่าย',
+        icon: 'solar:bill-list-bold',
+        back: { name: 'ExpenseListPage' }
+      }
     }
   ]
 } as RouteRecordRaw
