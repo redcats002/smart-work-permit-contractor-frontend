@@ -25,3 +25,9 @@ export function formatTitle (status?: TCustomerDocumentType): string {
   if (!status) return 'ไม่ระบุ'
   return titleMap[status] || 'ไม่พบสถานะ'
 }
+
+export function findEnumByTitle (title?: string): TCustomerDocumentType | undefined {
+  if (!title) return undefined
+  const entry = Object.entries(titleMap).find(([, label]: [string, string]): boolean => label === title)
+  return entry ? (entry[0] as TCustomerDocumentType) : undefined
+}
