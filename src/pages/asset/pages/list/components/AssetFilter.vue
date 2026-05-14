@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import type { IAssetFilter } from '@/models/modules/asset/Filter.model'
+import type { IContractAssetFilter } from '@/models/modules/contract-asset/Filter.model'
 import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
@@ -65,7 +65,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>('search', { default: '' })
-const filters = defineModel<IAssetFilter>('filters', { default: (): IAssetFilter => ({}) })
+const filters = defineModel<IContractAssetFilter>('filters', { default: (): IContractAssetFilter => ({}) })
 
 function onSearch (): void {
   emits('search')

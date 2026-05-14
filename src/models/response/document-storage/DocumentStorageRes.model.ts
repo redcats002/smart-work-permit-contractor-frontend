@@ -1,10 +1,9 @@
 import type { IEntity, TBaseModel } from '@/models/Global.model'
+import type { TAssetStatus } from '@/enums/modules/asset/AssetStatus.enum'
 import type { TAssetType } from '@/enums/modules/asset/AssetType.enum'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
-import type { TDocumentStorageAssetStatus } from '@/enums/modules/document-storage/DocumentStorageAssetStatus.enum'
 import type { TDocumentStorageMovementStatus } from '@/enums/modules/document-storage/DocumentStorageMovementStatus.enum'
 import type { TEstateStatus } from '@/enums/modules/estate/EstateStatus.enum'
-import type { IAssetList } from '../asset/AssetRes.model'
 import type { ICustomerList } from '../customer/CustomerRes.model'
 import type { IEmployeeList } from '../employee/EmployeeRes.model'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
@@ -13,8 +12,34 @@ import type { ILocationWarehouseList, IWarehouseList } from '../warehouse/Wareho
 interface IAssetContractList extends IEntity {
   customer: ICustomerList
 }
+
+export interface IAssetList extends IEntity {
+  assetNo: string
+  customerName: string
+  category: string
+  value: number
+  status: string
+  type: TAssetType
+  detail: string
+  contract: IContractOfAsset
+}
+
+interface IContractOfAsset extends IEntity {
+  status: string
+  contractedAt: string
+  contractLoanType: TBaseModel | Record<string, unknown>
+  loanAmount: number
+  firstInstallmentDate: string
+  finalInstallmentDate: string
+  contractDate: string
+  startDate: string
+  endDate: string
+  amount: number
+  customer: Record<string, unknown>
+  loanType: TBaseModel | Record<string, unknown>
+}
 export interface IDocumentAssetList extends IEntity {
-  status: TDocumentStorageAssetStatus
+  status: TAssetStatus
   type: TAssetType
   contract: IAssetContractList
   location: ILocationWarehouseList
