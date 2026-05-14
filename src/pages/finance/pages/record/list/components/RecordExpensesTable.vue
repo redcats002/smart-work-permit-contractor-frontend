@@ -58,7 +58,7 @@ const { formatDate } = useDayjs()
 
 const columns = ref<IColumn<IExpensesList>[]>([
   { field: 'idNo', header: 'เลขที่', sortable: true, align: 'left' },
-  { field: 'createdAt', header: 'วันที่', align: 'left', value: (e: IExpensesList): string => formatDate(e.createdAt) },
+  { field: 'createdAt', header: 'วันที่', align: 'left', value: (e: IExpensesList): string => formatDate(e.expenseDate) },
   { field: 'type', header: 'รับ/จ่าย', align: 'left', value: (e: IExpensesList): string => formatTitle(e.type) },
   { field: 'expenseType', header: 'ประเภท', align: 'left' },
   { field: 'expenseCategory', header: 'หมวดหมู่ค่าใช้จ่าย', align: 'left' },
