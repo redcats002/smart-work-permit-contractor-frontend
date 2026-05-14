@@ -10,7 +10,7 @@ export enum AssetStatusEnum {
 export type TAssetStatus = keyof typeof AssetStatusEnum
 
 const titleMap: Record <TAssetStatus, string> = {
-  [AssetStatusEnum.ACTIVE]: 'ใช้งานอยู่',
+  [AssetStatusEnum.ACTIVE]: 'ใช้งาน',
   [AssetStatusEnum.SOLD]: 'ขายแล้ว',
   [AssetStatusEnum.PENDING_SALE]: 'รอขาย',
   [AssetStatusEnum.DONE]: 'ปิดแล้ว'

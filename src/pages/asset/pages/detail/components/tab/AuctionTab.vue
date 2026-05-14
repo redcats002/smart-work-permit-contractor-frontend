@@ -1,15 +1,14 @@
 <template>
-  <div class="rounded-xl border border-surface-200 bg-white p-5">
-    <div class="flex items-start justify-between">
-      <div class="text-sm font-bold text-surface-500">
-        ขายต่อ/ประมูล
+  <Card>
+    <template #content>
+      <div class="flex justify-end">
+        <div class="w-fit">
+          <BaseActionMenu :items="actionMenuItems" />
+        </div>
       </div>
-      <BaseActionMenu :items="actionMenuItems" />
-    </div>
-    <div class="mt-4 max-w-md">
       <DisplayList :items="auctionItems" />
-    </div>
-  </div>
+    </template>
+  </Card>
 
   <BaseModal
     v-model="showSellModal"
@@ -56,17 +55,20 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useDayjs } from '@/utils/Dayjs'
+import { formatter } from '@/utils/Formatter'
+import type { TAssetStatus } from '@/enums/modules/asset/AssetStatus.enum'
 import type { IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import BaseActionMenu from '@/components/base/BaseActionMenu.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
-import { formatter } from '@/utils/Formatter'
 
 interface IProps {
   loanAmount: number
   salePrice: number | null
   saleDate: string | null
+  status: TAssetStatus
 }
 
 interface IEmits {
@@ -75,6 +77,10 @@ interface IEmits {
 
 const props = defineProps<IProps>()
 const emits = defineEmits<IEmits>()
+
+defineOptions({ inheritAttrs: false })
+
+const dayjs = useDayjs()
 
 const showSellModal = ref<boolean>(false)
 const sellPriceInput = ref<string>('')
@@ -85,15 +91,16 @@ const auctionItems = computed((): IDisplayList[] => {
     { key: 'appraisalValue', label: 'ยอดประเมินหลักทรัพย์', value: `${formatter.numberFormat(props.loanAmount)} บาท` },
     { key: 'auctionValue', label: 'ยอดที่ขาย/ประมูลได้', value: props.salePrice != null ? `${formatter.numberFormat(props.salePrice)} บาท` : '-' },
     { key: 'diff', label: 'ส่วนต่าง', value: props.salePrice != null ? `${formatter.numberFormat(diff)} บาท` : '-' },
-    { key: 'auctionDate', label: 'วันที่ขาย/ประมูล', value: props.saleDate ?? '-' }
+    { key: 'auctionDate', label: 'วันที่ขาย/ประมูล', value: props.saleDate != null ? dayjs.formatDateTime(props.saleDate) : '-' }
   ]
 })
 
 const actionMenuItems = computed((): IMenuItemAction[] => [
   {
     key: 'sell',
-    label: 'ขายหลักทรัพย์',
+    label: 'แก้ไขข้อมูล',
     type: 'TEXT',
+    disabled: props.status !== 'PENDING_SALE',
     action: (): void => { openSellModal() }
   }
 ])

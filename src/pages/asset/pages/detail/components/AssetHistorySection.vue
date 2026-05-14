@@ -8,15 +8,22 @@
     </div>
     <div class="px-5 pb-8">
       <BaseTabWindow
+        v-slot="{component,item}"
         :items="tabItems"
-        v-bind="props"
-        :model-value="tab"
-        @sell="emits('sell', $event)" />
+        :model-value="tab">
+        <component
+          :is="component"
+          :key="item?.value"
+          v-bind="props"
+          class="animate-fade-in"
+          @sell="emits('sell', $event)" />
+      </BaseTabWindow>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import type { TAssetStatus } from '@/enums/modules/asset/AssetStatus.enum'
 import BaseTab from '@/components/base/BaseTab.vue'
 import BaseTabWindow from '@/components/base/BaseTabWindow.vue'
 import { useInitDetail } from '../composables/useInitDetail'
@@ -25,6 +32,7 @@ interface IProps {
   loanAmount: number
   salePrice: number | null
   saleDate: string | null
+  status: TAssetStatus
 }
 
 interface IEmits {

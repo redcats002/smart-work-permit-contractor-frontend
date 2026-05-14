@@ -1,6 +1,7 @@
 import type { IEntity } from '@/models/Global.model'
 import type { TAssetStatus } from '@/enums/modules/asset/AssetStatus.enum'
 import type { TAssetType } from '@/enums/modules/asset/AssetType.enum'
+import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
 import type { IBasePaginationResponse } from '../Response.model'
 
 // --- List ---
@@ -48,7 +49,7 @@ export interface IContractAssetDetailSellMan {
 export interface IContractAssetDetailContract extends IEntity {
   idNo: string
   contractedAt: string
-  status: string
+  status: TContractStatus
   loanAmount: number
   sellMan: IContractAssetDetailSellMan
 }

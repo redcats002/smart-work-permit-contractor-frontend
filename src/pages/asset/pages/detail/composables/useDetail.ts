@@ -6,6 +6,7 @@ import ContractAssetProvider from '@/resources/provider/contract-asset/ContractA
 
 interface IUseDetail {
   detail: Ref<IContractAssetDetail | null>
+  loading: Ref<boolean>
   fetch(): void
   onSell(salePrice: number): void
   onUpdateStatus(status: TAssetStatus): void
@@ -14,6 +15,7 @@ interface IUseDetail {
 export function useDetail (assetId: number): IUseDetail {
   const ContractAssetService = new ContractAssetProvider()
   const detail = ref<IContractAssetDetail | null>(null)
+  const loading = ref<boolean>(false)
 
   async function useFetch (): Promise<void> {
     const res = await ContractAssetService.getContractAssetDetail(assetId)
@@ -21,7 +23,7 @@ export function useDetail (assetId: number): IUseDetail {
   }
 
   function fetch (): void {
-    handleLoading(useFetch)
+    handleLoading(useFetch, { loadingUnit: loading })
   }
 
   async function useSell (salePrice: number): Promise<void> {
@@ -44,6 +46,7 @@ export function useDetail (assetId: number): IUseDetail {
 
   return {
     detail,
+    loading,
     fetch,
     onSell,
     onUpdateStatus

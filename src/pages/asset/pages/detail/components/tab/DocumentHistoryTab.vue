@@ -2,7 +2,6 @@
   <BaseTable
     :columns="columns"
     :items="items"
-    table-class="border-0"
     disable-auto-left-padding
     hide-pagination>
     <template #[`item.status`]="{ item }">
@@ -32,10 +31,13 @@ export interface IAssetHistoryItem {
 }
 
 interface IProps {
-  items: IAssetHistoryItem[]
+  items?: IAssetHistoryItem[]
 }
 
-defineProps<IProps>()
+withDefaults(defineProps<IProps>(), {
+  items: (): IAssetHistoryItem[] => []
+})
+defineOptions({ inheritAttrs: false })
 
 const columns = ref<IColumn<IAssetHistoryItem>[]>([
   { field: 'date', header: 'วันที่', align: 'left', style: { minWidth: '100px' } },
