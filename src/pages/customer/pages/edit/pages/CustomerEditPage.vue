@@ -4,7 +4,8 @@
     <BaseTop>
       <BackButton />
       <Spacer />
-      <ReadIdentificationCardButton />
+      <ReadIdentificationCardButton
+        @read-success="onReadIdCard($event)" />
     </BaseTop>
     <BasePage>
       <div>
@@ -62,6 +63,7 @@ import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import type { ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import CustomerProvider from '@/resources/provider/customer/Customer.provider'
+import type { IReadIdCardResult } from '@/components/button/ReadIdentificationCardButton.vue'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
@@ -77,6 +79,7 @@ import InformationForm from '../../create/components/InformationForm.vue'
 import { type CustomerFormValues, CustomerSchema, useFormInitialValues } from '../../create/schema/customer.schema'
 import { useInitForm } from '../composables/useInitForm'
 import { usePayload } from '../composables/usePayload'
+import { mapIdCardToCustomer } from '../../create/composables/useIdCardMapper'
 
 const route = useRoute()
 const router = useRouter()
@@ -181,6 +184,11 @@ function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
 
 function mount (): void {
   formKey.value++
+}
+
+function onReadIdCard (data: IReadIdCardResult): void {
+  form.value = mapIdCardToCustomer(data, form.value)
+  mount()
 }
 
 onMounted((): void => {
