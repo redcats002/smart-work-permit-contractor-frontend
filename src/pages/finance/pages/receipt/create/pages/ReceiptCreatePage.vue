@@ -9,8 +9,9 @@
     <!-- Customer section -->
     <BasePage>
       <InformationDetail
+        v-model:customer-id="customerId"
         :data="customer"
-        @clear="onClearCustomer()" />
+        @change="onCustomerChange()" />
     </BasePage>
 
     <!-- Contract sections -->
@@ -21,17 +22,12 @@
       <BasePage>
         <div class="bg-[#D31145] rounded-lg px-4 py-4 flex items-center justify-between">
           <span class="text-white font-bold text-base">เลขที่สัญญา : {{ contract.contractNo }}</span>
-          <div
-            class="flex items-center gap-2 cursor-pointer"
-            @click="contract.selectAll = !contract.selectAll">
-            <div
-              :class="contract.selectAll ? 'border-white bg-white' : 'border-white bg-transparent'"
-              class="w-4 h-4 border-2 rounded-sm flex items-center justify-center">
-              <span
-                v-if="contract.selectAll"
-                class="text-[#D31145] text-[10px] font-bold leading-none">✓</span>
+          <div class="flex">
+            <CheckboxInput
+              v-model="contract.selectAll" />
+            <div class="text-white text-base">
+              เลือกชำระทั้งหมด
             </div>
-            <span class="text-white text-base">เลือกชำระทั้งหมด</span>
           </div>
         </div>
       </BasePage>
@@ -62,13 +58,13 @@
         <!-- Cash card -->
         <div
           class="bg-white drop-shadow-[1px_1px_2px_rgba(51,51,51,0.25)] flex flex-1 flex-col items-center p-4 rounded-lg cursor-pointer"
-          @click="paymentMethod = 'cash'">
+          @click="paymentMethod = EReceiptPaymentMethod.CASH">
           <div class="flex items-center gap-1">
             <div
-              :class="paymentMethod === 'cash' ? 'border-[#BD0102]' : 'border-[#bdbdbd]'"
+              :class="paymentMethod === EReceiptPaymentMethod.CASH ? 'border-[#BD0102]' : 'border-[#bdbdbd]'"
               class="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0">
               <div
-                v-if="paymentMethod === 'cash'"
+                v-if="paymentMethod === EReceiptPaymentMethod.CASH"
                 class="w-2 h-2 rounded-full bg-[#BD0102]" />
             </div>
             <span class="text-[#333] text-base">เงินสด</span>
@@ -77,13 +73,13 @@
         <!-- QR Code card -->
         <div
           class="bg-white drop-shadow-[1px_1px_2px_rgba(51,51,51,0.25)] flex flex-1 flex-col items-center p-4 rounded-lg cursor-pointer"
-          @click="paymentMethod = 'qr'">
+          @click="paymentMethod = EReceiptPaymentMethod.BANK_TRANSFER">
           <div class="flex items-center gap-1">
             <div
-              :class="paymentMethod === 'qr' ? 'border-[#BD0102]' : 'border-[#bdbdbd]'"
+              :class="paymentMethod === EReceiptPaymentMethod.BANK_TRANSFER ? 'border-[#BD0102]' : 'border-[#bdbdbd]'"
               class="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0">
               <div
-                v-if="paymentMethod === 'qr'"
+                v-if="paymentMethod === EReceiptPaymentMethod.BANK_TRANSFER"
                 class="w-2 h-2 rounded-full bg-[#BD0102]" />
             </div>
             <span class="text-[#333] text-base">QR Code PromptPay</span>
@@ -94,144 +90,137 @@
 
     <!-- Action buttons -->
     <BasePage>
-      <FormAction @cancel="onCancel()" />
+      <FormAction
+        @cancel="onCancel()"
+        @confirm="onSubmit()" />
     </BasePage>
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { toast } from '@/plugins/toast'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IReceiptInstallment } from '@/models/response/receipt/ReceiptRes.model'
+import type { ICreateReceiptPayload, IReceiptContractPayload, IReceiptInstallmentPayload } from '@/models/request/receipt/ReceiptReq.model'
+import { EReceiptPaymentMethod, type TReceiptPaymentMethod } from '@/models/response/receipt/PaymentMethod.enum'
+import type { IReceiptContractItem, IReceiptInstallmentCreate } from '@/models/response/receipt/ReceiptRes.model'
+import ReceiptProvider, { type IReceiptProvider } from '@/resources/provider/receipt/Receipt.provider'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
 import Spacer from '@/components/flex/Spacer.vue'
+import CheckboxInput from '@/components/input/CheckboxInput.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import CardInstallment from '../components/CardInstallment.vue'
 import InformationDetail from '../components/InformationDetail.vue'
 import { useInitDetail } from '../composables/useInitDetail'
 
-interface IInstallmentItem extends IReceiptInstallment {
+interface IInstallmentItem extends IReceiptInstallmentCreate {
   installmentNo: number
 }
 
 interface IInstallmentContract {
+  contractId: number
   contractNo: string
   selectAll: boolean
   installments: IInstallmentItem[]
 }
 
-const router = useRouter()
+interface IInstallmentChangePayload {
+  amount: number
+  discountPenaltyFee: number
+}
 
+const router = useRouter()
+const receiptService: IReceiptProvider = new ReceiptProvider()
+
+const customerId = ref<number | null>(null)
 const customer = useInitDetail()
 const contracts = ref<IInstallmentContract[]>([])
-const paymentMethod = ref<'cash' | 'qr'>('cash')
+const paymentMethod = ref<TReceiptPaymentMethod>(EReceiptPaymentMethod.CASH)
 const installmentAmounts = ref<Record<number, number>>({})
+const installmentDiscounts = ref<Record<number, number>>({})
 
 const totalAmount = computed((): number =>
   Object.values(installmentAmounts.value).reduce((acc: number, v: number): number => acc + v, 0)
 )
 
-function onInstallmentChange (id: number, amount: number): void {
-  installmentAmounts.value = { ...installmentAmounts.value, [id]: amount }
+function onInstallmentChange (id: number, payload: IInstallmentChangePayload): void {
+  installmentAmounts.value = { ...installmentAmounts.value, [id]: payload.amount }
+  installmentDiscounts.value = { ...installmentDiscounts.value, [id]: payload.discountPenaltyFee }
 }
 
-function onClearCustomer (): void {
-  customer.value = useInitDetail().value
-}
-
-async function useFetch (): Promise<void> {
+async function fetchInstallments (id: number): Promise<void> {
+  const { data } = await receiptService.getInstallmentsByCustomerId(id)
   customer.value = useInitDetail({
-    id: 124121221,
-    status: 'ACTIVE',
-    idCard: '1233030390122',
-    titleName: 'MR',
-    firstName: 'จันทร์',
-    lastName: 'พงษ์พัฒนโยธิน',
-    phoneNumber: '088-8888888',
-    birthDate: '1997-03-12T00:00:00.000Z',
-    email: 'Pichai@mail.com',
-    customerGroup: {
-      id: 1,
-      name: 'ลูกค้าใหม่'
-    }
+    id: data.customer.id,
+    idNo: data.customer.idNo,
+    idCard: data.customer.idCard,
+    firstName: data.customer.firstName,
+    lastName: data.customer.lastName,
+    birthDate: data.customer.birthDate,
+    phoneNumber: data.customer.phoneNumber,
+    email: data.customer.email,
+    customerGroup: data.customer.customerGroup ?? undefined,
+    occupation: data.customer.occupation ?? undefined
   }).value
+  contracts.value = data.contracts.map((c: IReceiptContractItem): IInstallmentContract => ({
+    contractId: c.id,
+    contractNo: c.idNo,
+    selectAll: false,
+    installments: c.installments.map((item: IReceiptInstallmentCreate, idx: number): IInstallmentItem => ({
+      ...item,
+      installmentNo: idx + 1
+    }))
+  }))
+  installmentAmounts.value = {}
+  installmentDiscounts.value = {}
+}
 
-  contracts.value = [
-    {
-      contractNo: 'LC-00002',
-      selectAll: false,
-      installments: [
-        {
-          id: 0,
-          installmentNo: 2,
-          status: 'PARTIALLY_PAID',
-          contractNo: 'LC-00002',
-          installmentDate: '2024-03-12',
-          installmentPrice: 11500,
-          interest: 120,
-          paid: 11000,
-          outstanding: 620
-        },
-        {
-          id: 1,
-          installmentNo: 3,
-          status: 'OVERDUE',
-          contractNo: 'LC-00002',
-          installmentDate: '2024-03-12',
-          installmentPrice: 11600,
-          interest: 120,
-          paid: 0,
-          outstanding: 11600
-        }
-      ]
-    },
-    {
-      contractNo: 'LC-00547',
-      selectAll: false,
-      installments: [
-        {
-          id: 2,
-          installmentNo: 2,
-          status: 'PARTIALLY_PAID',
-          contractNo: 'LC-00547',
-          installmentDate: '2024-03-12',
-          installmentPrice: 11500,
-          interest: 120,
-          paid: 11000,
-          outstanding: 620
-        },
-        {
-          id: 3,
-          installmentNo: 3,
-          status: 'OVERDUE',
-          contractNo: 'LC-00547',
-          installmentDate: '2024-03-12',
-          installmentPrice: 11600,
-          interest: 120,
-          paid: 0,
-          outstanding: 11600
-        }
-      ]
+async function onCustomerChange (): Promise<void> {
+  if (customerId.value) {
+    customer.value = useInitDetail().value
+    contracts.value = []
+    installmentAmounts.value = {}
+    installmentDiscounts.value = {}
+    await handleLoading((): Promise<void> => fetchInstallments(Number(customerId.value)))
+  }
+}
+
+async function onSubmit (): Promise<void> {
+  if (!customerId.value) {
+    toast.error('กรุณาเลือกลูกค้า')
+    return
+  }
+  await handleLoading(async (): Promise<void> => {
+    const payload: ICreateReceiptPayload = {
+      paymentType: paymentMethod.value,
+      customerId: customerId.value!,
+      contracts: contracts.value
+        .map((c: IInstallmentContract): IReceiptContractPayload => ({
+          id: c.contractId,
+          installments: c.installments
+            .filter((item: IInstallmentItem): boolean => (installmentAmounts.value[item.id] ?? 0) > 0)
+            .map((item: IInstallmentItem): IReceiptInstallmentPayload => ({
+              id: item.id,
+              discountPenaltyFee: installmentDiscounts.value[item.id] ?? 0,
+              amount: installmentAmounts.value[item.id] ?? 0
+            }))
+        }))
+        .filter((c: IReceiptContractPayload): boolean => c.installments.length > 0)
     }
-  ]
+    await receiptService.createReceipt(payload)
+    toast.success('ดำเนินการสำเร็จ')
+    router.push({ name: 'ReceiptListPage' })
+  })
 }
 
 function onCancel (): void {
   router.push({ name: 'ReceiptListPage' })
 }
-
-function fetch (): void {
-  handleLoading(useFetch)
-}
-
-onMounted((): void => {
-  fetch()
-})
 </script>
 
 <style scoped>

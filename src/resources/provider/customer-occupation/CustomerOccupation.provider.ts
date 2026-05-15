@@ -20,7 +20,7 @@ export interface ICustomerOccupationProvider {
 }
 
 class CustomerOccupationProvider extends HttpRequest implements ICustomerOccupationProvider {
-  private urlPrefix: string = '/api/v1/customer-occupation'
+  private urlPrefix: string = '/api/v1/management/customer-occupation'
 
   public async getCustomerOccupationPaginate (query: IGetCustomerOccupationList): Promise<TGetCustomerOccupationListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)

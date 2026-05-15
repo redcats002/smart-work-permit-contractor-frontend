@@ -20,7 +20,7 @@ export interface IFinanceExpenseCategoryProvider {
 }
 
 class FinanceExpenseCategoryProvider extends HttpRequest implements IFinanceExpenseCategoryProvider {
-  private urlPrefix: string = '/api/v1/finance-expense-category'
+  private urlPrefix: string = '/api/v1/management/finance-expense-category'
 
   public async getFinanceExpenseCategoryPaginate (query: IGetFinanceExpenseCategoryList): Promise<TGetFinanceExpenseCategoryListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)

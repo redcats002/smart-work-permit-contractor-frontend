@@ -7,7 +7,7 @@ export interface IProfitBasedOnActualPaymentProvider {
 }
 
 class ProfitBasedOnActualPaymentProvider extends HttpRequest implements IProfitBasedOnActualPaymentProvider {
-  private urlPrefix: string = '/api/v1/report/profit-based-on-actual-payment'
+  private urlPrefix: string = '/api/v1/management/report/profit-based-on-actual-payment'
 
   public async getProfitBasedOnActualPaymentPaginate (query: IGetProfitBasedOnActualPaymentList):
   Promise<TGetProfitBasedOnActualPaymentListResponse> {

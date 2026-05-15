@@ -7,7 +7,7 @@ export interface IAnnualFinanceReceiptProvider {
 }
 
 class AnnualFinanceReceiptProvider extends HttpRequest implements IAnnualFinanceReceiptProvider {
-  private urlPrefix: string = '/api/v1/report/annual-finance-receipt'
+  private urlPrefix: string = '/api/v1/management/report/annual-finance-receipt'
 
   public async getAnnualFinanceReceiptPaginate (query: IGetAnnualFinanceReceiptList): Promise<TGetAnnualFinanceReceiptListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)

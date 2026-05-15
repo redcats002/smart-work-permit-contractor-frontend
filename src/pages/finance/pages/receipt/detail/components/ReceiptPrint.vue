@@ -134,7 +134,7 @@
                 Branch
               </div>
             </div>
-            <div>: {{ form.branch }}</div>
+            <div>: {{ form.branch?.name }}</div>
           </div>
         </div>
       </div>
@@ -207,17 +207,17 @@
       <div class="flex items-center gap-2">
         <RadioButton
           v-model="paymentMethod"
+          :value="EReceiptPaymentMethod.CASH"
           input-id="cash"
-          name="cash"
-          value="CASH" />
+          name="cash" />
         <label for="cash">เงินสด</label>
       </div>
       <div class="flex items-center gap-2">
         <RadioButton
           v-model="paymentMethod"
+          :value="EReceiptPaymentMethod.BANK_TRANSFER"
           input-id="qr"
-          name="QR"
-          value="QR" />
+          name="QR" />
         <label for="qr">QR Code PromptPay</label>
       </div>
     </div>
@@ -267,6 +267,7 @@
 import { computed, ref } from 'vue'
 import { dayjs } from '@/plugins/dayjs.plugin'
 import { formatter } from '@/utils/Formatter'
+import { EReceiptPaymentMethod, type TReceiptPaymentMethod } from '@/models/response/receipt/PaymentMethod.enum'
 import type { IReceiptById, IReceiptDetailItems } from '@/models/response/receipt/ReceiptRes.model'
 import { RadioButton } from 'primevue'
 
@@ -276,9 +277,10 @@ interface IProps {
 
 const props = defineProps<IProps>()
 
-const paymentMethod = ref<string>('CASH')
+const paymentMethod = ref<TReceiptPaymentMethod>(EReceiptPaymentMethod.CASH)
 
-const totalPrice = computed((): number => props.form.items.reduce((sum: number, item: IReceiptDetailItems): number => sum + Number(item.price), 0))
+const totalPrice = computed((): number =>
+  props.form.items ? props.form.items.reduce((sum: number, item: IReceiptDetailItems): number => sum + Number(item.price), 0) : 0)
 
 </script>
 

@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "primevue": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@primevue/mcp"
+      ]
+    },
+    "figma": {
+      "url": "http://127.0.0.1:3845/mcp",
+      "type": "http",
+      "trust": true
+    }
+  }
+}

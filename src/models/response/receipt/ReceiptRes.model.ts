@@ -1,9 +1,12 @@
 import type { IEntity } from '@/models/Global.model'
 import type { TTitleName } from '@/enums/TitleName.enum'
+import type { TReceiptPaymentMethod } from './PaymentMethod.enum'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 
 export interface IReceiptCustomer {
   id: number | null
+  idNo?: string
+  fullName?: string
   idCard: string
   titleName: TTitleName
   firstName: string
@@ -12,6 +15,7 @@ export interface IReceiptCustomer {
   customerGroup?: { id: number, name: string } | null
   occupation?: { id: number, name: string } | null
   phoneNumber?: string | null
+  phoneNumber2?: string | null
   email?: string | null
 }
 
@@ -36,6 +40,11 @@ export interface IReceiptList extends IEntity {
   receiptDate: string | null
   customer: IReceiptCustomer
   totalValue: number | null
+
+  id: number
+  idNo: string
+  paidAt: Date | null | string
+  totalAmount: number
 }
 
 export interface IReceiptDetailItems {
@@ -43,26 +52,73 @@ export interface IReceiptDetailItems {
   price: number
 }
 
+export interface IReceiptSummary {
+  principal: number
+  interest: number
+  totalInstallment: number
+  penaltyFee: number
+  collectionFee: number
+  legalFee: number
+}
+
+export interface IReceiptDetailInstallment {
+  id: number
+  order: number
+  principal: number
+  interest: number
+  totalInstallment: number
+  penaltyFee: number
+  collectionFee: number
+  legalFee: number
+}
+
+export interface IReceiptDetailContract {
+  id: number
+  idNo: string
+  installments: IReceiptDetailInstallment[]
+}
+
 export interface IReceiptById extends IEntity {
-  contractId: number | null
-  receiptNo: string | null
-  contractNo: string | null
-  dateOfPayment: string | null
-  officer: IReceiptCustomer
-  branch: string | null
-  paymentChannel: string | null
+  id: number
+  idNo: string
+  createdAt: string
+  paidAt: string
+  paymentType: TReceiptPaymentMethod | null
+  createBy: {
+    id: string
+    idNo: string
+    fullName: string
+  }
+  receivedBy: {
+    id: string
+    idNo: string
+    fullName: string
+  }
   customer: IReceiptCustomer
-  address: string
-  subDistrict: string
-  district: string
-  province: string
-  postCode: string
-  totalValue: number | null
-  items: IReceiptDetailItems[]
-  interest: number | null
-  principal: number | null
-  outstanding: number | null
-  paymentGroups: IReceiptPaymentGroup[]
+  branch: {
+    id: string
+    name: string
+  }
+  contracts: IReceiptDetailContract[]
+  summary: IReceiptSummary
+
+  // Compatibility fields if needed by other components - can be marked as optional or removed if fully migrated
+  contractId?: number | null
+  receiptNo?: string | null
+  contractNo?: string | null
+  dateOfPayment?: string | null
+  officer?: IReceiptCustomer
+  address?: string
+  subDistrict?: string
+  district?: string
+  province?: string
+  postCode?: string
+  totalValue?: number | null
+  items?: IReceiptDetailItems[]
+  interest?: number | null
+  principal?: number | null
+  outstanding?: number | null
+  paymentGroups?: IReceiptPaymentGroup[]
 }
 
 export interface IReceiptInstallment extends IEntity {
@@ -75,6 +131,51 @@ export interface IReceiptInstallment extends IEntity {
   outstanding: number
 }
 
+export interface IReceiptFeeBreakdown {
+  total: number
+  paid: number
+  outstanding: number
+}
+
+export interface IReceiptInstallmentCreate {
+  id: number
+  status: string
+  dueDate: string
+  penaltyFee: IReceiptFeeBreakdown
+  collectionFee: IReceiptFeeBreakdown
+  legalFee: IReceiptFeeBreakdown
+  interest: IReceiptFeeBreakdown
+  principal: IReceiptFeeBreakdown
+  total: IReceiptFeeBreakdown
+}
+
+export interface IReceiptContractItem {
+  id: number
+  idNo: string
+  installments: IReceiptInstallmentCreate[]
+}
+
+export interface IReceiptCustomerInfo {
+  id: number
+  idNo: string
+  idCard: string
+  firstName: string
+  lastName: string
+  fullName: string
+  birthDate: string
+  phoneNumber: string
+  phoneNumber2: string
+  email: string
+  customerGroup: { id: number, name: string } | null
+  occupation: { id: number, name: string } | null
+}
+
+export interface IReceiptInstallmentsByCustomer {
+  customer: IReceiptCustomerInfo
+  contracts: IReceiptContractItem[]
+}
+
 export type TGetReceiptListResponse = IBasePaginationResponse<IReceiptList>
 export type TGetReceiptDetailResponse = IBaseSuccessResponse<IReceiptById>
+export type TGetReceiptInstallmentsResponse = IBaseSuccessResponse<IReceiptInstallmentsByCustomer>
 export type TActionReceipt = IBaseSuccessResponse<boolean>

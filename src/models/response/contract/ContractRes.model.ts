@@ -160,12 +160,20 @@ export interface IContractDocumentList extends IEntity {
   files?: string
 }
 
+export interface IContractSummaryCard {
+  interest: number
+  principal: number
+  total: number
+}
+
 export type TGetContractListResponse = IBasePaginationResponse<IContractList>
 export type TGetContractByIdResponse = IBaseSuccessResponse<IContractById>
 export type TActionContract = IBaseSuccessResponse<boolean>
 export type TGetAssetContractListResponse = IBasePaginationResponse<IContractAssetList>
 export type TGetInstallmentSummaryResponse = IBaseSuccessResponse<IContractInstallmentSummary>
-export type TGetInstallmentListResponse = IBaseSuccessResponse<IContractInstallmentList[]>
+export interface TGetInstallmentListResponse extends IBaseSuccessResponse<IContractInstallmentList[]> {
+  summary: IContractSummaryCard
+}
 export type TGetContractExpenseListResponse = IBasePaginationResponse<IContractExpenseList>
 export type TGetContractExpenseByIdResponse = IBaseSuccessResponse<IContractExpenseById>
 export type TActionContractExpenseResponse = IBaseSuccessResponse<boolean>

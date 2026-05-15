@@ -7,9 +7,9 @@
     :items="props.items"
     disable-auto-left-padding
     @update="emits('update')">
-    <template #[`item.contractIdNo`]="{ item }">
+    <template #[`item.idNo`]="{ item }">
       <LinkText :to="{ name: 'ReceiptDetailPage', params: { id: item.id } }">
-        {{ item.contractIdNo }}
+        {{ item.idNo }}
       </LinkText>
     </template>
   </BaseTable>
@@ -42,18 +42,14 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 const { formatDate } = useDayjs()
 
 const columns = ref<IColumn<IReceiptList>[]>([
-  { field: 'contractIdNo', header: 'เลขที่ใบเสร็จ', sortable: true, align: 'left' },
-  { field: 'receiptDate', header: 'วันที่', align: 'left', value: (e: IReceiptList): string => formatDate(e.receiptDate ?? undefined) },
+  { field: 'idNo', header: 'เลขที่ใบเสร็จ', sortable: true, align: 'left' },
+  { field: 'paidAt', header: 'วันที่', align: 'left', value: (e: IReceiptList): string => formatDate(e.paidAt ?? undefined) },
   {
     field: 'customer',
     header: 'ชื่อลูกค้า',
     align: 'left',
-    value: (e: IReceiptList): string => formatter.fullName({
-      titleName: e.customer?.titleName ?? undefined,
-      firstName: e.customer?.firstName ?? undefined,
-      lastName: e.customer?.lastName ?? undefined
-    })
+    value: (e: IReceiptList): string => e.customer.fullName ?? ''
   },
-  { field: 'totalValue', header: 'มูลค่า (บาท)', sortable: true, align: 'right', value: (e: IReceiptList): string => formatter.numberFormat(e.totalValue ?? 0) }
+  { field: 'totalAmount', header: 'มูลค่า (บาท)', sortable: true, align: 'right', value: (e: IReceiptList): string => formatter.numberFormat(e.totalAmount ?? 0) }
 ])
 </script>

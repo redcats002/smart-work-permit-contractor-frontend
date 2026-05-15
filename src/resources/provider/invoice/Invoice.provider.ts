@@ -17,7 +17,7 @@ export interface IInvoiceProvider {
 }
 
 class InvoiceProvider extends HttpRequest implements IInvoiceProvider {
-  private urlPrefix: string = '/api/v1/invoice'
+  private urlPrefix: string = '/api/v1/management/invoice'
 
   public async getInvoicePaginate (query: IGetInvoiceList): Promise<TGetInvoiceListResponse> {
     return this.get(this.urlPrefix, query)

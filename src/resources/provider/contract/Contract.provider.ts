@@ -72,7 +72,7 @@ export interface IContractProvider {
 }
 
 class ContractProvider extends HttpRequest implements IContractProvider {
-  private urlPrefix: string = '/api/v1/contract'
+  private urlPrefix: string = '/api/v1/management/contract'
 
   public async getContractPaginate (query: IGetContractList): Promise<TGetContractListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)

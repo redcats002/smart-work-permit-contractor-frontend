@@ -12,7 +12,7 @@ export interface IHowDidFindUsProvider {
 }
 
 class HowDidFindUsProvider extends HttpRequest implements IHowDidFindUsProvider {
-  private urlPrefix: string = '/api/v1/how-did-find-us'
+  private urlPrefix: string = '/api/v1/management/how-did-find-us'
 
   public async getHowDidFindUsPaginate (query: IGetHowDidFindUsList): Promise<TGetHowDidFindUsListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)

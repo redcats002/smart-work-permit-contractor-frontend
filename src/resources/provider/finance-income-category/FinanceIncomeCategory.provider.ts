@@ -20,7 +20,7 @@ export interface IFinanceIncomeCategoryProvider {
 }
 
 class FinanceIncomeCategoryProvider extends HttpRequest implements IFinanceIncomeCategoryProvider {
-  private urlPrefix: string = '/api/v1/finance-income-category'
+  private urlPrefix: string = '/api/v1/management/finance-income-category'
 
   public async getFinanceIncomeCategoryPaginate (query: IGetFinanceIncomeCategoryList): Promise<TGetFinanceIncomeCategoryListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)

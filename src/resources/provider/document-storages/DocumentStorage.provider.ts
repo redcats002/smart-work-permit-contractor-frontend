@@ -29,7 +29,7 @@ export interface IDocumentStorageProvider {
 }
 
 class DocumentStorageProvider extends HttpRequest implements IDocumentStorageProvider {
-  private urlPrefix: string = '/api/v1/document-storages'
+  private urlPrefix: string = '/api/v1/management/document-storages'
 
   public async getDocumentAssetsPaginate (query?: IGetDocumentAssetsList): Promise<TGetDocumentAssetsListResponse> {
     const response = await this.get(`${this.urlPrefix}/assets`, query)

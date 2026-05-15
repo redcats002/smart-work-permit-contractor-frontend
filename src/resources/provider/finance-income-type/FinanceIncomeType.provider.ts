@@ -20,7 +20,7 @@ export interface IFinanceIncomeTypeProvider {
 }
 
 class FinanceIncomeTypeProvider extends HttpRequest implements IFinanceIncomeTypeProvider {
-  private urlPrefix: string = '/api/v1/finance-income-type'
+  private urlPrefix: string = '/api/v1/management/finance-income-type'
 
   public async getFinanceIncomeTypePaginate (query: IGetFinanceIncomeTypeList): Promise<TGetFinanceIncomeTypeListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)

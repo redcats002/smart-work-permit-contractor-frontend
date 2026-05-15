@@ -56,17 +56,19 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IContractInstallmentList>[]>([
   { field: 'period', header: 'งวดที่' },
-  { field: 'dueDate', header: 'วันครบกำหนดชำระ', value: (e: IContractInstallmentList): string => dayjs.formatDate(e?.dueDate) },
-  { field: 'created', header: 'วันที่ชำระ', value: (e: IContractInstallmentList): string => dayjs.formatDate(e?.receipts[0]?.paidAt || '') },
+  { field: 'dueDate', header: 'กำหนดชำระ', value: (e: IContractInstallmentList): string => dayjs.formatDate(e?.dueDate) },
+  // { field: 'created', header: 'วันที่ชำระ', value: (e: IContractInstallmentList): string => dayjs.formatDate(e?.receipts[0]?.paidAt || '') },
   { field: 'interest', header: 'ดอกเบี้ย', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e?.interest) },
   { field: 'principal', header: 'เงินต้นชำระ', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e?.principal) },
   { field: 'installment', header: 'ค่างวด', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e?.installment) },
   { field: 'remainingPrincipal', header: 'เงินต้นคงเหลือ', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e?.remainingPrincipal) },
   { field: 'penaltyFee', header: 'ค่าปรับ', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e?.penaltyFee) },
   { field: 'collectionFee', header: 'ค่าติดตาม', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e?.collectionFee) },
-  { field: 'paymentAmount', header: 'ยอดชำระเงิน', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e?.receipts[0]?.amountPaid) },
+  { field: 'collectionFee', header: 'ค่าทนาย', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e?.collectionFee) },
+  // { field: 'paymentAmount', header: 'ยอดชำระเงิน', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e?.receipts[0]?.amountPaid) },
   { field: 'status', header: 'สถานะ' },
-  { field: 'action', header: 'จัดการ' }
+  { field: 'action', header: 'จัดการ' },
+  { field: 'action', header: 'รายละเอียด' }
 ])
 </script>
 

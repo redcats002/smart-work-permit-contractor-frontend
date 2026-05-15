@@ -16,7 +16,7 @@ export interface ICustomerGroupProvider {
 }
 
 class CustomerGroupProvider extends HttpRequest implements ICustomerGroupProvider {
-  private urlPrefix: string = '/api/v1/customer-group'
+  private urlPrefix: string = '/api/v1/management/customer-group'
 
   public async getCustomerGroupPaginate (query: IGetCustomerGroupList): Promise<TGetCustomerGroupListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)

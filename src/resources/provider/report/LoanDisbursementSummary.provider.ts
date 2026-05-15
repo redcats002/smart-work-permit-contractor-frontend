@@ -7,7 +7,7 @@ export interface ILoanDisbursementSummaryProvider {
 }
 
 class LoanDisbursementSummaryProvider extends HttpRequest implements ILoanDisbursementSummaryProvider {
-  private urlPrefix: string = '/api/v1/report/loan-disbursement-summary'
+  private urlPrefix: string = '/api/v1/management/report/loan-disbursement-summary'
 
   public async getLoanDisbursementSummaryPaginate (query: IGetLoanDisbursementSummaryList): Promise<TGetLoanDisbursementSummaryListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)
