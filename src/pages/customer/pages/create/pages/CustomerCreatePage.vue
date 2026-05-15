@@ -6,7 +6,8 @@
       <Spacer />
       <DevButton
         @click="onAuto()" />
-      <ReadIdentificationCardButton />
+      <ReadIdentificationCardButton
+        @read-success="onReadIdCard($event)" />
     </BaseTop>
     <BasePage>
       <div>
@@ -63,6 +64,7 @@ import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import type { ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import CustomerProvider from '@/resources/provider/customer/Customer.provider'
+import type { IReadIdCardResult } from '@/components/button/ReadIdentificationCardButton.vue'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
@@ -77,6 +79,7 @@ import InformationForm from '../components/InformationForm.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { usePayload } from '../composables/usePayload'
+import { mapIdCardToCustomer } from '../composables/useIdCardMapper'
 import { type CustomerFormValues, CustomerSchema, useDev, useFormInitialValues } from '../schema/customer.schema'
 
 const router = useRouter()
@@ -121,6 +124,11 @@ function onCancel (): void {
 function onAuto (): void {
   form.value = { ...useDev() }
   // Remount <Form> so it picks up the new initial-values without stale error state
+  formKey.value++
+}
+
+function onReadIdCard (data: IReadIdCardResult): void {
+  form.value = mapIdCardToCustomer(data, form.value)
   formKey.value++
 }
 

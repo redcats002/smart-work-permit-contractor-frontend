@@ -16,7 +16,7 @@ import { ref, useAttrs } from 'vue'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 
-interface IReadIdCardResult {
+export interface IReadIdCardResult {
   title: string
   firstName: string
   lastName: string

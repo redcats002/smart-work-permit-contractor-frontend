@@ -4,7 +4,8 @@
     <BaseTop>
       <BackButton />
       <Spacer />
-      <ReadIdentificationCardButton />
+      <ReadIdentificationCardButton
+        @read-success="onReadIdCard($event)" />
     </BaseTop>
     <BasePage class="flex flex-col md:grid md:grid-cols-3 gap-4">
       <BaseContainer class="h-fit md:order-2 md:col-span-1">
@@ -60,6 +61,7 @@ import type { IEmployeeById } from '@/models/response/employee/EmployeeRes.model
 import type { TBaseParamsId } from '@/models/response/Response.model'
 import type { IEmployeeProvider } from '@/resources/provider/employee/Employee.provider'
 import EmployeeProvider from '@/resources/provider/employee/Employee.provider'
+import type { IReadIdCardResult } from '@/components/button/ReadIdentificationCardButton.vue'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
@@ -77,6 +79,7 @@ import InformationForm from '../../create/components/InformationForm.vue'
 import { type EmployeeFormValues, EmployeeSchema, useFormInitialValues } from '../../create/schema/employee.schema'
 import { useInitForm } from '../composables/useInitForm'
 import { usePayload } from '../composables/usePayload'
+import { mapIdCardToEmployee } from '../../create/composables/useIdCardMapper'
 
 const route = useRoute()
 const router = useRouter()
@@ -146,6 +149,11 @@ function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
       postCode: mainAddress.value.postCode
     }
   }
+}
+
+function onReadIdCard (data: IReadIdCardResult): void {
+  form.value = mapIdCardToEmployee(data, form.value)
+  mount()
 }
 
 onMounted((): void => {
