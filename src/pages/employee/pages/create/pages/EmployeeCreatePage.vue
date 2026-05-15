@@ -6,7 +6,8 @@
       <Spacer />
       <DevButton
         @click="onAuto()" />
-      <ReadIdentificationCardButton />
+      <ReadIdentificationCardButton
+        @read-success="onReadIdCard($event)" />
     </BaseTop>
     <BasePage class="flex flex-col md:grid md:grid-cols-3 gap-4">
       <BaseContainer class="h-fit md:order-2 md:col-span-1">
@@ -61,6 +62,7 @@ import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import type { IEmployeeProvider } from '@/resources/provider/employee/Employee.provider'
 import EmployeeProvider from '@/resources/provider/employee/Employee.provider'
+import type { IReadIdCardResult } from '@/components/button/ReadIdentificationCardButton.vue'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
@@ -77,6 +79,7 @@ import useUpload from '@/composables/useUpload'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { usePayload } from '../composables/usePayload'
+import { mapIdCardToEmployee } from '../composables/useIdCardMapper'
 import { type EmployeeFormValues, EmployeeSchema, useDev, useFormInitialValues } from '../schema/employee.schema'
 
 const router = useRouter()
@@ -139,6 +142,11 @@ function mount (): void {
 
 function onAuto (): void {
   form.value = { ...useDev() }
+  mount()
+}
+
+function onReadIdCard (data: IReadIdCardResult): void {
+  form.value = mapIdCardToEmployee(data, form.value)
   mount()
 }
 

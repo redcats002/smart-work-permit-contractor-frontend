@@ -9,14 +9,37 @@
       อ่านข้อมูลบัตรประชาชน
     </div>
   </Button>
+
+  <Dialog
+    v-model:visible="showUrlModal"
+    :style="{ width: '28rem' }"
+    header="ตั้งค่า WebSocket URL"
+    modal>
+    <div class="flex flex-col gap-2 pb-1">
+      <label class="text-sm font-medium">URL</label>
+      <InputText
+        v-model="wsInput"
+        class="w-full"
+        placeholder="ws://localhost:14820/IDWAgent" />
+    </div>
+    <template #footer>
+      <SecondaryButton
+        label="ยกเลิก"
+        @click="showUrlModal = false" />
+      <Button
+        label="เชื่อมต่อ"
+        @click="onConfirmUrl()" />
+    </template>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, useAttrs } from 'vue'
+import { computed, ref, useAttrs } from 'vue'
+import { useRoute } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 
-interface IReadIdCardResult {
+export interface IReadIdCardResult {
   title: string
   firstName: string
   lastName: string
@@ -39,20 +62,27 @@ interface IEmits {
   readSuccess: [data: IReadIdCardResult]
 }
 
+
+const DEFAULT_WS_URL = 'ws://localhost:14820/IDWAgent'
+
+const route = useRoute()
 const attrs = useAttrs()
+const isDev = computed((): string => route?.query?.dev as string || '')
 
 const isLoading = ref(false)
+const showUrlModal = ref(false)
+const wsInput = ref(DEFAULT_WS_URL)
 
 let ws: WebSocket | null = null
-const WS_URL = 'ws://localhost:14820/TDKWAgent'
+let activeWsUrl = DEFAULT_WS_URL
 
 function openWs (): Promise<WebSocket> {
   return new Promise((resolve: any, reject: any): void => {
     if (ws && ws.readyState === WebSocket.OPEN) return resolve(ws)
     ws?.close?.()
-    ws = new WebSocket(WS_URL)
+    ws = new WebSocket(activeWsUrl)
     ws.onopen = (): void => resolve(ws as WebSocket)
-    ws.onerror = (): any => reject(new Error('เชื่อมต่อ TDKW Agent ไม่ได้'))
+    ws.onerror = (): any => reject(new Error('เชื่อมต่อ IDW Agent ไม่ได้'))
   })
 }
 
@@ -87,7 +117,22 @@ function wait<T = any> (predicate: (msg: any) => boolean, timeoutMs: number = 10
   })
 }
 
-async function handleReadIdCard (): Promise<void> {
+function handleReadIdCard (): void {
+  if (import.meta.env.DEV || isDev.value) {
+    wsInput.value = activeWsUrl
+    showUrlModal.value = true
+  } else {
+    doReadIdCard()
+  }
+}
+
+function onConfirmUrl (): void {
+  activeWsUrl = wsInput.value.trim() || DEFAULT_WS_URL
+  showUrlModal.value = false
+  doReadIdCard()
+}
+
+async function doReadIdCard (): Promise<void> {
   handleLoading(async (): Promise<any> => {
     isLoading.value = true
     try {
@@ -99,11 +144,10 @@ async function handleReadIdCard (): Promise<void> {
         throw new Error('ไม่พบเครื่องอ่านบัตร')
       }
 
-      const readerName = listResp.ReaderList[0] || ''
+      const readerName = listResp?.ReaderList?.[0] || ''
       send({ Command: 'SelectReader', ReaderName: readerName })
       const selResp = await wait((m: any): any => m.Message === 'SelectReaderR')
       if (!selResp || selResp.Status <= 0) throw new Error('เลือกเครื่องอ่านไม่สำเร็จ')
-
       send({
         Command: 'ReadIDCard',
         IDNumberRead: true,
@@ -112,12 +156,11 @@ async function handleReadIdCard (): Promise<void> {
         IDPhotoRead: true
       })
 
-
       const readResp = await wait(
         (m: any): any => (m.Message === 'ReadIDCardR' || m.Message === 'AutoReadIDCardE') && m.Status === 0, 15000
       )
       console.log(readResp)
-      const dataSplit = readResp.ID_Text.split('#')
+      const dataSplit = (readResp?.IDAText || readResp?.ID_Text)?.split('#')
       const gender = dataSplit[17] === '1' ? 'MALE' : 'FEMALE'
       const title = switchTitle(dataSplit[1])
       const payload: IReadIdCardResult = {
@@ -138,7 +181,7 @@ async function handleReadIdCard (): Promise<void> {
           province: dataSplit[16]
         }
       }
-      // NOTE: debugged here
+      console.log(payload)
       toast.success('อ่านบัตรสำเร็จ')
       emits('readSuccess', payload)
     } catch (err: any) {
@@ -149,6 +192,7 @@ async function handleReadIdCard (): Promise<void> {
     }
   })
 }
+
 function thaiYMDToIsoDate (value: string): string {
   if (!(/^\d{8}$/).test(value)) throw new Error('รูปแบบวันที่ต้องเป็น YYYYMMDD')
   const yearBE = Number(value.slice(0, 4))
