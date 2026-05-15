@@ -12,7 +12,7 @@ export interface IBranchProvider {
 }
 
 class BranchProvider extends HttpRequest implements IBranchProvider {
-  private urlPrefix: string = '/api/v1/branch'
+  private urlPrefix: string = '/api/v1/management/branch'
 
   public async getBranchPaginate (query: IGetBranchList): Promise<TGetBranchListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)

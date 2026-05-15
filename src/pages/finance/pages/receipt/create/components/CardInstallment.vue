@@ -9,7 +9,15 @@
           width="24" />
         <span class="font-bold text-[#333] text-base">งวดที่ {{ installmentNo }}</span>
       </div>
-      <div
+      <div class="flex items-center">
+        <CheckboxInput
+          v-model="selected" />
+        <div class="text-[#333] text-base">
+          เลือกชำระ
+        </div>
+      </div>
+      <!-- <span class="text-[#333] text-base">เลือกชำระ</span> -->
+      <!-- <div
         class="flex items-center gap-2 cursor-pointer"
         @click="selected = !selected">
         <div
@@ -23,7 +31,7 @@
             width="10" />
         </div>
         <span class="text-[#333] text-base">เลือกชำระ</span>
-      </div>
+      </div> -->
     </div>
 
     <!-- Divider -->
@@ -69,7 +77,7 @@
             width="24" />
           <span class="text-[#333] text-base">ค่าปรับ</span>
         </div>
-        <span class="text-[#333] text-base">{{ formatter.numberFormat(data.interest) }}</span>
+        <span class="text-[#333] text-base">{{ formatter.numberFormat(data.penaltyFee.outstanding) }}</span>
       </div>
 
       <!-- Discount row -->
@@ -235,8 +243,9 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
-import type { IReceiptInstallment } from '@/models/response/receipt/ReceiptRes.model'
+import type { IReceiptInstallmentCreate } from '@/models/response/receipt/ReceiptRes.model'
 import { type TInstallmentStatus } from '@/enums/modules/finance/InstallmentStatus.enum'
+import CheckboxInput from '@/components/input/CheckboxInput.vue'
 import { Icon } from '@iconify/vue'
 import ChipInstallmentStatus from './ChipInstallmentStatus.vue'
 
@@ -247,13 +256,18 @@ interface IDetailRow {
   remaining: number
 }
 
+interface IInstallmentChangePayload {
+  amount: number
+  discountPenaltyFee: number
+}
+
 interface IProps {
-  data: IReceiptInstallment
+  data: IReceiptInstallmentCreate
   installmentNo: number
 }
 
 interface IEmits {
-  change: [amount: number]
+  change: [payload: IInstallmentChangePayload]
 }
 
 const props = defineProps<IProps>()
@@ -271,41 +285,72 @@ const isExpanded = ref<boolean>(false)
 const isOverdue = computed((): boolean => props.data.status === 'OVERDUE')
 
 const fullAmount = computed((): number => {
-  const penalty = isOverdue.value ? props.data.interest : 0
   const discount = fineDiscount.value ? discountAmount.value : 0
-  return props.data.installmentPrice + penalty - discount
+  return props.data.total.outstanding - discount
 })
 
-const formattedDate = computed((): string => dayjs.formatDate(props.data.installmentDate))
+const formattedDate = computed((): string => dayjs.formatDate(props.data.dueDate))
 
-const tableRows = computed((): IDetailRow[] => {
-  const penalty = props.data.interest
-  const principal = Math.max(props.data.installmentPrice - penalty, 0)
-  const totalPaid = props.data.paid
-  const totalRemaining = props.data.outstanding
-
-  return [
-    { label: 'ค่าปรับ', amount: penalty, paid: penalty, remaining: 0 },
-    { label: 'ค่าติดตาม', amount: 0, paid: 0, remaining: 0 },
-    { label: 'ค่าทนาย', amount: 0, paid: 0, remaining: 0 },
-    { label: 'ดอกเบี้ย', amount: 0, paid: 0, remaining: 0 },
-    { label: 'เงินต้น', amount: principal, paid: totalPaid, remaining: totalRemaining },
-    { label: 'รวม', amount: props.data.installmentPrice, paid: totalPaid, remaining: totalRemaining }
-  ]
-})
+const tableRows = computed((): IDetailRow[] => [
+  {
+    label: 'ค่าปรับ',
+    amount: props.data.penaltyFee.total,
+    paid: props.data.penaltyFee.paid,
+    remaining: props.data.penaltyFee.outstanding
+  },
+  {
+    label: 'ค่าติดตาม',
+    amount: props.data.collectionFee.total,
+    paid: props.data.collectionFee.paid,
+    remaining: props.data.collectionFee.outstanding
+  },
+  {
+    label: 'ค่าทนาย',
+    amount: props.data.legalFee.total,
+    paid: props.data.legalFee.paid,
+    remaining: props.data.legalFee.outstanding
+  },
+  {
+    label: 'ดอกเบี้ย',
+    amount: props.data.interest.total,
+    paid: props.data.interest.paid,
+    remaining: props.data.interest.outstanding
+  },
+  {
+    label: 'เงินต้น',
+    amount: props.data.principal.total,
+    paid: props.data.principal.paid,
+    remaining: props.data.principal.outstanding
+  },
+  {
+    label: 'รวม',
+    amount: props.data.total.total,
+    paid: props.data.total.paid,
+    remaining: props.data.total.outstanding
+  }
+])
 
 const currentAmount = computed((): number => {
   if (!selected.value) return 0
   return paymentType.value === 'full' ? fullAmount.value : customAmount.value
 })
 
+const currentDiscount = computed((): number => {
+  if (!selected.value || !fineDiscount.value) return 0
+  return discountAmount.value
+})
+
 watch(currentAmount, (val: number): void => {
-  emits('change', val)
+  emits('change', { amount: val, discountPenaltyFee: currentDiscount.value })
+})
+
+watch(currentDiscount, (val: number): void => {
+  emits('change', { amount: currentAmount.value, discountPenaltyFee: val })
 })
 
 onMounted((): void => {
-  customAmount.value = props.data.outstanding
-  emits('change', currentAmount.value)
+  customAmount.value = props.data.total.outstanding
+  emits('change', { amount: currentAmount.value, discountPenaltyFee: currentDiscount.value })
 })
 </script>
 

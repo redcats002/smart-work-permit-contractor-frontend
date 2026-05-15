@@ -1,4 +1,3 @@
-
 import type { ICreateAnnouncementPayload, IGetAnnouncementList, IUpdateAnnouncementPayload } from '@/models/request/announcement/AnnouncementReq.model'
 import type { TActionAnnouncement, TGetAnnouncementListResponse } from '@/models/response/announcement/AnnouncementRes.model'
 import HttpRequest from '@/resources/HttpRequest'
@@ -11,7 +10,7 @@ export interface IAnnouncementProvider {
 }
 
 class AnnouncementProvider extends HttpRequest implements IAnnouncementProvider {
-  private urlPrefix: string = '/api/v1/announcement'
+  private urlPrefix: string = '/api/v1/management/announcement'
 
   public async getAnnouncementPaginate (query: IGetAnnouncementList): Promise<TGetAnnouncementListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)

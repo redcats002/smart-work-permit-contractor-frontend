@@ -5,6 +5,7 @@ export function useInitDetail (data?: Partial<ICustomerById>): Ref<ICustomerById
   return ref<ICustomerById>({
     ...data,
     id: data?.id ?? 0,
+    idNo: data?.idNo ?? '',
     status: data?.status ?? 'ACTIVE',
     idCard: data?.idCard ?? '',
     titleName: data?.titleName ?? 'MR',

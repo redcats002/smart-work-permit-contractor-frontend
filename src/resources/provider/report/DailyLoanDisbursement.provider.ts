@@ -7,7 +7,7 @@ export interface IDailyLoanDisbursementProvider {
 }
 
 class DailyLoanDisbursementProvider extends HttpRequest implements IDailyLoanDisbursementProvider {
-  private urlPrefix: string = '/api/v1/report/daily-loan-disbursement'
+  private urlPrefix: string = '/api/v1/management/report/daily-loan-disbursement'
 
   public async getDailyLoanDisbursementPaginate (query: IGetDailyLoanDisbursementList): Promise<TGetDailyLoanDisbursementListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)

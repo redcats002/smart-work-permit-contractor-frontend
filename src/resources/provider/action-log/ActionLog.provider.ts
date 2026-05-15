@@ -9,7 +9,7 @@ export interface IActionLogProvider {
 }
 
 class ActionLogProvider extends HttpRequest implements IActionLogProvider {
-  private urlPrefix: string = '/api/v1/action-log'
+  private urlPrefix: string = '/api/v1/management/action-log'
 
   public async getActionLogPaginate (query: IGetActionLogList): Promise<TGetActionLogListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)

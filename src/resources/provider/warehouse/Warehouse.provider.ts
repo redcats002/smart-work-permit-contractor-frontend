@@ -18,7 +18,7 @@ export interface IWarehouseProvider {
 }
 
 class WarehouseProvider extends HttpRequest implements IWarehouseProvider {
-  private urlPrefix: string = '/api/v1/warehouse'
+  private urlPrefix: string = '/api/v1/management/warehouse'
 
   public async getWarehousePaginate (query: IGetWarehouseList): Promise<TGetWarehouseListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)

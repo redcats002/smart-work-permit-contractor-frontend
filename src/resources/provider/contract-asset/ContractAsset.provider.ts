@@ -18,7 +18,7 @@ export interface IContractAssetProvider {
 }
 
 class ContractAssetProvider extends HttpRequest implements IContractAssetProvider {
-  private urlPrefix: string = '/api/v1/contract-assets'
+  private urlPrefix: string = '/api/v1/management/contract-assets'
 
   async getContractAssetPaginate (query: IGetContractAssetList): Promise<TGetContractAssetListResponse> {
     return this.get(this.urlPrefix, query)

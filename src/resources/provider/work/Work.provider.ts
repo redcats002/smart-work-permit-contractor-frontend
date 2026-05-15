@@ -20,7 +20,7 @@ export interface IWorkProvider {
 }
 
 class WorkProvider extends HttpRequest implements IWorkProvider {
-  private urlPrefix: string = '/api/v1/work'
+  private urlPrefix: string = '/api/v1/management/work'
 
   public async getWorkAppraisalNewPaginate (query: IGetNewWorkAssetAppraisalList): Promise<TGetNewWorkAppraisalListResponse> {
     const response = await this.get(`${this.urlPrefix}/assets-appraisal/new`, query)

@@ -20,7 +20,7 @@ export interface IContractLoanTypeProvider {
 }
 
 class ContractLoanTypeProvider extends HttpRequest implements IContractLoanTypeProvider {
-  private urlPrefix: string = '/api/v1/contract-loan-type'
+  private urlPrefix: string = '/api/v1/management/contract-loan-type'
 
   public async getContractLoanTypePaginate (query: IGetContractLoanTypeList): Promise<TGetContractLoanTypeListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)

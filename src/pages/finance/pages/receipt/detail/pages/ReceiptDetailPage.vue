@@ -33,12 +33,12 @@
               <span class="font-bold text-[#333] text-sm text-center">เลขที่สัญญา</span>
             </div>
             <template
-              v-for="(group, gi) in form.paymentGroups"
-              :key="`contract-${gi}`">
+              v-for="(contract, ci) in form.contracts"
+              :key="`contract-${ci}`">
               <div
-                :style="{ height: `${group.rows.length * 56}px` }"
+                :style="{ height: `${contract.installments.length * 56}px` }"
                 class="border-b border-[#e0e0e0] flex items-center justify-center px-2">
-                <span class="font-bold text-[#bd0102] text-sm text-center break-all">{{ group.contractNo }}</span>
+                <span class="font-bold text-[#bd0102] text-sm text-center break-all">{{ contract.idNo }}</span>
               </div>
             </template>
             <div class="bg-[#bdbdbd] h-14 flex items-center justify-center px-2">
@@ -52,13 +52,13 @@
               <span class="font-bold text-[#333] text-sm text-center">งวดที่</span>
             </div>
             <template
-              v-for="(group, gi) in form.paymentGroups"
-              :key="`installment-group-${gi}`">
+              v-for="(contract, ci) in form.contracts"
+              :key="`contract-group-${ci}`">
               <div
-                v-for="(row, ri) in group.rows"
-                :key="`installment-${gi}-${ri}`"
+                v-for="(item, ii) in contract.installments"
+                :key="`installment-${ci}-${ii}`"
                 class="h-14 border-b border-[#e0e0e0] flex items-center justify-center px-2">
-                <span class="text-[#333] text-sm">{{ row.installmentNo }}</span>
+                <span class="text-[#333] text-sm">{{ item.order }}</span>
               </div>
             </template>
             <div class="bg-[#bdbdbd] h-14 flex items-center justify-center px-2">
@@ -72,17 +72,17 @@
               <span class="font-bold text-[#333] text-sm">ค่าปรับ</span>
             </div>
             <template
-              v-for="(group, gi) in form.paymentGroups"
-              :key="`penalty-group-${gi}`">
+              v-for="(contract, ci) in form.contracts"
+              :key="`penalty-group-${ci}`">
               <div
-                v-for="(row, ri) in group.rows"
-                :key="`penalty-${gi}-${ri}`"
+                v-for="(item, ii) in contract.installments"
+                :key="`penalty-${ci}-${ii}`"
                 class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
-                <span class="text-[#333] text-sm">{{ formatter.numberFormat(row.penalty) }}</span>
+                <span class="text-[#333] text-sm">{{ formatter.numberFormat(item.penaltyFee) }}</span>
               </div>
             </template>
             <div class="bg-[#bdbdbd] h-14 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat(totals.penalty) }}</span>
+              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat(form.summary.penaltyFee) }}</span>
             </div>
           </div>
 
@@ -92,17 +92,17 @@
               <span class="font-bold text-[#333] text-sm">ค่าติดตาม</span>
             </div>
             <template
-              v-for="(group, gi) in form.paymentGroups"
-              :key="`tracking-group-${gi}`">
+              v-for="(contract, ci) in form.contracts"
+              :key="`tracking-group-${ci}`">
               <div
-                v-for="(row, ri) in group.rows"
-                :key="`tracking-${gi}-${ri}`"
+                v-for="(item, ii) in contract.installments"
+                :key="`tracking-${ci}-${ii}`"
                 class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
-                <span class="text-[#333] text-sm">{{ formatter.numberFormat(row.tracking) }}</span>
+                <span class="text-[#333] text-sm">{{ formatter.numberFormat(item.collectionFee) }}</span>
               </div>
             </template>
             <div class="bg-[#bdbdbd] h-14 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat(totals.tracking) }}</span>
+              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat(form.summary.collectionFee) }}</span>
             </div>
           </div>
 
@@ -112,17 +112,17 @@
               <span class="font-bold text-[#333] text-sm">ค่าทนาย</span>
             </div>
             <template
-              v-for="(group, gi) in form.paymentGroups"
-              :key="`lawyer-group-${gi}`">
+              v-for="(contract, ci) in form.contracts"
+              :key="`lawyer-group-${ci}`">
               <div
-                v-for="(row, ri) in group.rows"
-                :key="`lawyer-${gi}-${ri}`"
+                v-for="(item, ii) in contract.installments"
+                :key="`lawyer-${ci}-${ii}`"
                 class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
-                <span class="text-[#333] text-sm">{{ formatter.numberFormat(row.lawyer) }}</span>
+                <span class="text-[#333] text-sm">{{ formatter.numberFormat(item.legalFee) }}</span>
               </div>
             </template>
             <div class="bg-[#bdbdbd] h-14 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat(totals.lawyer) }}</span>
+              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat(form.summary.legalFee) }}</span>
             </div>
           </div>
 
@@ -132,17 +132,17 @@
               <span class="font-bold text-[#333] text-sm">ดอกเบี้ย</span>
             </div>
             <template
-              v-for="(group, gi) in form.paymentGroups"
-              :key="`interest-group-${gi}`">
+              v-for="(contract, ci) in form.contracts"
+              :key="`interest-group-${ci}`">
               <div
-                v-for="(row, ri) in group.rows"
-                :key="`interest-${gi}-${ri}`"
+                v-for="(item, ii) in contract.installments"
+                :key="`interest-${ci}-${ii}`"
                 class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
-                <span class="text-[#333] text-sm">{{ formatter.numberFormat(row.interest) }}</span>
+                <span class="text-[#333] text-sm">{{ formatter.numberFormat(item.interest) }}</span>
               </div>
             </template>
             <div class="bg-[#bdbdbd] h-14 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat(totals.interest) }}</span>
+              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat(form.summary.interest) }}</span>
             </div>
           </div>
 
@@ -152,17 +152,17 @@
               <span class="font-bold text-[#333] text-sm">เงินต้น</span>
             </div>
             <template
-              v-for="(group, gi) in form.paymentGroups"
-              :key="`principal-group-${gi}`">
+              v-for="(contract, ci) in form.contracts"
+              :key="`principal-group-${ci}`">
               <div
-                v-for="(row, ri) in group.rows"
-                :key="`principal-${gi}-${ri}`"
+                v-for="(item, ii) in contract.installments"
+                :key="`principal-${ci}-${ii}`"
                 class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
-                <span class="text-[#333] text-sm">{{ formatter.numberFormat(row.principal) }}</span>
+                <span class="text-[#333] text-sm">{{ formatter.numberFormat(item.principal) }}</span>
               </div>
             </template>
             <div class="bg-[#bdbdbd] h-14 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat(totals.principal) }}</span>
+              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat(form.summary.principal) }}</span>
             </div>
           </div>
 
@@ -172,17 +172,17 @@
               <span class="font-bold text-[#333] text-sm">รวม</span>
             </div>
             <template
-              v-for="(group, gi) in form.paymentGroups"
-              :key="`total-group-${gi}`">
+              v-for="(contract, ci) in form.contracts"
+              :key="`total-group-${ci}`">
               <div
-                v-for="(row, ri) in group.rows"
-                :key="`total-${gi}-${ri}`"
+                v-for="(item, ii) in contract.installments"
+                :key="`total-${ci}-${ii}`"
                 class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
-                <span class="text-[#333] text-sm">{{ formatter.numberFormat(row.total) }}</span>
+                <span class="text-[#333] text-sm">{{ formatter.numberFormat(item.totalInstallment) }}</span>
               </div>
             </template>
             <div class="bg-[#bdbdbd] h-14 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat(totals.total) }}</span>
+              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat(totalAll) }}</span>
             </div>
           </div>
         </div>
@@ -196,7 +196,8 @@ import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
-import type { IReceiptPaymentGroup, IReceiptPaymentRow } from '@/models/response/receipt/ReceiptRes.model'
+import { formatTitle } from '@/models/response/receipt/PaymentMethod.enum'
+import type { IReceiptDetailContract, IReceiptDetailInstallment } from '@/models/response/receipt/ReceiptRes.model'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BackButton from '@/components/button/BackButton.vue'
@@ -206,15 +207,6 @@ import DisplayList, { type IDisplayList } from '@/components/display/DisplayList
 import PageTitle from '@/components/nav/PageTitle.vue'
 import useDetail from '../composables/useDetail'
 
-interface ITotals {
-  penalty: number
-  tracking: number
-  lawyer: number
-  interest: number
-  principal: number
-  total: number
-}
-
 const router = useRouter()
 const route = useRoute()
 const { form, fetchById } = useDetail()
@@ -222,7 +214,7 @@ const dayjs = useDayjs()
 
 const customerItems = computed((): IDisplayList[] => [
   { label: 'ชื่อ', key: 'name', value: formatter.fullName(form.value.customer) },
-  { label: 'เลขที่ลูกค้า', key: 'id', value: form.value.customer.id },
+  { label: 'เลขที่ลูกค้า', key: 'idNo', value: form.value.customer.idNo },
   { label: 'เลขบัตรประชาชน', key: 'idCard', value: form.value.customer.idCard },
   { label: 'วันเดือนปีเกิด', key: 'birthDate', value: dayjs.formatDate(form.value.customer.birthDate ?? undefined) },
   { label: 'อายุ', key: 'age', value: dayjs.formatAge(String(form.value.customer.birthDate ?? '')) },
@@ -233,23 +225,17 @@ const customerItems = computed((): IDisplayList[] => [
 ])
 
 const receiptItems = computed((): IDisplayList[] => [
-  { label: 'เลขที่ใบเสร็จ', key: 'receiptNo', value: form.value.receiptNo ?? '-' },
-  { label: 'วันที่รับเงิน', key: 'dateOfPayment', value: dayjs.formatDate(form.value.dateOfPayment ?? undefined) },
-  { label: 'ผู้รับเงิน', key: 'officer', value: formatter.fullName(form.value.officer) },
-  { label: 'สาขา', key: 'branch', value: form.value.branch ?? '-' },
-  { label: 'ช่องทางการชำระเงิน', key: 'paymentChannel', value: form.value.paymentChannel ?? '-' }
+  { label: 'เลขที่ใบเสร็จ', key: 'receiptNo', value: form.value.idNo ?? '-' },
+  { label: 'วันที่รับเงิน', key: 'dateOfPayment', value: dayjs.formatDate(form.value.paidAt ?? undefined) },
+  { label: 'ผู้รับเงิน', key: 'receivedBy', value: form.value.receivedBy?.fullName ?? '-' },
+  { label: 'สาขา', key: 'branch', value: form.value.branch?.name ?? '-' },
+  { label: 'ช่องทางการชำระเงิน', key: 'paymentType', value: formatTitle(form.value.paymentType ?? undefined) }
 ])
 
-const totals = computed((): ITotals => {
-  const allRows = form.value.paymentGroups.flatMap((g: IReceiptPaymentGroup): IReceiptPaymentRow[] => g.rows)
-  return {
-    penalty: allRows.reduce((acc: number, r: IReceiptPaymentRow): number => acc + r.penalty, 0),
-    tracking: allRows.reduce((acc: number, r: IReceiptPaymentRow): number => acc + r.tracking, 0),
-    lawyer: allRows.reduce((acc: number, r: IReceiptPaymentRow): number => acc + r.lawyer, 0),
-    interest: allRows.reduce((acc: number, r: IReceiptPaymentRow): number => acc + r.interest, 0),
-    principal: allRows.reduce((acc: number, r: IReceiptPaymentRow): number => acc + r.principal, 0),
-    total: allRows.reduce((acc: number, r: IReceiptPaymentRow): number => acc + r.total, 0)
-  }
+const totalAll = computed((): number => {
+  return form.value.contracts.reduce((acc: number, contract: IReceiptDetailContract): number => {
+    return acc + contract.installments.reduce((sum: number, item: IReceiptDetailInstallment): number => sum + item.totalInstallment, 0)
+  }, 0)
 })
 
 function onPrint (): void {

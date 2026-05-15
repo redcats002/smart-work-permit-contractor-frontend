@@ -7,7 +7,7 @@ export interface IBranchIncomeExpenseProvider {
 }
 
 class BranchIncomeExpenseProvider extends HttpRequest implements IBranchIncomeExpenseProvider {
-  private urlPrefix: string = '/api/v1/report/branch-income-expense'
+  private urlPrefix: string = '/api/v1/management/report/branch-income-expense'
 
   public async getBranchIncomeExpensePaginate (query: IGetBranchIncomeExpenseList): Promise<TGetBranchIncomeExpenseListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)

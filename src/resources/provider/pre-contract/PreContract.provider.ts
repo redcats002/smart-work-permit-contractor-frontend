@@ -41,7 +41,7 @@ export interface IPreContractProvider {
 }
 
 class PreContractProvider extends HttpRequest implements IPreContractProvider {
-  private urlPrefix: string = '/api/v1/pre-contract'
+  private urlPrefix: string = '/api/v1/management/pre-contract'
 
   public async getContractPaginate (query: IGetPreContractList): Promise<TGetPreContractListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)
