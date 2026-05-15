@@ -34,7 +34,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, useAttrs } from 'vue'
+import { computed, ref, useAttrs } from 'vue'
+import { useRoute } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 
@@ -61,9 +62,12 @@ interface IEmits {
   readSuccess: [data: IReadIdCardResult]
 }
 
+
 const DEFAULT_WS_URL = 'ws://localhost:14820/IDWAgent'
 
+const route = useRoute()
 const attrs = useAttrs()
+const isDev = computed((): string => route?.query?.dev as string || '')
 
 const isLoading = ref(false)
 const showUrlModal = ref(false)
@@ -114,8 +118,12 @@ function wait<T = any> (predicate: (msg: any) => boolean, timeoutMs: number = 10
 }
 
 function handleReadIdCard (): void {
-  wsInput.value = activeWsUrl
-  showUrlModal.value = true
+  if (import.meta.env.DEV || isDev.value) {
+    wsInput.value = activeWsUrl
+    showUrlModal.value = true
+  } else {
+    doReadIdCard()
+  }
 }
 
 function onConfirmUrl (): void {
@@ -136,11 +144,10 @@ async function doReadIdCard (): Promise<void> {
         throw new Error('ไม่พบเครื่องอ่านบัตร')
       }
 
-      const readerName = listResp.ReaderList[0] || ''
+      const readerName = listResp?.ReaderList?.[0] || ''
       send({ Command: 'SelectReader', ReaderName: readerName })
       const selResp = await wait((m: any): any => m.Message === 'SelectReaderR')
       if (!selResp || selResp.Status <= 0) throw new Error('เลือกเครื่องอ่านไม่สำเร็จ')
-
       send({
         Command: 'ReadIDCard',
         IDNumberRead: true,
@@ -152,7 +159,8 @@ async function doReadIdCard (): Promise<void> {
       const readResp = await wait(
         (m: any): any => (m.Message === 'ReadIDCardR' || m.Message === 'AutoReadIDCardE') && m.Status === 0, 15000
       )
-      const dataSplit = readResp.ID_Text.split('#')
+      console.log(readResp)
+      const dataSplit = (readResp?.IDAText || readResp?.ID_Text)?.split('#')
       const gender = dataSplit[17] === '1' ? 'MALE' : 'FEMALE'
       const title = switchTitle(dataSplit[1])
       const payload: IReadIdCardResult = {
@@ -173,6 +181,7 @@ async function doReadIdCard (): Promise<void> {
           province: dataSplit[16]
         }
       }
+      console.log(payload)
       toast.success('อ่านบัตรสำเร็จ')
       emits('readSuccess', payload)
     } catch (err: any) {
