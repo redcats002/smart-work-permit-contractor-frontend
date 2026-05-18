@@ -1,10 +1,10 @@
-import { ref, type Ref } from 'vue'
+import { computed, ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
-
-import usePagination, { type IUsePagination } from '@/composables/usePagination'
 import type { IBranchSummaryReportFilter } from '@/models/modules/report/branch-summary/Filter.model'
-import type { IBranchSummaryReportList, TGetBranchSummaryReportListResponse } from '@/models/response/report/branch-summary/BranchSummaryRes.model'
-// import type { IGetPercentInstallmentList } from '@/models/request/report/percent-installment/PercentInstallmentReq.model'
+import type { IGetBranchSummaryReportList } from '@/models/request/report/branch-summary/BranchSummaryReq.model'
+import type { IBranchSummaryReportList } from '@/models/response/report/branch-summary/BranchSummaryRes.model'
+import ReportBranchesProvider, { type IReportBranchesProvider } from '@/resources/provider/report/Branches.provider'
+import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
 interface IUseList extends IUsePagination {
   filters: Ref<IBranchSummaryReportFilter>
@@ -13,60 +13,42 @@ interface IUseList extends IUsePagination {
   onClearFilters(): void
 }
 export default function useList (): IUseList {
+  const ReportBranchesService: IReportBranchesProvider = new ReportBranchesProvider()
+
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
   const filters = ref<IBranchSummaryReportFilter>({})
   const items = ref<IBranchSummaryReportList[]>([])
-  // mock
-  const mockResponse: TGetBranchSummaryReportListResponse = {
-    data: [
-      {
-        id: 1,
-        branchNo: 'BR-00001',
-        branchName: 'สำนักงานใหญ่',
-        createdAt: '2023-03-12T00:00:00.000Z',
-        openedTime: '2023-03-12T00:00:00.000Z'
-      },
-      {
-        id: 2,
-        branchNo: 'BR-00002',
-        branchName: 'สำนักงานใหญ่2',
-        createdAt: '2024-03-12T00:00:00.000Z',
-        openedTime: '2024-03-12T00:00:00.000Z'
-      },
-      {
-        id: 3,
-        branchNo: 'BR-00002',
-        branchName: 'สำนักงานใหญ่3',
-        createdAt: '2025-03-12T00:00:00.000Z',
-        openedTime: '2025-03-12T00:00:00.000Z'
-      }
-    ],
-    page: 1,
-    count: 3,
-    message: 'success',
-    limit: 10,
-    totalPage: 1
-  }
 
-  // const paginateQuery = computed((): IGetPercentInstallmentList => {
-  //   const normalizedFilters = normalizeFilters(filters.value)
-  //   return {
-  //     page: pagination.value.page,
-  //     limit: pagination.value.limit,
-  //     sortBy: sortBy.value || undefined,
-  //     sortOrder: sortOrder.value,
-  //     ...normalizedFilters
-  //   }
-  // })
+  const resolvedSortBy = computed((): string | undefined => {
+    if (!sortBy.value) return undefined
+    return sortBy.value === 'duration' ? 'openAt' : sortBy.value
+  })
+
+  const resolvedSortOrder = computed((): 'asc' | 'desc' => {
+    if (sortBy.value === 'duration') {
+      return sortOrder.value === 'asc' ? 'desc' : 'asc'
+    }
+    return sortOrder.value
+  })
+
+  const paginateQuery = computed((): IGetBranchSummaryReportList => {
+    const normalizedFilters = normalizeFilters(filters.value)
+    return {
+      page: pagination.value.page,
+      limit: pagination.value.limit,
+      search: search.value || undefined,
+      sortBy: resolvedSortBy.value,
+      sortOrder: resolvedSortOrder.value,
+      ...normalizedFilters
+    }
+  })
 
   async function useFetch (): Promise<void> {
-    // const response = await EmployeeService.getEmployeePaginate(paginateQuery.value)
-    // items.value = response?.data || []
-    const response = mockResponse as any
-    items.value = response.data || []
+    const response = await ReportBranchesService.getReportBranchesPaginate(paginateQuery.value)
+    items.value = response?.data || []
     pagination.value = extractPagination(response)
-    syncQuery({ ...normalizeFilters(filters.value) })
+    syncQuery({ search: search.value, ...normalizeFilters(filters.value) })
   }
 
 

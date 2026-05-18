@@ -18,7 +18,8 @@
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"
           v-model:sort-order="sortOrder"
-          :items="items" />
+          :items="items"
+          @update="fetch()" />
       </div>
     </BasePage>
   </section>
@@ -27,12 +28,12 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import BasePage from '@/components/base/BasePage.vue'
+import BackButton from '@/components/button/BackButton.vue'
 import PrintButton from '@/components/button/PrintButton.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
-import useList from '../composables/useList'
 import BranchSummaryReportFilter from '../components/BranchSummaryReportFilter.vue'
 import BranchSummaryReportTable from '../components/BranchSummaryReportTable.vue'
-import BackButton from '@/components/button/BackButton.vue'
+import useList from '../composables/useList'
 
 const {
   filters,
