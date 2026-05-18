@@ -1,5 +1,10 @@
 import type { ICreateExpensesPayload, IGetExpensesList, IUpdateExpensesPayload } from '@/models/request/expenses/ExpensesReq.model'
-import type { TActionExpenses, TCreateExpensesResponse, TGetExpensesDetailResponse, TGetExpensesListResponse } from '@/models/response/expenses/ExpensesRes.model'
+import type {
+  TActionExpenses,
+  TCreateExpensesResponse,
+  TGetExpensesDetailResponse,
+  TGetExpensesListResponse
+} from '@/models/response/expenses/ExpensesRes.model'
 import type { TBaseParamsId } from '@/models/response/Response.model'
 import HttpRequest from '@/resources/HttpRequest'
 
@@ -12,7 +17,7 @@ export interface IExpensesProvider {
 }
 
 class ExpensesProvider extends HttpRequest implements IExpensesProvider {
-  private urlPrefix: string = '/api/v1/record-expense'
+  private urlPrefix: string = '/api/v1/management/record-expense'
 
   public async getExpensesPaginate (query: IGetExpensesList): Promise<TGetExpensesListResponse> {
     return this.get(this.urlPrefix, query)
