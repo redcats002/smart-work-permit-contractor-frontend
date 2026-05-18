@@ -5,21 +5,28 @@
     v-model:sort-by="sortBy"
     v-model:sort-order="sortOrder"
     :columns="columns"
-    :items="displayItems"
+    :items="props.items"
     disable-auto-left-padding
     disable-virtual-scroll
     @update="emits('update')">
-    <template #[`item.period`]="{ index }">
-      {{ index + 1 }}
+    <template #[`item.period`]="{ item }">
+      {{ item.order }}
     </template>
     <template #[`item.status`]="{ item }">
       <ChipInstallmentStatus :value="item.status" />
     </template>
     <template #[`item.action`]="{ item }">
       <InstallmentMenuAction
+        :collection-fee="item.collectionFee"
+        :legal-fee="item.legalFee"
         :payment-status="item.status"
+        @collection-fee="openFeeModal('collection', item)"
         @create-invoice="emits('createInvoice', Number(item.id))"
-        @edit="emits('update')" />
+        @edit="emits('update')"
+        @edit-payment="emits('editPayment', Number(item.id))"
+        @legal-fee="openFeeModal('legal', item)"
+        @payment="emits('payment', Number(item.id))"
+        @view-receipt="emits('viewReceipt', Number(item.id))" />
     </template>
     <template #[`item.detail`]="{ item }">
       <div
@@ -56,49 +63,49 @@
           </div>
         </div>
 
-        <!-- Receipt groups -->
+        <!-- Receipt items -->
         <template
-          v-for="(group, gi) in getReceiptGroups(data)"
+          v-for="(receiptItem, gi) in data.items"
           :key="gi">
           <template
-            v-for="(row, fi) in group.rows"
+            v-for="(detail, fi) in receiptItem.details"
             :key="fi">
             <div
               :class="COL_SUB"
               class="grid h-12 px-4 border-b border-[#E0E0E0]">
               <div class="flex items-center text-sm text-[#333333]">
-                {{ fi === 0 ? dayjs.formatDate(group.paidAt) : '' }}
+                {{ fi === 0 ? dayjs.formatDate(receiptItem.paidAt) : '' }}
               </div>
               <div class="flex items-center text-sm text-[#333333]">
-                {{ row.label }}
+                {{ detail.name }}
               </div>
               <div class="flex items-center justify-end text-sm text-[#333333]">
-                {{ formatter.numberFormat2Decimal(row.due) }}
+                {{ formatter.numberFormat2Decimal(detail.amount) }}
               </div>
               <div class="flex items-center justify-end text-sm text-[#333333]">
-                {{ formatter.numberFormat2Decimal(row.paid) }}
+                {{ formatter.numberFormat2Decimal(detail.paid) }}
               </div>
               <div class="flex items-center justify-end text-sm text-[#333333]">
-                {{ formatter.numberFormat2Decimal(row.remaining) }}
+                {{ formatter.numberFormat2Decimal(detail.outstanding) }}
               </div>
             </div>
           </template>
-          <!-- Group total -->
+          <!-- Receipt total row -->
           <div
             :class="COL_SUB"
-            class="grid h-12 px-4 border-b-1 border-[#BD0102]">
+            class="grid h-12 px-4 border-b border-[#BD0102]">
             <div />
             <div class="flex items-center text-sm font-bold text-[#333333]">
               รวม
             </div>
             <div class="flex items-center justify-end text-sm font-bold text-[#333333]">
-              {{ formatter.numberFormat2Decimal(group.total.due) }}
+              {{ formatter.numberFormat2Decimal(receiptItem.summary.amount) }}
             </div>
             <div class="flex items-center justify-end text-sm font-bold text-[#333333]">
-              {{ formatter.numberFormat2Decimal(group.total.paid) }}
+              {{ formatter.numberFormat2Decimal(receiptItem.summary.paid) }}
             </div>
             <div class="flex items-center justify-end text-sm font-bold text-[#333333]">
-              {{ formatter.numberFormat2Decimal(group.total.remaining) }}
+              {{ formatter.numberFormat2Decimal(receiptItem.summary.outstanding) }}
             </div>
           </div>
         </template>
@@ -112,61 +119,76 @@
             รวม
           </div>
           <div class="flex items-center justify-end text-sm font-bold text-[#333333]">
-            {{ formatter.numberFormat2Decimal(getGrandTotal(data).due) }}
+            {{ formatter.numberFormat2Decimal(getGrandTotal(data).amount) }}
           </div>
           <div class="flex items-center justify-end text-sm font-bold text-[#333333]">
             {{ formatter.numberFormat2Decimal(getGrandTotal(data).paid) }}
           </div>
           <div class="flex items-center justify-end text-sm font-bold text-[#333333]">
-            {{ formatter.numberFormat2Decimal(getGrandTotal(data).remaining) }}
+            {{ formatter.numberFormat2Decimal(getGrandTotal(data).outstanding) }}
           </div>
         </div>
       </div>
     </template>
   </BaseTable>
+
+  <!-- Fee modals -->
+  <InstallmentFeeModal
+    v-model="collectionFeeModalVisible"
+    :initial-amount="selectedItem?.collectionFee ?? 0"
+    :label="'ค่าติดตาม'"
+    :title="selectedItem?.collectionFee === 0 ? 'เพิ่มค่าติดตาม' : 'แก้ไขค่าติดตาม'"
+    @confirm="onConfirmCollectionFee($event)" />
+
+  <InstallmentFeeModal
+    v-model="legalFeeModalVisible"
+    :initial-amount="selectedItem?.legalFee ?? 0"
+    :label="'ค่าทนาย'"
+    :title="selectedItem?.legalFee === 0 ? 'เพิ่มค่าทนาย' : 'แก้ไขค่าทนาย'"
+    @confirm="onConfirmLegalFee($event)" />
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
-import type { IContractInstallmentList, IContractInstallmentReceipt } from '@/models/response/contract/ContractRes.model'
+import type {
+  IContractInstallmentItem,
+  IContractInstallmentList
+} from '@/models/response/contract/ContractRes.model'
 import type { IColumn } from '@/models/Table.model'
-import type { TPaymentStatus } from '@/enums/modules/contract/PaymentStatus.enum'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
 import { Icon } from '@iconify/vue'
 import ChipInstallmentStatus from './ChipInstallmentStatus.vue'
 import InstallmentMenuAction from './InstallmentMenuAction.vue'
+import InstallmentFeeModal from './InstallmentFeeModal.vue'
 
 const COL_SUB = 'grid-cols-[180px_1fr_130px_130px_130px]'
 
-interface IFeeRow {
-  label: string
-  due: number
+interface IGrandTotal {
+  amount: number
   paid: number
-  remaining: number
-}
-
-interface IReceiptDisplayGroup {
-  paidAt: string
-  rows: IFeeRow[]
-  total: { due: number, paid: number, remaining: number }
-}
-
-interface ITotals {
-  due: number
-  paid: number
-  remaining: number
+  outstanding: number
 }
 
 interface IProps {
   items: IContractInstallmentList[]
 }
 
+interface IFeePayload {
+  id: number
+  amount: number
+}
+
 interface IEmits {
   update: []
   createInvoice: [id: number]
+  payment: [id: number]
+  viewReceipt: [id: number]
+  editPayment: [id: number]
+  updateCollectionFee: [payload: IFeePayload]
+  updateLegalFee: [payload: IFeePayload]
 }
 
 const props = defineProps<IProps>()
@@ -176,6 +198,10 @@ const pagination = defineModel<IPagination>('pagination', { required: true })
 const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 const expandedRows = ref<Record<string, IContractInstallmentList>>({})
+
+const collectionFeeModalVisible = ref<boolean>(false)
+const legalFeeModalVisible = ref<boolean>(false)
+const selectedItem = ref<IContractInstallmentList | null>(null)
 
 const dayjs = useDayjs()
 
@@ -188,7 +214,7 @@ const columns = ref<IColumn<IContractInstallmentList>[]>([
   { field: 'remainingPrincipal', header: 'เงินต้นคงเหลือ', align: 'right', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e.remainingPrincipal) },
   { field: 'penaltyFee', header: 'ค่าปรับ', align: 'right', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e.penaltyFee) },
   { field: 'collectionFee', header: 'ค่าติดตาม', align: 'right', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e.collectionFee) },
-  { field: 'legalFee' as keyof IContractInstallmentList, header: 'ค่าทนาย', align: 'right', value: (): string => '0.00' },
+  { field: 'legalFee', header: 'ค่าทนาย', align: 'right', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e.legalFee) },
   { field: 'status', header: 'สถานะ', align: 'center' },
   { field: 'action' as keyof IContractInstallmentList, header: 'จัดการ', align: 'center' },
   { field: 'detail' as keyof IContractInstallmentList, header: 'รายละเอียด', align: 'center' }
@@ -205,220 +231,32 @@ function toggleExpand (item: IContractInstallmentList): void {
   }
 }
 
-function getReceiptGroups (item: IContractInstallmentList): IReceiptDisplayGroup[] {
-  const cumulative = { penaltyFee: 0, collectionFee: 0, interest: 0, principal: 0 }
-  return item.receipts.map((receipt: IContractInstallmentReceipt): IReceiptDisplayGroup => {
-    const penaltyDue = item.penaltyFee - cumulative.penaltyFee
-    const collectionDue = item.collectionFee - cumulative.collectionFee
-    const interestDue = item.interest - cumulative.interest
-    const principalDue = item.principal - cumulative.principal
-    const rows: IFeeRow[] = [
-      { label: 'ค่าปรับ', due: penaltyDue, paid: receipt.penaltyFee, remaining: penaltyDue - receipt.penaltyFee },
-      { label: 'ค่าติดตาม', due: collectionDue, paid: receipt.collectionFee, remaining: collectionDue - receipt.collectionFee },
-      { label: 'ค่าทนาย', due: 0, paid: 0, remaining: 0 },
-      { label: 'ดอกเบี้ย', due: interestDue, paid: receipt.interest, remaining: interestDue - receipt.interest },
-      { label: 'เงินต้น', due: principalDue, paid: receipt.principal, remaining: principalDue - receipt.principal }
-    ]
-    cumulative.penaltyFee += receipt.penaltyFee
-    cumulative.collectionFee += receipt.collectionFee
-    cumulative.interest += receipt.interest
-    cumulative.principal += receipt.principal
-    const total = rows.reduce((acc: ITotals, r: IFeeRow): ITotals => ({
-      due: acc.due + r.due,
-      paid: acc.paid + r.paid,
-      remaining: acc.remaining + r.remaining
-    }), { due: 0, paid: 0, remaining: 0 })
-    return { paidAt: receipt.paidAt, rows, total }
-  })
+function getGrandTotal (item: IContractInstallmentList): IGrandTotal {
+  return item.items.reduce((acc: IGrandTotal, receiptItem: IContractInstallmentItem): IGrandTotal => ({
+    amount: acc.amount + receiptItem.summary.amount,
+    paid: acc.paid + receiptItem.summary.paid,
+    outstanding: acc.outstanding + receiptItem.summary.outstanding
+  }), { amount: 0, paid: 0, outstanding: 0 })
 }
 
-function getGrandTotal (item: IContractInstallmentList): ITotals {
-  const due = item.penaltyFee + item.collectionFee + item.interest + item.principal
-  const paid = item.receipts.reduce((s: number, r: IContractInstallmentReceipt): number =>
-    s + r.penaltyFee + r.collectionFee + r.interest + r.principal, 0)
-  return { due, paid, remaining: due - paid }
-}
-
-// Mock data — swap to props.items when API is ready
-const mockItems: IContractInstallmentList[] = [
-  {
-    id: 1,
-    status: 'PAID' as TPaymentStatus,
-    dueDate: '2024-03-12',
-    interest: 1500,
-    principal: 10000,
-    installment: 11500,
-    remainingPrincipal: 110000,
-    penaltyFee: 120,
-    outstandingPenaltyFee: 0,
-    collectionFee: 500,
-    outstandingCollectionFee: 0,
-    period: 1,
-    payment: 11500,
-    balance: 110000,
-    receipts: [
-      { id: 1, paidAt: '2024-03-12', interest: 0, principal: 0, penaltyFee: 120, collectionFee: 380, discount: 0, amountPaid: 500 },
-      { id: 2, paidAt: '2024-03-24', interest: 1500, principal: 10000, penaltyFee: 0, collectionFee: 120, discount: 0, amountPaid: 11620 }
-    ]
-  },
-  {
-    id: 2,
-    status: 'PARTIAL' as TPaymentStatus,
-    dueDate: '2024-04-12',
-    interest: 1500,
-    principal: 10000,
-    installment: 11500,
-    remainingPrincipal: 100000,
-    penaltyFee: 120,
-    outstandingPenaltyFee: 120,
-    collectionFee: 500,
-    outstandingCollectionFee: 380,
-    period: 2,
-    payment: 11500,
-    balance: 100000,
-    receipts: [
-      { id: 3, paidAt: '2024-04-12', interest: 0, principal: 0, penaltyFee: 0, collectionFee: 120, discount: 0, amountPaid: 120 }
-    ]
-  },
-  {
-    id: 3,
-    status: 'OVERDUE' as TPaymentStatus,
-    dueDate: '2024-05-12',
-    interest: 1500,
-    principal: 10000,
-    installment: 11500,
-    remainingPrincipal: 90000,
-    penaltyFee: 0,
-    outstandingPenaltyFee: 0,
-    collectionFee: 0,
-    outstandingCollectionFee: 0,
-    period: 3,
-    payment: 11500,
-    balance: 90000,
-    receipts: []
-  },
-  {
-    id: 4,
-    status: 'NOT_DUE_YET' as TPaymentStatus,
-    dueDate: '2024-06-12',
-    interest: 1500,
-    principal: 10000,
-    installment: 11500,
-    remainingPrincipal: 80000,
-    penaltyFee: 0,
-    outstandingPenaltyFee: 0,
-    collectionFee: 0,
-    outstandingCollectionFee: 0,
-    period: 4,
-    payment: 11500,
-    balance: 80000,
-    receipts: []
-  },
-  {
-    id: 5,
-    status: 'NOT_DUE_YET' as TPaymentStatus,
-    dueDate: '2024-07-12',
-    interest: 1500,
-    principal: 10000,
-    installment: 11500,
-    remainingPrincipal: 70000,
-    penaltyFee: 0,
-    outstandingPenaltyFee: 0,
-    collectionFee: 0,
-    outstandingCollectionFee: 0,
-    period: 5,
-    payment: 11500,
-    balance: 70000,
-    receipts: []
-  },
-  {
-    id: 6,
-    status: 'NOT_DUE_YET' as TPaymentStatus,
-    dueDate: '2024-08-12',
-    interest: 1500,
-    principal: 10000,
-    installment: 11500,
-    remainingPrincipal: 60000,
-    penaltyFee: 0,
-    outstandingPenaltyFee: 0,
-    collectionFee: 0,
-    outstandingCollectionFee: 0,
-    period: 6,
-    payment: 11500,
-    balance: 60000,
-    receipts: []
-  },
-  {
-    id: 7,
-    status: 'NOT_DUE_YET' as TPaymentStatus,
-    dueDate: '2024-09-12',
-    interest: 1500,
-    principal: 10000,
-    installment: 11500,
-    remainingPrincipal: 50000,
-    penaltyFee: 0,
-    outstandingPenaltyFee: 0,
-    collectionFee: 0,
-    outstandingCollectionFee: 0,
-    period: 7,
-    payment: 11500,
-    balance: 50000,
-    receipts: []
-  },
-  {
-    id: 8,
-    status: 'NOT_DUE_YET' as TPaymentStatus,
-    dueDate: '2024-10-12',
-    interest: 1500,
-    principal: 10000,
-    installment: 11500,
-    remainingPrincipal: 40000,
-    penaltyFee: 0,
-    outstandingPenaltyFee: 0,
-    collectionFee: 0,
-    outstandingCollectionFee: 0,
-    period: 8,
-    payment: 11500,
-    balance: 40000,
-    receipts: []
-  },
-  {
-    id: 9,
-    status: 'NOT_DUE_YET' as TPaymentStatus,
-    dueDate: '2024-11-12',
-    interest: 1500,
-    principal: 10000,
-    installment: 11500,
-    remainingPrincipal: 30000,
-    penaltyFee: 0,
-    outstandingPenaltyFee: 0,
-    collectionFee: 0,
-    outstandingCollectionFee: 0,
-    period: 9,
-    payment: 11500,
-    balance: 30000,
-    receipts: []
-  },
-  {
-    id: 10,
-    status: 'NOT_DUE_YET' as TPaymentStatus,
-    dueDate: '2024-12-12',
-    interest: 1500,
-    principal: 10000,
-    installment: 11500,
-    remainingPrincipal: 20000,
-    penaltyFee: 0,
-    outstandingPenaltyFee: 0,
-    collectionFee: 0,
-    outstandingCollectionFee: 0,
-    period: 10,
-    payment: 11500,
-    balance: 20000,
-    receipts: []
+function openFeeModal (type: 'collection' | 'legal', item: IContractInstallmentList): void {
+  selectedItem.value = item
+  if (type === 'collection') {
+    collectionFeeModalVisible.value = true
+  } else {
+    legalFeeModalVisible.value = true
   }
-]
+}
 
-const displayItems = props.items.length > 0 ? props.items : mockItems
+function onConfirmCollectionFee (amount: number): void {
+  if (!selectedItem.value) return
+  emits('updateCollectionFee', { id: Number(selectedItem.value.id), amount })
+}
+
+function onConfirmLegalFee (amount: number): void {
+  if (!selectedItem.value) return
+  emits('updateLegalFee', { id: Number(selectedItem.value.id), amount })
+}
 </script>
 
 <style scoped></style>

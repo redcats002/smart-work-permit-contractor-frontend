@@ -14,7 +14,8 @@ import type {
   IGetInstallmentSummary,
   IUpdateContractPayload,
   IUpdateExpense,
-  IUpdateIncome
+  IUpdateIncome,
+  IUpdateInstallmentFeePayload
 } from '@/models/request/contract/ContractReq.model'
 import type {
   TActionContract,
@@ -22,6 +23,7 @@ import type {
   TActionContractExpenseResponse,
   TActionContractHistoryResponse,
   TActionContractIncomeResponse,
+  TActionContractInstallmentFeeResponse,
   TGetAssetContractListResponse,
   TGetContractByIdResponse,
   TGetContractExpenseByIdResponse,
@@ -69,6 +71,8 @@ export interface IContractProvider {
   getDocumentById(id: TBaseParamsId): Promise<TGetDocumentListResponse>
   createDocument(id: TBaseParamsId, payload: ICreateDocument): Promise<TActionContractDocumentResponse>
   deleteDocument(id: TBaseParamsId, documentId: TBaseParamsId): Promise<TActionContractDocumentResponse>
+  updateLegalFee(contractInstallmentId: TBaseParamsId, payload: IUpdateInstallmentFeePayload): Promise<TActionContractInstallmentFeeResponse>
+  updateCollectionFee(contractInstallmentId: TBaseParamsId, payload: IUpdateInstallmentFeePayload): Promise<TActionContractInstallmentFeeResponse>
 }
 
 class ContractProvider extends HttpRequest implements IContractProvider {
@@ -219,6 +223,22 @@ class ContractProvider extends HttpRequest implements IContractProvider {
 
   public async deleteDocument (id: TBaseParamsId): Promise<TActionContractDocumentResponse> {
     const response = await this.delete(`${this.urlPrefix}-document/${id}`)
+    return response
+  }
+
+  public async updateLegalFee (
+    contractInstallmentId: TBaseParamsId,
+    payload: IUpdateInstallmentFeePayload
+  ): Promise<TActionContractInstallmentFeeResponse> {
+    const response = await this.patch(`${this.urlPrefix}/legal-fee/${contractInstallmentId}`, payload)
+    return response
+  }
+
+  public async updateCollectionFee (
+    contractInstallmentId: TBaseParamsId,
+    payload: IUpdateInstallmentFeePayload
+  ): Promise<TActionContractInstallmentFeeResponse> {
+    const response = await this.patch(`${this.urlPrefix}/collection-fee/${contractInstallmentId}`, payload)
     return response
   }
 }

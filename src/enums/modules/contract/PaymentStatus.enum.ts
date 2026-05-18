@@ -4,7 +4,8 @@ export enum PaymentStatusEnum {
   OVERDUE = 'OVERDUE',
   NOT_DUE_YET = 'NOT_DUE_YET',
   PARTIAL = 'PARTIAL',
-  PAID = 'PAID'
+  PAID = 'PAID',
+  DUE_DATE = 'DUE_DATE'
 }
 
 export type TPaymentStatus = keyof typeof PaymentStatusEnum
@@ -13,7 +14,8 @@ const titleMap: Record<TPaymentStatus, string> = {
   [PaymentStatusEnum.OVERDUE]: 'เกินกำหนด',
   [PaymentStatusEnum.NOT_DUE_YET]: 'ยังไม่ถึงกำหนด',
   [PaymentStatusEnum.PARTIAL]: 'ชำระบางส่วน',
-  [PaymentStatusEnum.PAID]: 'ชำระแล้ว'
+  [PaymentStatusEnum.PAID]: 'ชำระแล้ว',
+  [PaymentStatusEnum.DUE_DATE]: 'ถึงกำหนดชำระ'
 }
 
 export const PaymentStatusItems: TBaseOption[] = Object.values(PaymentStatusEnum).map(
@@ -38,6 +40,8 @@ export function getStatusClass (value?: TPaymentStatus): string {
       return 'bg-amber-100 text-amber-600 border-none'
     case PaymentStatusEnum.PAID:
       return 'bg-green-100 text-green-700 border-none'
+    case PaymentStatusEnum.DUE_DATE:
+      return 'bg-orange-100 text-orange-600 border-none'
     default:
       return 'bg-gray-100 text-gray-600 border-none'
   }
@@ -53,6 +57,8 @@ export function getIcon (value?: TPaymentStatus): string {
       return 'mingcute:time-duration-line'
     case PaymentStatusEnum.PAID:
       return 'mdi:check-circle-outline'
+    case PaymentStatusEnum.DUE_DATE:
+      return 'proicons:calendar'
     default:
       return 'mdi:help-circle-outline'
   }

@@ -13,6 +13,9 @@ export interface IGetAssetContract {}
 
 export interface IGetInstallmentList extends IBasePaginationRequest {}
 export interface IGetInstallmentSummary {}
+export interface IUpdateInstallmentFeePayload {
+  amount: number
+}
 
 export interface IGetExpenseList extends IBasePaginationRequest {}
 export interface ICreateExpense {
