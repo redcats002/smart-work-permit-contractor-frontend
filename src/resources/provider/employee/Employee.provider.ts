@@ -33,7 +33,7 @@ export interface IEmployeeProvider {
 }
 
 class EmployeeProvider extends HttpRequest implements IEmployeeProvider {
-  private urlPrefix: string = '/api/v1/management/user'
+  private urlPrefix: string = '/api/v1/user'
 
   public async getEmployeePaginate (query: IGetEmployeeList): Promise<TGetEmployeeListResponse> {
     const response = await this.get(`${this.urlPrefix}`, query)
