@@ -54,9 +54,9 @@ const summary = ref<IContractSummaryCard>({
 const contractId = computed((): number => route?.params?.id ? Number(route.params.id) : 0)
 
 const cards = computed((): ICardIndicator[] => [
-  { label: 'ยอดหนี้คงเหลือ', value: formatter.numberFormat2Decimal(summary.value.total), valueClass: 'text-orange-400' },
-  { label: 'เงินต้นคงเหลือ', value: formatter.numberFormat2Decimal(summary.value.principal), valueClass: 'text-blue-400' },
-  { label: 'ดอกเบี้ยคงเหลือ', value: formatter.numberFormat2Decimal(summary.value.interest), valueClass: 'text-blue-400' }
+  { label: 'ยอดหนี้คงเหลือ', value: formatter.numberFormat2Decimal(summary.value?.total), valueClass: 'text-orange-400' },
+  { label: 'เงินต้นคงเหลือ', value: formatter.numberFormat2Decimal(summary.value?.principal), valueClass: 'text-blue-400' },
+  { label: 'ดอกเบี้ยคงเหลือ', value: formatter.numberFormat2Decimal(summary.value?.interest), valueClass: 'text-blue-400' }
 ])
 
 async function useFetch (): Promise<void> {

@@ -16,7 +16,7 @@
       :table-class="resolvedTableClass"
       :table-style="tableStyle"
       :value="items"
-      :virtual-scroller-options="{ itemSize: pagination.limit || 44 }"
+      :virtual-scroller-options="disableVirtualScroll ? undefined : { itemSize: pagination.limit || 44 }"
       scrollable
       unstyled>
       <!-- Checkbox Column -->
@@ -151,6 +151,7 @@ interface IProps {
   hidePagination?: boolean
   showFooter?: boolean
   disableAutoLeftPadding?: boolean
+  disableVirtualScroll?: boolean
   checkboxHeaderClass?: string
   checkboxBodyClass?: string
   rowClass?: (data: T) => string
@@ -168,6 +169,7 @@ const props = withDefaults(defineProps<IProps>(), {
   showHeaders: true,
   hidePagination: false,
   disableAutoLeftPadding: false,
+  disableVirtualScroll: false,
   checkboxHeaderClass: '',
   checkboxBodyClass: '',
   rowClass: undefined,
