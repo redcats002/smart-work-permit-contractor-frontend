@@ -13,6 +13,10 @@
       </span>
       <slot name="actions" />
     </div>
+    <div
+      v-if="!!attrs.disabled"
+      class="absolute inset-0 z-10 cursor-not-allowed"
+      @click.stop />
     <slot
       v-if="!hideField"
       :invalid="isInvalid">
@@ -23,7 +27,7 @@
             :disabled="!!attrs.disabled"
             :invalid="isPrependInvalid"
             :options="prependOptions"
-            class="h-9 shadow-none! rounded-tl-sm! rounded-bl-sm! rounded-tr-none! rounded-br-none! shrink-0 max-w-[8rem] w-fit"
+            class="h-9 shadow-none! rounded-tl-sm! rounded-bl-sm! rounded-tr-none! rounded-br-none! shrink-0 max-w-32 w-fit"
             option-label="label"
             option-value="value" />
           <InputText
@@ -51,9 +55,12 @@
           <slot name="prependIcon">
             <Icon
               v-if="prependIcon"
-              :class="[isInvalid ? 'text-red-400!' : '']"
+              :class="[isInvalid ? 'text-red-400!' : '',
+                       attrs.disabled ? 'cursor-not-allowed' :''
+              ]"
+              :disabled="!!attrs.disabled"
               :icon="prependIcon"
-              class="absolute top-1/2 -mt-2 text-surface-400 leading-none inset-s-3 z-1" />
+              class="absolute top-1/2 -mt-2 text-surface-400 leading-none inset-s-3 z-2" />
           </slot>
           <InputText
             v-model="inputModel"
@@ -69,9 +76,12 @@
           <slot name="appendIcon">
             <Icon
               v-if="appendIcon"
-              :class="[isInvalid ? 'text-red-400!' : '']"
+              :class="[isInvalid ? 'text-red-400!' : '',
+                       attrs.disabled ? 'cursor-not-allowed' :''
+              ]"
+              :disabled="!!attrs.disabled"
               :icon="appendIcon"
-              class="absolute top-1/2 -mt-2 text-surface-400 leading-none inset-e-3 z-1" />
+              class="absolute top-1/2 -mt-2 text-surface-400 leading-none inset-e-3 z-2" />
           </slot>
         </div>
       </template>
