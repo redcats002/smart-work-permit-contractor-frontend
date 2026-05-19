@@ -33,7 +33,6 @@
 import { ref } from 'vue'
 import type { ICustomerDocumentById } from '@/models/response/customer/CustomerRes.model'
 import type { IColumn } from '@/models/Table.model'
-import { formatTitle, type TCustomerDocumentType } from '@/enums/modules/customer/CustomerDocumentType.enum'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
 import PrivateDocumentMenuAction from './PrivateDocumentMenuAction.vue'
@@ -58,7 +57,7 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<ICustomerDocumentById>[]>([
-  { field: 'name', header: 'ประเภทเอกสาร', align: 'left', value: (e: ICustomerDocumentById): string => formatTitle(e?.name as TCustomerDocumentType) },
+  { field: 'name', header: 'ประเภทเอกสาร', align: 'left' },
   { field: 'location', header: 'จุดจัดเก็บ', align: 'left', value: (e: ICustomerDocumentById): string => e?.location?.name || '-' },
   { field: 'action', header: 'จัดการ', align: 'right' }
 ])
