@@ -60,9 +60,10 @@
       {{ buttonText }}
     </Button>
     <input
+      :key="inputKey"
       ref="fileInputRef"
       :multiple="!props.single"
-      accept=".jpg,.jpeg,.png"
+      accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
       type="file"
       hidden
       @change="onFileChange($event)">
@@ -154,13 +155,14 @@ const emits = defineEmits<IEmits>()
 const fileInputRef = useTemplateRef<HTMLInputElement | null>('fileInputRef')
 const isRippling = ref(false)
 const isDragging = ref(false)
+const inputKey = ref<number>(0)
 const isContainerTrigger = computed((): boolean => props.hideIconButton || props.hideButton)
 
 function onFileChange (event: Event): void {
   const input = event.target as HTMLInputElement
   if (!input.files) return
   appendFiles(Array.from(input.files))
-  input.value = ''
+  inputKey.value++
 }
 
 function appendFiles (files: File[]): void {

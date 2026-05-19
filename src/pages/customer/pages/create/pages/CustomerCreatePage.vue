@@ -127,8 +127,8 @@ function onAuto (): void {
   formKey.value++
 }
 
-function onReadIdCard (data: IReadIdCardResult): void {
-  form.value = mapIdCardToCustomer(data, form.value)
+async function onReadIdCard (data: IReadIdCardResult): Promise<void> {
+  form.value = await mapIdCardToCustomer(data, form.value)
   formKey.value++
 }
 

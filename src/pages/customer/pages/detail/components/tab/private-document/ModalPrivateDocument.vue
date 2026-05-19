@@ -1,6 +1,7 @@
 <template>
   <BaseModal
     v-model="visible"
+    :dismissable-mask="false"
     :label="modalLabel"
     :style="{ width: 'min(95vw, 500px)' }"
     @open="onOpen()">
@@ -92,6 +93,9 @@
             ดูไฟล์เอกสาร
           </a>
         </div>
+        <span
+          v-else
+          class="text-sm text-gray-400">ไม่มีไฟล์แนบ</span>
       </div>
     </template>
   </BaseModal>
@@ -110,7 +114,6 @@ import type { ICreateCustomerDocumentPayload, IUpdateCustomerDocumentPayload } f
 import type { ICustomerDocumentById } from '@/models/response/customer/CustomerRes.model'
 import { findEnumByTitle, formatTitle } from '@/enums/modules/customer/CustomerDocumentType.enum'
 import CustomerProvider, { type ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
-import UploadProvider, { type IUploadProvider } from '@/resources/provider/Upload.provider'
 import FormAction from '@/components/button/FormAction.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import UploadInput from '@/components/input/UploadInput.vue'
@@ -139,14 +142,13 @@ const emits = defineEmits<IEmits>()
 const visible = defineModel<boolean>('visible', { default: false })
 
 const CustomerService: ICustomerProvider = new CustomerProvider()
-const UploadService: IUploadProvider = new UploadProvider()
 
 const currentMode = ref<TActionMode>(props.mode)
 const deleteVisible = ref<boolean>(false)
 const resolver = zodResolver(PrivateDocumentSchema)
 const formKey = ref<number>(0)
 const formData = ref<PrivateDocumentFormValues>(useFormInitialValues())
-const { media } = useUpload()
+const { media, getUploadImages } = useUpload()
 
 const isFormMode = computed((): boolean => currentMode.value === 'CREATE' || currentMode.value === 'UPDATE')
 
@@ -160,24 +162,15 @@ const modalLabel = computed((): string => {
   return labels[currentMode.value]
 })
 
-
-async function useResolveImageUrl (): Promise<string> {
-  const lastMedia = media.value[media.value.length - 1]
-  if (!lastMedia) return ''
-  if (lastMedia.isNew && lastMedia.file) {
-    const response = await UploadService.uploadFile(lastMedia.file)
-    return response.data.fileUrl
-  }
-  return lastMedia.url
-}
-
 async function usePayload (): Promise<ICreateCustomerDocumentPayload | IUpdateCustomerDocumentPayload> {
   const values = formData.value
-  const image = await useResolveImageUrl()
+  const uploaded = await getUploadImages(media.value)
+  const image = uploaded[uploaded.length - 1]?.url || ''
   const nameLabel = formatTitle(values.name)
+  const firstFileName = media.value[0]?.name || nameLabel
   return {
     name: nameLabel,
-    fileName: media.value[0]?.file?.name || nameLabel,
+    fileName: firstFileName,
     image,
     locationId: Number(values.locationId)
   }
@@ -198,7 +191,7 @@ async function useUpdate (): Promise<void> {
   const payload = await usePayload()
   await CustomerService.updateCustomerDocument(itemId, {
     ...payload,
-    fileName: media.value[0]?.file?.name || props.item?.fileName || payload.name
+    fileName: media.value[0]?.name || props.item?.fileName || payload.name
   })
   toast.success('แก้ไขเอกสารสำเร็จ')
 }
@@ -211,7 +204,6 @@ async function useDelete (): Promise<void> {
   visible.value = false
   toast.success('ลบเอกสารสำเร็จ')
 }
-
 
 function onSubmit (event: FormSubmitEvent, close: () => void): void {
   if (!event.valid) {
@@ -242,7 +234,6 @@ function onInitActionMode (mode: TActionMode): void {
   if (mode === 'DELETE') deleteVisible.value = true
 }
 
-
 function onOpen (): void {
   currentMode.value = props.mode
   if (props.mode === 'CREATE') {
@@ -270,6 +261,4 @@ function populateForm (): void {
 watch((): TActionMode => props.mode, (val: TActionMode): void => {
   onInitActionMode(val)
 })
-
-
 </script>
