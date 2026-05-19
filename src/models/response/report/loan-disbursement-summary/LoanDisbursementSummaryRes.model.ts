@@ -1,23 +1,25 @@
 import type { IEntity } from '@/models/Global.model'
-import type { IBranchList } from '../../branch/BranchRes.model'
 import type { IBasePaginationResponse } from '../../Response.model'
 
 export interface ILoanDisbursementSummaryList extends IEntity {
-  branch: IBranchList
-  amount: number
+  branchName: string
+  contractAmount: number
   principal: number
   interest: number
-  principalWithInterest: number
-  installment: number
+  principalAndInterest: number
+  monthlyInstallment: number
 }
+
 export interface ILoanDisbursementSummarySummary {
   numberOfBranches: number
-  amount: number
+  contractAmount: number
   principal: number
   interest: number
-  principalWithInterest: number
-  installment: number
+  principalAndInterest: number
+  monthlyInstallment: number
 }
 
 export interface TGetLoanDisbursementSummaryListResponse
-  extends IBasePaginationResponse<ILoanDisbursementSummaryList>, ILoanDisbursementSummarySummary {}
+  extends IBasePaginationResponse<ILoanDisbursementSummaryList> {
+  summary: Omit<ILoanDisbursementSummarySummary, 'numberOfBranches'>
+}

@@ -20,7 +20,7 @@
         v-model:sort-by="sortBy"
         v-model:sort-order="sortOrder"
         :items="items"
-        @delete="onDelete($event)"
+        :summary="summary"
         @update="fetch()" />
     </BasePage>
   </section>
@@ -41,13 +41,13 @@ import useList from '../composables/useList'
 const {
   filters,
   items,
+  summary,
   pagination,
   sortBy,
   sortOrder,
   search,
   fetch,
-  onClearFilters,
-  onDelete
+  onClearFilters
 } = useList()
 
 onMounted((): void => {
