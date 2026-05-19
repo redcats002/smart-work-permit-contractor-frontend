@@ -1,10 +1,10 @@
 <template>
   <Button
     :class="buttonClass"
+    :type="type"
     class="flex items-center rounded-sm!
     h-10.5 w-full md:w-49.5
-    text-white transition-all duration-200"
-    type="submit">
+    text-white transition-all duration-200">
     <div class="text-sm font-medium">
       {{ label }}
     </div>
@@ -17,11 +17,13 @@ import { computed } from 'vue'
 interface IProps {
   label?: string
   mode?: 'delete' | 'submit' | ''
+  type?: 'submit' | 'button'
 }
 
 const props = withDefaults(defineProps<IProps>(), {
   label: 'บันทึก',
-  mode: ''
+  mode: '',
+  type: 'submit'
 })
 
 const buttonClass = computed((): string => {

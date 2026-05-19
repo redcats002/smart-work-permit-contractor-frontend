@@ -37,7 +37,9 @@
           <AddressForm
             v-model="mainAddress"
             :form="$form"
-            type="MAIN" />
+            type="MAIN"
+            @use-same-citizen-address="mount()"
+            @use-same-current-address="mount()" />
         </BaseContainer>
         <BaseContainer>
           <AddressForm
@@ -45,7 +47,8 @@
             :citizen-address="mainAddress"
             :form="$form"
             type="CURRENT"
-            @use-same-citizen-address="onUseSameCitizenAddress('CURRENT')" />
+            @use-same-citizen-address="mount()"
+            @use-same-current-address="mount()" />
         </BaseContainer>
         <FormAction @cancel="onCancel()" />
       </Form>
@@ -62,24 +65,24 @@ import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import type { IEmployeeProvider } from '@/resources/provider/employee/Employee.provider'
 import EmployeeProvider from '@/resources/provider/employee/Employee.provider'
-import type { IReadIdCardResult } from '@/components/button/ReadIdentificationCardButton.vue'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import DevButton from '@/components/button/DevButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
+import type { IReadIdCardResult } from '@/components/button/ReadIdentificationCardButton.vue'
 import ReadIdentificationCardButton from '@/components/button/ReadIdentificationCardButton.vue'
 import Spacer from '@/components/flex/Spacer.vue'
+import AddressForm from '@/components/input/AddressForm.vue'
 import UploadInput from '@/components/input/UploadInput.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
-import AddressForm from '@/components/input/AddressForm.vue'
 import InformationForm from '../components/InformationForm.vue'
 import useUpload from '@/composables/useUpload'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import { usePayload } from '../composables/usePayload'
 import { mapIdCardToEmployee } from '../composables/useIdCardMapper'
+import { usePayload } from '../composables/usePayload'
 import { type EmployeeFormValues, EmployeeSchema, useDev, useFormInitialValues } from '../schema/employee.schema'
 
 const router = useRouter()
@@ -119,22 +122,6 @@ function onCancel (): void {
   router.push({ name: 'EmployeeListPage' })
 }
 
-
-function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
-  if (type === 'CURRENT') {
-    currentAddress.value = {
-      ...currentAddress.value,
-      isSameCitizenAddress: true,
-      isSameCurrentAddress: false,
-      address: mainAddress.value.address,
-      subDistrict: mainAddress.value.subDistrict,
-      district: mainAddress.value.district,
-      province: mainAddress.value.province,
-      postCode: mainAddress.value.postCode
-    }
-  }
-  mount()
-}
 
 function mount (): void {
   formKey.value++

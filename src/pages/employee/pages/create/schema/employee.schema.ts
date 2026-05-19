@@ -111,7 +111,7 @@ export function useFormInitialValues (): EmployeeFormValues {
     idCard: '',
     password: '',
     image: '',
-    title: ETitleName[''],
+    title: ETitleName.MR,
     firstName: '',
     lastName: '',
     phoneNumber: '',

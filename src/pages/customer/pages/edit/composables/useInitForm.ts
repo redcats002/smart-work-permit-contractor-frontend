@@ -10,6 +10,8 @@ const dayjs = useDayjs()
 
 export function useInitForm (form: Ref<CustomerFormValues>, data: ICustomerById): void {
   const { mainAddress, currentAddress, workAddress } = data
+  const workSameCitizen = isSameAddress(workAddress, mainAddress)
+  const workSameCurrent = !workSameCitizen && isSameAddress(workAddress, currentAddress)
   form.value = {
     ...data,
     idCard: data.idCard,
@@ -32,7 +34,7 @@ export function useInitForm (form: Ref<CustomerFormValues>, data: ICustomerById)
       postCode: mainAddress?.postCode ?? '',
       urlGoogleMap: mainAddress?.urlGoogleMap ?? '',
       isSameCitizenAddress: false,
-      isSameCurrentAddress: isSameAddress(mainAddress, currentAddress)
+      isSameCurrentAddress: false
     },
     currentAddress: {
       id: currentAddress?.id,
@@ -53,8 +55,8 @@ export function useInitForm (form: Ref<CustomerFormValues>, data: ICustomerById)
       province: workAddress?.province ?? '',
       postCode: workAddress?.postCode ?? '',
       urlGoogleMap: workAddress?.urlGoogleMap ?? '',
-      isSameCitizenAddress: isSameAddress(workAddress, mainAddress),
-      isSameCurrentAddress: isSameAddress(workAddress, currentAddress)
+      isSameCitizenAddress: workSameCitizen,
+      isSameCurrentAddress: workSameCurrent
     }
   }
 }

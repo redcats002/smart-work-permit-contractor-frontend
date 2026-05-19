@@ -16,18 +16,21 @@
       <div class="flex flex-col items-center justify-center text-sm text-[#333333] mb-5">
         <p v-sanitize.basic="description" />
       </div>
-      <FormAction
-        confirm-label="ยืนยัน"
-        mode="submit"
-        fluid
-        @cancel="close()"
-        @confirm="onConfirm(close)" />
+      <div class="flex gap-2.5 w-full justify-center">
+        <ConfirmButton
+          label="ยืนยัน"
+          mode="submit"
+          type="button"
+          @click="onConfirm(close)" />
+        <CancelButton @cancel="close()" />
+      </div>
     </template>
   </BaseModal>
 </template>
 
 <script setup lang="ts">
-import FormAction from '../button/FormAction.vue'
+import CancelButton from '../button/CancelButton.vue'
+import ConfirmButton from '../button/ConfirmButton.vue'
 import BaseModal from './BaseModal.vue'
 
 interface IProps {

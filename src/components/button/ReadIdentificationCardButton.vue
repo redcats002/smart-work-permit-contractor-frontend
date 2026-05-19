@@ -34,10 +34,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useAttrs } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, useAttrs } from 'vue'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
+import useDev from '@/composables/useDev'
 
 export interface IReadIdCardResult {
   title: string
@@ -65,9 +65,8 @@ interface IEmits {
 
 const DEFAULT_WS_URL = 'ws://localhost:14820/IDWAgent'
 
-const route = useRoute()
 const attrs = useAttrs()
-const isDev = computed((): string => route?.query?.dev as string || '')
+const { isDev } = useDev()
 
 const isLoading = ref(false)
 const showUrlModal = ref(false)
@@ -118,7 +117,7 @@ function wait<T = any> (predicate: (msg: any) => boolean, timeoutMs: number = 10
 }
 
 function handleReadIdCard (): void {
-  if (import.meta.env.DEV || isDev.value) {
+  if (isDev.value) {
     wsInput.value = activeWsUrl
     showUrlModal.value = true
   } else {

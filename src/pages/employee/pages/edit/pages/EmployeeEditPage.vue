@@ -34,7 +34,9 @@
           <AddressForm
             v-model="mainAddress"
             :form="$form"
-            type="MAIN" />
+            type="MAIN"
+            @use-same-citizen-address="mount()"
+            @use-same-current-address="mount()" />
         </BaseContainer>
         <BaseContainer>
           <AddressForm
@@ -42,7 +44,8 @@
             :citizen-address="mainAddress"
             :form="$form"
             type="CURRENT"
-            @use-same-citizen-address="onUseSameCitizenAddress('CURRENT')" />
+            @use-same-citizen-address="mount()"
+            @use-same-current-address="mount()" />
         </BaseContainer>
         <FormAction @cancel="onCancel()" />
       </Form>
@@ -61,25 +64,25 @@ import type { IEmployeeById } from '@/models/response/employee/EmployeeRes.model
 import type { TBaseParamsId } from '@/models/response/Response.model'
 import type { IEmployeeProvider } from '@/resources/provider/employee/Employee.provider'
 import EmployeeProvider from '@/resources/provider/employee/Employee.provider'
-import type { IReadIdCardResult } from '@/components/button/ReadIdentificationCardButton.vue'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
+import type { IReadIdCardResult } from '@/components/button/ReadIdentificationCardButton.vue'
 import ReadIdentificationCardButton from '@/components/button/ReadIdentificationCardButton.vue'
 import Spacer from '@/components/flex/Spacer.vue'
+import AddressForm from '@/components/input/AddressForm.vue'
 import UploadInput from '@/components/input/UploadInput.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import useUpload from '@/composables/useUpload'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import AddressForm from '@/components/input/AddressForm.vue'
 import InformationForm from '../../create/components/InformationForm.vue'
+import { mapIdCardToEmployee } from '../../create/composables/useIdCardMapper'
 import { type EmployeeFormValues, EmployeeSchema, useFormInitialValues } from '../../create/schema/employee.schema'
 import { useInitForm } from '../composables/useInitForm'
 import { usePayload } from '../composables/usePayload'
-import { mapIdCardToEmployee } from '../../create/composables/useIdCardMapper'
 
 const route = useRoute()
 const router = useRouter()
@@ -136,20 +139,6 @@ function mount (): void {
   formKey.value++
 }
 
-function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
-  if (type === 'CURRENT') {
-    currentAddress.value = {
-      ...currentAddress.value,
-      isSameCitizenAddress: true,
-      isSameCurrentAddress: false,
-      address: mainAddress.value.address,
-      subDistrict: mainAddress.value.subDistrict,
-      district: mainAddress.value.district,
-      province: mainAddress.value.province,
-      postCode: mainAddress.value.postCode
-    }
-  }
-}
 
 function onReadIdCard (data: IReadIdCardResult): void {
   form.value = mapIdCardToEmployee(data, form.value)
