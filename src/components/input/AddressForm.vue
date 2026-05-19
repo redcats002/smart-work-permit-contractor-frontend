@@ -125,6 +125,10 @@ interface IProps {
   citizenAddress?: IAddressRequest
   currentAddressRef?: IAddressRequest
 }
+interface IEmits {
+  useSameCitizenAddress: []
+  useSameCurrentAddress: []
+}
 
 const props = withDefaults(defineProps<IProps>(), {
   form: undefined,
@@ -133,6 +137,7 @@ const props = withDefaults(defineProps<IProps>(), {
   citizenAddress: undefined,
   currentAddressRef: undefined
 })
+const emits = defineEmits<IEmits>()
 
 const model = defineModel<IAddressRequest>({
   default: (): IAddressRequest => ({
@@ -246,6 +251,7 @@ function onUseSameCitizenAddress (isChecked: boolean): void {
   } else {
     model.value = { ...model.value, ...BLANK_ADDRESS }
   }
+  emits('useSameCitizenAddress')
 }
 
 function onUseSameCurrentAddress (isChecked: boolean): void {
@@ -263,6 +269,7 @@ function onUseSameCurrentAddress (isChecked: boolean): void {
   } else {
     model.value = { ...model.value, ...BLANK_ADDRESS }
   }
+  emits('useSameCurrentAddress')
 }
 
 function onUpdate (): void {

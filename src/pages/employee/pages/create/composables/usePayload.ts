@@ -5,6 +5,7 @@ import type { EmployeeFormValues } from '../schema/employee.schema'
 export function usePayload (form: EmployeeFormValues, images: IMedia[]): ICreateEmployeePayload {
   return {
     ...form,
+    phoneNumber: form?.phoneNumber?.replaceAll(/-/g, ''),
     image: images?.[0]?.url,
     password: form.idCard
   }
