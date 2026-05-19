@@ -47,6 +47,8 @@ const reportItems: IReportItem[] = [
   { label: 'รายงานสรุปบัญชีเทียบปัจจุบัน', to: { name: 'ComparativeListPage' } },
   { label: 'รายงานสรุปประจำวันรวมทุกสาขา', to: { name: 'DailyBranchSummaryPage' } },
   { label: 'รายงานลูกหนี้คงเหลือ', to: { name: 'OutstandingDebtorPage' } },
+  { label: 'รายงานลูกหนี้ปิดบัญชี', to: { name: 'SuccessDebtorListPage' } },
+  { label: 'รายงานลูกหนี้ทั้งหมด', to: { name: 'AllDebtorListPage' } },
   { label: 'รายงานรับชำระค่างวดประจำวัน', to: { name: 'DailyInstallmentListPage' } },
   { label: 'รายงานรับชำระค่างวดคิดเป็นเปอร์เซ็นต์', to: { name: 'PercentInstallmentPage' } },
   { label: 'รายงานกำไรตามการรับชำระจริง', to: { name: 'ProfitBasedOnActualPaymentPage' } },

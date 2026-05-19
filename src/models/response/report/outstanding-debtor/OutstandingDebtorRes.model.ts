@@ -1,54 +1,36 @@
-import type { IEntity } from '@/models/Global.model'
-import type { TTitleName } from '@/enums/TitleName.enum'
+import type { TInterestType } from '@/enums/modules/contract/InterestType.enum'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../../Response.model'
 
-interface IOutstandingContractDebtor {
+export interface IOutstandingDebtorList {
   id: number
   idNo: string
-}
-
-interface IOutstandingCustomer {
-  id: number
-  titleName: TTitleName
-  firstName: string
-  lastName: string
-}
-
-export interface IOutstandingDebtorList extends IEntity {
-  contract: IOutstandingContractDebtor
-  customer: IOutstandingCustomer
-  type: string
-  createdAt: string
-  contractExpirationDate: string
-  totalAmount: number
-  period: number
-  totalAmountNet: number
-  netPeriod: number
-  paid: number
+  customerName: string
+  interestType: TInterestType
+  startContractDate: string
+  endContractDate: string
+  principal: number
+  installmentCount: number
+  principalAndInterest: number
+  monthlyInstallment: number
+  amountPaid: number
   outstanding: number
-  lastPaymentDate: string
+  lastUpdated: string
   latestPaymentAmount: number
 }
 
 export interface IOutStandingDebtorSummary {
-  customer: number
-  totalAmount: number
-  totalAmountNet: number
-  paid: number
+  principal: number
+  installmentCount: number
+  principalAndInterest: number
+  monthlyInstallment: number
+  amountPaid: number
   outstanding: number
   latestPaymentAmount: number
 }
 
-export interface IOutstandingDebtorById extends IEntity {
-  name: string
-  taxId: string
-  openAt: string
-  address: string
-  district: string
-  subDistrict: string
-  province: string
-  postCode: string
+export interface TGetOutstandingDebtorListResponse
+  extends IBasePaginationResponse<IOutstandingDebtorList> {
+  summary: IOutStandingDebtorSummary
 }
 
-export type TGetOutstandingDebtorListResponse = IBasePaginationResponse<IOutstandingDebtorList>
 export type TActionOutstandingDebtor = IBaseSuccessResponse<boolean>

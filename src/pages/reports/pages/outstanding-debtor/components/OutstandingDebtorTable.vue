@@ -9,18 +9,25 @@
     disable-auto-left-padding
     show-footer
     @update="emits('update')">
-    <template #[`item.contractNo`]="{ item }">
-      <LinkText :to="{}">
-        {{ item.contract?.idNo }}
+    <template #[`item.index`]="{ index }">
+      {{ index + 1 }}
+    </template>
+    <template #[`item.idNo`]="{ item }">
+      <LinkText :to="{ name: 'ContractDetailPage', params: { id: item.id } }">
+        {{ item.idNo }}
       </LinkText>
     </template>
-    <template #[`item.totalAmount`]="{ item }">
-      <div>{{ formatter.numberFormat(item.totalAmount) }}</div>
-      <div>{{ formatter.numberFormat(item.period) }}</div>
+    <template #[`item.principal`]="{ item }">
+      <div>{{ formatter.numberFormat(item.principal) }}</div>
+      <div>
+        {{ formatter.numberFormat(item.installmentCount) }}
+      </div>
     </template>
-    <template #[`item.totalAmountNet`]="{ item }">
-      <div>{{ formatter.numberFormat(item.totalAmountNet) }}</div>
-      <div>{{ formatter.numberFormat(item.netPeriod) }}</div>
+    <template #[`item.principalAndInterest`]="{ item }">
+      <div>{{ formatter.numberFormat(item.principalAndInterest) }}</div>
+      <div>
+        {{ formatter.numberFormat(item.monthlyInstallment) }}
+      </div>
     </template>
   </BaseTable>
 </template>
@@ -32,6 +39,7 @@ import { formatter } from '@/utils/Formatter'
 import { generateTableFooter, type IFooterColConfig } from '@/utils/TableFooter'
 import type { IOutstandingDebtorList, IOutStandingDebtorSummary } from '@/models/response/report/outstanding-debtor/OutstandingDebtorRes.model'
 import type { IColumn, IFooter } from '@/models/Table.model'
+import { formatTitle } from '@/enums/modules/contract/InterestType.enum'
 import LinkText from '@/components/button/LinkText.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
@@ -41,46 +49,105 @@ interface IProps {
   summary?: IOutStandingDebtorSummary
 }
 
-const props = defineProps<IProps>()
+const props = withDefaults(defineProps<IProps>(), {
+  summary: undefined
+})
 
 interface IEmits {
-  delete: [id: number]
   update: []
 }
 
 const emits = defineEmits<IEmits>()
 const dayjs = useDayjs()
 
-const pagination = defineModel<IPagination>('pagination', {
-  required: true
-})
-
+const pagination = defineModel<IPagination>('pagination', { required: true })
 const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IOutstandingDebtorList>[]>([
-  { field: 'contractNo', header: 'เลขที่สัญญา', align: 'left', width: 60 },
-  { field: 'customer', header: 'ชื่อลูกค้า', align: 'left', width: 150, value: (e: IOutstandingDebtorList): string => formatter.fullName(e.customer) },
-  { field: 'type', header: 'ประเภทเงินกู้', align: 'left', width: 120, value: (e: IOutstandingDebtorList): string => e.type },
-  { field: 'createdAt', header: 'วันที่ทำสัญญา', align: 'left', width: 120, value: (e: IOutstandingDebtorList): string => dayjs.formatDate(e.createdAt) },
-  { field: 'contractExpirationDate', header: 'วันที่ครบสัญญา', align: 'right', width: 120, value: (e: IOutstandingDebtorList): string => dayjs.formatDate(e.contractExpirationDate) },
-  { field: 'totalAmount', header: 'ยอดจัด/งวด', align: 'right', width: 120 },
-  { field: 'totalAmountNet', header: 'ยอดจัดรวมดอกเบี้ย/งวด', align: 'right', width: 120 },
-  { field: 'paid', header: 'ชำระแล้ว', align: 'right', width: 140, value: (e: IOutstandingDebtorList): string => formatter.numberFormat(e.paid) },
-  { field: 'outstanding', header: 'ลูกหนี้คงเหลือ', align: 'right', width: 100, value: (e: IOutstandingDebtorList): string => formatter.numberFormat(e.outstanding) },
-  { field: 'lastPaymentDate', header: 'วันที่ชำระล่าสุด', align: 'left', width: 100, value: (e: IOutstandingDebtorList): string => dayjs.formatDate(e.lastPaymentDate) },
-  { field: 'latestPaymentAmount', header: 'ยอดชำระล่าสุด', align: 'right', width: 100, value: (e: IOutstandingDebtorList): string => formatter.numberFormat(e.latestPaymentAmount) }
+  { field: 'index', header: 'ลำดับ', align: 'center', width: 60 },
+  { field: 'idNo', header: 'เลขที่สัญญา', align: 'left', width: 120 },
+  { field: 'customerName', header: 'ชื่อลูกค้า', align: 'left', width: 160 },
+  {
+    field: 'interestType',
+    header: 'ประเภทเงินกู้',
+    align: 'left',
+    width: 120,
+    value: (e: IOutstandingDebtorList): string => formatTitle(e.interestType)
+  },
+  {
+    field: 'startContractDate',
+    header: 'วันที่ทำสัญญา',
+    align: 'left',
+    width: 120,
+    sortable: true,
+    value: (e: IOutstandingDebtorList): string => dayjs.formatDate(e.startContractDate)
+  },
+  {
+    field: 'endContractDate',
+    header: 'วันที่ครบสัญญา',
+    align: 'left',
+    width: 120,
+    sortable: true,
+    value: (e: IOutstandingDebtorList): string => dayjs.formatDate(e.endContractDate)
+  },
+  { field: 'principal', header: 'ยอดจัด/งวด', align: 'right', width: 130 },
+  { field: 'principalAndInterest', header: 'ยอดจัดรวมดอกเบี้ย/งวด', align: 'right', width: 160 },
+  {
+    field: 'amountPaid',
+    header: 'ชำระแล้ว',
+    align: 'right',
+    width: 120,
+    value: (e: IOutstandingDebtorList): string => formatter.numberFormat(e.amountPaid)
+  },
+  {
+    field: 'outstanding',
+    header: 'ลูกหนี้คงเหลือ',
+    align: 'right',
+    width: 130,
+    value: (e: IOutstandingDebtorList): string => formatter.numberFormat(e.outstanding)
+  },
+  {
+    field: 'lastUpdated',
+    header: 'วันที่ชำระล่าสุด',
+    align: 'left',
+    width: 120,
+    value: (e: IOutstandingDebtorList): string => dayjs.formatDate(e.lastUpdated)
+  },
+  {
+    field: 'latestPaymentAmount',
+    header: 'ยอดชำระล่าสุด',
+    align: 'right',
+    width: 120,
+    value: (e: IOutstandingDebtorList): string => formatter.numberFormat(e.latestPaymentAmount)
+  }
 ])
 
-
 const itemsFooter = computed((): IFooter[] => {
-  const footerConfig: Partial<Record<keyof IOutStandingDebtorSummary, IFooterColConfig<IOutStandingDebtorSummary>>> = {
-    customer: { value: `รวม ${props.summary?.customer || 0} สาขา` },
-    totalAmount: { value: formatter.numberFormat2Decimal(props.summary?.totalAmount || 0), footerClass: 'text-end' },
-    totalAmountNet: { value: formatter.numberFormat2Decimal(props.summary?.totalAmountNet || 0), footerClass: 'text-end' },
-    paid: { value: formatter.numberFormat2Decimal(props.summary?.paid || 0), footerClass: 'text-end' },
-    outstanding: { value: formatter.numberFormat2Decimal(props.summary?.outstanding || 0), footerClass: 'text-end' },
-    latestPaymentAmount: { value: formatter.numberFormat2Decimal(props.summary?.latestPaymentAmount || 0), footerClass: 'text-end' }
+  type TConfig = Partial<Record<keyof IOutstandingDebtorList, IFooterColConfig<IOutStandingDebtorSummary>>>
+  const footerConfig: TConfig = {
+    idNo: { value: `รวม ${pagination.value.count || 0} รายการ` },
+    customerName: { value: '' },
+    principal: {
+      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      footerClass: 'text-right'
+    },
+    principalAndInterest: {
+      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      footerClass: 'text-right'
+    },
+    amountPaid: {
+      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      footerClass: 'text-right'
+    },
+    outstanding: {
+      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      footerClass: 'text-right'
+    },
+    latestPaymentAmount: {
+      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      footerClass: 'text-right'
+    }
   }
   return generateTableFooter(columns.value, props.summary, footerConfig)
 })

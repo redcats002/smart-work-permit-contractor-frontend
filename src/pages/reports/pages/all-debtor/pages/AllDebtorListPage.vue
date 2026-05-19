@@ -1,5 +1,5 @@
 <template>
-  <section id="outstanding-debtor-list-page">
+  <section id="all-debtor-list-page">
     <PageTitle />
     <BaseTop>
       <BackButton />
@@ -32,9 +32,11 @@ import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import PrintButton from '@/components/button/PrintButton.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
-import OutstandingDebtorFilter from '../components/OutstandingDebtorFilter.vue'
-import OutstandingDebtorTable from '../components/OutstandingDebtorTable.vue'
-import { useOutstandingDebtorList } from '../composables/useList'
+import OutstandingDebtorFilter
+  from '@/pages/reports/pages/outstanding-debtor/components/OutstandingDebtorFilter.vue'
+import OutstandingDebtorTable
+  from '@/pages/reports/pages/outstanding-debtor/components/OutstandingDebtorTable.vue'
+import { useAllDebtorList } from '@/pages/reports/pages/outstanding-debtor/composables/useList'
 
 const {
   filters,
@@ -46,7 +48,7 @@ const {
   search,
   fetch,
   onClearFilters
-} = useOutstandingDebtorList()
+} = useAllDebtorList()
 
 onMounted((): void => {
   fetch()

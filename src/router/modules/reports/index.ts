@@ -1,5 +1,6 @@
 import type { ComponentOptions } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
+import AllDebtorRouter from './AllDebtor.router'
 import AllStockRouter from './AllStock.router'
 import AnnualFinanceReceiptRouter from './AnnualFinanceReceipt.router'
 import BranchHeadSummaryRouter from './BranchHeadSummary.router'
@@ -14,6 +15,7 @@ import DailySummaryRouter from './DailySummary.router'
 import FinancialSummaryRouter from './FinancialSummary.router'
 import LoanDisbursementSummaryRouter from './LoanDisbursementSummary.router'
 import OutstandingDebtorRouter from './OutstandingDebtor.router'
+import SuccessDebtorRouter from './SuccessDebtor.router'
 import OverdueCustomerRouter from './OverdueCustomer.router'
 import PaymentsForAccountClosureRouter from './PaymentsForAccountClosure.router'
 import PercentInstallmentRouter from './PercentInstallment.router'
@@ -64,6 +66,8 @@ export default {
     DailyLoanDisbursementRouter,
     LoanDisbursementSummaryRouter,
     OutstandingDebtorRouter,
+    SuccessDebtorRouter,
+    AllDebtorRouter,
     OverdueCustomerRouter,
     AnnualFinanceReceiptRouter
   ]
