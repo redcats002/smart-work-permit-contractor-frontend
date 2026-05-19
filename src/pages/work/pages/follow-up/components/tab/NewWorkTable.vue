@@ -23,6 +23,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { formatter } from '@/utils/Formatter'
 import type { IDebtCollectionList } from '@/models/response/work/WorkRes.model'
 import type { IColumn } from '@/models/Table.model'
 import LinkText from '@/components/button/LinkText.vue'
@@ -48,9 +49,9 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IDebtCollectionList>[]>([
   { field: 'contract.idNo', header: 'เลขที่สัญญา', sortable: true },
-  { field: 'order', header: 'งวดที่', sortable: true },
+  { field: 'order', header: 'งวดที่', sortable: true, value: (e: IDebtCollectionList): string => `งวดที่ ${formatter.numberFormatNoDecimal(e.order || 0)}` },
   { field: 'customer', header: 'ชื่อลูกค้า', value: (e: IDebtCollectionList): string => e.customer.fullName },
-  { field: 'customer.phoneNumber', header: 'เบอร์โทรศัพท์', value: (e: IDebtCollectionList): string => e.customer.phoneNumber },
+  { field: 'customer.phoneNumber', header: 'เบอร์โทรศัพท์', value: (e: IDebtCollectionList): string => formatter.phoneNumberFormat(e.customer.phoneNumber) },
   { field: 'actions', header: 'จัดการ', align: 'right' }
 ])
 </script>
