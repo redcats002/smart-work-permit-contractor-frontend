@@ -1,57 +1,43 @@
 import { computed, ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IGetCompleteWorkAssetFollowUpList, IGetNewWorkAssetFollowUpList } from '@/models/request/work/WorkReq.model'
-import type { IFollowUpCompleteWorkList, IFollowUpNewWorkList } from '@/models/response/work/WorkRes.model'
+import type { IGetDebtCollectionList } from '@/models/request/work/WorkReq.model'
+import type { IDebtCollectionList } from '@/models/response/work/WorkRes.model'
+import { DebtCollectionStatusEnum } from '@/enums/modules/work/DebtCollectionStatus.enum'
 import type { IWorkProvider } from '@/resources/provider/work/Work.provider'
 import WorkProvider from '@/resources/provider/work/Work.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 import type { TFollowUpTab } from './useInit'
 
-type TFollowUpList = IFollowUpNewWorkList | IFollowUpCompleteWorkList
-type TGetFollowUpList = IGetNewWorkAssetFollowUpList | IGetCompleteWorkAssetFollowUpList
-
 interface IUseList extends IUsePagination {
-  filters: Ref<TGetFollowUpList>
-  items: Ref<TFollowUpList[]>
+  filters: Ref<IGetDebtCollectionList>
+  items: Ref<IDebtCollectionList[]>
   fetch(): void
   onClearFilters(): void
 }
+
 export default function useList (tab: Ref<TFollowUpTab>): IUseList {
   const WorkService: IWorkProvider = new WorkProvider()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
-  const filters = ref<TGetFollowUpList>({})
-  const items = ref<TFollowUpList[]>([])
+  const filters = ref<IGetDebtCollectionList>({})
+  const items = ref<IDebtCollectionList[]>([])
 
-  const paginateQuery = computed((): TGetFollowUpList => {
-    const normalizedFilters = normalizeFilters(filters.value)
-    return {
-      search: search.value,
-      page: pagination.value.page,
-      limit: pagination.value.limit,
-      sortBy: sortBy.value || undefined,
-      sortOrder: sortOrder.value,
-      ...normalizedFilters
-    }
-  })
+  const paginateQuery = computed((): IGetDebtCollectionList => ({
+    search: search.value,
+    page: pagination.value.page,
+    limit: pagination.value.limit,
+    sortBy: sortBy.value || undefined,
+    sortOrder: sortOrder.value,
+    status: tab.value === 'NewWork' ? DebtCollectionStatusEnum.PENDING : DebtCollectionStatusEnum.COMPLETED,
+    ...filters.value
+  }))
 
   async function useFetch (): Promise<void> {
-    const fetchFn = tab.value === 'NewWork'
-      ? () => WorkService.getWorkFollowUpNewPaginate(paginateQuery.value)
-      : () => WorkService.getWorkFollowUpCompletePaginate(paginateQuery.value)
-
-    const response = await fetchFn()
+    const response = await WorkService.getDebtCollectionList(paginateQuery.value)
     items.value = response.data || []
     pagination.value = extractPagination(response)
-    syncQuery({ ...normalizeFilters(filters.value) })
-  }
-
-
-  function normalizeFilters (value: TGetFollowUpList): Partial<TGetFollowUpList> {
-    return {
-      ...value
-    }
+    syncQuery({ ...filters.value })
   }
 
   function fetch (): void {
@@ -59,10 +45,9 @@ export default function useList (tab: Ref<TFollowUpTab>): IUseList {
   }
 
   function onClearFilters (): void {
-    filters.value = {} as TGetFollowUpList
+    filters.value = {}
     reset()
   }
-
 
   return {
     filters,
