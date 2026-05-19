@@ -7,50 +7,50 @@
     :items="items"
     disable-auto-left-padding
     @update="emits('update')">
-    <template #[`item.asset.idNo`]="{ item }">
-      <LinkText :to="{}">
-        <!-- TODO: complete asset.idNo and route -->
-        {{ item.asset.idNo }}
+    <template #[`item.contract.idNo`]="{ item }">
+      <LinkText :to="{ name: 'ContractDetailPage', params: { id: item.contract.id } }">
+        {{ item.contract.idNo }}
       </LinkText>
     </template>
-    <template #[`item.idNo`]="{ item }">
-      <LinkText :to="{ name: 'PreContractDetailPage', params: { id: item.id } }">
-        {{ item.idNo }}
-      </LinkText>
+    <template #[`item.actions`]="{ item }">
+      <FollowUpMenuAction
+        :contract-id="item.contract.id"
+        :debt-collection-id="Number(item.id)"
+        @defer="emits('update')" />
     </template>
   </BaseTable>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { formatter } from '@/utils/Formatter'
-import type { IFollowUpBaseWorkList } from '@/models/response/work/WorkRes.model'
+import type { IDebtCollectionList } from '@/models/response/work/WorkRes.model'
 import type { IColumn } from '@/models/Table.model'
-import { formatTitle } from '@/enums/modules/asset/AssetType.enum'
 import LinkText from '@/components/button/LinkText.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
+import FollowUpMenuAction from './FollowUpMenuAction.vue'
 
 interface IProps {
-  items: IFollowUpBaseWorkList[]
+  items: IDebtCollectionList[]
 }
+
 defineProps<IProps>()
 
 interface IEmits {
   update: []
 }
+
 const emits = defineEmits<IEmits>()
 
 const pagination = defineModel<IPagination>('pagination', { required: true })
 const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
-
-const columns = ref<IColumn<IFollowUpBaseWorkList>[]>([
-  { field: 'asset.idNo', header: 'เลขที่หลักทรัพย์', sortable: true },
-  { field: 'idNo', header: 'เลขที่สัญญา', sortable: true, value: (e: IFollowUpBaseWorkList): string => e.idNo ?? '' },
-  { field: 'customer', header: 'ชื่อลูกค้า', value: (e: IFollowUpBaseWorkList): string => formatter.fullAddress(e.customer?.mainAddress) ?? '' },
-  { field: 'phoneNumber', header: 'เบอร์โทรศัพท์', value: (e: IFollowUpBaseWorkList): string => formatter.fullPhoneNumber(e?.customer) ?? '' },
-  { field: 'types', header: 'หมวดหมู่หลักทรัพย์', value: (e: IFollowUpBaseWorkList): string => e?.types?.map(formatTitle).join(', ') || '-' }
+const columns = ref<IColumn<IDebtCollectionList>[]>([
+  { field: 'contract.idNo', header: 'เลขที่สัญญา', sortable: true },
+  { field: 'order', header: 'งวดที่', sortable: true },
+  { field: 'customer', header: 'ชื่อลูกค้า', value: (e: IDebtCollectionList): string => e.customer.fullName },
+  { field: 'customer.phoneNumber', header: 'เบอร์โทรศัพท์', value: (e: IDebtCollectionList): string => e.customer.phoneNumber },
+  { field: 'actions', header: 'จัดการ', align: 'right' }
 ])
 </script>
