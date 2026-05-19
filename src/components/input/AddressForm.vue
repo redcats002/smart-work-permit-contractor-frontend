@@ -6,14 +6,14 @@
           :label="labelType"
           hide-error
           required>
-          <div v-if="type!=='MAIN'">
+          <div v-if="type !== 'MAIN'">
             <CheckboxInput
               v-model="model.isSameCitizenAddress"
               label="ใช้ที่อยู่เดียวกับตามบัตรประจำตัวประชาชน"
               variant="primary"
               @update:model-value="onUseSameCitizenAddress($event)" />
             <CheckboxInput
-              v-if="type==='WORK'"
+              v-if="type === 'WORK'"
               v-model="model.isSameCurrentAddress"
               label="ใช้ที่อยู่เดียวกับที่อยู่ปัจจุบัน"
               variant="primary"
@@ -23,6 +23,7 @@
         </LabelField>
         <LabelField
           v-model="model.address"
+          :disabled="isLocked"
           :form="form"
           :name="address"
           placeholder="กรอกที่อยู่"
@@ -30,7 +31,7 @@
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <LabelField
-          v-slot="{invalid}"
+          v-slot="{ invalid }"
           :form="form"
           :name="subDistrict"
           label="แขวง/ตำบล"
@@ -38,6 +39,7 @@
           required>
           <AddressFieldInput
             v-model="model.subDistrict"
+            :disabled="isLocked"
             :invalid="invalid"
             :name="subDistrict"
             address-type="sub-district"
@@ -45,7 +47,7 @@
             @select="onAddressSelect($event)" />
         </LabelField>
         <LabelField
-          v-slot="{invalid}"
+          v-slot="{ invalid }"
           :form="form"
           :name="district"
           label="เขต/อำเภอ"
@@ -53,6 +55,7 @@
           required>
           <AddressFieldInput
             v-model="model.district"
+            :disabled="isLocked"
             :invalid="invalid"
             :name="district"
             address-type="district"
@@ -60,7 +63,7 @@
             @select="onAddressSelect($event)" />
         </LabelField>
         <LabelField
-          v-slot="{invalid}"
+          v-slot="{ invalid }"
           :form="form"
           :name="province"
           label="จังหวัด"
@@ -68,6 +71,7 @@
           required>
           <AddressFieldInput
             v-model="model.province"
+            :disabled="isLocked"
             :invalid="invalid"
             :name="province"
             address-type="province"
@@ -75,7 +79,7 @@
             @select="onAddressSelect($event)" />
         </LabelField>
         <LabelField
-          v-slot="{invalid}"
+          v-slot="{ invalid }"
           :form="form"
           :name="postCode"
           label="รหัสไปรษณีย์"
@@ -83,6 +87,7 @@
           required>
           <AddressFieldInput
             v-model="model.postCode"
+            :disabled="isLocked"
             :invalid="invalid"
             :name="postCode"
             address-type="zipcode"
@@ -90,8 +95,9 @@
             @select="onAddressSelect($event)" />
         </LabelField>
         <LabelField
-          v-if="type!=='MAIN'"
+          v-if="type !== 'MAIN'"
           v-model="model.urlGoogleMap"
+          :disabled="isLocked"
           :form="form"
           :name="googleMapUrl"
           class="md:col-span-2"
@@ -106,7 +112,6 @@
 
 <script setup lang="ts">
 import { computed, watch } from 'vue'
-import { isSameAddress } from '@/utils/Address'
 import type { IFormState } from '@/models/Form.model'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import AddressFieldInput, { type IAddressData } from '@/components/input/AddressFieldInput.vue'
@@ -120,10 +125,6 @@ interface IProps {
   citizenAddress?: IAddressRequest
   currentAddressRef?: IAddressRequest
 }
-interface IEmits {
-  useSameCitizenAddress: []
-  useSameCurrentAddress: []
-}
 
 const props = withDefaults(defineProps<IProps>(), {
   form: undefined,
@@ -132,18 +133,19 @@ const props = withDefaults(defineProps<IProps>(), {
   citizenAddress: undefined,
   currentAddressRef: undefined
 })
-const emits = defineEmits<IEmits>()
 
-const model = defineModel<IAddressRequest>({ default: (): IAddressRequest => ({
-  address: '',
-  subDistrict: '',
-  district: '',
-  province: '',
-  postCode: '',
-  urlGoogleMap: '',
-  isSameCitizenAddress: false,
-  isSameCurrentAddress: false
-}) })
+const model = defineModel<IAddressRequest>({
+  default: (): IAddressRequest => ({
+    address: '',
+    subDistrict: '',
+    district: '',
+    province: '',
+    postCode: '',
+    urlGoogleMap: '',
+    isSameCitizenAddress: false,
+    isSameCurrentAddress: false
+  })
+})
 
 const BLANK_ADDRESS = {
   address: '',
@@ -152,6 +154,8 @@ const BLANK_ADDRESS = {
   province: '',
   postCode: ''
 }
+
+const isLocked = computed((): boolean => !!(model.value.isSameCitizenAddress || model.value.isSameCurrentAddress))
 
 const labelType = computed((): string => {
   if (props.type === 'CURRENT') return 'ที่อยู่ปัจจุบัน'
@@ -190,20 +194,33 @@ const googleMapUrl = computed((): string => {
 })
 
 watch(
-  (): string[] => [
-    model.value.address,
-    model.value.subDistrict,
-    model.value.district,
-    model.value.province,
-    model.value.postCode
-  ], (): void => {
-    if (props.citizenAddress) {
-      model.value.isSameCitizenAddress = isSameAddress(model.value, props.citizenAddress)
+  (): IAddressRequest | undefined => props.citizenAddress, (newVal: IAddressRequest | undefined): void => {
+    if (model.value.isSameCitizenAddress && newVal) {
+      model.value = {
+        ...model.value,
+        address: newVal.address,
+        subDistrict: newVal.subDistrict,
+        district: newVal.district,
+        province: newVal.province,
+        postCode: newVal.postCode
+      }
     }
-    if (props.currentAddressRef) {
-      model.value.isSameCurrentAddress = isSameAddress(model.value, props.currentAddressRef)
+  }, { deep: true }
+)
+
+watch(
+  (): IAddressRequest | undefined => props.currentAddressRef, (newVal: IAddressRequest | undefined): void => {
+    if (model.value.isSameCurrentAddress && newVal) {
+      model.value = {
+        ...model.value,
+        address: newVal.address,
+        subDistrict: newVal.subDistrict,
+        district: newVal.district,
+        province: newVal.province,
+        postCode: newVal.postCode
+      }
     }
-  }
+  }, { deep: true }
 )
 
 function onAddressSelect (address: Partial<IAddressData>): void {
@@ -215,16 +232,34 @@ function onAddressSelect (address: Partial<IAddressData>): void {
 }
 
 function onUseSameCitizenAddress (isChecked: boolean): void {
-  if (isChecked) {
-    emits('useSameCitizenAddress')
+  if (isChecked && props.citizenAddress) {
+    model.value = {
+      ...model.value,
+      isSameCitizenAddress: true,
+      isSameCurrentAddress: false,
+      address: props.citizenAddress.address,
+      subDistrict: props.citizenAddress.subDistrict,
+      district: props.citizenAddress.district,
+      province: props.citizenAddress.province,
+      postCode: props.citizenAddress.postCode
+    }
   } else {
     model.value = { ...model.value, ...BLANK_ADDRESS }
   }
 }
 
 function onUseSameCurrentAddress (isChecked: boolean): void {
-  if (isChecked) {
-    emits('useSameCurrentAddress')
+  if (isChecked && props.currentAddressRef) {
+    model.value = {
+      ...model.value,
+      isSameCurrentAddress: true,
+      isSameCitizenAddress: false,
+      address: props.currentAddressRef.address,
+      subDistrict: props.currentAddressRef.subDistrict,
+      district: props.currentAddressRef.district,
+      province: props.currentAddressRef.province,
+      postCode: props.currentAddressRef.postCode
+    }
   } else {
     model.value = { ...model.value, ...BLANK_ADDRESS }
   }
@@ -235,6 +270,4 @@ function onUpdate (): void {
 }
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

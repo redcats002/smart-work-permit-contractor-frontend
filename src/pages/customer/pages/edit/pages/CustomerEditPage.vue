@@ -33,8 +33,7 @@
               v-model="currentAddress"
               :citizen-address="mainAddress"
               :form="$form"
-              type="CURRENT"
-              @use-same-citizen-address="onUseSameCitizenAddress('CURRENT')" />
+              type="CURRENT" />
           </BaseContainer>
           <BaseContainer>
             <AddressForm
@@ -42,9 +41,7 @@
               :citizen-address="mainAddress"
               :current-address-ref="currentAddress"
               :form="$form"
-              type="WORK"
-              @use-same-citizen-address="onUseSameCitizenAddress('WORK')"
-              @use-same-current-address="onUseSameCurrentAddress('WORK')" />
+              type="WORK" />
           </BaseContainer>
           <FormAction @cancel="onCancel()" />
         </Form>
@@ -137,50 +134,6 @@ async function onSubmit (event: FormSubmitEvent): Promise<void> {
 function onCancel (): void {
   router.push({ name: 'CustomerListPage' })
 }
-
-function onUseSameCurrentAddress (type: 'WORK'): void {
-  if (type === 'WORK') {
-    workAddress.value = {
-      ...workAddress.value,
-      isSameCurrentAddress: true,
-      isSameCitizenAddress: false,
-      address: currentAddress.value.address,
-      subDistrict: currentAddress.value.subDistrict,
-      district: currentAddress.value.district,
-      province: currentAddress.value.province,
-      postCode: currentAddress.value.postCode
-    }
-  }
-  mount()
-}
-
-function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
-  if (type === 'CURRENT') {
-    currentAddress.value = {
-      ...currentAddress.value,
-      isSameCitizenAddress: true,
-      isSameCurrentAddress: false,
-      address: mainAddress.value.address,
-      subDistrict: mainAddress.value.subDistrict,
-      district: mainAddress.value.district,
-      province: mainAddress.value.province,
-      postCode: mainAddress.value.postCode
-    }
-  } else if (type === 'WORK') {
-    workAddress.value = {
-      ...workAddress.value,
-      isSameCitizenAddress: true,
-      isSameCurrentAddress: false,
-      address: mainAddress.value.address,
-      subDistrict: mainAddress.value.subDistrict,
-      district: mainAddress.value.district,
-      province: mainAddress.value.province,
-      postCode: mainAddress.value.postCode
-    }
-  }
-  mount()
-}
-
 
 function mount (): void {
   formKey.value++

@@ -44,8 +44,7 @@
             v-model="currentAddress"
             :citizen-address="mainAddress"
             :form="$form"
-            type="CURRENT"
-            @use-same-citizen-address="onUseSameCitizenAddress('CURRENT')" />
+            type="CURRENT" />
         </BaseContainer>
         <FormAction @cancel="onCancel()" />
       </Form>
@@ -119,22 +118,6 @@ function onCancel (): void {
   router.push({ name: 'EmployeeListPage' })
 }
 
-
-function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
-  if (type === 'CURRENT') {
-    currentAddress.value = {
-      ...currentAddress.value,
-      isSameCitizenAddress: true,
-      isSameCurrentAddress: false,
-      address: mainAddress.value.address,
-      subDistrict: mainAddress.value.subDistrict,
-      district: mainAddress.value.district,
-      province: mainAddress.value.province,
-      postCode: mainAddress.value.postCode
-    }
-  }
-  mount()
-}
 
 function mount (): void {
   formKey.value++
