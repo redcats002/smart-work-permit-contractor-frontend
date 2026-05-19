@@ -29,6 +29,7 @@ export interface IUseInit {
   selectedCustomer: Ref<ICustomerById | null>
   assetCategory: ComputedRef<TAssetCategory>
   canAddAsset: ComputedRef<boolean>
+  customerIdQuery: ComputedRef<number | null>
   mount (): void
   resolver: ReturnType<typeof zodResolver>
   onCustomerSelect: (id?: TBaseParamsId | null) => Promise<void>
@@ -52,10 +53,14 @@ export function useInit (): IUseInit {
 
   const formKey = ref<number>(0)
   const form = ref<PreContractFormValues>(useFormInitialValues())
-  const resolver = zodResolver(PreContractSchema)
   const submitMode = ref<TPreContractStatus>('DRAFT')
   const selectedCustomer = ref<ICustomerById | null>(null)
+  const resolver = zodResolver(PreContractSchema)
 
+  const customerIdQuery = computed<number | null>(() => {
+    const customerId = route?.query?.customerId ? Number(route.query.customerId) : null
+    return customerId
+  })
   const assetCategory = computed((): TAssetCategory => {
     for (const e of form.value.preAssets) {
       if (isVehicleAsset(e.type)) return 'VEHICLE'
@@ -133,7 +138,7 @@ export function useInit (): IUseInit {
   }
 
   function onInitCustomer (): void {
-    const customerId = route?.query?.customerId ? Number(route.query.customerId) : null
+    const customerId = customerIdQuery.value
     if (!customerId) return
     form.value.customerId = customerId
     onCustomerSelect(customerId)
@@ -150,6 +155,7 @@ export function useInit (): IUseInit {
     selectedCustomer,
     assetCategory,
     canAddAsset,
+    customerIdQuery,
     resolver,
     onCustomerSelect,
     onSubmit,

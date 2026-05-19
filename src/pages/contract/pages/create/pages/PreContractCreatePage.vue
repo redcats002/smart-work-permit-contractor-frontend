@@ -30,6 +30,7 @@
           <div class="flex flex-col gap-4">
             <ModalCustomerSelection
               v-model="form.customerId"
+              :disabled="!!customerIdQuery"
               :form="$form"
               label="ลูกค้า"
               name="customerId"
@@ -99,6 +100,7 @@ const {
   form,
   formKey,
   selectedCustomer,
+  customerIdQuery,
   resolver,
   onCustomerSelect,
   onSubmit,
