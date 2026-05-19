@@ -16,7 +16,17 @@
         required
         @keypress="keypress.thaiCitizenId"
         @paste="handlePasteIdCard($event)" />
-      <div class="w-full grid grid-cols-2 gap-5">
+      <LabelField
+        v-model="model.firstName"
+        v-model:prepend-option="model.titleName"
+        :form="form"
+        :prepend-options="TitleNameItems"
+        label="ชื่อ"
+        name="firstName"
+        name-prepend-option="titleName"
+        hide-error
+        required />
+      <!-- <div class="w-full grid grid-cols-2 gap-5">
         <LabelField
           v-slot="{ invalid }"
           :form="form"
@@ -36,7 +46,7 @@
           name="firstName"
           hide-error
           required />
-      </div>
+      </div> -->
       <LabelField
         v-model="model.lastName"
         :form="form"
@@ -121,13 +131,13 @@ import paste from '@/utils/Paste'
 import type { IFormState } from '@/models/Form.model'
 import type { ICreateCustomerPayload } from '@/models/request/customer/CustomerReq.model'
 import { CustomerStatusEnum } from '@/enums/modules/customer/CustomerStatus.enum'
+import { TitleNameItems } from '@/enums/TitleName.enum'
 import DatePickerInput from '@/components/input/DatePickerInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import PhoneNumberInput from '@/components/input/PhoneNumberInput.vue'
 import Switch from '@/components/input/Switch.vue'
 import CustomerGroupSelection from '@/components/selection/modules/api/customer-group/CustomerGroupSelection.vue'
 import CustomerOccupationSelection from '@/components/selection/modules/api/customer-occupation/CustomerOccupationSelection.vue'
-import TitleNameSelection from '@/components/selection/modules/static/title-name/TitleNameSelection.vue'
 import { useFormInitialValues } from '../schema/customer.schema'
 
 interface IProps {

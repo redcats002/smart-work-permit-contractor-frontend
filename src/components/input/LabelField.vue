@@ -16,33 +16,65 @@
     <slot
       v-if="!hideField"
       :invalid="isInvalid">
-      <div class="relative">
-        <slot name="prependIcon">
-          <Icon
-            v-if="prependIcon"
-            :class="[isInvalid ? 'text-red-400!' : '']"
-            :icon="prependIcon"
-            class="absolute top-1/2 -mt-2 text-surface-400 leading-none inset-s-3 z-1" />
-        </slot>
-        <InputText
-          v-model="inputModel"
-          :class="isInvalid ? 'border-red-400!' : ''"
-          :invalid="isInvalid"
-          :name="name"
-          class="h-9 shadow-none! rounded-sm! placeholder:text-gray-500! placeholder:text-md! placeholder:font-medium!"
-          fluid
-          v-bind="{
-            ...$attrs,
-            'pt:root': prependIcon ? 'ps-10' : 'pe-10'
-          }" />
-        <slot name="appendIcon">
-          <Icon
-            v-if="appendIcon"
-            :class="[isInvalid ? 'text-red-400!' : '']"
-            :icon="appendIcon"
-            class="absolute top-1/2 -mt-2 text-surface-400 leading-none inset-e-3 z-1" />
-        </slot>
-      </div>
+      <template v-if="hasPrepend">
+        <div class="relative flex w-full overflow-hidden">
+          <Select
+            v-model="prependOptionModel"
+            :disabled="!!attrs.disabled"
+            :invalid="isPrependInvalid"
+            :options="prependOptions"
+            class="h-9 shadow-none! rounded-tl-sm! rounded-bl-sm! rounded-tr-none! rounded-br-none! shrink-0 max-w-[8rem] w-fit"
+            option-label="label"
+            option-value="value" />
+          <InputText
+            v-if="namePrependOption"
+            ref="prependProxyInput"
+            :model-value="String(prependOptionModel ?? '')"
+            :name="namePrependOption"
+            class="absolute w-0 h-0 opacity-0 overflow-hidden pointer-events-none p-0 m-0 border-0"
+            tabindex="-1"
+            type="text" />
+          <InputText
+            v-model="inputModel"
+            :class="isInvalid ? 'border-red-400!' : ''"
+            :invalid="isInvalid"
+            :name="name"
+            class="flex-1 min-w-0 h-9 shadow-none! rounded-tr-sm! rounded-br-sm! rounded-tl-none! rounded-bl-none! border-l-0! placeholder:text-gray-500! placeholder:text-md! placeholder:font-medium!"
+            v-bind="{
+              ...$attrs,
+              'pt:root': 'pe-10'
+            }" />
+        </div>
+      </template>
+      <template v-else>
+        <div class="relative">
+          <slot name="prependIcon">
+            <Icon
+              v-if="prependIcon"
+              :class="[isInvalid ? 'text-red-400!' : '']"
+              :icon="prependIcon"
+              class="absolute top-1/2 -mt-2 text-surface-400 leading-none inset-s-3 z-1" />
+          </slot>
+          <InputText
+            v-model="inputModel"
+            :class="isInvalid ? 'border-red-400!' : ''"
+            :invalid="isInvalid"
+            :name="name"
+            class="h-9 shadow-none! rounded-sm! placeholder:text-gray-500! placeholder:text-md! placeholder:font-medium!"
+            fluid
+            v-bind="{
+              ...$attrs,
+              'pt:root': prependIcon ? 'ps-10' : 'pe-10'
+            }" />
+          <slot name="appendIcon">
+            <Icon
+              v-if="appendIcon"
+              :class="[isInvalid ? 'text-red-400!' : '']"
+              :icon="appendIcon"
+              class="absolute top-1/2 -mt-2 text-surface-400 leading-none inset-e-3 z-1" />
+          </slot>
+        </div>
+      </template>
     </slot>
     <p
       v-if="description"
@@ -62,7 +94,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, useAttrs } from 'vue'
+import { computed, nextTick, ref, useAttrs, watch } from 'vue'
+import type { TBaseOption } from '@/models/Global.model'
 import { Icon } from '@iconify/vue'
 
 type TInputTag = 'label' | 'div'
@@ -88,10 +121,14 @@ interface IProps {
   invalid?: boolean
   appendIcon?: string
   prependIcon?: string
+  prependOptions?: TBaseOption[]
+  namePrependOption?: string
 }
 
 const model = defineModel<string | number | null>({ default: '' })
+const prependOptionModel = defineModel<string | number | null>('prependOption', { default: null, required: false })
 const attrs = useAttrs()
+const prependProxyInput = ref<any>(null)
 
 const props = withDefaults(defineProps<IProps>(), {
   tag: 'label',
@@ -105,8 +142,12 @@ const props = withDefaults(defineProps<IProps>(), {
   form: undefined,
   invalid: undefined,
   appendIcon: undefined,
-  prependIcon: undefined
+  prependIcon: undefined,
+  prependOptions: undefined,
+  namePrependOption: undefined
 })
+
+const hasPrepend = computed((): boolean => !!props.prependOptions?.length)
 
 const inputModel = computed<string>({
   get: (): string => {
@@ -123,9 +164,7 @@ const inputModel = computed<string>({
 })
 
 function resolveFormField (form: IFormState, name: string): IFormState[string] | undefined {
-  // (e.g. form["mainAddress.address"]) as well as under a nested object tree.
   if (form[name] !== undefined) return form[name]
-
   const parts = name.split('.')
   let node: any = form
   for (const part of parts) {
@@ -141,11 +180,28 @@ const isInvalid = computed((): boolean => {
   return resolveFormField(props.form, props.name)?.invalid ?? false
 })
 
+const isPrependInvalid = computed((): boolean => {
+  if (!props.form || !props.namePrependOption) return false
+  return resolveFormField(props.form, props.namePrependOption)?.invalid ?? false
+})
+
 const errorMessage = computed((): string => {
   if (!props.form || !props.name) return ''
   const fieldState = resolveFormField(props.form, props.name)
   return fieldState?.error?.message ?? fieldState?.errors?.[0]?.message ?? ''
 })
+
+watch(
+  (): string | number | null => prependOptionModel.value, async (): Promise<void> => {
+    if (!props.namePrependOption || !prependProxyInput.value) return
+    await nextTick()
+    const inputEl = prependProxyInput.value.$el
+    if (inputEl) {
+      inputEl.dispatchEvent(new Event('input', { bubbles: true }))
+      inputEl.dispatchEvent(new Event('change', { bubbles: true }))
+    }
+  }
+)
 </script>
 
 <style scoped>
