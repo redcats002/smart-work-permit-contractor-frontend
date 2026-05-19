@@ -5,7 +5,9 @@
     v-model:sort-order="sortOrder"
     :columns="columns"
     :items="props.items"
+    :items-footer="itemsFooter"
     disable-auto-left-padding
+    show-footer
     @update="emits('update')">
     <template #[`item.index`]="{ index }">
       {{ index + 1 }}
@@ -14,21 +16,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { formatter } from '@/utils/Formatter'
-import type { IPercentInstallmentList } from '@/models/response/report/percent-installment/PercentInstallmentRes.model'
-import type { IColumn } from '@/models/Table.model'
+import { generateTableFooter, type IFooterColConfig } from '@/utils/TableFooter'
+import type {
+  IPercentInstallmentList,
+  IPercentInstallmentSummary
+} from '@/models/response/report/percent-installment/PercentInstallmentRes.model'
+import type { IColumn, IFooter } from '@/models/Table.model'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
 
 interface IProps {
   items: IPercentInstallmentList[]
+  summary?: IPercentInstallmentSummary
 }
 
-const props = defineProps<IProps>()
+const props = withDefaults(defineProps<IProps>(), {
+  summary: undefined
+})
 
 interface IEmits {
-  delete: [id: number]
   update: []
 }
 
@@ -44,14 +52,92 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 const columns = ref<IColumn<IPercentInstallmentList>[]>([
   { field: 'index', header: 'ลำดับ', align: 'left', width: 60 },
   { field: 'branchName', header: 'สาขา', align: 'left', width: 150 },
-  { field: 'installmentAmount', header: 'ค่างวด/งวด', align: 'left', width: 120, value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.installmentAmount) },
-  { field: 'receivedInstallment', header: 'รับค่างวด', align: 'left', width: 120, value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.receivedInstallment) },
-  { field: 'salesAmount', header: 'ขาย', align: 'left', width: 120, value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.salesAmount) },
-  { field: 'receivedPenalty', header: 'รับค่าปรับ', align: 'left', width: 120, value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.receivedPenalty) },
-  { field: 'trackingFee', header: 'ค่าติดตาม', align: 'left', width: 120, value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.trackingFee) },
-  { field: 'totalAmount', header: 'รวม', align: 'left', width: 140, value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.totalAmount) },
-  { field: 'percentage', header: '%', align: 'right', width: 100, value: (e: IPercentInstallmentList): string => `${formatter.numberFormat(e.percentage)} %` }
+  {
+    field: 'monthlyInstallment',
+    header: 'ค่างวด/งวด',
+    align: 'right',
+    width: 120,
+    value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.monthlyInstallment)
+  },
+  {
+    field: 'amountPaid',
+    header: 'รับค่างวด',
+    align: 'right',
+    width: 120,
+    value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.amountPaid)
+  },
+  {
+    field: 'salePrice',
+    header: 'ขาย',
+    align: 'right',
+    width: 120,
+    value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.salePrice)
+  },
+  {
+    field: 'totalPenaltyFee',
+    header: 'รับค่าปรับ',
+    align: 'right',
+    width: 120,
+    value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.totalPenaltyFee)
+  },
+  {
+    field: 'totalCollectionFee',
+    header: 'ค่าติดตาม',
+    align: 'right',
+    width: 120,
+    value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.totalCollectionFee)
+  },
+  {
+    field: 'summary',
+    header: 'รวม',
+    align: 'right',
+    width: 140,
+    value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.summary)
+  },
+  {
+    field: 'percent',
+    header: '%',
+    align: 'right',
+    width: 100,
+    value: (e: IPercentInstallmentList): string => `${formatter.numberFormat(e.percent)} %`
+  }
 ])
+
+const itemsFooter = computed((): IFooter[] => {
+  type TConfig = Partial<Record<keyof IPercentInstallmentList, IFooterColConfig<IPercentInstallmentSummary>>>
+  const footerConfig: TConfig = {
+    branchName: { value: 'รวม' },
+    monthlyInstallment: {
+      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      footerClass: 'text-right'
+    },
+    amountPaid: {
+      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      footerClass: 'text-right'
+    },
+    salePrice: {
+      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      footerClass: 'text-right'
+    },
+    totalPenaltyFee: {
+      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      footerClass: 'text-right'
+    },
+    totalCollectionFee: {
+      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      footerClass: 'text-right'
+    },
+    summary: {
+      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      footerClass: 'text-right'
+    },
+    percent: {
+      format: (v: number): string => `${formatter.numberFormat(v ?? 0)} %`,
+      footerClass: 'text-right'
+    }
+  }
+  return generateTableFooter(columns.value, props.summary, footerConfig)
+})
 </script>
 
 <style scoped></style>

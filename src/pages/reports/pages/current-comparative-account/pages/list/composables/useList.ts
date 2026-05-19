@@ -1,112 +1,71 @@
-import { ref, type Ref } from 'vue'
-import { toast } from '@/plugins/toast'
+import { computed, ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IGetCurrentComparativeList } from '@/models/request/report/current-comparative-account/CurrentComparativeReq.model'
-import type { ICurrentComparativeAccountList } from '@/models/response/report/current-comparative-account/CurrentComparativeAccountRes.model'
+import type {
+  ICurrentComparativeAccountList,
+  ICurrentComparativeAccountSummary
+} from '@/models/response/report/current-comparative-account/CurrentComparativeAccountRes.model'
+import type { ICurrentComparativeAccountFilter } from '@/models/modules/report/current-comparative-account/Filter.model'
+import CurrentComparativeAccountProvider, {
+  type ICurrentComparativeAccountProvider
+} from '@/resources/provider/report/CurrentComparativeAccount.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
 interface IUseList extends IUsePagination {
-  filters: Ref<IGetCurrentComparativeList>
+  filters: Ref<ICurrentComparativeAccountFilter>
   items: Ref<ICurrentComparativeAccountList[]>
+  summary: Ref<ICurrentComparativeAccountSummary>
   fetch(): void
   onClearFilters(): void
-  onDelete(id: number): void
 }
 export default function useList (): IUseList {
+  const CurrentComparativeAccountService: ICurrentComparativeAccountProvider = new CurrentComparativeAccountProvider()
+
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
-  const filters = ref<IGetCurrentComparativeList>({})
+  const filters = ref<ICurrentComparativeAccountFilter>({})
   const items = ref<ICurrentComparativeAccountList[]>([])
+  const summary = ref<ICurrentComparativeAccountSummary>({
+    numberOfBranches: 0,
+    contractAmount: 0,
+    principal: 0,
+    principalAndInterest: 0,
+    amountPaid: 0,
+    settlementDiscount: 0,
+    remainingAmount: 0
+  })
 
-  // const paginateQuery = computed((): any => {
-  //   const normalizedFilters = normalizeFilters(filters.value)
-  //   return {
-  //     search: search.value,
-  //     page: pagination.value.page,
-  //     limit: pagination.value.limit,
-  //     sortBy: sortBy.value || undefined,
-  //     sortOrder: sortOrder.value,
-  //     ...normalizedFilters
-  //   }
-  // })
-  // mockdata
-  const mockResponse = {
-    data: [
-      {
-        index: 1,
-        branchName: 'สำนักงานใหญ่',
-        contractCount: 125,
-        principalAmount: 120000,
-        principalWithInterest: 120000,
-        debtCutOff: 120000,
-        discount: 120000,
-        currentBalance: 120000
-      },
-      {
-        index: 2,
-        branchName: 'ขอนแก่น',
-        contractCount: 34,
-        principalAmount: 120000,
-        principalWithInterest: 120000,
-        debtCutOff: 120000,
-        discount: 120000,
-        currentBalance: 120000
-      },
-      {
-        index: 3,
-        branchName: 'มหาสารคาม',
-        contractCount: 69,
-        principalAmount: 120000,
-        principalWithInterest: 120000,
-        debtCutOff: 120000,
-        discount: 120000,
-        currentBalance: 120000
-      },
-      {
-        index: 4,
-        branchName: 'ร้อยเอ็ด',
-        contractCount: 11,
-        principalAmount: 120000,
-        principalWithInterest: 120000,
-        debtCutOff: 120000,
-        discount: 120000,
-        currentBalance: 120000
-      },
-      {
-        index: 5,
-        branchName: 'บุรีรัมย์',
-        contractCount: 667,
-        principalAmount: 120000,
-        principalWithInterest: 120000,
-        debtCutOff: 120000,
-        discount: 120000,
-        currentBalance: 120000
-      }
-    ],
-    total: 5,
-    lastPage: 1,
-    perPage: pagination.value.limit || 10,
-    currentPage: pagination.value.page || 1
-  }
+  const paginateQuery = computed((): IGetCurrentComparativeList => {
+    const normalizedFilters = normalizeFilters(filters.value)
+    return {
+      search: search.value || undefined,
+      page: pagination.value.page,
+      limit: pagination.value.limit,
+      sortBy: sortBy.value || undefined,
+      sortOrder: sortOrder.value,
+      ...normalizedFilters
+    }
+  })
+
   async function useFetch (): Promise<void> {
-    // const response = await EmployeeService.getEmployeePaginate(paginateQuery.value)
-    // items.value = response?.data || []
-    // pagination.value = extractPagination(response)
-    const response = mockResponse as any
-
+    const response = await CurrentComparativeAccountService.getCurrentComparativeAccountPaginate(paginateQuery.value)
     items.value = response?.data || []
     pagination.value = extractPagination(response)
+    summary.value = {
+      numberOfBranches: response?.count || 0,
+      contractAmount: response?.summary?.contractAmount || 0,
+      principal: response?.summary?.principal || 0,
+      principalAndInterest: response?.summary?.principalAndInterest || 0,
+      amountPaid: response?.summary?.amountPaid || 0,
+      settlementDiscount: response?.summary?.settlementDiscount || 0,
+      remainingAmount: response?.summary?.remainingAmount || 0
+    }
     syncQuery({ ...normalizeFilters(filters.value) })
   }
 
-  async function useDelete (id: number): Promise<void> {
-    console.log('id', id)
-    // await EmployeeService.deleteEmployee(id)
-    fetch()
-    toast.success('ลบรายการสําเร็จ')
-  }
-
-  function normalizeFilters (value: any): Partial<any> {
+  function normalizeFilters (
+    value: ICurrentComparativeAccountFilter
+  ): Partial<ICurrentComparativeAccountFilter> {
     return {
       ...value
     }
@@ -118,22 +77,19 @@ export default function useList (): IUseList {
 
   function onClearFilters (): void {
     reset()
-  }
-
-  function onDelete (id: number): void {
-    handleLoading((): Promise<void> => useDelete(id))
+    filters.value = {}
   }
 
   return {
     filters,
     items,
+    summary,
     pagination,
     sortBy,
     sortOrder,
     search,
     fetch,
     onClearFilters,
-    onDelete,
     extractPagination,
     syncQuery,
     reset

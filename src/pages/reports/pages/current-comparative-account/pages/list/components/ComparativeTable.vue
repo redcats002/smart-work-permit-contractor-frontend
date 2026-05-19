@@ -5,32 +5,39 @@
     v-model:sort-order="sortOrder"
     :columns="columns"
     :items="props.items"
+    :items-footer="itemsFooter"
+    footer-bg-class="bg-(--p-gray-4)"
     disable-auto-left-padding
+    show-footer
     @update="emits('update')">
-    <template #[`item.idNo`]="{ item }">
-      <LinkText :to="{ name: 'EmployeeDetailPage', params: { id: item.id }}">
-        {{ item?.idNo }}
-      </LinkText>
+    <template #[`item.no`]="{ index }">
+      {{ index + 1 }}
     </template>
   </BaseTable>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { formatter } from '@/utils/Formatter'
-import type { IColumn } from '@/models/Table.model'
-import LinkText from '@/components/button/LinkText.vue'
+import { generateTableFooter, type IFooterColConfig } from '@/utils/TableFooter'
+import type {
+  ICurrentComparativeAccountList,
+  ICurrentComparativeAccountSummary
+} from '@/models/response/report/current-comparative-account/CurrentComparativeAccountRes.model'
+import type { IColumn, IFooter } from '@/models/Table.model'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
 
 interface IProps {
-  items: any[]
+  items: ICurrentComparativeAccountList[]
+  summary?: ICurrentComparativeAccountSummary
 }
 
-const props = defineProps<IProps>()
+const props = withDefaults(defineProps<IProps>(), {
+  summary: undefined
+})
 
 interface IEmits {
-  delete: [id: number]
   update: []
 }
 
@@ -43,16 +50,82 @@ const pagination = defineModel<IPagination>('pagination', {
 const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
-const columns = ref<IColumn<any>[]>([
-  { field: 'index', header: 'ลำดับ', align: 'center' },
+const columns = ref<IColumn<ICurrentComparativeAccountList>[]>([
+  { field: 'no',
+    header: 'ลำดับ',
+    align: 'center'
+  },
   { field: 'branchName', header: 'สาขา', align: 'left' },
-  { field: 'contractCount', header: 'จำนวนสัญญา', align: 'left', value: (e: any): string => formatter.numberFormat(e.contractCount ?? 0) },
-  { field: 'principalAmount', header: 'เงินต้น (บาท)', align: 'left', value: (e: any): string => formatter.numberFormat(e.principalAmount ?? 0) },
-  { field: 'principalWithInterest', header: 'เงินต้นรวมดอกเบี้ย (บาท)', align: 'left', value: (e: any): string => formatter.numberFormat(e.principalWithInterest ?? 0) },
-  { field: 'debtCutOff', header: 'ยอดตัดลูกหนี้ (บาท)', align: 'left', value: (e: any): string => formatter.numberFormat(e.debtCutOff ?? 0) },
-  { field: 'discount', header: 'ส่วนลด (บาท)', align: 'left', value: (e: any): string => formatter.numberFormat(e.discount ?? 0) },
-  { field: 'currentBalance', header: 'บัญชีเทียบปัจจุบัน (บาท)', align: 'right', value: (e: any): string => formatter.numberFormat(e.currentBalance ?? 0) }
+  {
+    field: 'contractAmount',
+    header: 'จำนวนสัญญา',
+    align: 'left',
+    value: (e: ICurrentComparativeAccountList): string => formatter.numberFormat(e.contractAmount ?? 0)
+  },
+  {
+    field: 'principal',
+    header: 'เงินต้น (บาท)',
+    align: 'right',
+    value: (e: ICurrentComparativeAccountList): string => formatter.numberFormat(e.principal ?? 0)
+  },
+  {
+    field: 'principalAndInterest',
+    header: 'เงินต้นรวมดอกเบี้ย (บาท)',
+    align: 'right',
+    value: (e: ICurrentComparativeAccountList): string => formatter.numberFormat(e.principalAndInterest ?? 0)
+  },
+  {
+    field: 'amountPaid',
+    header: 'ยอดตัดลูกหนี้ (บาท)',
+    align: 'right',
+    value: (e: ICurrentComparativeAccountList): string => formatter.numberFormat(e.amountPaid ?? 0)
+  },
+  {
+    field: 'settlementDiscount',
+    header: 'ส่วนลด (บาท)',
+    align: 'right',
+    value: (e: ICurrentComparativeAccountList): string => formatter.numberFormat(e.settlementDiscount ?? 0)
+  },
+  {
+    field: 'remainingAmount',
+    header: 'บัญชีเทียบปัจจุบัน (บาท)',
+    align: 'right',
+    value: (e: ICurrentComparativeAccountList): string => formatter.numberFormat(e.remainingAmount ?? 0)
+  }
 ])
+
+const itemsFooter = computed((): IFooter[] => {
+  type TConfig = Partial<Record<keyof ICurrentComparativeAccountList, IFooterColConfig<ICurrentComparativeAccountSummary>>>
+  const footerConfig: TConfig = {
+    branchName: {
+      value: (s: ICurrentComparativeAccountSummary): string => `รวม ${s.numberOfBranches || 0} สาขา`
+    },
+    contractAmount: {
+      format: (v: number): string => formatter.numberFormat(v ?? 0)
+    },
+    principal: {
+      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      footerClass: 'text-right'
+    },
+    principalAndInterest: {
+      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      footerClass: 'text-right'
+    },
+    amountPaid: {
+      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      footerClass: 'text-right'
+    },
+    settlementDiscount: {
+      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      footerClass: 'text-right'
+    },
+    remainingAmount: {
+      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      footerClass: 'text-right'
+    }
+  }
+  return generateTableFooter(columns.value, props.summary, footerConfig)
+})
 </script>
 
 <style scoped></style>

@@ -17,7 +17,6 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import { generator } from '@/utils/Generator'
 import { generateTableFooter, type IFooterColConfig } from '@/utils/TableFooter'
@@ -44,8 +43,6 @@ interface IEmits {
 
 const emits = defineEmits<IEmits>()
 
-const dayjs = useDayjs()
-
 const pagination = defineModel<IPagination>('pagination', {
   required: true
 })
@@ -53,23 +50,63 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<ILoanDisbursementSummaryList>[]>([
-  { field: 'index', header: 'ลำดับ', value: (e: ILoanDisbursementSummaryList): string => dayjs.formatDate(e?.createdAt) },
-  { field: 'branch', header: 'สาขา', value: (e: ILoanDisbursementSummaryList): string => e.branch?.name || '' },
-  { field: 'amount', header: 'จำนวน', value: (e: ILoanDisbursementSummaryList): string => formatter.numberFormat2Decimal(e?.amount) },
-  { field: 'principal', header: 'เงินต้น', value: (e: ILoanDisbursementSummaryList): string => formatter.numberFormat2Decimal(e?.principal) },
-  { field: 'interest', header: 'ดอกเบี้ย', value: (e: ILoanDisbursementSummaryList): string => formatter.numberFormat2Decimal(e?.interest) },
-  { field: 'principalWithInterest', header: 'เงินต้นรวมดอกเบี้ย', value: (e: ILoanDisbursementSummaryList): string => formatter.numberFormat2Decimal(e?.principalWithInterest) },
-  { field: 'installment', header: 'ค่างวด', value: (e: ILoanDisbursementSummaryList): string => formatter.numberFormat2Decimal(e?.installment) }
+  { field: 'index', header: 'ลำดับ' },
+  { field: 'branchName', header: 'สาขา' },
+  {
+    field: 'contractAmount',
+    header: 'จำนวน',
+    align: 'right',
+    value: (e: ILoanDisbursementSummaryList): string => formatter.numberFormat2Decimal(e?.contractAmount)
+  },
+  {
+    field: 'principal',
+    header: 'เงินต้น',
+    align: 'right',
+    value: (e: ILoanDisbursementSummaryList): string => formatter.numberFormat2Decimal(e?.principal)
+  },
+  {
+    field: 'interest',
+    header: 'ดอกเบี้ย',
+    align: 'right',
+    value: (e: ILoanDisbursementSummaryList): string => formatter.numberFormat2Decimal(e?.interest)
+  },
+  {
+    field: 'principalAndInterest',
+    header: 'เงินต้นรวมดอกเบี้ย',
+    align: 'right',
+    value: (e: ILoanDisbursementSummaryList): string => formatter.numberFormat2Decimal(e?.principalAndInterest)
+  },
+  {
+    field: 'monthlyInstallment',
+    header: 'ค่างวด',
+    align: 'right',
+    value: (e: ILoanDisbursementSummaryList): string => formatter.numberFormat2Decimal(e?.monthlyInstallment)
+  }
 ])
 
 const itemsFooter = computed((): IFooter[] => {
   const footerConfig: Partial<Record<keyof ILoanDisbursementSummaryList, IFooterColConfig<ILoanDisbursementSummarySummary>>> = {
-    branch: { value: `รวม ${props.summary?.numberOfBranches || 0} สาขา` },
-    amount: { value: formatter.numberFormat2Decimal(props.summary?.amount || 0) },
-    principal: { value: formatter.numberFormat2Decimal(props.summary?.principal || 0) },
-    interest: { value: formatter.numberFormat2Decimal(props.summary?.interest || 0) },
-    principalWithInterest: { value: formatter.numberFormat2Decimal(props.summary?.principalWithInterest || 0) },
-    installment: { value: formatter.numberFormat2Decimal(props.summary?.installment || 0) }
+    branchName: { value: `รวม ${props.summary?.numberOfBranches || 0} สาขา` },
+    contractAmount: {
+      format: (v: number): string => formatter.numberFormat2Decimal(v || 0),
+      footerClass: 'text-right'
+    },
+    principal: {
+      format: (v: number): string => formatter.numberFormat2Decimal(v || 0),
+      footerClass: 'text-right'
+    },
+    interest: {
+      format: (v: number): string => formatter.numberFormat2Decimal(v || 0),
+      footerClass: 'text-right'
+    },
+    principalAndInterest: {
+      format: (v: number): string => formatter.numberFormat2Decimal(v || 0),
+      footerClass: 'text-right'
+    },
+    monthlyInstallment: {
+      format: (v: number): string => formatter.numberFormat2Decimal(v || 0),
+      footerClass: 'text-right'
+    }
   }
   return generateTableFooter(columns.value, props.summary, footerConfig)
 })

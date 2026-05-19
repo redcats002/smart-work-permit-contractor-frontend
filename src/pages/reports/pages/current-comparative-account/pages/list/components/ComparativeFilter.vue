@@ -2,7 +2,7 @@
   <BaseTop>
     <div>
       <SearchInput
-        v-model="model"
+        v-model="search"
         @search="onSearch()" />
     </div>
     <div>
@@ -12,12 +12,22 @@
         <template #activator="{ open }">
           <FilterButton @click="open()" />
         </template>
-        <!-- <div class="flex flex-col gap-5">
-            <div class="w-fit">
-              <LabelField
-                label="สถานะ" />
-            </div>
-          </div> -->
+        <div class="grid grid-cols-1 gap-5">
+          <LabelField
+            label="สาขา"
+            placeholder="ทั้งหมด">
+            <BranchSelection
+              v-model="filters.branchId"
+              show-clear />
+          </LabelField>
+          <LabelField
+            label="วันที่"
+            placeholder="ทั้งหมด">
+            <DatePickerInput
+              v-model="filters.date"
+              show-clear />
+          </LabelField>
+        </div>
         <template #footer="{ close }">
           <FormActionFilter
             @clear="onClear(close)"
@@ -33,13 +43,16 @@
 </template>
 
 <script setup lang="ts">
+import type { ICurrentComparativeAccountFilter } from '@/models/modules/report/current-comparative-account/Filter.model'
 import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
 import Spacer from '@/components/flex/Spacer.vue'
-// import LabelField from '@/components/input/LabelField.vue'
+import DatePickerInput from '@/components/input/DatePickerInput.vue'
+import LabelField from '@/components/input/LabelField.vue'
 import SearchInput from '@/components/input/SearchInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
+import BranchSelection from '@/components/selection/modules/api/branch/BranchSelection.vue'
 
 interface IEmits {
   search: []
@@ -49,8 +62,10 @@ interface IEmits {
 
 const emits = defineEmits<IEmits>()
 
-const model = defineModel<string>({ default: '' })
-defineModel<any>('filters', { default: (): any => ({}) })
+const search = defineModel<string>('search', { default: '' })
+const filters = defineModel<ICurrentComparativeAccountFilter>('filters', {
+  default: (): ICurrentComparativeAccountFilter => ({})
+})
 
 function onSearch (): void {
   emits('search')
@@ -67,9 +82,6 @@ function onClear (close: () => void): void {
   emits('clear')
   close()
 }
-
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

@@ -82,7 +82,7 @@
             :colspan="footer.colspan"
             :footer-class="footer.footerClass"
             :footer-style="footer.footerStyle"
-            style="padding: 10px 22px !important;">
+            style="padding: 12px 10px 12px 24px !important;">
             <template #footer>
               <slot
                 v-if="$slots[`footer.${String(footer.field)}`]"
