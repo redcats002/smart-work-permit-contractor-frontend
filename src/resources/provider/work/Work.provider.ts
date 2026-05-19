@@ -1,22 +1,17 @@
+import type { IGetCompleteWorkAssetAppraisalList, IGetDebtCollectionList, IGetNewWorkAssetAppraisalList } from '@/models/request/work/WorkReq.model'
 import type {
-  IGetCompleteWorkAssetAppraisalList,
-  IGetCompleteWorkAssetFollowUpList,
-  IGetNewWorkAssetAppraisalList,
-  IGetNewWorkAssetFollowUpList
-} from '@/models/request/work/WorkReq.model'
-import type {
+  TDeferDebtCollectionResponse,
   TGetCompleteWorkAppraisalListResponse,
-  TGetCompleteWorkFollowUpListResponse,
-  TGetNewWorkAppraisalListResponse,
-  TGetNewWorkFollowUpListResponse
+  TGetDebtCollectionListResponse,
+  TGetNewWorkAppraisalListResponse
 } from '@/models/response/work/WorkRes.model'
 import HttpRequest from '@/resources/HttpRequest'
 
 export interface IWorkProvider {
   getWorkAppraisalNewPaginate (query: IGetNewWorkAssetAppraisalList): Promise<TGetNewWorkAppraisalListResponse>
   getWorkAppraisalCompletePaginate (query: IGetCompleteWorkAssetAppraisalList): Promise<TGetCompleteWorkAppraisalListResponse>
-  getWorkFollowUpNewPaginate (query: IGetNewWorkAssetFollowUpList): Promise<TGetNewWorkFollowUpListResponse>
-  getWorkFollowUpCompletePaginate (query: IGetCompleteWorkAssetFollowUpList): Promise<TGetCompleteWorkFollowUpListResponse>
+  getDebtCollectionList (query?: IGetDebtCollectionList): Promise<TGetDebtCollectionListResponse>
+  deferDebtCollection (debtCollectionId: number): Promise<TDeferDebtCollectionResponse>
 }
 
 class WorkProvider extends HttpRequest implements IWorkProvider {
@@ -32,13 +27,13 @@ class WorkProvider extends HttpRequest implements IWorkProvider {
     return response
   }
 
-  public async getWorkFollowUpNewPaginate (query: IGetNewWorkAssetFollowUpList): Promise<TGetNewWorkFollowUpListResponse> {
-    const response = await this.get(`${this.urlPrefix}/follow-up/new`, query)
+  public async getDebtCollectionList (query?: IGetDebtCollectionList): Promise<TGetDebtCollectionListResponse> {
+    const response = await this.get(`${this.urlPrefix}/debt-collection`, query)
     return response
   }
 
-  public async getWorkFollowUpCompletePaginate (query: IGetCompleteWorkAssetFollowUpList): Promise<TGetCompleteWorkFollowUpListResponse> {
-    const response = await this.get(`${this.urlPrefix}/follow-up/complete`, query)
+  public async deferDebtCollection (debtCollectionId: number): Promise<TDeferDebtCollectionResponse> {
+    const response = await this.patch(`${this.urlPrefix}/debt-collection/defer/${debtCollectionId}`)
     return response
   }
 }

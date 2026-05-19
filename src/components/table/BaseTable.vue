@@ -16,7 +16,7 @@
       :table-class="resolvedTableClass"
       :table-style="tableStyle"
       :value="items"
-      :virtual-scroller-options="disableVirtualScroll ? undefined : { itemSize: pagination.limit || 44 }"
+      :virtual-scroller-options="disableVirtualScroll ? undefined : { itemSize: 44 }"
       scrollable
       unstyled>
       <!-- Checkbox Column -->

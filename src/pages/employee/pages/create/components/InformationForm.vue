@@ -13,7 +13,17 @@
         name="idCard"
         hide-error
         required />
-      <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
+      <LabelField
+        v-model="model.firstName"
+        v-model:prepend-option="model.title"
+        :form="form"
+        :prepend-options="TitleNameItems"
+        label="ชื่อ"
+        name="firstName"
+        name-prepend-option="title"
+        hide-error
+        required />
+      <!-- <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
         <LabelField
           v-slot="{ invalid }"
           :form="form"
@@ -33,7 +43,7 @@
           name="firstName"
           hide-error
           required />
-      </div>
+      </div> -->
       <LabelField
         v-model="model.lastName"
         :form="form"
@@ -114,13 +124,13 @@ import keypress from '@/utils/Keypress'
 import type { IFormState } from '@/models/Form.model'
 import type { ICreateEmployeePayload } from '@/models/request/employee/EmployeeReq.model'
 import { EmployeeStatusEnum } from '@/enums/modules/employee/EmployeeStatus.enum'
+import { TitleNameItems } from '@/enums/TitleName.enum'
 import DatePickerInput from '@/components/input/DatePickerInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import PhoneNumberInput from '@/components/input/PhoneNumberInput.vue'
 import Switch from '@/components/input/Switch.vue'
 import BranchSelection from '@/components/selection/modules/api/branch/BranchSelection.vue'
 import RoleSelection from '@/components/selection/modules/static/role/RoleSelection.vue'
-import TitleNameSelection from '@/components/selection/modules/static/title-name/TitleNameSelection.vue'
 import { useFormInitialValues } from '../schema/employee.schema'
 
 interface IProps {

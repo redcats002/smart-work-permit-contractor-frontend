@@ -118,7 +118,7 @@ export function useFormInitialValues (): CustomerFormValues {
   return {
     // Personal
     idCard: '',
-    titleName: ETitleName[''],
+    titleName: ETitleName.MR,
     firstName: '',
     lastName: '',
     phoneNumber: '',

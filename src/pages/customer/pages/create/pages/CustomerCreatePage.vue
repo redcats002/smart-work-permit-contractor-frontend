@@ -28,7 +28,9 @@
             <AddressForm
               v-model="mainAddress"
               :form="$form"
-              type="MAIN" />
+              type="MAIN"
+              @use-same-citizen-address="mount()"
+              @use-same-current-address="mount()" />
           </BaseContainer>
           <BaseContainer>
             <AddressForm
@@ -36,7 +38,8 @@
               :citizen-address="mainAddress"
               :form="$form"
               type="CURRENT"
-              @use-same-citizen-address="onUseSameCitizenAddress('CURRENT')" />
+              @use-same-citizen-address="mount()"
+              @use-same-current-address="mount()" />
           </BaseContainer>
           <BaseContainer>
             <AddressForm
@@ -45,8 +48,8 @@
               :current-address-ref="currentAddress"
               :form="$form"
               type="WORK"
-              @use-same-citizen-address="onUseSameCitizenAddress('WORK')"
-              @use-same-current-address="onUseSameCurrentAddress('WORK')" />
+              @use-same-citizen-address="mount()"
+              @use-same-current-address="mount()" />
           </BaseContainer>
           <FormAction @cancel="onCancel()" />
         </Form>
@@ -64,22 +67,22 @@ import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import type { ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import CustomerProvider from '@/resources/provider/customer/Customer.provider'
-import type { IReadIdCardResult } from '@/components/button/ReadIdentificationCardButton.vue'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import DevButton from '@/components/button/DevButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
+import type { IReadIdCardResult } from '@/components/button/ReadIdentificationCardButton.vue'
 import ReadIdentificationCardButton from '@/components/button/ReadIdentificationCardButton.vue'
 import Spacer from '@/components/flex/Spacer.vue'
-import PageTitle from '@/components/nav/PageTitle.vue'
 import AddressForm from '@/components/input/AddressForm.vue'
+import PageTitle from '@/components/nav/PageTitle.vue'
 import InformationForm from '../components/InformationForm.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import { usePayload } from '../composables/usePayload'
 import { mapIdCardToCustomer } from '../composables/useIdCardMapper'
+import { usePayload } from '../composables/usePayload'
 import { type CustomerFormValues, CustomerSchema, useDev, useFormInitialValues } from '../schema/customer.schema'
 
 const router = useRouter()
@@ -121,57 +124,21 @@ function onCancel (): void {
   router.push({ name: 'CustomerListPage' })
 }
 
+function mount (): void {
+  formKey.value++
+}
+
 function onAuto (): void {
   form.value = { ...useDev() }
   // Remount <Form> so it picks up the new initial-values without stale error state
-  formKey.value++
+  mount()
 }
 
 async function onReadIdCard (data: IReadIdCardResult): Promise<void> {
   form.value = await mapIdCardToCustomer(data, form.value)
-  formKey.value++
+  mount()
 }
 
-function onUseSameCurrentAddress (type: 'WORK'): void {
-  if (type === 'WORK') {
-    workAddress.value = {
-      ...workAddress.value,
-      isSameCurrentAddress: true,
-      isSameCitizenAddress: false,
-      address: currentAddress.value.address,
-      subDistrict: currentAddress.value.subDistrict,
-      district: currentAddress.value.district,
-      province: currentAddress.value.province,
-      postCode: currentAddress.value.postCode
-    }
-  }
-}
-
-function onUseSameCitizenAddress (type: 'CURRENT' | 'WORK'): void {
-  if (type === 'CURRENT') {
-    currentAddress.value = {
-      ...currentAddress.value,
-      isSameCitizenAddress: true,
-      isSameCurrentAddress: false,
-      address: mainAddress.value.address,
-      subDistrict: mainAddress.value.subDistrict,
-      district: mainAddress.value.district,
-      province: mainAddress.value.province,
-      postCode: mainAddress.value.postCode
-    }
-  } else if (type === 'WORK') {
-    workAddress.value = {
-      ...workAddress.value,
-      isSameCitizenAddress: true,
-      isSameCurrentAddress: false,
-      address: mainAddress.value.address,
-      subDistrict: mainAddress.value.subDistrict,
-      district: mainAddress.value.district,
-      province: mainAddress.value.province,
-      postCode: mainAddress.value.postCode
-    }
-  }
-}
 </script>
 
 <style scoped>

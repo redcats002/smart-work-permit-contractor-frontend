@@ -2,7 +2,6 @@
   <section id="work-follow-up-list-page">
     <PageTitle />
     <WorkFilter
-      v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
       @search="fetch()" />
@@ -41,7 +40,7 @@ import useInit from '../composables/useInit'
 import useList from '../composables/useList'
 
 const { tab, tabItems } = useInit()
-const { filters, search, fetch, onClearFilters, items, pagination, sortBy, sortOrder } = useList(tab)
+const { search, fetch, onClearFilters, items, pagination, sortBy, sortOrder } = useList(tab)
 
 
 onMounted((): void => {
