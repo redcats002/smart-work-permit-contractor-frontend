@@ -1,19 +1,28 @@
 <template>
   <div
     v-if="files.length"
-    class="flex gap-2 mt-2">
+    class="flex gap-2 mt-2 flex-wrap">
     <template
       v-for="(file, _i) in files"
       :key="`${file?.name}-${_i}`">
       <a
         :href="resolvedHref(file)"
-        class="border border-[#BDBDBD] rounded-lg p-3 flex flex-col items-center justify-center max-w-40 overflow-hidden
+        class="border border-[#BDBDBD] rounded-lg overflow-hidden flex flex-col items-center justify-center max-w-40 w-40
         transition-all hover:border-red-500 hover:scale-[1.02]"
         target="_blank">
-        <Icon
-          icon="material-icon-theme:pdf"
-          style="font-size: 90px;" />
-        <div class="text-sm text-center mt-2 truncate w-full">
+        <img
+          v-if="isImageFile(file)"
+          :alt="file.name"
+          :src="resolvedHref(file)"
+          class="w-full h-28 object-cover">
+        <div
+          v-else
+          class="p-3 flex flex-col items-center justify-center">
+          <Icon
+            icon="material-icon-theme:pdf"
+            style="font-size: 90px;" />
+        </div>
+        <div class="text-sm text-center px-2 pb-2 truncate w-full">
           {{ file.name }}
         </div>
       </a>
@@ -40,8 +49,16 @@ const props = withDefaults(defineProps<IProps>(), {
 const UploadService: IUploadProvider = new UploadProvider()
 const resolvedUrls = ref<Record<string, string>>({})
 
+const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'avif'])
+
 function isDirectUrl (path: string): boolean {
   return path.startsWith('blob:') || path.startsWith('http://')
+}
+
+function isImageFile (file: IMedia): boolean {
+  if (file.file?.type?.startsWith('image/')) return true
+  const ext = (file.name || file.url || '').split('.').pop()?.toLowerCase() ?? ''
+  return IMAGE_EXTENSIONS.has(ext)
 }
 
 function resolvedHref (file: IMedia): string {
