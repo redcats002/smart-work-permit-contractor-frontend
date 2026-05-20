@@ -80,18 +80,18 @@
         <BaseImage
           v-if="isImageFile(e.name)"
           :file-path="e.path"
+          :preview="false"
           :src="e?.url"
           class="aspect-square w-9 h-9" />
         <Icon
           v-else
           :icon="getFileIcon(e.name)"
           class="text-xl" />
-        <a
-          :href="e.url"
+        <span
           class="text-xs text-gray-700 truncate"
           target="_blank">
           {{ e.name }}
-        </a>
+        </span>
       </div>
 
       <button

@@ -1,8 +1,8 @@
 <template>
   <Image
+    :preview="preview"
     :pt="theme"
     :pt-options="{ mergeProps: ptViewMerge }"
-    preview
     unstyled
     v-bind="{
       ...attrs,
@@ -30,10 +30,12 @@ const FALLBACK_IMAGE = '/assets/images/logo-no-color.png'
 
 interface IProps {
   filePath?: string | null
+  preview?: boolean
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-  filePath: null
+  filePath: null,
+  preview: true
 })
 
 const attrs = useAttrs()
