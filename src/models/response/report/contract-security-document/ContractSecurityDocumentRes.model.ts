@@ -1,18 +1,29 @@
-import type { IEntity } from '@/models/Global.model'
-import type { IBasePaginationResponse, IBaseSuccessResponse } from '../../Response.model'
+import type { IBasePaginationResponse } from '../../Response.model'
 
-export interface IContractSecurityDocumentReportList extends IEntity {
+export interface IContractSecurityDocumentReportList {
+  id: string
   branchName: string
   contractAmount: number
-  accountClosedAmount: number
-  remainingAmount: number
-  landTitleDeedAmount: number
-  ns3gor: number
-  ns3: number
-  car: number
+  contractCloseAmount: number
+  contractPendingAmount: number
+  assetLandAmount: number
+  ns3Amount: number
+  ns3kAmount: number
+  vehicle: number
   motorcycle: number
 }
 
+export interface IContractSecurityDocumentReportSummary {
+  contractAmount: number
+  contractCloseAmount: number
+  contractPendingAmount: number
+  assetLandAmount: number
+  ns3Amount: number
+  ns3kAmount: number
+  vehicle: number
+  motorcycle: number
+}
 
-export interface TGetContractSecurityDocumentReportListResponse extends IBasePaginationResponse<IContractSecurityDocumentReportList> {}
-export interface TActionContractSecurityDocumentReport extends IBaseSuccessResponse<boolean> {}
+export interface TGetContractSecurityDocumentReportListResponse extends IBasePaginationResponse<IContractSecurityDocumentReportList> {
+  summary: IContractSecurityDocumentReportSummary
+}

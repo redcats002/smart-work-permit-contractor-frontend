@@ -1,3 +1,5 @@
 import type { IBasePaginationRequest } from '../../Request.model'
 
-export interface IGetOverdueCustomerList extends IBasePaginationRequest {}
+export interface IGetOverdueCustomerList extends IBasePaginationRequest {
+  branchId?: number
+}

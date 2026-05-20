@@ -14,6 +14,11 @@
         </template>
         <div class="grid grid-cols-1 gap-5">
           <LabelField
+            label="สาขา"
+            placeholder="ทั้งหมด">
+            <BranchSelection v-model="filters.branchId" />
+          </LabelField>
+          <LabelField
             label="ปี"
             placeholder="ทั้งหมด">
             <DatePickerInput
@@ -30,8 +35,6 @@
       </BaseModal>
     </div>
     <Spacer />
-    <AnnualFinanceReceiptTypeSelection
-      v-model="filters.type" />
     <div>
       <slot />
     </div>
@@ -48,11 +51,10 @@ import DatePickerInput from '@/components/input/DatePickerInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import SearchInput from '@/components/input/SearchInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
-import AnnualFinanceReceiptTypeSelection from '@/components/selection/modules/static/annual-finance-receipt-type/AnnualFinanceReceiptTypeSelection.vue'
+import BranchSelection from '@/components/selection/modules/api/branch/BranchSelection.vue'
 
 interface IEmits {
   search: []
-  modalSearch: []
   clear: []
 }
 
@@ -67,7 +69,6 @@ function onSearch (): void {
 
 function onModalSearch (close: () => void): void {
   emits('search')
-  emits('modalSearch')
   close()
 }
 
@@ -76,9 +77,6 @@ function onClear (close: () => void): void {
   emits('clear')
   close()
 }
-
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

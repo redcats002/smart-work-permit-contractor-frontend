@@ -1,8 +1,9 @@
-import { ref, type Ref } from 'vue'
-import { toast } from '@/plugins/toast'
+import { computed, ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IOverdueCustomerFilter } from '@/models/modules/report/overdue-customer/Filter.model'
+import type { IGetOverdueCustomerList } from '@/models/request/report/overdue-customer/OverdueCustomerReq.model'
 import type { IOverdueCustomerList, IOverdueCustomerSummary } from '@/models/response/report/overdue-customer/OverdueCustomerRes.model'
+import OverdueCustomerProvider, { type IOverdueCustomerProvider } from '@/resources/provider/report/OverdueCustomer.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
 interface IUseList extends IUsePagination {
@@ -11,123 +12,43 @@ interface IUseList extends IUsePagination {
   summary: Ref<IOverdueCustomerSummary>
   fetch(): void
   onClearFilters(): void
-  onDelete(id: number): void
 }
+
 export default function useList (): IUseList {
+  const OverdueCustomerService: IOverdueCustomerProvider = new OverdueCustomerProvider()
+
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
 
   const filters = ref<IOverdueCustomerFilter>({})
   const items = ref<IOverdueCustomerList[]>([])
-  // mock
-  const summary = ref<IOverdueCustomerSummary>({
-    customer: 3,
-    totalAmount: 12000,
-    totalAmountNet: 120000,
-    paidAmount: 20000,
-    outstanding: 120000
-  })
-  const mockResponse = {
-    data: [
-      {
-        contract: {
-          id: 0,
-          idNo: 'LC-00001'
-        },
-        customer: {
-          id: 0,
-          titleName: 'MR',
-          firstName: 'จันทร์',
-          lastName: 'พงษ์พัฒนโยธิน'
-        },
-        createdAt: '2026-03-01T09:30:00.000Z',
-        dueDate: '2026-03-01T09:30:00.000Z',
-        totalAmount: 12000,
-        totalAmountNet: 120000,
-        paidAmount: 120000,
-        remainAmount: 12000,
-        latestPaymentDate: '2026-03-01T09:30:00.000Z',
-        outstanding: 12000,
-        installmentAmount: 4
-      },
-      {
-        contract: {
-          id: 1,
-          idNo: 'LC-00002'
-        },
-        customer: {
-          id: 1,
-          titleName: 'MR',
-          firstName: 'พันธนา',
-          lastName: 'จิรวราภงษ์'
-        },
-        createdAt: '2026-03-01T09:30:00.000Z',
-        dueDate: '2026-03-01T09:30:00.000Z',
-        totalAmount: 12000,
-        totalAmountNet: 120000,
-        paidAmount: 120000,
-        remainAmount: 12000,
-        latestPaymentDate: '2026-03-01T09:30:00.000Z',
-        outstanding: 12000,
-        installmentAmount: 4
-      },
-      {
-        contract: {
-          id: 2,
-          idNo: 'LC-00003'
-        },
-        customer: {
-          id: 3,
-          titleName: 'MRS',
-          firstName: 'โชติกา',
-          lastName: 'ประชายศิริกุล'
-        },
-        createdAt: '2026-03-01T09:30:00.000Z',
-        dueDate: '2026-03-01T09:30:00.000Z',
-        totalAmount: 12000,
-        totalAmountNet: 120000,
-        paidAmount: 120000,
-        remainAmount: 12000,
-        latestPaymentDate: '2026-03-01T09:30:00.000Z',
-        outstanding: 12000,
-        installmentAmount: 4
-      }
-    ],
-    total: 3,
-    lastPage: 1,
-    perPage: pagination.value.limit || 10,
-    currentPage: pagination.value.page || 1
-  }
+  const summary = ref<IOverdueCustomerSummary>(initSummary())
 
-  // const paginateQuery = computed((): IGetPercentInstallmentList => {
-  //   const normalizedFilters = normalizeFilters(filters.value)
-  //   return {
-  //     page: pagination.value.page,
-  //     limit: pagination.value.limit,
-  //     sortBy: sortBy.value || undefined,
-  //     sortOrder: sortOrder.value,
-  //     ...normalizedFilters
-  //   }
-  // })
+  const paginateQuery = computed((): IGetOverdueCustomerList => {
+    return {
+      page: pagination.value.page,
+      limit: pagination.value.limit,
+      sortBy: sortBy.value || undefined,
+      sortOrder: sortOrder.value,
+      ...filters.value
+    }
+  })
 
   async function useFetch (): Promise<void> {
-    // const response = await EmployeeService.getEmployeePaginate(paginateQuery.value)
-    // items.value = response?.data || []
-    const response = mockResponse as any
-    items.value = response.data || []
+    const response = await OverdueCustomerService.getOverdueCustomerPaginate(paginateQuery.value)
+    items.value = response?.data || []
     pagination.value = extractPagination(response)
-    syncQuery({ ...normalizeFilters(filters.value) })
+    summary.value = initSummary(response.summary)
+    syncQuery({ ...filters.value })
   }
 
-  async function useDelete (id: number): Promise<void> {
-    // delete
-    console.log(id)
-    fetch()
-    toast.success('ลบสำเร็จ')
-  }
-
-  function normalizeFilters (value: IOverdueCustomerFilter): Partial<IOverdueCustomerFilter> {
+  function initSummary (data?: IOverdueCustomerSummary): IOverdueCustomerSummary {
     return {
-      ...value
+      principal: data?.principal || 0,
+      principalAndInterest: data?.principalAndInterest || 0,
+      amountPaid: data?.amountPaid || 0,
+      outstandingPrincipal: data?.outstandingPrincipal || 0,
+      overdueOutstandingAmount: data?.overdueOutstandingAmount || 0,
+      overdueOutstandingCount: data?.overdueOutstandingCount || 0
     }
   }
 
@@ -136,11 +57,8 @@ export default function useList (): IUseList {
   }
 
   function onClearFilters (): void {
+    filters.value = {}
     reset()
-  }
-
-  function onDelete (id: number): void {
-    handleLoading((): Promise<void> => useDelete(id))
   }
 
   return {
@@ -153,7 +71,6 @@ export default function useList (): IUseList {
     summary,
     fetch,
     onClearFilters,
-    onDelete,
     extractPagination,
     syncQuery,
     reset
