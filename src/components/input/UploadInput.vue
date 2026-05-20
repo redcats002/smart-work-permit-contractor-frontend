@@ -151,9 +151,8 @@ const props = withDefaults(defineProps<IProps>(), {
   accept: '.jpg,.jpeg,.png,.pdf,.doc,.docx'
 })
 
-const media = defineModel<IMedia[]>({ required: true })
-
 const emits = defineEmits<IEmits>()
+const media = defineModel<IMedia[]>({ required: true })
 
 const fileInputRef = useTemplateRef<HTMLInputElement | null>('fileInputRef')
 const isRippling = ref(false)
