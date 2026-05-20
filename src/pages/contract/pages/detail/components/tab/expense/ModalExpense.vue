@@ -150,6 +150,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
+import { toast } from '@/plugins/toast'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
@@ -251,6 +252,7 @@ async function onOpen (): Promise<void> {
   if (props.mode === 'create') {
     formData.value = useFormInitialValues()
     formData.value.file = []
+    formKey.value++
     return
   }
 
@@ -262,10 +264,6 @@ async function onOpen (): Promise<void> {
     }
   }
 }
-
-watch((): TExpenseModalMode => props.mode, async (val: TExpenseModalMode): Promise<void> => {
-  currentMode.value = val
-})
 
 function onCategoryChange (): void {
   formData.value.expenseTypeId = undefined
@@ -295,8 +293,10 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
     await uploadAndSetFile()
     if (currentMode.value === 'create') {
       await ContractService.createExpense(props.contractId, values)
+      toast.success('บันทึกค่าใช้จ่ายสำเร็จ')
     } else if (currentMode.value === 'edit' && itemId) {
       await ContractService.updateExpense(itemId, values)
+      toast.success('แก้ไขค่าใช้จ่ายสำเร็จ')
     }
     emits('update')
     close()
@@ -308,8 +308,13 @@ function onDelete (close: () => void): void {
   if (!id) return
   handleLoading(async (): Promise<void> => {
     await ContractService.deleteExpense(id)
+    toast.success('ลบค่าใช้จ่ายสำเร็จ')
     emits('update')
     close()
   })
 }
+
+watch((): TExpenseModalMode => props.mode, async (val: TExpenseModalMode): Promise<void> => {
+  currentMode.value = val
+})
 </script>

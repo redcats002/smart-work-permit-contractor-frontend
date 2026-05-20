@@ -161,6 +161,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
+import { toast } from '@/plugins/toast'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
@@ -260,6 +261,7 @@ async function onOpen (): Promise<void> {
   if (props.mode === 'create') {
     formData.value = useFormInitialValues()
     formData.value.file = []
+    formKey.value++
     return
   }
 
@@ -303,8 +305,10 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
     await uploadAndSetFile()
     if (currentMode.value === 'create') {
       await ContractService.createIncome(props.contractId, values)
+      toast.success('บันทึกรายได้สำเร็จ')
     } else if (currentMode.value === 'edit' && itemId) {
       await ContractService.updateIncome(itemId, values)
+      toast.success('แก้ไขรายได้สำเร็จ')
     }
     emits('update')
     close()
@@ -316,6 +320,7 @@ function onDelete (close: () => void): void {
   if (!id) return
   handleLoading(async (): Promise<void> => {
     await ContractService.deleteIncome(id)
+    toast.success('ลบรายได้สำเร็จ')
     emits('update')
     close()
   })

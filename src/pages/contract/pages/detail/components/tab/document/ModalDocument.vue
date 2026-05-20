@@ -106,6 +106,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { ICreateDocument } from '@/models/request/contract/ContractReq.model'
@@ -202,9 +203,6 @@ function onOpen (): void {
   }
 }
 
-watch((): TDocumentModalMode => props.mode, (val: TDocumentModalMode): void => {
-  currentMode.value = val
-})
 
 function onSubmit (event: FormSubmitEvent, close: () => void): void {
   if (!event.valid) {
@@ -222,8 +220,10 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
     } as ICreateDocument
     if (currentMode.value === 'create') {
       await ContractService.createDocument(props.contractId, values)
+      toast.success('บันทึกเอกสารสำเร็จ')
     } else if (currentMode.value === 'edit' && itemId) {
-      // await ContractService.updateDocument(props.contractId, itemId, values)
+      await ContractService.updateDocument(itemId, values)
+      toast.success('แก้ไขเอกสารสำเร็จ')
     }
     emits('update')
     close()
@@ -234,9 +234,15 @@ function onDelete (close: () => void): void {
   const id = props.item?.id
   if (!id) return
   handleLoading(async (): Promise<void> => {
-    await ContractService.deleteDocument(props.contractId, id)
+    await ContractService.deleteDocument(id)
+    toast.success('ลบเอกสารสำเร็จ')
     emits('update')
     close()
   })
 }
+
+
+watch((): TDocumentModalMode => props.mode, (val: TDocumentModalMode): void => {
+  currentMode.value = val
+})
 </script>
