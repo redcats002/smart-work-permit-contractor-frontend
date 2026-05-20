@@ -49,6 +49,8 @@ import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
+import type { TErrorResponse } from '@/models/response/Response.model'
+import type { EDays } from '@/enums/Date.enum'
 import type { IBranchProvider } from '@/resources/provider/branch/Branch.provider'
 import BranchProvider from '@/resources/provider/branch/Branch.provider'
 import BaseContainer from '@/components/base/BaseContainer.vue'
@@ -65,8 +67,7 @@ import InformationForm from '../components/InformationForm.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { usePayload } from '../composables/usePayload'
-import { type BranchFormValues, BranchSchema, useDev, useFormInitialValues } from '../schema/branch.schema'
-import type { EDays } from '@/enums/Date.enum'
+import { type BranchFormValues, BranchSchema, formatBranchErrorMessage, useDev, useFormInitialValues } from '../schema/branch.schema'
 
 const router = useRouter()
 
@@ -132,7 +133,10 @@ async function onSubmit (event: FormSubmitEvent): Promise<void> {
     scrollToFirstError(event.errors)
     return
   }
-  await handleLoading(useSubmit)
+  await handleLoading(useSubmit, undefined, async (err: TErrorResponse): Promise<void> => {
+    const errorMessage = formatBranchErrorMessage(err?.message, form.value.name)
+    toast.error('', errorMessage)
+  })
 }
 
 function onCancel (): void {
