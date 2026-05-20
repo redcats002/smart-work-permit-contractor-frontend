@@ -1,5 +1,4 @@
 import type { Ref } from 'vue'
-import { isSameAddress } from '@/utils/Address'
 import { useDayjs } from '@/utils/Dayjs'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import type { CustomerStatusEnum } from '@/enums/modules/customer/CustomerStatus.enum'
@@ -10,8 +9,8 @@ const dayjs = useDayjs()
 
 export function useInitForm (form: Ref<CustomerFormValues>, data: ICustomerById): void {
   const { mainAddress, currentAddress, workAddress } = data
-  const workSameCitizen = isSameAddress(workAddress, mainAddress)
-  const workSameCurrent = !workSameCitizen && isSameAddress(workAddress, currentAddress)
+  const workSameCitizen = data?.workAddress?.isSameCitizenAddress || false
+  const workSameCurrent = data?.workAddress?.isSameCurrentAddress || false
   form.value = {
     ...data,
     idCard: data.idCard,
@@ -44,7 +43,7 @@ export function useInitForm (form: Ref<CustomerFormValues>, data: ICustomerById)
       province: currentAddress?.province ?? '',
       postCode: currentAddress?.postCode ?? '',
       urlGoogleMap: currentAddress?.urlGoogleMap ?? '',
-      isSameCitizenAddress: isSameAddress(currentAddress, mainAddress),
+      isSameCitizenAddress: data?.currentAddress?.isSameCitizenAddress || false,
       isSameCurrentAddress: false
     },
     workAddress: {

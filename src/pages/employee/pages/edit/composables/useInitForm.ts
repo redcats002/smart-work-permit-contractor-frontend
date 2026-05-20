@@ -1,5 +1,4 @@
 import type { Ref } from 'vue'
-import { isSameAddress } from '@/utils/Address'
 import { useDayjs } from '@/utils/Dayjs'
 import type { IBranchList } from '@/models/response/branch/BranchRes.model'
 import type { IEmployeeById } from '@/models/response/employee/EmployeeRes.model'
@@ -19,7 +18,7 @@ export function useInitForm (form: Ref<EmployeeFormValues>, data: IEmployeeById)
     },
     currentAddress: {
       ...(data?.currentAddress || {}),
-      isSameCitizenAddress: isSameAddress(data?.currentAddress, data?.mainAddress),
+      isSameCitizenAddress: data?.currentAddress?.isSameCitizenAddress || false,
       isSameCurrentAddress: false
     },
     dateOfBirth: data?.dateOfBirth ? dayjs(data.dateOfBirth).toDate() : undefined,
