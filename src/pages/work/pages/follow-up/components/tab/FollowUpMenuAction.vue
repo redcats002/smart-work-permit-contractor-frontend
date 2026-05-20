@@ -5,6 +5,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseParamsId } from '@/models/response/Response.model'
 import WorkProvider, { type IWorkProvider } from '@/resources/provider/work/Work.provider'
@@ -28,6 +29,7 @@ const WorkService: IWorkProvider = new WorkProvider()
 
 async function onDefer (): Promise<void> {
   await WorkService.deferDebtCollection(props.debtCollectionId)
+  toast.success('ผ่อนผันสำเร็จ')
   emits('defer')
 }
 
