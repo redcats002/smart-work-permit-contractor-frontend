@@ -95,7 +95,6 @@
             </label>
           </div>
         </div>
-
         <FormAction
           class="mt-2"
           @cancel="close()" />
@@ -204,7 +203,6 @@ const formData = ref<IncomeFormValues>(useFormInitialValues())
 const vatTypeItems = VatTypeItems
 
 const isFormMode = computed((): boolean => currentMode.value === 'create' || currentMode.value === 'edit')
-
 const modalLabel = computed((): string => {
   const labels: Record<TIncomeModalMode, string> = {
     create: 'บันทึกค่าใช้จ่าย',
@@ -214,6 +212,11 @@ const modalLabel = computed((): string => {
   }
   return labels[currentMode.value]
 })
+const readMenuItems = computed((): IMenuItemAction[] => [
+  { label: 'แก้ไข', key: 'edit', type: 'TEXT', action: switchToEdit },
+  { label: 'ลบ', key: 'delete', type: 'TEXT', action: switchToDelete }
+])
+
 
 function switchToEdit (): void {
   currentMode.value = 'edit'
@@ -223,11 +226,6 @@ function switchToEdit (): void {
 function switchToDelete (): void {
   currentMode.value = 'delete'
 }
-
-const readMenuItems = computed((): IMenuItemAction[] => [
-  { label: 'แก้ไข', key: 'edit', type: 'TEXT', action: switchToEdit },
-  { label: 'ลบ', key: 'delete', type: 'TEXT', action: switchToDelete }
-])
 
 async function populateForm (): Promise<void> {
   if (!props.item) return
@@ -264,9 +262,6 @@ async function onOpen (): Promise<void> {
   }
 }
 
-watch((): TIncomeModalMode => props.mode, (val: TIncomeModalMode): void => {
-  currentMode.value = val
-})
 
 function onCategoryChange (): void {
   formData.value.incomeTypeId = undefined
@@ -277,14 +272,6 @@ async function uploadAndSetFile (file?: File): Promise<void> {
   const response = await UploadService.uploadFile(file)
   formData.value.file = [response.data]
 }
-
-watch(formData.value.file, (files: IMedia[]): void => {
-  if (files.length === 0) {
-    formData.value.file = []
-    return
-  }
-  handleLoading((): Promise<void> => uploadAndSetFile(files[files.length - 1]?.file))
-}, { deep: true })
 
 function onSubmit (event: FormSubmitEvent, close: () => void): void {
   if (!event.valid) {
@@ -321,4 +308,16 @@ function onDelete (close: () => void): void {
     close()
   })
 }
+
+watch(formData.value.file, (files: IMedia[]): void => {
+  if (files.length === 0) {
+    formData.value.file = []
+    return
+  }
+  handleLoading((): Promise<void> => uploadAndSetFile(files[files.length - 1]?.file))
+}, { deep: true })
+
+watch((): TIncomeModalMode => props.mode, (val: TIncomeModalMode): void => {
+  currentMode.value = val
+})
 </script>

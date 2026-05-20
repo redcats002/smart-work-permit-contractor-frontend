@@ -122,7 +122,7 @@ async function useFetch (): Promise<void> {
 }
 
 function onCancel (): void {
-  router.push({ name: 'BranchListPage' })
+  router.push({ name: 'BranchDetailPage', params: { id: branchId.value } })
 }
 
 function onAuto (): void {

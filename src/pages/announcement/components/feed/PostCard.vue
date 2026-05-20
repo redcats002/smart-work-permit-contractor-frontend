@@ -7,7 +7,6 @@
         <img
           class="w-10 h-10 rounded-full"
           src="https://www.pngall.com/wp-content/uploads/20/Cappuccino-Assassino-PNG.png">
-
         <div>
           <div class="flex items-center gap-2">
             <span class="font-semibold">
@@ -38,26 +37,7 @@
       <div
         v-sanitize.basic="content"
         class="text-sm" />
-
-      <div
-        v-if="files.length"
-        class="flex gap-2 mt-5 ">
-        <template
-          v-for="(file, _i) in files"
-          :key="_i">
-          <a
-            :href="file.url"
-            class="border border-[#BDBDBD] rounded-lg p-3 flex flex-col items-center justify-center max-w-40 overflow-hidden"
-            target="_blank">
-            <Icon
-              icon="material-icon-theme:pdf"
-              style="font-size: 90px;" />
-            <div class="text-sm text-center mt-2 truncate w-full">
-              {{ file.name }}
-            </div>
-          </a>
-        </template>
-      </div>
+      <FileAttachment :files="files" />
     </div>
   </BaseContainer>
 
@@ -74,19 +54,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { toast } from '@/plugins/toast'
-import { handleLoading } from '@/utils/HandleLoading'
 import { useDayjs } from '@/utils/Dayjs'
+import { handleLoading } from '@/utils/HandleLoading'
 import type { IAttachments } from '@/models/response/announcement/AnnouncementRes.model'
 import type { IAnnouncementProvider } from '@/resources/provider/announcement/Announcement.provider'
 import AnnouncementProvider from '@/resources/provider/announcement/Announcement.provider'
-import BaseContainer from '@/components/base/BaseContainer.vue'
-import { Icon } from '@iconify/vue'
 import BaseActionMenu, { type IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
+import BaseContainer from '@/components/base/BaseContainer.vue'
+import FileAttachment from '@/components/display/FileAttachment.vue'
 import DeleteModal from '@/components/modal/DeleteModal.vue'
 import PostEditModal from '../composer/PostEditModal.vue'
-import { computed } from 'vue'
 
 interface IProps {
   id: number

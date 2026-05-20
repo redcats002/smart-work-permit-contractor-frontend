@@ -1,6 +1,7 @@
 <template>
   <UploadInput
     v-model="media"
+    accept="image/*"
     class="border border-dashed border-gray-300 rounded-md" />
 </template>
 

@@ -10,17 +10,21 @@
     unstyled
     @update:active-index="console.log($event)">
     <template #item="slotProps">
-      <img
+      <BaseImage
         :alt="slotProps.item.name"
-        :src="slotProps.item.url"
-        class="aspect-square object-contain bg-white p-2">
+        :file-path="slotProps.item.path"
+        class="aspect-square object-contain bg-white p-2" />
     </template>
     <template #thumbnail="slotProps">
       <div class="bg-white grid place-content-center">
-        <img
+        <BaseImage
+          :alt="slotProps.item.name"
+          :file-path="slotProps.item.path"
+          class="aspect-square h-16 w-16 object-contain cursor-pointer" />
+        <!-- <img
           :alt="slotProps.item.name"
           :src="slotProps.item.url"
-          class="aspect-square h-16 w-16 object-contain cursor-pointer">
+          class="aspect-square h-16 w-16 object-contain cursor-pointer"> -->
       </div>
     </template>
     <template #previousthumbnailicon>
@@ -43,6 +47,7 @@ import { ptViewMerge } from '@/volt/utils'
 import { Icon } from '@iconify/vue'
 import type { GalleriaPassThroughOptions, GalleriaResponsiveOptions } from 'primevue'
 import Galleria from 'primevue/galleria'
+import BaseImage from './BaseImage.vue'
 
 interface IProps {
   images?: IMedia[]

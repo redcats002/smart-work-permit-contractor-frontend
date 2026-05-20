@@ -8,7 +8,7 @@
     </template>
     <div class="flex items-start gap-4">
       <BaseImage
-        :src="data?.image"
+        :file-path="data?.image"
         class="object-contain"
         width="152" />
       <DisplayList :items="items">

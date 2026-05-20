@@ -12,11 +12,12 @@
         <UploadInput
           v-model="media"
           :model-image="form.image"
-          :single="true"
+          accept="image/*"
           button-upload-class="bg-primary text-white"
           detail="ไฟล์ JPG, JPEG และ PNG ได้รับอนุญาต"
           label="เลือกเพื่ออัปโหลดหรือลากและวาง"
-          hide-icon-button />
+          hide-icon-button
+          single />
       </BaseContainer>
       <Form
         :key="formKey"
@@ -114,7 +115,7 @@ async function useSubmit (): Promise<void> {
   const images = await getUploadImages()
   await EmployeeService.updateEmployee(employeeId.value, usePayload(form.value, images))
   toast.success('ดำเนินการสำเร็จ')
-  router.push({ name: 'EmployeeListPage' })
+  router.push({ name: 'EmployeeDetailPage', params: { id: employeeId.value } })
 }
 
 
@@ -128,7 +129,7 @@ async function onSubmit (event: FormSubmitEvent): Promise<void> {
 }
 
 function onCancel (): void {
-  router.push({ name: 'EmployeeListPage' })
+  router.push({ name: 'EmployeeDetailPage', params: { id: employeeId.value } })
 }
 
 function useInit (data: IEmployeeById): void {

@@ -139,7 +139,7 @@ async function onSubmit (event: FormSubmitEvent): Promise<void> {
 }
 
 function onCancel (): void {
-  router.push({ name: 'CustomerListPage' })
+  router.push({ name: 'CustomerDetailPage', params: { id: customerId.value } })
 }
 
 function mount (): void {

@@ -14,11 +14,12 @@
         <UploadInput
           v-model="media"
           :model-image="form.image"
-          :single="true"
+          accept="image/*"
           button-upload-class="bg-primary text-white"
           detail="ไฟล์ JPG, JPEG และ PNG ได้รับอนุญาต"
           label="เลือกเพื่ออัปโหลดหรือลากและวาง"
-          hide-icon-button />
+          hide-icon-button
+          single />
       </BaseContainer>
       <Form
         :key="formKey"

@@ -2,6 +2,7 @@
   <Button
     :class="buttonClass"
     :type="type"
+    v-bind="$attrs"
     class="flex items-center rounded-sm!
     h-10.5 w-full md:w-49.5
     text-white transition-all duration-200">

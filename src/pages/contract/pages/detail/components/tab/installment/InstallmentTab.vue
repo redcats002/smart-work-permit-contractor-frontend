@@ -8,10 +8,12 @@
     </div>
     <div class="flex justify-between items-center">
       <span>ตารางการชำระ</span>
-      <span><ConfirmButton
-        :to="{}"
-        label="ชำระเงิน" /></span>
-      <!-- TODO: to document-and-finance detail -->
+      <span>
+        <router-link :to="{ name: 'ReceiptCreatePage', query: { customerId: mainBorrowerId } }">
+          <ConfirmButton
+            label="ชำระเงิน" />
+        </router-link>
+      </span>
     </div>
     <InstallmentTable
       v-model:pagination="pagination"
@@ -32,7 +34,7 @@ import { toast } from '@/plugins/toast'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IGetInstallmentList } from '@/models/request/contract/ContractReq.model'
-import type { IContractById, IContractInstallmentList } from '@/models/response/contract/ContractRes.model'
+import type { IBorrowersItems, IContractById, IContractInstallmentList } from '@/models/response/contract/ContractRes.model'
 import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
 import InvoiceProvider, { type IInvoiceProvider } from '@/resources/provider/invoice/Invoice.provider'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
@@ -56,6 +58,10 @@ const items = ref<IContractInstallmentList[]>([])
 
 const contractId = computed((): number => route?.params?.id ? Number(route.params.id) : 0)
 
+const mainBorrowerId = computed((): string | number | undefined => {
+  const main = props.data?.borrowers?.find((b: IBorrowersItems): boolean => b.isMain)
+  return main?.customer?.id
+})
 const cards = computed((): ICardIndicator[] => [
   { label: 'ยอดหนี้คงเหลือ', value: formatter.numberFormat2Decimal(props.data?.outstanding?.total), valueClass: 'text-orange-400' },
   { label: 'เงินต้นคงเหลือ', value: formatter.numberFormat2Decimal(props.data?.outstanding.principal), valueClass: 'text-blue-400' },
