@@ -81,15 +81,16 @@ export default function useList (categoryId: Ref<TBaseParamsId | null>): IUseLis
     search,
     sortBy,
     sortOrder,
-    extractPagination,
-    syncQuery,
     items,
     form,
+    extractPagination,
+    syncQuery,
     useFetch,
     onCreate,
     onUpdate,
     onDelete,
     fetch,
-    reset
+    reset,
+    resetPagination
   }
 }

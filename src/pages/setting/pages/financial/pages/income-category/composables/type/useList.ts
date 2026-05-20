@@ -90,6 +90,7 @@ export default function useList (categoryId: Ref<TBaseParamsId | null>): IUseLis
     onUpdate,
     onDelete,
     fetch,
-    reset
+    reset,
+    resetPagination
   }
 }

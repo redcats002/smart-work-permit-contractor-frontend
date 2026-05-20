@@ -75,15 +75,16 @@ export default function useList (): IUseList {
     search,
     sortBy,
     sortOrder,
-    extractPagination,
-    syncQuery,
     items,
     form,
+    extractPagination,
+    syncQuery,
     useDelete,
     onCreate,
     onUpdate,
     onDelete,
     fetch,
-    reset
+    reset,
+    resetPagination
   }
 }
