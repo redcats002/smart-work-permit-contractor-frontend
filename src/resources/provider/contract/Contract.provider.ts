@@ -221,8 +221,8 @@ class ContractProvider extends HttpRequest implements IContractProvider {
     return response
   }
 
-  public async deleteDocument (id: TBaseParamsId): Promise<TActionContractDocumentResponse> {
-    const response = await this.delete(`${this.urlPrefix}-document/${id}`)
+  public async deleteDocument (contractId: TBaseParamsId, documentId: TBaseParamsId): Promise<TActionContractDocumentResponse> {
+    const response = await this.delete(`${this.urlPrefix}-document/${documentId}`)
     return response
   }
 
