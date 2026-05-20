@@ -38,11 +38,12 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel } from '@/models/Global.model'
 import type { ICustomerList } from '@/models/response/customer/CustomerRes.model'
-import CustomerProvider from '@/resources/provider/customer/Customer.provider'
+import CustomerProvider, { type ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import CreateButton from '@/components/button/CreateButton.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
@@ -51,11 +52,12 @@ import CustomerTable from '@/pages/customer/pages/list/components/CustomerTable.
 import useList from '@/pages/customer/pages/list/composables/useList.ts'
 import type { DataTableRowClickEvent } from 'primevue'
 
-const CustomerService = new CustomerProvider()
+const CustomerService: ICustomerProvider = new CustomerProvider()
+const router = useRouter()
 
 const { filters, items, pagination, sortBy, sortOrder, search, fetch: fetchList, onClearFilters, onDelete, useFetch: useFetchList } = useList()
 
-const model = defineModel<number>()
+const model = defineModel<number | null>({ required: false })
 const data = ref<TBaseModel | undefined>(undefined)
 
 async function useFetch (): Promise<void> {
@@ -115,7 +117,8 @@ function fetch (): void {
   })
 }
 
-onMounted((): void => {
+onMounted(async (): Promise<void> => {
+  await router.isReady()
   if (model.value) fetch()
 })
 </script>
