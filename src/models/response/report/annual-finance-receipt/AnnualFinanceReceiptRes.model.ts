@@ -1,43 +1,44 @@
-import type { IEntity } from '@/models/Global.model'
-import type { IBranchList } from '../../branch/BranchRes.model'
 import type { IBasePaginationResponse } from '../../Response.model'
 
-export interface IAmountAndPercent {
-  amount: number
+export interface IMonthData {
+  principalAndInterest: number
   percent: number
 }
 
-export interface IAnnualFinanceReceiptList extends IEntity {
-  branch: IBranchList
-  january: IAmountAndPercent
-  february: IAmountAndPercent
-  march: IAmountAndPercent
-  april: IAmountAndPercent
-  may: IAmountAndPercent
-  june: IAmountAndPercent
-  july: IAmountAndPercent
-  august: IAmountAndPercent
-  september: IAmountAndPercent
-  october: IAmountAndPercent
-  november: IAmountAndPercent
-  december: IAmountAndPercent
-  total: IAmountAndPercent
-}
-export interface IAnnualFinanceReceiptSummary {
-  numberOfBranches: number
-  january: IAmountAndPercent
-  february: IAmountAndPercent
-  march: IAmountAndPercent
-  april: IAmountAndPercent
-  may: IAmountAndPercent
-  june: IAmountAndPercent
-  july: IAmountAndPercent
-  august: IAmountAndPercent
-  september: IAmountAndPercent
-  october: IAmountAndPercent
-  november: IAmountAndPercent
-  december: IAmountAndPercent
-  total: IAmountAndPercent
+export interface IAnnualFinanceReceiptList {
+  id: string
+  branchName: string
+  month1: IMonthData
+  month2: IMonthData
+  month3: IMonthData
+  month4: IMonthData
+  month5: IMonthData
+  month6: IMonthData
+  month7: IMonthData
+  month8: IMonthData
+  month9: IMonthData
+  month10: IMonthData
+  month11: IMonthData
+  month12: IMonthData
+  sumMonth: IMonthData
 }
 
-export interface TGetAnnualFinanceReceiptListResponse extends IBasePaginationResponse<IAnnualFinanceReceiptList>, IAnnualFinanceReceiptSummary {}
+export interface IAnnualFinanceReceiptSummary {
+  month1: IMonthData
+  month2: IMonthData
+  month3: IMonthData
+  month4: IMonthData
+  month5: IMonthData
+  month6: IMonthData
+  month7: IMonthData
+  month8: IMonthData
+  month9: IMonthData
+  month10: IMonthData
+  month11: IMonthData
+  month12: IMonthData
+  sumMonth: IMonthData
+}
+
+export interface TGetAnnualFinanceReceiptListResponse extends IBasePaginationResponse<IAnnualFinanceReceiptList> {
+  summary: IAnnualFinanceReceiptSummary
+}

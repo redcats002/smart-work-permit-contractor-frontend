@@ -4,46 +4,50 @@
     v-model:sort-by="sortBy"
     v-model:sort-order="sortOrder"
     :columns="columns"
-    :items="props.items"
-    disable-auto-left-padding>
+    :items="items"
+    disable-auto-left-padding
+    @update="emits('update')">
     <template #[`item.index`]="{ index }">
-      {{ index + 1 }}
+      {{ generator.generateOrder(index, pagination) }}
     </template>
   </BaseTable>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { generator } from '@/utils/Generator'
+import type { IContractSecurityDocumentReportList } from '@/models/response/report/contract-security-document/ContractSecurityDocumentRes.model'
 import type { IColumn } from '@/models/Table.model'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
-
-import type { IContractSecurityDocumentReportList } from '@/models/response/report/contract-security-document/ContractSecurityDocumentRes.model'
 
 interface IProps {
   items: IContractSecurityDocumentReportList[]
 }
 
-const props = defineProps<IProps>()
+defineProps<IProps>()
 
-const pagination = defineModel<IPagination>('pagination', {
-  required: true
-})
+interface IEmits {
+  update: []
+}
 
+const emits = defineEmits<IEmits>()
+
+const pagination = defineModel<IPagination>('pagination', { required: true })
 const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IContractSecurityDocumentReportList>[]>([
-  { field: 'index', header: 'ลำดับ', align: 'left', width: 60 },
-  { field: 'branchName', header: 'สาขา', align: 'left', width: 150 },
-  { field: 'contractAmount', header: 'จำนวนสัญญา', align: 'center', width: 120, value: (e: IContractSecurityDocumentReportList): number => e.contractAmount },
-  { field: 'accountClosedAmount', header: 'จำนวนปิดบัญชี', align: 'center', width: 120, value: (e: IContractSecurityDocumentReportList): number => e.accountClosedAmount },
-  { field: 'remainingAmount', header: 'คงเหลือ', align: 'center', width: 120, value: (e: IContractSecurityDocumentReportList): number => e.remainingAmount },
-  { field: 'landTitleDeedAmount', header: 'จำนวนโฉนดที่ดิน', align: 'center', width: 120, value: (e: IContractSecurityDocumentReportList): number => e.landTitleDeedAmount },
-  { field: 'ns3gor', header: 'นส3.ก ', align: 'center', width: 120, value: (e: IContractSecurityDocumentReportList): number => e.ns3gor },
-  { field: 'ns3', header: 'น.ส. 3', align: 'center', width: 120, value: (e: IContractSecurityDocumentReportList): number => e.ns3 },
-  { field: 'car', header: 'รถยนต์', align: 'center', width: 120, value: (e: IContractSecurityDocumentReportList): number => e.car },
-  { field: 'motorcycle', header: 'รถมอเตอร์ไซค์', align: 'center', width: 120, value: (e: IContractSecurityDocumentReportList): number => e.motorcycle }
+  { field: 'index', header: 'ลำดับ', align: 'center', width: 60 },
+  { field: 'branchName', header: 'สาขา', align: 'left', width: 160 },
+  { field: 'contractAmount', header: 'จำนวนสัญญา', align: 'center', width: 120 },
+  { field: 'contractCloseAmount', header: 'จำนวนปิดบัญชี', align: 'center', width: 120 },
+  { field: 'contractPendingAmount', header: 'คงเหลือ', align: 'center', width: 120 },
+  { field: 'assetLandAmount', header: 'จำนวนโฉนดที่ดิน', align: 'center', width: 130 },
+  { field: 'ns3Amount', header: 'น.ส. 3', align: 'center', width: 100 },
+  { field: 'ns3kAmount', header: 'น.ส. 3ก', align: 'center', width: 100 },
+  { field: 'vehicle', header: 'รถยนต์', align: 'center', width: 100 },
+  { field: 'motorcycle', header: 'รถมอเตอร์ไซค์', align: 'center', width: 120 }
 ])
 </script>
 

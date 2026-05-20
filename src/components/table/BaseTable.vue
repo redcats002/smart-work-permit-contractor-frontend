@@ -345,4 +345,10 @@ const checkboxColumnPt = ref({
 :deep(th.text-right .datatable-header-content) {
 	justify-content: flex-end;
 }
+
+:deep(tfoot) {
+	position: sticky;
+	bottom: 0;
+	z-index: 2;
+}
 </style>

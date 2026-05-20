@@ -1,5 +1,5 @@
 <template>
-  <section id="percent-installment-list-page">
+  <section id="overdue-customer-list-page">
     <PageTitle />
     <BaseTop>
       <BackButton />
@@ -9,7 +9,6 @@
       v-model:search="search"
       @clear="onClearFilters()"
       @search="fetch()">
-      <Spacer />
       <PrintButton
         icon="material-symbols:print-outline-rounded"
         label="พิมพ์" />
@@ -21,7 +20,6 @@
         v-model:sort-order="sortOrder"
         :items="items"
         :summary="summary"
-        @delete="onDelete($event)"
         @update="fetch()" />
     </BasePage>
   </section>
@@ -33,7 +31,6 @@ import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import PrintButton from '@/components/button/PrintButton.vue'
-import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import OverdueCustomerFilter from '../components/OverdueCustomerFilter.vue'
 import OverdueCustomerTable from '../components/OverdueCustomerTable.vue'
@@ -48,14 +45,12 @@ const {
   sortOrder,
   search,
   fetch,
-  onClearFilters,
-  onDelete
+  onClearFilters
 } = useList()
 
 onMounted((): void => {
   fetch()
 })
-
 </script>
 
 <style scoped></style>
