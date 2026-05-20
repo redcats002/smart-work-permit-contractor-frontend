@@ -13,6 +13,7 @@ import type {
   IGetIncomeList,
   IGetInstallmentSummary,
   IUpdateContractPayload,
+  IUpdateDocument,
   IUpdateExpense,
   IUpdateIncome,
   IUpdateInstallmentFeePayload
@@ -69,8 +70,9 @@ export interface IContractProvider {
   deleteContractHistory (id: TBaseParamsId): Promise<TActionContractHistoryResponse>
   getDocumentList(id: TBaseParamsId, query?: IGetDocumentList): Promise<TGetDocumentListResponse>
   getDocumentById(id: TBaseParamsId): Promise<TGetDocumentListResponse>
-  createDocument(id: TBaseParamsId, payload: ICreateDocument): Promise<TActionContractDocumentResponse>
-  deleteDocument(id: TBaseParamsId, documentId: TBaseParamsId): Promise<TActionContractDocumentResponse>
+  createDocument(contractId: TBaseParamsId, payload: ICreateDocument): Promise<TActionContractDocumentResponse>
+  updateDocument(id: TBaseParamsId, payload: IUpdateDocument): Promise<TActionContractDocumentResponse>
+  deleteDocument(documentId: TBaseParamsId): Promise<TActionContractDocumentResponse>
   updateLegalFee(contractInstallmentId: TBaseParamsId, payload: IUpdateInstallmentFeePayload): Promise<TActionContractInstallmentFeeResponse>
   updateCollectionFee(contractInstallmentId: TBaseParamsId, payload: IUpdateInstallmentFeePayload): Promise<TActionContractInstallmentFeeResponse>
 }
@@ -216,12 +218,17 @@ class ContractProvider extends HttpRequest implements IContractProvider {
     return response
   }
 
-  public async createDocument (id: TBaseParamsId, payload: ICreateDocument): Promise<TActionContractDocumentResponse> {
-    const response = await this.post(`${this.urlPrefix}-document/${id}`, payload)
+  public async createDocument (contractId: TBaseParamsId, payload: ICreateDocument): Promise<TActionContractDocumentResponse> {
+    const response = await this.post(`${this.urlPrefix}-document/${contractId}`, payload)
     return response
   }
 
-  public async deleteDocument (contractId: TBaseParamsId, documentId: TBaseParamsId): Promise<TActionContractDocumentResponse> {
+  public async updateDocument (id: TBaseParamsId, payload: IUpdateDocument): Promise<TActionContractDocumentResponse> {
+    const response = await this.put(`${this.urlPrefix}-document/${id}`, payload)
+    return response
+  }
+
+  public async deleteDocument (documentId: TBaseParamsId): Promise<TActionContractDocumentResponse> {
     const response = await this.delete(`${this.urlPrefix}-document/${documentId}`)
     return response
   }
