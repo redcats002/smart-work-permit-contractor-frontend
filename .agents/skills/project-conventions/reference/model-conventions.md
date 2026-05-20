@@ -50,7 +50,7 @@ export interface IUpdateFeaturePayload extends Partial<ICreateFeaturePayload> {}
 
 ## Response Models
 
-**Location:** `src/models/Response/<feature>/<entity>Res.model.ts`
+**Location:** `src/models/response/<feature>/<entity>Res.model.ts`
 
 **Pattern:**
 

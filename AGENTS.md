@@ -53,7 +53,18 @@ Per-domain routes belong in `src/router/modules/<Domain>.router.ts` and merge in
 
 All API access goes through `src/resources/HttpRequest.ts` (axios wrapper) + `src/resources/Interceptors.ts`. Base URL comes from `import.meta.env.VITE_APP_API_URL`. Interceptors handle camelCase conversion (humps) and 401 → logout + redirect to `/auth/login`.
 
-New API surfaces extend `HttpRequest`, implement a typed `I<Name>Provider` interface, set a `urlPrefix`, and export as default. Provider files live under `src/resources/provider/<feature>/<Name>.provider.ts` (directory does not yet exist — create when first provider is added). Request/response types live in `src/models/Request/` and `src/models/Response/`.
+New API surfaces extend `HttpRequest`, implement a typed `I<Name>Provider` interface, set a `urlPrefix`, and export as default. Provider files live under `src/resources/provider/<feature>/<Name>.provider.ts` (directory does not yet exist — create when first provider is added). request/response types live in `src/models/request/` and `src/models/response/`.
+
+When instantiating a provider in a page or composable, always declare with the typed interface and a `Service` suffix:
+
+```ts
+// correct
+const DashboardService: IDashboardProvider = new DashboardProvider()
+
+// wrong
+const provider = new DashboardProvider()
+const dashboardProvider = new DashboardProvider()
+```
 
 ### State (Pinia)
 
