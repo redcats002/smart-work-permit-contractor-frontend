@@ -10,6 +10,7 @@
     <BasePage>
       <InformationDetail
         v-model:customer-id="customerId"
+        :customer-id-query="customerIdQuery"
         :data="customer"
         @change="onCustomerChange()" />
     </BasePage>
@@ -98,8 +99,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
@@ -134,15 +135,21 @@ interface IInstallmentChangePayload {
   discountPenaltyFee: number
 }
 
+const route = useRoute()
 const router = useRouter()
-const receiptService: IReceiptProvider = new ReceiptProvider()
+const ReceiptService: IReceiptProvider = new ReceiptProvider()
 
-const customerId = ref<number | null>(null)
+const customerIdQuery = computed((): number | null => {
+  return route?.query?.customerId ? Number(route.query.customerId) : null
+})
 const customer = useInitDetail()
+const customerId = ref<number | null>(customerIdQuery.value)
+
 const contracts = ref<IInstallmentContract[]>([])
 const paymentMethod = ref<TReceiptPaymentMethod>(EReceiptPaymentMethod.CASH)
 const installmentAmounts = ref<Record<number, number>>({})
 const installmentDiscounts = ref<Record<number, number>>({})
+
 
 const totalAmount = computed((): number =>
   Object.values(installmentAmounts.value).reduce((acc: number, v: number): number => acc + v, 0)
@@ -154,7 +161,7 @@ function onInstallmentChange (id: number, payload: IInstallmentChangePayload): v
 }
 
 async function fetchInstallments (id: number): Promise<void> {
-  const { data } = await receiptService.getInstallmentsByCustomerId(id)
+  const { data } = await ReceiptService.getInstallmentsByCustomerId(id)
   customer.value = useInitDetail({
     id: data.customer.id,
     idNo: data.customer.idNo,
@@ -212,7 +219,7 @@ async function onSubmit (): Promise<void> {
         }))
         .filter((c: IReceiptContractPayload): boolean => c.installments.length > 0)
     }
-    await receiptService.createReceipt(payload)
+    await ReceiptService.createReceipt(payload)
     toast.success('ดำเนินการสำเร็จ')
     router.push({ name: 'ReceiptListPage' })
   })
@@ -221,6 +228,16 @@ async function onSubmit (): Promise<void> {
 function onCancel (): void {
   router.push({ name: 'ReceiptListPage' })
 }
+
+function onInitCustomer (): void {
+  if (!customerIdQuery.value) return
+  onCustomerChange()
+}
+
+onMounted(async (): Promise<void> => {
+  await router.isReady()
+  onInitCustomer()
+})
 </script>
 
 <style scoped>

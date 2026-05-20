@@ -6,13 +6,14 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
+import type { TBaseParamsId } from '@/models/response/Response.model'
 import WorkProvider, { type IWorkProvider } from '@/resources/provider/work/Work.provider'
 import type { IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import BaseActionMenu from '@/components/base/BaseActionMenu.vue'
 
 interface IProps {
   debtCollectionId: number
-  contractId: number
+  customerId: TBaseParamsId
 }
 
 interface IEmits {
@@ -36,7 +37,7 @@ const items = ref<IMenuItemAction[]>([
     key: 'payment',
     type: 'TEXT',
     action: (): void => {
-      router.push({ name: 'ReceiptCreatePage', query: { contractId: props.contractId } })
+      router.push({ name: 'ReceiptCreatePage', query: { customerId: props.customerId } })
     }
   },
   {
