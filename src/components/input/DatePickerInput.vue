@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, useAttrs } from 'vue'
+import { computed, getCurrentInstance, useAttrs } from 'vue'
 
 defineOptions({
   inheritAttrs: false
@@ -28,8 +28,9 @@ withDefaults(defineProps<{ dateFormat?: string, iconPosition?: 'prepend' | 'appe
 })
 
 const attrs = useAttrs()
+const instance = getCurrentInstance()
 const useStartEndRange = computed((): boolean => {
-  return 'onUpdate:start' in attrs && 'onUpdate:end' in attrs
+  return 'start' in (instance?.vnode?.props ?? {})
 })
 
 
