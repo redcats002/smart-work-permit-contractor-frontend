@@ -14,7 +14,7 @@
     </template>
     <template #[`item.actions`]="{ item }">
       <FollowUpMenuAction
-        :contract-id="item.contract.id"
+        :customer-id="item.customer.id"
         :debt-collection-id="Number(item.id)"
         @defer="emits('update')" />
     </template>
