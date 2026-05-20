@@ -1,5 +1,6 @@
 export interface IPaste {
   number(e: ClipboardEvent): string
+  citizenId(e: ClipboardEvent): string
 }
 
 function number (e: ClipboardEvent): string {
@@ -31,8 +32,20 @@ function number (e: ClipboardEvent): string {
   return ''
 }
 
+function citizenId (e: ClipboardEvent): string {
+  const clipboardText: string = e.clipboardData?.getData('text') || ''
+
+  if (!clipboardText) return ''
+
+  // Extract only digits and limit to 13 characters
+  const digitsOnly = clipboardText.replace(/\D/g, '').slice(0, 13)
+
+  return digitsOnly
+}
+
 const paste: IPaste = {
-  number
+  number,
+  citizenId
 }
 
 export default paste

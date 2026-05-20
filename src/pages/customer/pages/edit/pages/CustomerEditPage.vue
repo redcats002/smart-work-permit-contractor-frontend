@@ -130,6 +130,7 @@ async function useSubmit (): Promise<void> {
 }
 
 async function onSubmit (event: FormSubmitEvent): Promise<void> {
+  mount()
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return

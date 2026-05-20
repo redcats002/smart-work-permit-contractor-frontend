@@ -31,7 +31,8 @@
           <InformationForm
             v-model="form"
             v-model:form-key="formKey"
-            :form="$form" />
+            :form="$form"
+            @mount="mount()" />
         </BaseContainer>
         <BaseContainer>
           <AddressForm
@@ -111,6 +112,7 @@ async function useSubmit (): Promise<void> {
 }
 
 async function onSubmit (event: FormSubmitEvent): Promise<void> {
+  mount()
   if (!event.valid) {
     scrollToFirstError(event.errors, true)
     return

@@ -164,7 +164,7 @@ const isActive = computed({
 
 function handlePasteNumber (evt: ClipboardEvent, key: keyof ICreateCustomerPayload): void {
   model.value[key] = ''
-  model.value[key] = paste.number(evt)
+  model.value[key] = paste.citizenId(evt)
   formKey.value++
 }
 
