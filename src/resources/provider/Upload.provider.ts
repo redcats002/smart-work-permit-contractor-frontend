@@ -7,14 +7,14 @@ export interface IUploadResponse {
   fileType: string | null
   originalName: string
 }
-// export interface IUploadResponse {
-//   name: string
-//   url: string
-//   path: string
-// }
-
-
 type TUploadResponse = IBaseSuccessResponse<IUploadResponse>
+
+export interface IFileUrlResponse {
+  message: string
+  url: string
+}
+
+type TFileUrlResponse = IFileUrlResponse
 
 export interface IMedia {
   file?: File
@@ -26,6 +26,7 @@ export interface IMedia {
 
 export interface IUploadProvider {
   uploadFile(file: File): Promise<TUploadResponse>
+  getFileUrl(filePath: string): Promise<TFileUrlResponse>
 }
 
 class UploadProvider extends HttpRequest implements IUploadProvider {
@@ -41,6 +42,10 @@ class UploadProvider extends HttpRequest implements IUploadProvider {
       }
     })
     return response
+  }
+
+  public async getFileUrl (filePath: string): Promise<TFileUrlResponse> {
+    return this.get(`/api/v1/file?filePath=${filePath}`)
   }
 }
 
