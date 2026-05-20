@@ -48,6 +48,7 @@ const resolver = zodResolver(LoginSchema)
 const emits = defineEmits<IEmits>()
 
 async function onSubmit (event: FormSubmitEvent): Promise<void> {
+  event.originalEvent.preventDefault()
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return
