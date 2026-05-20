@@ -6,16 +6,17 @@
         <span>ลูกค้า</span>
         <span class="text-[#BD0102]">*</span>
       </div>
-      <CustomerSelection
+      <ModalCustomerSelection
         v-model="customerId"
-        :show-clear="true"
+        :disabled="!!customerIdQuery"
         placeholder="กรุณาเลือกลูกค้า"
+        show-clear
         @update:model-value="onSelectionChange()" />
     </div>
 
     <!-- Customer details -->
     <DisplayList
-      v-if="props.data.id"
+      v-if="data.id"
       :items="items">
       <template #[`value.status`]="{ value }">
         <ChipCustomerStatus :value="value" />
@@ -34,18 +35,21 @@ import type { ICustomerById } from '@/models/response/customer/CustomerRes.model
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import CitizenId from '@/components/display/CitizenId.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
-import CustomerSelection from '@/components/selection/modules/api/customer/CustomerSelection.vue'
+import ModalCustomerSelection from '@/components/selection/modules/api/customer/ModalCustomerSelection.vue'
 import ChipCustomerStatus from '@/pages/customer/pages/list/components/ChipCustomerStatus.vue'
 
 interface IProps {
   data: ICustomerById
+  customerIdQuery?: number | null
 }
 
 interface IEmits {
   change: [id: number | null]
 }
 
-const props = defineProps<IProps>()
+const props = withDefaults(defineProps<IProps>(), {
+  customerIdQuery: null
+})
 const emits = defineEmits<IEmits>()
 
 const customerId = defineModel<number | null>('customerId', { default: null })
