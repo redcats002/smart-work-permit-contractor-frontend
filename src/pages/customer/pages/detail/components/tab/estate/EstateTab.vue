@@ -4,7 +4,7 @@
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
-      @search="fetch()" />
+      @search="onSearch()" />
     <EstateTable
       v-model:pagination="pagination"
       v-model:sort-by="sortBy"
@@ -31,7 +31,7 @@ import EstateTable from './EstateTable.vue'
 const CustomerService: ICustomerProvider = new CustomerProvider()
 
 const route = useRoute()
-const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
 const filters = ref<ICustomerEstateFilter>({
   type: route?.query?.type ? route?.query?.type as TAssetType : undefined,
@@ -66,6 +66,11 @@ function normalizeFilters (value: ICustomerEstateFilter): Partial<IGetCustomerEs
   return {
     ...value
   }
+}
+
+function onSearch (): void {
+  resetPagination()
+  fetch()
 }
 
 function fetch (): void {

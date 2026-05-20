@@ -10,12 +10,13 @@ interface IUseList extends IUsePagination {
   filters: Ref<IBranchSummaryReportFilter>
   items: Ref<IBranchSummaryReportList[]>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
 }
 export default function useList (): IUseList {
   const ReportBranchesService: IReportBranchesProvider = new ReportBranchesProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IBranchSummaryReportFilter>({})
   const items = ref<IBranchSummaryReportList[]>([])
@@ -58,6 +59,11 @@ export default function useList (): IUseList {
     }
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -75,6 +81,8 @@ export default function useList (): IUseList {
     sortOrder,
     search,
     fetch,
+    onSearch,
+    resetPagination,
     onClearFilters,
     extractPagination,
     syncQuery,

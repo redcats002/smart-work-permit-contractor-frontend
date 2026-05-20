@@ -4,7 +4,7 @@
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
-      @search="fetch()" />
+      @search="onSearch()" />
     <PaymentHistoryTable
       v-model:pagination="pagination"
       v-model:sort-by="sortBy"
@@ -28,7 +28,7 @@ import PaymentHistoryTable from './PaymentHistoryTable.vue'
 const CustomerService: ICustomerProvider = new CustomerProvider()
 
 const route = useRoute()
-const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
 const filters = ref<IGetCustomerPaymentHistoryList>({})
 const items = ref<ICustomerPaymentHistoryList[]>([])
@@ -62,6 +62,11 @@ function normalizeFilters (value: IGetCustomerPaymentHistoryList): Partial<IGetC
   return {
     ...value
   }
+}
+
+function onSearch (): void {
+  resetPagination()
+  fetch()
 }
 
 function fetch (): void {

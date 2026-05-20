@@ -6,7 +6,7 @@
       <PaymentsForAccountClosureFilter
         v-model:search="search"
         @clear="onClearFilters()"
-        @search="fetch()">
+        @search="onSearch()">
         <PrintButton
           icon="material-symbols:print-outline-rounded"
           label="พิมพ์" />
@@ -56,7 +56,8 @@ const {
   sortOrder,
   search,
   fetch,
-  onClearFilters
+  onClearFilters,
+  onSearch
 } = useList()
 
 onMounted((): void => {

@@ -8,7 +8,7 @@
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
-      @search="fetch()">
+      @search="onSearch()">
       <Spacer />
       <PrintButton
         icon="material-symbols:print-outline-rounded"
@@ -47,7 +47,8 @@ const {
   search,
   summary,
   fetch,
-  onClearFilters
+  onClearFilters,
+  onSearch
 } = useList()
 
 onMounted((): void => {

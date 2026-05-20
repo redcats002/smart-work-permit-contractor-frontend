@@ -15,7 +15,7 @@ interface IDailySummaryDetail extends IUsePagination {
 export default function useList (): IDailySummaryDetail {
   // const DeilyInstallmentService: any = new Provider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IGetDailySummaryDetailListRequest>({})
   const items = ref<IDailySummaryDetailList>()

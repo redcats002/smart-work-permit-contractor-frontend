@@ -11,13 +11,14 @@ interface IUseContractList extends IUsePagination {
   items: Ref<IContractList[]>
   loanTypeOptions: Ref<IBaseOption[]>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
 }
 
 export default function useContractList (): IUseContractList {
   const contractService: IContractProvider = new ContractProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IGetContractList>({})
   const items = ref<IContractList[]>([])
@@ -44,6 +45,11 @@ export default function useContractList (): IUseContractList {
   }
 
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -63,6 +69,8 @@ export default function useContractList (): IUseContractList {
     sortOrder,
     search,
     fetch,
+    onSearch,
+    resetPagination,
     onClearFilters,
     extractPagination,
     syncQuery,

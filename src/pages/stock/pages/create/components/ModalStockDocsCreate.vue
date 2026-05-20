@@ -16,7 +16,7 @@
         v-model:filters="filters"
         v-model:search="search"
         @clear="onClearFilters()"
-        @search="fetch()" />
+        @search="onSearch()" />
       <BasePage class="flex flex-col gap-5">
         <SelectDocsTable
           v-model:pagination="pagination"
@@ -66,6 +66,7 @@ const selection = ref<IDocumentAssetList[]>([])
 const {
   fetch,
   onClearFilters,
+  onSearch,
   filters,
   items,
   search,

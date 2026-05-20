@@ -10,12 +10,13 @@ interface IUseList extends IUsePagination {
   filters: Ref<IContractAssetFilter>
   items: Ref<IContractAssetList[]>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
 }
 
 export default function useList (): IUseList {
   const provider = new ContractAssetProvider()
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IContractAssetFilter>({})
   const items = ref<IContractAssetList[]>([])
@@ -42,6 +43,11 @@ export default function useList (): IUseList {
     filters.value = {}
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -54,6 +60,8 @@ export default function useList (): IUseList {
     sortOrder,
     search,
     fetch,
+    onSearch,
+    resetPagination,
     onClearFilters,
     extractPagination,
     syncQuery,

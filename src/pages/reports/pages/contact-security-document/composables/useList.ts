@@ -11,13 +11,14 @@ interface IUseList extends IUsePagination {
   items: Ref<IContractSecurityDocumentReportList[]>
   summary: Ref<IContractSecurityDocumentReportSummary>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
 }
 
 export default function useList (): IUseList {
   const ContractSecurityDocumentService: IContractSecurityDocumentProvider = new ContractSecurityDocumentProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IContractSecurityDocumentReportFilter>({})
   const items = ref<IContractSecurityDocumentReportList[]>([])
@@ -54,6 +55,11 @@ export default function useList (): IUseList {
     }
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -72,9 +78,11 @@ export default function useList (): IUseList {
     search,
     summary,
     fetch,
+    onSearch,
     onClearFilters,
     extractPagination,
     syncQuery,
-    reset
+    reset,
+    resetPagination
   }
 }

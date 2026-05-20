@@ -8,7 +8,7 @@
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
-      @search="fetch()">
+      @search="onSearch()">
       <PrintButton
         icon="material-symbols:print-outline-rounded"
         label="พิมพ์" />
@@ -32,10 +32,8 @@ import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import PrintButton from '@/components/button/PrintButton.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
-import OutstandingDebtorFilter
-  from '@/pages/reports/pages/outstanding-debtor/components/OutstandingDebtorFilter.vue'
-import OutstandingDebtorTable
-  from '@/pages/reports/pages/outstanding-debtor/components/OutstandingDebtorTable.vue'
+import OutstandingDebtorFilter from '@/pages/reports/pages/outstanding-debtor/components/OutstandingDebtorFilter.vue'
+import OutstandingDebtorTable from '@/pages/reports/pages/outstanding-debtor/components/OutstandingDebtorTable.vue'
 import { useSuccessDebtorList } from '@/pages/reports/pages/outstanding-debtor/composables/useList'
 
 const {
@@ -47,7 +45,8 @@ const {
   sortOrder,
   search,
   fetch,
-  onClearFilters
+  onClearFilters,
+  onSearch
 } = useSuccessDebtorList()
 
 onMounted((): void => {

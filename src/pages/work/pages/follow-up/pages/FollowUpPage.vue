@@ -4,7 +4,7 @@
     <WorkFilter
       v-model:search="search"
       @clear="onClearFilters()"
-      @search="fetch()" />
+      @search="onSearch()" />
     <BasePage>
       <BaseTab
         v-model="tab"
@@ -40,7 +40,7 @@ import useInit from '../composables/useInit'
 import useList from '../composables/useList'
 
 const { tab, tabItems } = useInit()
-const { search, fetch, onClearFilters, items, pagination, sortBy, sortOrder } = useList(tab)
+const { search, items, pagination, sortBy, sortOrder, fetch, onClearFilters, onSearch } = useList(tab)
 
 
 onMounted((): void => {

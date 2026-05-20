@@ -15,6 +15,7 @@ interface IUseList extends IUsePagination {
   items: Ref<ILoanDisbursementSummaryList[]>
   summary: Ref<ILoanDisbursementSummarySummary>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
 }
 export default function useList (): IUseList {
@@ -22,7 +23,7 @@ export default function useList (): IUseList {
 
   const route = useRoute()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<ILoanDisbursementSummaryFilter>({
     branchId: route?.query?.branchId ? Number(route.query.branchId) : undefined,
@@ -70,6 +71,11 @@ export default function useList (): IUseList {
     }
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -88,6 +94,8 @@ export default function useList (): IUseList {
     search,
     summary,
     fetch,
+    onSearch,
+    resetPagination,
     onClearFilters,
     extractPagination,
     syncQuery,

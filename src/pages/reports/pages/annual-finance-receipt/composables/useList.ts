@@ -12,6 +12,7 @@ interface IUseList extends IUsePagination {
   items: Ref<IAnnualFinanceReceiptList[]>
   summary: Ref<IAnnualFinanceReceiptSummary>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
 }
 
@@ -20,7 +21,7 @@ export default function useList (): IUseList {
 
   const dayjs = useDayjs()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IAnnualFinanceReceiptFilter>({})
   const items = ref<IAnnualFinanceReceiptList[]>([])
@@ -77,6 +78,11 @@ export default function useList (): IUseList {
     }
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -95,9 +101,11 @@ export default function useList (): IUseList {
     search,
     summary,
     fetch,
+    onSearch,
     onClearFilters,
     extractPagination,
     syncQuery,
-    reset
+    reset,
+    resetPagination
   }
 }

@@ -5,7 +5,7 @@
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
-      @search="fetch()">
+      @search="onSearch()">
       <CreateButton
         :to="{
           name: 'DocumentMovementCreatePage'
@@ -43,7 +43,8 @@ const {
   sortOrder,
   search,
   fetch,
-  onClearFilters
+  onClearFilters,
+  onSearch
 } = useList()
 
 onMounted((): void => {

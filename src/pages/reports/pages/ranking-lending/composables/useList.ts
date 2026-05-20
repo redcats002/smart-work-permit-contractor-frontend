@@ -10,10 +10,11 @@ interface IUseList extends IUsePagination {
   filters: Ref<IRankLendingFilter>
   items: Ref<IRankLendingList[]>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
 }
 export default function useList (): IUseList {
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IRankLendingFilter>({ type: 'RECEIPT_AMOUNT' })
   const items = ref<IRankLendingList[]>([])
@@ -74,6 +75,11 @@ export default function useList (): IUseList {
     }
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -90,9 +96,11 @@ export default function useList (): IUseList {
     sortOrder,
     search,
     fetch,
+    onSearch,
     onClearFilters,
     extractPagination,
     syncQuery,
-    reset
+    reset,
+    resetPagination
   }
 }

@@ -13,12 +13,13 @@ interface IUseList extends IUsePagination {
   filters: Ref<TGetAssetAppraisalList>
   items: Ref<TAssetAppraisalList[]>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
 }
 export default function useList (tab: Ref<TAssetAppraisalTab>): IUseList {
   const WorkService: IWorkProvider = new WorkProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<TGetAssetAppraisalList>({})
   const items = ref<TAssetAppraisalList[]>([])
@@ -53,6 +54,11 @@ export default function useList (tab: Ref<TAssetAppraisalTab>): IUseList {
     }
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -71,6 +77,8 @@ export default function useList (tab: Ref<TAssetAppraisalTab>): IUseList {
     sortOrder,
     search,
     fetch,
+    onSearch,
+    resetPagination,
     onClearFilters,
     extractPagination,
     syncQuery,

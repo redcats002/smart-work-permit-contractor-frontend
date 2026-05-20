@@ -5,7 +5,7 @@
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
-      @search="fetch()" />
+      @search="onSearch()" />
     <BasePage>
       <AssetTable
         v-model:pagination="pagination"
@@ -25,7 +25,7 @@ import AssetFilter from '../components/AssetFilter.vue'
 import AssetTable from '../components/AssetTable.vue'
 import useList from '../composables/useList'
 
-const { filters, items, pagination, sortBy, sortOrder, search, fetch, onClearFilters } = useList()
+const { filters, items, pagination, sortBy, sortOrder, search, fetch, onClearFilters, onSearch } = useList()
 
 onMounted((): void => {
   fetch()

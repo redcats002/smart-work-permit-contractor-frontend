@@ -13,6 +13,7 @@ interface IUseList extends IUsePagination {
   items: Ref<IAnnouncementList[]>
   isFinished: Ref<boolean>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
   loadMore(): Promise<void>
   reset(): void
@@ -22,7 +23,7 @@ const DEFAULT_LIMIT = 3
 export default function useList (): IUseList {
   const AnnouncementService: IAnnouncementProvider = new AnnouncementProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
   pagination.value.limit = DEFAULT_LIMIT
 
   const filters = ref<IGetAnnouncementList>({})
@@ -85,6 +86,11 @@ export default function useList (): IUseList {
     }
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (isLoadMore: boolean = false): void {
     if (!isLoadMore) {
       pagination.value.page = 1
@@ -123,10 +129,12 @@ export default function useList (): IUseList {
     isFinished,
     loadMore,
     fetch,
+    onSearch,
     onClearFilters,
     extractPagination,
     syncQuery,
     reset,
+    resetPagination,
     onUpdate
   }
 }

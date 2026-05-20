@@ -9,13 +9,14 @@ interface IUseList extends IUsePagination {
   filters: Ref<IGetReceiptList>
   items: Ref<IReceiptList[]>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
 }
 
 export default function useList (): IUseList {
   const receiptService: IReceiptProvider = new ReceiptProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const items = ref<IReceiptList[]>([])
   const filters = ref<IGetReceiptList>({})
@@ -39,6 +40,11 @@ export default function useList (): IUseList {
     syncQuery({})
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -51,6 +57,8 @@ export default function useList (): IUseList {
     search,
     filters,
     fetch,
+    onSearch,
+    resetPagination,
     onClearFilters,
     extractPagination,
     syncQuery,

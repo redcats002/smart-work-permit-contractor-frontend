@@ -8,12 +8,13 @@ import usePagination, { type IUsePagination } from '@/composables/usePagination'
 interface IUseList extends IUsePagination {
   items: Ref<IExpensesList[]>
   fetch(): void
+  onSearch(): void
 }
 
 export default function useList (): IUseList {
   const expensesService: IExpensesProvider = new ExpensesProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const items = ref<IExpensesList[]>([])
 
@@ -32,6 +33,11 @@ export default function useList (): IUseList {
     syncQuery({})
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -43,6 +49,8 @@ export default function useList (): IUseList {
     sortOrder,
     search,
     fetch,
+    onSearch,
+    resetPagination,
     extractPagination,
     syncQuery,
     reset

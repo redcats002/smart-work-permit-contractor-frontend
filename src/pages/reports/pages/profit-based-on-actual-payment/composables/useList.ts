@@ -14,12 +14,13 @@ interface IUseList extends IUsePagination {
   items: Ref<IProfitBasedOnActualPaymentList[]>
   summary: Ref<IProfitBasedOnActualPaymentSummary>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
 }
 export default function useList (): IUseList {
   const ProfitBasedOnActualPaymentService = new ProfitBasedOnActualPaymentProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IProfitBasedOnActualPaymentFilter>({})
   const items = ref<IProfitBasedOnActualPaymentList[]>([])
@@ -203,6 +204,11 @@ export default function useList (): IUseList {
     }
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -220,6 +226,8 @@ export default function useList (): IUseList {
     search,
     summary,
     fetch,
+    onSearch,
+    resetPagination,
     onClearFilters,
     extractPagination,
     syncQuery,

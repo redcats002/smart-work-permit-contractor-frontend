@@ -10,10 +10,11 @@ interface IUseList extends IUsePagination {
   filters: Ref<IFinancialSummaryReportFilter>
   items: Ref<IFinancialSummaryReportList[]>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
 }
 export default function useList (): IUseList {
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IFinancialSummaryReportFilter>({})
   const items = ref<IFinancialSummaryReportList[]>([])
@@ -76,6 +77,11 @@ export default function useList (): IUseList {
     }
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -93,6 +99,8 @@ export default function useList (): IUseList {
     sortOrder,
     search,
     fetch,
+    onSearch,
+    resetPagination,
     onClearFilters,
     extractPagination,
     syncQuery,

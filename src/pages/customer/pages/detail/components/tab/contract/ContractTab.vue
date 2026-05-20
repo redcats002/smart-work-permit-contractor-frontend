@@ -4,7 +4,7 @@
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
-      @search="fetch()">
+      @search="onSearch()">
       <CreateButton
         :to="{ name: 'PreContractCreatePage', query: { customerId: customerId } }"
         label="สร้างสัญญาใหม่" />
@@ -35,7 +35,7 @@ import ContractTable from './ContractTable.vue'
 const CustomerService: ICustomerProvider = new CustomerProvider()
 
 const route = useRoute()
-const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
 const filters = ref<ICustomerContractFilter>({
   status: route?.query?.status ? route.query.status as TContractStatus : undefined
@@ -67,6 +67,11 @@ function normalizeFilters (value: ICustomerContractFilter): Partial<IGetCustomer
   return {
     ...value
   }
+}
+
+function onSearch (): void {
+  resetPagination()
+  fetch()
 }
 
 function fetch (): void {

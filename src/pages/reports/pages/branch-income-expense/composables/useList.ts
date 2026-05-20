@@ -11,12 +11,13 @@ interface IUseList extends IUsePagination {
   items: Ref<IBranchIncomeExpenseList[]>
   summary: Ref<IBranchIncomeExpenseSummary>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
 }
 export default function useList (): IUseList {
   const BranchIncomeExpenseService = new BranchIncomeExpenseProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IBranchIncomeExpenseFilter>({
     transactionType: 'INCOME_EXPENSE',
@@ -109,6 +110,11 @@ export default function useList (): IUseList {
     }
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -127,6 +133,8 @@ export default function useList (): IUseList {
     search,
     summary,
     fetch,
+    onSearch,
+    resetPagination,
     onClearFilters,
     extractPagination,
     syncQuery,

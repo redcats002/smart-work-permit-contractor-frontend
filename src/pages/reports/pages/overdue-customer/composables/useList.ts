@@ -11,13 +11,14 @@ interface IUseList extends IUsePagination {
   items: Ref<IOverdueCustomerList[]>
   summary: Ref<IOverdueCustomerSummary>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
 }
 
 export default function useList (): IUseList {
   const OverdueCustomerService: IOverdueCustomerProvider = new OverdueCustomerProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IOverdueCustomerFilter>({})
   const items = ref<IOverdueCustomerList[]>([])
@@ -52,6 +53,11 @@ export default function useList (): IUseList {
     }
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -70,9 +76,11 @@ export default function useList (): IUseList {
     search,
     summary,
     fetch,
+    onSearch,
     onClearFilters,
     extractPagination,
     syncQuery,
-    reset
+    reset,
+    resetPagination
   }
 }

@@ -16,12 +16,13 @@ interface IUseList extends IUsePagination {
   items: Ref<IPercentInstallmentList[]>
   summary: Ref<IPercentInstallmentSummary>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
 }
 export default function useList (): IUseList {
   const PercentInstallmentPaymentService: IPercentInstallmentPaymentProvider = new PercentInstallmentPaymentProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IPercentInstallmentFilter>({})
   const items = ref<IPercentInstallmentList[]>([])
@@ -71,6 +72,11 @@ export default function useList (): IUseList {
     }
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -89,6 +95,8 @@ export default function useList (): IUseList {
     sortOrder,
     search,
     fetch,
+    onSearch,
+    resetPagination,
     onClearFilters,
     extractPagination,
     syncQuery,

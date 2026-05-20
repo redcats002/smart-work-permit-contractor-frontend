@@ -7,7 +7,7 @@
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
-      @search="fetch()">
+      @search="onSearch()">
       <PrintButton
         icon="material-symbols:print-outline-rounded"
         label="พิมพ์" />
@@ -28,12 +28,12 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import BasePage from '@/components/base/BasePage.vue'
-import PageTitle from '@/components/nav/PageTitle.vue'
-import useList from '../composables/useList'
-import PrintButton from '@/components/button/PrintButton.vue'
-import DailyBranchSummaryTable from '../components/DailyBranchSummaryTable.vue'
-import DailyBranchSummaryFilter from '../components/DailyBranchSummaryFilter.vue'
 import BackButton from '@/components/button/BackButton.vue'
+import PrintButton from '@/components/button/PrintButton.vue'
+import PageTitle from '@/components/nav/PageTitle.vue'
+import DailyBranchSummaryFilter from '../components/DailyBranchSummaryFilter.vue'
+import DailyBranchSummaryTable from '../components/DailyBranchSummaryTable.vue'
+import useList from '../composables/useList'
 
 const {
   filters,
@@ -43,7 +43,8 @@ const {
   sortOrder,
   search,
   fetch,
-  onClearFilters
+  onClearFilters,
+  onSearch
 } = useList()
 
 onMounted((): void => {
