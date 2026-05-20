@@ -1,7 +1,7 @@
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
 import type { TDocumentType } from '@/enums/modules/contract/DocumentType.enum'
 import type { TVatType } from '@/enums/modules/Vat.enum'
-import type { IUploadResponse } from '@/resources/provider/Upload.provider'
+import type { IMedia, IUploadResponse } from '@/resources/provider/Upload.provider'
 import type { ContractHistoryFormValues } from '@/pages/contract/pages/detail/components/tab/contact-history/schema/contract-history.schema'
 import type { IBasePaginationRequest } from '../Request.model'
 
@@ -47,7 +47,7 @@ export interface IGetDocumentList extends IBasePaginationRequest {}
 export interface ICreateDocument {
   documentType: TDocumentType
   locationId: number
-  files: IUploadResponse[]
+  files: IMedia[]
   note: string
 }
 export interface IUpdateDocument extends Partial<ICreateDocument> {}

@@ -10,7 +10,7 @@ export const IncomeSchema = z.object({
     .number({ message: 'กรุณากรอกจำนวนเงิน' })
     .min(1, 'กรุณากรอกจำนวนเงิน'),
   file: z.array(schema.media),
-  vatType: z.nativeEnum(EVatType, { message: 'กรุณาเลือกประเภท VAT' })
+  vatType: z.enum(EVatType, { message: 'กรุณาเลือกประเภท VAT' })
 })
 
 export type IncomeFormValues = z.infer<typeof IncomeSchema>

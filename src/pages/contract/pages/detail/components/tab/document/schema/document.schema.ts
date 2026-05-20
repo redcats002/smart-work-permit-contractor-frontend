@@ -3,7 +3,7 @@ import { DocumentTypeEnum } from '@/enums/modules/contract/DocumentType.enum'
 import { z } from 'zod'
 
 export const DocumentSchema = z.object({
-  documentType: z.nativeEnum(DocumentTypeEnum, { message: 'กรุณาเลือกประเภทเอกสาร' })
+  documentType: z.enum(DocumentTypeEnum, { message: 'กรุณาเลือกประเภทเอกสาร' })
     .optional()
     .refine((val: DocumentTypeEnum | undefined): val is DocumentTypeEnum => val !== undefined, { message: 'กรุณาเลือกประเภทเอกสาร' }),
   locationId: schema.id('จุดจัดเก็บ'),

@@ -6,7 +6,7 @@ import type { TDocumentType } from '@/enums/modules/contract/DocumentType.enum'
 import type { TInterestType } from '@/enums/modules/contract/InterestType.enum'
 import type { TPaymentStatus } from '@/enums/modules/contract/PaymentStatus.enum'
 import type { TVatType } from '@/enums/modules/Vat.enum'
-import type { IUploadResponse } from '@/resources/provider/Upload.provider'
+import type { IMedia } from '@/resources/provider/Upload.provider'
 import type { IInstallmentRow } from '@/pages/contract/pages/pre-contract-detail/composables/useInstallment'
 import type { IContractLoanPurposeList } from '../contract-loan-purpose/ContractLoanPurposeRes.model'
 import type { IContractLoanTypeList } from '../contract-loan-type/ContractLoanTypeRes.model'
@@ -118,7 +118,7 @@ export interface IContractExpenseList extends IEntity {
   note: string
   amount: number
   vatType?: TVatType
-  file?: IUploadResponse[]
+  file?: IMedia[]
 }
 
 export interface IContractExpenseById extends IEntity {
@@ -128,7 +128,7 @@ export interface IContractExpenseById extends IEntity {
   note: string
   amount: number
   vatType: TVatType
-  file: IUploadResponse[]
+  file: IMedia[]
 }
 export interface IContractIncomeList extends IEntity {
   date: string
@@ -137,7 +137,7 @@ export interface IContractIncomeList extends IEntity {
   note: string
   amount: number
   vatType?: TVatType
-  file?: IUploadResponse[]
+  file?: IMedia[]
 }
 export interface IContractIncomeById extends IEntity {
   contractId: number | null
@@ -146,7 +146,7 @@ export interface IContractIncomeById extends IEntity {
   note: string
   amount: number
   vatType: TVatType
-  file: IUploadResponse[]
+  file: IMedia[]
 }
 export interface IContractGuarantorList extends ICustomerList {
   customer: ICustomerById
@@ -172,7 +172,7 @@ export interface IContractDocumentList extends IEntity {
   documentType: TDocumentType
   note: string
   location: IWarehouseList
-  files?: string
+  files?: IMedia[]
 }
 
 export interface IContractSummaryCard {
