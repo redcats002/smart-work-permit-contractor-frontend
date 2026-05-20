@@ -4,9 +4,18 @@
 
     <div class="flex items-start justify-between">
       <div class="flex gap-3">
-        <img
-          class="w-10 h-10 rounded-full"
-          src="https://www.pngall.com/wp-content/uploads/20/Cappuccino-Assassino-PNG.png">
+        <BaseImage
+          v-if="image"
+          :file-path="image"
+          :preview="false"
+          class="size-10 border rounded-full border-gray-400" />
+        <div
+          v-else
+          class="border rounded-full border-gray-300 size-10 grid place-content-center">
+          <Icon
+            class="size-6 text-gray-400"
+            icon="solar:user-bold" />
+        </div>
         <div>
           <div class="flex items-center gap-2">
             <span class="font-semibold">
@@ -63,14 +72,17 @@ import type { IAnnouncementProvider } from '@/resources/provider/announcement/An
 import AnnouncementProvider from '@/resources/provider/announcement/Announcement.provider'
 import BaseActionMenu, { type IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import BaseContainer from '@/components/base/BaseContainer.vue'
+import BaseImage from '@/components/base/BaseImage.vue'
 import FileAttachment from '@/components/display/FileAttachment.vue'
 import DeleteModal from '@/components/modal/DeleteModal.vue'
+import { Icon } from '@iconify/vue'
 import PostEditModal from '../composer/PostEditModal.vue'
 
 interface IProps {
+  files?: IAttachments[]
+  image?: string | null
   id: number
   content: string
-  files?: IAttachments[]
   authorName: string
   role: string
   createdAt: string
@@ -82,7 +94,8 @@ interface IEmits {
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-  files: (): IAttachments[] => []
+  files: (): IAttachments[] => [],
+  image: ''
 })
 const emits = defineEmits<IEmits>()
 

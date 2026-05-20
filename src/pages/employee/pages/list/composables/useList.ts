@@ -11,13 +11,14 @@ interface IUseList extends IUsePagination {
   items: Ref<IEmployeeList[]>
   useFetch(): Promise<void>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
   onDelete(id: number): void
 }
 export default function useList (): IUseList {
   const EmployeeService: IEmployeeProvider = new EmployeeProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IGetEmployeeList>({})
   const items = ref<IEmployeeList[]>([])
@@ -57,6 +58,11 @@ export default function useList (): IUseList {
     handleLoading(useFetch)
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function onClearFilters (): void {
     reset()
     filters.value = {}
@@ -73,12 +79,14 @@ export default function useList (): IUseList {
     sortBy,
     sortOrder,
     search,
+    onSearch,
     useFetch,
     fetch,
     onClearFilters,
     onDelete,
     extractPagination,
     syncQuery,
-    reset
+    reset,
+    resetPagination
   }
 }

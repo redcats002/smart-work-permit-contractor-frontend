@@ -8,7 +8,7 @@
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
-      @search="fetch()">
+      @search="onSearch()">
       <CreateButton
         :to="{
           name: 'EmployeeCreatePage'
@@ -48,6 +48,7 @@ const {
   sortOrder,
   search,
   fetch,
+  onSearch,
   onClearFilters,
   onDelete
 } = useList()
