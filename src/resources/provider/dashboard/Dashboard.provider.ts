@@ -1,17 +1,26 @@
-import type { IDashboardData } from '@/models/response/dashboard/DashboardRes.model'
+import type { IDashboardCardQuery, IDashboardChartQuery } from '@/models/request/dashboard/DashboardReq.model'
+import type { TDashboardCardResponse, TDashboardChartResponse } from '@/models/response/dashboard/DashboardRes.model'
 import HttpRequest from '@/resources/HttpRequest'
-import { dashboardMock } from './Dashboard.mock'
 
 export interface IDashboardProvider {
-  getDashboard: () => Promise<IDashboardData>
+  getCard(query: IDashboardCardQuery): Promise<TDashboardCardResponse>
+  getChartMarket(query: IDashboardChartQuery): Promise<TDashboardChartResponse>
+  getChartLoan(query: IDashboardChartQuery): Promise<TDashboardChartResponse>
 }
 
 class DashboardProvider extends HttpRequest implements IDashboardProvider {
-  private urlPrefix: string = '/api/v1/management/dashboard'
+  private urlPrefix: string = '/api/v1/dashboard'
 
-  async getDashboard (): Promise<IDashboardData> {
-    void this.urlPrefix
-    return Promise.resolve(dashboardMock)
+  async getCard (query: IDashboardCardQuery): Promise<TDashboardCardResponse> {
+    return this.get(`${this.urlPrefix}/card`, query)
+  }
+
+  async getChartMarket (query: IDashboardChartQuery): Promise<TDashboardChartResponse> {
+    return this.get(`${this.urlPrefix}/chart-market`, query)
+  }
+
+  async getChartLoan (query: IDashboardChartQuery): Promise<TDashboardChartResponse> {
+    return this.get(`${this.urlPrefix}/chart-loan`, query)
   }
 }
 
