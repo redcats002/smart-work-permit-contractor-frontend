@@ -1,10 +1,14 @@
 <template>
   <Image
+    :preview="preview"
     :pt="theme"
     :pt-options="{ mergeProps: ptViewMerge }"
-    preview
     unstyled
-    v-bind="attrs">
+    v-bind="{
+      ...attrs,
+      src: computedSrc
+    }"
+    @click.prevent.stop>
     <template #image>
       <img
         :alt="attrs?.alt ? String(attrs?.alt) : computedSrc"
@@ -16,22 +20,50 @@
 </template>
 
 <script setup lang="ts">
-import { type Attrs, computed, nextTick, ref, useAttrs } from 'vue'
+import { type Attrs, computed, nextTick, ref, useAttrs, watchEffect } from 'vue'
+import useFileUrl from '@/composables/useFileUrl'
 import { ptViewMerge } from '@/volt/utils'
 import type { ImagePassThroughOptions } from 'primevue'
 import Image from 'primevue/image'
 
 const FALLBACK_IMAGE = '/assets/images/logo-no-color.png'
-const attrs = useAttrs()
 
+interface IProps {
+  filePath?: string | null
+  preview?: boolean
+}
+
+const props = withDefaults(defineProps<IProps>(), {
+  filePath: null,
+  preview: true
+})
+
+const attrs = useAttrs()
 const fallback = ref<boolean>(false)
 
 
-const src = computed((): string => attrs.src as string || '')
-const computedSrc = computed((): string => {
-  if (fallback.value || !src.value) return FALLBACK_IMAGE
-  return src.value
+const filePathRef = computed((): string | null | undefined =>
+  props.filePath && !isDirectUrl(props.filePath) ? props.filePath : undefined
+)
+const { url: signedUrl } = useFileUrl(filePathRef)
+
+const computedSrc = ref<string>((attrs.src as string | undefined) || FALLBACK_IMAGE)
+
+watchEffect((): void => {
+  if (fallback.value) {
+    computedSrc.value = FALLBACK_IMAGE
+    return
+  }
+  if (props.filePath) {
+    if (isDirectUrl(props.filePath)) {
+      computedSrc.value = props.filePath
+      return
+    }
+    computedSrc.value = signedUrl.value ?? FALLBACK_IMAGE
+    return
+  }
 })
+
 const safeAttrs = computed((): Attrs => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { src, ...rest } = attrs
@@ -41,6 +73,10 @@ const safeAttrs = computed((): Attrs => {
 function onError (): void {
   fallback.value = true
   nextTick()
+}
+
+function isDirectUrl (path: string): boolean {
+  return path.startsWith('blob:') || path.startsWith('http://')
 }
 
 const theme = ref<ImagePassThroughOptions>({

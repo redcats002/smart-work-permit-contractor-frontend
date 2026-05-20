@@ -8,12 +8,12 @@
     v-model:selected-name="selectedNameValue"
     :fetch-suggestions="fetchSuggestions"
     :map-option-to-model="mapOptionToModel"
-    :refresh-deps="[incomeCategoryId]"
+    :refresh-deps="refreshDeps"
     option-label="name" />
 </template>
 
 <script setup lang="ts">
-import { useAttrs } from 'vue'
+import { computed, useAttrs } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel } from '@/models/Global.model'
 import type { IFinanceIncomeTypeList } from '@/models/response/finance-income-type/FinanceIncomeTypeRes.model'
@@ -48,6 +48,7 @@ const fetchSuggestions = async (): Promise<TBaseModel[]> => await handleLoading(
 }) ?? []
 
 const mapOptionToModel = (item: TBaseModel): number | null => item?.id != null ? Number(item.id) : null
+const refreshDeps = computed((): unknown[] => [props.incomeCategoryId])
 </script>
 
 <style scoped></style>

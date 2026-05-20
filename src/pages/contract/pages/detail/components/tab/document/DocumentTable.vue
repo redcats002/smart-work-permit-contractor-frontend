@@ -53,7 +53,8 @@ const columns = ref<IColumn<IContractDocumentList>[]>([
   { field: 'createdAt', header: 'วันที่', value: (e: IContractDocumentList): string => dayjs.formatDate(e?.createdAt || '') },
   { field: 'documentType', header: 'ประเภทเอกสาร', value: (e: IContractDocumentList): string => formatTitle(e?.documentType) },
   { field: 'note', header: 'คำอธิบาย', bodyClass: 'max-w-[200px]' },
-  { field: 'location', header: 'จุดจัดเก็บ', align: 'left', value: (e: IContractDocumentList): string => e?.location?.name || '-' }
+  { field: 'location', header: 'จุดจัดเก็บ', align: 'left', value: (e: IContractDocumentList): string => e?.location?.name || '-' },
+  { field: 'action', header: 'จัดการ', align: 'right' }
 ])
 </script>
 

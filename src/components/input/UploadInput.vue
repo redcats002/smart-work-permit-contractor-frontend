@@ -15,14 +15,15 @@
     @dragleave.prevent="onDragLeave($event)"
     @dragover.prevent="onDragOver()"
     @drop.prevent="onDrop($event)">
-    <img
+    <BaseImage
       v-if="media.length > 0 && single"
+      :file-path="media[media.length - 1]?.path"
       :src="media[media.length - 1].url"
-      class="w-24 h-24 object-cover rounded-md">
-    <img
+      class="w-24 h-24 object-cover rounded-md" />
+    <BaseImage
       v-else-if="modelImage && typeof modelImage === 'string'"
-      :src="modelImage"
-      class="w-24 h-24 object-cover rounded-md">
+      :file-path="modelImage"
+      class="w-24 h-24 object-cover rounded-md" />
     <template v-else>
       <Icon
         v-if="!single"
@@ -34,7 +35,6 @@
         class="w-24 h-24 object-cover rounded-md"
         src="/images/blank_avatar.png">
     </template>
-
     <slot name="label">
       <p class="text-sm text-surface-600 text-center">
         {{ label }}
@@ -62,8 +62,8 @@
     <input
       :key="inputKey"
       ref="fileInputRef"
+      :accept="accept"
       :multiple="!props.single"
-      accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
       type="file"
       hidden
       @change="onFileChange($event)">
@@ -78,19 +78,20 @@
       class="flex items-center justify-between border border-surface-300 rounded-md px-3 py-2 bg-white">
       <div class="flex items-start gap-2 truncate">
         <BaseImage
-          v-if="getExt(e.name) === 'png' || getExt(e.name) === 'jpg' || getExt(e.name) === 'jpeg'"
-          :src="e.url"
+          v-if="isImageFile(e.name)"
+          :file-path="e.path"
+          :preview="false"
+          :src="e?.url"
           class="aspect-square w-9 h-9" />
         <Icon
           v-else
           :icon="getFileIcon(e.name)"
           class="text-xl" />
-        <a
-          :href="e.url"
+        <span
           class="text-xs text-gray-700 truncate"
           target="_blank">
           {{ e.name }}
-        </a>
+        </span>
       </div>
 
       <button
@@ -127,6 +128,7 @@ interface IProps {
   buttonUploadClass?: string
   removeIcon?: string
   removeButtonClass?: string
+  accept?: string
 }
 interface IEmits {
   upload: [media: IMedia[]]
@@ -145,18 +147,25 @@ const props = withDefaults(defineProps<IProps>(), {
   buttonText: 'อัปโหลดรูปภาพ',
   buttonUploadClass: '',
   removeIcon: 'mdi:trash-can-outline',
-  removeButtonClass: ''
+  removeButtonClass: '',
+  accept: '.jpg,.jpeg,.png,.pdf,.doc,.docx'
 })
 
-const media = defineModel<IMedia[]>({ required: true })
-
 const emits = defineEmits<IEmits>()
+const media = defineModel<IMedia[]>({ required: true })
 
 const fileInputRef = useTemplateRef<HTMLInputElement | null>('fileInputRef')
 const isRippling = ref(false)
 const isDragging = ref(false)
 const inputKey = ref<number>(0)
 const isContainerTrigger = computed((): boolean => props.hideIconButton || props.hideButton)
+
+const imageExtensions = ['png', 'jpg', 'jpeg', 'webp']
+
+function isImageFile (fileName: string): boolean {
+  const ext = getExt(fileName)
+  return imageExtensions.includes(ext ?? '')
+}
 
 function onFileChange (event: Event): void {
   const input = event.target as HTMLInputElement

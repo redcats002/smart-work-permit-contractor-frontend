@@ -10,13 +10,14 @@ interface IDailyInstallment extends IUsePagination {
   filters: Ref<IGetDailyInstallmentList>
   items: Ref<IDailyInstallmentPaymentList[]>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
   onDelete(id: number): void
 }
 export default function useList (): IDailyInstallment {
   // const DeilyInstallmentService: any = new Provider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IGetDailyInstallmentList>({})
   const items = ref<IDailyInstallmentPaymentList[]>([])
@@ -111,6 +112,11 @@ export default function useList (): IDailyInstallment {
     }
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -132,6 +138,8 @@ export default function useList (): IDailyInstallment {
     sortOrder,
     search,
     fetch,
+    onSearch,
+    resetPagination,
     onClearFilters,
     onDelete,
     extractPagination,

@@ -1,9 +1,10 @@
 <template>
   <DatePicker
-    v-bind="$attrs"
     v-model="pickerValue"
     :date-format="dateFormat"
+    :icon-position="iconPosition"
     :manual-input="false"
+    v-bind="attrs"
     class="w-full h-9 text-sm!"
     icon-display="input"
     update-model-type="date"
@@ -12,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, useAttrs } from 'vue'
+import { computed, getCurrentInstance, useAttrs } from 'vue'
 
 defineOptions({
   inheritAttrs: false
@@ -21,14 +22,17 @@ defineOptions({
 const model = defineModel<Date | Date[] | string | string[] | null>()
 const startModel = defineModel<Date | string | null | undefined>('start')
 const endModel = defineModel<Date | string | null | undefined>('end')
-withDefaults(defineProps<{ dateFormat?: string }>(), {
-  dateFormat: 'dd/mm/yy'
+withDefaults(defineProps<{ dateFormat?: string, iconPosition?: 'prepend' | 'append' }>(), {
+  dateFormat: 'dd/mm/yy',
+  iconPosition: 'append'
 })
 
 const attrs = useAttrs()
+const instance = getCurrentInstance()
 const useStartEndRange = computed((): boolean => {
-  return 'onUpdate:start' in attrs && 'onUpdate:end' in attrs
+  return 'start' in (instance?.vnode?.props ?? {})
 })
+
 
 function parseDate (value: string | Date | null | undefined): Date | null {
   if (!value) return null

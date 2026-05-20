@@ -5,7 +5,7 @@
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
-      @search="fetch()" />
+      @search="onSearch()" />
     <BasePage>
       <ActionLogTable
         v-model:pagination="pagination"
@@ -25,7 +25,7 @@ import ActionLogFilter from '../components/ActionLogFilter.vue'
 import ActionLogTable from '../components/ActionLogTable.vue'
 import useList from '../composables/useList'
 
-const { fetch, filters, items, pagination, sortBy, sortOrder, search, onClearFilters } = useList()
+const { fetch, filters, items, pagination, sortBy, sortOrder, search, onClearFilters, onSearch } = useList()
 
 onMounted((): void => {
   fetch()

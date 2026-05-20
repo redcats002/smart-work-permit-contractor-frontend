@@ -123,11 +123,9 @@
           <span class="font-bold text-gray-700 whitespace-nowrap">ประเภท VAT</span>
           <span>: {{ formRead?.vatType ? formatVatTitle(formRead.vatType) : '-' }}</span>
         </div>
-        <img
-          v-if="formRead?.file.length"
-          :src="formRead.file[0]?.fileUrl"
-          alt="หลักฐานการชำระ"
-          class="w-full rounded-lg object-contain max-h-80">
+        <div v-if="formRead.file?.length">
+          <FileAttachment :files="formRead.file" />
+        </div>
       </div>
 
       <!-- DELETE MODE -->
@@ -152,6 +150,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
+import { toast } from '@/plugins/toast'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
@@ -160,18 +159,16 @@ import type { ICreateExpense } from '@/models/request/contract/ContractReq.model
 import type { IContractExpenseList } from '@/models/response/contract/ContractRes.model'
 import { EVatType, formatTitle as formatVatTitle, VatTypeItems } from '@/enums/modules/Vat.enum'
 import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
-import UploadProvider, {
-  type IMedia,
-  type IUploadProvider
-} from '@/resources/provider/Upload.provider'
 import type { IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import BaseActionMenu from '@/components/base/BaseActionMenu.vue'
 import FormAction from '@/components/button/FormAction.vue'
+import FileAttachment from '@/components/display/FileAttachment.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import UploadInput from '@/components/input/UploadInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import FinanceExpenseCategorySelection from '@/components/selection/modules/api/finance-expense-category/FinanceExpenseCategorySelection.vue'
 import FinanceExpenseTypeSelection from '@/components/selection/modules/api/finance-expense-type/FinanceExpenseTypeSelection.vue'
+import useUpload from '@/composables/useUpload'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { useInitDetail } from './composables/useInitExpense'
@@ -195,7 +192,6 @@ const emits = defineEmits<IEmits>()
 const visible = defineModel<boolean>('visible', { default: false })
 
 const ContractService: IContractProvider = new ContractProvider()
-const UploadService: IUploadProvider = new UploadProvider()
 
 const dayjs = useDayjs()
 
@@ -206,6 +202,7 @@ const formData = ref<ExpenseFormValues>(useFormInitialValues())
 const resolver = zodResolver(ExpenseSchema)
 
 const vatTypeItems = VatTypeItems
+const { getUploadImages } = useUpload()
 
 const isFormMode = computed((): boolean => currentMode.value === 'create' || currentMode.value === 'edit')
 
@@ -235,19 +232,18 @@ const readMenuItems = computed((): IMenuItemAction[] => [
 
 async function populateForm (): Promise<void> {
   if (!props.item) return
+  const expenseCategoryId = formRead.value.expenseCategory?.id != null ? Number(formRead.value.expenseCategory.id) : undefined
+  const expenseTypeId = formRead.value.expenseType?.id != null ? Number(formRead.value.expenseType.id) : undefined
+  formData.value.expenseCategoryId = expenseCategoryId
+  await nextTick()
   formData.value = {
-    expenseCategoryId: formRead.value.expenseCategory?.id ? Number(formRead.value.expenseCategory.id) : undefined,
-    expenseTypeId: formRead.value.expenseType?.id ? Number(formRead.value.expenseType.id) : undefined,
+    expenseCategoryId,
+    expenseTypeId,
     note: formRead.value.note || '',
     amount: formRead.value.amount || 0,
     file: formRead.value.file || [],
     vatType: formRead.value.vatType ? EVatType[formRead.value.vatType] : EVatType.VAT
   }
-  formData.value.file = []
-  formData.value.expenseCategoryId = Number(formRead.value.expenseCategory?.id)
-  await nextTick()
-  formData.value.expenseTypeId = Number(formRead.value.expenseType?.id)
-  await nextTick()
   formKey.value++
 }
 
@@ -256,6 +252,7 @@ async function onOpen (): Promise<void> {
   if (props.mode === 'create') {
     formData.value = useFormInitialValues()
     formData.value.file = []
+    formKey.value++
     return
   }
 
@@ -268,27 +265,14 @@ async function onOpen (): Promise<void> {
   }
 }
 
-watch((): TExpenseModalMode => props.mode, async (val: TExpenseModalMode): Promise<void> => {
-  currentMode.value = val
-})
-
 function onCategoryChange (): void {
   formData.value.expenseTypeId = undefined
 }
 
-async function uploadAndSetFile (file?: File): Promise<void> {
-  if (!file) return
-  const response = await UploadService.uploadFile(file)
-  formData.value.file = [response.data]
+async function uploadAndSetFile (): Promise<void> {
+  if (!formData.value.file.length) return
+  formData.value.file = await getUploadImages(formData.value.file)
 }
-
-watch(formData.value.file, (e: IMedia[]): void => {
-  if (e.length === 0) {
-    formData.value.file = []
-    return
-  }
-  handleLoading((): Promise<void> => uploadAndSetFile(e[e.length - 1]?.file))
-}, { deep: true })
 
 function onSubmit (event: FormSubmitEvent, close: () => void): void {
   if (!event.valid) {
@@ -306,10 +290,13 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
 
   const itemId = props.item?.id
   handleLoading(async (): Promise<void> => {
+    await uploadAndSetFile()
     if (currentMode.value === 'create') {
       await ContractService.createExpense(props.contractId, values)
+      toast.success('บันทึกค่าใช้จ่ายสำเร็จ')
     } else if (currentMode.value === 'edit' && itemId) {
       await ContractService.updateExpense(itemId, values)
+      toast.success('แก้ไขค่าใช้จ่ายสำเร็จ')
     }
     emits('update')
     close()
@@ -321,8 +308,13 @@ function onDelete (close: () => void): void {
   if (!id) return
   handleLoading(async (): Promise<void> => {
     await ContractService.deleteExpense(id)
+    toast.success('ลบค่าใช้จ่ายสำเร็จ')
     emits('update')
     close()
   })
 }
+
+watch((): TExpenseModalMode => props.mode, async (val: TExpenseModalMode): Promise<void> => {
+  currentMode.value = val
+})
 </script>

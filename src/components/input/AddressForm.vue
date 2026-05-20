@@ -27,7 +27,8 @@
           :form="form"
           :name="address"
           placeholder="กรอกที่อยู่"
-          hide-error />
+          hide-error
+          @blur="emits('mount')" />
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <LabelField
@@ -111,7 +112,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, inject, watch } from 'vue'
 import type { IFormState } from '@/models/Form.model'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import AddressFieldInput, { type IAddressData } from '@/components/input/AddressFieldInput.vue'
@@ -126,6 +127,7 @@ interface IProps {
   currentAddressRef?: IAddressRequest
 }
 interface IEmits {
+  mount: []
   useSameCitizenAddress: []
   useSameCurrentAddress: []
 }
@@ -159,6 +161,8 @@ const BLANK_ADDRESS = {
   province: '',
   postCode: ''
 }
+
+const $pcForm = inject<any>('$pcForm', null)
 
 const isLocked = computed((): boolean => !!(model.value.isSameCitizenAddress || model.value.isSameCurrentAddress))
 
@@ -198,6 +202,17 @@ const googleMapUrl = computed((): string => {
   return 'workAddress.urlGoogleMap'
 })
 
+function syncPcFormValues (data: Partial<IAddressRequest>): void {
+  if (!$pcForm?.setValues) return
+  $pcForm.setValues({
+    [address.value]: data.address ?? '',
+    [subDistrict.value]: data.subDistrict ?? '',
+    [district.value]: data.district ?? '',
+    [province.value]: data.province ?? '',
+    [postCode.value]: data.postCode ?? ''
+  })
+}
+
 watch(
   (): IAddressRequest | undefined => props.citizenAddress, (newVal: IAddressRequest | undefined): void => {
     if (model.value.isSameCitizenAddress && newVal) {
@@ -209,6 +224,7 @@ watch(
         province: newVal.province,
         postCode: newVal.postCode
       }
+      syncPcFormValues(newVal)
     }
   }, { deep: true }
 )
@@ -224,6 +240,7 @@ watch(
         province: newVal.province,
         postCode: newVal.postCode
       }
+      syncPcFormValues(newVal)
     }
   }, { deep: true }
 )
@@ -248,8 +265,10 @@ function onUseSameCitizenAddress (isChecked: boolean): void {
       province: props.citizenAddress.province,
       postCode: props.citizenAddress.postCode
     }
+    syncPcFormValues(props.citizenAddress)
   } else {
     model.value = { ...model.value, ...BLANK_ADDRESS }
+    syncPcFormValues(BLANK_ADDRESS)
   }
   emits('useSameCitizenAddress')
 }
@@ -266,8 +285,10 @@ function onUseSameCurrentAddress (isChecked: boolean): void {
       province: props.currentAddressRef.province,
       postCode: props.currentAddressRef.postCode
     }
+    syncPcFormValues(props.currentAddressRef)
   } else {
     model.value = { ...model.value, ...BLANK_ADDRESS }
+    syncPcFormValues(BLANK_ADDRESS)
   }
   emits('useSameCurrentAddress')
 }

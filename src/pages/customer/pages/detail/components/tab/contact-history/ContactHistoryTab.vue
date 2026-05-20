@@ -4,7 +4,7 @@
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
-      @search="fetch()" />
+      @search="onSearch()" />
     <ContactHistoryTable
       v-model:pagination="pagination"
       v-model:sort-by="sortBy"
@@ -30,7 +30,7 @@ import ContactHistoryTable from './ContactHistoryTable.vue'
 const CustomerService: ICustomerProvider = new CustomerProvider()
 
 const route = useRoute()
-const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
 const filters = ref<IGetCustomerContactHistoryList>({
   topic: route?.query?.topic ? String(route.query.topic) : undefined,
@@ -68,6 +68,11 @@ function normalizeFilters (value: IGetCustomerList): Partial<IGetCustomerList> {
   return {
     ...value
   }
+}
+
+function onSearch (): void {
+  resetPagination()
+  fetch()
 }
 
 function fetch (): void {

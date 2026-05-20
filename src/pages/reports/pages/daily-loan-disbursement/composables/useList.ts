@@ -12,6 +12,7 @@ interface IUseList extends IUsePagination {
   items: Ref<IDailyLoanDisbursementList[]>
   summary: Ref<IDailyLoanDisbursementSummary>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
 }
 export default function useList (): IUseList {
@@ -19,7 +20,7 @@ export default function useList (): IUseList {
 
   const route = useRoute()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IDailyLoanDisbursementFilter>({
     categoryId: route?.query?.categoryId ? Number(route.query.categoryId) : undefined,
@@ -168,6 +169,11 @@ export default function useList (): IUseList {
     }
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -186,6 +192,8 @@ export default function useList (): IUseList {
     search,
     summary,
     fetch,
+    onSearch,
+    resetPagination,
     onClearFilters,
     extractPagination,
     syncQuery,

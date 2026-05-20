@@ -5,7 +5,7 @@
       <div class="mb-4">
         <SearchInput
           v-model="search"
-          @search="fetch()" />
+          @search="onSearch()" />
       </div>
       <InvoiceTable
         v-model:pagination="pagination"
@@ -25,7 +25,7 @@ import PageTitle from '@/components/nav/PageTitle.vue'
 import InvoiceTable from '../components/InvoiceTable.vue'
 import useList from '../composables/useList'
 
-const { items, pagination, sortBy, sortOrder, search, fetch } = useList()
+const { items, pagination, sortBy, sortOrder, search, fetch, onSearch } = useList()
 
 onMounted((): void => {
   fetch()

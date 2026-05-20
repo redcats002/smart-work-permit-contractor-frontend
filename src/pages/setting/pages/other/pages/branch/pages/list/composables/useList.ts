@@ -10,13 +10,14 @@ interface IUseList extends IUsePagination {
   filters: Ref<IGetBranchList>
   items: Ref<IBranchList[]>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
   onDelete(id: number): void
 }
 export default function useList (): IUseList {
   const BranchService: IBranchProvider = new BranchProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IGetBranchList>({})
   const items = ref<IBranchList[]>([])
@@ -53,6 +54,11 @@ export default function useList (): IUseList {
     }
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -74,6 +80,8 @@ export default function useList (): IUseList {
     sortOrder,
     search,
     fetch,
+    onSearch,
+    resetPagination,
     onClearFilters,
     onDelete,
     extractPagination,

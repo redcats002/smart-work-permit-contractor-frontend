@@ -5,7 +5,7 @@
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
-      @search="fetch()" />
+      @search="onSearch()" />
     <BasePage>
       <BaseTab
         v-model="tab"
@@ -41,7 +41,7 @@ import useInit from '../composables/useInit'
 import useList from '../composables/useList'
 
 const { tab, tabItems } = useInit()
-const { filters, search, fetch, onClearFilters, items, pagination, sortBy, sortOrder } = useList(tab)
+const { filters, search, fetch, onClearFilters, items, pagination, sortBy, sortOrder, onSearch } = useList(tab)
 
 onMounted((): void => {
   fetch()

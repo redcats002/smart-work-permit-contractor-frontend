@@ -14,11 +14,12 @@
         <UploadInput
           v-model="media"
           :model-image="form.image"
-          :single="true"
+          accept="image/*"
           button-upload-class="bg-primary text-white"
           detail="ไฟล์ JPG, JPEG และ PNG ได้รับอนุญาต"
           label="เลือกเพื่ออัปโหลดหรือลากและวาง"
-          hide-icon-button />
+          hide-icon-button
+          single />
       </BaseContainer>
       <Form
         :key="formKey"
@@ -31,7 +32,8 @@
           <InformationForm
             v-model="form"
             v-model:form-key="formKey"
-            :form="$form" />
+            :form="$form"
+            @mount="mount()" />
         </BaseContainer>
         <BaseContainer>
           <AddressForm
@@ -111,6 +113,7 @@ async function useSubmit (): Promise<void> {
 }
 
 async function onSubmit (event: FormSubmitEvent): Promise<void> {
+  mount()
   if (!event.valid) {
     scrollToFirstError(event.errors, true)
     return

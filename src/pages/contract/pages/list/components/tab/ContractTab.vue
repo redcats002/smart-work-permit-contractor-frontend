@@ -6,11 +6,11 @@
       flex-col md:flex-row">
         <SearchInput
           v-model="search"
-          @search="fetch()" />
+          @search="onSearch()" />
         <ContractFilter
           v-model:filters="filters"
           @clear="onClearFilters()"
-          @search="fetch()" />
+          @search="onSearch()" />
         <Spacer class="hidden md:flex" />
         <CreateButton
           :to="{ name: 'PreContractCreatePage' }"
@@ -38,7 +38,7 @@ import useContractList from '../../composables/useContractList'
 import ContractFilter from '../ContractFilter.vue'
 import ContractTable from '../ContractTable.vue'
 
-const { search, fetch, onClearFilters, filters, pagination, sortBy, sortOrder, items } = useContractList()
+const { fetch, onClearFilters, onSearch, search, filters, pagination, sortBy, sortOrder, items } = useContractList()
 
 onMounted((): void => {
   fetch()

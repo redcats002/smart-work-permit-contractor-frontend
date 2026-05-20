@@ -1,9 +1,9 @@
 import { ref, type Ref } from 'vue'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
-import usePagination, { type IUsePagination } from '@/composables/usePagination'
 import type { IGetDailySummaryDetailListRequest } from '@/models/request/report/daily-summary/DailySummaryDetail'
 import type { IDailySummaryDetailList } from '@/models/response/report/daily-summary/DailySummaryDetailRes'
+import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
 interface IDailySummaryDetail extends IUsePagination {
   filters: Ref<IGetDailySummaryDetailListRequest>
@@ -15,7 +15,7 @@ interface IDailySummaryDetail extends IUsePagination {
 export default function useList (): IDailySummaryDetail {
   // const DeilyInstallmentService: any = new Provider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IGetDailySummaryDetailListRequest>({})
   const items = ref<IDailySummaryDetailList>()
@@ -147,6 +147,7 @@ export default function useList (): IDailySummaryDetail {
     onDelete,
     extractPagination,
     syncQuery,
-    reset
+    reset,
+    resetPagination
   }
 }

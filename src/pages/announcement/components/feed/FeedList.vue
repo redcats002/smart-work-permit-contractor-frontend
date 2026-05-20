@@ -8,6 +8,7 @@
       :content="post.content"
       :created-at="post.createdAt"
       :files="post.attachments"
+      :image="post.author.image"
       :role="post.author.role"
       @deleted="emits('refresh')"
       @updated="emits('refresh')" />

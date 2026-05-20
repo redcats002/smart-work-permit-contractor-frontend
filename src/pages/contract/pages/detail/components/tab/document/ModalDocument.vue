@@ -8,6 +8,7 @@
       <!-- FORM MODE: create / edit -->
       <Form
         v-if="isFormMode"
+        :key="formKey"
         v-slot="$form"
         :initial-values="formData"
         :resolver="resolver"
@@ -44,10 +45,8 @@
           label="แนบเอกสาร"
           name="files"
           tag="div"
-          hide-error
-          required>
-          <UploadInput
-            v-model="media" />
+          hide-error>
+          <UploadInput v-model="media" />
         </LabelField>
 
         <LabelField
@@ -71,20 +70,17 @@
         </div>
         <div class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm">
           <span class="font-bold text-gray-700 whitespace-nowrap">ประเภทเอกสาร</span>
-          <span>: {{ props.item?.documentType ? formatDocumentType(props.item.documentType) : '-' }}</span>
+          <span>: {{ item?.documentType ? formatDocumentType(item.documentType) : '-' }}</span>
           <span class="font-bold text-gray-700 whitespace-nowrap">คำอธิบาย</span>
-          <span>: {{ props.item?.note || '-' }}</span>
+          <span>: {{ item?.note || '-' }}</span>
           <span class="font-bold text-gray-700 whitespace-nowrap">จุดจัดเก็บ</span>
-          <span>: {{ props.item?.location?.name || '-' }}</span>
+          <span>: {{ item?.location?.name || '-' }}</span>
         </div>
         <div
-          v-if="props.item?.files?.length"
+          v-if="item?.files"
           class="grid gap-2">
           <span class="text-sm font-bold text-gray-700">เอกสาร</span>
-          <img
-            :src="props.item.files"
-            alt="เอกสาร"
-            class="w-full rounded-lg object-contain max-h-80">
+          <FileAttachment :files="item.files" />
         </div>
       </div>
 
@@ -110,19 +106,17 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { ICreateDocument } from '@/models/request/contract/ContractReq.model'
 import type { IContractDocumentList } from '@/models/response/contract/ContractRes.model'
 import { DocumentTypeEnum, formatTitle as formatDocumentType } from '@/enums/modules/contract/DocumentType.enum'
 import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
-import UploadProvider, {
-  type IMedia,
-  type IUploadProvider
-} from '@/resources/provider/Upload.provider'
 import type { IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import BaseActionMenu from '@/components/base/BaseActionMenu.vue'
 import FormAction from '@/components/button/FormAction.vue'
+import FileAttachment from '@/components/display/FileAttachment.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import UploadInput from '@/components/input/UploadInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
@@ -151,13 +145,12 @@ const emits = defineEmits<IEmits>()
 const visible = defineModel<boolean>('visible', { default: false })
 
 const ContractService: IContractProvider = new ContractProvider()
-const UploadService: IUploadProvider = new UploadProvider()
+const { media, getUploadImages } = useUpload()
 
+const formKey = ref<number>(0)
 const currentMode = ref<TDocumentModalMode>(props.mode)
-// const formRead = useInitDetail()
 const resolver = zodResolver(DocumentSchema)
 const formData = ref<DocumentFormValues>(useFormInitialValues())
-const { media } = useUpload()
 
 const isFormMode = computed((): boolean => currentMode.value === 'create' || currentMode.value === 'edit')
 
@@ -189,12 +182,12 @@ function populateForm (): void {
   if (!props.item) return
   formData.value = {
     documentType: props.item.documentType ? DocumentTypeEnum[props.item.documentType] : undefined,
-    locationId: props.item.location?.id ? Number(props.item.location.id) : undefined,
+    locationId: props.item.location?.id != null ? Number(props.item.location.id) : undefined,
     files: [],
     note: props.item.note || ''
   }
   media.value = []
-  // media.value = props.item.files ? [props.item.files] : []
+  formKey.value++
 }
 
 function onOpen (): void {
@@ -202,46 +195,35 @@ function onOpen (): void {
   if (props.mode === 'create') {
     formData.value = useFormInitialValues()
     media.value = []
-  } else if (props.mode === 'edit') {
+    formKey.value++
+    return
+  }
+  if (props.mode === 'edit') {
     populateForm()
   }
 }
 
-watch((): TDocumentModalMode => props.mode, (val: TDocumentModalMode): void => {
-  currentMode.value = val
-})
-
-async function uploadAndSetFile (file?: File): Promise<void> {
-  if (!file) return
-  const response = await UploadService.uploadFile(file)
-  formData.value.files = [{ name: file.name, url: response.data.fileUrl, path: response.data.filePath }]
-}
-
-watch(media, (files: IMedia[]): void => {
-  if (files.length === 0) {
-    formData.value.files = []
-    return
-  }
-  handleLoading((): Promise<void> => uploadAndSetFile(files[files.length - 1].file))
-}, { deep: true })
 
 function onSubmit (event: FormSubmitEvent, close: () => void): void {
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return
   }
-  const values = {
-    documentType: formData.value.documentType,
-    locationId: formData.value.locationId,
-    files: [], // TODO WHEN CAN UPLOAD
-    note: formData.value.note
-  } as ICreateDocument
   const itemId = props.item?.id
   handleLoading(async (): Promise<void> => {
+    const uploadedFiles = await getUploadImages(media.value)
+    const values = {
+      documentType: formData.value.documentType as DocumentTypeEnum,
+      locationId: formData.value.locationId as number,
+      files: uploadedFiles,
+      note: formData.value.note
+    } as ICreateDocument
     if (currentMode.value === 'create') {
       await ContractService.createDocument(props.contractId, values)
+      toast.success('บันทึกเอกสารสำเร็จ')
     } else if (currentMode.value === 'edit' && itemId) {
-      // await ContractService.updateDocument(props.contractId, itemId, values)
+      await ContractService.updateDocument(itemId, values)
+      toast.success('แก้ไขเอกสารสำเร็จ')
     }
     emits('update')
     close()
@@ -252,9 +234,15 @@ function onDelete (close: () => void): void {
   const id = props.item?.id
   if (!id) return
   handleLoading(async (): Promise<void> => {
-    await ContractService.deleteDocument(props.contractId, id)
+    await ContractService.deleteDocument(id)
+    toast.success('ลบเอกสารสำเร็จ')
     emits('update')
     close()
   })
 }
+
+
+watch((): TDocumentModalMode => props.mode, (val: TDocumentModalMode): void => {
+  currentMode.value = val
+})
 </script>

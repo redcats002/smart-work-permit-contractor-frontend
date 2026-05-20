@@ -10,12 +10,13 @@ interface IUseList extends IUsePagination {
   filters: Ref<IGetDocumentAssetsList>
   items: Ref<IDocumentAssetList[]>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
 }
 export default function useList (warehouseId: ComputedRef<number>): IUseList {
   const DocumentStorageService: IDocumentStorageProvider = new DocumentStorageProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IGetDocumentAssetsList>({})
   const items = ref<IDocumentAssetList[]>([])
@@ -48,6 +49,11 @@ export default function useList (warehouseId: ComputedRef<number>): IUseList {
     }
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -64,6 +70,8 @@ export default function useList (warehouseId: ComputedRef<number>): IUseList {
     sortOrder,
     search,
     fetch,
+    onSearch,
+    resetPagination,
     onClearFilters,
     extractPagination,
     syncQuery,

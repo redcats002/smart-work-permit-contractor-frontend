@@ -6,7 +6,7 @@
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
-      @search="fetch()">
+      @search="onSearch()">
       <CreateButton
         label="สรุปประจำวัน" />
     </DailySummaryFilter>
@@ -27,12 +27,12 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import BasePage from '@/components/base/BasePage.vue'
+import BackButton from '@/components/button/BackButton.vue'
+import CreateButton from '@/components/button/CreateButton.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import DailySummaryFilter from '../../list/components/DailySummaryFilter.vue'
 import DailySummaryTable from '../../list/components/DailySummaryTable.vue'
 import useList from '../composables/useList'
-import BackButton from '@/components/button/BackButton.vue'
-import CreateButton from '@/components/button/CreateButton.vue'
 
 const {
   filters,
@@ -43,8 +43,9 @@ const {
   search,
   fetch,
   onClearFilters,
-  onDelete
-} = useList() // TODO: update when api ready
+  onDelete,
+  onSearch
+} = useList()
 
 onMounted((): void => {
   fetch()

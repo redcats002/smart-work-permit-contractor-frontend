@@ -12,13 +12,14 @@ interface IUseList extends IUsePagination {
   items: Ref<IOutstandingDebtorList[]>
   summary: Ref<IOutStandingDebtorSummary>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
 }
 
 export default function useList (fixedStatus?: TContractStatus): IUseList {
   const OutstandingDebtorService: IOutstandingDebtorProvider = new OutstandingDebtorProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IOutstandingDebtorFilter>({})
   const items = ref<IOutstandingDebtorList[]>([])
@@ -69,6 +70,11 @@ export default function useList (fixedStatus?: TContractStatus): IUseList {
     return result
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -87,6 +93,8 @@ export default function useList (fixedStatus?: TContractStatus): IUseList {
     sortOrder,
     search,
     fetch,
+    onSearch,
+    resetPagination,
     onClearFilters,
     extractPagination,
     syncQuery,

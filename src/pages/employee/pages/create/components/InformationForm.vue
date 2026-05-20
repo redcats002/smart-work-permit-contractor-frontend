@@ -12,7 +12,9 @@
         label="เลขบัตรประชาชน"
         name="idCard"
         hide-error
-        required />
+        required
+        @keypress="keypress.thaiCitizenId"
+        @paste="handlePasteIdCard($event)" />
       <LabelField
         v-model="model.firstName"
         v-model:prepend-option="model.title"
@@ -121,6 +123,7 @@
 import { computed } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
 import keypress from '@/utils/Keypress'
+import paste from '@/utils/Paste'
 import type { IFormState } from '@/models/Form.model'
 import type { ICreateEmployeePayload } from '@/models/request/employee/EmployeeReq.model'
 import { EmployeeStatusEnum } from '@/enums/modules/employee/EmployeeStatus.enum'
@@ -156,6 +159,16 @@ const isActive = computed({
     model.value.status = value ? EmployeeStatusEnum.ACTIVE : EmployeeStatusEnum.INACTIVE
   }
 })
+
+function handlePasteNumber (evt: ClipboardEvent, key: keyof ICreateEmployeePayload): void {
+  model.value[key] = ''
+  model.value[key] = paste.citizenId(evt)
+  emits('mount')
+}
+
+function handlePasteIdCard (evt: ClipboardEvent): void {
+  handlePasteNumber(evt, 'idCard')
+}
 </script>
 
 <style scoped>

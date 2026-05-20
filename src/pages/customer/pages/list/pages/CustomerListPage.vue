@@ -5,7 +5,7 @@
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
-      @search="fetch()">
+      @search="onSearch()">
       <CreateButton
         :to="{
           name: 'CustomerCreatePage'
@@ -35,7 +35,7 @@ import CustomerFilter from '../components/CustomerFilter.vue'
 import CustomerTable from '../components/CustomerTable.vue'
 import useList from '../composables/useList'
 
-const { filters, items, pagination, sortBy, sortOrder, search, fetch, onClearFilters, onDelete } = useList()
+const { filters, items, pagination, sortBy, sortOrder, search, fetch, onClearFilters, onDelete, onSearch } = useList()
 
 onMounted((): void => {
   fetch()

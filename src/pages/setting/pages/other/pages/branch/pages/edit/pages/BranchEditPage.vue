@@ -48,6 +48,7 @@ import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import type { IBranchById } from '@/models/response/branch/BranchRes.model'
+import type { TErrorResponse } from '@/models/response/Response.model'
 import type { IBranchProvider } from '@/resources/provider/branch/Branch.provider'
 import BranchProvider from '@/resources/provider/branch/Branch.provider'
 import BaseContainer from '@/components/base/BaseContainer.vue'
@@ -63,7 +64,7 @@ import { zodResolver } from '@primevue/forms/resolvers/zod'
 import AddressForm from '../../create/components/AddressForm.vue'
 import BranchTimeForm from '../../create/components/BranchTimeForm.vue'
 import InformationForm from '../../create/components/InformationForm.vue'
-import { type BranchFormValues, BranchSchema, useDev, useFormInitialValues } from '../../create/schema/branch.schema'
+import { type BranchFormValues, BranchSchema, formatBranchErrorMessage, useDev, useFormInitialValues } from '../../create/schema/branch.schema'
 import { useInitForm } from '../composables/useInitForm'
 import { usePayload } from '../composables/usePayload'
 
@@ -109,7 +110,10 @@ async function onSubmit (event: FormSubmitEvent): Promise<void> {
     scrollToFirstError(event.errors)
     return
   }
-  await handleLoading(useSubmit)
+  await handleLoading(useSubmit, undefined, async (err: TErrorResponse): Promise<void> => {
+    const errorMessage = formatBranchErrorMessage(err?.message, form.value.name)
+    toast.error('', errorMessage)
+  })
 }
 
 async function useFetch (): Promise<void> {
@@ -118,7 +122,7 @@ async function useFetch (): Promise<void> {
 }
 
 function onCancel (): void {
-  router.push({ name: 'BranchListPage' })
+  router.push({ name: 'BranchDetailPage', params: { id: branchId.value } })
 }
 
 function onAuto (): void {

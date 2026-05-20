@@ -5,7 +5,7 @@
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
-      @search="fetch()">
+      @search="onSearch()">
       <CreateButton
         :to="{
           name: 'ReceiptCreatePage'
@@ -32,7 +32,7 @@ import ReceiptFilter from '../components/ReceiptFilter.vue'
 import ReceiptTable from '../components/ReceiptTable.vue'
 import useList from '../composables/useList'
 
-const { items, pagination, sortBy, sortOrder, search, filters, onClearFilters, fetch } = useList()
+const { items, pagination, sortBy, sortOrder, search, filters, onClearFilters, fetch, onSearch } = useList()
 
 onMounted((): void => {
   fetch()

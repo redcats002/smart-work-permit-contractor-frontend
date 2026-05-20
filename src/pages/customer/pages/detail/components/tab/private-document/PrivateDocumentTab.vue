@@ -4,7 +4,7 @@
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
-      @search="fetch()">
+      @search="onSearch()">
       <CreateButton
         label="เพิ่มเอกสาร"
         @click="openModal('CREATE')" />
@@ -45,7 +45,7 @@ import PrivateDocumentTable from './PrivateDocumentTable.vue'
 const CustomerService: ICustomerProvider = new CustomerProvider()
 
 const route = useRoute()
-const { pagination, sortBy, sortOrder, search, extractPagination, syncQuery } = usePagination()
+const { pagination, sortBy, sortOrder, search, extractPagination, syncQuery, resetPagination } = usePagination()
 
 const filters = ref<ICustomerDocumentFilter>({})
 const items = ref<ICustomerDocumentById[]>([])
@@ -82,6 +82,11 @@ async function useFetch (): Promise<void> {
   items.value = response.data || []
   pagination.value = extractPagination(response)
   syncQuery({ ...normalizeFilters(filters.value) })
+}
+
+function onSearch (): void {
+  resetPagination()
+  fetch()
 }
 
 function fetch (): void {

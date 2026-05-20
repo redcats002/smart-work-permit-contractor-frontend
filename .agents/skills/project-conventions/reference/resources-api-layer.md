@@ -29,8 +29,8 @@ import type {
   ICountProductInGroupResponse,
   IGetProductGroupDetailResponse,
   IGetProductGroupListResponse
-} from '@/models/Response/product/product-group/ProductGroupRes.model'
-import type { TBaseParamsId } from '@/models/Response/Response.model'
+} from '@/models/response/product/product-group/ProductGroupRes.model'
+import type { TBaseParamsId } from '@/models/response/Response.model'
 import HttpRequest from '@/resources/HttpRequest'
 
 export interface IProductGroupProvider {

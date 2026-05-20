@@ -12,13 +12,14 @@ interface IUseList extends IUsePagination {
   filters: Ref<IGetDebtCollectionList>
   items: Ref<IDebtCollectionList[]>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
 }
 
 export default function useList (tab: Ref<TFollowUpTab>): IUseList {
   const WorkService: IWorkProvider = new WorkProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IGetDebtCollectionList>({})
   const items = ref<IDebtCollectionList[]>([])
@@ -40,6 +41,11 @@ export default function useList (tab: Ref<TFollowUpTab>): IUseList {
     syncQuery({ ...filters.value })
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -57,6 +63,8 @@ export default function useList (tab: Ref<TFollowUpTab>): IUseList {
     sortOrder,
     search,
     fetch,
+    onSearch,
+    resetPagination,
     onClearFilters,
     extractPagination,
     syncQuery,

@@ -5,8 +5,14 @@
       @submit="onSubmit($event)">
       <div class="flex gap-3">
         <img
-          class="w-10 h-10 rounded-full"
-          src="https://www.pngall.com/wp-content/uploads/20/Cappuccino-Assassino-PNG.png">
+          v-if="authStore?.user?.image"
+          :src="authStore?.user?.image"
+          class="size-10 rounded-full">
+        <div v-else>
+          <Icon
+            class="size-10 text-gray-400"
+            icon="mdi:account" />
+        </div>
 
         <div class="flex-1">
           <div class="relative">
@@ -31,10 +37,12 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '@/stores/Auth'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BaseEditor from '@/components/base/BaseEditor.vue'
 import FileInput from '@/components/input/FileInput.vue'
+import { Icon } from '@iconify/vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { type AnnouncementCreateAnnouncement, AnnouncementSchema } from '../../schemas/announcement.schema'
@@ -43,7 +51,10 @@ interface IEmit {
   created: []
 }
 
-const emit = defineEmits<IEmit>()
+const emits = defineEmits<IEmit>()
+
+const authStore = useAuthStore()
+
 const form = defineModel<AnnouncementCreateAnnouncement>({ required: true })
 const resolver = zodResolver(AnnouncementSchema)
 
@@ -53,6 +64,6 @@ async function onSubmit (event: FormSubmitEvent): Promise<void> {
     scrollToFirstError(event.errors)
     return
   }
-  emit('created')
+  emits('created')
 }
 </script>

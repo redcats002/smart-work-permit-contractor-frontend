@@ -5,7 +5,7 @@
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
-      @search="fetch()">
+      @search="onSearch()">
       <div>
         จำนวนสินทรัพย์ {{ pagination.count }} รายการ
       </div>
@@ -40,7 +40,8 @@ const {
   sortOrder,
   search,
   fetch,
-  onClearFilters
+  onClearFilters,
+  onSearch
 } = useList()
 
 onMounted((): void => {

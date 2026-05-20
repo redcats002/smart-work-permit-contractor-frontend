@@ -6,7 +6,7 @@ export function usePayload (form: EmployeeFormValues, images: IMedia[]): IUpdate
   return {
     ...form,
     phoneNumber: form?.phoneNumber?.replaceAll(/-/g, ''),
-    image: images?.[0]?.url,
+    image: images?.[0]?.path,
     password: undefined
   }
 }

@@ -53,6 +53,7 @@ import LoginForm from '../components/auth/form/LoginForm.vue'
 import SetPasswordForm from '../components/auth/form/SetPasswordForm.vue'
 import SelectBranchBody from '../components/select-branch/SelectBranchBody.vue'
 import SelectBranchHeader from '../components/select-branch/SelectBranchHeader.vue'
+import useResolveUrl from '@/composables/useResolveUrl'
 import { useInitForm } from '../composables/useInit'
 import { useLoginPayload, useRegisterPayload } from '../composables/usePayload'
 
@@ -64,6 +65,8 @@ const AuthPrivateService: IAuthPrivateProvider = new AuthPrivateProvider()
 
 const router = useRouter()
 const authStore = useAuthStore()
+
+const { resolveUploadImageUrl } = useResolveUrl()
 
 const form = ref<IActionLoginPayload>(useInitForm())
 const state = ref<TState>('AUTH')
@@ -102,6 +105,8 @@ async function useRegister (): Promise<void> {
 async function useSelectBranch (branchId: TBaseParamsId, branch: IAuthBranchList): Promise<void> {
   await AuthPrivateService.selectBranch({ branchId })
   authStore.branchLogin(branch)
+  const { url } = await resolveUploadImageUrl(authStore.user?.image)
+  authStore.setUserImage(url)
   toast.success('ยินดีต้อนรับเข้าสู่ระบบ')
   router.push({ name: 'HomePage' })
 }

@@ -28,7 +28,7 @@ export default function useList (): IUseList {
 
   const items = ref<IFinanceExpenseCategoryList[]>([])
   const form = ref<IActionFinanceExpenseCategoryPayload>(useFormInitialValues())
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const paginateQuery = computed((): IGetFinanceExpenseCategoryList => {
     return {
@@ -80,15 +80,16 @@ export default function useList (): IUseList {
     search,
     sortBy,
     sortOrder,
-    extractPagination,
-    syncQuery,
     items,
     form,
+    extractPagination,
+    syncQuery,
     useDelete,
     onCreate,
     onUpdate,
     onDelete,
     fetch,
-    reset
+    reset,
+    resetPagination
   }
 }

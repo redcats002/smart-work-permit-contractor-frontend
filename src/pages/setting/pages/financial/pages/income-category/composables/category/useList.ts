@@ -23,7 +23,7 @@ export default function useList (): IUseList {
 
   const items = ref<IFinanceIncomeCategoryList[]>([])
   const form = ref<IActionFinanceIncomeTypePayload>(useFormInitialValues())
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const paginateQuery = computed((): IGetFinanceIncomeTypeList => {
     return {
@@ -75,15 +75,16 @@ export default function useList (): IUseList {
     search,
     sortBy,
     sortOrder,
-    extractPagination,
-    syncQuery,
     items,
     form,
+    extractPagination,
+    syncQuery,
     useDelete,
     onCreate,
     onUpdate,
     onDelete,
     fetch,
-    reset
+    reset,
+    resetPagination
   }
 }

@@ -6,7 +6,7 @@
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
-      @search="fetch()">
+      @search="onSearch()">
       <PrintButton
         icon="material-symbols:print-outline-rounded"
         label="พิมพ์" />
@@ -28,12 +28,12 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import BasePage from '@/components/base/BasePage.vue'
+import BackButton from '@/components/button/BackButton.vue'
+import PrintButton from '@/components/button/PrintButton.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import DailyInstallmentFilter from '../components/DailyInstallmentFilter.vue'
 import DailyInstallmentTable from '../components/DailyInstallmentTable.vue'
 import useList from '../composables/useList'
-import PrintButton from '@/components/button/PrintButton.vue'
-import BackButton from '@/components/button/BackButton.vue'
 
 const {
   filters,
@@ -44,7 +44,8 @@ const {
   search,
   fetch,
   onClearFilters,
-  onDelete
+  onDelete,
+  onSearch
 } = useList() // TODO: update when api ready
 
 onMounted((): void => {

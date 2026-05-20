@@ -9,13 +9,14 @@ interface IDailySummary extends IUsePagination {
   filters: Ref<IGetDailySummaryList>
   items: Ref<IDailySummaryList[]>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
   onDelete(id: number): void
 }
 export default function useList (): IDailySummary {
   // const DeilyInstallmentService: any = new Provider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IGetDailySummaryList>({})
   const items = ref<IDailySummaryList[]>([])
@@ -98,6 +99,11 @@ export default function useList (): IDailySummary {
     }
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -119,6 +125,8 @@ export default function useList (): IDailySummary {
     sortOrder,
     search,
     fetch,
+    onSearch,
+    resetPagination,
     onClearFilters,
     onDelete,
     extractPagination,

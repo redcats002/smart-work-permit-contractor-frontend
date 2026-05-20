@@ -130,6 +130,7 @@ async function useSubmit (): Promise<void> {
 }
 
 async function onSubmit (event: FormSubmitEvent): Promise<void> {
+  mount()
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return
@@ -138,7 +139,7 @@ async function onSubmit (event: FormSubmitEvent): Promise<void> {
 }
 
 function onCancel (): void {
-  router.push({ name: 'CustomerListPage' })
+  router.push({ name: 'CustomerDetailPage', params: { id: customerId.value } })
 }
 
 function mount (): void {

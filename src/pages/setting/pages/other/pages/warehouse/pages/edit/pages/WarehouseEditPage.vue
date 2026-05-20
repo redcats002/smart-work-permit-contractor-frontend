@@ -91,7 +91,7 @@ async function useFetch (): Promise<void> {
 }
 
 function onCancel (): void {
-  router.push({ name: 'WarehouseListPage' })
+  router.push({ name: 'WarehouseDetailPage', params: { id: warehouseId.value } })
 }
 
 function onAuto (): void {

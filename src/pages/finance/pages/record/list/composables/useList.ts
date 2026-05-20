@@ -9,13 +9,14 @@ interface IUseList extends IUsePagination {
   filters: Ref<IGetExpensesList>
   items: Ref<IExpensesList[]>
   fetch(): void
+  onSearch(): void
   onClearFilters(): void
 }
 
 export default function useList (): IUseList {
   const expensesService: IExpensesProvider = new ExpensesProvider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset } = usePagination()
+  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
   const filters = ref<IGetExpensesList>({})
 
   const items = ref<IExpensesList[]>([])
@@ -39,6 +40,11 @@ export default function useList (): IUseList {
     reset()
   }
 
+  function onSearch (): void {
+    resetPagination()
+    fetch()
+  }
+
   function fetch (): void {
     handleLoading(useFetch)
   }
@@ -52,6 +58,8 @@ export default function useList (): IUseList {
     filters,
     onClearFilters,
     fetch,
+    onSearch,
+    resetPagination,
     extractPagination,
     syncQuery,
     reset

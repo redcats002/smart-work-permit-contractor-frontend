@@ -44,7 +44,14 @@
               </p>
               <DisplayList
                 :items="items"
+                class="mb-2"
                 label-class="text-font-gray!" />
+              <LabelField
+                label="เอกสารหลักทรัพย์">
+                <FileAttachment
+                  v-if="activeAsset?.files"
+                  :files="activeAsset?.files" />
+              </LabelField>
               <template v-if="status === 'PENDING_CONTRACT'">
                 <AssetWarehouseForm
                   v-if="activeIndex !== undefined && activeIndex !== null"
@@ -80,6 +87,8 @@ import type { TPreContractStatus } from '@/enums/modules/contract/PreContractSta
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BaseGalleria from '@/components/base/BaseGalleria.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
+import FileAttachment from '@/components/display/FileAttachment.vue'
+import LabelField from '@/components/input/LabelField.vue'
 import type { TAssetCategory } from '../../create/schema/pre-contract.schema'
 import { readyForAppraisal as readyForLandAppraisal } from '../schema/land.schema'
 import type { PreAssetWarehouseFormValues } from '../schema/make-contract.schema'
@@ -141,7 +150,8 @@ const items = computed((): IDisplayList[] => {
       { label: 'เลขที่ดิน', value: props.activeAsset?.realEstateForm.landNo || '-', key: 'landNo', hidden: !props.activeAsset?.realEstateForm.landNo },
       { label: 'เลขหน้าสำรวจ', value: props.activeAsset?.realEstateForm.surveyNo || '-', key: 'surveyNo', hidden: !props.activeAsset?.realEstateForm.surveyNo },
       { label: 'ที่อยู่หลักทรัพย์', value: fullAddress, key: 'address', extUrl: props.activeAsset?.realEstateForm.urlGoogleMap || '', hidden: !fullAddress },
-      { label: 'ระวางรูปถ่ายทางอากาศ', value: `หมายเลข ${props.activeAsset?.realEstateForm.aerialPhotoMapNo || '-'} แผ่นที่ ${props.activeAsset?.realEstateForm.aerialPhotoSheet || '-'}`, key: 'aerialPhotoMapNo', hidden: !props.activeAsset?.realEstateForm.aerialPhotoMapNo && !props.activeAsset?.realEstateForm.aerialPhotoSheet }
+      { label: 'ระวางรูปถ่ายทางอากาศ', value: `หมายเลข ${props.activeAsset?.realEstateForm.aerialPhotoMapNo || '-'} แผ่นที่ ${props.activeAsset?.realEstateForm.aerialPhotoSheet || '-'}`, key: 'aerialPhotoMapNo', hidden: !props.activeAsset?.realEstateForm.aerialPhotoMapNo && !props.activeAsset?.realEstateForm.aerialPhotoSheet },
+      { label: 'จุดจัดเก็บ', value: props.activeAsset?.location?.name, key: 'location', hidden: !props.activeAsset?.location?.name }
     ]
   }
   return [
@@ -150,7 +160,8 @@ const items = computed((): IDisplayList[] => {
     { label: 'ปีที่ผลิต', value: props.activeAsset?.vehicleForm?.manufactureYear || '-', key: 'manufactureYear', hidden: !props.activeAsset?.vehicleForm?.manufactureYear },
     { label: 'ปีที่จดทะเบียน', value: props.activeAsset?.vehicleForm?.registrationYear || '-', key: 'registrationYear', hidden: !props.activeAsset?.vehicleForm?.registrationYear },
     { label: 'หมายเลขตัวถัง', value: props.activeAsset?.vehicleForm?.vehicleIdentificationNo || '-', key: 'vehicleIdentificationNo', hidden: !props.activeAsset?.vehicleForm?.vehicleIdentificationNo },
-    { label: 'เลขไมล์ (กม.)', value: props.activeAsset?.vehicleForm?.mileage || '-', key: 'mileage', hidden: !props.activeAsset?.vehicleForm?.mileage }
+    { label: 'เลขไมล์ (กม.)', value: props.activeAsset?.vehicleForm?.mileage || '-', key: 'mileage', hidden: !props.activeAsset?.vehicleForm?.mileage },
+    { label: 'จุดจัดเก็บ', value: props.activeAsset?.location?.name, key: 'location', hidden: !props.activeAsset?.location?.name }
   ]
 })
 
