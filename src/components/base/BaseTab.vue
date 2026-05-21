@@ -18,7 +18,7 @@
             ? ' text-black text-sm font-medium border-b-2 border-primary text-black'
             : 'bg-transparent text-[#62748E] hover:text-gray-800 text-sm font-medium border-b-2 border-transparent'
         ]"
-        @click="emit('update:modelValue', tab.value)">
+        @click="handleClick(tab.value)">
         {{ tab.label }}
       </div>
     </div>
@@ -26,22 +26,32 @@
 </template>
 
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
+
 export interface ITabItem {
   label: string
   value: string
   [key: string]: any
 }
 
-interface Props {
+interface IProps {
   modelValue: string
   items: ITabItem[]
   full?: boolean
 }
+interface IEmits {
+  'update:modelValue': [value: string]
+}
 
-defineProps<Props>()
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void
-}>()
+defineProps<IProps>()
+const emits = defineEmits<IEmits>()
+
+const router = useRouter()
+
+function handleClick (value: string): void {
+  emits('update:modelValue', value)
+  router.replace({ query: { tab: value } })
+}
 </script>
 
 <style scoped></style>
