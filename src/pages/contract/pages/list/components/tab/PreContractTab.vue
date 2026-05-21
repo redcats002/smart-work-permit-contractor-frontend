@@ -16,7 +16,7 @@
           :to="{ name: 'PreContractCreatePage' }"
           label="สร้างสัญญาใหม่" />
       </div>
-      <div>
+      <div class="mt-5">
         <PreContractTable
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"

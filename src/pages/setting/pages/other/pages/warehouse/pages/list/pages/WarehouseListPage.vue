@@ -16,7 +16,7 @@
         label="เพิ่มคลังใหม่" />
     </WarehouseFilter>
     <BasePage>
-      <div class="mt-5">
+      <div>
         <WarehouseTable
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"

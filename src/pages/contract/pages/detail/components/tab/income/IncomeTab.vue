@@ -1,9 +1,9 @@
 <template>
   <div class="grid gap-2.5">
     <div class="flex items-center justify-between flex-wrap gap-2">
-      <Title title="รายการค่าใช้จ่าย" />
+      <Title title="รายการรายได้" />
       <CreateButton
-        label="บันทึกค่าใช้จ่าย"
+        label="บันทึกรายได้"
         @click="openModal('create')" />
     </div>
     <IncomeTable
