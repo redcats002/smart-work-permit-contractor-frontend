@@ -114,6 +114,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { ICreateExpensesPayload, IExpensesFile } from '@/models/request/expenses/ExpensesReq.model'
@@ -143,8 +144,8 @@ const form = ref<ExpensesFormValues>(useFormInitialValues())
 const files = ref<IMedia[]>([])
 const resolver = zodResolver(ExpensesSchema)
 
-const expensesService: IExpensesProvider = new ExpensesProvider()
-const uploadService: IUploadProvider = new UploadProvider()
+const ExpensesService: IExpensesProvider = new ExpensesProvider()
+const UploadService: IUploadProvider = new UploadProvider()
 
 function onCancel (): void {
   router.push({ name: 'ExpenseListPage' })
@@ -159,7 +160,7 @@ async function uploadFiles (): Promise<IExpensesFile[]> {
   const uploaded: IExpensesFile[] = []
   for (const media of files.value) {
     if (media.isNew && media.file) {
-      const { data } = await uploadService.uploadFile(media.file)
+      const { data } = await UploadService.uploadFile(media.file)
       uploaded.push({ name: data.originalName, url: data.fileUrl, path: data.filePath })
     } else {
       uploaded.push({ name: media.name, url: media.url, path: media.path })
@@ -186,8 +187,9 @@ async function onSubmit (event: FormSubmitEvent): Promise<void> {
       reason: form.value.note ?? '',
       files: uploadedFiles
     }
-    await expensesService.createExpenses(payload)
-    router.push({ name: 'ExpenseListPage' })
+    const response = await ExpensesService.createExpenses(payload)
+    toast.success('บันทึกข้อมูลสำเร็จ')
+    router.push({ name: 'ExpenseDetailPage', params: { id: response.data.id } })
   })
 }
 </script>
