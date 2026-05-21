@@ -42,24 +42,27 @@
       </div>
 
       <div class="space-y-2">
-        <DonutRowItem
-          v-for="(row, i) in rows"
-          :key="`${row.label}-${i}`"
-          :color="donutColorMap[row.label]"
-          :label="row.label"
-          :percent="row.percent"
-          :unit="row.unit"
-          :value="row.value" />
-        <div
-          v-if="showSummary"
-          class="border-t border-(--p-gray-5) pt-2 flex items-center justify-between text-sm">
-          <div class="font-bold text-[#333]">
-            รวม
+        <template v-if="rows.length">
+          <DonutRowItem
+            v-for="(row, i) in rows"
+            :key="`${row.label}-${i}`"
+            :color="donutColorMap[row.label]"
+            :label="row.label"
+            :percent="row.percent"
+            :unit="row.unit"
+            :value="row.value" />
+          <div
+            v-if="showSummary"
+            class="border-t border-(--p-gray-5) pt-2 flex items-center justify-between text-sm">
+            <div class="font-bold text-[#333]">
+              รวม
+            </div>
+            <div class="font-bold text-[#333]">
+              {{ computedTotal }} {{ rows[0]?.unit ?? '' }}
+            </div>
           </div>
-          <div class="font-bold text-[#333]">
-            {{ computedTotal }} {{ rows[0]?.unit ?? '' }}
-          </div>
-        </div>
+        </template>
+        <Empty v-else />
       </div>
     </div>
   </div>
@@ -69,6 +72,7 @@
 import { computed } from 'vue'
 import type { IDashboardDonutRow } from '@/models/modules/dashboard/Dashboard.model'
 import ChartJsDonut, { type DonutItem } from '@/components/charts/ChartJsDonut.vue'
+import Empty from '@/components/display/Empty.vue'
 import DatePickerInput from '@/components/input/DatePickerInput.vue'
 import DonutRowItem from './DonutRowItem.vue'
 

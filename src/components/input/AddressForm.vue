@@ -98,7 +98,6 @@
         <LabelField
           v-if="type !== 'MAIN'"
           v-model="model.urlGoogleMap"
-          :disabled="isLocked"
           :form="form"
           :name="googleMapUrl"
           class="md:col-span-2"

@@ -3,12 +3,12 @@
     class="h-10 border border-gray-300 rounded-md px-2 py-1 md:px-3 flex items-center gap-2 min-w-fit md:min-w-50">
     <div class="flex items-center gap-2 w-full">
       <Avatar
-        :image="authStore.user?.image"
+        :image="authStore.user?.imageUrl"
         class="shrink-0 border border-gray-300 h-7! w-7!"
         shape="circle"
         size="normal">
         <Icon
-          v-if="!authStore.user?.image"
+          v-if="!authStore.user?.imageUrl"
           icon="solar:user-bold" />
       </Avatar>
       <div class="hidden md:block">
@@ -31,21 +31,32 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/Auth'
 import { formatter } from '@/utils/Formatter'
+import { handleLoading } from '@/utils/HandleLoading'
 import useLogout from '@/pages/auth/composables/useLogout'
+import useResolveUrl from '@/composables/useResolveUrl'
 import { Icon } from '@iconify/vue'
 import BaseActionMenu, { type IMenuItemAction } from '../base/BaseActionMenu.vue'
 
 const authStore = useAuthStore()
 const { logout } = useLogout()
+const { resolveUploadImageUrl } = useResolveUrl()
+
 
 const items = computed((): IMenuItemAction[] => {
   const base: IMenuItemAction[] = [
     { label: 'Logout', key: 'logout', type: 'TEXT', action: (): void => { logout() } }
   ]
   return base
+})
+
+onMounted((): void => {
+  handleLoading(async (): Promise<void> => {
+    const { url } = await resolveUploadImageUrl(authStore.user?.image)
+    authStore.setUserImage(url)
+  })
 })
 
 </script>

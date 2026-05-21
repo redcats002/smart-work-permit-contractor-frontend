@@ -5,8 +5,8 @@
       @submit="onSubmit($event)">
       <div class="flex gap-3">
         <img
-          v-if="authStore?.user?.image"
-          :src="authStore?.user?.image"
+          v-if="authStore?.user?.imageUrl"
+          :src="authStore?.user?.imageUrl"
           class="size-10 rounded-full">
         <div v-else>
           <Icon
