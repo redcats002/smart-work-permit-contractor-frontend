@@ -11,7 +11,7 @@
       {{ getTableIndex(index, pagination) }}
     </template>
     <template #[`item.userNo`]="{ item }">
-      <LinkText :to="{}">
+      <LinkText :to="{ name: 'EmployeeDetailPage', params: { id: item?.userId || 0 } }">
         {{ item?.userNo || '-' }}
       </LinkText>
     </template>
