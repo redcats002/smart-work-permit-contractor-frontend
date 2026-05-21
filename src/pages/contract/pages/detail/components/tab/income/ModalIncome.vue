@@ -217,8 +217,8 @@ const vatTypeItems = VatTypeItems
 const isFormMode = computed((): boolean => currentMode.value === 'create' || currentMode.value === 'edit')
 const modalLabel = computed((): string => {
   const labels: Record<TIncomeModalMode, string> = {
-    create: 'บันทึกค่าใช้จ่าย',
-    edit: 'แก้ไขค่าใช้จ่าย',
+    create: 'บันทึกรายรับ',
+    edit: 'แก้ไขรายรับ',
     read: 'รายละเอียด',
     delete: 'ยืนยันการลบ'
   }
