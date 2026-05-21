@@ -1,13 +1,19 @@
 import type { IEntity } from '@/models/Global.model'
-import type { IBasePaginationResponse, IBaseSuccessResponse } from '../../Response.model'
+import type { IBasePaginationResponse } from '../../Response.model'
 
 export interface IFinancialSummaryReportList extends IEntity {
   branchName: string
-  income: number | null
-  loan: number
-  expenses: number | null
+  income: number
+  principal: number
+  expenses: number
 }
 
+export interface IFinancialSummaryReportSummary {
+  income: number
+  principal: number
+  expenses: number
+}
 
-export interface TGetFinancialSummaryReportListResponse extends IBasePaginationResponse<IFinancialSummaryReportList> {}
-export interface TActionFinancialSummaryReport extends IBaseSuccessResponse<boolean> {}
+export interface TGetFinancialSummaryReportListResponse extends IBasePaginationResponse<IFinancialSummaryReportList> {
+  summary: IFinancialSummaryReportSummary
+}

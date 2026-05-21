@@ -26,6 +26,7 @@
             <SelectInput
               v-model="filters.interestType"
               :options="interestTypeOptions"
+              option-label="label"
               show-clear />
           </LabelField>
           <LabelField
@@ -72,8 +73,8 @@
 </template>
 
 <script setup lang="ts">
-import { InterestTypeItems } from '@/enums/modules/contract/InterestType.enum'
 import type { IOutstandingDebtorFilter } from '@/models/modules/report/outstanding-debtor/Filter.model'
+import { InterestTypeItems } from '@/enums/modules/contract/InterestType.enum'
 import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
