@@ -51,6 +51,7 @@ const theme = computed((): AutoCompletePassThroughOptions => {
             group-[.p-invalid]:border-red-400! dark:group-[.p-invalid]:border-red-300!
             disabled:bg-surface-200 disabled:text-surface-500
             dark:disabled:bg-surface-700 dark:disabled:text-surface-400
+						disabled:cursor-not-allowed!
             p-invalid:border-red-400 dark:p-invalid:border-red-300
             p-invalid:placeholder:text-red-600 dark:p-invalid:placeholder:text-red-400
             px-3 py-2 p-fluid:w-full
@@ -102,6 +103,7 @@ const theme = computed((): AutoCompletePassThroughOptions => {
 				group-[.p-invalid]:border-red-400! dark:group-[.p-invalid]:border-red-300!
 				p-invalid:border-red-400! dark:p-invalid:border-red-300!
         p-invalid:placeholder:text-red-600! dark:p-invalid:placeholder:text-red-400!
+				disabled:bg-surface-200 disabled:text-surface-500 disabled:cursor-not-allowed!
         bg-surface-100 dark:bg-surface-800
         text-surface-600 dark:text-surface-300
         transition-colors duration-200`,
