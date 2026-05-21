@@ -1,7 +1,7 @@
 <template>
   <section id="document-asset-list-page">
     <PageTitle />
-    <StockFilter
+    <DocumentAssetFilter
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
@@ -9,10 +9,10 @@
       <div>
         จำนวนสินทรัพย์ {{ pagination.count }} รายการ
       </div>
-    </StockFilter>
+    </DocumentAssetFilter>
 
     <BasePage>
-      <div class="mt-5">
+      <div>
         <StockTable
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"
@@ -29,7 +29,7 @@ import { onMounted } from 'vue'
 import BasePage from '@/components/base/BasePage.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import StockTable from '../components/asset/AssetTable.vue'
-import StockFilter from '../components/StockFilter.vue'
+import DocumentAssetFilter from '../../create/components/DocumentAssetFilter.vue'
 import useList from '../composables/asset/useList'
 
 const {

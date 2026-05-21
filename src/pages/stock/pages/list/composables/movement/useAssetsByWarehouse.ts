@@ -34,7 +34,6 @@ export default function useList (warehouseId: ComputedRef<number>): IUseList {
   })
 
   async function useFetch (): Promise<void> {
-    console.log(warehouseId.value)
     if (!warehouseId.value) return
     const response = await DocumentStorageService.getDocumentMovementAssetsPaginateByWarehouseId(warehouseId.value, paginateQuery.value)
     items.value = response?.data || []
