@@ -1,12 +1,9 @@
 <template>
   <BaseTable
-    v-model:pagination="pagination"
-    v-model:sort-by="sortBy"
-    v-model:sort-order="sortOrder"
     :columns="columns"
     :items="props.items"
     disable-auto-left-padding
-    @update="emits('update')">
+    hide-pagination>
     <template #[`item.index`]="{ index }">
       {{ index + 1 }}
     </template>
@@ -14,39 +11,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
 import { formatter } from '@/utils/Formatter'
-import type { IRankLoanList } from '@/models/response/report/rank-loan/RankLoanRes.model'
+import type { IRankLoanItem } from '@/models/response/report/rank-loan/RankLoanRes.model'
 import type { IColumn } from '@/models/Table.model'
+import { RankingLoanTypeEnum } from '@/enums/modules/report/RankingLoan.enum'
 import BaseTable from '@/components/table/BaseTable.vue'
-import type { IPagination } from '@/composables/usePagination'
 
 interface IProps {
-  items: IRankLoanList[]
+  items: IRankLoanItem[]
+  type?: string
 }
 
 const props = defineProps<IProps>()
 
-interface IEmits {
-  update: []
-}
+const isPercent = computed((): boolean => props.type === RankingLoanTypeEnum.PERCENTAGE)
 
-const emits = defineEmits<IEmits>()
-
-const pagination = defineModel<IPagination>('pagination', {
-  required: true
-})
-
-const sortBy = defineModel<string>('sortBy', { default: '' })
-const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
-
-const columns = ref<IColumn<IRankLoanList>[]>([
+const columns = computed((): IColumn<IRankLoanItem>[] => [
   { field: 'index', header: 'ลำดับ', align: 'left', width: 60 },
-  { field: 'branchName', header: 'สาขา', align: 'left', width: 150 },
-  { field: 'branchIdNo', header: 'เลขที่สาขา', align: 'left', width: 120 },
-  { field: 'totalReceived', header: 'ยอดรับ', align: 'right', width: 120, value: (e: IRankLoanList): string => formatter.numberFormat(e.totalReceived) },
-  { field: 'rankedInTopTimes', header: 'ติด TOP ครั้งที่', align: 'center', width: 120, value: (e: IRankLoanList): string => formatter.numberFormat(e.rankedInTopTimes) }
+  { field: 'branch', header: 'สาขา', align: 'left', width: 150, value: (e: IRankLoanItem): string => e.branch?.name || '-' },
+  { field: 'branch', header: 'เลขที่สาขา', align: 'left', width: 120, value: (e: IRankLoanItem): string => e.branch?.idNo || '-' },
+  { field: 'paidAmount' as keyof IRankLoanItem, header: 'ยอดรับ', align: 'right' as const, width: 130, value: (e: IRankLoanItem): string => isPercent.value ? `${formatter.numberFormat(e.percent)}%` : formatter.numberFormat(e.paidAmount) },
+  { field: 'topCount', header: 'ติด TOP ครั้งที่', align: 'center', width: 120, value: (e: IRankLoanItem): string => formatter.numberFormat(e.topCount) }
 ])
+
 </script>
 
 <style scoped></style>

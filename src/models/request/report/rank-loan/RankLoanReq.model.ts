@@ -1,3 +1,4 @@
-import type { IBasePaginationRequest } from '../../Request.model'
-
-export interface IGetRankLoanList extends IBasePaginationRequest {}
+export interface IGetRankLoanList {
+  startDate?: string
+  endDate?: string
+}

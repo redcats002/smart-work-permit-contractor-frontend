@@ -1,12 +1,12 @@
-import type { IEntity } from '@/models/Global.model'
-import type { IBasePaginationResponse, IBaseSuccessResponse } from '../../Response.model'
+import type { TBaseModel } from '@/models/Global.model'
+import type { IBaseSuccessResponse } from '../../Response.model'
 
-export interface IRankLoanList extends IEntity {
-  branchName: string
-  branchIdNo: string
-  totalReceived: number
-  rankedInTopTimes: number
+export interface IRankLoanItem {
+  branch: TBaseModel
+  paidAmount: number
+  totalAmount: number
+  topCount: number
+  percent: number
 }
 
-export type TGetRankLoanListResponse = IBasePaginationResponse<IRankLoanList>
-export type TActionRankLoanInstallment = IBaseSuccessResponse<boolean>
+export type TGetRankLoanListResponse = IBaseSuccessResponse<IRankLoanItem[]>
