@@ -5,7 +5,9 @@
     v-model:sort-order="sortOrder"
     :columns="columns"
     :items="props.items"
+    :items-footer="itemsFooter"
     disable-auto-left-padding
+    show-footer
     @update="emits('update')">
     <template #[`item.index`]="{ index }">
       {{ index + 1 }}
@@ -14,40 +16,72 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { IColumn } from '@/models/Table.model'
+import { computed, ref } from 'vue'
+import { formatter } from '@/utils/Formatter'
+import { generateTableFooter, type IFooterColConfig } from '@/utils/TableFooter'
+import type { IFinancialSummaryReportList, IFinancialSummaryReportSummary } from '@/models/response/report/financial-summary/FinancialSummaryRes.model'
+import type { IColumn, IFooter } from '@/models/Table.model'
+import { FinancialSummaryTypeEnum, type TFinancialSummaryType } from '@/enums/modules/report/financial-summary/FinancialSummaryType.enum'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
 
-import type { IFinancialSummaryReportList } from '@/models/response/report/financial-summary/FinancialSummaryRes.model'
-import { formatter } from '@/utils/Formatter'
-
 interface IProps {
   items: IFinancialSummaryReportList[]
+  summary?: IFinancialSummaryReportSummary
+  type?: TFinancialSummaryType
 }
 
-const props = defineProps<IProps>()
+const props = withDefaults(defineProps<IProps>(), {
+  summary: undefined,
+  type: FinancialSummaryTypeEnum.SUMMARY
+})
+
 interface IEmits {
-  delete: [id: number]
   update: []
 }
 
 const emits = defineEmits<IEmits>()
 
-const pagination = defineModel<IPagination>('pagination', {
-  required: true
-})
-
+const pagination = defineModel<IPagination>('pagination', { required: true })
 const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
-const columns = ref<IColumn<IFinancialSummaryReportList>[]>([
+const baseColumns = ref<IColumn<IFinancialSummaryReportList>[]>([
   { field: 'index', header: 'ลำดับ', align: 'left', width: 60 },
-  { field: 'branchName', header: 'สาขา', align: 'left', width: 150 },
-  { field: 'income', header: 'รายรับ', align: 'left', width: 120, value: (e: IFinancialSummaryReportList): string => e.income ? formatter.numberFormat2Decimal(e.income) : '-' },
-  { field: 'loan', header: 'ปล่อยสินเชื่อ', align: 'left', width: 120, value: (e: IFinancialSummaryReportList): number => e.loan },
-  { field: 'expenses', header: 'รายจ่าย', align: 'left', width: 120, value: (e: IFinancialSummaryReportList): string => e.expenses ? formatter.numberFormat2Decimal(e.expenses) : '-' }
+  { field: 'branchName', header: 'สาขา', align: 'left' }
 ])
+
+const incomeColumn: IColumn<IFinancialSummaryReportList> = {
+  field: 'income', header: 'รายรับ', align: 'right', value: (e: IFinancialSummaryReportList): string => e.income ? formatter.numberFormatNoDecimal(e.income) : '-'
+}
+const principalColumn: IColumn<IFinancialSummaryReportList> = {
+  field: 'principal', header: 'ปล่อยสินเชื่อ', align: 'right', value: (e: IFinancialSummaryReportList): string => formatter.numberFormatNoDecimal(e.principal)
+}
+const expensesColumn: IColumn<IFinancialSummaryReportList> = {
+  field: 'expenses', header: 'รายจ่าย', align: 'right', value: (e: IFinancialSummaryReportList): string => e.expenses ? formatter.numberFormatNoDecimal(e.expenses) : '-'
+}
+
+const columns = computed((): IColumn<IFinancialSummaryReportList>[] => {
+  const extra: IColumn<IFinancialSummaryReportList>[] = {
+    [FinancialSummaryTypeEnum.SUMMARY]: [incomeColumn, principalColumn, expensesColumn],
+    [FinancialSummaryTypeEnum.INCOME]: [incomeColumn],
+    [FinancialSummaryTypeEnum.PRINCIPAL]: [principalColumn],
+    [FinancialSummaryTypeEnum.EXPENSES]: [expensesColumn]
+  }[props.type ?? FinancialSummaryTypeEnum.SUMMARY]
+  return [...baseColumns.value, ...extra]
+})
+
+const footerStyle = 'height: 80px; padding: 9px 16px;'
+const footerClass = 'text-right font-bold'
+
+const itemsFooter = computed((): IFooter[] => {
+  const footerConfig: Partial<Record<keyof IFinancialSummaryReportList, IFooterColConfig<IFinancialSummaryReportSummary>>> = {
+    income: { value: `ยอดรับทั้งหมด ${formatter.numberFormatNoDecimal(props.summary?.income || 0)}`, footerClass, footerStyle },
+    principal: { value: `ยอดปล่อยสินเชื่อทั้งหมด ${formatter.numberFormatNoDecimal(props.summary?.principal || 0)}`, footerClass, footerStyle },
+    expenses: { value: `ยอดจ่ายทั้งหมด ${formatter.numberFormatNoDecimal(props.summary?.expenses || 0)}`, footerClass, footerStyle }
+  }
+  return generateTableFooter(columns.value, props.summary, footerConfig)
+})
 </script>
 
 <style scoped></style>

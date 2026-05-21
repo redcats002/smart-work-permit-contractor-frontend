@@ -9,14 +9,9 @@
     disable-auto-left-padding
     show-footer
     @update="emits('update')">
-    <template #[`item.receipt.idNo`]="{item}">
+    <template #[`item.idNo`]="{ item }">
       <LinkText :to="{}">
-        {{ item.receipt?.idNo }}
-      </LinkText>
-    </template>
-    <template #[`item.contract.idNo`]="{item}">
-      <LinkText :to="{}">
-        {{ item.contract?.idNo }}
+        {{ item.idNo }}
       </LinkText>
     </template>
   </BaseTable>
@@ -50,33 +45,31 @@ const emits = defineEmits<IEmits>()
 
 const dayjs = useDayjs()
 
-const pagination = defineModel<IPagination>('pagination', {
-  required: true
-})
+const pagination = defineModel<IPagination>('pagination', { required: true })
 const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IDailyLoanDisbursementList>[]>([
-  { field: 'createdAt', header: 'วันที่ใบชำระเงิน', value: (e: IDailyLoanDisbursementList): string => dayjs.formatDate(e?.createdAt) },
-  { field: 'receipt.idNo', header: 'เลขที่ใบเสร็จ' },
-  { field: 'contract.idNo', header: 'เลขที่สัญญา' },
-  { field: 'customer', header: 'ชื่อลูกค้า', value: (e: IDailyLoanDisbursementList): string => formatter.fullName(e?.customer) },
-  { field: 'totalWithInterest', header: 'ยอดจัดรวดอกเบี้ย', value: (e: IDailyLoanDisbursementList): string => formatter.numberFormat2Decimal(e?.totalWithInterest) },
-  { field: 'total', header: 'ยอดจัด', value: (e: IDailyLoanDisbursementList): string => formatter.numberFormat2Decimal(e?.total) },
-  { field: 'operation', header: 'ค่าดำเนินการ', value: (e: IDailyLoanDisbursementList): string => formatter.numberFormat2Decimal(e?.operation) },
-  { field: 'interest', header: 'ดอกเบี้ย', value: (e: IDailyLoanDisbursementList): string => formatter.numberFormat2Decimal(e?.interest) },
-  { field: 'installment', header: 'ชำระต่องวด', value: (e: IDailyLoanDisbursementList): string => formatter.numberFormat2Decimal(e?.installment) },
-  { field: 'numberOfInstallments', header: 'จำนวนงวด', value: (e: IDailyLoanDisbursementList): string => formatter.numberFormatNoDecimal(e?.numberOfInstallments) }
+  { field: 'createdAt', header: 'วันที่', value: (e: IDailyLoanDisbursementList): string => dayjs.formatDate(e?.createdAt) },
+  { field: 'idNo', header: 'เลขที่สัญญา' },
+  { field: 'customerName', header: 'ชื่อลูกค้า' },
+  { field: 'principalAndInterest', header: 'ยอดจัดรวมดอกเบี้ย', align: 'right', value: (e: IDailyLoanDisbursementList): string => formatter.numberFormat2Decimal(e?.principalAndInterest) },
+  { field: 'principal', header: 'ยอดจัด', align: 'right', value: (e: IDailyLoanDisbursementList): string => formatter.numberFormat2Decimal(e?.principal) },
+  { field: 'administrativeCost', header: 'ค่าดำเนินการ', align: 'right', value: (e: IDailyLoanDisbursementList): string => formatter.numberFormat2Decimal(e?.administrativeCost) },
+  { field: 'interest', header: 'ดอกเบี้ย', align: 'right', value: (e: IDailyLoanDisbursementList): string => formatter.numberFormat2Decimal(e?.interest) },
+  { field: 'monthlyInstallment', header: 'ชำระต่องวด', align: 'right', value: (e: IDailyLoanDisbursementList): string => formatter.numberFormat2Decimal(e?.monthlyInstallment) },
+  { field: 'installmentCount', header: 'จำนวนงวด', align: 'right', value: (e: IDailyLoanDisbursementList): string => formatter.numberFormatNoDecimal(e?.installmentCount) }
 ])
 
 const itemsFooter = computed((): IFooter[] => {
   const footerConfig: Partial<Record<keyof IDailyLoanDisbursementList, IFooterColConfig<IDailyLoanDisbursementSummary>>> = {
-    customer: { value: `รวมทั้งสิ้น ${formatter.numberFormatNoDecimal(props.summary?.numberOfCustomer || 0)} รายการ` },
-    totalWithInterest: { value: formatter.numberFormat2Decimal(props.summary?.totalWithInterest || 0) },
-    total: { value: formatter.numberFormat2Decimal(props.summary?.total || 0) },
-    operation: { value: formatter.numberFormat2Decimal(props.summary?.operation || 0) },
-    interest: { value: formatter.numberFormat2Decimal(props.summary?.interest || 0) },
-    installment: { value: formatter.numberFormat2Decimal(props.summary?.installment || 0) }
+    customerName: { value: 'รวมทั้งสิ้น' },
+    principalAndInterest: { value: formatter.numberFormat2Decimal(props.summary?.principalAndInterest || 0), footerClass: 'text-right' },
+    principal: { value: formatter.numberFormat2Decimal(props.summary?.principal || 0), footerClass: 'text-right' },
+    administrativeCost: { value: formatter.numberFormat2Decimal(props.summary?.administrativeCost || 0), footerClass: 'text-right' },
+    interest: { value: formatter.numberFormat2Decimal(props.summary?.interest || 0), footerClass: 'text-right' },
+    monthlyInstallment: { value: formatter.numberFormat2Decimal(props.summary?.monthlyInstallment || 0), footerClass: 'text-right' },
+    installmentCount: { value: formatter.numberFormatNoDecimal(props.summary?.installmentCount || 0), footerClass: 'text-right' }
   }
   return generateTableFooter(columns.value, props.summary, footerConfig)
 })
