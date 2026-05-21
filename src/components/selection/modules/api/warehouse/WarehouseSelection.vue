@@ -30,7 +30,7 @@ const props = defineProps<IProps>()
 const attrs = useAttrs()
 const WarehouseService: IWarehouseProvider = new WarehouseProvider()
 
-const modelValue = defineModel<number | null>()
+const modelValue = defineModel<number | null>({ required: false })
 const selectedNameValue = defineModel<string | null>('selectedName', { default: null })
 
 const { pagination } = usePagination()
