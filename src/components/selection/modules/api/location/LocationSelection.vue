@@ -40,7 +40,7 @@ const selectedNameValue = defineModel<string | null>('selectedName', { default: 
 
 const refreshDeps = computed((): (number | null)[] => [props.warehouseId])
 
-const { pagination } = usePagination()
+const { pagination } = usePagination({ inheritQuery: false })
 
 const fetchSuggestions = async (): Promise<TBaseModel[]> => await handleLoading(async (): Promise<TBaseModel[]> => {
   const response = await WarehouseService.getLocationPaginate({

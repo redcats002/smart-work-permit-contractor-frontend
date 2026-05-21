@@ -25,7 +25,7 @@ const CustomerService: ICustomerProvider = new CustomerProvider()
 const modelValue = defineModel<number | null>()
 const selectedNameValue = defineModel<string | null>('selectedName', { default: null })
 
-const { pagination } = usePagination()
+const { pagination } = usePagination({ inheritQuery: false })
 
 const fetchSuggestions = async (): Promise<TBaseModel[]> => await handleLoading(async (): Promise<TBaseModel[]> => {
   const response = await CustomerService.getCustomerPaginate({
