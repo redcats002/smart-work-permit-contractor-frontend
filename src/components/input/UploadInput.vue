@@ -96,7 +96,8 @@
 
       <button
         :class="removeButtonClass"
-        class="text-primary-500 hover:text-red-500 cursor-pointer"
+        class="text-primary-500 hover:text-red-500 cursor-pointer
+        hover:bg-red-50 transition-all hover:scale-[1.02]"
         type="button"
         @click="removeFile(index)">
         <Icon :icon="removeIcon" />
