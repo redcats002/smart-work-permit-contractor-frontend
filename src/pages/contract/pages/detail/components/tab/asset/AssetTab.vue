@@ -15,16 +15,16 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IContractAssetList } from '@/models/response/contract-assets/ContractAssetsRes.model'
+import type { IContractAssetList } from '@/models/response/contract/ContractRes.model'
 import { isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
-import ContractAssetsProvider, { type IContractAssetsProvider } from '@/resources/provider/contract-assets/ContractAssets.provider'
+import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
 import Empty from '@/components/display/Empty.vue'
 import type { TAssetCategory } from '@/pages/contract/pages/create/schema/pre-contract.schema'
 import AssetSection from '@/pages/contract/pages/pre-contract-detail/components/AssetSection.vue'
 
 const route = useRoute()
 
-const ContractAssetsService: IContractAssetsProvider = new ContractAssetsProvider()
+const ContractService: IContractProvider = new ContractProvider()
 
 const contractId = computed((): string | string[] => route.params.id)
 const assets = ref<IContractAssetList[]>([])
@@ -45,7 +45,7 @@ const assetCategory = computed((): TAssetCategory => {
 })
 
 async function useFetch (): Promise<void> {
-  const res = await ContractAssetsService.getContractAssets(contractId.value)
+  const res = await ContractService.getContractAssets(contractId.value)
   assets.value = res.data
 }
 

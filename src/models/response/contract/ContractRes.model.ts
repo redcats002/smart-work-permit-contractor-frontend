@@ -10,6 +10,7 @@ import type { ICustomerById, ICustomerList } from '../customer/CustomerRes.model
 import type { IEmployeeList } from '../employee/EmployeeRes.model'
 import type { IHowDidFindUsList } from '../how-did-find-us/HowDidFindUsRes.model'
 import type { IPreContractList, IPreContractLoanType } from '../pre-contract/PreContractRes.model'
+import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 
 export interface IContractCustomer extends ICustomerList {
@@ -123,7 +124,10 @@ export type TGetInstallmentListResponse = IBasePaginationResponse<IContractInsta
 export type TActionContractInstallmentFeeResponse = IBaseSuccessResponse<boolean>
 export type TGetGuarantorContractListResponse = IBasePaginationResponse<IContractGuarantorList>
 
-export * from '../contract-assets/ContractAssetsRes.model'
+export interface IContractAssetList extends IPreAssetList {}
+export type TGetAssetContractListResponse = IBasePaginationResponse<IContractAssetList>
+
+
 export * from '../contract-expense/ContractExpenseRes.model'
 export * from '../contract-income/ContractIncomeRes.model'
 export * from '../contract-history/ContractHistoryRes.model'

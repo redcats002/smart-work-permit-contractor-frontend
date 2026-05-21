@@ -2,7 +2,7 @@ import type {
   IGetContractAssetList,
   ISellContractAssetPayload,
   IUpdateContractAssetStatusPayload
-} from '@/models/request/contract-asset/ContractAssetReq.model'
+} from '@/models/request/contract/ContractAssetReq.model'
 import type {
   IActionContractAssetResponse,
   IGetContractAssetDetailResponse,

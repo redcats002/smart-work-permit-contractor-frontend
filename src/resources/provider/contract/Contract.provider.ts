@@ -10,6 +10,7 @@ import type {
 import type {
   TActionContract,
   TActionContractInstallmentFeeResponse,
+  TGetAssetContractListResponse,
   TGetContractByIdResponse,
   TGetContractListResponse,
   TGetGuarantorContractListResponse,
@@ -31,6 +32,8 @@ export interface IContractProvider {
   getGuarantorList(id: TBaseParamsId, query?: IGetGuarantorContractList): Promise<TGetGuarantorContractListResponse>
   updateLegalFee(contractInstallmentId: TBaseParamsId, payload: IUpdateInstallmentFeePayload): Promise<TActionContractInstallmentFeeResponse>
   updateCollectionFee(contractInstallmentId: TBaseParamsId, payload: IUpdateInstallmentFeePayload): Promise<TActionContractInstallmentFeeResponse>
+  getContractAssets(id: TBaseParamsId): Promise<TGetAssetContractListResponse>
+  saveAssetDetail(contractId: TBaseParamsId, assetId: TBaseParamsId, formData: FormData): Promise<TActionContract>
 }
 
 class ContractProvider extends HttpRequest implements IContractProvider {
@@ -96,11 +99,22 @@ class ContractProvider extends HttpRequest implements IContractProvider {
     const response = await this.patch(`${this.urlPrefix}/collection-fee/${contractInstallmentId}`, payload)
     return response
   }
+
+  public async getContractAssets (id: TBaseParamsId): Promise<TGetAssetContractListResponse> {
+    const response = await this.get(`${this.urlPrefix}/${id}/assets`)
+    return response
+  }
+
+  public async saveAssetDetail (contractId: TBaseParamsId, assetId: TBaseParamsId, formData: FormData): Promise<TActionContract> {
+    const response = await this.put(`${this.urlPrefix}/${contractId}/asset/${assetId}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    return response
+  }
 }
 
 export default ContractProvider
 
-export * from '../contract-assets/ContractAssets.provider'
 export * from '../contract-expense/ContractExpense.provider'
 export * from '../contract-income/ContractIncome.provider'
 export * from '../contract-history/ContractHistory.provider'

@@ -18,7 +18,8 @@ export interface ICreateContractPayload {}
 export interface IUpdateContractPayload extends Partial<ICreateContractPayload> {}
 export interface IActionContractPayload extends ICreateContractPayload {}
 
-export * from '../contract-assets/ContractAssetsReq.model'
+export interface IGetAssetContract {}
+
 export * from '../contract-expense/ContractExpenseReq.model'
 export * from '../contract-income/ContractIncomeReq.model'
 export * from '../contract-history/ContractHistoryReq.model'
