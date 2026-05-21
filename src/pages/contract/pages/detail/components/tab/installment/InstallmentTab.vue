@@ -4,6 +4,7 @@
       <CardIndicator
         v-for="(card, i) in cards"
         :key="`card-${i}`"
+        label-class="font-bold mt-4"
         v-bind="card" />
     </div>
     <div class="flex justify-between items-center">

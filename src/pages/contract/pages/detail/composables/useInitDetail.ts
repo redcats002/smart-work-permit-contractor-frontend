@@ -85,7 +85,7 @@ export function useInitTabDetail (): IUseTabItems {
     { key: 'Asset', label: 'ทรัพย์สิน', instance: Asset, value: 'asset' },
     { key: 'Installment', label: 'งวดชำระ', instance: Installment, value: 'installment' },
     { key: 'Expense', label: 'ค่าใช้จ่าย', instance: Expense, value: 'expense' },
-    { key: 'Income', label: 'รายรับ', instance: Income, value: 'income' },
+    { key: 'Income', label: 'รายได้', instance: Income, value: 'income' },
     { key: 'Guarantor', label: 'ผู้ค้ำประกัน', instance: Guarantor, value: 'guarantor' },
     { key: 'ContactHistory', label: 'ประวัติการติดต่อ', instance: ContactHistory, value: 'contact-history' },
     { key: 'Document', label: 'เอกสาร', instance: Document, value: 'document' }
