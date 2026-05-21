@@ -15,18 +15,37 @@
     @dragleave.prevent="onDragLeave($event)"
     @dragover.prevent="onDragOver()"
     @drop.prevent="onDrop($event)">
-    <BaseImage
-      v-if="media.length > 0 && single"
-      :file-path="media[media.length - 1]?.path"
-      :src="media[media.length - 1].url"
-      class="w-24 h-24 object-cover rounded-md" />
+    <div v-if="media.length > 0 && single">
+      <BaseImage
+        v-if="isImageFile(media[media.length - 1].name)"
+        :file-path="media[media.length - 1]?.path"
+        :src="media[media.length - 1].url"
+        class="w-24 h-24 object-cover rounded-md" />
+      <div
+        v-else
+        class="flex items-center gap-2 border border-surface-200 rounded-md px-3 py-2 bg-surface-50 max-w-xs">
+        <Icon
+          :icon="getFileIcon(media[media.length - 1].name)"
+          class="text-2xl shrink-0" />
+        <span class="text-xs text-gray-700 truncate grow">
+          {{ media[media.length - 1].name }}
+        </span>
+        <button
+          :class="removeButtonClass"
+          class="text-primary-500 hover:text-red-500 cursor-pointer hover:bg-red-50 transition-all shrink-0"
+          type="button"
+          @click.stop="removeFile(0)">
+          <Icon :icon="removeIcon" />
+        </button>
+      </div>
+    </div>
     <BaseImage
       v-else-if="modelImage && typeof modelImage === 'string'"
       :file-path="modelImage"
       class="w-24 h-24 object-cover rounded-md" />
     <template v-else>
       <Icon
-        v-if="!single"
+        v-if="icon"
         :class="iconClass"
         :icon="icon"
         class="size-12 text-gray-800" />
