@@ -4,6 +4,13 @@
     :label="modalLabel"
     :style="{ width: 'min(95vw, 500px)' }"
     @open="onOpen()">
+    <template
+      v-if="currentMode==='read'"
+      #menu>
+      <div class="flex justify-end">
+        <BaseActionMenu :items="readMenuItems" />
+      </div>
+    </template>
     <template #default="{ close }">
       <!-- FORM MODE: create / edit -->
       <Form
@@ -119,9 +126,6 @@
       <div
         v-else-if="currentMode === 'read'"
         class="grid gap-4">
-        <div class="flex justify-end">
-          <BaseActionMenu :items="readMenuItems" />
-        </div>
         <div class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm">
           <span class="font-bold text-gray-700 whitespace-nowrap">วันที่</span>
           <span>: {{ dayjs.formatDate(props.item?.date || '') }}</span>

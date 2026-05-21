@@ -16,14 +16,16 @@
           class="px-8 pt-10 mb-5 relative">
           <label
             :class="headerAlign === 'center' ? 'text-center' : ''"
-            class="text-[20px] font-bold text-[#333333]">
+            class="text-lg font-bold text-[#333333]">
             {{ label }}
           </label>
-          <Icon
-            v-if="headerAlign !== 'center'"
-            class="cursor-pointer size-6 text-[#62748E] hover:text-black transition-all duration-200 absolute top-4 right-4"
-            icon="mdi:close"
-            @click="closeCallback()" />
+          <div class="flex gap-2.5 items-center">
+            <slot name="menu" />
+            <Icon
+              class="cursor-pointer size-6 text-[#62748E] hover:text-black transition-all duration-200"
+              icon="mdi:close"
+              @click="closeCallback()" />
+          </div>
         </div>
         <div class="px-8 pb-10 overflow-y-auto flex-1">
           <slot
