@@ -13,10 +13,10 @@
         v-for="tab in items"
         :key="tab.value"
         :class="[
-          'flex-1 px-4 py-2 font-medium text-base transition-all duration-200 cursor-pointer h-8.5 flex items-center justify-center whitespace-nowrap border-b-2',
+          'flex-1 px-4 py-2  font-bold text-base transition-all duration-200 cursor-pointer h-8.5 flex items-center justify-center whitespace-nowrap border-b-2',
           modelValue === tab.value
-            ? ' text-black text-sm font-medium border-b-2 border-primary text-black'
-            : 'bg-transparent text-[#62748E] hover:text-gray-800 text-sm font-medium border-b-2 border-transparent'
+            ? ' text-black text-sm border-b-2 border-primary'
+            : 'bg-transparent text-(--p-gray-4) hover:text-gray-800 text-sm border-b-2 border-transparent'
         ]"
         @click="handleClick(tab.value)">
         {{ tab.label }}
