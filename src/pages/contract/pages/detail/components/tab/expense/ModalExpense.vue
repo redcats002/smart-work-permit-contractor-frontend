@@ -75,7 +75,22 @@
           required>
           <UploadInput
             v-model="formData.file"
-            name="url" />
+            class="border border-dashed border-gray-700 rounded-md"
+            detail=""
+            icon="material-symbols-light:upload-file-outline"
+            icon-class="size-20"
+            name="url"
+            remove-button-class="text-(--p-gray-4)! border rounded-full border-(--p-gray-4)! p-1"
+            remove-icon="solar:trash-bin-2-linear"
+            hide-button
+            touchable>
+            <template #label>
+              <span>
+                ลากและวางไฟล์ที่นี่ หรือ
+                <span class="font-bold underline">เลือกไฟล์</span>
+              </span>
+            </template>
+          </UploadInput>
         </LabelField>
 
         <LabelField
