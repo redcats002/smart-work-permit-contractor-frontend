@@ -47,9 +47,9 @@
                 class="mb-2"
                 label-class="text-font-gray!" />
               <LabelField
+                v-if="activeAsset?.files"
                 label="เอกสารหลักทรัพย์">
                 <FileAttachment
-                  v-if="activeAsset?.files"
                   :files="activeAsset?.files" />
               </LabelField>
               <template v-if="status === 'PENDING_CONTRACT'">
