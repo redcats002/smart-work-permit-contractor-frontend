@@ -3,12 +3,12 @@
     class="h-10 border border-gray-300 rounded-md px-2 py-1 md:px-3 flex items-center gap-2 min-w-fit md:min-w-50">
     <div class="flex items-center gap-2 w-full">
       <Avatar
-        :image="authStore.user?.image"
+        :image="authStore.user?.imageUrl"
         class="shrink-0 border border-gray-300 h-7! w-7!"
         shape="circle"
         size="normal">
         <Icon
-          v-if="!authStore.user?.image"
+          v-if="!authStore.user?.imageUrl"
           icon="solar:user-bold" />
       </Avatar>
       <div class="hidden md:block">
