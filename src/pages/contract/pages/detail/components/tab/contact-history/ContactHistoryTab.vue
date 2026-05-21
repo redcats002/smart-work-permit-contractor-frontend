@@ -18,16 +18,15 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IGetContactHistoryList } from '@/models/request/contract/ContractReq.model'
-import type { IContractContactHistoryList } from '@/models/response/contract/ContractRes.model'
-import type { IContractProvider } from '@/resources/provider/contract/Contract.provider'
-import ContractProvider from '@/resources/provider/contract/Contract.provider'
+import type { IGetContactHistoryList } from '@/models/request/contract-history/ContractHistoryReq.model'
+import type { IContractContactHistoryList } from '@/models/response/contract-history/ContractHistoryRes.model'
+import ContractHistoryProvider, { type IContractHistoryProvider } from '@/resources/provider/contract-history/ContractHistory.provider'
 import usePagination from '@/composables/usePagination'
 import Title from '../Title.vue'
 import ContactHistoryTable from './ContactHistoryTable.vue'
 import ModalContractHistory from './ModalContractHistory.vue'
 
-const ContractService: IContractProvider = new ContractProvider()
+const ContractHistoryService: IContractHistoryProvider = new ContractHistoryProvider()
 
 const route = useRoute()
 const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
@@ -49,7 +48,7 @@ const paginateQuery = computed((): IGetContactHistoryList => {
 })
 
 async function useFetch (): Promise<void> {
-  const response = await ContractService.getContractHistoryList(contractId.value, paginateQuery.value)
+  const response = await ContractHistoryService.getContractHistoryList(contractId.value, paginateQuery.value)
   items.value = response?.data || []
   pagination.value = extractPagination(response)
   syncQuery({ ...normalizeFilters(filters.value) })

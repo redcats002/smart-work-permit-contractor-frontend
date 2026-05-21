@@ -19,7 +19,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
-import type { IContractDocumentList } from '@/models/response/contract/ContractRes.model'
+import type { IContractDocumentList } from '@/models/response/contract-document/ContractDocumentRes.model'
 import type { IColumn } from '@/models/Table.model'
 import { formatTitle } from '@/enums/modules/contract/DocumentType.enum'
 import BaseTable from '@/components/table/BaseTable.vue'

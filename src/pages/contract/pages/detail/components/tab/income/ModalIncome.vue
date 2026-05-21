@@ -166,10 +166,10 @@ import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { ICreateIncome } from '@/models/request/contract/ContractReq.model'
-import type { IContractIncomeList } from '@/models/response/contract/ContractRes.model'
+import type { ICreateIncome } from '@/models/request/contract-income/ContractIncomeReq.model'
+import type { IContractIncomeList } from '@/models/response/contract-income/ContractIncomeRes.model'
 import { EVatType, formatTitle as formatVatTitle, VatTypeItems } from '@/enums/modules/Vat.enum'
-import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
+import ContractIncomeProvider, { type IContractIncomeProvider } from '@/resources/provider/contract-income/ContractIncome.provider'
 import type { IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import BaseActionMenu from '@/components/base/BaseActionMenu.vue'
 import FormAction from '@/components/button/FormAction.vue'
@@ -202,7 +202,7 @@ const emits = defineEmits<IEmits>()
 
 const visible = defineModel<boolean>('visible', { default: false })
 
-const ContractService: IContractProvider = new ContractProvider()
+const ContractIncomeService: IContractIncomeProvider = new ContractIncomeProvider()
 const { getUploadImages } = useUpload()
 
 const dayjs = useDayjs()
@@ -266,7 +266,7 @@ async function onOpen (): Promise<void> {
   }
 
   if (props.item?.id) {
-    const { data } = await ContractService.getIncomeById(Number(props.item.id))
+    const { data } = await ContractIncomeService.getIncomeById(Number(props.item.id))
     formRead.value = data
 
     if (props.mode === 'edit') {
@@ -304,10 +304,10 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
   handleLoading(async (): Promise<void> => {
     await uploadAndSetFile()
     if (currentMode.value === 'create') {
-      await ContractService.createIncome(props.contractId, values)
+      await ContractIncomeService.createIncome(props.contractId, values)
       toast.success('บันทึกรายได้สำเร็จ')
     } else if (currentMode.value === 'edit' && itemId) {
-      await ContractService.updateIncome(itemId, values)
+      await ContractIncomeService.updateIncome(itemId, values)
       toast.success('แก้ไขรายได้สำเร็จ')
     }
     emits('update')
@@ -319,7 +319,7 @@ function onDelete (close: () => void): void {
   const id = props.item?.id
   if (!id) return
   handleLoading(async (): Promise<void> => {
-    await ContractService.deleteIncome(id)
+    await ContractIncomeService.deleteIncome(id)
     toast.success('ลบรายได้สำเร็จ')
     emits('update')
     close()

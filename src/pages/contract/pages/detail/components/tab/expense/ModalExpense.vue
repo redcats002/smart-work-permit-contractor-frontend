@@ -170,10 +170,10 @@ import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { ICreateExpense } from '@/models/request/contract/ContractReq.model'
-import type { IContractExpenseList } from '@/models/response/contract/ContractRes.model'
+import type { ICreateExpense } from '@/models/request/contract-expense/ContractExpenseReq.model'
+import type { IContractExpenseList } from '@/models/response/contract-expense/ContractExpenseRes.model'
 import { EVatType, formatTitle as formatVatTitle, VatTypeItems } from '@/enums/modules/Vat.enum'
-import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
+import ContractExpenseProvider, { type IContractExpenseProvider } from '@/resources/provider/contract-expense/ContractExpense.provider'
 import type { IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import BaseActionMenu from '@/components/base/BaseActionMenu.vue'
 import FormAction from '@/components/button/FormAction.vue'
@@ -206,7 +206,7 @@ const emits = defineEmits<IEmits>()
 
 const visible = defineModel<boolean>('visible', { default: false })
 
-const ContractService: IContractProvider = new ContractProvider()
+const ContractExpenseService: IContractExpenseProvider = new ContractExpenseProvider()
 
 const dayjs = useDayjs()
 
@@ -272,7 +272,7 @@ async function onOpen (): Promise<void> {
   }
 
   if (props.item?.id) {
-    const { data } = await ContractService.getExpenseById(Number(props.item.id))
+    const { data } = await ContractExpenseService.getExpenseById(Number(props.item.id))
     formRead.value = data
     if (props.mode === 'edit') {
       populateForm()
@@ -307,10 +307,10 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
   handleLoading(async (): Promise<void> => {
     await uploadAndSetFile()
     if (currentMode.value === 'create') {
-      await ContractService.createExpense(props.contractId, values)
+      await ContractExpenseService.createExpense(props.contractId, values)
       toast.success('บันทึกค่าใช้จ่ายสำเร็จ')
     } else if (currentMode.value === 'edit' && itemId) {
-      await ContractService.updateExpense(itemId, values)
+      await ContractExpenseService.updateExpense(itemId, values)
       toast.success('แก้ไขค่าใช้จ่ายสำเร็จ')
     }
     emits('update')
@@ -322,7 +322,7 @@ function onDelete (close: () => void): void {
   const id = props.item?.id
   if (!id) return
   handleLoading(async (): Promise<void> => {
-    await ContractService.deleteExpense(id)
+    await ContractExpenseService.deleteExpense(id)
     toast.success('ลบค่าใช้จ่ายสำเร็จ')
     emits('update')
     close()

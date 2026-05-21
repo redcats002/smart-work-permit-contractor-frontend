@@ -28,9 +28,9 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IGetExpenseList } from '@/models/request/contract/ContractReq.model'
-import type { IContractExpenseList } from '@/models/response/contract/ContractRes.model'
-import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
+import type { IGetExpenseList } from '@/models/request/contract-expense/ContractExpenseReq.model'
+import type { IContractExpenseList } from '@/models/response/contract-expense/ContractExpenseRes.model'
+import ContractExpenseProvider, { type IContractExpenseProvider } from '@/resources/provider/contract-expense/ContractExpense.provider'
 import CreateButton from '@/components/button/CreateButton.vue'
 import usePagination from '@/composables/usePagination'
 import Title from '../Title.vue'
@@ -39,7 +39,7 @@ import ModalExpense from './ModalExpense.vue'
 
 type TExpenseModalMode = 'create' | 'read' | 'edit' | 'delete'
 
-const ContractService: IContractProvider = new ContractProvider()
+const ContractExpenseService: IContractExpenseProvider = new ContractExpenseProvider()
 
 const route = useRoute()
 const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
@@ -61,7 +61,7 @@ const paginateQuery = computed((): IGetExpenseList => {
 })
 
 async function useFetch (): Promise<void> {
-  const response = await ContractService.getExpenseList(contractId.value, paginateQuery.value)
+  const response = await ContractExpenseService.getExpenseList(contractId.value, paginateQuery.value)
   items.value = response?.data || []
   pagination.value = extractPagination(response)
   syncQuery({ ...normalizeFilters(filters.value) })

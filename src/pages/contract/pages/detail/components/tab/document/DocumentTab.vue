@@ -28,9 +28,9 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IGetDocumentList } from '@/models/request/contract/ContractReq.model'
-import type { IContractDocumentList } from '@/models/response/contract/ContractRes.model'
-import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
+import type { IGetDocumentList } from '@/models/request/contract-document/ContractDocumentReq.model'
+import type { IContractDocumentList } from '@/models/response/contract-document/ContractDocumentRes.model'
+import ContractDocumentProvider, { type IContractDocumentProvider } from '@/resources/provider/contract-document/ContractDocument.provider'
 import CreateButton from '@/components/button/CreateButton.vue'
 import usePagination from '@/composables/usePagination'
 import Title from '../Title.vue'
@@ -39,7 +39,7 @@ import ModalDocument from './ModalDocument.vue'
 
 type TDocumentModalMode = 'create' | 'read' | 'edit' | 'delete'
 
-const ContractService: IContractProvider = new ContractProvider()
+const ContractDocumentService: IContractDocumentProvider = new ContractDocumentProvider()
 
 const route = useRoute()
 const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
@@ -61,7 +61,7 @@ const paginateQuery = computed((): IGetDocumentList => {
 })
 
 async function useFetch (): Promise<void> {
-  const response = await ContractService.getDocumentList(contractId.value, paginateQuery.value)
+  const response = await ContractDocumentService.getDocumentList(contractId.value, paginateQuery.value)
   items.value = response?.data || []
   pagination.value = extractPagination(response)
   syncQuery({ ...normalizeFilters(filters.value) })

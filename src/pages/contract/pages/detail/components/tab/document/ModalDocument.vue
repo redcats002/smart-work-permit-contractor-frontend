@@ -109,10 +109,10 @@ import { computed, ref, watch } from 'vue'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { ICreateDocument } from '@/models/request/contract/ContractReq.model'
-import type { IContractDocumentList } from '@/models/response/contract/ContractRes.model'
+import type { ICreateDocument } from '@/models/request/contract-document/ContractDocumentReq.model'
+import type { IContractDocumentList } from '@/models/response/contract-document/ContractDocumentRes.model'
 import { DocumentTypeEnum, formatTitle as formatDocumentType } from '@/enums/modules/contract/DocumentType.enum'
-import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
+import ContractDocumentProvider, { type IContractDocumentProvider } from '@/resources/provider/contract-document/ContractDocument.provider'
 import type { IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import BaseActionMenu from '@/components/base/BaseActionMenu.vue'
 import FormAction from '@/components/button/FormAction.vue'
@@ -144,7 +144,7 @@ const emits = defineEmits<IEmits>()
 
 const visible = defineModel<boolean>('visible', { default: false })
 
-const ContractService: IContractProvider = new ContractProvider()
+const ContractDocumentService: IContractDocumentProvider = new ContractDocumentProvider()
 const { media, getUploadImages } = useUpload()
 
 const formKey = ref<number>(0)
@@ -219,10 +219,10 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
       note: formData.value.note
     } as ICreateDocument
     if (currentMode.value === 'create') {
-      await ContractService.createDocument(props.contractId, values)
+      await ContractDocumentService.createDocument(props.contractId, values)
       toast.success('บันทึกเอกสารสำเร็จ')
     } else if (currentMode.value === 'edit' && itemId) {
-      await ContractService.updateDocument(itemId, values)
+      await ContractDocumentService.updateDocument(itemId, values)
       toast.success('แก้ไขเอกสารสำเร็จ')
     }
     emits('update')
@@ -234,7 +234,7 @@ function onDelete (close: () => void): void {
   const id = props.item?.id
   if (!id) return
   handleLoading(async (): Promise<void> => {
-    await ContractService.deleteDocument(id)
+    await ContractDocumentService.deleteDocument(id)
     toast.success('ลบเอกสารสำเร็จ')
     emits('update')
     close()
