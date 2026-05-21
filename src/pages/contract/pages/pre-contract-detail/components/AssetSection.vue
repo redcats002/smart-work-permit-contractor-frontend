@@ -47,7 +47,7 @@
                 class="mb-2"
                 label-class="text-font-gray!" />
               <LabelField
-                v-if="activeAsset?.files"
+                v-if="activeAsset?.files.length"
                 label="เอกสารหลักทรัพย์">
                 <FileAttachment
                   :files="activeAsset?.files" />
