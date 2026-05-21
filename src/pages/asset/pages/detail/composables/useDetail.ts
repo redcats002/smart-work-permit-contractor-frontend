@@ -1,4 +1,5 @@
 import { ref, type Ref } from 'vue'
+import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IContractAssetDetail } from '@/models/response/contract-asset/ContractAssetRes.model'
 import type { TAssetStatus } from '@/enums/modules/asset/AssetStatus.enum'
@@ -29,11 +30,13 @@ export function useDetail (assetId: number): IUseDetail {
   async function useSell (salePrice: number): Promise<void> {
     await ContractAssetService.sellContractAsset(assetId, { salePrice })
     await useFetch()
+    toast.success('ขายสินทรัพย์สำเร็จ')
   }
 
   async function useUpdateStatus (status: TAssetStatus): Promise<void> {
     await ContractAssetService.updateContractAssetStatus(assetId, { status })
     await useFetch()
+    toast.success('อัปเดตสถานะสำเร็จ')
   }
 
   function onSell (salePrice: number): void {

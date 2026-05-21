@@ -19,7 +19,9 @@
           <ChipContractStatus :value="detail.contract.status" />
         </template>
         <template #[`value.contractNo`]>
-          <LinkText :to="{name:'ContractDetailPage', params: {id:detail.contract.id}}">
+          <LinkText
+            :to="{name:'ContractDetailPage', params: {id:detail.contract.id}}"
+            class="underline text-surface-700">
             {{ detail.contract.idNo }}
           </LinkText>
         </template>

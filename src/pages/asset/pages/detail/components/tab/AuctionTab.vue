@@ -1,14 +1,12 @@
 <template>
-  <Card>
-    <template #content>
-      <div class="flex justify-end">
-        <div class="w-fit">
-          <BaseActionMenu :items="actionMenuItems" />
-        </div>
+  <div>
+    <div class="flex justify-end">
+      <div class="w-fit">
+        <BaseActionMenu :items="actionMenuItems" />
       </div>
-      <DisplayList :items="auctionItems" />
-    </template>
-  </Card>
+    </div>
+    <DisplayList :items="auctionItems" />
+  </div>
 
   <BaseModal
     v-model="showSellModal"
@@ -18,20 +16,26 @@
     <template #default>
       <div class="space-y-4">
         <div>
-          <div class="text-sm text-surface-500 mb-1">
+          <LabelField label="ยอดประเมินหลักทรัพย์">
+            <InputNumber
+              :model-value="loanAmount"
+              class="w-full"
+              placeholder="0"
+              disabled />
+          </LabelField>
+          <!-- <div class="text-sm text-surface-500 mb-1">
             ยอดประเมินหลักทรัพย์
           </div>
           <div class="text-base font-medium">
             {{ formatter.numberFormat(loanAmount) }} บาท
-          </div>
+          </div> -->
         </div>
         <div>
           <LabelField label="ยอดที่ขาย/ประมูลได้">
-            <InputText
+            <InputNumber
               v-model="sellPriceInput"
               class="w-full"
-              placeholder="0"
-              type="number" />
+              placeholder="0" />
           </LabelField>
         </div>
       </div>
@@ -83,7 +87,7 @@ defineOptions({ inheritAttrs: false })
 const dayjs = useDayjs()
 
 const showSellModal = ref<boolean>(false)
-const sellPriceInput = ref<string>('')
+const sellPriceInput = ref<number>(0)
 
 const auctionItems = computed((): IDisplayList[] => {
   const diff = props.loanAmount - (props.salePrice ?? 0)
@@ -106,7 +110,7 @@ const actionMenuItems = computed((): IMenuItemAction[] => [
 ])
 
 function openSellModal (): void {
-  sellPriceInput.value = props.salePrice != null ? String(props.salePrice) : ''
+  sellPriceInput.value = props.salePrice != null ? Number(props.salePrice) : 0
   showSellModal.value = true
 }
 

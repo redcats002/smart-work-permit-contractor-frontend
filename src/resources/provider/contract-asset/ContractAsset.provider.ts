@@ -1,8 +1,4 @@
-import type {
-  IGetContractAssetList,
-  ISellContractAssetPayload,
-  IUpdateContractAssetStatusPayload
-} from '@/models/request/contract/ContractAssetReq.model'
+import type { IGetContractAssetList, ISellContractAssetPayload, IUpdateContractAssetStatusPayload } from '@/models/request/contract/ContractAssetReq.model'
 import type {
   IActionContractAssetResponse,
   IGetContractAssetDetailResponse,
@@ -33,7 +29,7 @@ class ContractAssetProvider extends HttpRequest implements IContractAssetProvide
   }
 
   async updateContractAssetStatus (id: number, payload: IUpdateContractAssetStatusPayload): Promise<IActionContractAssetResponse> {
-    return this.patch(`${this.urlPrefix}/${id}/update-status`, payload)
+    return this.patch(`${this.urlPrefix}/status/${id}`, payload)
   }
 }
 
