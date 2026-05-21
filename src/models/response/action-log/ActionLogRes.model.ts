@@ -5,6 +5,7 @@ import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.
 export interface IActionLogList extends IEntity {
   createdAtDate: string
   createdAtTime: string
+  userId?: number // TODO: future key
   userNo: string
   userName: string
   frontendMenuName: string

@@ -4,7 +4,6 @@ import { onRequest, onRequestError, onResponse, onResponseError } from './Interc
 
 interface IHttpRequest {
   axiosInstance: AxiosInstance
-  setLogHeader(): void
   setHeader(data: ISetHeader): void
   get(endPoint: string, data: object, config?: object): Promise<any>
   download(endPoint: string, data?: object): Promise<any>
@@ -41,18 +40,14 @@ class HttpRequest implements IHttpRequest {
     })
 
     this.axiosInstance.interceptors.request.use((config: any): any => {
-      // this.setLogHeader() //TODO: it send method option when set header
+      const path: string = getCurrentPath()
+      const menu: string = getCurrentMenu()
+      if (path) config.headers['x-current-path'] = encodeURIComponent(path)
+      if (menu) config.headers['x-current-menu'] = encodeURIComponent(menu)
       return onRequest(config)
     }, onRequestError)
 
     this.axiosInstance.interceptors.response.use(onResponse, onResponseError)
-  }
-
-  public setLogHeader (): void {
-    const path: string = getCurrentPath()
-    const menu: string = getCurrentMenu()
-    if (path) this.setHeader({ key: 'x-current-path', value: path })
-    if (menu) this.setHeader({ key: 'x-current-menu', value: menu })
   }
 
   public setHeader (data: ISetHeader): void {
