@@ -9,27 +9,33 @@
       </DisplayList>
       <template v-if="data.borrowers.length > 1">
         <Divider />
-        <button
-          class="flex items-center gap-1 text-primary text-sm font-medium hover:underline"
-          type="button"
-          @click="showModal = true">
-          <Icon icon="solar:add-circle-bold" />
-          ดูผู้กู้ทั้งหมด (+{{ data.borrowers.length - 1 }})
-        </button>
+        <div class="flex justify-center items-center">
+          <Button
+            class="flex items-center gap-1 text-primary text-sm font-medium hover:underline"
+            type="button"
+            variant="text"
+            @click="onOpenModal()">
+            <Icon
+              class="size-4"
+              icon="mdi:plus" />
+            ดูผู้กู้ทั้งหมด (+{{ data.borrowers.length - 1 }})
+          </Button>
+        </div>
       </template>
     </BaseContainer>
-
-    <BaseContainer>
-      <DisplayList :items="contractItems">
-        <template #[`value.status`]>
-          <ChipContractStatus :value="data.status" />
-        </template>
-      </DisplayList>
-      <Divider />
-      <DisplayList :items="loanItems" />
-    </BaseContainer>
+    <div class="grid grid-cols-1 gap-2.5">
+      <BaseContainer>
+        <DisplayList :items="contractItems">
+          <template #[`value.status`]>
+            <ChipContractStatus :value="data.status" />
+          </template>
+        </DisplayList>
+      </BaseContainer>
+      <BaseContainer>
+        <DisplayList :items="loanItems" />
+      </BaseContainer>
+    </div>
   </div>
-
   <AllBorrowersModal
     v-model:visible="showModal"
     :borrowers="data.borrowers" />
@@ -85,4 +91,8 @@ const loanItems = computed((): IDisplayList[] => [
   { key: 'contractLoanPurpose', label: 'วัตถุประสงค์การกู้', value: props.data.contractLoanPurpose?.name || '-' },
   { key: 'howDidFindUs', label: 'รู้จักมิตรแท้จากที่ไหน', value: props.data.howDidFindUs?.name || '-' }
 ])
+
+function onOpenModal (): void {
+  showModal.value = true
+}
 </script>

@@ -3,8 +3,11 @@
     v-model="visible"
     label="ผู้กู้ทั้งหมด">
     <BaseTable
+      v-model:pagination="pagination"
+      v-model:sort-by="sortBy"
+      v-model:sort-order="sortOrder"
       :columns="columns"
-      :items="customers"
+      :items="props.borrowers"
       disable-auto-left-padding
       hide-pagination>
       <template #[`item.idCard`]="{ value }">
@@ -25,16 +28,18 @@ import type { TTitleName } from '@/enums/TitleName.enum'
 import CitizenId from '@/components/display/CitizenId.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
+import { useLocalPagination } from '@/composables/usePagination'
 
 interface IProps {
   borrowers: IBorrowersItems[]
 }
 
-const { borrowers: customers } = defineProps<IProps>()
+const props = defineProps<IProps>()
 
 const visible = defineModel<boolean>('visible', { default: false })
 
 const { formatDate, formatAgeYear } = useDayjs()
+const { pagination, sortBy, sortOrder } = useLocalPagination(props.borrowers)
 
 const columns = ref<IColumn<IBorrowersItems>[]>([
   { field: 'idCard', header: 'เลขบัตรประชาชน', align: 'left', value: (e: IBorrowersItems): string => e.customer?.idCard || '-' },
