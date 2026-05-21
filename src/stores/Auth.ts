@@ -11,7 +11,8 @@ export interface IUser {
   firstName: string
   lastName: string
   email: string
-  image?: string
+  image?: string // imagePath
+  imageUrl?: string
   role?: TEmployeeRole
 }
 
@@ -43,6 +44,7 @@ export const useAuthStore = defineStore(
       lastName: '',
       email: '',
       image: undefined,
+      imageUrl: undefined,
       role: undefined,
       title: undefined
     })
@@ -77,8 +79,8 @@ export const useAuthStore = defineStore(
       }
     }
 
-    function setUserImage (image: string): void {
-      user.value.image = image
+    function setUserImage (imageUrl: string): void {
+      user.value.imageUrl = imageUrl
     }
 
     function branchLogin (branchValue: IBranch): void {

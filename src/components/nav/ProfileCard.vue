@@ -31,21 +31,32 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/Auth'
 import { formatter } from '@/utils/Formatter'
+import { handleLoading } from '@/utils/HandleLoading'
 import useLogout from '@/pages/auth/composables/useLogout'
+import useResolveUrl from '@/composables/useResolveUrl'
 import { Icon } from '@iconify/vue'
 import BaseActionMenu, { type IMenuItemAction } from '../base/BaseActionMenu.vue'
 
 const authStore = useAuthStore()
 const { logout } = useLogout()
+const { resolveUploadImageUrl } = useResolveUrl()
+
 
 const items = computed((): IMenuItemAction[] => {
   const base: IMenuItemAction[] = [
     { label: 'Logout', key: 'logout', type: 'TEXT', action: (): void => { logout() } }
   ]
   return base
+})
+
+onMounted((): void => {
+  handleLoading(async (): Promise<void> => {
+    const { url } = await resolveUploadImageUrl(authStore.user?.image)
+    authStore.setUserImage(url)
+  })
 })
 
 </script>
