@@ -16,7 +16,7 @@
         label="เพิ่มสาขาใหม่" />
     </BranchFilter>
     <BasePage>
-      <div class="mt-5">
+      <div>
         <BranchTable
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"

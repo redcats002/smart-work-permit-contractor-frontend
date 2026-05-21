@@ -13,7 +13,7 @@
         label="พิมพ์" />
     </BranchSummaryReportFilter>
     <BasePage>
-      <div class="mt-5">
+      <div>
         <BranchSummaryReportTable
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"

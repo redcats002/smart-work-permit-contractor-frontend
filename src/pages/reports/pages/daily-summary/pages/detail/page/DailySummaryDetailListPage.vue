@@ -19,7 +19,7 @@
       :data="items"
       class="mt-5" />
     <BasePage>
-      <div class="mt-5">
+      <div>
         <DailySummaryTable
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"

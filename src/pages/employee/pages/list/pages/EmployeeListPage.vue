@@ -16,7 +16,7 @@
         label="เพิ่มพนักงานใหม่" />
     </EmployeeFilter>
     <BasePage>
-      <div class="mt-5">
+      <div>
         <EmployeeTable
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"

@@ -12,7 +12,7 @@
         label="พิมพ์" />
     </DailyInstallmentFilter>
     <BasePage>
-      <div class="mt-5">
+      <div>
         <DailyInstallmentTable
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"

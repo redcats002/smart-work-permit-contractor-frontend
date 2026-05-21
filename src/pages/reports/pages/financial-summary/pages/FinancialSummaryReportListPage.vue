@@ -17,7 +17,7 @@
       </div>
     </FinancialSummaryReportFilter>
     <BasePage>
-      <div class="mt-5">
+      <div>
         <FinancialSummaryReportTable
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"

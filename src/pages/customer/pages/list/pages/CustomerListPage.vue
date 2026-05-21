@@ -13,7 +13,7 @@
         label="เพิ่มลูกค้าใหม่" />
     </CustomerFilter>
     <BasePage>
-      <div class="mt-5">
+      <div>
         <CustomerTable
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"

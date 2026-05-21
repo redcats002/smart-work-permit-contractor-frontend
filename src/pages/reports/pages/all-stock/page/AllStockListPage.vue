@@ -11,7 +11,7 @@
           icon="material-symbols:print-outline-rounded"
           label="พิมพ์" />
       </AllStockFilter>
-      <div class="mt-5">
+      <div>
         <AllStockTable
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"
