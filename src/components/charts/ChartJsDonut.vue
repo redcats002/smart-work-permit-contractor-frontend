@@ -7,8 +7,8 @@
 </template>
 
 <script setup lang="ts">
-import { Chart } from 'chart.js/auto'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { Chart } from 'chart.js/auto'
 
 export interface DonutItem {
   label: string
@@ -72,7 +72,11 @@ const buildChart = (): void => {
       cutout: props.cutout,
       plugins: {
         legend: { display: false },
-        tooltip: { enabled: true }
+        tooltip: {
+          enabled: true,
+          bodyFont: { family: 'LINE_Seed_Sans_TH' },
+          titleFont: { family: 'LINE_Seed_Sans_TH' }
+        }
       }
     }
   })
