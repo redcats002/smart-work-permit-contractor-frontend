@@ -14,6 +14,8 @@
       <DocumentAssetFilter
         v-model:filters="filters"
         v-model:search="search"
+        disabled-warehouse
+        hide-status
         @clear="onClearFilters()"
         @search="onSearch()" />
       <BasePage class="flex flex-col gap-5">

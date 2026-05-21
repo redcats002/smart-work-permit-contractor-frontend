@@ -24,6 +24,7 @@
             label="คลัง">
             <WarehouseSelection
               v-model="filters.warehouseId"
+              :disabled="disabledWarehouse"
               placeholder="ทั้งหมด"
               show-clear />
           </LabelField>
@@ -31,10 +32,12 @@
             label="จุดจัดเก็บ">
             <LocationSelection
               v-model="filters.locationId"
+              :warehouse-id="filters.warehouseId"
               placeholder="ทั้งหมด"
               show-clear />
           </LabelField>
           <LabelField
+            v-if="!hideStatus"
             label="สถานะ">
             <AssetStatusSelection
               v-model="filters.status"
@@ -71,6 +74,10 @@ import WarehouseSelection from '@/components/selection/modules/api/warehouse/War
 import AssetStatusSelection from '@/components/selection/modules/static/asset-status/AssetStatusSelection.vue'
 import AssetTypeSelection from '@/components/selection/modules/static/asset-type/AssetTypeSelection.vue'
 
+interface IProps {
+  hideStatus?: boolean
+  disabledWarehouse?: boolean
+}
 interface IEmits {
   search: []
   modalSearch: []
@@ -78,6 +85,10 @@ interface IEmits {
 }
 
 const emits = defineEmits<IEmits>()
+withDefaults(defineProps<IProps>(), {
+  hideStatus: false,
+  disabledWarehouse: false
+})
 
 const model = defineModel<string>('search', { default: '' })
 defineModel<IGetDocumentAssetsList>('filters', { required: true })
