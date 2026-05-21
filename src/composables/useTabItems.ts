@@ -1,5 +1,5 @@
 import { type Component, computed, type ComputedRef, defineAsyncComponent, markRaw, ref, type Ref } from 'vue'
-import type { RouteLocationRaw } from 'vue-router'
+import { type RouteLocationRaw, useRoute } from 'vue-router'
 import type { ITabItem } from '@/components/base/BaseTab.vue'
 import ComponentLoader from '@/components/loader/ComponentLoader.vue'
 
@@ -25,6 +25,7 @@ export function importComponent (loader: () => Promise<Component>): Component {
 }
 
 export default function useTabItems (components: ComputedRef<ITabItemComponent[]>): IUseTabItems {
+  const route = useRoute()
   const tabItems = computed((): any[] => {
     return components.value.map((component: ITabItemComponent): any => ({
       label: component?.label,
@@ -38,7 +39,7 @@ export default function useTabItems (components: ComputedRef<ITabItemComponent[]
   })
 
   return {
-    tab: ref<string>(tabItems?.value?.[0]?.value || ''),
+    tab: ref<string>(route?.query?.tab as string || tabItems?.value?.[0]?.value || ''),
     tabItems
   }
 }
