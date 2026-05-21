@@ -38,6 +38,7 @@
           required>
           <LocationSelection
             v-model="formData.locationId"
+            :disabled="mode==='UPDATE'"
             :invalid="invalid"
             name="locationId" />
         </LabelField>
@@ -58,6 +59,7 @@
             remove-button-class="text-(--p-gray-4)! border rounded-full border-(--p-gray-4)! p-1"
             remove-icon="solar:trash-bin-2-linear"
             hide-button
+            single
             touchable>
             <template #label>
               <span>
@@ -78,20 +80,24 @@
         class="grid gap-4">
         <div class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm">
           <span class="font-bold text-gray-700 whitespace-nowrap">ชื่อเอกสาร</span>
-          <span>: {{ props.item?.name || '-' }}</span>
+          <span>: {{ item?.name || '-' }}</span>
           <span class="font-bold text-gray-700 whitespace-nowrap">ชื่อไฟล์</span>
-          <span>: {{ props.item?.fileName || '-' }}</span>
+          <span>: {{ item?.fileName || '-' }}</span>
           <span class="font-bold text-gray-700 whitespace-nowrap">จุดจัดเก็บ</span>
-          <span>: {{ props.item?.location?.name || '-' }}</span>
+          <span>: {{ item?.location?.name || '-' }}</span>
         </div>
-        <div v-if="props.item?.image">
-          <a
-            :href="props.item.image"
-            class="text-blue-500 underline text-sm"
-            rel="noopener noreferrer"
-            target="_blank">
-            ดูไฟล์เอกสาร
-          </a>
+        <div v-if="item?.image">
+          <FileAttachment
+            v-if="item.image"
+            :files="[
+              { name: item?.fileName,
+                path: item?.image,
+                url: '',
+              }
+            ]" />
+          <span
+            v-else
+            class="text-sm text-red-400">ไม่สามารถโหลดไฟล์ได้</span>
         </div>
         <span
           v-else
@@ -115,6 +121,7 @@ import type { ICustomerDocumentById } from '@/models/response/customer/CustomerR
 import { findEnumByTitle, formatTitle } from '@/enums/modules/customer/CustomerDocumentType.enum'
 import CustomerProvider, { type ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import FormAction from '@/components/button/FormAction.vue'
+import FileAttachment from '@/components/display/FileAttachment.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import UploadInput from '@/components/input/UploadInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
@@ -165,7 +172,7 @@ const modalLabel = computed((): string => {
 async function usePayload (): Promise<ICreateCustomerDocumentPayload | IUpdateCustomerDocumentPayload> {
   const values = formData.value
   const uploaded = await getUploadImages(media.value)
-  const image = uploaded[uploaded.length - 1]?.url || ''
+  const image = uploaded[uploaded.length - 1]?.path || ''
   const nameLabel = formatTitle(values.name)
   const firstFileName = media.value[0]?.name || nameLabel
   return {

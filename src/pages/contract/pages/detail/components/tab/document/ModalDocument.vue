@@ -37,6 +37,7 @@
           required>
           <WarehouseSelection
             v-model="formData.locationId"
+            :disabled="mode==='edit'"
             :invalid="invalid" />
         </LabelField>
 
