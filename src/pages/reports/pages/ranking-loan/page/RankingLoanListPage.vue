@@ -1,11 +1,10 @@
 <template>
-  <section id="percent-installment-list-page">
+  <section id="ranking-loan-list-page">
     <PageTitle />
     <BackButton />
     <BasePage>
       <RankingLoanFilter
         v-model:filters="filters"
-        v-model:search="search"
         @clear="onClearFilters()"
         @search="onSearch()">
         <PrintButton
@@ -14,11 +13,8 @@
       </RankingLoanFilter>
       <div class="mt-5">
         <RankingLoanTable
-          v-model:pagination="pagination"
-          v-model:sort-by="sortBy"
-          v-model:sort-order="sortOrder"
           :items="items"
-          @update="fetch()" />
+          :type="filters.type" />
       </div>
     </BasePage>
   </section>
@@ -34,22 +30,11 @@ import RankingLoanFilter from '../components/RankingLoanFilter.vue'
 import RankingLoanTable from '../components/RankingLoanTable.vue'
 import useList from '../composables/useList'
 
-const {
-  filters,
-  items,
-  pagination,
-  sortBy,
-  sortOrder,
-  search,
-  fetch,
-  onClearFilters,
-  onSearch
-} = useList()
+const { filters, items, fetch, onClearFilters, onSearch } = useList()
 
 onMounted((): void => {
   fetch()
 })
-
 </script>
 
 <style scoped></style>

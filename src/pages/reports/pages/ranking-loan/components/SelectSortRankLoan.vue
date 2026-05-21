@@ -56,7 +56,7 @@ function syncInnerFromId (): void {
 }
 
 watch(innerModel, (val: TBaseModel | null): void => {
-  // model.value = val?.id ? val.id as TRankingLoanType : undefined
+  model.value = val?.id ? val.id as TRankingLoanType : 'RECEIPT_AMOUNT'
   selectedName.value = val?.name ?? null
 })
 
