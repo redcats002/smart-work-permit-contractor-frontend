@@ -11,6 +11,7 @@ import type {
   IGetExpenseList,
   IGetGuarantorContractList,
   IGetIncomeList,
+  IGetInstallmentList,
   IGetInstallmentSummary,
   IUpdateContractPayload,
   IUpdateDocument,
@@ -51,7 +52,7 @@ export interface IContractProvider {
   getContractFindOne(id: TBaseParamsId): Promise<TGetContractByIdResponse>
   saveAssetDetail(contractId: TBaseParamsId, assetId: TBaseParamsId, formData: FormData): Promise<TActionContract>
   requestAssessmentPrice(id: TBaseParamsId): Promise<TActionContract>
-  getInstallmentList(id: TBaseParamsId): Promise<TGetInstallmentListResponse>
+  getInstallmentList(id: TBaseParamsId, query?: IGetInstallmentList): Promise<TGetInstallmentListResponse>
   getInstallmentSummary(id: TBaseParamsId, query?: IGetInstallmentSummary): Promise<TGetInstallmentSummaryResponse>
   getExpenseList(id: TBaseParamsId, query?: IGetExpenseList): Promise<TGetContractExpenseListResponse>
   getExpenseById (id: TBaseParamsId): Promise<TGetContractExpenseByIdResponse>
@@ -123,8 +124,8 @@ class ContractProvider extends HttpRequest implements IContractProvider {
     return response
   }
 
-  public async getInstallmentList (id: TBaseParamsId): Promise<TGetInstallmentListResponse> {
-    const response = await this.get(`${this.urlPrefix}/${id}/installments`)
+  public async getInstallmentList (id: TBaseParamsId, query?: IGetInstallmentList): Promise<TGetInstallmentListResponse> {
+    const response = await this.get(`${this.urlPrefix}/${id}/installments`, query)
     return response
   }
 

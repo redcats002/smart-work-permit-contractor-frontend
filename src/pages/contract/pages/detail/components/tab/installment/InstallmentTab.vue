@@ -51,13 +51,22 @@ interface IProps {
 const props = defineProps<IProps>()
 
 const route = useRoute()
-const { pagination, sortBy, sortOrder, syncQuery } = usePagination()
+const { pagination, sortBy, sortOrder, syncQuery, extractPagination } = usePagination()
 
 const filters = ref<IGetInstallmentList>({})
 const items = ref<IContractInstallmentList[]>([])
 
 const contractId = computed((): number => route?.params?.id ? Number(route.params.id) : 0)
-
+const paginateQuery = computed((): IGetInstallmentList => {
+  const normalizedFilters = normalizeFilters(filters.value)
+  return {
+    page: pagination.value.page,
+    limit: pagination.value.limit,
+    sortBy: sortBy.value || undefined,
+    sortOrder: sortOrder.value,
+    ...normalizedFilters
+  }
+})
 const mainBorrowerId = computed((): string | number | undefined => {
   const main = props.data?.borrowers?.find((b: IBorrowersItems): boolean => b.isMain)
   return main?.customer?.id
@@ -69,8 +78,9 @@ const cards = computed((): ICardIndicator[] => [
 ])
 
 async function useFetch (): Promise<void> {
-  const listResponse = await ContractService.getInstallmentList(contractId.value)
+  const listResponse = await ContractService.getInstallmentList(contractId.value, paginateQuery.value)
   items.value = listResponse?.data || []
+  pagination.value = extractPagination(listResponse)
   // summary.value = summaryResponse?.data || summary.value
   syncQuery({ ...normalizeFilters(filters.value) })
 }

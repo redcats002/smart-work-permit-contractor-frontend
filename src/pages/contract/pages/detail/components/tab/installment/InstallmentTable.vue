@@ -5,7 +5,7 @@
     v-model:sort-by="sortBy"
     v-model:sort-order="sortOrder"
     :columns="columns"
-    :items="props.items"
+    :items="items"
     disable-auto-left-padding
     disable-virtual-scroll
     @update="emits('update')">
@@ -152,17 +152,14 @@
 import { ref } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
-import type {
-  IContractInstallmentItem,
-  IContractInstallmentList
-} from '@/models/response/contract/ContractRes.model'
+import type { IContractInstallmentItem, IContractInstallmentList } from '@/models/response/contract/ContractRes.model'
 import type { IColumn } from '@/models/Table.model'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
 import { Icon } from '@iconify/vue'
 import ChipInstallmentStatus from './ChipInstallmentStatus.vue'
-import InstallmentMenuAction from './InstallmentMenuAction.vue'
 import InstallmentFeeModal from './InstallmentFeeModal.vue'
+import InstallmentMenuAction from './InstallmentMenuAction.vue'
 
 const COL_SUB = 'grid-cols-[180px_1fr_130px_130px_130px]'
 
@@ -191,7 +188,7 @@ interface IEmits {
   updateLegalFee: [payload: IFeePayload]
 }
 
-const props = defineProps<IProps>()
+defineProps<IProps>()
 const emits = defineEmits<IEmits>()
 
 const pagination = defineModel<IPagination>('pagination', { required: true })
