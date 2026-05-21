@@ -9,7 +9,7 @@ export interface IDashboardProvider {
 }
 
 class DashboardProvider extends HttpRequest implements IDashboardProvider {
-  private urlPrefix: string = '/api/v1/dashboard'
+  private urlPrefix: string = '/api/v1/management/dashboard'
 
   async getCard (query: IDashboardCardQuery): Promise<TDashboardCardResponse> {
     return this.get(`${this.urlPrefix}/card`, query)
