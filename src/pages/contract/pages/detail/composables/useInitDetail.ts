@@ -34,7 +34,7 @@ export function useInitDetail (data?: Partial<IContractById>): Ref<IContractById
     },
     borrowers: data?.borrowers || [],
     sellMan: {
-      titleName: data?.sellMan?.titleName || '',
+      title: data?.sellMan?.title || '',
       firstName: data?.sellMan?.firstName || '',
       lastName: data?.sellMan?.lastName || '',
       phoneNumber: data?.sellMan?.phoneNumber || '',

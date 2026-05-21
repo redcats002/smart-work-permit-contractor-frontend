@@ -24,7 +24,7 @@
         <LabelField
           v-slot="{ invalid }"
           :form="$form"
-          label="หมวดหมู่ค่าใช้จ่าย"
+          label="หมวดหมู่รายได้"
           name="incomeCategoryId"
           tag="div"
           hide-error
@@ -39,7 +39,7 @@
         <LabelField
           v-slot="{ invalid }"
           :form="$form"
-          label="ประเภทค่าใช้จ่าย"
+          label="ประเภทรายได้"
           name="incomeTypeId"
           tag="div"
           hide-error

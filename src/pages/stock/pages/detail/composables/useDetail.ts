@@ -69,7 +69,7 @@ export default function useDetail (): IUseDetail {
         id: data?.asset?.id || 0
       } as IAssetList),
       createdByEmployee: data?.createdByEmployee || {
-        titleName: data?.createdByEmployee?.titleName || '',
+        title: data?.createdByEmployee?.title || '',
         firstName: data?.createdByEmployee?.firstName || '',
         lastName: data?.createdByEmployee?.lastName || '',
         phoneNumber: data?.createdByEmployee?.phoneNumber || '',
@@ -88,7 +88,7 @@ export default function useDetail (): IUseDetail {
         id: data?.originWarehouse?.id || ''
       },
       receivedByEmployee: data?.receivedByEmployee || {
-        titleName: data?.receivedByEmployee?.titleName || '',
+        title: data?.receivedByEmployee?.title || '',
         firstName: data?.receivedByEmployee?.firstName || '',
         lastName: data?.receivedByEmployee?.lastName || '',
         phoneNumber: data?.receivedByEmployee?.phoneNumber || '',

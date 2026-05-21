@@ -9,7 +9,7 @@ import type { IBranchList } from '../branch/BranchRes.model'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 
 export interface IEmployeeList extends IEntity {
-  titleName: TTitleName
+  title: TTitleName
   firstName: string
   lastName: string
   phoneNumber: string
