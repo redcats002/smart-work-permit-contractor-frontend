@@ -4,16 +4,16 @@
       <Title title="รายการเอกสาร" />
       <CreateButton
         label="บันทึกเอกสาร"
-        @click="openModal('create')" />
+        @click="openModal('CREATE')" />
     </div>
     <DocumentTable
       v-model:pagination="pagination"
       v-model:sort-by="sortBy"
       v-model:sort-order="sortOrder"
       :items="items"
-      @delete="openModal('delete', $event)"
-      @edit="openModal('edit', $event)"
-      @read="openModal('read', $event)"
+      @delete="openModal('DELETE', $event)"
+      @edit="openModal('UPDATE', $event)"
+      @read="openModal('READ', $event)"
       @update="fetch()" />
     <ModalDocument
       v-model:visible="modalVisible"
@@ -35,9 +35,8 @@ import CreateButton from '@/components/button/CreateButton.vue'
 import usePagination from '@/composables/usePagination'
 import Title from '../Title.vue'
 import DocumentTable from './DocumentTable.vue'
+import type { TActionMode } from '@/models/Global.model'
 import ModalDocument from './ModalDocument.vue'
-
-type TDocumentModalMode = 'create' | 'read' | 'edit' | 'delete'
 
 const ContractDocumentService: IContractDocumentProvider = new ContractDocumentProvider()
 
@@ -79,10 +78,10 @@ function fetch (): void {
 }
 
 const modalVisible = ref<boolean>(false)
-const modalMode = ref<TDocumentModalMode>('create')
+const modalMode = ref<TActionMode>('CREATE')
 const selectedItem = ref<IContractDocumentList | undefined>(undefined)
 
-function openModal (mode: TDocumentModalMode, item?: IContractDocumentList): void {
+function openModal (mode: TActionMode, item?: IContractDocumentList): void {
   modalMode.value = mode
   selectedItem.value = item
   modalVisible.value = true

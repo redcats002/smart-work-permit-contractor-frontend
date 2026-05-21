@@ -4,16 +4,16 @@
       <Title title="รายการค่าใช้จ่าย" />
       <CreateButton
         label="บันทึกค่าใช้จ่าย"
-        @click="openModal('create')" />
+        @click="openModal('CREATE')" />
     </div>
     <ExpenseTable
       v-model:pagination="pagination"
       v-model:sort-by="sortBy"
       v-model:sort-order="sortOrder"
       :items="items"
-      @delete="openModal('delete', $event)"
-      @edit="openModal('edit', $event)"
-      @read="openModal('read', $event)"
+      @delete="openModal('DELETE', $event)"
+      @edit="openModal('UPDATE', $event)"
+      @read="openModal('READ', $event)"
       @update="fetch()" />
     <ModalExpense
       v-model:visible="modalVisible"
@@ -35,9 +35,8 @@ import CreateButton from '@/components/button/CreateButton.vue'
 import usePagination from '@/composables/usePagination'
 import Title from '../Title.vue'
 import ExpenseTable from './ExpenseTable.vue'
+import type { TActionMode } from '@/models/Global.model'
 import ModalExpense from './ModalExpense.vue'
-
-type TExpenseModalMode = 'create' | 'read' | 'edit' | 'delete'
 
 const ContractExpenseService: IContractExpenseProvider = new ContractExpenseProvider()
 
@@ -79,10 +78,10 @@ function fetch (): void {
 }
 
 const modalVisible = ref<boolean>(false)
-const modalMode = ref<TExpenseModalMode>('create')
+const modalMode = ref<TActionMode>('CREATE')
 const selectedItem = ref<IContractExpenseList | undefined>(undefined)
 
-function openModal (mode: TExpenseModalMode, item?: IContractExpenseList): void {
+function openModal (mode: TActionMode, item?: IContractExpenseList): void {
   modalMode.value = mode
   selectedItem.value = item
   modalVisible.value = true

@@ -4,6 +4,13 @@
     :label="modalLabel"
     :style="{ width: 'min(95vw, 500px)' }"
     @open="onOpen()">
+    <template
+      v-if="currentMode==='READ'"
+      #menu>
+      <div class="flex justify-end">
+        <BaseActionMenu :items="readMenuItems" />
+      </div>
+    </template>
     <template #default="{ close }">
       <!-- FORM MODE: create / edit -->
       <Form
@@ -121,11 +128,8 @@
 
       <!-- READ MODE -->
       <div
-        v-else-if="currentMode === 'read'"
+        v-else-if="currentMode === 'READ'"
         class="grid gap-4">
-        <div class="flex justify-end">
-          <BaseActionMenu :items="readMenuItems" />
-        </div>
         <div class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm">
           <span class="font-bold text-gray-700 whitespace-nowrap">วันที่</span>
           <span>: {{ dayjs.formatDate(props.item?.date || '') }}</span>
@@ -145,7 +149,7 @@
 
       <!-- DELETE MODE -->
       <div
-        v-else-if="currentMode === 'delete'"
+        v-else-if="currentMode === 'DELETE'"
         class="grid gap-6">
         <div class="flex flex-col items-center justify-center text-sm text-gray-700 gap-1 py-4">
           <p>คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้</p>
@@ -170,6 +174,7 @@ import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
+import type { TActionMode } from '@/models/Global.model'
 import type { ICreateExpense } from '@/models/request/contract-expense/ContractExpenseReq.model'
 import type { IContractExpenseList } from '@/models/response/contract-expense/ContractExpenseRes.model'
 import { EVatType, formatTitle as formatVatTitle, VatTypeItems } from '@/enums/modules/Vat.enum'
@@ -189,7 +194,7 @@ import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { useInitDetail } from './composables/useInitExpense'
 import { type ExpenseFormValues, ExpenseSchema, useFormInitialValues } from './schema/expense.schema'
 
-export type TExpenseModalMode = 'create' | 'read' | 'edit' | 'delete'
+export type TExpenseModalMode = TActionMode
 
 interface IProps {
   mode: TExpenseModalMode
@@ -219,25 +224,25 @@ const resolver = zodResolver(ExpenseSchema)
 const vatTypeItems = VatTypeItems
 const { getUploadImages } = useUpload()
 
-const isFormMode = computed((): boolean => currentMode.value === 'create' || currentMode.value === 'edit')
+const isFormMode = computed((): boolean => currentMode.value === 'CREATE' || currentMode.value === 'UPDATE')
 
 const modalLabel = computed((): string => {
   const labels: Record<TExpenseModalMode, string> = {
-    create: 'บันทึกค่าใช้จ่าย',
-    edit: 'แก้ไขค่าใช้จ่าย',
-    read: 'รายละเอียด',
-    delete: 'ยืนยันการลบ'
+    CREATE: 'บันทึกค่าใช้จ่าย',
+    UPDATE: 'แก้ไขค่าใช้จ่าย',
+    READ: 'รายละเอียด',
+    DELETE: 'ยืนยันการลบ'
   }
   return labels[currentMode.value]
 })
 
 function switchToEdit (): void {
-  currentMode.value = 'edit'
+  currentMode.value = 'UPDATE'
   populateForm()
 }
 
 function switchToDelete (): void {
-  currentMode.value = 'delete'
+  currentMode.value = 'DELETE'
 }
 
 const readMenuItems = computed((): IMenuItemAction[] => [
@@ -264,7 +269,7 @@ async function populateForm (): Promise<void> {
 
 async function onOpen (): Promise<void> {
   currentMode.value = props.mode
-  if (props.mode === 'create') {
+  if (props.mode === 'CREATE') {
     formData.value = useFormInitialValues()
     formData.value.file = []
     formKey.value++
@@ -274,7 +279,7 @@ async function onOpen (): Promise<void> {
   if (props.item?.id) {
     const { data } = await ContractExpenseService.getExpenseById(Number(props.item.id))
     formRead.value = data
-    if (props.mode === 'edit') {
+    if (props.mode === 'UPDATE') {
       populateForm()
     }
   }
@@ -306,10 +311,10 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
   const itemId = props.item?.id
   handleLoading(async (): Promise<void> => {
     await uploadAndSetFile()
-    if (currentMode.value === 'create') {
+    if (currentMode.value === 'CREATE') {
       await ContractExpenseService.createExpense(props.contractId, values)
       toast.success('บันทึกค่าใช้จ่ายสำเร็จ')
-    } else if (currentMode.value === 'edit' && itemId) {
+    } else if (currentMode.value === 'UPDATE' && itemId) {
       await ContractExpenseService.updateExpense(itemId, values)
       toast.success('แก้ไขค่าใช้จ่ายสำเร็จ')
     }

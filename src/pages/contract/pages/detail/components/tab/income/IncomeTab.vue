@@ -4,16 +4,16 @@
       <Title title="รายการรายได้" />
       <CreateButton
         label="บันทึกรายได้"
-        @click="openModal('create')" />
+        @click="openModal('CREATE')" />
     </div>
     <IncomeTable
       v-model:pagination="pagination"
       v-model:sort-by="sortBy"
       v-model:sort-order="sortOrder"
       :items="items"
-      @delete="openModal('delete', $event)"
-      @edit="openModal('edit', $event)"
-      @read="openModal('read', $event)"
+      @delete="openModal('DELETE', $event)"
+      @edit="openModal('UPDATE', $event)"
+      @read="openModal('READ', $event)"
       @update="fetch()" />
     <ModalIncome
       v-model:visible="modalVisible"
@@ -35,9 +35,8 @@ import CreateButton from '@/components/button/CreateButton.vue'
 import usePagination from '@/composables/usePagination'
 import Title from '../Title.vue'
 import IncomeTable from './IncomeTable.vue'
+import type { TActionMode } from '@/models/Global.model'
 import ModalIncome from './ModalIncome.vue'
-
-type TIncomeModalMode = 'create' | 'read' | 'edit' | 'delete'
 
 const ContractIncomeService: IContractIncomeProvider = new ContractIncomeProvider()
 
@@ -79,10 +78,10 @@ function fetch (): void {
 }
 
 const modalVisible = ref<boolean>(false)
-const modalMode = ref<TIncomeModalMode>('create')
+const modalMode = ref<TActionMode>('CREATE')
 const selectedItem = ref<IContractIncomeList | undefined>(undefined)
 
-function openModal (mode: TIncomeModalMode, item?: IContractIncomeList): void {
+function openModal (mode: TActionMode, item?: IContractIncomeList): void {
   modalMode.value = mode
   selectedItem.value = item
   modalVisible.value = true

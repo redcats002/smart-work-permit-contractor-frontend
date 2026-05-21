@@ -5,7 +5,7 @@
     :style="{ width: 'min(95vw, 500px)' }"
     @open="onOpen()">
     <template
-      v-if="currentMode==='read'"
+      v-if="currentMode==='READ'"
       #menu>
       <div class="flex justify-end">
         <BaseActionMenu :items="readMenuItems" />
@@ -124,7 +124,7 @@
 
       <!-- READ MODE -->
       <div
-        v-else-if="currentMode === 'read'"
+        v-else-if="currentMode === 'READ'"
         class="grid gap-4">
         <div class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm">
           <span class="font-bold text-gray-700 whitespace-nowrap">วันที่</span>
@@ -145,7 +145,7 @@
 
       <!-- DELETE MODE -->
       <div
-        v-else-if="currentMode === 'delete'"
+        v-else-if="currentMode === 'DELETE'"
         class="grid gap-6">
         <div class="flex flex-col items-center justify-center text-sm text-gray-700 gap-1 py-4">
           <p>คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้</p>
@@ -170,6 +170,7 @@ import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
+import type { TActionMode } from '@/models/Global.model'
 import type { ICreateIncome } from '@/models/request/contract-income/ContractIncomeReq.model'
 import type { IContractIncomeList } from '@/models/response/contract-income/ContractIncomeRes.model'
 import { EVatType, formatTitle as formatVatTitle, VatTypeItems } from '@/enums/modules/Vat.enum'
@@ -189,7 +190,7 @@ import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { useInitDetail } from './composables/useInitIncome'
 import { type IncomeFormValues, IncomeSchema, useFormInitialValues } from './schema/income.schema'
 
-export type TIncomeModalMode = 'create' | 'read' | 'edit' | 'delete'
+export type TIncomeModalMode = TActionMode
 
 interface IProps {
   mode: TIncomeModalMode
@@ -218,13 +219,13 @@ const resolver = zodResolver(IncomeSchema)
 const formData = ref<IncomeFormValues>(useFormInitialValues())
 const vatTypeItems = VatTypeItems
 
-const isFormMode = computed((): boolean => currentMode.value === 'create' || currentMode.value === 'edit')
+const isFormMode = computed((): boolean => currentMode.value === 'CREATE' || currentMode.value === 'UPDATE')
 const modalLabel = computed((): string => {
   const labels: Record<TIncomeModalMode, string> = {
-    create: 'บันทึกรายรับ',
-    edit: 'แก้ไขรายรับ',
-    read: 'รายละเอียด',
-    delete: 'ยืนยันการลบ'
+    CREATE: 'บันทึกรายรับ',
+    UPDATE: 'แก้ไขรายรับ',
+    READ: 'รายละเอียด',
+    DELETE: 'ยืนยันการลบ'
   }
   return labels[currentMode.value]
 })
@@ -235,12 +236,12 @@ const readMenuItems = computed((): IMenuItemAction[] => [
 
 
 function switchToEdit (): void {
-  currentMode.value = 'edit'
+  currentMode.value = 'UPDATE'
   populateForm()
 }
 
 function switchToDelete (): void {
-  currentMode.value = 'delete'
+  currentMode.value = 'DELETE'
 }
 
 async function populateForm (): Promise<void> {
@@ -262,7 +263,7 @@ async function populateForm (): Promise<void> {
 
 async function onOpen (): Promise<void> {
   currentMode.value = props.mode
-  if (props.mode === 'create') {
+  if (props.mode === 'CREATE') {
     formData.value = useFormInitialValues()
     formData.value.file = []
     formKey.value++
@@ -273,7 +274,7 @@ async function onOpen (): Promise<void> {
     const { data } = await ContractIncomeService.getIncomeById(Number(props.item.id))
     formRead.value = data
 
-    if (props.mode === 'edit') {
+    if (props.mode === 'UPDATE') {
       populateForm()
     }
   }
@@ -307,10 +308,10 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
   const itemId = props.item?.id
   handleLoading(async (): Promise<void> => {
     await uploadAndSetFile()
-    if (currentMode.value === 'create') {
+    if (currentMode.value === 'CREATE') {
       await ContractIncomeService.createIncome(props.contractId, values)
       toast.success('บันทึกรายได้สำเร็จ')
-    } else if (currentMode.value === 'edit' && itemId) {
+    } else if (currentMode.value === 'UPDATE' && itemId) {
       await ContractIncomeService.updateIncome(itemId, values)
       toast.success('แก้ไขรายได้สำเร็จ')
     }
