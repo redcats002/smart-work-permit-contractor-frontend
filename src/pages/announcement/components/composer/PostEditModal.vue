@@ -2,7 +2,7 @@
   <BaseModal
     v-model="visible"
     :style="{ width: 'min(95vw, 700px)' }"
-    label="แก้ไขประกาศ"
+    label="แก้ไขข่าวสาร"
     @open="onOpen()">
     <template #default="{ close }">
       <Form
@@ -37,14 +37,14 @@ import type { IAttachments } from '@/models/response/announcement/AnnouncementRe
 import type { IAnnouncementProvider } from '@/resources/provider/announcement/Announcement.provider'
 import AnnouncementProvider from '@/resources/provider/announcement/Announcement.provider'
 import type { IMedia } from '@/resources/provider/Upload.provider'
-import FormAction from '@/components/button/FormAction.vue'
-import BaseModal from '@/components/modal/BaseModal.vue'
 import BaseEditor from '@/components/base/BaseEditor.vue'
+import FormAction from '@/components/button/FormAction.vue'
 import FileInput from '@/components/input/FileInput.vue'
+import BaseModal from '@/components/modal/BaseModal.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import { CreateAnnouncementSchema } from '../../schemas/announcement.schema'
 import { usePayload } from '../../composables/usePayload'
+import { CreateAnnouncementSchema } from '../../schemas/announcement.schema'
 
 interface IFormData {
   content: string

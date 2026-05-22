@@ -1,6 +1,6 @@
 import type { IEntity } from '@/models/Global.model'
+import type { TEmployeeRole } from '@/enums/modules/employee/EmployeeRole.enum'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
-
 
 export interface IAttachments extends IEntity {
   name: string
@@ -10,7 +10,7 @@ export interface IAttachments extends IEntity {
 export interface IAuthor extends IEntity {
   name: string
   image: string | null
-  role: string
+  role: TEmployeeRole
 }
 export interface IAnnouncementList extends IEntity {
   content: string

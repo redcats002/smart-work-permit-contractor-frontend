@@ -27,6 +27,7 @@
             v-model="form.attachments"
             class="mt-4" />
           <Button
+            :disabled="loadingStore.isLoading || !form.content"
             class="mt-4 bg-primary px-10 py-2 text-base"
             label="โพสต์"
             type="submit" />
@@ -38,6 +39,7 @@
 
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/Auth'
+import { useLoadingStore } from '@/stores/Loading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BaseEditor from '@/components/base/BaseEditor.vue'
@@ -54,6 +56,7 @@ interface IEmit {
 const emits = defineEmits<IEmit>()
 
 const authStore = useAuthStore()
+const loadingStore = useLoadingStore()
 
 const form = defineModel<AnnouncementCreateAnnouncement>({ required: true })
 const resolver = zodResolver(AnnouncementSchema)
