@@ -66,7 +66,7 @@ const { formatDate, formatAge } = useDayjs()
 
 const showModal = ref<boolean>(false)
 
-const primaryCustomer = computed((): IContractCustomer | undefined => props.data.borrowers[0]?.customer)
+const primaryCustomer = computed((): IContractCustomer | undefined => props.data.borrowers?.[0]?.customer)
 
 const customerItems = computed((): IDisplayList[] => {
   const c = primaryCustomer.value

@@ -183,6 +183,7 @@ function useInit (): void {
     annualInterestRate: props.contract.annualInterestRate,
     lateFee: props.contract.lateFee
   }
+  recalculate()
   mount()
 }
 

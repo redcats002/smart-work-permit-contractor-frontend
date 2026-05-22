@@ -1,15 +1,19 @@
-import { computed, type ComputedRef, ref, type Ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, type ComputedRef, ref, type Ref, useTemplateRef } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { toast } from '@/plugins/toast'
+import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
+import type { IUpdateContractPayload } from '@/models/request/contract/ContractReq.model'
 import type { IContractById } from '@/models/response/contract/ContractRes.model'
 import { isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
 import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
 import type { TAssetCategory } from '../../create/schema/pre-contract.schema'
 import { useInitDetail as useInitContractDetail } from '../../detail/composables/useInitDetail'
+import type InstallmentSection from '../../pre-contract-detail/components/InstallmentSection.vue'
 import type { InstallmentFormValues, PreAssetWarehouseFormValues } from '../../pre-contract-detail/schema/make-contract.schema'
 
-export interface IUseInitDetail {
+export interface IUseInit {
   contractId: ComputedRef<number>
   contract: Ref<IContractById>
   assets: Ref<IPreAssetList[]>
@@ -21,10 +25,13 @@ export interface IUseInitDetail {
   useFetch(): Promise<void>
   fetch(): void
   onActiveAsset(index?: number): void
+  onSave(): void
+  onCancel(): void
 }
 
-export function useInitDetail (): IUseInitDetail {
+export function useInit (): IUseInit {
   const route = useRoute()
+  const router = useRouter()
   const ContractService: IContractProvider = new ContractProvider()
 
   const contractId = computed((): number => Number(route.params.id as string ?? ''))
@@ -75,6 +82,29 @@ export function useInitDetail (): IUseInitDetail {
     activeIndex.value = index
   }
 
+  const installmentSectionRef = useTemplateRef<InstanceType<typeof InstallmentSection>>('installmentSectionRef')
+
+  async function useSave (): Promise<void> {
+    const valid = await installmentSectionRef.value?.submit()
+    if (!valid) return
+    const payload: IUpdateContractPayload = {
+      installmentCount: formatter.numberParseFloat(formInstallment.value.installmentCount),
+      interestType: formInstallment.value.interestType!,
+      annualInterestRate: formatter.numberParseFloat(formInstallment.value.annualInterestRate)
+    }
+    await ContractService.updateContract(contractId.value, payload)
+    toast.success('บันทึกสัญญาเรียบร้อยแล้ว')
+    router.push({ name: 'ContractDetailPage', params: { id: contractId.value } })
+  }
+
+  function onSave (): void {
+    handleLoading(useSave)
+  }
+
+  function onCancel (): void {
+    router.push({ name: 'ContractDetailPage', params: { id: contractId.value } })
+  }
+
   return {
     contractId,
     contract,
@@ -86,6 +116,8 @@ export function useInitDetail (): IUseInitDetail {
     assetCategory,
     useFetch,
     fetch,
-    onActiveAsset
+    onActiveAsset,
+    onCancel,
+    onSave
   }
 }

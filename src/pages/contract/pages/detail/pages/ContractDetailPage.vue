@@ -80,8 +80,7 @@ function onCancelled (): void {
 }
 
 function onPrint (): void {
-  // TODO: implement print feature (รอ ui)
-  toast.warn('ฟีเจอร์นี้อยู่ระหว่างการพัฒนา')
+  router.push({ name: 'ContractPrintPage', params: { id: contractId.value } })
 }
 
 onMounted((): void => {
