@@ -45,7 +45,8 @@ export default function useList (warehouseId: ComputedRef<number>): IUseList {
 
   function normalizeFilters (value: IGetDocumentAssetsList): Partial<IGetDocumentAssetsList> {
     return {
-      ...value
+      ...value,
+      assetType: value?.type
     }
   }
 
@@ -64,6 +65,7 @@ export default function useList (warehouseId: ComputedRef<number>): IUseList {
       locationId: undefined,
       status: undefined,
       type: undefined,
+      assetType: undefined,
       warehouseId: warehouseId.value
     }
   }

@@ -7,6 +7,7 @@ import type { IBasePaginationRequest } from '../Request.model'
 
 export interface IGetDocumentAssetsList extends IBasePaginationRequest {
   type?: TAssetType
+  assetType?: TAssetType // TODO: remove after FE refactor
   warehouseId?: number
   locationId?: number
   status?: TAssetStatus
