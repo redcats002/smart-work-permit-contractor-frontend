@@ -1,6 +1,9 @@
 <template>
   <BaseSelection
-    v-bind="attrs"
+    v-bind="{
+      ...props,
+      ...attrs
+    }"
     v-model="modelValue"
     v-model:selected-name="selectedNameValue"
     :fetch-suggestions="fetchSuggestions"
@@ -19,6 +22,18 @@ import CustomerProvider from '@/resources/provider/customer/Customer.provider'
 import BaseSelection from '@/components/selection/modules/BaseSelection.vue'
 import usePagination from '@/composables/usePagination'
 
+interface IProps {
+  invalid?: boolean
+  disabledIds?: number[]
+  showClear?: boolean
+}
+
+const props = withDefaults(defineProps<IProps>(), {
+  disabledIds: (): number[] => [],
+  showClear: false,
+  invalid: false
+})
+
 const attrs = useAttrs()
 const CustomerService: ICustomerProvider = new CustomerProvider()
 
@@ -35,7 +50,8 @@ const fetchSuggestions = async (): Promise<TBaseModel[]> => await handleLoading(
 
   return (response.data ?? []).map((item: ICustomerList): TBaseModel => ({
     id: item.id!,
-    name: formatter.fullName(item)
+    name: formatter.fullName(item),
+    disabled: props.disabledIds?.includes(Number(item?.id)) ?? false
   }))
 }) ?? []
 
