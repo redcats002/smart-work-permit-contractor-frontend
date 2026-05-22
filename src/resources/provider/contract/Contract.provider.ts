@@ -48,7 +48,7 @@ class ContractProvider extends HttpRequest implements IContractProvider {
   }
 
   public async cancelledContract (id: number): Promise<TActionContract> {
-    const response = await this.patch(`${this.urlPrefix}/${id}`)
+    const response = await this.patch(`${this.urlPrefix}/cancelled/${id}`)
     return response
   }
 

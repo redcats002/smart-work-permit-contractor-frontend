@@ -5,6 +5,7 @@
       <BackButton />
       <Spacer />
       <ContractDetailMenuAction
+        :status="contract.status"
         @delete="onCancelled()"
         @edit="onEdit()"
         @print="onPrint()" />
@@ -53,9 +54,13 @@ async function useFetch (): Promise<void> {
 
 async function useCancelled (): Promise<void> {
   if (!contractId.value) throw new Error('Contract ID is required for deletion')
+  if (contract.value.status === 'CANCELLED') {
+    toast.error('สัญญานี้ถูกยกเลิกไปแล้ว')
+    return
+  }
   await ContractService.cancelledContract(contractId.value)
-  toast.success('ดำเนินการสำเร็จ')
-  router.push({ name: 'ContractListPage' })
+  toast.success('ยกเลิกสัญญาสำเร็จ')
+  await useFetch()
 }
 
 function fetch (): void {
@@ -63,6 +68,10 @@ function fetch (): void {
 }
 
 function onEdit (): void {
+  if (contract.value.status === 'CANCELLED') {
+    toast.error('สัญญานี้ถูกยกเลิกไปแล้ว')
+    return
+  }
   router.push({ name: 'PreContractEditPage', params: { id: contractId.value } })
 }
 
