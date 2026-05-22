@@ -5,7 +5,7 @@
   -->
   <aside
     :class="isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
-    class="fixed md:relative inset-y-0 left-0 z-50 w-64 h-screen bg-white border-r border-r-(--p-gray-5) flex flex-col p-4 transition-transform duration-300 ease-in-out">
+    class="fixed md:relative inset-y-0 left-0 z-10 w-64 h-screen bg-white border-r border-r-(--p-gray-5) flex flex-col p-4 transition-transform duration-300 ease-in-out">
     <!-- Logo Section -->
     <div class="border-b border-b-(--p-red)">
       <!-- Mobile close button -->

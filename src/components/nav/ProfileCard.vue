@@ -13,7 +13,7 @@
       </Avatar>
       <div class="hidden md:block">
         <p class="text-xs font-medium line-clamp-1">
-          {{ formatter.fullName(authStore.user) }}
+          {{ authStore.user?.name || formatter.fullName(authStore.user) }}
         </p>
         <p class="text-2xs text-gray-500 line-clamp-1">
           {{ formatter.stringFormatToCapitalize(authStore.user?.role || '') }}

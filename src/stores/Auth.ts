@@ -1,4 +1,5 @@
 import { computed, type ComputedRef, ref, type Ref } from 'vue'
+import { formatter } from '@/utils/Formatter'
 import { accessTokenStorage } from '@/utils/Storage'
 import type { IAuthBranchList } from '@/models/response/auth/private/AuthRes.private.model'
 import type { TEmployeeRole } from '@/enums/modules/employee/EmployeeRole.enum'
@@ -7,10 +8,11 @@ import { defineStore } from 'pinia'
 
 export interface IUser {
   id: number | null
-  title?: TTitleName
+  name: string
   firstName: string
   lastName: string
   email: string
+  title?: TTitleName
   image?: string // imagePath
   imageUrl?: string
   role?: TEmployeeRole
@@ -40,6 +42,7 @@ export const useAuthStore = defineStore(
   'Auth', (): IAuthStore => {
     const user = ref<IUser>({
       id: null,
+      name: '',
       firstName: '',
       lastName: '',
       email: '',
@@ -72,7 +75,10 @@ export const useAuthStore = defineStore(
     })
 
     function userLogin (userValue: IUser, token: string): void {
-      user.value = userValue
+      user.value = {
+        ...userValue,
+        name: userValue?.name || formatter.fullName(userValue)
+      }
       userToken.value = {
         accessToken: token,
         expireIn: null
@@ -105,9 +111,11 @@ export const useAuthStore = defineStore(
     function clearUser (): void {
       user.value = {
         id: null,
+        name: '',
         firstName: '',
         lastName: '',
         email: '',
+        title: undefined,
         role: undefined
       }
       userToken.value = {

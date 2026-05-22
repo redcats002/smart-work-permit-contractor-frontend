@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-1 gap-2.5">
+  <div class="grid grid-cols-1 gap-2.5 max-h-100 overflow-auto">
     <template v-if="branches.length">
       <div
         v-for="(branch, i) in branches"
@@ -23,7 +23,7 @@
               width="32" />
           </Button>
         </div>
-      <!-- <template v-if="branch?.isNew">
+        <!-- <template v-if="branch?.isNew">
         <Divider class="my-0!" />
         <div class="flex gap-2.5 w-1/2">
           <ConfirmButton
