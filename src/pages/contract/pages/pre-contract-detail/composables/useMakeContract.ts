@@ -53,7 +53,7 @@ export function useMakeContract (_useFetch: () => Promise<void>): IUseMakeContra
     await PreContractService.makeAContract(contractId.value, payload)
     toast.success('ทำสัญญาเรียบร้อยแล้ว')
     // await _useFetch()
-    router.push({ name: 'ContractListPage' })
+    router.push({ name: 'ContractListPage', query: { tab: 'contract' } })
   }
 
   function mount (): void {
