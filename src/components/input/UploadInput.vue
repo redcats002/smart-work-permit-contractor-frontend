@@ -130,6 +130,7 @@ import { computed, ref, useTemplateRef } from 'vue'
 import type { IMedia } from '@/resources/provider/Upload.provider'
 import { Icon } from '@iconify/vue'
 import BaseImage from '../base/BaseImage.vue'
+import { toast } from '@/plugins/toast'
 
 defineOptions({
   inheritAttrs: false
@@ -194,16 +195,26 @@ function onFileChange (event: Event): void {
   inputKey.value++
 }
 
+function isFileAccepted (file: File): boolean {
+  if (!props.accept) return true
+  return props.accept.split(',').map((s: string): string => s.trim().toLowerCase()).some((type: string): boolean => {
+    if (type.startsWith('.')) return file.name.toLowerCase().endsWith(type)
+    if (type.endsWith('/*')) return file.type.startsWith(type.slice(0, -1))
+    return file.type === type
+  })
+}
+
 function appendFiles (files: File[]): void {
-  if (!files.length) return
+  const accepted = files.filter(isFileAccepted)
+  if (!accepted.length) return
   if (props.single) {
     media.value.splice(0, media.value.length)
-    const file = files[0]
+    const file = accepted[0]
     if (file) {
       media.value.push({ file, name: file.name, url: URL.createObjectURL(file), path: '', isNew: true })
     }
   } else {
-    files.forEach((file: File): void => {
+    accepted.forEach((file: File): void => {
       media.value.push({ file, name: file.name, url: URL.createObjectURL(file), path: '', isNew: true })
     })
   }
@@ -273,7 +284,12 @@ function onDragLeave (event: DragEvent): void {
 
 function onDrop (event: DragEvent): void {
   isDragging.value = false
-  appendFiles(Array.from(event.dataTransfer?.files ?? []))
+  const files = Array.from(event.dataTransfer?.files ?? [])
+  const rejected = files.filter((f: File): boolean => !isFileAccepted(f))
+  if (rejected.length) {
+    toast.error(`ไฟล์ที่อนุญาต: ${props.accept}`, 'ไฟล์ไม่รองรับ')
+  }
+  appendFiles(files)
 }
 </script>
 
