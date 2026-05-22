@@ -78,6 +78,7 @@ const progressItems = computed((): IProgress[] => {
 
 async function onSubmit (event: FormSubmitEvent): Promise<void> {
   event.originalEvent.preventDefault()
+  event.originalEvent.stopPropagation()
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return

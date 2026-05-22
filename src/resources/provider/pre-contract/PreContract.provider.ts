@@ -29,7 +29,6 @@ export interface IPreContractProvider {
   getContractPaginate (query: IGetPreContractList): Promise<TGetPreContractListResponse>
   createContract (payload: ICreatePreContractPayload): Promise<TActionPreContract>
   updateContract (id: TBaseParamsId, payload: IUpdatePreContractPayload): Promise<TActionPreContract>
-  deleteContract (id: number): Promise<TActionPreContract>
   getContractFindOne (id: TBaseParamsId): Promise<TGetPreContractByIdResponse>
   requestAppraisal (id: TBaseParamsId, payload: IRequestAppraisalPayload): Promise<TRequestAppraisalPreContract>
   requestReappraisal (id: TBaseParamsId, payload: IRequestReappraisalPayload): Promise<TRequestReappraisalPreContract>
@@ -55,11 +54,6 @@ class PreContractProvider extends HttpRequest implements IPreContractProvider {
 
   public async updateContract (id: TBaseParamsId, payload: IUpdatePreContractPayload): Promise<TActionPreContract> {
     const response = await this.put(`${this.urlPrefix}/${id}`, payload)
-    return response
-  }
-
-  public async deleteContract (id: number): Promise<TActionPreContract> {
-    const response = await this.delete(`${this.urlPrefix}/${id}`)
     return response
   }
 

@@ -13,7 +13,7 @@
         label="เพิ่มบันทึกค่าใช้จ่ายใหม่" />
     </ExpensesFilter>
     <BasePage>
-      <div class="mt-5">
+      <div>
         <RecordExpensesTable
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"

@@ -1,7 +1,9 @@
 <template>
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
     <div class="rounded-xl border border-surface-200 bg-white p-5 relative">
-      <div class="flex justify-end">
+      <div
+        v-if="isAbleToChangeStatus"
+        class="flex justify-end">
         <BaseActionMenu :items="actionItems" />
       </div>
       <DisplayList :items="assetItems">
@@ -17,9 +19,11 @@
           <ChipContractStatus :value="detail.contract.status" />
         </template>
         <template #[`value.contractNo`]>
-          <span class="underline text-surface-700">
+          <LinkText
+            :to="{name:'ContractDetailPage', params: {id:detail.contract.id}}"
+            class="underline text-surface-700">
             {{ detail.contract.idNo }}
-          </span>
+          </LinkText>
         </template>
       </DisplayList>
     </div>
@@ -33,6 +37,7 @@
     <template #default>
       <AssetStatusSelection
         v-model="selectedStatus"
+        :contract-status="detail.contract.status"
         placeholder="เลือกสถานะ" />
     </template>
     <template #footer>
@@ -58,9 +63,10 @@ import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import type { IContractAssetDetail } from '@/models/response/contract-asset/ContractAssetRes.model'
 import type { TAssetStatus } from '@/enums/modules/asset/AssetStatus.enum'
-import { AssetStatusEnum, formatTitle } from '@/enums/modules/asset/AssetStatus.enum'
+import { formatTitle } from '@/enums/modules/asset/AssetStatus.enum'
 import { formatTitle as formatTypeTitle } from '@/enums/modules/asset/AssetType.enum'
 import BaseActionMenu, { type IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
+import LinkText from '@/components/button/LinkText.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import AssetStatusSelection from '@/components/selection/modules/static/asset-status/AssetStatusSelection.vue'
@@ -97,11 +103,13 @@ const contractItems = computed((): IDisplayList[] => [
 
 const actionItems = computed((): IMenuItemAction[] => {
   return [
-    { key: 'status', label: 'สถานะหลักทรัพย์', action: openStatusModal, disabled: isPendingSale.value }
+    { key: 'status', label: 'สถานะหลักทรัพย์', action: openStatusModal, disabled: !isAbleToChangeStatus.value }
   ]
 })
 
-const isPendingSale = computed((): boolean => props.detail.status === AssetStatusEnum.PENDING_SALE)
+const isAbleToChangeStatus = computed((): boolean => {
+  return props.detail.contract.status !== 'PENDING'
+})
 const showStatusModal = ref<boolean>(false)
 const selectedStatus = ref<string>(props.detail.status)
 

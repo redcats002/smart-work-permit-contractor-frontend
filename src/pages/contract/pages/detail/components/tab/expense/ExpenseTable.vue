@@ -21,7 +21,7 @@
 import { ref } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
-import type { IContractExpenseList } from '@/models/response/contract/ContractRes.model'
+import type { IContractExpenseList } from '@/models/response/contract-expense/ContractExpenseRes.model'
 import type { IColumn } from '@/models/Table.model'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'

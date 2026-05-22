@@ -1,7 +1,6 @@
 <template>
   <BaseModal
     v-model:visible="visible"
-    class="md:w-fit!"
     label="เพิ่มเอกสารที่ต้องการย้าย"
     modal>
     <template #activator="{ open }">
@@ -11,10 +10,12 @@
         @click="onOpen(open)" />
     </template>
     <template
-      #default="{ close }">
-      <StockFilter
+      #default>
+      <DocumentAssetFilter
         v-model:filters="filters"
         v-model:search="search"
+        disabled-warehouse
+        hide-status
         @clear="onClearFilters()"
         @search="onSearch()" />
       <BasePage class="flex flex-col gap-5">
@@ -26,10 +27,12 @@
           :items="items"
           @delete="emits('delete', $event)"
           @update="fetch()" />
-        <FormAction
-          @cancel="onCancel(close)"
-          @confirm="onConfirm(close)" />
       </BasePage>
+    </template>
+    <template #footer="{ close }">
+      <FormAction
+        @cancel="onCancel(close)"
+        @confirm="onConfirm(close)" />
     </template>
   </BaseModal>
 </template>
@@ -46,10 +49,10 @@ import CreateButton from '@/components/button/CreateButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import SelectDocsTable from '../components/SelectDocsTable.vue'
-import StockFilter from '../../list/components/StockFilter.vue'
 import useAssetsByWarehouse from '../../list/composables/movement/useAssetsByWarehouse'
 import type { DocumentAssetFormValues } from '../schema/document-asset.schema'
 import type { DocumentMovementFormValues } from '../schema/document-movement'
+import DocumentAssetFilter from './DocumentAssetFilter.vue'
 
 interface IEmits {
   clear: []

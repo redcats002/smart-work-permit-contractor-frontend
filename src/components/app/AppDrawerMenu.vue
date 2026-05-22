@@ -1,14 +1,15 @@
 <template>
   <router-link
-    v-slot="{ isActive, isExactActive, navigate }"
+    v-slot="{ isActive, isExactActive, navigate, href }"
     :to="to"
     custom>
-    <div
+    <a
       :class="[
         'flex items-center p-2 rounded duration-200 hover:bg-(--p-gray-5) gap-2 cursor-pointer',
         (isActive || isExactActive || isRootActive) && !disabled && 'bg-(--p-red)! text-white!',
         disabled && 'cursor-not-allowed opacity-50 pointer-events-none'
       ]"
+      :href="href"
       @click="!disabled && navigate($event)">
       <img
         v-if="isImageIcon"
@@ -25,7 +26,7 @@
       <span class="grow">
         {{ label }}
       </span>
-    </div>
+    </a>
   </router-link>
 </template>
 

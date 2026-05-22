@@ -36,6 +36,7 @@
     <DeleteModal
       v-if="modalType === 'DELETE'"
       v-model="modalVisible"
+      v-bind="pendingDeleteProps"
       @confirm="onModalConfirm()" />
     <ConfirmModal
       v-else-if="modalType === 'CONFIRM'"
@@ -48,7 +49,7 @@
 import { computed, ref, useTemplateRef } from 'vue'
 import { Icon } from '@iconify/vue'
 import ConfirmModal from '../modal/ConfirmModal.vue'
-import DeleteModal from '../modal/DeleteModal.vue'
+import DeleteModal, { type IDeleteModalProps } from '../modal/DeleteModal.vue'
 
 export interface IMenuItemAction {
   label: string
@@ -58,6 +59,7 @@ export interface IMenuItemAction {
   disabled?: boolean
   action?: () => void
   separator?: boolean
+  deleteProps?: IDeleteModalProps
 }
 
 interface IMenuItem {
@@ -88,6 +90,7 @@ const menuRef = useTemplateRef('menu')
 const modalVisible = ref<boolean>(false)
 const modalType = ref<'DELETE' | 'CONFIRM' | null>(null)
 const pendingModalAction = ref<(() => void) | undefined>(undefined)
+const pendingDeleteProps = ref<IDeleteModalProps | undefined>(undefined)
 
 const menuItems = computed((): IMenuItem[] =>
   props.items.map((item: IMenuItemAction): IMenuItem => {
@@ -104,6 +107,7 @@ const menuItems = computed((): IMenuItem[] =>
       command: (): void => {
         if (item.type === 'DELETE' || item.type === 'CONFIRM') {
           pendingModalAction.value = item.action
+          pendingDeleteProps.value = item.deleteProps
           modalType.value = item.type
           modalVisible.value = true
         } else {

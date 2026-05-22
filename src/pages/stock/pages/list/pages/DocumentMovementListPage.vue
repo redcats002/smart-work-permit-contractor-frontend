@@ -12,9 +12,8 @@
         }"
         label="สร้างย้ายเอกสารใหม่" />
     </StockFilter>
-
     <BasePage>
-      <div class="mt-5">
+      <div>
         <StockDocsTable
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"

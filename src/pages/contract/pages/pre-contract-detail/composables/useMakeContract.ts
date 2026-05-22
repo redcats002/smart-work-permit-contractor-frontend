@@ -15,7 +15,8 @@ interface IUseMakeContract {
   onConfirmMakeContract (): void
 }
 
-export function useMakeContract (useFetch: () => Promise<void>): IUseMakeContract {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useMakeContract (_useFetch: () => Promise<void>): IUseMakeContract {
   const PreContractService: IPreContractProvider = new PreContractProvider()
 
   const route = useRoute()
@@ -51,8 +52,8 @@ export function useMakeContract (useFetch: () => Promise<void>): IUseMakeContrac
     const payload = await usePayload()
     await PreContractService.makeAContract(contractId.value, payload)
     toast.success('ทำสัญญาเรียบร้อยแล้ว')
-    await useFetch()
-    router.push({ name: 'ContractListPage' })
+    // await _useFetch()
+    router.push({ name: 'ContractListPage', query: { tab: 'contract' } })
   }
 
   function mount (): void {

@@ -1,19 +1,19 @@
 <template>
   <div class="grid gap-2.5">
     <div class="flex items-center justify-between flex-wrap gap-2">
-      <Title title="รายการค่าใช้จ่าย" />
+      <Title title="รายการรายได้" />
       <CreateButton
-        label="บันทึกค่าใช้จ่าย"
-        @click="openModal('create')" />
+        label="บันทึกรายได้"
+        @click="openModal('CREATE')" />
     </div>
     <IncomeTable
       v-model:pagination="pagination"
       v-model:sort-by="sortBy"
       v-model:sort-order="sortOrder"
       :items="items"
-      @delete="openModal('delete', $event)"
-      @edit="openModal('edit', $event)"
-      @read="openModal('read', $event)"
+      @delete="openModal('DELETE', $event)"
+      @edit="openModal('UPDATE', $event)"
+      @read="openModal('READ', $event)"
       @update="fetch()" />
     <ModalIncome
       v-model:visible="modalVisible"
@@ -28,18 +28,17 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IGetIncomeList } from '@/models/request/contract/ContractReq.model'
-import type { IContractIncomeList } from '@/models/response/contract/ContractRes.model'
-import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
+import type { IGetIncomeList } from '@/models/request/contract-income/ContractIncomeReq.model'
+import type { IContractIncomeList } from '@/models/response/contract-income/ContractIncomeRes.model'
+import ContractIncomeProvider, { type IContractIncomeProvider } from '@/resources/provider/contract-income/ContractIncome.provider'
 import CreateButton from '@/components/button/CreateButton.vue'
 import usePagination from '@/composables/usePagination'
 import Title from '../Title.vue'
 import IncomeTable from './IncomeTable.vue'
+import type { TActionMode } from '@/models/Global.model'
 import ModalIncome from './ModalIncome.vue'
 
-type TIncomeModalMode = 'create' | 'read' | 'edit' | 'delete'
-
-const ContractService: IContractProvider = new ContractProvider()
+const ContractIncomeService: IContractIncomeProvider = new ContractIncomeProvider()
 
 const route = useRoute()
 const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
@@ -61,7 +60,7 @@ const paginateQuery = computed((): IGetIncomeList => {
 })
 
 async function useFetch (): Promise<void> {
-  const response = await ContractService.getIncomeList(contractId.value, paginateQuery.value)
+  const response = await ContractIncomeService.getIncomeList(contractId.value, paginateQuery.value)
   items.value = response?.data || []
   pagination.value = extractPagination(response)
   syncQuery({ ...normalizeFilters(filters.value) })
@@ -79,10 +78,10 @@ function fetch (): void {
 }
 
 const modalVisible = ref<boolean>(false)
-const modalMode = ref<TIncomeModalMode>('create')
+const modalMode = ref<TActionMode>('CREATE')
 const selectedItem = ref<IContractIncomeList | undefined>(undefined)
 
-function openModal (mode: TIncomeModalMode, item?: IContractIncomeList): void {
+function openModal (mode: TActionMode, item?: IContractIncomeList): void {
   modalMode.value = mode
   selectedItem.value = item
   modalVisible.value = true

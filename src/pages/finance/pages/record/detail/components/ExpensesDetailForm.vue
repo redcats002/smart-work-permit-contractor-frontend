@@ -4,25 +4,12 @@
       {{ `${formatter.numberFormat(value)} บาท` || '-' }}
     </template>
   </DisplayList>
-  <div
-    v-if="data.files.length"
-    class="flex gap-2 mt-5">
-    <template
-      v-for="(file, _i) in data.files"
-      :key="_i">
-      <a
-        :href="file.url"
-        class="border border-[#BDBDBD] rounded-lg p-3 flex flex-col items-center justify-center"
-        target="_blank">
-        <Icon
-          icon="material-icon-theme:pdf"
-          style="font-size: 90px;" />
-        <div class="text-sm">
-          {{ file.name }}
-        </div>
-      </a>
-    </template>
-  </div>
+  <FileAttachment
+    v-if="data?.files?.length"
+    :files="data.files" />
+  <Empty
+    v-else
+    title="ไม่มีไฟล์แนบ" />
 </template>
 
 <script setup lang="ts">
@@ -33,7 +20,8 @@ import type { IExpensesById } from '@/models/response/expenses/ExpensesRes.model
 import { formatTitle } from '@/enums/modules/finance/ExpenseType.enum'
 import type { IDisplayList } from '@/components/display/DisplayList.vue'
 import DisplayList from '@/components/display/DisplayList.vue'
-import { Icon } from '@iconify/vue'
+import Empty from '@/components/display/Empty.vue'
+import FileAttachment from '@/components/display/FileAttachment.vue'
 
 interface IProps {
   data: IExpensesById

@@ -33,7 +33,8 @@ export default {
       meta: {
         auth: true,
         menu: true,
-        title: 'ย้ายเอกสาร',
+        title: 'รายการย้ายเอกสาร',
+        menuTitle: 'ย้ายเอกสาร',
         icon: 'mdi-account'
       }
     },

@@ -11,7 +11,7 @@
           icon="material-symbols:print-outline-rounded"
           label="พิมพ์" />
       </PaymentsForAccountClosureFilter>
-      <div class="mt-5">
+      <div>
         <div class="font-bold mb-5">
           ปิดบัญชีก่อนกำหนด
         </div>
@@ -23,7 +23,7 @@
           @update="fetch()" />
       </div>
 
-      <div class="mt-5">
+      <div>
         <div class="font-bold mb-5">
           ปิดปรับ (รีไฟแนนซ์)
         </div>

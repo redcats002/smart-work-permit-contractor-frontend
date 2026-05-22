@@ -56,14 +56,18 @@ export interface IUsePagination {
   resetPagination (): void
 }
 
-export function usePagination (): IUsePagination {
+interface IProps {
+  inheritQuery?: boolean
+}
+
+export function usePagination ({ inheritQuery }: IProps = { inheritQuery: true }): IUsePagination {
   const route = useRoute()
   const router = useRouter()
 
   const sortBy = ref<string>(route?.query?.sortBy as string || '')
   const sortOrder = ref<TSortOrder>((route?.query?.sortOrder as TSortOrder) || 'desc')
   const search = ref<string>((route?.query?.search as string) || '')
-  const pagination = ref<IPagination>(useInitPagination())
+  const pagination = ref<IPagination>(inheritQuery ? useInitPagination() : { page: 1, totalPage: 1, count: 0, limit: 10 })
 
   function useSyncQuery (payload?: IUseSyncQueryPayload): Record<string, unknown> {
     const { pagination: _pagination, search: _search, sortBy: _sortBy, sortOrder: _sortOrder, ...rest } = payload || {}

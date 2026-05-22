@@ -12,12 +12,34 @@
         <template #activator="{ open }">
           <FilterButton @click="open()" />
         </template>
-        <!-- <div class="flex flex-col gap-5">
-            <div class="w-fit">
-              <LabelField
-                label="สถานะ" />
-            </div>
-          </div> -->
+        <div class="flex flex-col gap-5">
+          <LabelField
+            label="วันที่เริ่มต้น">
+            <DatePickerInput
+              v-model="filters.startDate"
+              :show-clear="true"
+              placeholder="ทั้งหมด" />
+          </LabelField>
+          <LabelField
+            label="คลังต้นทาง">
+            <WarehouseSelection
+              v-model="filters.originalWarehouseId"
+              show-clear />
+          </LabelField>
+          <LabelField
+            label="คลังปลายทาง">
+            <WarehouseSelection
+              v-model="filters.destinationWarehouseId"
+              show-clear />
+          </LabelField>
+          <LabelField
+            label="สถานะ">
+            <DocumentMovementStatusSelection
+              v-model="filters.status"
+              placeholder="ทั้งหมด"
+              show-clear />
+          </LabelField>
+        </div>
         <template #footer="{ close }">
           <FormActionFilter
             @clear="onClear(close)"
@@ -33,13 +55,18 @@
 </template>
 
 <script setup lang="ts">
+import type { IDocumentMovementFilter } from '@/models/modules/document-storage/Filter'
 import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
 import Spacer from '@/components/flex/Spacer.vue'
+import DatePickerInput from '@/components/input/DatePickerInput.vue'
+import LabelField from '@/components/input/LabelField.vue'
 // import LabelField from '@/components/input/LabelField.vue'
 import SearchInput from '@/components/input/SearchInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
+import WarehouseSelection from '@/components/selection/modules/api/warehouse/WarehouseSelection.vue'
+import DocumentMovementStatusSelection from '@/components/selection/modules/static/document-movement-status/DocumentMovementStatusSelection.vue'
 
 interface IEmits {
   search: []
@@ -50,7 +77,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>('search', { default: '' })
-defineModel<any>('filters', { default: (): any => ({}) })
+defineModel<IDocumentMovementFilter>('filters', { required: true })
 
 function onSearch (): void {
   emits('search')

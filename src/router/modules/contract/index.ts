@@ -43,6 +43,16 @@ export default {
       }
     },
     {
+      path: 'edit/:id',
+      name: 'ContractEditPage',
+      component: (): ComponentOptions => import('@/pages/contract/pages/contract-edit/pages/ContractEditPage.vue'),
+      meta: {
+        auth: true,
+        title: 'แก้ไขสัญญา',
+        back: { name: 'ContractDetailPage' }
+      }
+    },
+    {
       path: 'pre-contract/edit/:id',
       name: 'PreContractEditPage',
       component: (): ComponentOptions => import('@/pages/contract/pages/pre-contract-edit/pages/PreContractEditPage.vue'),
@@ -50,6 +60,16 @@ export default {
         auth: true,
         title: 'แก้ไขสัญญา',
         back: { name: 'ContractListPage' }
+      }
+    },
+    {
+      path: 'print/:id',
+      name: 'ContractPrintPage',
+      component: (): ComponentOptions => import('@/pages/contract/pages/print/pages/ContractPrintPage.vue'),
+      meta: {
+        auth: true,
+        layout: 'blank',
+        title: 'พิมพ์สัญญา'
       }
     }
   ]

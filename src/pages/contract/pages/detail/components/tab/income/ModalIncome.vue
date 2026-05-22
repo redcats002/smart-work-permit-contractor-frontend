@@ -4,6 +4,13 @@
     :label="modalLabel"
     :style="{ width: 'min(95vw, 500px)' }"
     @open="onOpen()">
+    <template
+      v-if="currentMode==='READ'"
+      #menu>
+      <div class="flex justify-end">
+        <BaseActionMenu :items="readMenuItems" />
+      </div>
+    </template>
     <template #default="{ close }">
       <!-- FORM MODE: create / edit -->
       <Form
@@ -17,7 +24,7 @@
         <LabelField
           v-slot="{ invalid }"
           :form="$form"
-          label="หมวดหมู่ค่าใช้จ่าย"
+          label="หมวดหมู่รายได้"
           name="incomeCategoryId"
           tag="div"
           hide-error
@@ -32,7 +39,7 @@
         <LabelField
           v-slot="{ invalid }"
           :form="$form"
-          label="ประเภทค่าใช้จ่าย"
+          label="ประเภทรายได้"
           name="incomeTypeId"
           tag="div"
           hide-error
@@ -117,11 +124,8 @@
 
       <!-- READ MODE -->
       <div
-        v-else-if="currentMode === 'read'"
+        v-else-if="currentMode === 'READ'"
         class="grid gap-4">
-        <div class="flex justify-end">
-          <BaseActionMenu :items="readMenuItems" />
-        </div>
         <div class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm">
           <span class="font-bold text-gray-700 whitespace-nowrap">วันที่</span>
           <span>: {{ dayjs.formatDate(props.item?.date || '') }}</span>
@@ -141,7 +145,7 @@
 
       <!-- DELETE MODE -->
       <div
-        v-else-if="currentMode === 'delete'"
+        v-else-if="currentMode === 'DELETE'"
         class="grid gap-6">
         <div class="flex flex-col items-center justify-center text-sm text-gray-700 gap-1 py-4">
           <p>คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้</p>
@@ -166,10 +170,11 @@ import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { ICreateIncome } from '@/models/request/contract/ContractReq.model'
-import type { IContractIncomeList } from '@/models/response/contract/ContractRes.model'
+import type { TActionMode } from '@/models/Global.model'
+import type { ICreateIncome } from '@/models/request/contract-income/ContractIncomeReq.model'
+import type { IContractIncomeList } from '@/models/response/contract-income/ContractIncomeRes.model'
 import { EVatType, formatTitle as formatVatTitle, VatTypeItems } from '@/enums/modules/Vat.enum'
-import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
+import ContractIncomeProvider, { type IContractIncomeProvider } from '@/resources/provider/contract-income/ContractIncome.provider'
 import type { IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import BaseActionMenu from '@/components/base/BaseActionMenu.vue'
 import FormAction from '@/components/button/FormAction.vue'
@@ -185,7 +190,7 @@ import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { useInitDetail } from './composables/useInitIncome'
 import { type IncomeFormValues, IncomeSchema, useFormInitialValues } from './schema/income.schema'
 
-export type TIncomeModalMode = 'create' | 'read' | 'edit' | 'delete'
+export type TIncomeModalMode = TActionMode
 
 interface IProps {
   mode: TIncomeModalMode
@@ -202,7 +207,7 @@ const emits = defineEmits<IEmits>()
 
 const visible = defineModel<boolean>('visible', { default: false })
 
-const ContractService: IContractProvider = new ContractProvider()
+const ContractIncomeService: IContractIncomeProvider = new ContractIncomeProvider()
 const { getUploadImages } = useUpload()
 
 const dayjs = useDayjs()
@@ -214,13 +219,13 @@ const resolver = zodResolver(IncomeSchema)
 const formData = ref<IncomeFormValues>(useFormInitialValues())
 const vatTypeItems = VatTypeItems
 
-const isFormMode = computed((): boolean => currentMode.value === 'create' || currentMode.value === 'edit')
+const isFormMode = computed((): boolean => currentMode.value === 'CREATE' || currentMode.value === 'UPDATE')
 const modalLabel = computed((): string => {
   const labels: Record<TIncomeModalMode, string> = {
-    create: 'บันทึกค่าใช้จ่าย',
-    edit: 'แก้ไขค่าใช้จ่าย',
-    read: 'รายละเอียด',
-    delete: 'ยืนยันการลบ'
+    CREATE: 'บันทึกรายได้',
+    UPDATE: 'แก้ไขรายได้',
+    READ: 'รายละเอียด',
+    DELETE: 'ยืนยันการลบ'
   }
   return labels[currentMode.value]
 })
@@ -231,12 +236,12 @@ const readMenuItems = computed((): IMenuItemAction[] => [
 
 
 function switchToEdit (): void {
-  currentMode.value = 'edit'
+  currentMode.value = 'UPDATE'
   populateForm()
 }
 
 function switchToDelete (): void {
-  currentMode.value = 'delete'
+  currentMode.value = 'DELETE'
 }
 
 async function populateForm (): Promise<void> {
@@ -258,7 +263,7 @@ async function populateForm (): Promise<void> {
 
 async function onOpen (): Promise<void> {
   currentMode.value = props.mode
-  if (props.mode === 'create') {
+  if (props.mode === 'CREATE') {
     formData.value = useFormInitialValues()
     formData.value.file = []
     formKey.value++
@@ -266,10 +271,10 @@ async function onOpen (): Promise<void> {
   }
 
   if (props.item?.id) {
-    const { data } = await ContractService.getIncomeById(Number(props.item.id))
+    const { data } = await ContractIncomeService.getIncomeById(Number(props.item.id))
     formRead.value = data
 
-    if (props.mode === 'edit') {
+    if (props.mode === 'UPDATE') {
       populateForm()
     }
   }
@@ -303,11 +308,11 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
   const itemId = props.item?.id
   handleLoading(async (): Promise<void> => {
     await uploadAndSetFile()
-    if (currentMode.value === 'create') {
-      await ContractService.createIncome(props.contractId, values)
+    if (currentMode.value === 'CREATE') {
+      await ContractIncomeService.createIncome(props.contractId, values)
       toast.success('บันทึกรายได้สำเร็จ')
-    } else if (currentMode.value === 'edit' && itemId) {
-      await ContractService.updateIncome(itemId, values)
+    } else if (currentMode.value === 'UPDATE' && itemId) {
+      await ContractIncomeService.updateIncome(itemId, values)
       toast.success('แก้ไขรายได้สำเร็จ')
     }
     emits('update')
@@ -319,7 +324,7 @@ function onDelete (close: () => void): void {
   const id = props.item?.id
   if (!id) return
   handleLoading(async (): Promise<void> => {
-    await ContractService.deleteIncome(id)
+    await ContractIncomeService.deleteIncome(id)
     toast.success('ลบรายได้สำเร็จ')
     emits('update')
     close()

@@ -72,8 +72,8 @@ import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { ICreateContractHistory } from '@/models/request/contract/ContractReq.model'
-import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
+import type { ICreateContractHistory } from '@/models/request/contract-history/ContractHistoryReq.model'
+import ContractHistoryProvider, { type IContractHistoryProvider } from '@/resources/provider/contract-history/ContractHistory.provider'
 import CreateButton from '@/components/button/CreateButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
 import DatePickerInput from '@/components/input/DatePickerInput.vue'
@@ -88,7 +88,7 @@ interface IEmits {
   submit: []
 }
 
-const ContractService: IContractProvider = new ContractProvider()
+const ContractHistoryService: IContractHistoryProvider = new ContractHistoryProvider()
 const route = useRoute()
 const contractId = computed((): number => route?.params?.id ? Number(route.params.id) : 0)
 
@@ -109,7 +109,7 @@ async function useCreate (): Promise<void> {
     topic: formData.value.topic,
     note: formData.value.note
   }
-  await ContractService.createContractHistory(contractId.value, payload)
+  await ContractHistoryService.createContractHistory(contractId.value, payload)
   emits('submit')
 }
 

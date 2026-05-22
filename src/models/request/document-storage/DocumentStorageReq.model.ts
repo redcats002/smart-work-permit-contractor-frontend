@@ -12,6 +12,8 @@ export interface IGetDocumentAssetsList extends IBasePaginationRequest {
   status?: TAssetStatus
 }
 export interface IGetDocumentMovementList extends IBasePaginationRequest {
+  startDate?: string // RFC 3339, section 5.6, for example, 2017-07-21
+  endDate?: string// RFC 3339, section 5.6, for example, 2017-07-21
   originalWarehouseId?: number
   destinationWarehouseId?: number
   status?: TDocumentStorageMovementStatus

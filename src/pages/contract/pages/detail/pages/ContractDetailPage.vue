@@ -4,12 +4,17 @@
     <BaseTop>
       <BackButton />
       <Spacer />
+      <ContractDetailMenuAction
+        :status="contract.status"
+        @delete="onCancelled()"
+        @edit="onEdit()"
+        @print="onPrint()" />
     </BaseTop>
     <BasePage>
       <div class="grid grid-cols-1 gap-2.5">
         <InformationDetail
           :data="contract"
-          @delete="onDelete()"
+          @delete="onCancelled()"
           @edit="onEdit()" />
         <ContractTab :data="contract" />
       </div>
@@ -29,6 +34,7 @@ import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
+import ContractDetailMenuAction from '../components/ContractDetailMenuAction.vue'
 import InformationDetail from '../components/InformationDetail.vue'
 import ContractTab from '../components/tab/ContractTab.vue'
 import { useInitDetail } from '../composables/useInitDetail'
@@ -46,11 +52,15 @@ async function useFetch (): Promise<void> {
   contract.value = useInitDetail(data).value
 }
 
-async function useDelete (): Promise<void> {
+async function useCancelled (): Promise<void> {
   if (!contractId.value) throw new Error('Contract ID is required for deletion')
-  await ContractService.deleteContract(contractId.value)
-  toast.success('ดำเนินการสำเร็จ')
-  router.push({ name: 'ContractListPage' })
+  if (contract.value.status === 'CANCELLED') {
+    toast.error('สัญญานี้ถูกยกเลิกไปแล้ว')
+    return
+  }
+  await ContractService.cancelledContract(contractId.value)
+  toast.success('ยกเลิกสัญญาสำเร็จ')
+  await useFetch()
 }
 
 function fetch (): void {
@@ -58,11 +68,19 @@ function fetch (): void {
 }
 
 function onEdit (): void {
+  if (contract.value.status === 'CANCELLED') {
+    toast.error('สัญญานี้ถูกยกเลิกไปแล้ว')
+    return
+  }
   router.push({ name: 'ContractEditPage', params: { id: contractId.value } })
 }
 
-function onDelete (): void {
-  handleLoading(useDelete)
+function onCancelled (): void {
+  handleLoading(useCancelled)
+}
+
+function onPrint (): void {
+  router.push({ name: 'ContractPrintPage', params: { id: contractId.value } })
 }
 
 onMounted((): void => {

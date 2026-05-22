@@ -4,6 +4,13 @@
     :label="modalLabel"
     :style="{ width: 'min(95vw, 500px)' }"
     @open="onOpen()">
+    <template
+      v-if="currentMode==='READ'"
+      #menu>
+      <div class="flex justify-end">
+        <BaseActionMenu :items="readMenuItems" />
+      </div>
+    </template>
     <template #default="{ close }">
       <!-- FORM MODE: create / edit -->
       <Form
@@ -37,6 +44,7 @@
           required>
           <WarehouseSelection
             v-model="formData.locationId"
+            :disabled="mode==='UPDATE'"
             :invalid="invalid" />
         </LabelField>
 
@@ -63,11 +71,8 @@
 
       <!-- READ MODE -->
       <div
-        v-else-if="currentMode === 'read'"
+        v-else-if="currentMode === 'READ'"
         class="grid gap-4">
-        <div class="flex justify-end">
-          <BaseActionMenu :items="readMenuItems" />
-        </div>
         <div class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm">
           <span class="font-bold text-gray-700 whitespace-nowrap">ประเภทเอกสาร</span>
           <span>: {{ item?.documentType ? formatDocumentType(item.documentType) : '-' }}</span>
@@ -86,7 +91,7 @@
 
       <!-- DELETE MODE -->
       <div
-        v-else-if="currentMode === 'delete'"
+        v-else-if="currentMode === 'DELETE'"
         class="grid gap-6">
         <div class="flex flex-col items-center justify-center text-sm text-gray-700 gap-1 py-4">
           <p>คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้</p>
@@ -109,10 +114,11 @@ import { computed, ref, watch } from 'vue'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { ICreateDocument } from '@/models/request/contract/ContractReq.model'
-import type { IContractDocumentList } from '@/models/response/contract/ContractRes.model'
+import type { TActionMode } from '@/models/Global.model'
+import type { ICreateDocument } from '@/models/request/contract-document/ContractDocumentReq.model'
+import type { IContractDocumentList } from '@/models/response/contract-document/ContractDocumentRes.model'
 import { DocumentTypeEnum, formatTitle as formatDocumentType } from '@/enums/modules/contract/DocumentType.enum'
-import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
+import ContractDocumentProvider, { type IContractDocumentProvider } from '@/resources/provider/contract-document/ContractDocument.provider'
 import type { IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import BaseActionMenu from '@/components/base/BaseActionMenu.vue'
 import FormAction from '@/components/button/FormAction.vue'
@@ -127,7 +133,7 @@ import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { type DocumentFormValues, DocumentSchema, useFormInitialValues } from './schema/document.schema'
 
-export type TDocumentModalMode = 'create' | 'read' | 'edit' | 'delete'
+export type TDocumentModalMode = TActionMode
 
 interface IProps {
   mode: TDocumentModalMode
@@ -144,7 +150,7 @@ const emits = defineEmits<IEmits>()
 
 const visible = defineModel<boolean>('visible', { default: false })
 
-const ContractService: IContractProvider = new ContractProvider()
+const ContractDocumentService: IContractDocumentProvider = new ContractDocumentProvider()
 const { media, getUploadImages } = useUpload()
 
 const formKey = ref<number>(0)
@@ -152,25 +158,25 @@ const currentMode = ref<TDocumentModalMode>(props.mode)
 const resolver = zodResolver(DocumentSchema)
 const formData = ref<DocumentFormValues>(useFormInitialValues())
 
-const isFormMode = computed((): boolean => currentMode.value === 'create' || currentMode.value === 'edit')
+const isFormMode = computed((): boolean => currentMode.value === 'CREATE' || currentMode.value === 'UPDATE')
 
 const modalLabel = computed((): string => {
   const labels: Record<TDocumentModalMode, string> = {
-    create: 'บันทึกเอกสาร',
-    edit: 'แก้ไขเอกสาร',
-    read: 'รายละเอียด',
-    delete: 'ยืนยันการลบ'
+    CREATE: 'บันทึกเอกสาร',
+    UPDATE: 'แก้ไขเอกสาร',
+    READ: 'รายละเอียด',
+    DELETE: 'ยืนยันการลบ'
   }
   return labels[currentMode.value]
 })
 
 function switchToEdit (): void {
-  currentMode.value = 'edit'
+  currentMode.value = 'UPDATE'
   populateForm()
 }
 
 function switchToDelete (): void {
-  currentMode.value = 'delete'
+  currentMode.value = 'DELETE'
 }
 
 const readMenuItems = computed((): IMenuItemAction[] => [
@@ -192,13 +198,13 @@ function populateForm (): void {
 
 function onOpen (): void {
   currentMode.value = props.mode
-  if (props.mode === 'create') {
+  if (props.mode === 'CREATE') {
     formData.value = useFormInitialValues()
     media.value = []
     formKey.value++
     return
   }
-  if (props.mode === 'edit') {
+  if (props.mode === 'UPDATE') {
     populateForm()
   }
 }
@@ -218,11 +224,11 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
       files: uploadedFiles,
       note: formData.value.note
     } as ICreateDocument
-    if (currentMode.value === 'create') {
-      await ContractService.createDocument(props.contractId, values)
+    if (currentMode.value === 'CREATE') {
+      await ContractDocumentService.createDocument(props.contractId, values)
       toast.success('บันทึกเอกสารสำเร็จ')
-    } else if (currentMode.value === 'edit' && itemId) {
-      await ContractService.updateDocument(itemId, values)
+    } else if (currentMode.value === 'UPDATE' && itemId) {
+      await ContractDocumentService.updateDocument(itemId, values)
       toast.success('แก้ไขเอกสารสำเร็จ')
     }
     emits('update')
@@ -234,7 +240,7 @@ function onDelete (close: () => void): void {
   const id = props.item?.id
   if (!id) return
   handleLoading(async (): Promise<void> => {
-    await ContractService.deleteDocument(id)
+    await ContractDocumentService.deleteDocument(id)
     toast.success('ลบเอกสารสำเร็จ')
     emits('update')
     close()

@@ -34,7 +34,7 @@ export function useInitDetail (data?: Partial<IContractById>): Ref<IContractById
     },
     borrowers: data?.borrowers || [],
     sellMan: {
-      titleName: data?.sellMan?.titleName || '',
+      title: data?.sellMan?.title || '',
       firstName: data?.sellMan?.firstName || '',
       lastName: data?.sellMan?.lastName || '',
       phoneNumber: data?.sellMan?.phoneNumber || '',
@@ -82,13 +82,13 @@ export function useInitTabDetail (): IUseTabItems {
 
   const input = computed((): ITabItemComponent[] => [
     { key: 'Information', label: 'รายละเอียด', instance: Information, value: 'information' },
-    { key: 'Asset', label: 'ทรัพย์สิน', instance: Asset, value: 'asset' },
-    { key: 'Installment', label: 'งวดชำระ', instance: Installment, value: 'installment' },
+    { key: 'Asset', label: 'หลักทรัพย์', instance: Asset, value: 'asset' },
+    { key: 'Installment', label: 'ตารางการชำระ', instance: Installment, value: 'installment' },
     { key: 'Expense', label: 'ค่าใช้จ่าย', instance: Expense, value: 'expense' },
-    { key: 'Income', label: 'รายรับ', instance: Income, value: 'income' },
+    { key: 'Income', label: 'รายได้', instance: Income, value: 'income' },
     { key: 'Guarantor', label: 'ผู้ค้ำประกัน', instance: Guarantor, value: 'guarantor' },
     { key: 'ContactHistory', label: 'ประวัติการติดต่อ', instance: ContactHistory, value: 'contact-history' },
-    { key: 'Document', label: 'เอกสาร', instance: Document, value: 'document' }
+    { key: 'Document', label: 'รายการเอกสาร', instance: Document, value: 'document' }
   ])
 
   return useTabItems(input)

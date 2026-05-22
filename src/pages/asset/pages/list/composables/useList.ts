@@ -1,7 +1,7 @@
 import { computed, ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IContractAssetFilter } from '@/models/modules/contract-asset/Filter.model'
-import type { IGetContractAssetList } from '@/models/request/contract-asset/ContractAssetReq.model'
+import type { IGetContractAssetList } from '@/models/request/contract/ContractAssetReq.model'
 import type { IContractAssetList } from '@/models/response/contract-asset/ContractAssetRes.model'
 import ContractAssetProvider from '@/resources/provider/contract-asset/ContractAsset.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'

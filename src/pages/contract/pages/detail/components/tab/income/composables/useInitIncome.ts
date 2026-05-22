@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue'
-import type { IContractIncomeById } from '@/models/response/contract/ContractRes.model'
+import type { IContractIncomeById } from '@/models/response/contract-income/ContractIncomeRes.model'
 
 export function useInitDetail (data?: Partial<IContractIncomeById>): Ref<IContractIncomeById> {
   return ref<IContractIncomeById>({

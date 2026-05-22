@@ -9,6 +9,11 @@
     :placeholder="placeholder"
     dropdown-class="bg-white"
     fluid>
+    <template #dropdownicon>
+      <Icon
+        class="size-5 text-surface-400"
+        icon="mdi:chevron-down" />
+    </template>
     <template #clearicon="{ clearCallback }">
       <div :class="clearIconClass">
         <Icon

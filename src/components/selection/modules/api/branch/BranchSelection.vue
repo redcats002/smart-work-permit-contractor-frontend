@@ -36,7 +36,7 @@ const modelValue = defineModel<TBaseParamsId | TBaseParamsId[] | null>()
 const selectedNameValue = defineModel<string | null>('selectedName', { default: null })
 
 const BranchService: IBranchProvider = new BranchProvider()
-const { pagination } = usePagination()
+const { pagination } = usePagination({ inheritQuery: false })
 
 const fetchSuggestions = async (): Promise<TBaseModel[]> => {
   const response = await BranchService.getBranchPaginate({

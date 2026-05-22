@@ -91,7 +91,7 @@
               v-model="form.lateFee"
               :class="invalid ? 'border-red-400!' : ''"
               :invalid="invalid"
-              :max-fraction-digits="0"
+              :max-fraction-digits="2"
               :min="0"
               class="h-9 shadow-none!"
               name="lateFee"
@@ -102,11 +102,11 @@
       </BaseContainer>
       <div class="flex flex-col gap-5">
         <BaseContainer class="flex flex-col items-center justify-center gap-1 py-6">
-          <span class="text-4xl font-bold text-green-600">{{ formatter.numberFormat(Math.round(monthlyPayment)) }}</span>
+          <span class="text-4xl font-bold text-green-600">{{ formatter.numberFormat2Decimal(monthlyPayment) }}</span>
           <span class="text-sm text-surface-500">ยอดชำระต่อเดือน</span>
         </BaseContainer>
         <BaseContainer class="flex flex-col items-center justify-center gap-1 py-6">
-          <span class="text-4xl font-bold text-orange-500">{{ formatter.numberFormat(Math.round(totalInterest)) }}</span>
+          <span class="text-4xl font-bold text-orange-500">{{ formatter.numberFormat2Decimal(totalInterest) }}</span>
           <span class="text-sm text-surface-500">ดอกเบี้ยรวม</span>
         </BaseContainer>
       </div>
@@ -122,7 +122,7 @@ import { nextTick, ref, useTemplateRef, watch } from 'vue'
 import { formatter } from '@/utils/Formatter'
 import { handleValidate, scrollToFirstError } from '@/utils/HandleSubmit'
 import type { IFormType } from '@/models/Form.model'
-import type { IPreContractById } from '@/models/response/pre-contract/PreContractRes.model'
+import type { TInterestType } from '@/enums/modules/contract/InterestType.enum'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import InterestTypeSelection from '@/components/selection/modules/static/interest-type/InterestTypeSelection.vue'
@@ -132,11 +132,19 @@ import useInstallment, { type IInstallmentRow } from '../composables/useInstallm
 import { type InstallmentFormValues, InstallmentSchema } from '../schema/make-contract.schema'
 import InstallmentTable from './InstallmentTable.vue'
 
+interface IInstallmentContract {
+  loanAmount: number
+  installmentCount: number
+  interestType?: TInterestType
+  annualInterestRate: number
+  lateFee: number
+}
+
 interface IExposes {
   submit: () => Promise<boolean>
 }
 interface IProps {
-  contract: IPreContractById
+  contract: IInstallmentContract
 }
 const props = withDefaults(defineProps<IProps>(), {})
 
@@ -175,6 +183,7 @@ function useInit (): void {
     annualInterestRate: props.contract.annualInterestRate,
     lateFee: props.contract.lateFee
   }
+  recalculate()
   mount()
 }
 
@@ -199,7 +208,7 @@ function mount (): void {
 defineExpose<IExposes>({ submit })
 
 watch(
-  (): IPreContractById => props.contract, (): void => {
+  (): IInstallmentContract => props.contract, (): void => {
     useInit()
   }, { immediate: true }
 )

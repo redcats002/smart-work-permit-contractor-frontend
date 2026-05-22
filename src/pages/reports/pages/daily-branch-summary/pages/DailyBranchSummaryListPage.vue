@@ -13,7 +13,7 @@
         label="พิมพ์" />
     </DailyBranchSummaryFilter>
     <BasePage>
-      <div class="mt-5">
+      <div>
         <DailyBranchSummaryTable
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"

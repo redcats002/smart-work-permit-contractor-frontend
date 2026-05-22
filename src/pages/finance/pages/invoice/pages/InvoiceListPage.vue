@@ -1,12 +1,12 @@
 <template>
   <section id="invoice-list-page">
     <PageTitle />
+    <div>
+      <SearchInput
+        v-model="search"
+        @search="onSearch()" />
+    </div>
     <BasePage>
-      <div class="mb-4">
-        <SearchInput
-          v-model="search"
-          @search="onSearch()" />
-      </div>
       <InvoiceTable
         v-model:pagination="pagination"
         v-model:sort-by="sortBy"

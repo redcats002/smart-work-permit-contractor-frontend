@@ -7,7 +7,7 @@
         v-if="!item.hidden"
         :class="rowClass"
         class="grid gap-2.5">
-        <div :class="['text-sm font-bold text-gray-500', labelClass]">
+        <div :class="['text-sm font-bold', labelClass]">
           <slot
             v-if="$slots[`label.${String(item.key)}`]"
             :label="item.label"

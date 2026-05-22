@@ -1,5 +1,10 @@
 <template>
+  <div v-if="loading">
+    <Skeleton
+      class="w-full h-48 rounded-md mb-2 last:mb-0" />
+  </div>
   <Image
+    v-else
     :preview="preview"
     :pt="theme"
     :pt-options="{ mergeProps: ptViewMerge }"
@@ -40,6 +45,7 @@ const props = withDefaults(defineProps<IProps>(), {
 
 const attrs = useAttrs()
 const fallback = ref<boolean>(false)
+const loading = ref<boolean>(false)
 
 
 const filePathRef = computed((): string | null | undefined =>
@@ -50,17 +56,21 @@ const { url: signedUrl } = useFileUrl(filePathRef)
 const computedSrc = ref<string>((attrs.src as string | undefined) || FALLBACK_IMAGE)
 
 watchEffect((): void => {
-  if (fallback.value) {
-    computedSrc.value = FALLBACK_IMAGE
-    return
-  }
-  if (props.filePath) {
-    if (isDirectUrl(props.filePath)) {
-      computedSrc.value = props.filePath
+  try {
+    if (fallback.value) {
+      computedSrc.value = FALLBACK_IMAGE
       return
     }
-    computedSrc.value = signedUrl.value ?? FALLBACK_IMAGE
-    return
+    if (props.filePath) {
+      if (isDirectUrl(props.filePath)) {
+        computedSrc.value = props.filePath
+        return
+      }
+      computedSrc.value = signedUrl.value ?? FALLBACK_IMAGE
+      return
+    }
+  } finally {
+    loading.value = false
   }
 })
 

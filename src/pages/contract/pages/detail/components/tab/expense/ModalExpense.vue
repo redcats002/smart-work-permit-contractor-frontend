@@ -4,6 +4,13 @@
     :label="modalLabel"
     :style="{ width: 'min(95vw, 500px)' }"
     @open="onOpen()">
+    <template
+      v-if="currentMode==='READ'"
+      #menu>
+      <div class="flex justify-end">
+        <BaseActionMenu :items="readMenuItems" />
+      </div>
+    </template>
     <template #default="{ close }">
       <!-- FORM MODE: create / edit -->
       <Form
@@ -75,7 +82,22 @@
           required>
           <UploadInput
             v-model="formData.file"
-            name="url" />
+            class="border border-dashed border-gray-700 rounded-md"
+            detail=""
+            icon="material-symbols-light:upload-file-outline"
+            icon-class="size-20"
+            name="url"
+            remove-button-class="text-(--p-gray-4)! border rounded-full border-(--p-gray-4)! p-1"
+            remove-icon="solar:trash-bin-2-linear"
+            hide-button
+            touchable>
+            <template #label>
+              <span>
+                ลากและวางไฟล์ที่นี่ หรือ
+                <span class="font-bold underline">เลือกไฟล์</span>
+              </span>
+            </template>
+          </UploadInput>
         </LabelField>
 
         <LabelField
@@ -106,11 +128,8 @@
 
       <!-- READ MODE -->
       <div
-        v-else-if="currentMode === 'read'"
+        v-else-if="currentMode === 'READ'"
         class="grid gap-4">
-        <div class="flex justify-end">
-          <BaseActionMenu :items="readMenuItems" />
-        </div>
         <div class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm">
           <span class="font-bold text-gray-700 whitespace-nowrap">วันที่</span>
           <span>: {{ dayjs.formatDate(props.item?.date || '') }}</span>
@@ -130,7 +149,7 @@
 
       <!-- DELETE MODE -->
       <div
-        v-else-if="currentMode === 'delete'"
+        v-else-if="currentMode === 'DELETE'"
         class="grid gap-6">
         <div class="flex flex-col items-center justify-center text-sm text-gray-700 gap-1 py-4">
           <p>คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้</p>
@@ -155,10 +174,11 @@ import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { ICreateExpense } from '@/models/request/contract/ContractReq.model'
-import type { IContractExpenseList } from '@/models/response/contract/ContractRes.model'
+import type { TActionMode } from '@/models/Global.model'
+import type { ICreateExpense } from '@/models/request/contract-expense/ContractExpenseReq.model'
+import type { IContractExpenseList } from '@/models/response/contract-expense/ContractExpenseRes.model'
 import { EVatType, formatTitle as formatVatTitle, VatTypeItems } from '@/enums/modules/Vat.enum'
-import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
+import ContractExpenseProvider, { type IContractExpenseProvider } from '@/resources/provider/contract-expense/ContractExpense.provider'
 import type { IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import BaseActionMenu from '@/components/base/BaseActionMenu.vue'
 import FormAction from '@/components/button/FormAction.vue'
@@ -174,7 +194,7 @@ import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { useInitDetail } from './composables/useInitExpense'
 import { type ExpenseFormValues, ExpenseSchema, useFormInitialValues } from './schema/expense.schema'
 
-export type TExpenseModalMode = 'create' | 'read' | 'edit' | 'delete'
+export type TExpenseModalMode = TActionMode
 
 interface IProps {
   mode: TExpenseModalMode
@@ -191,7 +211,7 @@ const emits = defineEmits<IEmits>()
 
 const visible = defineModel<boolean>('visible', { default: false })
 
-const ContractService: IContractProvider = new ContractProvider()
+const ContractExpenseService: IContractExpenseProvider = new ContractExpenseProvider()
 
 const dayjs = useDayjs()
 
@@ -204,25 +224,25 @@ const resolver = zodResolver(ExpenseSchema)
 const vatTypeItems = VatTypeItems
 const { getUploadImages } = useUpload()
 
-const isFormMode = computed((): boolean => currentMode.value === 'create' || currentMode.value === 'edit')
+const isFormMode = computed((): boolean => currentMode.value === 'CREATE' || currentMode.value === 'UPDATE')
 
 const modalLabel = computed((): string => {
   const labels: Record<TExpenseModalMode, string> = {
-    create: 'บันทึกค่าใช้จ่าย',
-    edit: 'แก้ไขค่าใช้จ่าย',
-    read: 'รายละเอียด',
-    delete: 'ยืนยันการลบ'
+    CREATE: 'บันทึกค่าใช้จ่าย',
+    UPDATE: 'แก้ไขค่าใช้จ่าย',
+    READ: 'รายละเอียด',
+    DELETE: 'ยืนยันการลบ'
   }
   return labels[currentMode.value]
 })
 
 function switchToEdit (): void {
-  currentMode.value = 'edit'
+  currentMode.value = 'UPDATE'
   populateForm()
 }
 
 function switchToDelete (): void {
-  currentMode.value = 'delete'
+  currentMode.value = 'DELETE'
 }
 
 const readMenuItems = computed((): IMenuItemAction[] => [
@@ -249,7 +269,7 @@ async function populateForm (): Promise<void> {
 
 async function onOpen (): Promise<void> {
   currentMode.value = props.mode
-  if (props.mode === 'create') {
+  if (props.mode === 'CREATE') {
     formData.value = useFormInitialValues()
     formData.value.file = []
     formKey.value++
@@ -257,9 +277,9 @@ async function onOpen (): Promise<void> {
   }
 
   if (props.item?.id) {
-    const { data } = await ContractService.getExpenseById(Number(props.item.id))
+    const { data } = await ContractExpenseService.getExpenseById(Number(props.item.id))
     formRead.value = data
-    if (props.mode === 'edit') {
+    if (props.mode === 'UPDATE') {
       populateForm()
     }
   }
@@ -291,11 +311,11 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
   const itemId = props.item?.id
   handleLoading(async (): Promise<void> => {
     await uploadAndSetFile()
-    if (currentMode.value === 'create') {
-      await ContractService.createExpense(props.contractId, values)
+    if (currentMode.value === 'CREATE') {
+      await ContractExpenseService.createExpense(props.contractId, values)
       toast.success('บันทึกค่าใช้จ่ายสำเร็จ')
-    } else if (currentMode.value === 'edit' && itemId) {
-      await ContractService.updateExpense(itemId, values)
+    } else if (currentMode.value === 'UPDATE' && itemId) {
+      await ContractExpenseService.updateExpense(itemId, values)
       toast.success('แก้ไขค่าใช้จ่ายสำเร็จ')
     }
     emits('update')
@@ -307,7 +327,7 @@ function onDelete (close: () => void): void {
   const id = props.item?.id
   if (!id) return
   handleLoading(async (): Promise<void> => {
-    await ContractService.deleteExpense(id)
+    await ContractExpenseService.deleteExpense(id)
     toast.success('ลบค่าใช้จ่ายสำเร็จ')
     emits('update')
     close()

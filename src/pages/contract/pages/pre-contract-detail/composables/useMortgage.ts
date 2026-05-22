@@ -1,4 +1,4 @@
-import { computed, ref, type Ref } from 'vue'
+import { computed, nextTick, ref, type Ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
@@ -33,7 +33,9 @@ export function useMortgage (useFetch: () => void): IUseMortgage {
 
   function onSubmitMortgage (): void {
     isMortgageFormVisible.value = true
-    scrollToTop()
+    nextTick((): void => {
+      scrollToTop()
+    })
   }
 
   function onConfirmMortgage (): void {

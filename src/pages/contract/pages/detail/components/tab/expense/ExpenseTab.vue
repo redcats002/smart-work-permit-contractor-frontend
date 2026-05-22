@@ -4,16 +4,16 @@
       <Title title="รายการค่าใช้จ่าย" />
       <CreateButton
         label="บันทึกค่าใช้จ่าย"
-        @click="openModal('create')" />
+        @click="openModal('CREATE')" />
     </div>
     <ExpenseTable
       v-model:pagination="pagination"
       v-model:sort-by="sortBy"
       v-model:sort-order="sortOrder"
       :items="items"
-      @delete="openModal('delete', $event)"
-      @edit="openModal('edit', $event)"
-      @read="openModal('read', $event)"
+      @delete="openModal('DELETE', $event)"
+      @edit="openModal('UPDATE', $event)"
+      @read="openModal('READ', $event)"
       @update="fetch()" />
     <ModalExpense
       v-model:visible="modalVisible"
@@ -28,18 +28,17 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IGetExpenseList } from '@/models/request/contract/ContractReq.model'
-import type { IContractExpenseList } from '@/models/response/contract/ContractRes.model'
-import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
+import type { IGetExpenseList } from '@/models/request/contract-expense/ContractExpenseReq.model'
+import type { IContractExpenseList } from '@/models/response/contract-expense/ContractExpenseRes.model'
+import ContractExpenseProvider, { type IContractExpenseProvider } from '@/resources/provider/contract-expense/ContractExpense.provider'
 import CreateButton from '@/components/button/CreateButton.vue'
 import usePagination from '@/composables/usePagination'
 import Title from '../Title.vue'
 import ExpenseTable from './ExpenseTable.vue'
+import type { TActionMode } from '@/models/Global.model'
 import ModalExpense from './ModalExpense.vue'
 
-type TExpenseModalMode = 'create' | 'read' | 'edit' | 'delete'
-
-const ContractService: IContractProvider = new ContractProvider()
+const ContractExpenseService: IContractExpenseProvider = new ContractExpenseProvider()
 
 const route = useRoute()
 const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = usePagination()
@@ -61,7 +60,7 @@ const paginateQuery = computed((): IGetExpenseList => {
 })
 
 async function useFetch (): Promise<void> {
-  const response = await ContractService.getExpenseList(contractId.value, paginateQuery.value)
+  const response = await ContractExpenseService.getExpenseList(contractId.value, paginateQuery.value)
   items.value = response?.data || []
   pagination.value = extractPagination(response)
   syncQuery({ ...normalizeFilters(filters.value) })
@@ -79,10 +78,10 @@ function fetch (): void {
 }
 
 const modalVisible = ref<boolean>(false)
-const modalMode = ref<TExpenseModalMode>('create')
+const modalMode = ref<TActionMode>('CREATE')
 const selectedItem = ref<IContractExpenseList | undefined>(undefined)
 
-function openModal (mode: TExpenseModalMode, item?: IContractExpenseList): void {
+function openModal (mode: TActionMode, item?: IContractExpenseList): void {
   modalMode.value = mode
   selectedItem.value = item
   modalVisible.value = true

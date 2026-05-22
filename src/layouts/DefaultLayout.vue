@@ -15,8 +15,7 @@
 
     <!-- ── Main content ────────────────────────────────────────── -->
     <div
-      class="flex-1 flex flex-col overflow-hidden bg-[#F3F6F9]"
-      data-app-scroll="true">
+      class="flex-1 flex flex-col overflow-hidden bg-[#F3F6F9]">
       <!-- Top bar -->
       <header class="md:hidden flex justify-between items-center h-14 px-4 bg-white border-b border-[--p-gray-5] shrink-0">
         <div class="flex items-center gap-4">
@@ -35,7 +34,9 @@
         <ProfileCard class="md:hidden" />
       </header>
 
-      <div class="flex-1 overflow-y-auto py-4 px-5">
+      <div
+        class="flex-1 overflow-y-auto py-4 px-5"
+        data-app-scroll="true">
         <RouteTransition />
       </div>
     </div>

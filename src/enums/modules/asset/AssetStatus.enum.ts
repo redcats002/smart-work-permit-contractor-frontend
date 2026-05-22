@@ -2,21 +2,47 @@ import type { TBaseOption } from '@/models/Global.model'
 
 export enum AssetStatusEnum {
   ACTIVE = 'ACTIVE',
+  PENDING_REFUND = 'PENDING_REFUND',
+  REFUNDED = 'REFUNDED',
+  LEGAL_EXECUTION = 'LEGAL_EXECUTION',
   SOLD = 'SOLD',
-  PENDING_SALE = 'PENDING_SALE',
-  DONE = 'DONE'
+  PENDING_SALE = 'PENDING_SALE'
+  // DONE = 'DONE'
 }
 
 export type TAssetStatus = keyof typeof AssetStatusEnum
 
-const titleMap: Record <TAssetStatus, string> = {
+const titleMap: Record<TAssetStatus, string> = {
   [AssetStatusEnum.ACTIVE]: 'ใช้งาน',
-  [AssetStatusEnum.SOLD]: 'ขายแล้ว',
+  [AssetStatusEnum.PENDING_REFUND]: 'รอคืนลูกค้า',
+  [AssetStatusEnum.REFUNDED]: 'คืนลูกค้าแล้ว',
+  [AssetStatusEnum.LEGAL_EXECUTION]: 'บังคับคดี',
   [AssetStatusEnum.PENDING_SALE]: 'รอขาย',
-  [AssetStatusEnum.DONE]: 'ปิดแล้ว'
+  [AssetStatusEnum.SOLD]: 'ขายแล้ว'
+  // [AssetStatusEnum.DONE]: 'ปิดแล้ว'
 }
 
 export const AssetsStatusItems: TBaseOption[] = Object.values(AssetStatusEnum).map(
+  (e: TAssetStatus): TBaseOption => ({
+    label: formatTitle(e),
+    value: e
+  })
+)
+
+export const AssetStatusForCancelledContractItems: TBaseOption[] = [
+  AssetStatusEnum.LEGAL_EXECUTION,
+  AssetStatusEnum.PENDING_SALE,
+  AssetStatusEnum.SOLD
+].map(
+  (e: TAssetStatus): TBaseOption => ({
+    label: formatTitle(e),
+    value: e
+  })
+)
+export const AssetStatusForCloseContractContractItems: TBaseOption[] = [
+  AssetStatusEnum.PENDING_REFUND,
+  AssetStatusEnum.REFUNDED
+].map(
   (e: TAssetStatus): TBaseOption => ({
     label: formatTitle(e),
     value: e
@@ -36,8 +62,12 @@ export function getStatusClass (value?: TAssetStatus): string {
       return 'bg-yellow-50 text-yellow-600 border-none'
     case AssetStatusEnum.SOLD:
       return 'bg-gray-100 text-gray-600 border-none'
-    case AssetStatusEnum.DONE:
-      return 'bg-gray-200 text-gray-500 border-none'
+    // case AssetStatusEnum.DONE:
+    //   return 'bg-gray-200 text-gray-500 border-none'
+    case AssetStatusEnum.PENDING_REFUND:
+    case AssetStatusEnum.REFUNDED:
+    case AssetStatusEnum.LEGAL_EXECUTION:
+      return 'bg-blue-50 text-blue-600 border-none'
     default:
       return 'bg-gray-100 text-gray-600 border-none'
   }
@@ -51,8 +81,12 @@ export function getIcon (value?: TAssetStatus): string {
       return 'solar:clock-circle-linear'
     case AssetStatusEnum.SOLD:
       return 'mdi:tag-outline'
-    case AssetStatusEnum.DONE:
-      return 'material-symbols:close-rounded'
+    // case AssetStatusEnum.DONE:
+    //   return 'material-symbols:close-rounded'
+    case AssetStatusEnum.PENDING_REFUND:
+    case AssetStatusEnum.REFUNDED:
+    case AssetStatusEnum.LEGAL_EXECUTION:
+      return 'mdi:truck-delivery-outline'
     default:
       return 'mdi:help-circle-outline'
   }

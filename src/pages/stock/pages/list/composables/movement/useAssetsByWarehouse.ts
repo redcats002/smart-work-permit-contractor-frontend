@@ -34,8 +34,8 @@ export default function useList (warehouseId: ComputedRef<number>): IUseList {
   })
 
   async function useFetch (): Promise<void> {
-    console.log(warehouseId.value)
     if (!warehouseId.value) return
+    filters.value.warehouseId = warehouseId.value
     const response = await DocumentStorageService.getDocumentMovementAssetsPaginateByWarehouseId(warehouseId.value, paginateQuery.value)
     items.value = response?.data || []
     pagination.value = extractPagination(response)
@@ -60,6 +60,12 @@ export default function useList (warehouseId: ComputedRef<number>): IUseList {
 
   function onClearFilters (): void {
     reset()
+    filters.value = {
+      locationId: undefined,
+      status: undefined,
+      type: undefined,
+      warehouseId: warehouseId.value
+    }
   }
 
   return {

@@ -17,7 +17,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const items = computed((): IMenuItemAction[] => [
-  { label: 'ดู', key: 'read', type: 'TEXT', action: (): void => { emits('read') } },
+  { label: 'รายละเอียด', key: 'read', type: 'TEXT', action: (): void => { emits('read') } },
   { label: 'แก้ไข', key: 'edit', type: 'TEXT', action: (): void => { emits('edit') } },
   { label: 'ลบ', key: 'delete', type: 'TEXT', action: (): void => { emits('delete') } }
 ])

@@ -131,6 +131,13 @@
 				</template>
 			</SecondaryButton>
 		</template>
+		<template #clearicon="{ clearCallback }">
+			<TimesIcon v-if="$attrs?.['show-clear'] && !!$attrs?.modelValue"
+				@click="clearCallback"
+				class="cursor-pointer absolute top-1/2 -mt-2 end-8 text-surface-400
+				leading-none p-small:size-[0.875rem] p-large:size-[1.125rem]" />
+				<div v-else></div>
+		</template>
 		<template
 			v-for="(_, slotName) in $slots"
 			#[slotName]="slotProps">
@@ -148,6 +155,7 @@ import ChevronDownIcon from '@primevue/icons/chevrondown'
 import ChevronLeftIcon from '@primevue/icons/chevronleft'
 import ChevronRightIcon from '@primevue/icons/chevronright'
 import ChevronUpIcon from '@primevue/icons/chevronup'
+import TimesIcon from '@primevue/icons/times'
 import DatePicker from 'primevue/datepicker'
 import SecondaryButton from './SecondaryButton.vue'
 import { ptViewMerge } from './utils'

@@ -11,7 +11,7 @@
           icon="material-symbols:print-outline-rounded"
           label="พิมพ์" />
       </RankingLoanFilter>
-      <div class="mt-5">
+      <div>
         <RankingLoanTable
           :items="items"
           :type="filters.type" />

@@ -1,25 +1,17 @@
 import type { IEntity } from '@/models/Global.model'
-import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
-import type { TDocumentType } from '@/enums/modules/contract/DocumentType.enum'
 import type { TInterestType } from '@/enums/modules/contract/InterestType.enum'
 import type { TPaymentStatus } from '@/enums/modules/contract/PaymentStatus.enum'
-import type { TVatType } from '@/enums/modules/Vat.enum'
-import type { IMedia } from '@/resources/provider/Upload.provider'
 import type { IInstallmentRow } from '@/pages/contract/pages/pre-contract-detail/composables/useInstallment'
 import type { IContractLoanPurposeList } from '../contract-loan-purpose/ContractLoanPurposeRes.model'
 import type { IContractLoanTypeList } from '../contract-loan-type/ContractLoanTypeRes.model'
 import type { ICustomerById, ICustomerList } from '../customer/CustomerRes.model'
 import type { IEmployeeList } from '../employee/EmployeeRes.model'
-import type { IFinanceExpenseCategoryList } from '../finance-expense-category/FinanceExpenseCategoryRes.model'
-import type { IFinanceExpenseTypeList } from '../finance-expense-type/FinanceExpenseTypeRes.model'
-import type { IFinanceIncomeCategoryList } from '../finance-income-category/FinanceIncomeCategoryRes.model'
-import type { IFinanceIncomeTypeList } from '../finance-income-type/FinanceIncomeTypeRes.model'
 import type { IHowDidFindUsList } from '../how-did-find-us/HowDidFindUsRes.model'
 import type { IPreContractList, IPreContractLoanType } from '../pre-contract/PreContractRes.model'
+import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
-import type { IWarehouseList } from '../warehouse/WarehouseRes.model'
 
 export interface IContractCustomer extends ICustomerList {
   idCard?: string
@@ -40,6 +32,7 @@ export interface IContractList extends Omit<IPreContractList, 'status'> {
   firstInstallmentDate: string
   finalInstallmentDate: string
 }
+
 export interface IContractById extends IEntity {
   borrowers: IBorrowersItems[]
   status: TContractStatus
@@ -66,7 +59,6 @@ export interface IContractById extends IEntity {
   outstanding: IContractSummaryCard
 }
 
-export interface IContractAssetList extends IPreAssetList {}
 export interface IContractInstallmentSummary {
   remainingDebt: number
   remainingPrincipal: number
@@ -111,68 +103,11 @@ export interface IContractInstallmentList extends IInstallmentRow, IEntity {
   items: IContractInstallmentItem[]
 }
 
-export interface IContractExpenseList extends IEntity {
-  date: string
-  expenseCategory: IFinanceExpenseCategoryList
-  expenseType: IFinanceExpenseTypeList
-  note: string
-  amount: number
-  vatType?: TVatType
-  file?: IMedia[]
-}
-
-export interface IContractExpenseById extends IEntity {
-  contractId: number | null
-  expenseCategory: IFinanceExpenseCategoryList
-  expenseType: IFinanceExpenseTypeList
-  note: string
-  amount: number
-  vatType: TVatType
-  file: IMedia[]
-}
-export interface IContractIncomeList extends IEntity {
-  date: string
-  incomeCategory: IFinanceIncomeCategoryList
-  incomeType: IFinanceIncomeTypeList
-  note: string
-  amount: number
-  vatType?: TVatType
-  file?: IMedia[]
-}
-export interface IContractIncomeById extends IEntity {
-  contractId: number | null
-  incomeCategory: IFinanceIncomeCategoryList
-  incomeType: IFinanceIncomeTypeList
-  note: string
-  amount: number
-  vatType: TVatType
-  file: IMedia[]
-}
 export interface IContractGuarantorList extends ICustomerList {
   customer: ICustomerById
   idCard: string
   mainAddress: IAddressRequest
   birthDate?: string
-}
-export interface IContractContactHistoryList extends IEntity {
-  contactAt: string
-  topic: string
-  note: string
-  employee: IEmployeeList
-}
-
-export interface IContractContactHistoryById extends IEntity {
-  contactAt: string
-  topic: string
-  note: string
-  employee: IEmployeeList
-}
-export interface IContractDocumentList extends IEntity {
-  date: string
-  documentType: TDocumentType
-  note: string
-  location: IWarehouseList
-  files?: IMedia[]
 }
 
 export interface IContractSummaryCard {
@@ -184,20 +119,16 @@ export interface IContractSummaryCard {
 export type TGetContractListResponse = IBasePaginationResponse<IContractList>
 export type TGetContractByIdResponse = IBaseSuccessResponse<IContractById>
 export type TActionContract = IBaseSuccessResponse<boolean>
-export type TGetAssetContractListResponse = IBasePaginationResponse<IContractAssetList>
 export type TGetInstallmentSummaryResponse = IBaseSuccessResponse<IContractInstallmentSummary>
 export type TGetInstallmentListResponse = IBasePaginationResponse<IContractInstallmentList>
 export type TActionContractInstallmentFeeResponse = IBaseSuccessResponse<boolean>
-export type TGetContractExpenseListResponse = IBasePaginationResponse<IContractExpenseList>
-export type TGetContractExpenseByIdResponse = IBaseSuccessResponse<IContractExpenseById>
-export type TActionContractExpenseResponse = IBaseSuccessResponse<boolean>
-export type TGetContractIncomeListResponse = IBasePaginationResponse<IContractIncomeList>
-export type TGetContractIncomeByIdResponse = IBaseSuccessResponse<IContractIncomeById>
-export type TActionContractIncomeResponse = IBaseSuccessResponse<boolean>
 export type TGetGuarantorContractListResponse = IBasePaginationResponse<IContractGuarantorList>
-export type TGetContractHistoryListResponse = IBasePaginationResponse<IContractContactHistoryList>
-export type TGetContractHistoryByIdResponse = IBaseSuccessResponse<IContractContactHistoryById>
-export type TActionContractHistoryResponse = IBaseSuccessResponse<boolean>
 
-export type TGetDocumentListResponse = IBasePaginationResponse<IContractDocumentList>
-export type TActionContractDocumentResponse = IBaseSuccessResponse<boolean>
+export interface IContractAssetList extends IPreAssetList {}
+export type TGetAssetContractListResponse = IBasePaginationResponse<IContractAssetList>
+
+
+export * from '../contract-expense/ContractExpenseRes.model'
+export * from '../contract-income/ContractIncomeRes.model'
+export * from '../contract-history/ContractHistoryRes.model'
+export * from '../contract-document/ContractDocumentRes.model'

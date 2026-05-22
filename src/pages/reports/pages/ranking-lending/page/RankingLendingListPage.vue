@@ -7,7 +7,7 @@
         v-model:filters="filters"
         @clear="onClearFilters()"
         @search="onSearch()" />
-      <div class="mt-5">
+      <div>
         <RankingLendingTable :items="items" />
       </div>
     </BasePage>
