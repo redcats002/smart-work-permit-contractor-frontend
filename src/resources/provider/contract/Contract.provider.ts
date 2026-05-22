@@ -1,5 +1,4 @@
 import type {
-  ICreateContractPayload,
   IGetContractList,
   IGetGuarantorContractList,
   IGetInstallmentList,
@@ -22,9 +21,8 @@ import HttpRequest from '@/resources/HttpRequest'
 
 export interface IContractProvider {
   getContractPaginate(query: IGetContractList): Promise<TGetContractListResponse>
-  createContract(payload: ICreateContractPayload): Promise<TActionContract>
   updateContract(id: TBaseParamsId, payload: IUpdateContractPayload): Promise<TActionContract>
-  deleteContract(id: number): Promise<TActionContract>
+  cancelledContract(id: number): Promise<TActionContract>
   getContractFindOne(id: TBaseParamsId): Promise<TGetContractByIdResponse>
   requestAssessmentPrice(id: TBaseParamsId): Promise<TActionContract>
   getInstallmentList(id: TBaseParamsId, query?: IGetInstallmentList): Promise<TGetInstallmentListResponse>
@@ -44,18 +42,13 @@ class ContractProvider extends HttpRequest implements IContractProvider {
     return response
   }
 
-  public async createContract (payload: ICreateContractPayload): Promise<TActionContract> {
-    const response = await this.post(`${this.urlPrefix}`, payload)
-    return response
-  }
-
   public async updateContract (id: TBaseParamsId, payload: IUpdateContractPayload): Promise<TActionContract> {
     const response = await this.put(`${this.urlPrefix}/${id}`, payload)
     return response
   }
 
-  public async deleteContract (id: number): Promise<TActionContract> {
-    const response = await this.delete(`${this.urlPrefix}/${id}`)
+  public async cancelledContract (id: number): Promise<TActionContract> {
+    const response = await this.patch(`${this.urlPrefix}/${id}`)
     return response
   }
 

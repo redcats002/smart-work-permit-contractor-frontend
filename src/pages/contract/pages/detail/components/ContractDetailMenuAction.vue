@@ -11,6 +11,7 @@ import BaseActionMenu, { type IMenuItemAction } from '@/components/base/BaseActi
 interface IProps {}
 
 interface IEmits {
+  print: []
   edit: []
   delete: []
 }
@@ -19,8 +20,9 @@ defineProps<IProps>()
 const emits = defineEmits<IEmits>()
 
 const items = ref<IMenuItemAction[]>([
-  { label: 'แก้ไข', key: 'edit', type: 'TEXT', action: (): void => { emits('edit') } },
-  { label: 'ลบ', key: 'delete', action: (): void => { emits('delete') }, type: 'DELETE' }
+  { label: 'พิมพ์สัญญา', key: 'print', type: 'TEXT', action: (): void => { emits('print') } },
+  { label: 'แก้ไขสัญญา', key: 'edit', type: 'TEXT', action: (): void => { emits('edit') } },
+  { label: 'ยกเลิกสัญญา', key: 'delete', action: (): void => { emits('delete') }, type: 'DELETE' }
 ])
 
 

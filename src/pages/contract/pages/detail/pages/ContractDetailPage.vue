@@ -4,12 +4,16 @@
     <BaseTop>
       <BackButton />
       <Spacer />
+      <ContractDetailMenuAction
+        @delete="onCancelled()"
+        @edit="onEdit()"
+        @print="onPrint()" />
     </BaseTop>
     <BasePage>
       <div class="grid grid-cols-1 gap-2.5">
         <InformationDetail
           :data="contract"
-          @delete="onDelete()"
+          @delete="onCancelled()"
           @edit="onEdit()" />
         <ContractTab :data="contract" />
       </div>
@@ -29,6 +33,7 @@ import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
+import ContractDetailMenuAction from '../components/ContractDetailMenuAction.vue'
 import InformationDetail from '../components/InformationDetail.vue'
 import ContractTab from '../components/tab/ContractTab.vue'
 import { useInitDetail } from '../composables/useInitDetail'
@@ -46,9 +51,9 @@ async function useFetch (): Promise<void> {
   contract.value = useInitDetail(data).value
 }
 
-async function useDelete (): Promise<void> {
+async function useCancelled (): Promise<void> {
   if (!contractId.value) throw new Error('Contract ID is required for deletion')
-  await ContractService.deleteContract(contractId.value)
+  await ContractService.cancelledContract(contractId.value)
   toast.success('ดำเนินการสำเร็จ')
   router.push({ name: 'ContractListPage' })
 }
@@ -58,11 +63,16 @@ function fetch (): void {
 }
 
 function onEdit (): void {
-  router.push({ name: 'ContractEditPage', params: { id: contractId.value } })
+  router.push({ name: 'PreContractEditPage', params: { id: contractId.value } })
 }
 
-function onDelete (): void {
-  handleLoading(useDelete)
+function onCancelled (): void {
+  handleLoading(useCancelled)
+}
+
+function onPrint (): void {
+  // TODO: implement print feature (รอ ui)
+  toast.warn('ฟีเจอร์นี้อยู่ระหว่างการพัฒนา')
 }
 
 onMounted((): void => {
