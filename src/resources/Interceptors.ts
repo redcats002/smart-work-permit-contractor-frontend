@@ -59,9 +59,12 @@ export async function onResponseError (error: AxiosError): Promise<any> {
     return Promise.reject(newError?.response?.data)
   }
   if (newError.response?.status === 401 || unauthorized) {
-    const baseUrl = window.location.origin
-    AuthStore.logout()
-    window.location.href = `${baseUrl}/auth/login`
+    const isOnAuthPage = window.location.pathname.startsWith('/auth')
+    if (!isOnAuthPage) {
+      const baseUrl = window.location.origin
+      AuthStore.logout()
+      window.location.href = `${baseUrl}/auth/login`
+    }
     return Promise.reject(newError.response?.data)
   }
   if (newError?.response?.data) {
