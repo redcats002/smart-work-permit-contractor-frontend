@@ -24,6 +24,7 @@
             class="flex items-center gap-2">
             <div class="flex-1">
               <CustomerSelection
+                :disabled-ids="primaryCustomer?.id ? [Number(primaryCustomer?.id)] : []"
                 :model-value="customer.id"
                 @update:model-value="updateCustomer(index, $event)" />
             </div>
@@ -62,6 +63,7 @@
             class="flex items-center gap-2">
             <div class="flex-1">
               <CustomerSelection
+                :disabled-ids="primaryCustomer?.id ? [Number(primaryCustomer?.id)] : []"
                 :model-value="guarantor.id"
                 @update:model-value="updateGuarantor(index, $event)" />
             </div>
