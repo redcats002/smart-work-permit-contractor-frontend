@@ -74,12 +74,15 @@ import type { RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '@/stores/Auth'
 import useLogout from '@/pages/auth/composables/useLogout'
 import { useAppDrawer } from '@/composables/useAppDrawer'
+import { usePermission } from '@/composables/usePermission'
 import { routes } from '@/router'
+import { type TPermissionModule } from '@/utils/Permission'
 import { Icon } from '@iconify/vue'
 import AppDrawerMenu from './AppDrawerMenu.vue'
 import AppDrawerSubMenu, { type ISubMenuItem } from './AppDrawerSubMenu.vue'
 
 const { isOpen, close } = useAppDrawer()
+const { hasPermission } = usePermission()
 
 const { logout } = useLogout()
 
@@ -98,6 +101,7 @@ interface IRouteMeta {
   icon?: string
   menu?: boolean
   disabled?: boolean
+  permission?: TPermissionModule
 }
 
 interface IMenuRouteItem {
@@ -105,6 +109,7 @@ interface IMenuRouteItem {
   to: string
   icon?: string
   disabled?: boolean
+  permission?: TPermissionModule
 }
 
 const authStore = useAuthStore()
@@ -115,8 +120,12 @@ const menuItems = computed<IMenuItem[]>((): IMenuItem[] => {
       return []
     }
 
-    const fullPath = normalizePath('', route.path)
     const routeMeta = getRouteMeta(route)
+    if (routeMeta.permission && !hasPermission(routeMeta.permission)) {
+      return []
+    }
+
+    const fullPath = normalizePath('', route.path)
     const childMenuItems = (route.children ?? []).flatMap((child: RouteRecordRaw): IMenuRouteItem[] => {
       const childPath = normalizePath(fullPath, child.path)
       return collectMenuRouteItems(child, childPath)
@@ -173,6 +182,12 @@ function getRouteMeta (route: RouteRecordRaw): IRouteMeta {
 
 function collectMenuRouteItems (route: RouteRecordRaw, fullPath: string): IMenuRouteItem[] {
   const meta = getRouteMeta(route)
+
+  // Skip if no permission for this specific route/child
+  if (meta.permission && !hasPermission(meta.permission)) {
+    return []
+  }
+
   const currentItems
     = meta.menu && (meta?.menuTitle || meta?.title)
       ? [
@@ -180,7 +195,8 @@ function collectMenuRouteItems (route: RouteRecordRaw, fullPath: string): IMenuR
           label: (meta?.menuTitle || meta?.title || ''),
           to: fullPath,
           icon: meta.icon,
-          disabled: meta.disabled
+          disabled: meta.disabled,
+          permission: meta.permission
         }
       ]
       : []

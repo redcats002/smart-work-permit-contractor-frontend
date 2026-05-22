@@ -8,7 +8,7 @@ export default {
   name: 'ActionLogPage',
   redirect: { name: 'ActionLogListPage' },
   component: (): ComponentOptions => import('@/pages/action-log/ActionLog.vue'),
-  meta: { title: 'บันทึกการเข้าถึงระบบ', auth: true, icon: 'streamline-flex:search-history-browser' },
+  meta: { title: 'บันทึกการเข้าถึงระบบ', auth: true, icon: 'streamline-flex:search-history-browser', permission: 'audit_logs' },
   children: [
     {
       path: 'list',

@@ -12,7 +12,8 @@ export default {
   meta: {
     title: 'การจัดเก็บ',
     auth: true,
-    icon: 'mdi-account-cog-outline'
+    icon: 'mdi-account-cog-outline',
+    permission: 'storage'
   },
   children: [
     {

@@ -8,7 +8,7 @@ export default {
   name: 'WorkPage',
   redirect: { name: 'WorkListPage' },
   component: (): ComponentOptions => import('@/pages/work/WorkPage.vue'),
-  meta: { title: 'งาน', auth: true, icon: 'iconoir:box-iso' },
+  meta: { title: 'งาน', auth: true, icon: 'iconoir:box-iso', permission: 'tasks' },
   children: [
     {
       path: 'asset-appraisal',

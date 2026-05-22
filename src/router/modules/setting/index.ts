@@ -16,7 +16,8 @@ export default {
   meta: {
     title: 'ตั้งค่า',
     auth: true,
-    icon: 'lsicon:setting-outline'
+    icon: 'lsicon:setting-outline',
+    permission: 'settings'
   },
   children: [
     {

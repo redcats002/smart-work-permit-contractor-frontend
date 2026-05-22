@@ -33,7 +33,8 @@ export default {
   meta: {
     title: 'รายงาน',
     auth: true,
-    icon: 'eva:list-fill'
+    icon: 'eva:list-fill',
+    permission: 'reports'
   },
   children: [
     {

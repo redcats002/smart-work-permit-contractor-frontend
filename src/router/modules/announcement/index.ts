@@ -8,7 +8,7 @@ export default {
   name: 'AnnouncementPage',
   redirect: { name: 'AnnouncementPostPage' },
   component: (): ComponentOptions => import('@/pages/announcement/Announcement.vue'),
-  meta: { title: 'ข่าวสาร', auth: true, icon: 'iconamoon:news' },
+  meta: { title: 'ข่าวสาร', auth: true, icon: 'iconamoon:news', permission: 'news' },
   children: [
     {
       path: '/announcement',

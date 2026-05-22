@@ -12,7 +12,8 @@ export default {
   meta: {
     title: 'หลักทรัพย์',
     auth: true,
-    icon: 'iconoir:box-iso'
+    icon: 'iconoir:box-iso',
+    permission: 'assets'
   },
   children: [
     {
