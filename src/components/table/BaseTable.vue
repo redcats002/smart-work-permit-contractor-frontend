@@ -245,11 +245,11 @@ const sortFieldModel = computed<string | undefined>({
 const sortOrderModel = computed<number | undefined>({
   get (): number | undefined {
     if (!sortOrder.value) return undefined
-    return sortOrder.value === 'desc' ? 1 : -1
+    return sortOrder.value === 'asc' ? 1 : -1
   },
   set (value: number | undefined): void {
-    if (value === 1) sortOrder.value = 'desc'
-    if (value === -1) sortOrder.value = 'asc'
+    if (value === 1) sortOrder.value = 'asc'
+    if (value === -1) sortOrder.value = 'desc'
   }
 })
 
