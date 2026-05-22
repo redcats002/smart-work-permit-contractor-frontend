@@ -12,10 +12,10 @@
           <span class="text-sm font-bold after:content-['*'] after:text-red-500 after:ml-0.5">ลูกค้า</span>
           <div
             v-if="primaryCustomer?.id"
-            class="flex items-center gap-2 h-9 px-3 border border-surface-300 rounded-sm bg-surface-50">
+            class="flex items-center gap-2 h-9 px-3 border border-surface-300 rounded-sm bg-(--p-gray-4) text-surface-700">
             <Icon
               class="size-4 text-surface-400 shrink-0"
-              icon="solar:user-bold" />
+              icon="solar:user-linear" />
             <span class="flex-1 text-sm truncate">{{ formatter.fullName(primaryCustomer) }}</span>
           </div>
           <div
@@ -23,19 +23,21 @@
             :key="index"
             class="flex items-center gap-2">
             <div class="flex-1">
-              <CustomerSelection
-                :disabled-ids="primaryCustomer?.id ? [Number(primaryCustomer?.id)] : []"
+              <ModalCustomerSelection
+                :disabled-ids="selectedIds"
                 :model-value="customer.id"
+                placeholder="เลือกลูกค้า"
+                prepend-icon="solar:user-linear"
                 @update:model-value="updateCustomer(index, $event)" />
             </div>
             <button
-              class="shrink-0 size-8 flex items-center justify-center text-red-400 hover:text-red-600 transition-colors"
+              class="shrink-0 size-8 flex items-center justify-center text-primary cursor-pointer hover:text-red-600 transition-colors"
               type="button"
               text
               @click="removeCustomer(index)">
               <Icon
                 class="size-5"
-                icon="mdi:delete-outline" />
+                icon="material-symbols:delete-outline" />
             </button>
           </div>
 
@@ -51,29 +53,31 @@
           </Button>
         </div>
 
-        <Divider />
+        <Divider class="grayscale opacity-50" />
 
         <!-- Guarantors section -->
         <div class="flex flex-col gap-2">
-          <span class="text-sm font-bold">ผู้ค้าประกัน</span>
+          <span class="text-sm font-bold">ผู้ค้ำประกัน</span>
 
           <div
             v-for="(guarantor, index) in localGuarantors"
             :key="index"
             class="flex items-center gap-2">
             <div class="flex-1">
-              <CustomerSelection
-                :disabled-ids="primaryCustomer?.id ? [Number(primaryCustomer?.id)] : []"
+              <ModalCustomerSelection
+                :disabled-ids="selectedIds"
                 :model-value="guarantor.id"
+                placeholder="เลือกผู้ค้ำประกัน"
+                prepend-icon="solar:user-linear"
                 @update:model-value="updateGuarantor(index, $event)" />
             </div>
             <button
-              class="shrink-0 size-8 flex items-center justify-center text-red-400 hover:text-red-600 transition-colors"
+              class="shrink-0 size-8 flex items-center justify-center text-primary cursor-pointer hover:text-red-600 transition-colors"
               type="button"
               @click="removeGuarantor(index)">
               <Icon
                 class="size-5"
-                icon="mdi:delete-outline" />
+                icon="material-symbols:delete-outline" />
             </button>
           </div>
 
@@ -85,7 +89,7 @@
             <Icon
               class="size-4"
               icon="mdi:plus" />
-            เพิ่มผู้ค้าประกันในสัญญา
+            เพิ่มผู้ค้ำประกันในสัญญา
           </Button>
         </div>
       </div>
@@ -157,7 +161,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
 import { formatter } from '@/utils/Formatter'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { IFormType } from '@/models/Form.model'
@@ -167,7 +171,7 @@ import DatePickerInput from '@/components/input/DatePickerInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import ContractLoanPurposeSelection from '@/components/selection/modules/api/contract-loan-purpose/ContractLoanPurposeSelection.vue'
 import ContractLoanTypeSelection from '@/components/selection/modules/api/contract-loan-type/ContractLoanTypeSelection.vue'
-import CustomerSelection from '@/components/selection/modules/api/customer/CustomerSelection.vue'
+import ModalCustomerSelection from '@/components/selection/modules/api/customer/ModalCustomerSelection.vue'
 import HowDidFindUsSelection from '@/components/selection/modules/api/how-did-find-us/HowDidFindUsSelection.vue'
 import { Icon } from '@iconify/vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
@@ -198,6 +202,20 @@ const formRef = useTemplateRef<IFormType>('formRef')
 const resolver = zodResolver(MortgageSchema)
 const localCustomers = ref<ISelectItem[]>([])
 const localGuarantors = ref<ISelectItem[]>([])
+
+const selectedCustomerIds = computed((): number[] => {
+  const primary = props.primaryCustomer ? [{ id: Number(props.primaryCustomer.id) }] : []
+  const others = localCustomers.value
+  return [...primary, ...others].map((c: { id: number | null }): number | null => c.id).filter((id: number | null): id is number => id !== null)
+})
+const selectedGuarantorIds = computed((): number[] => {
+  return localGuarantors.value.map((g: { id: number | null }): number | null => g.id).filter((id: number | null): id is number => id !== null)
+})
+const selectedIds = computed((): number[] => {
+  const customerIds = selectedCustomerIds.value
+  const guarantorIds = selectedGuarantorIds.value
+  return [...customerIds, ...guarantorIds]
+})
 
 function updateCustomer (index: number, value: number | null | undefined): void {
   localCustomers.value[index] = { id: value ?? null }

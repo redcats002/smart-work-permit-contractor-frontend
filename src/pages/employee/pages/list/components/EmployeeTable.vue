@@ -8,7 +8,9 @@
     disable-auto-left-padding
     @update="emits('update')">
     <template #[`item.idNo`]="{ item }">
-      <LinkText :to="{ name: 'EmployeeDetailPage', params: { id: item.id } }">
+      <LinkText
+        :target="linkBlank ? '_blank' : '_self'"
+        :to="{ name: 'EmployeeDetailPage', params: { id: item.id } }">
         {{ item?.idNo }}
       </LinkText>
     </template>
@@ -32,11 +34,13 @@ import ChipEmployeeStatus from './ChipEmployeeStatus.vue'
 
 interface IProps {
   hideColumns?: (keyof IEmployeeList)[]
+  linkBlank?: boolean
   items: IEmployeeList[]
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-  hideColumns: undefined
+  hideColumns: undefined,
+  linkBlank: false
 })
 
 interface IEmits {

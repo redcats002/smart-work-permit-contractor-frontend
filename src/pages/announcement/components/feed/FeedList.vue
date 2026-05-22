@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4">
     <PostCard
-      v-for="post in items"
+      v-for="(post, i) in items"
       :id="Number(post.id)"
       :key="post.id"
       :author-name="post.author.name"
@@ -9,6 +9,7 @@
       :created-at="post.createdAt"
       :files="post.attachments"
       :image="post.author.image"
+      :order="i"
       :role="post.author.role"
       @deleted="emits('refresh')"
       @updated="emits('refresh')" />

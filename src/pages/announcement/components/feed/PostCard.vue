@@ -22,13 +22,15 @@
               {{ authorName }}
             </span>
 
-            <span class="bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
+            <span
+              v-if="order === 0"
+              class="bg-primary text-white text-xs px-2 py-0.5 rounded-full">
               ใหม่
             </span>
           </div>
 
           <div class="text-sm text-gray-500">
-            {{ role }} • {{ dayjs.formatDate(createdAt || '') }}
+            {{ formatTitle(role) }} • {{ dayjs.formatDate(createdAt || '') }}
           </div>
         </div>
       </div>
@@ -56,10 +58,6 @@
     :initial-content="content"
     :initial-files="files"
     @updated="emits('updated')" />
-
-  <DeleteModal
-    v-model="deleteVisible"
-    @confirm="onDelete()" />
 </template>
 
 <script setup lang="ts">
@@ -68,23 +66,24 @@ import { toast } from '@/plugins/toast'
 import { useDayjs } from '@/utils/Dayjs'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IAttachments } from '@/models/response/announcement/AnnouncementRes.model'
+import { formatTitle, type TEmployeeRole } from '@/enums/modules/employee/EmployeeRole.enum'
 import type { IAnnouncementProvider } from '@/resources/provider/announcement/Announcement.provider'
 import AnnouncementProvider from '@/resources/provider/announcement/Announcement.provider'
 import BaseActionMenu, { type IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BaseImage from '@/components/base/BaseImage.vue'
 import FileAttachment from '@/components/display/FileAttachment.vue'
-import DeleteModal from '@/components/modal/DeleteModal.vue'
 import { Icon } from '@iconify/vue'
 import PostEditModal from '../composer/PostEditModal.vue'
 
 interface IProps {
   files?: IAttachments[]
   image?: string | null
+  order: number
   id: number
   content: string
   authorName: string
-  role: string
+  role: TEmployeeRole
   createdAt: string
 }
 
@@ -103,19 +102,17 @@ const dayjs = useDayjs()
 const AnnouncementService: IAnnouncementProvider = new AnnouncementProvider()
 
 const editVisible = ref<boolean>(false)
-const deleteVisible = ref<boolean>(false)
 
 const items = computed((): IMenuItemAction[] => {
   const base: IMenuItemAction[] = [
     { label: 'แก้ไข', key: 'edit', type: 'TEXT', action: (): void => { editVisible.value = true } },
-    { label: 'ลบ', key: 'delete', type: 'TEXT', action: (): void => { deleteVisible.value = true } }
+    { label: 'ลบ', key: 'delete', type: 'DELETE', action: onDelete }
   ]
   return base
 })
 
 async function useDelete (): Promise<void> {
   await AnnouncementService.deleteAnnouncement(props.id)
-  deleteVisible.value = false
   toast.success('ดำเนินการสำเร็จ')
 }
 

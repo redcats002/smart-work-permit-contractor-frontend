@@ -32,6 +32,7 @@ export interface IContractProvider {
   updateCollectionFee(contractInstallmentId: TBaseParamsId, payload: IUpdateInstallmentFeePayload): Promise<TActionContractInstallmentFeeResponse>
   getContractAssets(id: TBaseParamsId): Promise<TGetAssetContractListResponse>
   saveAssetDetail(contractId: TBaseParamsId, assetId: TBaseParamsId, formData: FormData): Promise<TActionContract>
+  testDueDate (id: TBaseParamsId): Promise<TActionContract>
 }
 
 class ContractProvider extends HttpRequest implements IContractProvider {
@@ -102,6 +103,11 @@ class ContractProvider extends HttpRequest implements IContractProvider {
     const response = await this.put(`${this.urlPrefix}/${contractId}/asset/${assetId}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
+    return response
+  }
+
+  public async testDueDate (id: TBaseParamsId): Promise<TActionContract> {
+    const response = await this.put(`${this.urlPrefix}/test-due-date/${id}`, {})
     return response
   }
 }

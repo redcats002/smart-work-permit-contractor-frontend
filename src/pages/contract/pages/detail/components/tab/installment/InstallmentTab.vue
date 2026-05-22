@@ -9,12 +9,23 @@
     </div>
     <div class="flex justify-between items-center">
       <span>ตารางการชำระ</span>
-      <span>
+      <div class="flex gap-2.5">
+        <ConfirmModal
+          label="ทดสอบวันครบกำหนด"
+          @confirm="onTestDueDate()">
+          <template #activator="{open}">
+            <Button
+              class="text-sm"
+              label="ทดสอบวันครบกำหนด"
+              variant="outlined"
+              @click="open()" />
+          </template>
+        </ConfirmModal>
         <router-link :to="{ name: 'ReceiptCreatePage', query: { customerId: mainBorrowerId } }">
           <ConfirmButton
             label="ชำระเงิน" />
         </router-link>
-      </span>
+      </div>
     </div>
     <InstallmentTable
       v-model:pagination="pagination"
@@ -40,6 +51,7 @@ import ContractProvider, { type IContractProvider } from '@/resources/provider/c
 import InvoiceProvider, { type IInvoiceProvider } from '@/resources/provider/invoice/Invoice.provider'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import CardIndicator, { type ICardIndicator } from '@/components/card/CardIndicator.vue'
+import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 import usePagination from '@/composables/usePagination'
 import InstallmentTable from './InstallmentTable.vue'
 
@@ -111,6 +123,14 @@ function onUpdateLegalFee (payload: { id: number, amount: number }): void {
   handleLoading(async (): Promise<void> => {
     await ContractService.updateLegalFee(payload.id, { amount: payload.amount })
     toast.success('บันทึกค่าทนายสำเร็จ')
+    fetch()
+  })
+}
+
+function onTestDueDate (): void {
+  handleLoading(async (): Promise<void> => {
+    await ContractService.testDueDate(contractId.value)
+    toast.success('ทดสอบวันครบกำหนดสำเร็จ')
     fetch()
   })
 }

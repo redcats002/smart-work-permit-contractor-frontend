@@ -1,12 +1,15 @@
 import { computed, ref, type Ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
+import type { IExpensesFilter } from '@/models/modules/expenses/Filter'
 import type { IGetExpensesList } from '@/models/request/expenses/ExpensesReq.model'
 import type { IExpensesList } from '@/models/response/expenses/ExpensesRes.model'
+import type { TExpensesType } from '@/enums/modules/finance/ExpenseType.enum'
 import ExpensesProvider, { type IExpensesProvider } from '@/resources/provider/expenses/Expenses.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
 interface IUseList extends IUsePagination {
-  filters: Ref<IGetExpensesList>
+  filters: Ref<IExpensesFilter>
   items: Ref<IExpensesList[]>
   fetch(): void
   onSearch(): void
@@ -14,10 +17,15 @@ interface IUseList extends IUsePagination {
 }
 
 export default function useList (): IUseList {
-  const expensesService: IExpensesProvider = new ExpensesProvider()
+  const route = useRoute()
+  const ExpensesService: IExpensesProvider = new ExpensesProvider()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
-  const filters = ref<IGetExpensesList>({})
+  const filters = ref<IExpensesFilter>({
+    expenseCategoryId: route?.query.expenseCategoryId ? Number(route.query.expenseCategoryId) : undefined,
+    expenseTypeId: route?.query.expenseTypeId ? Number(route.query.expenseTypeId) : undefined,
+    type: route?.query.type ? route.query.type as TExpensesType : undefined
+  })
 
   const items = ref<IExpensesList[]>([])
 
@@ -26,18 +34,22 @@ export default function useList (): IUseList {
     page: pagination.value.page,
     limit: pagination.value.limit,
     sortBy: sortBy.value || undefined,
-    sortOrder: sortOrder.value
+    sortOrder: sortOrder.value,
+    expenseCategoryId: filters.value.expenseCategoryId,
+    expenseTypeId: filters.value.expenseTypeId,
+    type: filters.value.type
   }))
 
   async function useFetch (): Promise<void> {
-    const response = await expensesService.getExpensesPaginate(paginateQuery.value)
+    const response = await ExpensesService.getExpensesPaginate(paginateQuery.value)
     items.value = response?.data || []
     pagination.value = extractPagination(response)
-    syncQuery({})
+    syncQuery({ ...paginateQuery.value })
   }
 
   function onClearFilters (): void {
     reset()
+    filters.value = {}
   }
 
   function onSearch (): void {

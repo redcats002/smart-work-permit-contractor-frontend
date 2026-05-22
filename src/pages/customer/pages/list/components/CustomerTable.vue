@@ -8,7 +8,9 @@
     disable-auto-left-padding
     @update="emits('update')">
     <template #[`item.idNo`]="{ item }">
-      <LinkText :to="{ name: 'CustomerDetailPage', params: { id: item.id }}">
+      <LinkText
+        :target="linkBlank ? '_blank' : undefined"
+        :to="{ name: 'CustomerDetailPage', params: { id: item.id }}">
         {{ item?.idNo }}
       </LinkText>
     </template>
@@ -30,9 +32,12 @@ import ChipCustomerStatus from './ChipCustomerStatus.vue'
 
 interface IProps {
   items: ICustomerList[]
+  linkBlank?: boolean
 }
 
-defineProps<IProps>()
+withDefaults(defineProps<IProps>(), {
+  linkBlank: false
+})
 
 interface IEmits {
   delete: [id: number]

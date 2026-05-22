@@ -24,6 +24,7 @@
           :hide-columns="['status']"
           :items="items"
           :row-class="rowClass"
+          link-blank
           @delete="onDelete($event)"
           @row-click="onRowClick($event, close)"
           @update="fetchList()" />
