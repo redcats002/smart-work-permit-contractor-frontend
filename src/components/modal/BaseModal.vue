@@ -19,7 +19,11 @@
             class="text-lg font-bold text-[#333333]">
             {{ label }}
           </label>
-          <div class="flex gap-2.5 items-center">
+          <div
+            :class="{
+              'absolute right-4 top-4': headerAlign === 'center'
+            }"
+            class="flex gap-2.5 items-center">
             <slot name="menu" />
             <Icon
               class="cursor-pointer size-6 text-[#62748E] hover:text-black transition-all duration-200"
