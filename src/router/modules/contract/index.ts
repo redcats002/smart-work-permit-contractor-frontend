@@ -61,6 +61,16 @@ export default {
         title: 'แก้ไขสัญญา',
         back: { name: 'ContractListPage' }
       }
+    },
+    {
+      path: 'print/:id',
+      name: 'ContractPrintPage',
+      component: (): ComponentOptions => import('@/pages/contract/pages/print/pages/ContractPrintPage.vue'),
+      meta: {
+        auth: true,
+        layout: 'blank',
+        title: 'พิมพ์สัญญา'
+      }
     }
   ]
 } as RouteRecordRaw
