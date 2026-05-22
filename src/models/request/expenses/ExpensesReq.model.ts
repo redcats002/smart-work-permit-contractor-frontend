@@ -1,6 +1,11 @@
+import type { TExpensesType } from '@/enums/modules/finance/ExpenseType.enum'
 import type { IBasePaginationRequest } from '../Request.model'
 
-export interface IGetExpensesList extends IBasePaginationRequest {}
+export interface IGetExpensesList extends IBasePaginationRequest {
+  type?: TExpensesType
+  expenseTypeId?: number
+  expenseCategoryId?: number
+}
 
 export interface IExpensesFile {
   name: string
