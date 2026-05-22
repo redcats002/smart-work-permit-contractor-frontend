@@ -43,7 +43,7 @@ class ContractProvider extends HttpRequest implements IContractProvider {
   }
 
   public async updateContract (id: TBaseParamsId, payload: IUpdateContractPayload): Promise<TActionContract> {
-    const response = await this.put(`${this.urlPrefix}/${id}`, payload)
+    const response = await this.patch(`${this.urlPrefix}/${id}`, payload)
     return response
   }
 

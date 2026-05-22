@@ -122,7 +122,7 @@ import { nextTick, ref, useTemplateRef, watch } from 'vue'
 import { formatter } from '@/utils/Formatter'
 import { handleValidate, scrollToFirstError } from '@/utils/HandleSubmit'
 import type { IFormType } from '@/models/Form.model'
-import type { IPreContractById } from '@/models/response/pre-contract/PreContractRes.model'
+import type { TInterestType } from '@/enums/modules/contract/InterestType.enum'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import InterestTypeSelection from '@/components/selection/modules/static/interest-type/InterestTypeSelection.vue'
@@ -132,11 +132,19 @@ import useInstallment, { type IInstallmentRow } from '../composables/useInstallm
 import { type InstallmentFormValues, InstallmentSchema } from '../schema/make-contract.schema'
 import InstallmentTable from './InstallmentTable.vue'
 
+interface IInstallmentContract {
+  loanAmount: number
+  installmentCount: number
+  interestType?: TInterestType
+  annualInterestRate: number
+  lateFee: number
+}
+
 interface IExposes {
   submit: () => Promise<boolean>
 }
 interface IProps {
-  contract: IPreContractById
+  contract: IInstallmentContract
 }
 const props = withDefaults(defineProps<IProps>(), {})
 
@@ -199,7 +207,7 @@ function mount (): void {
 defineExpose<IExposes>({ submit })
 
 watch(
-  (): IPreContractById => props.contract, (): void => {
+  (): IInstallmentContract => props.contract, (): void => {
     useInit()
   }, { immediate: true }
 )

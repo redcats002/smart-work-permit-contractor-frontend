@@ -43,6 +43,16 @@ export default {
       }
     },
     {
+      path: 'edit/:id',
+      name: 'ContractEditPage',
+      component: (): ComponentOptions => import('@/pages/contract/pages/contract-edit/pages/ContractEditPage.vue'),
+      meta: {
+        auth: true,
+        title: 'แก้ไขสัญญา',
+        back: { name: 'ContractDetailPage' }
+      }
+    },
+    {
       path: 'pre-contract/edit/:id',
       name: 'PreContractEditPage',
       component: (): ComponentOptions => import('@/pages/contract/pages/pre-contract-edit/pages/PreContractEditPage.vue'),

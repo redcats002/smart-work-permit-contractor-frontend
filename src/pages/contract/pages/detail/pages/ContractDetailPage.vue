@@ -72,7 +72,7 @@ function onEdit (): void {
     toast.error('สัญญานี้ถูกยกเลิกไปแล้ว')
     return
   }
-  router.push({ name: 'PreContractEditPage', params: { id: contractId.value } })
+  router.push({ name: 'ContractEditPage', params: { id: contractId.value } })
 }
 
 function onCancelled (): void {
