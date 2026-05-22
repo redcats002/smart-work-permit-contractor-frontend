@@ -10,7 +10,7 @@
         <div>
           <LabelField label="ประเภทเงินกู้">
             <ContractLoanTypeSelection
-              v-model="filters.loanTypeId"
+              v-model="filters.contractLoanTypeId"
               placeholder="ทั้งหมด"
               show-clear />
           </LabelField>

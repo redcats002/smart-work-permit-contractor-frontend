@@ -91,7 +91,7 @@
               v-model="form.lateFee"
               :class="invalid ? 'border-red-400!' : ''"
               :invalid="invalid"
-              :max-fraction-digits="0"
+              :max-fraction-digits="2"
               :min="0"
               class="h-9 shadow-none!"
               name="lateFee"
@@ -102,11 +102,11 @@
       </BaseContainer>
       <div class="flex flex-col gap-5">
         <BaseContainer class="flex flex-col items-center justify-center gap-1 py-6">
-          <span class="text-4xl font-bold text-green-600">{{ formatter.numberFormat(Math.round(monthlyPayment)) }}</span>
+          <span class="text-4xl font-bold text-green-600">{{ formatter.numberFormat2Decimal(monthlyPayment) }}</span>
           <span class="text-sm text-surface-500">ยอดชำระต่อเดือน</span>
         </BaseContainer>
         <BaseContainer class="flex flex-col items-center justify-center gap-1 py-6">
-          <span class="text-4xl font-bold text-orange-500">{{ formatter.numberFormat(Math.round(totalInterest)) }}</span>
+          <span class="text-4xl font-bold text-orange-500">{{ formatter.numberFormat2Decimal(totalInterest) }}</span>
           <span class="text-sm text-surface-500">ดอกเบี้ยรวม</span>
         </BaseContainer>
       </div>

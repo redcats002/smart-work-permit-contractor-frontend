@@ -1,3 +1,3 @@
-import type { IGetPreContractList } from '@/models/request/pre-contract/PreContractReq.model'
+import type { IGetContractList } from '@/models/request/contract/ContractReq.model'
 
-export interface IContractFilter extends IGetPreContractList {}
+export interface IContractFilter extends IGetContractList {}
