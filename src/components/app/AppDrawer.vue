@@ -193,5 +193,5 @@ function collectMenuRouteItems (route: RouteRecordRaw, fullPath: string): IMenuR
   return [...currentItems, ...childItems]
 }
 
-const bottomMenuItems: IMenuItem[] = [{ label: 'ตั่งค่า', icon: 'lsicon:setting-outline', key: 'setting', to: '/setting' }]
+const bottomMenuItems: IMenuItem[] = [{ label: 'ตั้งค่า', icon: 'lsicon:setting-outline', key: 'setting', to: '/setting' }]
 </script>
