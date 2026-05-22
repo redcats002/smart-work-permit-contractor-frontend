@@ -47,10 +47,12 @@ withDefaults(defineProps<IProps>(), {
 const emits = defineEmits<IEmits>()
 const visible = defineModel<boolean>({ default: false })
 
+
 function onConfirm (close: () => void): void {
   emits('confirm')
   close()
 }
+
 </script>
 
 <style scoped>
