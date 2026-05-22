@@ -3,6 +3,7 @@
     <template #activator="{ open }">
       <LabelField
         :model-value="data?.name"
+        :prepend-icon="prependIcon"
         append-icon="mdi-chevron-down"
         class="cursor-pointer"
         readonly
@@ -53,6 +54,16 @@ import CustomerTable from '@/pages/customer/pages/list/components/CustomerTable.
 import useList from '@/pages/customer/pages/list/composables/useList.ts'
 import type { DataTableRowClickEvent } from 'primevue'
 
+interface IProps {
+  prependIcon?: string
+  disabledIds?: number[]
+}
+
+const props = withDefaults(defineProps<IProps>(), {
+  prependIcon: undefined,
+  disabledIds: (): number[] => []
+})
+
 const CustomerService: ICustomerProvider = new CustomerProvider()
 const router = useRouter()
 
@@ -72,12 +83,17 @@ async function useFetch (): Promise<void> {
   }
 }
 
-function rowClass (): string {
-  const baseClass = (className: string): string => `cursor-pointer ${className}`
-  return baseClass('')
+function isDisabled (item: ICustomerList): boolean {
+  return props.disabledIds.includes(Number(item.id))
+}
+
+function rowClass (item: ICustomerList): string {
+  if (isDisabled(item)) return 'opacity-50 cursor-not-allowed pointer-events-none'
+  return 'cursor-pointer'
 }
 
 function onRowClick (e: DataTableRowClickEvent<ICustomerList>, close: () => void): void {
+  if (isDisabled(e.data)) return
   model.value = Number(e.data.id)
   onInitModel()
   close()
