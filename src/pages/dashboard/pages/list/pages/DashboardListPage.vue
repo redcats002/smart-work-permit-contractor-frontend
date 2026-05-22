@@ -91,7 +91,7 @@ const CHART_LOAN_UNIT = 'บาท'
 
 const SUMMARY_CARDS: ICardConfig[] = [
   { key: 'daily', title: 'สรุปยอดประจำวัน', icon: 'solar:wallet-linear', iconClass: 'bg-red-100 text-(--p-red)', cardClass: 'border border-(--p-gray-5)' },
-  { key: 'cash', title: 'ยอดเงินจากเงินสด', icon: 'iconoir:cash', iconClass: 'bg-emerald-100 text-emerald-600', cardClass: 'border border-(--p-gray-5)' },
+  { key: 'cash', title: 'ยอดเงินจากเงินสดประจำวัน', icon: 'iconoir:cash', iconClass: 'bg-emerald-100 text-emerald-600', cardClass: 'border border-(--p-gray-5)' },
   { key: 'bankTransfer', title: 'ยอดเงินจาก QR Code ประจำวัน', icon: 'majesticons:qr-code-line', iconClass: 'bg-sky-100 text-sky-600', cardClass: 'border border-(--p-gray-5)' }
 ]
 
