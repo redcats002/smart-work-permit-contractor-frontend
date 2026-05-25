@@ -11,7 +11,8 @@
       </div>
       <div class="flex items-center">
         <CheckboxInput
-          v-model="selected" />
+          :model-value="selected"
+          @update:model-value="onUserCheck($event)" />
         <div class="text-[#333] text-base">
           เลือกชำระ
         </div>
@@ -264,10 +265,13 @@ interface IInstallmentChangePayload {
 interface IProps {
   data: IReceiptInstallmentCreate
   installmentNo: number
+  selectAll?: boolean
+  selectAllTick?: number
 }
 
 interface IEmits {
   change: [payload: IInstallmentChangePayload]
+  select: [selected: boolean]
 }
 
 const props = defineProps<IProps>()
@@ -339,6 +343,15 @@ const currentDiscount = computed((): number => {
   if (!selected.value || !fineDiscount.value) return 0
   return discountAmount.value
 })
+
+watch((): number | undefined => props.selectAllTick, (): void => {
+  if (props.selectAll !== undefined) selected.value = props.selectAll
+})
+
+function onUserCheck (val: boolean): void {
+  selected.value = val
+  emits('select', val)
+}
 
 watch(currentAmount, (val: number): void => {
   emits('change', { amount: val, discountPenaltyFee: currentDiscount.value })
