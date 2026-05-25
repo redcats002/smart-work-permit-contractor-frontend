@@ -11,6 +11,7 @@
       <span>ตารางการชำระ</span>
       <div class="flex gap-2.5">
         <ConfirmModal
+          v-if="isDev || isAlpha"
           label="ทดสอบวันครบกำหนด"
           @confirm="onTestDueDate()">
           <template #activator="{open}">
@@ -52,6 +53,7 @@ import InvoiceProvider, { type IInvoiceProvider } from '@/resources/provider/inv
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import CardIndicator, { type ICardIndicator } from '@/components/card/CardIndicator.vue'
 import ConfirmModal from '@/components/modal/ConfirmModal.vue'
+import useDev from '@/composables/useDev'
 import usePagination from '@/composables/usePagination'
 import InstallmentTable from './InstallmentTable.vue'
 
@@ -65,6 +67,7 @@ const props = defineProps<IProps>()
 
 const route = useRoute()
 const { pagination, sortBy, sortOrder, syncQuery, extractPagination } = usePagination()
+const { isAlpha, isDev } = useDev()
 
 const filters = ref<IGetInstallmentList>({})
 const items = ref<IContractInstallmentList[]>([])

@@ -2,6 +2,7 @@ import { computed, type ComputedRef } from 'vue'
 
 interface IUseDev {
   isDev: ComputedRef<boolean>
+  isAlpha: ComputedRef<boolean>
 }
 
 export default function useDev (): IUseDev {
@@ -11,5 +12,12 @@ export default function useDev (): IUseDev {
     // return import.meta.env.DEV || devEnvs.includes(import.meta.env.VITE_APP_ENV) || isLocalhost
     return isLocalhost
   })
-  return { isDev }
+  const isAlpha = computed((): boolean => {
+    const devEnvs = ['alpha']
+    const isAlphaEnv = devEnvs.includes(import.meta.env.VITE_APP_ENV)
+    const isAlphaHost = window.location.hostname === 'mittae-siam-management-alpha.vercel.app'
+    return isAlphaEnv || isAlphaHost
+  })
+
+  return { isDev, isAlpha }
 }
