@@ -12,7 +12,8 @@ export default {
   meta: {
     title: 'ลูกค้า',
     auth: true,
-    icon: 'solar:user-linear'
+    icon: 'solar:user-linear',
+    permission: 'customers'
   },
   children: [
     {

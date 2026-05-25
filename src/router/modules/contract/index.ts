@@ -8,7 +8,7 @@ export default {
   name: 'ContractPage',
   redirect: { name: 'ContractListPage' },
   component: (): ComponentOptions => import('@/pages/contract/Contract.vue'),
-  meta: { title: 'สัญญา', auth: true, icon: 'bitcoin-icons:sign-outline' },
+  meta: { title: 'สัญญา', auth: true, icon: 'bitcoin-icons:sign-outline', permission: 'contracts' },
   children: [
     {
       path: 'list',

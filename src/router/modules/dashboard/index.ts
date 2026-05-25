@@ -12,6 +12,7 @@ export default {
   meta: {
     title: 'แดชบอร์ด',
     auth: true,
+    permission: 'dashboard',
     icon: 'solar:widget-4-linear'
   },
   children: [

@@ -4,7 +4,9 @@ import type { TBaseOption } from '@/models/Global.model'
 export enum EmployeeRoleEnum {
   ADMIN = 'ADMIN',
   SUPER_ADMIN = 'SUPER_ADMIN',
-  ACCOUNTING = 'ACCOUNTING'
+  // ACCOUNTING = 'ACCOUNTING',
+  SUPERVISOR = 'SUPERVISOR',
+  STAFF = 'STAFF'
 }
 
 // 2. สร้าง Type จาก Key ของ Enum
@@ -14,7 +16,9 @@ export type TEmployeeRole = keyof typeof EmployeeRoleEnum
 const roleTitleMap: Record<TEmployeeRole, string> = {
   [EmployeeRoleEnum.ADMIN]: 'ผู้ดูแลระบบ (Admin)',
   [EmployeeRoleEnum.SUPER_ADMIN]: 'ผู้ดูแลระบบสูงสุด (Super Admin)',
-  [EmployeeRoleEnum.ACCOUNTING]: 'บัญชี (Accounting)'
+  // [EmployeeRoleEnum.ACCOUNTING]: 'บัญชี (Accounting)',
+  [EmployeeRoleEnum.SUPERVISOR]: 'หัวหน้าแผนก (Supervisor)',
+  [EmployeeRoleEnum.STAFF]: 'พนักงาน (Staff)'
 }
 
 // 4. Export รายการสำหรับใช้ใน Dropdown/Selection
@@ -38,9 +42,12 @@ export function getRoleClass (value?: TEmployeeRole): string {
       return 'bg-purple-100 text-purple-700 border-none'
     case EmployeeRoleEnum.ADMIN:
       return 'bg-blue-100 text-blue-700 border-none'
-    case EmployeeRoleEnum.ACCOUNTING:
-      // สีทอง/ส้ม เพื่อให้แยกจาก Admin ได้ชัดเจน
-      return 'bg-orange-100 text-orange-700 border-none'
+    // case EmployeeRoleEnum.ACCOUNTING:
+    //   return 'bg-orange-100 text-orange-700 border-none'
+    case EmployeeRoleEnum.SUPERVISOR:
+      return 'bg-green-100 text-green-700 border-none'
+    case EmployeeRoleEnum.STAFF:
+      return 'bg-gray-100 text-gray-600 border-none'
     default:
       return 'bg-gray-100 text-gray-600 border-none'
   }
@@ -53,9 +60,13 @@ export function getRoleIcon (value?: TEmployeeRole): string {
       return 'solar:shield-star-bold'
     case EmployeeRoleEnum.ADMIN:
       return 'solar:user-speak-bold'
-    case EmployeeRoleEnum.ACCOUNTING:
-      // Icon เกี่ยวกับการเงินหรือเอกสาร
-      return 'solar:bill-list-bold'
+    // case EmployeeRoleEnum.ACCOUNTING:
+    //   Icon เกี่ยวกับการเงินหรือเอกสาร
+    //   return 'solar:bill-list-bold'
+    case EmployeeRoleEnum.SUPERVISOR:
+      return 'solar:user-check-bold'
+    case EmployeeRoleEnum.STAFF:
+      return 'solar:user-bold'
     default:
       return 'mdi:help-circle-outline'
   }
