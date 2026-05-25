@@ -5,7 +5,6 @@
       <BackButton />
       <Spacer />
     </BaseTop>
-
     <!-- Customer section -->
     <BasePage>
       <InformationDetail
@@ -25,7 +24,9 @@
           <span class="text-white font-bold text-base">เลขที่สัญญา : {{ contract.contractNo }}</span>
           <div class="flex">
             <CheckboxInput
-              v-model="contract.selectAll" />
+              :indeterminate="isContractIndeterminate(ci)"
+              :model-value="contract.selectAll"
+              @update:model-value="onSelectAllChange(ci, $event)" />
             <div class="text-white text-base">
               เลือกชำระทั้งหมด
             </div>
@@ -35,12 +36,15 @@
 
       <!-- Installment cards -->
       <BasePage
-        v-for="(item, ii) in contract.installments"
-        :key="`${ci}-${ii}`">
+        v-for="(item, j) in contract.installments"
+        :key="`${ci}-${j}`">
         <CardInstallment
           :data="item"
           :installment-no="item.installmentNo"
-          @change="onInstallmentChange(Number(item.id), $event)" />
+          :select-all="contract.selectAll"
+          :select-all-tick="contract.selectAllTick"
+          @change="onInstallmentChange(Number(item.id), $event)"
+          @select="onInstallmentSelect(ci, Number(item.id), $event)" />
       </BasePage>
     </template>
 
@@ -127,6 +131,7 @@ interface IInstallmentContract {
   contractId: number
   contractNo: string
   selectAll: boolean
+  selectAllTick: number
   installments: IInstallmentItem[]
 }
 
@@ -149,6 +154,7 @@ const contracts = ref<IInstallmentContract[]>([])
 const paymentMethod = ref<TReceiptPaymentMethod>(EReceiptPaymentMethod.CASH)
 const installmentAmounts = ref<Record<number, number>>({})
 const installmentDiscounts = ref<Record<number, number>>({})
+const installmentSelected = ref<Record<number, boolean>>({})
 
 
 const totalAmount = computed((): number =>
@@ -158,6 +164,32 @@ const totalAmount = computed((): number =>
 function onInstallmentChange (id: number, payload: IInstallmentChangePayload): void {
   installmentAmounts.value = { ...installmentAmounts.value, [id]: payload.amount }
   installmentDiscounts.value = { ...installmentDiscounts.value, [id]: payload.discountPenaltyFee }
+}
+
+function isContractIndeterminate (contractIdx: number): boolean {
+  const contract = contracts.value[contractIdx]
+  if (!contract || contract.installments.length === 0) return false
+  const anySelected = contract.installments.some(
+    (item: IInstallmentItem): boolean => installmentSelected.value[item.id] === true
+  )
+  return anySelected && !contract.selectAll
+}
+
+function onSelectAllChange (contractIdx: number, val: boolean): void {
+  contracts.value[contractIdx].selectAll = val
+  contracts.value[contractIdx].selectAllTick++
+  contracts.value[contractIdx].installments.forEach((item: IInstallmentItem): void => {
+    installmentSelected.value[item.id] = val
+  })
+}
+
+function onInstallmentSelect (contractIdx: number, installmentId: number, isSelected: boolean): void {
+  installmentSelected.value = { ...installmentSelected.value, [installmentId]: isSelected }
+  const contract = contracts.value[contractIdx]
+  if (!contract) return
+  contracts.value[contractIdx].selectAll = contract.installments.every(
+    (item: IInstallmentItem): boolean => installmentSelected.value[item.id] === true
+  )
 }
 
 async function fetchInstallments (id: number): Promise<void> {
@@ -178,6 +210,7 @@ async function fetchInstallments (id: number): Promise<void> {
     contractId: c.id,
     contractNo: c.idNo,
     selectAll: false,
+    selectAllTick: 0,
     installments: c.installments.map((item: IReceiptInstallmentCreate, idx: number): IInstallmentItem => ({
       ...item,
       installmentNo: idx + 1
@@ -185,6 +218,7 @@ async function fetchInstallments (id: number): Promise<void> {
   }))
   installmentAmounts.value = {}
   installmentDiscounts.value = {}
+  installmentSelected.value = {}
 }
 
 async function onCustomerChange (): Promise<void> {
@@ -193,6 +227,7 @@ async function onCustomerChange (): Promise<void> {
     contracts.value = []
     installmentAmounts.value = {}
     installmentDiscounts.value = {}
+    installmentSelected.value = {}
     await handleLoading((): Promise<void> => fetchInstallments(Number(customerId.value)))
   }
 }

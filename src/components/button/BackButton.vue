@@ -5,7 +5,7 @@
     :to="isBack ? route.meta.back : {}"
     class="bg-white! md:bg-transparent! text-[#333333]! px-4
     border! border-gray-200! md:border-none
-    flex items-center hover:bg-gray-100!"
+    flex items-center hover:bg-gray-200!"
     text
     @click="validate()">
     <Icon
