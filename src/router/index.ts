@@ -1,6 +1,6 @@
 import type { ComponentOptions } from 'vue'
-import type { RouteLocationNormalized, Router, RouteRecordRaw } from 'vue-router'
-import { createRouter, createWebHistory } from 'vue-router'
+import type { NavigationFailure, RouteLocationNormalized, Router, RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHistory, isNavigationFailure } from 'vue-router'
 import { useAuthStore } from '@/stores/Auth'
 import { updateFromRoute } from '@/utils/RouterHeader'
 import ActionLogRouter from './modules/action-log'
@@ -72,9 +72,21 @@ const router: Router = createRouter({
 
 const DEFAULT_TITLE: string = 'Mittae Siam Management'
 
-router.afterEach((to: RouteLocationNormalized): void => {
+router.afterEach((to: RouteLocationNormalized, _from: RouteLocationNormalized, failure: NavigationFailure | void | undefined): void => {
+  if (isNavigationFailure(failure)) return
   document.title = to?.meta?.title ? `${DEFAULT_TITLE} | ${to.meta.title}` : DEFAULT_TITLE
   void updateFromRoute(to)
+})
+
+router.onError((error: Error, to: RouteLocationNormalized): void => {
+  const isChunkLoadError
+    = error.message.includes('Failed to fetch dynamically imported module')
+      || error.message.includes('Importing a module script failed')
+      || error.message.includes('Unable to preload CSS')
+
+  if (isChunkLoadError) {
+    window.location.assign(to.fullPath)
+  }
 })
 
 router.beforeEach((to: RouteLocationNormalized) => {
