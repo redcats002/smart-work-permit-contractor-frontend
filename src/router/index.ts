@@ -85,7 +85,14 @@ router.onError((error: Error, to: RouteLocationNormalized): void => {
       || error.message.includes('Unable to preload CSS')
 
   if (isChunkLoadError) {
-    window.location.assign(to.fullPath)
+    const key = `chunk-retry:${to.fullPath}`
+    const retries = Number(sessionStorage.getItem(key) || 0)
+    if (retries < 2) {
+      sessionStorage.setItem(key, String(retries + 1))
+      window.location.assign(to.fullPath)
+    } else {
+      sessionStorage.removeItem(key)
+    }
   }
 })
 

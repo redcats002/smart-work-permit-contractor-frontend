@@ -23,6 +23,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseParamsId } from '@/models/response/Response.model'
+import type { IAuthPublicProvider } from '@/resources/provider/auth/public/Auth.public.provider'
+import AuthPublicProvider from '@/resources/provider/auth/public/Auth.public.provider'
 import type { IEmployeeProvider } from '@/resources/provider/employee/Employee.provider'
 import EmployeeProvider from '@/resources/provider/employee/Employee.provider'
 import BasePage from '@/components/base/BasePage.vue'
@@ -37,6 +39,7 @@ const route = useRoute()
 const router = useRouter()
 
 const EmployeeService: IEmployeeProvider = new EmployeeProvider()
+const AuthPublicService: IAuthPublicProvider = new AuthPublicProvider()
 
 const employee = useInitDetail()
 const employeeId = computed((): TBaseParamsId => route?.params?.id as string ?? '')
@@ -55,12 +58,9 @@ async function useDelete (): Promise<void> {
 }
 
 async function useResetPassword (): Promise<void> {
-  const mock = true // TODO: remove mock and uncomment code below when API is ready
-
-  if (mock) return toast.warn('ฟีเจอร์นี้ยังไม่พร้อมใช้งานในขณะนี้')
-  if (!employeeId.value) throw new Error('Employee ID is required for password reset')
-  await EmployeeService.resetPassword(employeeId.value)
-  toast.success('รีเซ็ตรหัสผ่านสำเร็จ')
+  if (!employee.value?.email) throw new Error('Employee email is required for password reset')
+  await AuthPublicService.requestPasswordReset({ email: employee.value.email })
+  toast.success('กรุณาตรวจสอบอีเมลของคุณ', 'ส่งอีเมลรีเซ็ตรหัสผ่านสำเร็จ')
 }
 
 function fetch (): void {
