@@ -62,7 +62,7 @@ const columns = computed((): IColumn<IEmployeeList>[] => {
     { field: 'idNo', header: 'เลขที่พนักงาน', sortable: true, align: 'left', style: { width: '130px', minWidth: '130px' } },
     { field: 'firstName', header: 'ชื่อพนักงาน', align: 'left', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IEmployeeList): string => formatter.fullName(e) },
     { field: 'status', header: 'สถานะ', sortable: true, align: 'right', style: { width: '120px', minWidth: '120px' } }
-  ],
+  ]
   return base.filter((c: IColumn<IEmployeeList>): boolean => !props.hideColumns?.includes(c.field as keyof IEmployeeList))
 })
 </script>
