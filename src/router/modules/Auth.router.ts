@@ -20,7 +20,7 @@ export default {
       meta: {
         layout: 'blank'
       }
-    }
+    },
     // {
     //   path: 'forgot-password',
     //   name: 'ForgotPasswordPage',
@@ -29,13 +29,13 @@ export default {
     //     layout: 'blank'
     //   }
     // },
-    // {
-    //   path: 'reset-password',
-    //   name: 'ResetPasswordPage',
-    //   component: (): ComponentOptions => import('@/pages/auth/pages/ResetPasswordPage.vue'),
-    //   meta: {
-    //     layout: 'blank'
-    //   }
-    // }
+    {
+      path: 'reset-password',
+      name: 'ResetPasswordPage',
+      component: (): ComponentOptions => import('@/pages/auth/pages/reset-password/pages/ResetPasswordPage.vue'),
+      meta: {
+        layout: 'blank'
+      }
+    }
   ]
 } as RouteRecordRaw

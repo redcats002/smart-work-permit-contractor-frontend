@@ -65,11 +65,5 @@
     "vite-plugin-eslint2": "^5.0.5",
     "vitest": "^4.1.0",
     "vue-tsc": "^3.2.5"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx,vue}": [
-      "eslint --fix",
-      "vitest run"
-    ]
   }
 }

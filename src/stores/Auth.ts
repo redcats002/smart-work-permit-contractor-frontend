@@ -7,7 +7,7 @@ import type { TTitleName } from '@/enums/TitleName.enum'
 import { defineStore } from 'pinia'
 
 export interface IUser {
-  id: number | null
+  id: string | null
   name: string
   firstName: string
   lastName: string
