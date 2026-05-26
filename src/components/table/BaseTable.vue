@@ -25,7 +25,16 @@
         :pt="checkboxColumnPt"
         align-frozen="left"
         selection-mode="multiple"
-        frozen />
+        frozen>
+        <template #header>
+          <Checkbox
+            :indeterminate="isPartiallySelected"
+            :model-value="isAllSelected"
+            :pt="headerCheckboxPt"
+            binary
+            @update:model-value="onToggleAll($event)" />
+        </template>
+      </Column>
 
       <!-- Data Columns -->
       <Column
@@ -133,6 +142,7 @@ import { computed, ref, watch } from 'vue'
 import type { IColumn, IFooter } from '@/models/Table.model'
 import type { IPagination } from '@/composables/usePagination'
 import { ColumnGroup, Row } from 'primevue'
+import Checkbox from 'primevue/checkbox'
 import Column from 'primevue/column'
 import type { DataTablePassThroughOptions } from 'primevue/datatable'
 import Paginate from './Paginate.vue'
@@ -257,6 +267,22 @@ watch([sortBy, sortOrder], (): void => {
   emits('update', pagination.value)
 })
 
+const isAllSelected = computed((): boolean => {
+  if (!props.items.length || !selectedItems.value.length) return false
+  const key = props.dataKey ?? 'id'
+  return props.items.every((item: any): boolean =>
+    selectedItems.value.some((s: any): boolean => s[key] === item[key])
+  )
+})
+
+const isPartiallySelected = computed((): boolean =>
+  selectedItems.value.length > 0 && !isAllSelected.value
+)
+
+function onToggleAll (checked: boolean): void {
+  selectedItems.value = checked ? [...props.items] as any[] : []
+}
+
 const theme = ref<DataTablePassThroughOptions>({
   root: 'relative',
   tableContainer: 'overflow-auto',
@@ -298,16 +324,7 @@ const checkboxColumnPt = ref({
     bg-white z-30 ${props.checkboxBodyClass}
   `,
   pcHeaderCheckbox: {
-    root: 'relative inline-flex select-none w-5 h-5 align-bottom cursor-pointer',
-    input: `peer cursor-pointer appearance-none
-      absolute start-0 top-0 w-full h-full m-0 p-0 opacity-0 z-10
-      border border-transparent rounded`,
-    box: `flex justify-center items-center rounded w-4 h-4
-      border-2 border-surface-300 bg-white text-white
-      peer-hover:border-surface-600
-      p-checked:bg-surface-800 p-checked:border-surface-800
-      transition-colors duration-200`,
-    icon: 'text-sm w-3 h-3'
+    root: 'hidden'
   },
   pcRowCheckbox: {
     root: 'relative inline-flex select-none w-4 h-4 align-bottom cursor-pointer',
@@ -321,6 +338,20 @@ const checkboxColumnPt = ref({
       transition-colors duration-200`
   }
 })
+
+const headerCheckboxPt = {
+  root: 'relative inline-flex select-none w-5 h-5 align-bottom cursor-pointer',
+  input: `peer cursor-pointer appearance-none
+    absolute start-0 top-0 w-full h-full m-0 p-0 opacity-0 z-10
+    border border-transparent rounded`,
+  box: `flex justify-center items-center rounded w-4 h-4
+    border-2 border-surface-300 bg-white text-white
+    peer-hover:border-surface-600
+    p-checked:bg-surface-800 p-checked:border-surface-800
+    [[data-p-indeterminate]_&]:bg-surface-800 [[data-p-indeterminate]_&]:border-surface-800
+    transition-colors duration-200`,
+  icon: 'text-sm w-3 h-3'
+}
 </script>
 
 <style scoped>
