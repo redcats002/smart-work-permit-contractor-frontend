@@ -46,12 +46,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IFormState } from '@/models/Form.model'
 import type { TBaseModel } from '@/models/Global.model'
 import type { IAssetMovementItem } from '@/models/response/document-storage/DocumentStorageRes.model'
+import type { TBaseParamsId } from '@/models/response/Response.model'
 import type { ILocationList } from '@/models/response/warehouse/WarehouseRes.model'
 import type { IColumn } from '@/models/Table.model'
 import { formatTitle } from '@/enums/modules/asset/AssetType.enum'
@@ -66,12 +67,13 @@ import { Icon } from '@iconify/vue'
 import type { DocumentReceiveFormValues } from '../schema/document-receive.schema'
 
 interface IProps {
+  destinationWarehouseId: TBaseParamsId
   items: IAssetMovementItem[]
   form: IFormState
   isSuccess?: boolean
 }
 
-withDefaults(defineProps<IProps>(), {
+const props = withDefaults(defineProps<IProps>(), {
   isSuccess: false
 })
 
@@ -100,7 +102,8 @@ const columns = computed<IColumn<IAssetMovementItem>[]>((): IColumn<IAssetMoveme
 ]))
 
 async function useFetch (): Promise<void> {
-  const res = await WarehouseService.getLocationPaginate({ limit: 9999 })
+  if (!props.destinationWarehouseId) return
+  const res = await WarehouseService.getLocationPaginate({ limit: 9999, warehouseId: Number(props.destinationWarehouseId) })
   locationOptions.value = res.data.map((item: ILocationList): TBaseModel => ({ name: item.name, id: item.id }))
 }
 
@@ -108,9 +111,9 @@ function fetch (): void {
   handleLoading(useFetch)
 }
 
-onMounted((): void => {
+watch((): TBaseParamsId => props.destinationWarehouseId, (): void => {
   fetch()
-})
+}, { immediate: true })
 
 </script>
 

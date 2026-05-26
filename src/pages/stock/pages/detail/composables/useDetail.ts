@@ -30,7 +30,7 @@ export default function useDetail (): IUseDetail {
   const form = ref<DocumentReceiveFormValues>(useInitForm())
 
   const isSuccess = computed((): boolean => {
-    return data.value.status === 'SUCCESS'
+    return data.value.status === 'SUCCESS' || data.value.status === 'CANCELLED'
   })
 
 
@@ -38,6 +38,12 @@ export default function useDetail (): IUseDetail {
     const response = await DocumentStorageService.getDocumentMovementFindOne(documentId.value)
     data.value = useInit(response.data)
     form.value = useInitForm(response.data)
+  }
+
+  async function useDelete (): Promise<void> {
+    await DocumentStorageService.cancelledDocumentMovement(documentId.value)
+    toast.success('ยกเลิกเอกสารสำเร็จ')
+    await useFetch()
   }
 
   function useInit (data?: IDocumentMovementById): IDocumentMovementById {
@@ -130,7 +136,9 @@ export default function useDetail (): IUseDetail {
     handleLoading(useSubmit)
   }
 
-  function onDelete (): void {}
+  function onDelete (): void {
+    handleLoading(useDelete)
+  }
 
   function onEdit (): void {
     // router.push({ name: 'DocumentMovementEditPage' })
