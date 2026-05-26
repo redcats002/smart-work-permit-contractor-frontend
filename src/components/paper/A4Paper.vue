@@ -41,7 +41,14 @@ $height: 297mm;
 
 	@page {
 		size: A4;
-		margin: 0;
+		// margin: 0;
+		@top-center {
+			content: '';
+		}
+		@bottom-center {
+			content: '';
+			font-size: 10px;
+		}
 	}
 }
 </style>
