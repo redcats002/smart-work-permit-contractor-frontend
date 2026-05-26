@@ -40,17 +40,17 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IOverdueCustomerList>[]>([
-  { field: 'idNo', header: 'เลขที่สัญญา', align: 'left', width: 120 },
-  { field: 'customerName', header: 'ชื่อลูกค้า', align: 'left', width: 160 },
-  { field: 'createdAt', header: 'วันที่ทำสัญญา', align: 'left', width: 120, value: (e: IOverdueCustomerList): string => dayjs.formatDate(e.createdAt) },
-  { field: 'finalInstallmentDate', header: 'วันที่งวดสุดท้าย', align: 'left', width: 130, value: (e: IOverdueCustomerList): string => dayjs.formatDate(e.finalInstallmentDate) },
-  { field: 'principal', header: 'ยอดจัด', align: 'right', width: 110, value: (e: IOverdueCustomerList): string => formatter.numberFormat(e.principal) },
-  { field: 'principalAndInterest', header: 'ยอดจัดรวมดอกเบี้ย', align: 'right', width: 140, value: (e: IOverdueCustomerList): string => formatter.numberFormat(e.principalAndInterest) },
-  { field: 'amountPaid', header: 'ชำระแล้ว', align: 'right', width: 110, value: (e: IOverdueCustomerList): string => formatter.numberFormat(e.amountPaid) },
-  { field: 'outstandingPrincipal', header: 'เงินต้นคงเหลือ', align: 'right', width: 120, value: (e: IOverdueCustomerList): string => formatter.numberFormat(e.outstandingPrincipal) },
-  { field: 'lastPaidAt', header: 'วันที่ชำระล่าสุด', align: 'left', width: 130, value: (e: IOverdueCustomerList): string => dayjs.formatDate(e.lastPaidAt) },
-  { field: 'overdueOutstandingAmount', header: 'ยอดค้างชำระ', align: 'right', width: 120, value: (e: IOverdueCustomerList): string => formatter.numberFormat(e.overdueOutstandingAmount) },
-  { field: 'overdueOutstandingCount', header: 'งวดค้าง', align: 'right', width: 90, value: (e: IOverdueCustomerList): string => formatter.numberFormat(e.overdueOutstandingCount) }
+  { field: 'idNo', header: 'เลขที่สัญญา', align: 'left', style: { width: '130px', minWidth: '130px' }, width: 120 },
+  { field: 'customerName', header: 'ชื่อลูกค้า', align: 'left', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, width: 160 },
+  { field: 'createdAt', header: 'วันที่ทำสัญญา', align: 'left', style: { width: '120px', minWidth: '120px' }, width: 120, value: (e: IOverdueCustomerList): string => dayjs.formatDate(e.createdAt) },
+  { field: 'finalInstallmentDate', header: 'วันที่งวดสุดท้าย', align: 'left', style: { width: '120px', minWidth: '120px' }, width: 130, value: (e: IOverdueCustomerList): string => dayjs.formatDate(e.finalInstallmentDate) },
+  { field: 'principal', header: 'ยอดจัด', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 110, value: (e: IOverdueCustomerList): string => formatter.numberFormat(e.principal) },
+  { field: 'principalAndInterest', header: 'ยอดจัดรวมดอกเบี้ย', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 140, value: (e: IOverdueCustomerList): string => formatter.numberFormat(e.principalAndInterest) },
+  { field: 'amountPaid', header: 'ชำระแล้ว', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 110, value: (e: IOverdueCustomerList): string => formatter.numberFormat(e.amountPaid) },
+  { field: 'outstandingPrincipal', header: 'เงินต้นคงเหลือ', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IOverdueCustomerList): string => formatter.numberFormat(e.outstandingPrincipal) },
+  { field: 'lastPaidAt', header: 'วันที่ชำระล่าสุด', align: 'left', style: { width: '120px', minWidth: '120px' }, width: 130, value: (e: IOverdueCustomerList): string => dayjs.formatDate(e.lastPaidAt) },
+  { field: 'overdueOutstandingAmount', header: 'ยอดค้างชำระ', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IOverdueCustomerList): string => formatter.numberFormat(e.overdueOutstandingAmount) },
+  { field: 'overdueOutstandingCount', header: 'งวดค้าง', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 90, value: (e: IOverdueCustomerList): string => formatter.numberFormat(e.overdueOutstandingCount) }
 ])
 
 const itemsFooter = computed((): IFooter[] => {

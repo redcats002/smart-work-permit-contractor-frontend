@@ -64,9 +64,9 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IFinanceExpenseCategoryList>[]>([
-  { field: 'name', header: 'หมวดหมู่ค่าใช้จ่าย', align: 'left', value: (e: IFinanceExpenseCategoryList): string => e?.name || '' },
-  { field: 'externalInternalExpense', header: 'ค่าใช้จ่าย ภายใน/ภายนอก', align: 'left', value: (e: IFinanceExpenseCategoryList): string => formatTitle(e?.externalInternalExpense) },
-  { field: 'action', header: '', align: 'right' }
+  { field: 'name', header: 'หมวดหมู่ค่าใช้จ่าย', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IFinanceExpenseCategoryList): string => e?.name || '' },
+  { field: 'externalInternalExpense', header: 'ค่าใช้จ่าย ภายใน/ภายนอก', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IFinanceExpenseCategoryList): string => formatTitle(e?.externalInternalExpense) },
+  { field: 'action', header: '', align: 'right', style: { width: '80px', minWidth: '80px' } }
 ])
 
 function rowClass (item: IFinanceExpenseCategoryList): string {

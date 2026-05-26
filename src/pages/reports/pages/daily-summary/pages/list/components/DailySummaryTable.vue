@@ -37,13 +37,16 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IDailySummaryList>[]>([
-  { field: 'date',
+  {
+    field: 'date',
     header: 'สรุปประจำวันที่',
     sortable: true,
     align: 'left',
-    value: (e: IDailySummaryList): string => formatDate(e?.date ?? undefined) },
-  { field: 'principalAmount', header: 'ยอดคงเหลือยกมา', sortable: false, align: 'left', class: 'red--text font-weight-bold' },
-  { field: 'currentBalance', header: 'ยอดคงเหลือยกไป', sortable: false, align: 'right', class: 'red--text font-weight-bold' }
+    style: { width: '120px', minWidth: '120px' },
+    value: (e: IDailySummaryList): string => formatDate(e?.date ?? undefined)
+  },
+  { field: 'principalAmount', header: 'ยอดคงเหลือยกมา', sortable: false, align: 'left', style: { width: '140px', minWidth: '140px' }, class: 'red--text font-weight-bold' },
+  { field: 'currentBalance', header: 'ยอดคงเหลือยกไป', sortable: false, align: 'right', style: { width: '140px', minWidth: '140px' }, class: 'red--text font-weight-bold' }
 ])
 
 </script>

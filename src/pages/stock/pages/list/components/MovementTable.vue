@@ -51,13 +51,13 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IDocumentMovementList>[]>([
-  { field: 'idNo', header: 'เลขที่ใบย้ายเอกสาร', sortable: true },
-  { field: 'createdAt', header: 'วันที่', value: (e: IDocumentMovementList): string => formatDate(e.createdAt) || '' },
-  { field: 'createdByEmployee', header: 'ย้ายโดย', value: (e: IDocumentMovementList): string => formatter.fullName(e.createdByEmployee) || '' },
-  { field: 'originWarehouse', header: 'คลังต้นทาง', value: (e: IDocumentMovementList): string => e.originWarehouse?.name || '' },
-  { field: 'receivedByEmployee', header: 'รับโดย', value: (e: IDocumentMovementList): string => formatter.fullName(e.receivedByEmployee) || '' },
-  { field: 'destinationWarehouse', header: 'คลังปลายทาง', value: (e: IDocumentMovementList): string => e.destinationWarehouse?.name || '' },
-  { field: 'status', header: 'สถานะ' }
+  { field: 'idNo', header: 'เลขที่ใบย้ายเอกสาร', sortable: true, style: { width: '130px', minWidth: '130px' } },
+  { field: 'createdAt', header: 'วันที่', style: { width: '120px', minWidth: '120px' }, value: (e: IDocumentMovementList): string => formatDate(e.createdAt) || '' },
+  { field: 'createdByEmployee', header: 'ย้ายโดย', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IDocumentMovementList): string => formatter.fullName(e.createdByEmployee) || '' },
+  { field: 'originWarehouse', header: 'คลังต้นทาง', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IDocumentMovementList): string => e.originWarehouse?.name || '' },
+  { field: 'receivedByEmployee', header: 'รับโดย', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IDocumentMovementList): string => formatter.fullName(e.receivedByEmployee) || '' },
+  { field: 'destinationWarehouse', header: 'คลังปลายทาง', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IDocumentMovementList): string => e.destinationWarehouse?.name || '' },
+  { field: 'status', header: 'สถานะ', style: { width: '120px', minWidth: '120px' } }
 ])
 </script>
 

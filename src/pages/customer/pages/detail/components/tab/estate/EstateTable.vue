@@ -55,13 +55,13 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<ICustomerAssetList>[]>([
-  { field: 'createdAt', header: 'วันที่', align: 'left', value: (e: ICustomerAssetList): string => dayjs.formatDate(e?.createdAt || '') },
-  { field: 'idNo', header: 'เลขที่หลักทรัพย์', align: 'left' },
-  { field: 'contract.idNo', header: 'เลขที่สัญญาที่เกี่ยวข้อง', align: 'left' },
-  { field: 'type', header: 'หมวดหมู่หลักทรัพย์', align: 'left', value: (e: ICustomerAssetList): string => formatTitle(e?.type) || '-' },
-  { field: 'detail', header: 'รายละเอียดหลักทรัพย์', align: 'left' },
-  { field: 'location.name', header: 'จุดจัดเก็บเอกสาร', align: 'left', value: (e: ICustomerAssetList): string => e?.location?.name || '-' },
-  { field: 'status', header: 'สถานะ', align: 'left' }
+  { field: 'createdAt', header: 'วันที่', align: 'left', style: { width: '120px', minWidth: '120px' }, value: (e: ICustomerAssetList): string => dayjs.formatDate(e?.createdAt || '') },
+  { field: 'idNo', header: 'เลขที่หลักทรัพย์', align: 'left', style: { width: '130px', minWidth: '130px' } },
+  { field: 'contract.idNo', header: 'เลขที่สัญญาที่เกี่ยวข้อง', align: 'left', style: { width: '130px', minWidth: '130px' } },
+  { field: 'type', header: 'หมวดหมู่หลักทรัพย์', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: ICustomerAssetList): string => formatTitle(e?.type) || '-' },
+  { field: 'detail', header: 'รายละเอียดหลักทรัพย์', align: 'left', style: { width: '220px', minWidth: '220px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' } },
+  { field: 'location.name', header: 'จุดจัดเก็บเอกสาร', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: ICustomerAssetList): string => e?.location?.name || '-' },
+  { field: 'status', header: 'สถานะ', align: 'left', style: { width: '120px', minWidth: '120px' } }
 ])
 </script>
 

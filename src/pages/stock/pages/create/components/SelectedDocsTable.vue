@@ -76,12 +76,12 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = computed<IColumn<DocumentAssetFormValues>[]>((): IColumn<DocumentAssetFormValues>[] => {
   const baseColumns: IColumn<DocumentAssetFormValues>[] = [
-    { field: 'idNo', header: 'เลขที่หลักทรัพย์', sortable: true, align: 'left' },
-    { field: 'contract.idNo', header: 'เลขที่สัญญา', sortable: true, align: 'left' },
-    { field: 'customerName', header: 'ชื่อลูกค้า', align: 'left', value: (e: DocumentAssetFormValues): string => formatter.fullName(e?.contract?.customer) },
-    { field: 'category', header: 'หมวดหมู่', align: 'left' },
-    { field: 'type', header: 'ประเภท', align: 'left' },
-    { field: 'location', header: 'จุดจัดเก็บ', sortable: false, align: 'left' }
+    { field: 'idNo', header: 'เลขที่หลักทรัพย์', sortable: true, align: 'left', style: { width: '130px', minWidth: '130px' } },
+    { field: 'contract.idNo', header: 'เลขที่สัญญา', sortable: true, align: 'left', style: { width: '130px', minWidth: '130px' } },
+    { field: 'customerName', header: 'ชื่อลูกค้า', align: 'left', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: DocumentAssetFormValues): string => formatter.fullName(e?.contract?.customer) },
+    { field: 'category', header: 'หมวดหมู่', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' } },
+    { field: 'type', header: 'ประเภท', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' } },
+    { field: 'location', header: 'จุดจัดเก็บ', sortable: false, align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' } }
   ]
 
   if (!props.isDetail) {
@@ -90,11 +90,14 @@ const columns = computed<IColumn<DocumentAssetFormValues>[]>((): IColumn<Documen
         field: 'location',
         header: 'จุดจัดเก็บ',
         sortable: false,
-        align: 'left'
+        align: 'left',
+        style: { width: '160px', minWidth: '160px' },
+        bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }
       }, {
         field: 'action',
         header: 'ลบ',
-        align: 'right'
+        align: 'right',
+        style: { width: '80px', minWidth: '80px' }
       }
     )
   }

@@ -51,8 +51,8 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IHowDidFindUsList>[]>([
-  { field: 'name', header: 'ช่องทาง', align: 'left', value: (e: IHowDidFindUsList): string => e?.name || '' },
-  { field: 'action', header: 'จัดการ', align: 'right' }
+  { field: 'name', header: 'ช่องทาง', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IHowDidFindUsList): string => e?.name || '' },
+  { field: 'action', header: 'จัดการ', align: 'right', style: { width: '80px', minWidth: '80px' } }
 ])
 </script>
 

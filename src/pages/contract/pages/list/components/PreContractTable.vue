@@ -52,18 +52,21 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 const { formatDate } = useDayjs()
 
 const columns = ref<IColumn<IPreContractList>[]>([
-  { field: 'idNo', header: 'เลขที่สัญญา', sortable: true, align: 'left' },
+  { field: 'idNo', header: 'เลขที่สัญญา', sortable: true, align: 'left', style: { width: '130px', minWidth: '130px' } },
   {
     field: 'createdAt',
     header: 'วันที่เริ่มทำสัญญา',
     sortable: true,
     align: 'left',
+    style: { width: '120px', minWidth: '120px' },
     value: (e: IPreContractList): string => formatDate(e.createdAt ?? undefined)
   },
   {
     field: 'customer',
     header: 'ชื่อลูกค้า',
     align: 'left',
+    style: { width: '180px', minWidth: '180px' },
+    bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' },
     value: (e: IPreContractList): string =>
       formatter.fullName({
         titleName: (e.customer?.titleName ?? undefined) as TTitleName | undefined,
@@ -71,6 +74,6 @@ const columns = ref<IColumn<IPreContractList>[]>([
         lastName: e.customer?.lastName ?? undefined
       })
   },
-  { field: 'status', header: 'สถานะ', sortable: true, align: 'left' }
+  { field: 'status', header: 'สถานะ', sortable: true, align: 'left', style: { width: '120px', minWidth: '120px' } }
 ])
 </script>

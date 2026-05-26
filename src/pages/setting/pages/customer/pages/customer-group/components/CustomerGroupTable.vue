@@ -51,8 +51,8 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<ICustomerGroupList>[]>([
-  { field: 'name', header: 'กลุ่มลูกค้า', align: 'left', value: (e: ICustomerGroupList): string => e?.name || '' },
-  { field: 'action', header: 'จัดการ', align: 'right' }
+  { field: 'name', header: 'กลุ่มลูกค้า', align: 'left', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: ICustomerGroupList): string => e?.name || '' },
+  { field: 'action', header: 'จัดการ', align: 'right', style: { width: '80px', minWidth: '80px' } }
 ])
 </script>
 

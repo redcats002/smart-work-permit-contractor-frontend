@@ -45,17 +45,19 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IBranchHeadSummaryList>[]>([
-  { field: 'index', header: 'ลำดับ', align: 'left', width: 60 },
-  { field: 'branchName', header: 'สาขา', align: 'left', width: 150 },
-  { field: 'costPerInstallment', header: 'ค่างวดต่องวด', align: 'left', width: 120, value: (e: IBranchHeadSummaryList): string => formatter.numberFormat(e.costPerInstallment) },
-  { field: 'percentageCollection',
+  { field: 'index', header: 'ลำดับ', align: 'left', style: { width: '70px', minWidth: '70px' }, width: 60 },
+  { field: 'branchName', header: 'สาขา', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, width: 150 },
+  { field: 'costPerInstallment', header: 'ค่างวดต่องวด', align: 'left', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IBranchHeadSummaryList): string => formatter.numberFormat(e.costPerInstallment) },
+  {
+    field: 'percentageCollection',
     header: 'การคิด%ยอดเก็บ',
     align: 'left',
+    style: { width: '100px', minWidth: '100px' },
     width: 120,
     value: (e: IBranchHeadSummaryList): string => e.percentageCollection ? formatter.numberFormat(e.percentageCollection) : 'ไม่นับยอดเก็บ'
   },
-  { field: 'collectionAmount', header: 'ยอดเก็บ', align: 'left', width: 120, value: (e: IBranchHeadSummaryList): string => formatter.numberFormat(e.collectionAmount) },
-  { field: 'releaseAmount', header: 'ยอดปล่อย', align: 'left', width: 120, value: (e: IBranchHeadSummaryList): string => formatter.numberFormat(e.releaseAmount) }
+  { field: 'collectionAmount', header: 'ยอดเก็บ', align: 'left', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IBranchHeadSummaryList): string => formatter.numberFormat(e.collectionAmount) },
+  { field: 'releaseAmount', header: 'ยอดปล่อย', align: 'left', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IBranchHeadSummaryList): string => formatter.numberFormat(e.releaseAmount) }
 ])
 </script>
 

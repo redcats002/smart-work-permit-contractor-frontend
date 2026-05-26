@@ -46,47 +46,57 @@ const columns = ref<IColumn<IDailySummaryDetailItem>[]>([
   {
     field: 'index',
     header: 'ลำดับ',
-    align: 'center'
+    align: 'center',
+    style: { width: '70px', minWidth: '70px' }
   },
   {
     field: 'paymentCode',
     header: 'รหัสการชำระ',
     sortable: true,
-    align: 'left'
+    align: 'left',
+    style: { width: '130px', minWidth: '130px' }
   },
   {
     field: 'categoryName',
     header: 'หมวดหมู่',
     sortable: true,
-    align: 'left'
+    align: 'left',
+    style: { width: '160px', minWidth: '160px' },
+    bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }
   },
   {
     field: 'transactionType',
     header: 'ประเภท',
-    align: 'center'
+    align: 'center',
+    style: { width: '160px', minWidth: '160px' },
+    bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }
   },
   {
     field: 'amount',
     header: 'มูลค่า',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     value: (e: IDailySummaryDetailItem): string => formatter.numberFormat(e.amount ?? 0)
   },
   {
     field: 'totalAmount',
     header: 'ยอดจัด',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     value: (e: IDailySummaryDetailItem): string => formatter.numberFormat(e.totalAmount ?? 0)
   },
   {
     field: 'installmentAmount',
     header: 'ค่างวด',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     value: (e: IDailySummaryDetailItem): string => formatter.numberFormat(e.installmentAmount ?? 0)
   },
   {
     field: 'totalInterest',
     header: 'ดอกเบี้ยรวม',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     value: (e: IDailySummaryDetailItem): string => formatter.numberFormat(e.totalInterest ?? 0)
   }
 ])

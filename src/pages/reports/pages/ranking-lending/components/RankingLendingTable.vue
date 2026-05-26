@@ -24,11 +24,11 @@ interface IProps {
 const props = defineProps<IProps>()
 
 const columns = ref<IColumn<IRankLendingItem>[]>([
-  { field: 'index', header: 'ลำดับ', align: 'left', width: 60 },
-  { field: 'branch', header: 'สาขา', align: 'left', width: 150, value: (e: IRankLendingItem): string => e.branch?.name || '-' },
-  { field: 'branch', header: 'เลขที่สาขา', align: 'left', width: 120, value: (e: IRankLendingItem): string => e.branch?.idNo || '-' },
-  { field: 'amount', header: 'ยอดปล่อยสินเชื่อ', align: 'right', width: 140, value: (e: IRankLendingItem): string => formatter.numberFormat(e.amount) },
-  { field: 'topCount', header: 'ติด TOP ครั้งที่', align: 'center', width: 120, value: (e: IRankLendingItem): string => formatter.numberFormat(e.topCount) }
+  { field: 'index', header: 'ลำดับ', align: 'left', style: { width: '70px', minWidth: '70px' }, width: 60 },
+  { field: 'branch', header: 'สาขา', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, width: 150, value: (e: IRankLendingItem): string => e.branch?.name || '-' },
+  { field: 'branch', header: 'เลขที่สาขา', align: 'left', style: { width: '130px', minWidth: '130px' }, width: 120, value: (e: IRankLendingItem): string => e.branch?.idNo || '-' },
+  { field: 'amount', header: 'ยอดปล่อยสินเชื่อ', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 140, value: (e: IRankLendingItem): string => formatter.numberFormat(e.amount) },
+  { field: 'topCount', header: 'ติด TOP ครั้งที่', align: 'center', style: { width: '70px', minWidth: '70px' }, width: 120, value: (e: IRankLendingItem): string => formatter.numberFormat(e.topCount) }
 ])
 </script>
 

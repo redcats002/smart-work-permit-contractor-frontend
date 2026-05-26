@@ -50,15 +50,15 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IDailyLoanDisbursementList>[]>([
-  { field: 'createdAt', header: 'วันที่', value: (e: IDailyLoanDisbursementList): string => dayjs.formatDate(e?.createdAt) },
-  { field: 'idNo', header: 'เลขที่สัญญา' },
-  { field: 'customerName', header: 'ชื่อลูกค้า' },
-  { field: 'principalAndInterest', header: 'ยอดจัดรวมดอกเบี้ย', align: 'right', value: (e: IDailyLoanDisbursementList): string => formatter.numberFormat2Decimal(e?.principalAndInterest) },
-  { field: 'principal', header: 'ยอดจัด', align: 'right', value: (e: IDailyLoanDisbursementList): string => formatter.numberFormat2Decimal(e?.principal) },
-  { field: 'administrativeCost', header: 'ค่าดำเนินการ', align: 'right', value: (e: IDailyLoanDisbursementList): string => formatter.numberFormat2Decimal(e?.administrativeCost) },
-  { field: 'interest', header: 'ดอกเบี้ย', align: 'right', value: (e: IDailyLoanDisbursementList): string => formatter.numberFormat2Decimal(e?.interest) },
-  { field: 'monthlyInstallment', header: 'ชำระต่องวด', align: 'right', value: (e: IDailyLoanDisbursementList): string => formatter.numberFormat2Decimal(e?.monthlyInstallment) },
-  { field: 'installmentCount', header: 'จำนวนงวด', align: 'right', value: (e: IDailyLoanDisbursementList): string => formatter.numberFormatNoDecimal(e?.installmentCount) }
+  { field: 'createdAt', header: 'วันที่', style: { width: '120px', minWidth: '120px' }, value: (e: IDailyLoanDisbursementList): string => dayjs.formatDate(e?.createdAt) },
+  { field: 'idNo', header: 'เลขที่สัญญา', style: { width: '130px', minWidth: '130px' } },
+  { field: 'customerName', header: 'ชื่อลูกค้า', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' } },
+  { field: 'principalAndInterest', header: 'ยอดจัดรวมดอกเบี้ย', align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IDailyLoanDisbursementList): string => formatter.numberFormat2Decimal(e?.principalAndInterest) },
+  { field: 'principal', header: 'ยอดจัด', align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IDailyLoanDisbursementList): string => formatter.numberFormat2Decimal(e?.principal) },
+  { field: 'administrativeCost', header: 'ค่าดำเนินการ', align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IDailyLoanDisbursementList): string => formatter.numberFormat2Decimal(e?.administrativeCost) },
+  { field: 'interest', header: 'ดอกเบี้ย', align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IDailyLoanDisbursementList): string => formatter.numberFormat2Decimal(e?.interest) },
+  { field: 'monthlyInstallment', header: 'ชำระต่องวด', align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IDailyLoanDisbursementList): string => formatter.numberFormat2Decimal(e?.monthlyInstallment) },
+  { field: 'installmentCount', header: 'จำนวนงวด', align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IDailyLoanDisbursementList): string => formatter.numberFormatNoDecimal(e?.installmentCount) }
 ])
 
 const itemsFooter = computed((): IFooter[] => {

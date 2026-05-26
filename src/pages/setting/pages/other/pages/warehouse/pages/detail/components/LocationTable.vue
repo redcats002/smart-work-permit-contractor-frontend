@@ -44,8 +44,8 @@ const items = defineModel<WarehouseLocationFormValues[]>('items', {
   default: []
 })
 const columns = ref<IColumn<WarehouseLocationFormValues>[]>([
-  { field: 'status', header: 'สถานะ' },
-  { field: 'name', header: 'จุดจัดเก็บ' }
+  { field: 'status', header: 'สถานะ', style: { width: '120px', minWidth: '120px' } },
+  { field: 'name', header: 'จุดจัดเก็บ', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' } }
 ])
 
 function onToggle (index: number): void {

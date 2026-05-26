@@ -44,18 +44,20 @@
       :file-path="modelImage"
       class="w-24 h-24 object-cover rounded-md" />
     <template v-else>
-      <Icon
-        v-if="icon"
-        :class="iconClass"
-        :icon="icon"
-        class="size-12 text-gray-800" />
-      <img
-        v-else
-        class="w-24 h-24 object-cover rounded-md"
-        src="/images/blank_avatar.png">
+      <slot name="placeholderIcon">
+        <Icon
+          v-if="icon"
+          :class="iconClass"
+          :icon="icon"
+          class="size-12 text-gray-800" />
+        <img
+          v-else
+          class="w-24 h-24 object-cover rounded-md"
+          src="/images/blank_avatar.png">
+      </slot>
     </template>
     <slot name="label">
-      <p class="text-sm text-surface-600 text-center">
+      <p class="text-sm text-surface-600 text-center font-bold">
         {{ label }}
       </p>
     </slot>
@@ -127,10 +129,10 @@
 
 <script setup lang="ts">
 import { computed, ref, useTemplateRef } from 'vue'
+import { toast } from '@/plugins/toast'
 import type { IMedia } from '@/resources/provider/Upload.provider'
 import { Icon } from '@iconify/vue'
 import BaseImage from '../base/BaseImage.vue'
-import { toast } from '@/plugins/toast'
 
 defineOptions({
   inheritAttrs: false

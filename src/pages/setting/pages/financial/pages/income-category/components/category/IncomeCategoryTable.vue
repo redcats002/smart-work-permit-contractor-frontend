@@ -63,8 +63,8 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IFinanceIncomeCategoryList>[]>([
-  { field: 'name', header: 'หมวดหมู่รายได้', align: 'left', value: (e: IFinanceIncomeCategoryList): string => e?.name || '' },
-  { field: 'action', header: '', align: 'right' }
+  { field: 'name', header: 'หมวดหมู่รายได้', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IFinanceIncomeCategoryList): string => e?.name || '' },
+  { field: 'action', header: '', align: 'right', style: { width: '80px', minWidth: '80px' } }
 ])
 
 function rowClass (item: IFinanceIncomeCategoryList): string {

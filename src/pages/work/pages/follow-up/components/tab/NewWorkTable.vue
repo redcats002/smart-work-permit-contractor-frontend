@@ -48,10 +48,10 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IDebtCollectionList>[]>([
-  { field: 'contract.idNo', header: 'เลขที่สัญญา', sortable: true },
-  { field: 'order', header: 'งวดที่', sortable: true, value: (e: IDebtCollectionList): string => `งวดที่ ${formatter.numberFormatNoDecimal(e.order || 0)}` },
-  { field: 'customer', header: 'ชื่อลูกค้า', value: (e: IDebtCollectionList): string => e.customer.fullName },
-  { field: 'customer.phoneNumber', header: 'เบอร์โทรศัพท์', value: (e: IDebtCollectionList): string => formatter.phoneNumberFormat(e.customer.phoneNumber) },
-  { field: 'actions', header: 'จัดการ', align: 'right' }
+  { field: 'contract.idNo', header: 'เลขที่สัญญา', sortable: true, style: { width: '130px', minWidth: '130px' } },
+  { field: 'order', header: 'งวดที่', sortable: true, style: { width: '70px', minWidth: '70px' }, value: (e: IDebtCollectionList): string => `งวดที่ ${formatter.numberFormatNoDecimal(e.order || 0)}` },
+  { field: 'customer', header: 'ชื่อลูกค้า', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IDebtCollectionList): string => e.customer.fullName },
+  { field: 'customer.phoneNumber', header: 'เบอร์โทรศัพท์', style: { width: '130px', minWidth: '130px' }, value: (e: IDebtCollectionList): string => formatter.phoneNumberFormat(e.customer.phoneNumber) },
+  { field: 'actions', header: 'จัดการ', align: 'right', style: { width: '80px', minWidth: '80px' } }
 ])
 </script>

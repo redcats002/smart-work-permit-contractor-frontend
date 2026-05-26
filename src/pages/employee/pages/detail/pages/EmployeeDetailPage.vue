@@ -42,6 +42,7 @@ const employee = useInitDetail()
 const employeeId = computed((): TBaseParamsId => route?.params?.id as string ?? '')
 
 async function useFetch (): Promise<void> {
+  if (Number(employeeId.value) === 0) return
   const { data } = await EmployeeService.getEmployeeFindOne(employeeId.value)
   employee.value = useInitDetail(data).value
 }

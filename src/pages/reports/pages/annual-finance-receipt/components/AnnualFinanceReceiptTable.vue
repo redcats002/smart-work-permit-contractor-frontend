@@ -69,21 +69,21 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IAnnualFinanceReceiptList>[]>([
-  { field: 'index', header: 'ลำดับ', width: 60 },
-  { field: 'branchName', header: 'สาขา', align: 'left', width: 160 },
-  { field: 'month1', header: 'ม.ค.' },
-  { field: 'month2', header: 'ก.พ.' },
-  { field: 'month3', header: 'มี.ค.' },
-  { field: 'month4', header: 'เม.ย.' },
-  { field: 'month5', header: 'พ.ค.' },
-  { field: 'month6', header: 'มิ.ย.' },
-  { field: 'month7', header: 'ก.ค.' },
-  { field: 'month8', header: 'ส.ค.' },
-  { field: 'month9', header: 'ก.ย.' },
-  { field: 'month10', header: 'ต.ค.' },
-  { field: 'month11', header: 'พ.ย.' },
-  { field: 'month12', header: 'ธ.ค.' },
-  { field: 'sumMonth', header: 'รวมทั้งสิ้น' }
+  { field: 'index', header: 'ลำดับ', style: { width: '70px', minWidth: '70px' }, width: 60 },
+  { field: 'branchName', header: 'สาขา', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, width: 160 },
+  { field: 'month1', header: 'ม.ค.', style: { width: '160px', minWidth: '160px' } },
+  { field: 'month2', header: 'ก.พ.', style: { width: '160px', minWidth: '160px' } },
+  { field: 'month3', header: 'มี.ค.', style: { width: '160px', minWidth: '160px' } },
+  { field: 'month4', header: 'เม.ย.', style: { width: '160px', minWidth: '160px' } },
+  { field: 'month5', header: 'พ.ค.', style: { width: '160px', minWidth: '160px' } },
+  { field: 'month6', header: 'มิ.ย.', style: { width: '160px', minWidth: '160px' } },
+  { field: 'month7', header: 'ก.ค.', style: { width: '160px', minWidth: '160px' } },
+  { field: 'month8', header: 'ส.ค.', style: { width: '160px', minWidth: '160px' } },
+  { field: 'month9', header: 'ก.ย.', style: { width: '160px', minWidth: '160px' } },
+  { field: 'month10', header: 'ต.ค.', style: { width: '160px', minWidth: '160px' } },
+  { field: 'month11', header: 'พ.ย.', style: { width: '160px', minWidth: '160px' } },
+  { field: 'month12', header: 'ธ.ค.', style: { width: '160px', minWidth: '160px' } },
+  { field: 'sumMonth', header: 'รวมทั้งสิ้น', style: { width: '140px', minWidth: '140px' } }
 ])
 
 const monthColumns = computed((): IColumn<IAnnualFinanceReceiptList>[] => {

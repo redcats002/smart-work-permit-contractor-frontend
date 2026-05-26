@@ -60,17 +60,17 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IProfitBasedOnActualPaymentList>[]>([
-  { field: 'index', header: 'ลำดับ', width: 60 },
-  { field: 'receipt.idNo', header: 'เลขที่ใบเสร็จ', width: 100, value: (e: IProfitBasedOnActualPaymentList): string => e.receipt?.idNo || '-' },
-  { field: 'contract.idNo', header: 'เลขที่สัญญา', width: 100, value: (e: IProfitBasedOnActualPaymentList): string => e.contract?.idNo || '-' },
-  { field: 'numberOfContractYear', header: 'จำนวนปีสัญญา', width: 100, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.numberOfContractYear)}` },
-  { field: 'customer', header: 'ชื่อลูกค้า', width: 100, value: (e: IProfitBasedOnActualPaymentList): string => formatter.fullName(e.customer) || '-' },
-  { field: 'installmentPaymentNumber', header: 'ชำระงวดที่', width: 100, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.installmentPaymentNumber)}` },
-  { field: 'totalPrincipal', header: 'เงินต้นทั้งหมด', width: 100, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.totalPrincipal)}` },
-  { field: 'totalInterest', header: 'ดอกเบี้ยทั้งหมด', width: 100, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.totalInterest)}` },
-  { field: 'installmentPaymentAmount', header: 'ค่างวดที่รับชำระ', width: 100, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.installmentPaymentAmount)}` },
-  { field: 'currentPrincipal', header: 'เงินต้นงวดนี้', width: 100, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.currentPrincipal)}` },
-  { field: 'currentInterest', header: 'ดอกเบี้ยงวดนี้', width: 100, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.currentInterest)}` }
+  { field: 'index', header: 'ลำดับ', style: { width: '70px', minWidth: '70px' }, width: 60 },
+  { field: 'receipt.idNo', header: 'เลขที่ใบเสร็จ', style: { width: '130px', minWidth: '130px' }, width: 100, value: (e: IProfitBasedOnActualPaymentList): string => e.receipt?.idNo || '-' },
+  { field: 'contract.idNo', header: 'เลขที่สัญญา', style: { width: '130px', minWidth: '130px' }, width: 100, value: (e: IProfitBasedOnActualPaymentList): string => e.contract?.idNo || '-' },
+  { field: 'numberOfContractYear', header: 'จำนวนปีสัญญา', style: { width: '140px', minWidth: '140px' }, width: 100, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.numberOfContractYear)}` },
+  { field: 'customer', header: 'ชื่อลูกค้า', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, width: 100, value: (e: IProfitBasedOnActualPaymentList): string => formatter.fullName(e.customer) || '-' },
+  { field: 'installmentPaymentNumber', header: 'ชำระงวดที่', style: { width: '70px', minWidth: '70px' }, width: 100, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.installmentPaymentNumber)}` },
+  { field: 'totalPrincipal', header: 'เงินต้นทั้งหมด', style: { width: '140px', minWidth: '140px' }, width: 100, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.totalPrincipal)}` },
+  { field: 'totalInterest', header: 'ดอกเบี้ยทั้งหมด', style: { width: '140px', minWidth: '140px' }, width: 100, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.totalInterest)}` },
+  { field: 'installmentPaymentAmount', header: 'ค่างวดที่รับชำระ', style: { width: '70px', minWidth: '70px' }, width: 100, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.installmentPaymentAmount)}` },
+  { field: 'currentPrincipal', header: 'เงินต้นงวดนี้', style: { width: '140px', minWidth: '140px' }, width: 100, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.currentPrincipal)}` },
+  { field: 'currentInterest', header: 'ดอกเบี้ยงวดนี้', style: { width: '140px', minWidth: '140px' }, width: 100, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.currentInterest)}` }
 ])
 
 const itemsFooter = computed((): IFooter[] => {

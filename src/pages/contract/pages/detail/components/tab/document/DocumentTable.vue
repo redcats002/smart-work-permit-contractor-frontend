@@ -50,11 +50,11 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IContractDocumentList>[]>([
-  { field: 'createdAt', header: 'วันที่', value: (e: IContractDocumentList): string => dayjs.formatDate(e?.createdAt || '') },
-  { field: 'documentType', header: 'ประเภทเอกสาร', value: (e: IContractDocumentList): string => formatTitle(e?.documentType) },
-  { field: 'note', header: 'คำอธิบาย', bodyClass: 'max-w-[200px]' },
-  { field: 'location', header: 'จุดจัดเก็บ', align: 'left', value: (e: IContractDocumentList): string => e?.location?.name || '-' },
-  { field: 'action', header: 'จัดการ', align: 'right' }
+  { field: 'createdAt', header: 'วันที่', style: { width: '120px', minWidth: '120px' }, value: (e: IContractDocumentList): string => dayjs.formatDate(e?.createdAt || '') },
+  { field: 'documentType', header: 'ประเภทเอกสาร', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IContractDocumentList): string => formatTitle(e?.documentType) },
+  { field: 'note', header: 'คำอธิบาย', style: { width: '220px', minWidth: '220px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, bodyClass: 'max-w-[200px]' },
+  { field: 'location', header: 'จุดจัดเก็บ', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IContractDocumentList): string => e?.location?.name || '-' },
+  { field: 'action', header: 'จัดการ', align: 'right', style: { width: '80px', minWidth: '80px' } }
 ])
 </script>
 

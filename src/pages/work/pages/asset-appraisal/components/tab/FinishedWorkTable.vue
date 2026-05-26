@@ -41,8 +41,8 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 
 const columns = ref<IColumn<IAssetAppraisalCompleteWorkList>[]>([
-  { field: 'idNo', header: 'เลขที่สัญญา', sortable: true, align: 'left', value: (e: IAssetAppraisalCompleteWorkList): string => e.idNo ?? '' },
-  { field: 'customer', header: 'ชื่อลูกค้า', align: 'left', value: (e: IAssetAppraisalCompleteWorkList): string => formatter.fullName(e.customer) ?? '' },
-  { field: 'types', header: 'หมวดหมู่หลักทรัพย์', align: 'left', value: (e: IAssetAppraisalCompleteWorkList): string => e?.types?.map(formatTitle).join(', ') || '-', style: { maxWidth: '200px', whiteSpace: 'inherit' } }
+  { field: 'idNo', header: 'เลขที่สัญญา', sortable: true, align: 'left', style: { width: '130px', minWidth: '130px' }, value: (e: IAssetAppraisalCompleteWorkList): string => e.idNo ?? '' },
+  { field: 'customer', header: 'ชื่อลูกค้า', align: 'left', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IAssetAppraisalCompleteWorkList): string => formatter.fullName(e.customer) ?? '' },
+  { field: 'types', header: 'หมวดหมู่หลักทรัพย์', align: 'left', value: (e: IAssetAppraisalCompleteWorkList): string => e?.types?.map(formatTitle).join(', ') || '-', style: { width: '220px', minWidth: '220px', maxWidth: '200px', whiteSpace: 'inherit' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' } }
 ])
 </script>

@@ -45,12 +45,12 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IContractGuarantorList>[]>([
-  { field: 'idCard', header: 'เลขบัตรประชาชน', value: (e: IContractGuarantorList): string => (e?.customer?.idCard || '') },
-  { field: 'firstName', header: 'ชื่อ', value: (e: IContractGuarantorList): string => formatter.fullName(e?.customer) || '-' },
-  { field: 'birthDate', header: 'วันเดือนปีเกิด', value: (e: IContractGuarantorList): string => dayjs.formatDate(e?.customer?.birthDate || '') },
-  { field: 'age', header: 'อายุ', value: (e: IContractGuarantorList): string => dayjs.formatAge(e?.customer?.birthDate || '') },
-  { field: 'phoneNumber', header: 'เบอร์โทร', value: (e: IContractGuarantorList): string => formatter.fullPhoneNumber(e?.customer) },
-  { field: 'address', header: 'ที่อยู่ตามบัตรประจำตัวประชาชน', value: (e: IContractGuarantorList): string => formatter.fullAddress(e?.customer?.mainAddress) }
+  { field: 'idCard', header: 'เลขบัตรประชาชน', style: { width: '130px', minWidth: '130px' }, value: (e: IContractGuarantorList): string => (e?.customer?.idCard || '') },
+  { field: 'firstName', header: 'ชื่อ', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IContractGuarantorList): string => formatter.fullName(e?.customer) || '-' },
+  { field: 'birthDate', header: 'วันเดือนปีเกิด', style: { width: '120px', minWidth: '120px' }, value: (e: IContractGuarantorList): string => dayjs.formatDate(e?.customer?.birthDate || '') },
+  { field: 'age', header: 'อายุ', style: { width: '70px', minWidth: '70px' }, value: (e: IContractGuarantorList): string => dayjs.formatAge(e?.customer?.birthDate || '') },
+  { field: 'phoneNumber', header: 'เบอร์โทร', style: { width: '130px', minWidth: '130px' }, value: (e: IContractGuarantorList): string => formatter.fullPhoneNumber(e?.customer) },
+  { field: 'address', header: 'ที่อยู่ตามบัตรประจำตัวประชาชน', style: { width: '220px', minWidth: '220px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IContractGuarantorList): string => formatter.fullAddress(e?.customer?.mainAddress) }
 ])
 </script>
 

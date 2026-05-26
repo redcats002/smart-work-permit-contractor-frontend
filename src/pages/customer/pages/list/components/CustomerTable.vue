@@ -54,11 +54,11 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<ICustomerList>[]>([
-  { field: 'idNo', header: 'เลขที่ลูกค้า', sortable: true, align: 'left' },
-  { field: 'firstName', header: 'ชื่อลูกค้า', align: 'left', value: (e: ICustomerList): string => formatter.fullName(e) },
-  { field: 'phoneNumber', header: 'เบอร์โทรศัพท์', align: 'left', value: (e: ICustomerList): string => formatter.fullPhoneNumber(e) },
-  { field: 'customerGroup', header: 'กลุ่มลูกค้า', align: 'left', value: (e: ICustomerList): string => e?.customerGroup?.name || 'ไม่ระบุ' },
-  { field: 'status', header: 'สถานะ', sortable: true, align: 'left' }
+  { field: 'idNo', header: 'เลขที่ลูกค้า', sortable: true, align: 'left', style: { width: '130px', minWidth: '130px' } },
+  { field: 'firstName', header: 'ชื่อลูกค้า', align: 'left', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: ICustomerList): string => formatter.fullName(e) },
+  { field: 'phoneNumber', header: 'เบอร์โทรศัพท์', align: 'left', style: { width: '130px', minWidth: '130px' }, value: (e: ICustomerList): string => formatter.fullPhoneNumber(e) },
+  { field: 'customerGroup', header: 'กลุ่มลูกค้า', align: 'left', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: ICustomerList): string => e?.customerGroup?.name || 'ไม่ระบุ' },
+  { field: 'status', header: 'สถานะ', sortable: true, align: 'left', style: { width: '120px', minWidth: '120px' } }
   // {
   //   field: 'action',
   //   header: 'จัดการ',

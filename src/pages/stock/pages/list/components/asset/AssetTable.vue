@@ -57,14 +57,14 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IDocumentAssetList>[]>([
-  { field: 'idNo', header: 'เลขที่หลักทรัพย์', sortable: true },
-  { field: 'contract.idNo', header: 'เลขที่สัญญา', sortable: true },
-  { field: 'createdAt', header: 'วันที่รับเข้า', value: (e: IDocumentAssetList): string => formatDate(e?.createdAt) || '' },
-  { field: 'customerName', header: 'ชื่อลูกค้า', value: (e: IDocumentAssetList): string => formatter.fullName(e?.contract?.customer) },
-  { field: 'type', header: 'หมวดหมู่', value: (e: IDocumentAssetList): string => formatTitle(e?.type) },
-  { field: 'warehouse', header: 'คลัง', value: (e: IDocumentAssetList): string => e?.location?.warehouse?.name },
-  { field: 'storageLocation', header: 'จุดจัดเก็บ', value: (e: IDocumentAssetList): string => e?.location?.name },
-  { field: 'status', header: 'สถานะ', sortable: true }
+  { field: 'idNo', header: 'เลขที่หลักทรัพย์', sortable: true, style: { width: '130px', minWidth: '130px' } },
+  { field: 'contract.idNo', header: 'เลขที่สัญญา', sortable: true, style: { width: '130px', minWidth: '130px' } },
+  { field: 'createdAt', header: 'วันที่รับเข้า', style: { width: '120px', minWidth: '120px' }, value: (e: IDocumentAssetList): string => formatDate(e?.createdAt) || '' },
+  { field: 'customerName', header: 'ชื่อลูกค้า', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IDocumentAssetList): string => formatter.fullName(e?.contract?.customer) },
+  { field: 'type', header: 'หมวดหมู่', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IDocumentAssetList): string => formatTitle(e?.type) },
+  { field: 'warehouse', header: 'คลัง', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IDocumentAssetList): string => e?.location?.warehouse?.name },
+  { field: 'storageLocation', header: 'จุดจัดเก็บ', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IDocumentAssetList): string => e?.location?.name },
+  { field: 'status', header: 'สถานะ', sortable: true, style: { width: '120px', minWidth: '120px' } }
 ])
 </script>
 
