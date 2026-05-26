@@ -1,8 +1,10 @@
 import { computed, ref, type Ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IBaseOption } from '@/models/Global.model'
 import type { IGetContractList } from '@/models/request/contract/ContractReq.model'
 import type { IContractList } from '@/models/response/contract/ContractRes.model'
+import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
 import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
@@ -16,11 +18,16 @@ interface IUseContractList extends IUsePagination {
 }
 
 export default function useContractList (): IUseContractList {
-  const contractService: IContractProvider = new ContractProvider()
+  const route = useRoute()
+  const ContractService: IContractProvider = new ContractProvider()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
-  const filters = ref<IGetContractList>({})
+  const filters = ref<IGetContractList>({
+    branchId: route?.query.branchId as string || undefined,
+    status: route?.query.status as TContractStatus || undefined,
+    contractLoanTypeId: route?.query.contractLoanTypeId ? Number(route?.query.contractLoanTypeId) : undefined
+  })
   const items = ref<IContractList[]>([])
   const loanTypeOptions = ref<IBaseOption[]>([])
 
@@ -31,11 +38,12 @@ export default function useContractList (): IUseContractList {
     sortBy: sortBy.value || undefined,
     sortOrder: sortOrder.value,
     status: filters.value.status,
-    contractLoanTypeId: filters.value.contractLoanTypeId
+    contractLoanTypeId: filters.value.contractLoanTypeId,
+    branchId: filters.value?.branchId
   }))
 
   async function useFetch (): Promise<void> {
-    const response = await contractService.getContractPaginate(paginateQuery.value)
+    const response = await ContractService.getContractPaginate(paginateQuery.value)
     items.value = response?.data || []
     pagination.value = extractPagination(response)
     syncQuery({
@@ -55,8 +63,8 @@ export default function useContractList (): IUseContractList {
   }
 
   function onClearFilters (): void {
-    reset()
     filters.value = {}
+    reset()
     fetch()
   }
 

@@ -6,6 +6,7 @@ import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model
 import type { TInterestType } from '@/enums/modules/contract/InterestType.enum'
 import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import type { TTitleName } from '@/enums/TitleName.enum'
+import type { IBranchList } from '../branch/BranchRes.model'
 import type { IContractLoanPurposeList } from '../contract-loan-purpose/ContractLoanPurposeRes.model'
 import type { IContractLoanTypeList } from '../contract-loan-type/ContractLoanTypeRes.model'
 import type { ICustomerById } from '../customer/CustomerRes.model'
@@ -44,6 +45,7 @@ export interface IPreContractLoanType {
   name: string
 }
 export interface IPreContractList extends IEntity {
+  branch: IBranchList
   contractDate: string
   startDate: string
   endDate: string

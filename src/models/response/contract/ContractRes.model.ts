@@ -1,16 +1,17 @@
 import type { IEntity } from '@/models/Global.model'
+import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
 import type { TInterestType } from '@/enums/modules/contract/InterestType.enum'
 import type { TPaymentStatus } from '@/enums/modules/contract/PaymentStatus.enum'
 import type { IInstallmentRow } from '@/pages/contract/pages/pre-contract-detail/composables/useInstallment'
+import type { IBranchList } from '../branch/BranchRes.model'
 import type { IContractLoanPurposeList } from '../contract-loan-purpose/ContractLoanPurposeRes.model'
 import type { IContractLoanTypeList } from '../contract-loan-type/ContractLoanTypeRes.model'
 import type { ICustomerById, ICustomerList } from '../customer/CustomerRes.model'
 import type { IEmployeeList } from '../employee/EmployeeRes.model'
 import type { IHowDidFindUsList } from '../how-did-find-us/HowDidFindUsRes.model'
 import type { IPreContractList, IPreContractLoanType } from '../pre-contract/PreContractRes.model'
-import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 
 export interface IContractCustomer extends ICustomerList {
@@ -28,6 +29,7 @@ export interface IContractList extends Omit<IPreContractList, 'status'> {
   status: TContractStatus
   contractedAt: string
   contractLoanType: IPreContractLoanType
+  branch: IBranchList
   loanAmount: number
   firstInstallmentDate: string
   finalInstallmentDate: string

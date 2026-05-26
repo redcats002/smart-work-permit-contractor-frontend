@@ -3,6 +3,7 @@ import type { TInterestType } from '@/enums/modules/contract/InterestType.enum'
 import type { IBasePaginationRequest } from '../Request.model'
 
 export interface IGetContractList extends IBasePaginationRequest {
+  branchId?: string
   status?: TContractStatus
   contractLoanTypeId?: number
 }

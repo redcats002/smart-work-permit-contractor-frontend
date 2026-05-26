@@ -16,6 +16,17 @@
           </LabelField>
         </div>
         <div>
+          <LabelField
+            label="สาขา"
+            name="branch"
+            tag="div">
+            <BranchSelection
+              v-model="filters.branchId"
+              placeholder="ทั้งหมด"
+              show-clear />
+          </LabelField>
+        </div>
+        <div>
           <LabelField label="สถานะ">
             <ContractStatusSelection
               v-model="filters.status"
@@ -39,6 +50,7 @@ import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
+import BranchSelection from '@/components/selection/modules/api/branch/BranchSelection.vue'
 import ContractLoanTypeSelection from '@/components/selection/modules/api/contract-loan-type/ContractLoanTypeSelection.vue'
 import ContractStatusSelection from '@/components/selection/modules/static/contract/ContractStatusSelection.vue'
 

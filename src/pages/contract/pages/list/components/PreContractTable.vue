@@ -74,6 +74,7 @@ const columns = ref<IColumn<IPreContractList>[]>([
         lastName: e.customer?.lastName ?? undefined
       })
   },
+  { field: 'branch', header: 'สาขา', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IPreContractList): string => e?.branch?.name || 'ไม่ระบุ' },
   { field: 'status', header: 'สถานะ', sortable: true, align: 'left', style: { width: '120px', minWidth: '120px' } }
 ])
 </script>
