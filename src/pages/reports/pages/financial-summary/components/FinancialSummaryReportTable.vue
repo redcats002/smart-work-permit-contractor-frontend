@@ -47,18 +47,30 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const baseColumns = ref<IColumn<IFinancialSummaryReportList>[]>([
-  { field: 'index', header: 'ลำดับ', align: 'left', width: 60 },
-  { field: 'branchName', header: 'สาขา', align: 'left' }
+  { field: 'index', header: 'ลำดับ', align: 'left', style: { width: '70px', minWidth: '70px' }, width: 60 },
+  { field: 'branchName', header: 'สาขา', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' } }
 ])
 
 const incomeColumn: IColumn<IFinancialSummaryReportList> = {
-  field: 'income', header: 'รายรับ', align: 'right', value: (e: IFinancialSummaryReportList): string => e.income ? formatter.numberFormatNoDecimal(e.income) : '-'
+  field: 'income',
+  header: 'รายรับ',
+  align: 'right',
+  style: { width: '140px', minWidth: '140px' },
+  value: (e: IFinancialSummaryReportList): string => e.income ? formatter.numberFormatNoDecimal(e.income) : '-'
 }
 const principalColumn: IColumn<IFinancialSummaryReportList> = {
-  field: 'principal', header: 'ปล่อยสินเชื่อ', align: 'right', value: (e: IFinancialSummaryReportList): string => formatter.numberFormatNoDecimal(e.principal)
+  field: 'principal',
+  header: 'ปล่อยสินเชื่อ',
+  align: 'right',
+  style: { width: '140px', minWidth: '140px' },
+  value: (e: IFinancialSummaryReportList): string => formatter.numberFormatNoDecimal(e.principal)
 }
 const expensesColumn: IColumn<IFinancialSummaryReportList> = {
-  field: 'expenses', header: 'รายจ่าย', align: 'right', value: (e: IFinancialSummaryReportList): string => e.expenses ? formatter.numberFormatNoDecimal(e.expenses) : '-'
+  field: 'expenses',
+  header: 'รายจ่าย',
+  align: 'right',
+  style: { width: '140px', minWidth: '140px' },
+  value: (e: IFinancialSummaryReportList): string => e.expenses ? formatter.numberFormatNoDecimal(e.expenses) : '-'
 }
 
 const columns = computed((): IColumn<IFinancialSummaryReportList>[] => {

@@ -47,11 +47,11 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<ICustomerContactHistoryList>[]>([
-  { field: 'contactAt', header: 'วันที่', align: 'left', value: (e: ICustomerContactHistoryList): string => dayjs.formatDate(e?.contactAt || '') },
-  { field: 'contractIdNo', header: 'เลขที่สัญญาที่เกี่ยวข้อง', sortable: true, align: 'left' },
-  { field: 'subject', header: 'เรื่อง', align: 'left', value: (e: ICustomerContactHistoryList): string => e?.topic || '' },
-  { field: 'detail', header: 'รายละเอียด', align: 'left', value: (e: ICustomerContactHistoryList): string => e?.note || '' },
-  { field: 'createdBy', header: 'โดยพนักงาน', align: 'left', value: (e: ICustomerContactHistoryList): string => formatter.fullName(e?.employee || {}) || '-' }
+  { field: 'contactAt', header: 'วันที่', align: 'left', style: { width: '120px', minWidth: '120px' }, value: (e: ICustomerContactHistoryList): string => dayjs.formatDate(e?.contactAt || '') },
+  { field: 'contractIdNo', header: 'เลขที่สัญญาที่เกี่ยวข้อง', sortable: true, align: 'left', style: { width: '130px', minWidth: '130px' } },
+  { field: 'subject', header: 'เรื่อง', align: 'left', style: { width: '220px', minWidth: '220px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: ICustomerContactHistoryList): string => e?.topic || '' },
+  { field: 'detail', header: 'รายละเอียด', align: 'left', style: { width: '220px', minWidth: '220px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: ICustomerContactHistoryList): string => e?.note || '' },
+  { field: 'createdBy', header: 'โดยพนักงาน', align: 'left', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: ICustomerContactHistoryList): string => formatter.fullName(e?.employee || {}) || '-' }
 ])
 </script>
 

@@ -53,15 +53,15 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IActionLogList>[]>([
-  { header: 'ลำดับ', field: 'index' },
-  { header: 'วันที่', field: 'createdAtDate', sortable: true, value: (item: IActionLogList): string => formatDate(item.createdAtDate) },
-  { header: 'เวลา', field: 'createdAtTime', sortable: true, value: (item: IActionLogList): string => formatTime(item.createdAtTime) },
-  { header: 'เลขที่พนักงาน', field: 'userNo', sortable: true },
-  { header: 'ชื่อพนักงาน', field: 'userName', value: (item: IActionLogList): string => item?.userName || '-' },
-  { header: 'ชื่อเมนูที่ใช้งาน', field: 'frontendMenuName' },
-  { header: 'การเข้าถึง', field: 'action', value: (item: IActionLogList): string => formatTitle(item.action) },
-  { header: 'เลขที่เอกสาร', field: 'ref' },
-  { header: 'สาขา', field: 'branch' }
+  { header: 'ลำดับ', style: { width: '70px', minWidth: '70px' }, field: 'index' },
+  { header: 'วันที่', field: 'createdAtDate', sortable: true, style: { width: '120px', minWidth: '120px' }, value: (item: IActionLogList): string => formatDate(item.createdAtDate) },
+  { header: 'เวลา', field: 'createdAtTime', sortable: true, style: { width: '120px', minWidth: '120px' }, value: (item: IActionLogList): string => formatTime(item.createdAtTime) },
+  { header: 'เลขที่พนักงาน', field: 'userNo', sortable: true, style: { width: '130px', minWidth: '130px' } },
+  { header: 'ชื่อพนักงาน', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, field: 'userName', value: (item: IActionLogList): string => item?.userName || '-' },
+  { header: 'ชื่อเมนูที่ใช้งาน', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, field: 'frontendMenuName' },
+  { header: 'การเข้าถึง', style: { width: '80px', minWidth: '80px' }, field: 'action', value: (item: IActionLogList): string => formatTitle(item.action) },
+  { header: 'เลขที่เอกสาร', style: { width: '130px', minWidth: '130px' }, field: 'ref' },
+  { header: 'สาขา', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, field: 'branch' }
 ])
 </script>
 

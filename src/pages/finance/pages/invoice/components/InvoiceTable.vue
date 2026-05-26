@@ -45,19 +45,21 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 const { formatDate } = useDayjs()
 
 const columns = ref<IColumn<IInvoiceList>[]>([
-  { field: 'idNo', header: 'เลขที่ใบแจ้งหนี้', sortable: true, align: 'left' },
-  { field: 'contractNo', header: 'เลขที่สัญญา', sortable: true, align: 'left' },
-  { field: 'invoiceDate', header: 'วันที่', align: 'left', value: (e: IInvoiceList): string => formatDate(e.createdAt ?? undefined) },
+  { field: 'idNo', header: 'เลขที่ใบแจ้งหนี้', sortable: true, align: 'left', style: { width: '130px', minWidth: '130px' } },
+  { field: 'contractNo', header: 'เลขที่สัญญา', sortable: true, align: 'left', style: { width: '130px', minWidth: '130px' } },
+  { field: 'invoiceDate', header: 'วันที่', align: 'left', style: { width: '120px', minWidth: '120px' }, value: (e: IInvoiceList): string => formatDate(e.createdAt ?? undefined) },
   {
     field: 'customer',
     header: 'ชื่อลูกค้า',
     align: 'left',
+    style: { width: '180px', minWidth: '180px' },
+    bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' },
     value: (e: IInvoiceList): string => formatter.fullName({
       titleName: e.contract?.customer?.titleName ?? undefined,
       firstName: e.contract?.customer?.firstName ?? undefined,
       lastName: e.contract?.customer?.lastName ?? undefined
     })
   },
-  { field: 'totalAmount', header: 'มูลค่า (บาท)', sortable: true, align: 'right', value: (e: IInvoiceList): string => formatter.numberFormat(e.totalAmount ?? 0) }
+  { field: 'totalAmount', header: 'มูลค่า (บาท)', sortable: true, align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IInvoiceList): string => formatter.numberFormat(e.totalAmount ?? 0) }
 ])
 </script>

@@ -1,7 +1,7 @@
 <template>
   <section id="dashboard-list-page">
     <PageTitle />
-    <BasePage class="max-w-none">
+    <BasePage>
       <div class="px-3 pb-6 pt-0 bg-(--p-gray-1) min-h-full">
         <div class="mt-1 grid grid-cols-1 md:grid-cols-4">
           <LabelField label="สาขา">
@@ -9,7 +9,7 @@
           </LabelField>
         </div>
 
-        <div class="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4 max-w-296">
+        <div class="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4">
           <SummaryCard
             v-for="(card, i) in summaryCards"
             :key="`${card.key}-${i}`"
@@ -20,7 +20,7 @@
             :title="card.title" />
         </div>
 
-        <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 max-w-296">
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
           <SummaryCard
             v-for="(card, i) in statCards"
             :key="`${card.key}-${i}`"
@@ -31,7 +31,7 @@
             :title="card.title" />
         </div>
 
-        <div class="mt-4 grid grid-cols-1 xl:grid-cols-2 gap-4 max-w-296">
+        <div class="mt-4 grid grid-cols-1 xl:grid-cols-2 gap-4">
           <MarketingDonutCard
             v-model:end="marketingEnd"
             v-model:start="marketingStart"

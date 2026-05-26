@@ -39,10 +39,10 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IContractContactHistoryList>[]>([
-  { field: 'contactAt', header: 'วันที่', value: (e: IContractContactHistoryList): string => dayjs.formatDate(e?.contactAt || '') },
-  { field: 'topic', header: 'เรื่อง' },
-  { field: 'note', header: 'รายละเอียด', bodyClass: 'max-w-[200px]' },
-  { field: 'createdBy', header: 'โดยพนักงาน', value: (e: IContractContactHistoryList): string => formatter.fullName(e?.employee) }
+  { field: 'contactAt', header: 'วันที่', style: { width: '120px', minWidth: '120px' }, value: (e: IContractContactHistoryList): string => dayjs.formatDate(e?.contactAt || '') },
+  { field: 'topic', header: 'เรื่อง', style: { width: '220px', minWidth: '220px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' } },
+  { field: 'note', header: 'รายละเอียด', style: { width: '220px', minWidth: '220px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, bodyClass: 'max-w-[200px]' },
+  { field: 'createdBy', header: 'โดยพนักงาน', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IContractContactHistoryList): string => formatter.fullName(e?.employee) }
 ])
 </script>
 

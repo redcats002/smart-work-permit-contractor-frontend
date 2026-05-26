@@ -51,11 +51,11 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IContractIncomeList>[]>([
-  { field: 'date', header: 'วันที่', value: (e: IContractIncomeList): string => dayjs.formatDate(e?.date || '') },
-  { field: 'incomeCategory', header: 'ประเภทรายได้', value: (e: IContractIncomeList): string => e?.incomeCategory?.name || '-' },
-  { field: 'note', header: 'คำอธิบาย', bodyClass: 'max-w-[200px]' },
-  { field: 'amount', header: 'จำนวนเงิน', align: 'right', value: (e: IContractIncomeList): string => formatter.numberFormat2Decimal(e?.amount || 0) },
-  { field: 'action', header: 'จัดการ', headerClass: 'text-center' }
+  { field: 'date', header: 'วันที่', style: { width: '120px', minWidth: '120px' }, value: (e: IContractIncomeList): string => dayjs.formatDate(e?.date || '') },
+  { field: 'incomeCategory', header: 'ประเภทรายได้', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IContractIncomeList): string => e?.incomeCategory?.name || '-' },
+  { field: 'note', header: 'คำอธิบาย', style: { width: '220px', minWidth: '220px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, bodyClass: 'max-w-[200px]' },
+  { field: 'amount', header: 'จำนวนเงิน', align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IContractIncomeList): string => formatter.numberFormat2Decimal(e?.amount || 0) },
+  { field: 'action', header: 'จัดการ', style: { width: '80px', minWidth: '80px' }, headerClass: 'text-center' }
 ])
 </script>
 

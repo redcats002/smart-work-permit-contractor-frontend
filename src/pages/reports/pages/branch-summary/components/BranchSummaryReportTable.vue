@@ -45,10 +45,10 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IBranchSummaryReportList>[]>([
-  { field: 'idNo', header: 'เลขที่สาขา', align: 'left', width: 150, sortable: true },
-  { field: 'name', header: 'สาขา', align: 'left', width: 150 },
-  { field: 'openAt', header: 'วันที่เปิดสาขา', align: 'left', width: 120, sortable: true, value: (e: IBranchSummaryReportList): string => dayjs.formatDate(e.openAt) },
-  { field: 'duration', header: 'เปิดทำการมาแล้ว', align: 'left', width: 120, sortable: true, value: (e: IBranchSummaryReportList): string => dayjs.formatAge(e.openAt) }
+  { field: 'idNo', header: 'เลขที่สาขา', align: 'left', style: { width: '130px', minWidth: '130px' }, width: 150, sortable: true },
+  { field: 'name', header: 'สาขา', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, width: 150 },
+  { field: 'openAt', header: 'วันที่เปิดสาขา', align: 'left', style: { width: '120px', minWidth: '120px' }, width: 120, sortable: true, value: (e: IBranchSummaryReportList): string => dayjs.formatDate(e.openAt) },
+  { field: 'duration', header: 'เปิดทำการมาแล้ว', align: 'left', style: { width: '140px', minWidth: '140px' }, width: 120, sortable: true, value: (e: IBranchSummaryReportList): string => dayjs.formatAge(e.openAt) }
 ])
 </script>
 

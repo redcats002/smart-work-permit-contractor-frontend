@@ -40,9 +40,9 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = computed((): IColumn<IEvaluatorList>[] => [
-  { field: 'firstName', header: `ชื่อผู้ตีราคา รอบที่ ${props.count}`, value: (e: IEvaluatorList): string => formatter.fullName(e?.evaluator) },
-  { field: 'evaluatorLevel', header: 'กลุ่มผู้ตีราคา', value: (): string => formatTitle(props.evaluatorLevel) },
-  { field: 'loanAmount', header: 'ราคา', align: 'right', value: (e: IEvaluatorList): string => formatter.numberFormat2Decimal(e.loanAmount) }
+  { field: 'firstName', header: `ชื่อผู้ตีราคา รอบที่ ${props.count}`, style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IEvaluatorList): string => formatter.fullName(e?.evaluator) },
+  { field: 'evaluatorLevel', header: 'กลุ่มผู้ตีราคา', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (): string => formatTitle(props.evaluatorLevel) },
+  { field: 'loanAmount', header: 'ราคา', align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IEvaluatorList): string => formatter.numberFormat2Decimal(e.loanAmount) }
 ])
 </script>
 

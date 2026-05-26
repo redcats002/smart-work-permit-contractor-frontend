@@ -35,17 +35,17 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IDailyBranchSummaryList>[]>([
-  { field: 'index', header: 'ลำดับ', align: 'left', width: 60 },
-  { field: 'branchName', header: 'สาขา', align: 'left', width: 150 },
-  { field: 'financeReceive', header: 'รับไฟแนนซ์', align: 'right', width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.financeReceive) },
-  { field: 'financeRelease', header: 'ปล่อยไฟแนนซ์', align: 'left', width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.financeRelease) },
-  { field: 'processingFee', header: 'ค่าดำเนินการ', align: 'left', width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.processingFee) },
-  { field: 'sell', header: 'ขาย', align: 'left', width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.sell) },
-  { field: 'insuranceCost', header: 'เงินประกัน', align: 'left', width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.insuranceCost) },
-  { field: 'cancellationCost', header: 'ยกเลิกสัญญา', align: 'left', width: 140, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.cancellationCost) },
-  { field: 'lawyerFee', header: 'ค่าทนาย', align: 'left', width: 100, value: (e: IDailyBranchSummaryList): string => `${formatter.numberFormat(e.lawyerFee)}` },
-  { field: 'contractReplacementFee', header: 'เปลี่ยนสัญญา', align: 'left', width: 100, value: (e: IDailyBranchSummaryList): string => `${formatter.numberFormat(e.contractReplacementFee)}` },
-  { field: 'remainingBalance', header: 'เงินคงเหลือ', align: 'left', width: 100, value: (e: IDailyBranchSummaryList): string => `${formatter.numberFormat(e.remainingBalance)}` }
+  { field: 'index', header: 'ลำดับ', align: 'left', style: { width: '70px', minWidth: '70px' }, width: 60 },
+  { field: 'branchName', header: 'สาขา', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, width: 150 },
+  { field: 'financeReceive', header: 'รับไฟแนนซ์', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.financeReceive) },
+  { field: 'financeRelease', header: 'ปล่อยไฟแนนซ์', align: 'left', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.financeRelease) },
+  { field: 'processingFee', header: 'ค่าดำเนินการ', align: 'left', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.processingFee) },
+  { field: 'sell', header: 'ขาย', align: 'left', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.sell) },
+  { field: 'insuranceCost', header: 'เงินประกัน', align: 'left', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.insuranceCost) },
+  { field: 'cancellationCost', header: 'ยกเลิกสัญญา', align: 'left', style: { width: '140px', minWidth: '140px' }, width: 140, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.cancellationCost) },
+  { field: 'lawyerFee', header: 'ค่าทนาย', align: 'left', style: { width: '140px', minWidth: '140px' }, width: 100, value: (e: IDailyBranchSummaryList): string => `${formatter.numberFormat(e.lawyerFee)}` },
+  { field: 'contractReplacementFee', header: 'เปลี่ยนสัญญา', align: 'left', style: { width: '140px', minWidth: '140px' }, width: 100, value: (e: IDailyBranchSummaryList): string => `${formatter.numberFormat(e.contractReplacementFee)}` },
+  { field: 'remainingBalance', header: 'เงินคงเหลือ', align: 'left', style: { width: '140px', minWidth: '140px' }, width: 100, value: (e: IDailyBranchSummaryList): string => `${formatter.numberFormat(e.remainingBalance)}` }
 ])
 </script>
 

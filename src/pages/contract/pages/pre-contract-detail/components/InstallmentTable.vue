@@ -29,11 +29,11 @@ const emits = defineEmits<IEmits>()
 const { formatDate } = useDayjs()
 
 const columns = ref<IColumn<IInstallmentRow>[]>([
-  { field: 'installmentNumber', header: 'งวดที่', value: (e: IInstallmentRow): number => e.period },
-  { field: 'dueDate', header: 'วันที่กำหนดชำระ', value: (e: IInstallmentRow): string => formatDate(e.dueDate) },
-  { field: 'interest', header: 'ดอกเบี้ย', value: (e: IInstallmentRow): string => formatter.numberFormat2Decimal(e.interest) },
-  { field: 'principalPayment', header: 'เงินต้นชำระ', value: (e: IInstallmentRow): string => formatter.numberFormat2Decimal(e.principal) },
-  { field: 'installmentAmount', header: 'ค่างวด', value: (e: IInstallmentRow): string => formatter.numberFormat2Decimal(e.payment) },
-  { field: 'remainingPrincipal', header: 'เงินต้นคงเหลือ', value: (e: IInstallmentRow): string => formatter.numberFormat2Decimal(e.balance) }
+  { field: 'installmentNumber', header: 'งวดที่', style: { width: '70px', minWidth: '70px' }, value: (e: IInstallmentRow): number => e.period },
+  { field: 'dueDate', header: 'วันที่กำหนดชำระ', style: { width: '120px', minWidth: '120px' }, value: (e: IInstallmentRow): string => formatDate(e.dueDate) },
+  { field: 'interest', header: 'ดอกเบี้ย', style: { width: '140px', minWidth: '140px' }, value: (e: IInstallmentRow): string => formatter.numberFormat2Decimal(e.interest) },
+  { field: 'principalPayment', header: 'เงินต้นชำระ', style: { width: '140px', minWidth: '140px' }, value: (e: IInstallmentRow): string => formatter.numberFormat2Decimal(e.principal) },
+  { field: 'installmentAmount', header: 'ค่างวด', style: { width: '140px', minWidth: '140px' }, value: (e: IInstallmentRow): string => formatter.numberFormat2Decimal(e.payment) },
+  { field: 'remainingPrincipal', header: 'เงินต้นคงเหลือ', style: { width: '140px', minWidth: '140px' }, value: (e: IInstallmentRow): string => formatter.numberFormat2Decimal(e.balance) }
 ])
 </script>

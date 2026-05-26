@@ -46,20 +46,20 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IDailyInstallmentPaymentList>[]>([
-  { field: 'date', header: 'วันที่', sortable: true, align: 'left' },
-  { field: 'receiptNo', header: 'เลขที่ใบเสร็จ', sortable: true, align: 'left', class: 'red--text font-weight-bold' },
-  { field: 'contractNo', header: 'เลขที่สัญญา', sortable: true, align: 'left', class: 'red--text font-weight-bold' },
-  { field: 'customerName', header: 'ชื่อลูกค้า', align: 'left' },
-  { field: 'paymentMethod', header: 'ชำระโดย', align: 'left' },
-  { field: 'paymentType', header: 'รับชำระค่า', align: 'left' },
-  { field: 'debtAmount', header: 'ยอดตัดลูกหนี้', align: 'left' },
-  { field: 'discount', header: 'ส่วนลด', align: 'left' },
-  { field: 'netAmount', header: 'ยอดรับสุทธิ', align: 'left' },
-  { field: 'totalPrincipal', header: 'เงินต้นทั้งหมด', align: 'left' },
-  { field: 'principal', header: 'เงินต้น', align: 'left' },
-  { field: 'interest', header: 'ดอกเบี้ย', align: 'left' },
-  { field: 'staffName', header: 'พนักงาน', align: 'left' },
-  { field: 'status', header: 'สถานะ', sortable: true, align: 'left' }
+  { field: 'date', header: 'วันที่', sortable: true, align: 'left', style: { width: '120px', minWidth: '120px' } },
+  { field: 'receiptNo', header: 'เลขที่ใบเสร็จ', sortable: true, align: 'left', style: { width: '130px', minWidth: '130px' }, class: 'red--text font-weight-bold' },
+  { field: 'contractNo', header: 'เลขที่สัญญา', sortable: true, align: 'left', style: { width: '130px', minWidth: '130px' }, class: 'red--text font-weight-bold' },
+  { field: 'customerName', header: 'ชื่อลูกค้า', align: 'left', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' } },
+  { field: 'paymentMethod', header: 'ชำระโดย', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' } },
+  { field: 'paymentType', header: 'รับชำระค่า', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' } },
+  { field: 'debtAmount', header: 'ยอดตัดลูกหนี้', align: 'left', style: { width: '140px', minWidth: '140px' } },
+  { field: 'discount', header: 'ส่วนลด', align: 'left', style: { width: '140px', minWidth: '140px' } },
+  { field: 'netAmount', header: 'ยอดรับสุทธิ', align: 'left', style: { width: '140px', minWidth: '140px' } },
+  { field: 'totalPrincipal', header: 'เงินต้นทั้งหมด', align: 'left', style: { width: '140px', minWidth: '140px' } },
+  { field: 'principal', header: 'เงินต้น', align: 'left', style: { width: '140px', minWidth: '140px' } },
+  { field: 'interest', header: 'ดอกเบี้ย', align: 'left', style: { width: '140px', minWidth: '140px' } },
+  { field: 'staffName', header: 'พนักงาน', align: 'left', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' } },
+  { field: 'status', header: 'สถานะ', sortable: true, align: 'left', style: { width: '120px', minWidth: '120px' } }
 ])
 
 </script>

@@ -50,36 +50,41 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<ILoanDisbursementSummaryList>[]>([
-  { field: 'index', header: 'ลำดับ' },
-  { field: 'branchName', header: 'สาขา' },
+  { field: 'index', header: 'ลำดับ', style: { width: '70px', minWidth: '70px' } },
+  { field: 'branchName', header: 'สาขา', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' } },
   {
     field: 'contractAmount',
     header: 'จำนวน',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     value: (e: ILoanDisbursementSummaryList): string => formatter.numberFormat2Decimal(e?.contractAmount)
   },
   {
     field: 'principal',
     header: 'เงินต้น',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     value: (e: ILoanDisbursementSummaryList): string => formatter.numberFormat2Decimal(e?.principal)
   },
   {
     field: 'interest',
     header: 'ดอกเบี้ย',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     value: (e: ILoanDisbursementSummaryList): string => formatter.numberFormat2Decimal(e?.interest)
   },
   {
     field: 'principalAndInterest',
     header: 'เงินต้นรวมดอกเบี้ย',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     value: (e: ILoanDisbursementSummaryList): string => formatter.numberFormat2Decimal(e?.principalAndInterest)
   },
   {
     field: 'monthlyInstallment',
     header: 'ค่างวด',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     value: (e: ILoanDisbursementSummaryList): string => formatter.numberFormat2Decimal(e?.monthlyInstallment)
   }
 ])

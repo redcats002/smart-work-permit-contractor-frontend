@@ -64,8 +64,8 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IFinanceExpenseTypeList>[]>([
-  { field: 'name', header: 'ประเภทค่าใช้จ่าย', align: 'left', value: (e: IFinanceExpenseTypeList): string => e?.name || '' },
-  { field: 'action', header: '', align: 'right' }
+  { field: 'name', header: 'ประเภทค่าใช้จ่าย', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IFinanceExpenseTypeList): string => e?.name || '' },
+  { field: 'action', header: '', align: 'right', style: { width: '80px', minWidth: '80px' } }
 ])
 </script>
 

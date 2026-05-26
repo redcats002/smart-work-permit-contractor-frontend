@@ -50,9 +50,9 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IWarehouseList>[]>([
-  { field: 'idNo', header: 'เลขที่คลัง', sortable: true, align: 'left' },
-  { field: 'name', header: 'ชื่อคลัง', align: 'left' },
-  { field: 'status', header: 'สถานะ', sortable: true, align: 'right' }
+  { field: 'idNo', header: 'เลขที่คลัง', sortable: true, align: 'left', style: { width: '130px', minWidth: '130px' } },
+  { field: 'name', header: 'ชื่อคลัง', align: 'left', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' } },
+  { field: 'status', header: 'สถานะ', sortable: true, align: 'right', style: { width: '120px', minWidth: '120px' } }
 ])
 </script>
 

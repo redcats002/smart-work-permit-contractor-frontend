@@ -65,13 +65,15 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IOutstandingDebtorList>[]>([
-  { field: 'index', header: 'ลำดับ', align: 'center', width: 60 },
-  { field: 'idNo', header: 'เลขที่สัญญา', align: 'left', width: 120 },
-  { field: 'customerName', header: 'ชื่อลูกค้า', align: 'left', width: 160 },
+  { field: 'index', header: 'ลำดับ', align: 'center', style: { width: '70px', minWidth: '70px' }, width: 60 },
+  { field: 'idNo', header: 'เลขที่สัญญา', align: 'left', style: { width: '130px', minWidth: '130px' }, width: 120 },
+  { field: 'customerName', header: 'ชื่อลูกค้า', align: 'left', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, width: 160 },
   {
     field: 'interestType',
     header: 'ประเภทเงินกู้',
     align: 'left',
+    style: { width: '160px', minWidth: '160px' },
+    bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' },
     width: 120,
     value: (e: IOutstandingDebtorList): string => formatTitle(e.interestType)
   },
@@ -79,6 +81,7 @@ const columns = ref<IColumn<IOutstandingDebtorList>[]>([
     field: 'startContractDate',
     header: 'วันที่ทำสัญญา',
     align: 'left',
+    style: { width: '120px', minWidth: '120px' },
     width: 120,
     sortable: true,
     value: (e: IOutstandingDebtorList): string => dayjs.formatDate(e.startContractDate)
@@ -87,16 +90,18 @@ const columns = ref<IColumn<IOutstandingDebtorList>[]>([
     field: 'endContractDate',
     header: 'วันที่ครบสัญญา',
     align: 'left',
+    style: { width: '120px', minWidth: '120px' },
     width: 120,
     sortable: true,
     value: (e: IOutstandingDebtorList): string => dayjs.formatDate(e.endContractDate)
   },
-  { field: 'principal', header: 'ยอดจัด/งวด', align: 'right', width: 130 },
-  { field: 'principalAndInterest', header: 'ยอดจัดรวมดอกเบี้ย/งวด', align: 'right', width: 160 },
+  { field: 'principal', header: 'ยอดจัด/งวด', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 130 },
+  { field: 'principalAndInterest', header: 'ยอดจัดรวมดอกเบี้ย/งวด', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 160 },
   {
     field: 'amountPaid',
     header: 'ชำระแล้ว',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     width: 120,
     value: (e: IOutstandingDebtorList): string => formatter.numberFormat(e.amountPaid)
   },
@@ -104,6 +109,7 @@ const columns = ref<IColumn<IOutstandingDebtorList>[]>([
     field: 'outstanding',
     header: 'ลูกหนี้คงเหลือ',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     width: 130,
     value: (e: IOutstandingDebtorList): string => formatter.numberFormat(e.outstanding)
   },
@@ -111,6 +117,7 @@ const columns = ref<IColumn<IOutstandingDebtorList>[]>([
     field: 'lastUpdated',
     header: 'วันที่ชำระล่าสุด',
     align: 'left',
+    style: { width: '120px', minWidth: '120px' },
     width: 120,
     value: (e: IOutstandingDebtorList): string => dayjs.formatDate(e.lastUpdated)
   },
@@ -118,6 +125,7 @@ const columns = ref<IColumn<IOutstandingDebtorList>[]>([
     field: 'latestPaymentAmount',
     header: 'ยอดชำระล่าสุด',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     width: 120,
     value: (e: IOutstandingDebtorList): string => formatter.numberFormat(e.latestPaymentAmount)
   }

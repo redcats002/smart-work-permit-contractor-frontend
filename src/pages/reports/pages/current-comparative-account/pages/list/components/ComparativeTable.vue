@@ -51,45 +51,53 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<ICurrentComparativeAccountList>[]>([
-  { field: 'no',
+  {
+    field: 'no',
     header: 'ลำดับ',
-    align: 'center'
+    align: 'center',
+    style: { width: '70px', minWidth: '70px' }
   },
-  { field: 'branchName', header: 'สาขา', align: 'left' },
+  { field: 'branchName', header: 'สาขา', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' } },
   {
     field: 'contractAmount',
     header: 'จำนวนสัญญา',
     align: 'left',
+    style: { width: '140px', minWidth: '140px' },
     value: (e: ICurrentComparativeAccountList): string => formatter.numberFormat(e.contractAmount ?? 0)
   },
   {
     field: 'principal',
     header: 'เงินต้น (บาท)',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     value: (e: ICurrentComparativeAccountList): string => formatter.numberFormat(e.principal ?? 0)
   },
   {
     field: 'principalAndInterest',
     header: 'เงินต้นรวมดอกเบี้ย (บาท)',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     value: (e: ICurrentComparativeAccountList): string => formatter.numberFormat(e.principalAndInterest ?? 0)
   },
   {
     field: 'amountPaid',
     header: 'ยอดตัดลูกหนี้ (บาท)',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     value: (e: ICurrentComparativeAccountList): string => formatter.numberFormat(e.amountPaid ?? 0)
   },
   {
     field: 'settlementDiscount',
     header: 'ส่วนลด (บาท)',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     value: (e: ICurrentComparativeAccountList): string => formatter.numberFormat(e.settlementDiscount ?? 0)
   },
   {
     field: 'remainingAmount',
     header: 'บัญชีเทียบปัจจุบัน (บาท)',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     value: (e: ICurrentComparativeAccountList): string => formatter.numberFormat(e.remainingAmount ?? 0)
   }
 ])

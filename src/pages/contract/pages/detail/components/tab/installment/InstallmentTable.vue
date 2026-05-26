@@ -203,18 +203,18 @@ const selectedItem = ref<IContractInstallmentList | null>(null)
 const dayjs = useDayjs()
 
 const columns = ref<IColumn<IContractInstallmentList>[]>([
-  { field: 'period', header: 'งวดที่', align: 'center', style: 'width: 60px' },
-  { field: 'dueDate', header: 'กำหนดชำระ', value: (e: IContractInstallmentList): string => dayjs.formatDate(e.dueDate) },
-  { field: 'interest', header: 'ดอกเบี้ย', align: 'right', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e.interest) },
-  { field: 'principal', header: 'เงินต้นชำระ', align: 'right', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e.principal) },
-  { field: 'installment', header: 'ค่างวด', align: 'right', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e.installment) },
-  { field: 'remainingPrincipal', header: 'เงินต้นคงเหลือ', align: 'right', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e.remainingPrincipal) },
-  { field: 'penaltyFee', header: 'ค่าปรับ', align: 'right', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e.penaltyFee) },
-  { field: 'collectionFee', header: 'ค่าติดตาม', align: 'right', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e.collectionFee) },
-  { field: 'legalFee', header: 'ค่าทนาย', align: 'right', value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e.legalFee) },
-  { field: 'status', header: 'สถานะ', align: 'center' },
-  { field: 'action' as keyof IContractInstallmentList, header: 'จัดการ', align: 'center' },
-  { field: 'detail' as keyof IContractInstallmentList, header: 'รายละเอียด', align: 'center' }
+  { field: 'period', header: 'งวดที่', align: 'center', style: { width: '70px', minWidth: '70px' } },
+  { field: 'dueDate', header: 'กำหนดชำระ', style: { width: '120px', minWidth: '120px' }, value: (e: IContractInstallmentList): string => dayjs.formatDate(e.dueDate) },
+  { field: 'interest', header: 'ดอกเบี้ย', align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e.interest) },
+  { field: 'principal', header: 'เงินต้นชำระ', align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e.principal) },
+  { field: 'installment', header: 'ค่างวด', align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e.installment) },
+  { field: 'remainingPrincipal', header: 'เงินต้นคงเหลือ', align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e.remainingPrincipal) },
+  { field: 'penaltyFee', header: 'ค่าปรับ', align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e.penaltyFee) },
+  { field: 'collectionFee', header: 'ค่าติดตาม', align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e.collectionFee) },
+  { field: 'legalFee', header: 'ค่าทนาย', align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IContractInstallmentList): string => formatter.numberFormat2Decimal(e.legalFee) },
+  { field: 'status', header: 'สถานะ', align: 'center', style: { width: '120px', minWidth: '120px' } },
+  { field: 'action' as keyof IContractInstallmentList, header: 'จัดการ', align: 'center', style: { width: '80px', minWidth: '80px' } },
+  { field: 'detail' as keyof IContractInstallmentList, header: 'รายละเอียด', align: 'center', style: { width: '220px', minWidth: '220px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' } }
 ])
 
 function toggleExpand (item: IContractInstallmentList): void {

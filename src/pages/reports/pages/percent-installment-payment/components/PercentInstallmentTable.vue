@@ -50,12 +50,13 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IPercentInstallmentList>[]>([
-  { field: 'index', header: 'ลำดับ', align: 'left', width: 60 },
-  { field: 'branchName', header: 'สาขา', align: 'left', width: 150 },
+  { field: 'index', header: 'ลำดับ', align: 'left', style: { width: '70px', minWidth: '70px' }, width: 60 },
+  { field: 'branchName', header: 'สาขา', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, width: 150 },
   {
     field: 'monthlyInstallment',
     header: 'ค่างวด/งวด',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     width: 120,
     value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.monthlyInstallment)
   },
@@ -63,6 +64,7 @@ const columns = ref<IColumn<IPercentInstallmentList>[]>([
     field: 'amountPaid',
     header: 'รับค่างวด',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     width: 120,
     value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.amountPaid)
   },
@@ -70,6 +72,7 @@ const columns = ref<IColumn<IPercentInstallmentList>[]>([
     field: 'salePrice',
     header: 'ขาย',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     width: 120,
     value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.salePrice)
   },
@@ -77,6 +80,7 @@ const columns = ref<IColumn<IPercentInstallmentList>[]>([
     field: 'totalPenaltyFee',
     header: 'รับค่าปรับ',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     width: 120,
     value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.totalPenaltyFee)
   },
@@ -84,6 +88,7 @@ const columns = ref<IColumn<IPercentInstallmentList>[]>([
     field: 'totalCollectionFee',
     header: 'ค่าติดตาม',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     width: 120,
     value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.totalCollectionFee)
   },
@@ -91,6 +96,7 @@ const columns = ref<IColumn<IPercentInstallmentList>[]>([
     field: 'summary',
     header: 'รวม',
     align: 'right',
+    style: { width: '140px', minWidth: '140px' },
     width: 140,
     value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.summary)
   },
@@ -98,6 +104,7 @@ const columns = ref<IColumn<IPercentInstallmentList>[]>([
     field: 'percent',
     header: '%',
     align: 'right',
+    style: { width: '100px', minWidth: '100px' },
     width: 100,
     value: (e: IPercentInstallmentList): string => `${formatter.numberFormat(e.percent)} %`
   }

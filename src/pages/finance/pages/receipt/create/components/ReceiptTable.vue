@@ -47,18 +47,20 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 const { formatDate } = useDayjs()
 
 const columns = ref<IColumn<IReceiptList>[]>([
-  { field: 'idNo', header: 'เลขที่ใบเสร็จ', sortable: true, align: 'left' },
-  { field: 'receiptDate', header: 'วันที่', align: 'left', value: (e: IReceiptList): string => formatDate(e.receiptDate ?? undefined) },
+  { field: 'idNo', header: 'เลขที่ใบเสร็จ', sortable: true, align: 'left', style: { width: '130px', minWidth: '130px' } },
+  { field: 'receiptDate', header: 'วันที่', align: 'left', style: { width: '120px', minWidth: '120px' }, value: (e: IReceiptList): string => formatDate(e.receiptDate ?? undefined) },
   {
     field: 'customer',
     header: 'ชื่อลูกค้า',
     align: 'left',
+    style: { width: '180px', minWidth: '180px' },
+    bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' },
     value: (e: IReceiptList): string => formatter.fullName({
       titleName: e.customer?.titleName ?? undefined,
       firstName: e.customer?.firstName ?? undefined,
       lastName: e.customer?.lastName ?? undefined
     })
   },
-  { field: 'totalValue', header: 'มูลค่า (บาท)', sortable: true, align: 'right', value: (e: IReceiptList): string => formatter.numberFormat(e.totalValue ?? 0) }
+  { field: 'totalValue', header: 'มูลค่า (บาท)', sortable: true, align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IReceiptList): string => formatter.numberFormat(e.totalValue ?? 0) }
 ])
 </script>

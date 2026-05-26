@@ -50,31 +50,31 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = computed((): IColumn<IBranchIncomeExpenseList>[] => {
   const base: IColumn<IBranchIncomeExpenseList>[] = [
-    { field: 'index', header: 'ลำดับ' },
-    { field: 'idNo', header: 'รหัสการชำระ' },
-    { field: 'category', header: 'หมวดหมู่', value: (e: IBranchIncomeExpenseList): string => e?.category?.name }
+    { field: 'index', header: 'ลำดับ', style: { width: '70px', minWidth: '70px' } },
+    { field: 'idNo', header: 'รหัสการชำระ', style: { width: '130px', minWidth: '130px' } },
+    { field: 'category', header: 'หมวดหมู่', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IBranchIncomeExpenseList): string => e?.category?.name }
   ]
   switch (props.transactionType) {
     case 'INCOME_EXPENSE':
-      base.push({ field: 'income', header: 'รายรับ' })
-      base.push({ field: 'expense', header: 'รายจ่าย' })
+      base.push({ field: 'income', header: 'รายรับ', style: { width: '140px', minWidth: '140px' } })
+      base.push({ field: 'expense', header: 'รายจ่าย', style: { width: '140px', minWidth: '140px' } })
       break
     case 'INCOME':
-      base.push({ field: 'income', header: 'รายรับ' })
+      base.push({ field: 'income', header: 'รายรับ', style: { width: '140px', minWidth: '140px' } })
       break
     case 'EXPENSE':
-      base.push({ field: 'expense', header: 'รายจ่าย' })
+      base.push({ field: 'expense', header: 'รายจ่าย', style: { width: '140px', minWidth: '140px' } })
       break
     case 'INCREASE_REPAYMENT':
-      base.push({ field: 'income', header: 'รับทุน' })
-      base.push({ field: 'expense', header: 'จ่ายทุน' })
+      base.push({ field: 'income', header: 'รับทุน', style: { width: '140px', minWidth: '140px' } })
+      base.push({ field: 'expense', header: 'จ่ายทุน', style: { width: '140px', minWidth: '140px' } })
       break
     case 'INCREASE':
-      base.push({ field: 'income', header: 'รับทุน' })
-      base.push({ field: 'expense', header: 'จ่ายทุน' })
+      base.push({ field: 'income', header: 'รับทุน', style: { width: '140px', minWidth: '140px' } })
+      base.push({ field: 'expense', header: 'จ่ายทุน', style: { width: '140px', minWidth: '140px' } })
       break
     case 'REPAYMENT':
-      base.push({ field: 'expense', header: 'จ่ายทุน' })
+      base.push({ field: 'expense', header: 'จ่ายทุน', style: { width: '140px', minWidth: '140px' } })
       break
     default:
       break
