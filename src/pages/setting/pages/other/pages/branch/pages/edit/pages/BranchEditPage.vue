@@ -111,7 +111,7 @@ async function onSubmit (event: FormSubmitEvent): Promise<void> {
     return
   }
   await handleLoading(useSubmit, undefined, async (err: TErrorResponse): Promise<void> => {
-    const errorMessage = formatBranchErrorMessage(err?.message, form.value.name)
+    const errorMessage = formatBranchErrorMessage(err?.message)
     toast.error('', errorMessage)
   })
 }
