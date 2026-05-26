@@ -21,6 +21,17 @@
               show-clear />
           </LabelField>
         </div>
+        <div>
+          <LabelField
+            label="สาขา"
+            name="branch"
+            tag="div">
+            <BranchSelection
+              v-model="filters.branchId"
+              placeholder="ทั้งหมด"
+              show-clear />
+          </LabelField>
+        </div>
       </div>
     </template>
     <template #footer="{ close }">
@@ -34,13 +45,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { IBaseOption } from '@/models/Global.model'
-import type { IContractFilter } from '@/models/modules/contract/Filter.model'
+import type { IPreContractFilter } from '@/models/modules/pre-contract/Filter.model'
 import { PreContractStatusEnum, PreContractStatusItems } from '@/enums/modules/contract/PreContractStatus.enum'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import SelectInput from '@/components/input/SelectInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
+import BranchSelection from '@/components/selection/modules/api/branch/BranchSelection.vue'
 
 interface IEmits {
   search: []
@@ -48,8 +60,8 @@ interface IEmits {
 }
 const emits = defineEmits<IEmits>()
 
-const filters = defineModel<IContractFilter>('filters', {
-  default: (): IContractFilter => ({})
+const filters = defineModel<IPreContractFilter>('filters', {
+  default: (): IPreContractFilter => ({})
 })
 
 const statusOptions = computed((): IBaseOption[] => {

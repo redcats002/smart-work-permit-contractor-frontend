@@ -44,9 +44,9 @@ export const BranchSchema = z.object({
 export type BranchFormValues = z.infer<typeof BranchSchema>
 export type BranchTimeFormValues = z.infer<typeof BranchTimeSchema>
 
-export function formatBranchErrorMessage (apiMsg: string, branchName: string): string {
+export function formatBranchErrorMessage (apiMsg: string): string {
   const fieldErrorMap: Record<string, string> = {
-    'Organization already exists': `สาขา "${branchName}" ถูกใช้งานแล้ว`
+    'Organization already exists': `ชื่อหรือเลขที่สาขาถูกใช้งานแล้ว`
   }
   return fieldErrorMap[apiMsg] || apiMsg
 }
