@@ -32,8 +32,10 @@
           v-model:sort-by="sortBy"
           v-model:sort-order="sortOrder"
           :items="form.assets"
+          is-preview
           @delete="onRemoveItem($event)" />
-        <FormAction @cancel="onCancel()" />
+        <FormAction
+          @cancel="onCancel()" />
       </Form>
     </BasePage>
   </section>

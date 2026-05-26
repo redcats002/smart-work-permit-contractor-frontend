@@ -5,6 +5,7 @@
       <BackButton />
       <Spacer />
       <StockDocsDetailMenuAction
+        v-if="data.status==='WAITING_RECEIVE'"
         @delete="onDelete()"
         @edit="onEdit()" />
     </BaseTop>
@@ -23,12 +24,13 @@
         </div>
         <DocumentMovementReceiveTable
           v-model="form"
+          :destination-warehouse-id="data.destinationWarehouse?.id"
           :form="$form"
           :is-success="isSuccess"
-          :items="data.items"
-          is-detail />
+          :items="data.items" />
         <FormAction
           v-if="!isSuccess"
+          confirm-label="รับเอกสาร"
           @cancel="onCancel()" />
       </Form>
     </BasePage>
