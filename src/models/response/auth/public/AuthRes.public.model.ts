@@ -22,7 +22,6 @@ export type TActionRequestResetPasswordResponse = IBaseSuccessResponse<boolean>
 export type TActionResetPasswordResponse = IBaseSuccessResponse<boolean>
 export interface ICheckTokenResetPasswordResponse {
   valid: boolean
-  userId: string
 }
 
 export type TActionCheckTokenResetPasswordResponse = IBaseSuccessResponse<ICheckTokenResetPasswordResponse>

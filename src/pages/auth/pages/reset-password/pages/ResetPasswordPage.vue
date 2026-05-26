@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { useAuthStore } from '@/stores/Auth'
@@ -47,12 +47,11 @@ const { logout } = useLogout()
 
 const tokenValid = ref<boolean>(false)
 const form = ref<ResetPasswordFormValues>(useResetPasswordInitialValues())
-const userId = ref<string>('') // Store userId from token validation to use after password reset
+const userId = computed((): string | undefined => route?.query?.userId as string || undefined)
 async function useCheckToken (): Promise<void> {
   const token = route.query.token as string
 
   const response = await AuthPublicService.checkTokenResetPassword({ token })
-  userId.value = response.data?.userId || '0DJIBr0ROdSmOYUiM1IlRilh5ujXA1vk'
   if (!response.data.valid) {
     toast.error('ลิงก์หมดอายุหรือไม่ถูกต้อง')
     tokenValid.value = false
