@@ -17,7 +17,17 @@
           detail="ไฟล์ JPG, JPEG และ PNG ได้รับอนุญาต"
           label="เลือกเพื่ออัปโหลดหรือลากและวาง"
           hide-icon-button
-          single />
+          single>
+          <template #placeholderIcon>
+            <div class="p-1.5 rounded-lg border border-(--p-gray-5)">
+              <div class="bg-(--p-gray-5) rounded-xl">
+                <Icon
+                  class="size-12 text-(--p-gray-4)"
+                  icon="solar:user-bold" />
+              </div>
+            </div>
+          </template>
+        </UploadInput>
       </BaseContainer>
       <Form
         :key="formKey"
