@@ -189,6 +189,132 @@ describe('formatter', () => {
     })
   })
 
+  describe('numberToThaiText', () => {
+    describe('zero', () => {
+      it('returns ศูนย์บาทถ้วน for 0', () => {
+        expect(formatter.numberToThaiText(0)).toBe('ศูนย์บาทถ้วน')
+      })
+    })
+
+    describe('single digits', () => {
+      it('converts 1 → หนึ่งบาทถ้วน', () => {
+        expect(formatter.numberToThaiText(1)).toBe('หนึ่งบาทถ้วน')
+      })
+
+      it('converts 9 → เก้าบาทถ้วน', () => {
+        expect(formatter.numberToThaiText(9)).toBe('เก้าบาทถ้วน')
+      })
+    })
+
+    describe('tens', () => {
+      it('converts 10 → สิบบาทถ้วน (no หนึ่ง prefix)', () => {
+        expect(formatter.numberToThaiText(10)).toBe('สิบบาทถ้วน')
+      })
+
+      it('converts 11 → สิบเอ็ดบาทถ้วน', () => {
+        expect(formatter.numberToThaiText(11)).toBe('สิบเอ็ดบาทถ้วน')
+      })
+
+      it('converts 20 → ยี่สิบบาทถ้วน', () => {
+        expect(formatter.numberToThaiText(20)).toBe('ยี่สิบบาทถ้วน')
+      })
+
+      it('converts 21 → ยี่สิบเอ็ดบาทถ้วน', () => {
+        expect(formatter.numberToThaiText(21)).toBe('ยี่สิบเอ็ดบาทถ้วน')
+      })
+
+      it('converts 30 → สามสิบบาทถ้วน', () => {
+        expect(formatter.numberToThaiText(30)).toBe('สามสิบบาทถ้วน')
+      })
+    })
+
+    describe('hundreds', () => {
+      it('converts 100 → หนึ่งร้อยบาทถ้วน', () => {
+        expect(formatter.numberToThaiText(100)).toBe('หนึ่งร้อยบาทถ้วน')
+      })
+
+      it('converts 101 → หนึ่งร้อยเอ็ดบาทถ้วน', () => {
+        expect(formatter.numberToThaiText(101)).toBe('หนึ่งร้อยเอ็ดบาทถ้วน')
+      })
+
+      it('converts 110 → หนึ่งร้อยสิบบาทถ้วน', () => {
+        expect(formatter.numberToThaiText(110)).toBe('หนึ่งร้อยสิบบาทถ้วน')
+      })
+
+      it('converts 111 → หนึ่งร้อยสิบเอ็ดบาทถ้วน', () => {
+        expect(formatter.numberToThaiText(111)).toBe('หนึ่งร้อยสิบเอ็ดบาทถ้วน')
+      })
+    })
+
+    describe('thousands', () => {
+      it('converts 1000 → หนึ่งพันบาทถ้วน', () => {
+        expect(formatter.numberToThaiText(1000)).toBe('หนึ่งพันบาทถ้วน')
+      })
+
+      it('converts 10000 → หนึ่งหมื่นบาทถ้วน', () => {
+        expect(formatter.numberToThaiText(10000)).toBe('หนึ่งหมื่นบาทถ้วน')
+      })
+
+      it('converts 100000 → หนึ่งแสนบาทถ้วน', () => {
+        expect(formatter.numberToThaiText(100000)).toBe('หนึ่งแสนบาทถ้วน')
+      })
+
+      it('converts 999999 → เก้าแสนเก้าหมื่นเก้าพันเก้าร้อยเก้าสิบเก้าบาทถ้วน', () => {
+        expect(formatter.numberToThaiText(999999)).toBe('เก้าแสนเก้าหมื่นเก้าพันเก้าร้อยเก้าสิบเก้าบาทถ้วน')
+      })
+    })
+
+    describe('millions (the bug cases)', () => {
+      it('converts 1000000 → หนึ่งล้านบาทถ้วน', () => {
+        expect(formatter.numberToThaiText(1_000_000)).toBe('หนึ่งล้านบาทถ้วน')
+      })
+
+      it('converts 10000000 → สิบล้านบาทถ้วน', () => {
+        expect(formatter.numberToThaiText(10_000_000)).toBe('สิบล้านบาทถ้วน')
+      })
+
+      it('converts 100000000 → หนึ่งร้อยล้านบาทถ้วน', () => {
+        expect(formatter.numberToThaiText(100_000_000)).toBe('หนึ่งร้อยล้านบาทถ้วน')
+      })
+
+      it('converts 1000000000 → หนึ่งพันล้านบาทถ้วน', () => {
+        expect(formatter.numberToThaiText(1_000_000_000)).toBe('หนึ่งพันล้านบาทถ้วน')
+      })
+
+      it('converts 90000000 → เก้าสิบล้านบาทถ้วน', () => {
+        expect(formatter.numberToThaiText(90_000_000)).toBe('เก้าสิบล้านบาทถ้วน')
+      })
+
+      it('converts 1500000 → หนึ่งล้านห้าแสนบาทถ้วน (millions + remainder)', () => {
+        expect(formatter.numberToThaiText(1_500_000)).toBe('หนึ่งล้านห้าแสนบาทถ้วน')
+      })
+
+      it('converts 11000000 → สิบเอ็ดล้านบาทถ้วน', () => {
+        expect(formatter.numberToThaiText(11_000_000)).toBe('สิบเอ็ดล้านบาทถ้วน')
+      })
+    })
+
+    describe('decimals (สตางค์)', () => {
+      it('appends บาทถ้วน when decimal is .00', () => {
+        expect(formatter.numberToThaiText(100.00)).toBe('หนึ่งร้อยบาทถ้วน')
+      })
+
+      it('converts 100.50 → หนึ่งร้อยบาทจุดห้าสิบสตางค์', () => {
+        expect(formatter.numberToThaiText(100.50)).toBe('หนึ่งร้อยบาทจุดห้าสิบสตางค์')
+      })
+
+      it('converts 1.25 → หนึ่งบาทจุดยี่สิบห้าสตางค์', () => {
+        expect(formatter.numberToThaiText(1.25)).toBe('หนึ่งบาทจุดยี่สิบห้าสตางค์')
+      })
+    })
+
+    describe('error handling', () => {
+      it('throws for NaN', () => {
+        expect(() => formatter.numberToThaiText(NaN)).toThrow('Input must be a valid number')
+      })
+    })
+  })
+
   describe('fullAddress', () => {
     it('formats a full address', () => {
       const result = formatter.fullAddress({

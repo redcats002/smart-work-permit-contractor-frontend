@@ -210,47 +210,50 @@ function numberToThaiText (amount: number): string {
     throw new Error('Input must be a valid number')
   }
 
-  const thaiNumbers = ['ศูนย์', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า']
-  const thaiUnits = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน', 'ล้าน']
-  const bahtText = 'บาท'
-  const satangText = 'สตางค์'
-  const wholeText = 'ถ้วน'
+  const ones = ['', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า']
+  const units = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน']
 
-  const formatThaiText = (num: number): string => {
+  // Converts a number in range 1–999999 to Thai text
+  const convertGroup = (n: number): string => {
+    if (n === 0) return ''
     let text = ''
-    const numStr = num.toString().split('').reverse()
-    numStr.forEach((digit: string, index: number): any => {
+    const digits = n.toString().split('').reverse()
+    digits.forEach((digit: string, index: number): void => {
       const d = Number(digit)
-      const unit = thaiUnits[index % thaiUnits.length]
-      const isTens = index % thaiUnits.length === 1
-
-      if (d !== 0) {
-        if (isTens && d === 2) {
-          text = `ยี่${unit}${text}`
-        } else if (isTens && d === 1) {
-          text = `${unit}${text}`
-        } else if (!isTens && d === 1 && index !== 0) {
-          text = `เอ็ด${unit}${text}`
-        } else {
-          text = `${thaiNumbers[d]}${unit}${text}`
-        }
+      if (d === 0) return
+      if (index === 1) {
+        // tens position: สิบ / ยี่สิบ / สามสิบ...
+        if (d === 1) text = `สิบ${text}`
+        else if (d === 2) text = `ยี่สิบ${text}`
+        else text = `${ones[d]}สิบ${text}`
+      } else {
+        // ones position in a multi-digit number uses เอ็ด instead of หนึ่ง
+        const digitText = (index === 0 && d === 1 && n >= 10) ? 'เอ็ด' : ones[d]
+        text = `${digitText}${units[index]}${text}`
       }
     })
-    if (text.startsWith('เอ็ด')) {
-      text = text.replace('เอ็ด', 'หนึ่ง')
-    }
     return text
   }
 
+  // Recursively converts any non-negative integer to Thai text,
+  // splitting at ล้าน (1,000,000) to avoid modulo unit wrap-around
+  const convertToThaiText = (n: number): string => {
+    if (n === 0) return 'ศูนย์'
+    if (n < 1_000_000) return convertGroup(n)
+    const millions = Math.floor(n / 1_000_000)
+    const remainder = n % 1_000_000
+    const millionText = `${convertGroup(millions)}ล้าน`
+    return remainder > 0 ? `${millionText}${convertGroup(remainder)}` : millionText
+  }
+
   const [integerPart, decimalPart] = amount.toFixed(2).split('.')
-  const integerText = formatThaiText(Number(integerPart))
+  const integerText = convertToThaiText(Number(integerPart))
   const decimalValue = Number(decimalPart)
 
   if (decimalValue === 0) {
-    return `${integerText}${bahtText}${wholeText}`
+    return `${integerText}บาทถ้วน`
   }
-  const decimalText = formatThaiText(decimalValue)
-  return `${integerText}${bahtText}จุด${decimalText}${satangText}`
+  return `${integerText}บาทจุด${convertToThaiText(decimalValue)}สตางค์`
 }
 
 export const formatter: IFormatter = {
