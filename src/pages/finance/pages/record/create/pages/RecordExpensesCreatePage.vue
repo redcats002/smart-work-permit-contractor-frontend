@@ -131,7 +131,7 @@ async function useCreate (event: FormSubmitEvent): Promise<void> {
       expenseTypeId: expensesState?.id ? Number(expensesState.id) : Number(form.value.expenseTypeId ?? 0),
       expenseCategoryId: categoryState?.id ? Number(categoryState.id) : Number(form.value.expenseCategoryId ?? 0),
       amount: form.value.amount,
-      branchId: form.value.branchId,
+      referBranchId: form.value.referBranchId,
       expenseDate: form.value.expenseDate,
       reason: form.value.reason ?? '',
       files: uploadedFiles

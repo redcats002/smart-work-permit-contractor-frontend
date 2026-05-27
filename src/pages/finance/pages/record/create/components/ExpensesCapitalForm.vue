@@ -19,13 +19,13 @@
       v-slot="{ invalid }"
       :form="form"
       label="สาขา"
-      name="branchId"
+      name="referBranchId"
       tag="div"
       required>
-      <FinanceExpenseCategorySelection
-        v-model="model.branchId"
+      <BranchSelection
+        v-model="model.referBranchId"
         :invalid="invalid"
-        name="branchId"
+        name="referBranchId"
         placeholder="กรุณาเลือกสาขา" />
     </LabelField>
     <LabelField
@@ -98,7 +98,7 @@ import { type IFormState } from '@/models/Form.model'
 import DatePickerInput from '@/components/input/DatePickerInput.vue'
 import FileInput from '@/components/input/FileInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
-import FinanceExpenseCategorySelection from '@/components/selection/modules/api/finance-expense-category/FinanceExpenseCategorySelection.vue'
+import BranchSelection from '@/components/selection/modules/api/branch/BranchSelection.vue'
 import ExpensesTypeSelection from '@/components/selection/modules/static/expense-type/ExpensesTypeSelection.vue'
 import { FormField } from '@primevue/forms'
 import { type ExpensesFormValues } from '../schema/expenses.schema'

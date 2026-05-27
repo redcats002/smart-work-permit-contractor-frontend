@@ -54,8 +54,8 @@ const columns = ref<IColumn<IExpensesList>[]>([
   { field: 'idNo', header: 'เลขที่ใบค่าใช้จ่าย', sortable: true, align: 'left', style: { width: '130px', minWidth: '130px' } },
   { field: 'createdAt', header: 'วันที่', align: 'left', style: { width: '120px', minWidth: '120px' }, value: (e: IExpensesList): string => formatDate(e.expenseDate) },
   { field: 'type', header: 'รับ/จ่าย', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IExpensesList): string => formatTitle(e.type) },
-  { field: 'expenseCategory', header: 'หมวดหมู่ค่าใช้จ่าย', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IExpensesList): string => e?.expenseCategory || '-' },
   { field: 'expenseType', header: 'ประเภท', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IExpensesList): string => e?.expenseType || '-' },
+  { field: 'expenseCategory', header: 'หมวดหมู่ค่าใช้จ่าย', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IExpensesList): string => e?.expenseCategory || '-' },
   { field: 'amount', header: 'มูลค่า (บาท)', sortable: true, align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IExpensesList): string => formatter.numberFormat2Decimal(e.amount) }
   // { field: 'actions', header: '', align: 'right', style: { width: '80px', minWidth: '80px' } }
 ])
