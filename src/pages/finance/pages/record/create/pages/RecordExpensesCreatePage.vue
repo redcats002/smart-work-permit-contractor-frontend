@@ -6,6 +6,7 @@
     </BaseTop>
     <BasePage>
       <Form
+        :key="formKey"
         ref="formRef"
         v-slot="$form"
         :initial-values="form"
@@ -29,7 +30,8 @@
                 name="type"
                 placeholder="เลือกประเภทรับ/จ่าย"
                 dropdown
-                show-clear />
+                show-clear
+                @update:model-value="mount()" />
             </LabelField>
           </div>
           <Transition
@@ -38,8 +40,8 @@
             <ExpensesPaymentForm
               v-if="isPaymentExpense(form.type)"
               v-model="form"
-              v-model:files="files"
               :form="$form"
+              @mount="mount()"
               @update-category="onCategoryChange()" />
           </Transition>
           <Transition
@@ -48,8 +50,8 @@
             <ExpensesCapitalForm
               v-if="isCapitalExpense(form.type)"
               v-model="form"
-              v-model:files="files"
-              :form="$form" />
+              :form="$form"
+              @mount="mount()" />
           </Transition>
         </BaseContainer>
         <FormAction @cancel="onCancel()" />
@@ -78,7 +80,6 @@ import PageTitle from '@/components/nav/PageTitle.vue'
 import ExpensesTypeSelection from '@/components/selection/modules/static/expense-type/ExpensesTypeSelection.vue'
 import ExpensesCapitalForm from '../components/ExpensesCapitalForm.vue'
 import ExpensesPaymentForm from '../components/ExpensesPaymentForm.vue'
-import useUpload from '@/composables/useUpload.ts'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { type FormInstance } from '@primevue/forms/form'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
@@ -88,7 +89,7 @@ import { type ExpensesFormValues, ExpensesSchema, useFormInitialValues } from '.
 const router = useRouter()
 const formRef = ref<FormInstance | null>(null)
 const form = ref<ExpensesFormValues>(useFormInitialValues())
-const { media: files } = useUpload()
+const formKey = ref<number>(0)
 const resolver = zodResolver(ExpensesSchema)
 
 const ExpensesService: IExpensesProvider = new ExpensesProvider()
@@ -103,9 +104,13 @@ function onCategoryChange (): void {
   formRef.value?.setFieldValue('expenseTypeId', undefined)
 }
 
+function mount (): void {
+  formKey.value++
+}
+
 async function uploadFiles (): Promise<IExpensesFile[]> {
   const uploaded: IExpensesFile[] = []
-  for (const media of files.value) {
+  for (const media of form.value.files) {
     if (media.isNew && media.file) {
       const { data } = await UploadService.uploadFile(media.file)
       uploaded.push({ name: data.originalName, url: data.fileUrl, path: data.filePath })

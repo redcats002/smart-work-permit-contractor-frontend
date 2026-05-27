@@ -105,15 +105,14 @@ function onFileChange (e: Event): void {
 
   if (!selected) return
 
-  for (const file of selected) {
-    files.value.push({
-      name: file.name,
-      url: URL.createObjectURL(file),
-      file,
-      path: file?.webkitRelativePath || file.name,
-      isNew: true
-    })
-  }
+  const added = Array.from(selected).map((file: File): IMedia => ({
+    name: file.name,
+    url: URL.createObjectURL(file),
+    file,
+    path: file?.webkitRelativePath || file.name,
+    isNew: true
+  }))
+  files.value = [...files.value, ...added]
 
   if (fileInput.value) {
     fileInput.value.value = ''
@@ -121,7 +120,7 @@ function onFileChange (e: Event): void {
 }
 
 function removeFile (index: number): void {
-  files.value.splice(index, 1)
+  files.value = files.value.filter((_: IMedia, i: number): boolean => i !== index)
 }
 </script>
 

@@ -53,24 +53,28 @@
         :invalid="invalid"
         :use-grouping="true"
         class="h-9! shadow-none!"
+        name="amount"
         placeholder="กรอกจำนวนเงิน"
         fluid />
     </LabelField>
-    <LabelField
-      v-slot="{invalid}"
-      :form="form"
-      label="ไฟล์"
-      name="files"
-      tag="div"
-      required>
-      <FileInput
-        v-model="files"
+    <FormField
+      name="files">
+      <LabelField
+        v-slot="{ invalid }"
         :form="form"
-        :invalid="invalid"
-        name="files" />
-    </LabelField>
+        label="ไฟล์"
+        name="files"
+        tag="div"
+        required>
+        <FileInput
+          v-model="model.files"
+          :invalid="invalid"
+          name="files"
+          @update:model-value="emits('mount')" />
+      </LabelField>
+    </FormField>
     <LabelField
-      v-slot="{invalid}"
+      v-slot="{ invalid }"
       :form="form"
       class="col-span-2 w-full"
       label="หมายเหตุ"
@@ -91,23 +95,25 @@
 
 <script setup lang="ts">
 import { type IFormState } from '@/models/Form.model'
-import { type IMedia } from '@/resources/provider/Upload.provider'
 import DatePickerInput from '@/components/input/DatePickerInput.vue'
 import FileInput from '@/components/input/FileInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import FinanceExpenseCategorySelection from '@/components/selection/modules/api/finance-expense-category/FinanceExpenseCategorySelection.vue'
 import ExpensesTypeSelection from '@/components/selection/modules/static/expense-type/ExpensesTypeSelection.vue'
+import { FormField } from '@primevue/forms'
 import { type ExpensesFormValues } from '../schema/expenses.schema'
 
 interface IProps {
   form: IFormState
 }
+interface IEmits {
+  mount: []
+}
 
 withDefaults(defineProps<IProps>(), {})
+const emits = defineEmits<IEmits>()
 
 const model = defineModel<ExpensesFormValues>({ required: true })
-const files = defineModel<IMedia[]>('files', { required: true })
-
 </script>
 
 <style scoped>
