@@ -14,9 +14,10 @@ export interface IExpensesFile {
 }
 
 export interface ICreateExpensesPayload {
-  type: string
-  expenseTypeId: number
-  expenseCategoryId: number
+  type: TExpensesType
+  expenseCategoryId?: number
+  expenseTypeId?: number
+  branchId?: string
   amount: number
   expenseDate: string
   reason: string

@@ -13,97 +13,44 @@
         class="flex flex-col gap-5 pb-10"
         @submit="onSubmit($event)">
         <BaseContainer>
-          <div class="grid grid-cols-2 gap-x-4 gap-y-5">
-            <div class="grid grid-cols-4 gap-2">
-              <LabelField
-                v-slot="{ invalid }"
-                :form="$form"
-                class="col-span-1"
-                label="หมวดหมู่ค่าใช้จ่าย"
-                name="expensesType"
-                tag="div"
-                required>
-                <ExpensesTypeSelection
-                  v-model="form.expensesType"
-                  :invalid="invalid"
-                  dropdown />
-              </LabelField>
-              <LabelField
-                v-slot="{ invalid }"
-                :form="$form"
-                class="col-span-3 mt-6"
-                name="categoryId"
-                tag="div">
-                <FinanceExpenseCategorySelection
-                  v-model="form.categoryId"
-                  :invalid="invalid"
-                  name="categoryId"
-                  placeholder="กรุณาเลือกหมวดหมู่ค่าใช้จ่าย"
-                  @update:model-value="onCategoryChange()" />
-              </LabelField>
-            </div>
+          <div
+            v-if="!form.type"
+            class="grid grid-cols-2">
             <LabelField
               v-slot="{ invalid }"
               :form="$form"
-              label="ประเภทค่าใช้จ่าย"
-              name="expensesId"
+              label="รับ/จ่าย"
+              name="type"
               tag="div"
               required>
-              <FinanceExpenseTypeSelection
-                v-model="form.expensesId"
-                :disabled="!form.categoryId"
-                :expense-category-id="form.categoryId"
+              <ExpensesTypeSelection
+                v-model="form.type"
                 :invalid="invalid"
-                name="expensesId"
-                placeholder="กรุณาเลือกประเภทค่าใช้จ่าย" />
-            </LabelField>
-            <LabelField
-              v-slot="{ invalid }"
-              :form="$form"
-              label="จำนวนเงิน (บาท)"
-              name="amount"
-              tag="div"
-              required>
-              <InputNumber
-                v-model="form.amount"
-                :invalid="invalid"
-                :use-grouping="true"
-                class="h-9! shadow-none!"
-                placeholder="กรอกจำนวนเงิน"
-                fluid />
-            </LabelField>
-            <LabelField
-              label="ไฟล์"
-              tag="div">
-              <FileInput v-model="files" />
-            </LabelField>
-            <LabelField
-              v-slot="{ invalid }"
-              :form="$form"
-              label="วันที่จ่าย"
-              name="payDate"
-              tag="div"
-              required>
-              <DatePickerInput
-                v-model="form.payDate"
-                :invalid="invalid"
-                name="payDate" />
-            </LabelField>
-            <LabelField
-              :form="$form"
-              class="col-span-2 w-full"
-              label="หมายเหตุ"
-              name="note"
-              tag="div">
-              <div class="flex w-full">
-                <Textarea
-                  v-model="form.note"
-                  class="resize-none"
-                  cols="130"
-                  rows="3" />
-              </div>
+                name="type"
+                placeholder="เลือกประเภทรับ/จ่าย"
+                dropdown
+                show-clear />
             </LabelField>
           </div>
+          <Transition
+            mode="out-in"
+            name="fade">
+            <ExpensesPaymentForm
+              v-if="isPaymentExpense(form.type)"
+              v-model="form"
+              v-model:files="files"
+              :form="$form"
+              @update-category="onCategoryChange()" />
+          </Transition>
+          <Transition
+            mode="out-in"
+            name="fade">
+            <ExpensesCapitalForm
+              v-if="isCapitalExpense(form.type)"
+              v-model="form"
+              v-model:files="files"
+              :form="$form" />
+          </Transition>
         </BaseContainer>
         <FormAction @cancel="onCancel()" />
       </Form>
@@ -117,31 +64,31 @@ import { useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { ICreateExpensesPayload, IExpensesFile } from '@/models/request/expenses/ExpensesReq.model'
+import type { IExpensesFile } from '@/models/request/expenses/ExpensesReq.model'
+import { isCapitalExpense, isPaymentExpense } from '@/enums/modules/finance/ExpenseType.enum'
 import ExpensesProvider, { type IExpensesProvider } from '@/resources/provider/expenses/Expenses.provider'
-import type { IMedia } from '@/resources/provider/Upload.provider'
 import UploadProvider, { type IUploadProvider } from '@/resources/provider/Upload.provider'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
-import DatePickerInput from '@/components/input/DatePickerInput.vue'
-import FileInput from '@/components/input/FileInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
-import FinanceExpenseCategorySelection from '@/components/selection/modules/api/finance-expense-category/FinanceExpenseCategorySelection.vue'
-import FinanceExpenseTypeSelection from '@/components/selection/modules/api/finance-expense-type/FinanceExpenseTypeSelection.vue'
 import ExpensesTypeSelection from '@/components/selection/modules/static/expense-type/ExpensesTypeSelection.vue'
+import ExpensesCapitalForm from '../components/ExpensesCapitalForm.vue'
+import ExpensesPaymentForm from '../components/ExpensesPaymentForm.vue'
+import useUpload from '@/composables/useUpload.ts'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { type FormInstance } from '@primevue/forms/form'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
+import { usePayload } from '../composables/usePayload.ts'
 import { type ExpensesFormValues, ExpensesSchema, useFormInitialValues } from '../schema/expenses.schema'
 
 const router = useRouter()
 const formRef = ref<FormInstance | null>(null)
 const form = ref<ExpensesFormValues>(useFormInitialValues())
-const files = ref<IMedia[]>([])
+const { media: files } = useUpload()
 const resolver = zodResolver(ExpensesSchema)
 
 const ExpensesService: IExpensesProvider = new ExpensesProvider()
@@ -152,8 +99,8 @@ function onCancel (): void {
 }
 
 function onCategoryChange (): void {
-  form.value.expensesId = undefined
-  formRef.value?.setFieldValue('expensesId', undefined)
+  form.value.expenseTypeId = undefined
+  formRef.value?.setFieldValue('expenseTypeId', undefined)
 }
 
 async function uploadFiles (): Promise<IExpensesFile[]> {
@@ -169,27 +116,32 @@ async function uploadFiles (): Promise<IExpensesFile[]> {
   return uploaded
 }
 
+async function useCreate (event: FormSubmitEvent): Promise<void> {
+  await handleLoading(async (): Promise<void> => {
+    const uploadedFiles = await uploadFiles()
+    const categoryState = event.states?.expenseCategoryId?.value
+    const expensesState = event.states?.expenseTypeId?.value
+    const payload = usePayload({
+      type: form.value.type,
+      expenseTypeId: expensesState?.id ? Number(expensesState.id) : Number(form.value.expenseTypeId ?? 0),
+      expenseCategoryId: categoryState?.id ? Number(categoryState.id) : Number(form.value.expenseCategoryId ?? 0),
+      amount: form.value.amount,
+      branchId: form.value.branchId,
+      expenseDate: form.value.expenseDate,
+      reason: form.value.reason ?? '',
+      files: uploadedFiles
+    })
+    const response = await ExpensesService.createExpenses(payload)
+    toast.success('บันทึกข้อมูลสำเร็จ')
+    router.push({ name: 'ExpenseDetailPage', params: { id: response.data.id } })
+  })
+}
+
 async function onSubmit (event: FormSubmitEvent): Promise<void> {
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return
   }
-  await handleLoading(async (): Promise<void> => {
-    const uploadedFiles = await uploadFiles()
-    const categoryState = event.states?.categoryId?.value
-    const expensesState = event.states?.expensesId?.value
-    const payload: ICreateExpensesPayload = {
-      type: form.value.expensesType,
-      expenseTypeId: expensesState?.id ? Number(expensesState.id) : Number(form.value.expensesId ?? 0),
-      expenseCategoryId: categoryState?.id ? Number(categoryState.id) : Number(form.value.categoryId ?? 0),
-      amount: form.value.amount,
-      expenseDate: form.value.payDate,
-      reason: form.value.note ?? '',
-      files: uploadedFiles
-    }
-    const response = await ExpensesService.createExpenses(payload)
-    toast.success('บันทึกข้อมูลสำเร็จ')
-    router.push({ name: 'ExpenseDetailPage', params: { id: response.data.id } })
-  })
+  await useCreate(event)
 }
 </script>

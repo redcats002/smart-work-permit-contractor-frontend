@@ -25,7 +25,7 @@
                 tag="div"
                 required>
                 <ExpensesTypeSelection
-                  v-model="form.expensesType"
+                  v-model="form.type"
                   :invalid="invalid"
                   dropdown />
               </LabelField>
@@ -36,7 +36,7 @@
                 name="categoryId"
                 tag="div">
                 <FinanceExpenseCategorySelection
-                  v-model="form.categoryId"
+                  v-model="form.expenseCategoryId"
                   :invalid="invalid"
                   name="categoryId"
                   placeholder="กรุณาเลือกหมวดหมู่ค่าใช้จ่าย"
@@ -51,9 +51,9 @@
               tag="div"
               required>
               <FinanceExpenseTypeSelection
-                v-model="form.expensesId"
-                :disabled="!form.categoryId"
-                :expense-category-id="form.categoryId"
+                v-model="form.expenseTypeId"
+                :disabled="!form.expenseCategoryId"
+                :expense-category-id="form.expenseCategoryId"
                 :invalid="invalid"
                 name="expensesId"
                 placeholder="กรุณาเลือกประเภทค่าใช้จ่าย" />
@@ -86,7 +86,7 @@
               tag="div"
               required>
               <DatePickerInput
-                v-model="form.payDate"
+                v-model="form.expenseDate"
                 :invalid="invalid"
                 name="payDate" />
             </LabelField>
@@ -98,7 +98,7 @@
               tag="div">
               <div class="flex w-full">
                 <Textarea
-                  v-model="form.note"
+                  v-model="form.reason"
                   class="resize-none"
                   cols="130"
                   rows="3" />
@@ -160,7 +160,7 @@ function onCancel (): void {
 }
 
 function onCategoryChange (): void {
-  form.value.expensesId = undefined
+  form.value.expenseTypeId = undefined
   formRef.value?.setFieldValue('expensesId', undefined)
 }
 
@@ -194,12 +194,12 @@ async function onSubmit (event: FormSubmitEvent): Promise<void> {
     const categoryState = event.states?.categoryId?.value
     const expensesState = event.states?.expensesId?.value
     const payload: IUpdateExpensesPayload = {
-      type: form.value.expensesType,
-      expenseTypeId: expensesState?.id ? Number(expensesState.id) : Number(form.value.expensesId ?? 0),
-      expenseCategoryId: categoryState?.id ? Number(categoryState.id) : Number(form.value.categoryId ?? 0),
+      type: form.value.type,
+      expenseTypeId: expensesState?.id ? Number(expensesState.id) : Number(form.value.expenseTypeId ?? 0),
+      expenseCategoryId: categoryState?.id ? Number(categoryState.id) : Number(form.value.expenseCategoryId ?? 0),
       amount: form.value.amount,
-      expenseDate: form.value.payDate,
-      reason: form.value.note ?? '',
+      expenseDate: form.value.expenseDate,
+      reason: form.value.reason ?? '',
       files: uploadedFiles
     }
     await expensesService.updateExpenses(expensesId.value, payload)
