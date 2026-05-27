@@ -6,6 +6,7 @@
     :empty-model-value="undefined"
     :fetch-options="fetchOptions"
     :map-option-to-model="mapOptionToModel"
+    :refresh-deps="[modelValue]"
     option-label="name" />
 </template>
 
@@ -13,7 +14,14 @@
 import { useAttrs } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel, TBaseOption } from '@/models/Global.model'
-import { ExpensePayItems, type TExpensesType } from '@/enums/modules/finance/ExpenseType.enum'
+import {
+  ExpensesTypeCapitalItems,
+  ExpensesTypePaymentItems,
+  ExpenseTypeItems,
+  isCapitalExpense,
+  isPaymentExpense,
+  type TExpensesType
+} from '@/enums/modules/finance/ExpenseType.enum'
 import BaseStaticSelection from '@/components/selection/modules/static/BaseStaticSelection.vue'
 
 const attrs = useAttrs()
@@ -21,8 +29,15 @@ const attrs = useAttrs()
 const modelValue = defineModel<TExpensesType>()
 const selectedNameValue = defineModel<string | null>('selectedName', { default: null })
 
+function itemsForType (): TBaseOption[] {
+  if (isCapitalExpense(modelValue.value)) return ExpensesTypeCapitalItems
+  if (isPaymentExpense(modelValue.value)) return ExpensesTypePaymentItems
+  return ExpenseTypeItems
+}
+
+
 const fetchOptions = async (): Promise<TBaseModel[]> => await handleLoading(async (): Promise<TBaseModel[]> => (
-  (ExpensePayItems ?? []).map((item: TBaseOption): TBaseModel => ({
+  (itemsForType() ?? []).map((item: TBaseOption): TBaseModel => ({
     id: item.value!,
     name: item?.label
   }))

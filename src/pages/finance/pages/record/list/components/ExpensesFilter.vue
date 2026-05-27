@@ -21,7 +21,7 @@
               show-clear />
           </LabelField>
           <LabelField
-            label="ประเภท">
+            label="หมวดหมู่ค่าใช้จ่าย">
             <FinanceExpenseCategorySelection
               v-model="filters.expenseCategoryId"
               placeholder="ทั้งหมด"
@@ -29,7 +29,7 @@
               @update:model-value="onUpdateCategory()" />
           </LabelField>
           <LabelField
-            label="หมวดหมู่ค่าใช้จ่าย">
+            label="ประเภท">
             <FinanceExpenseTypeSelection
               v-model="filters.expenseTypeId"
               :disabled="!filters.expenseCategoryId"

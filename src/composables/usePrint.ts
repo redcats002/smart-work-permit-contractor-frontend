@@ -27,7 +27,7 @@ export default function usePrint (props?: IProps): IUsePrint {
     if (!isDev.value) window.addEventListener('afterprint', closePage)
     // window.addEventListener('afterprint', closePage)
 
-    setInterval((): void => {
+    setTimeout((): void => {
       if (!isDev.value) window.print()
     }, 2000)
   }

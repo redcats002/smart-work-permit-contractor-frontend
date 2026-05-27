@@ -4,10 +4,11 @@
     v-model:sort-by="sortBy"
     v-model:sort-order="sortOrder"
     :columns="columns"
-    :items="items"
+    :items="displayItems"
     :selectable="!isPreview"
     disable-auto-left-padding
-    @update="emits('update')">
+    disable-virtual-scroll
+    @update="updatePagination()">
     <template #[`item.idNo`]="{ item }">
       <LinkText :to="{ name: 'DocumentMovementDetailPage', params: { id: item?.id }}">
         {{ item?.idNo }}
@@ -33,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch, type Ref } from 'vue'
 import { formatter } from '@/utils/Formatter'
 import type { IColumn } from '@/models/Table.model'
 import { formatTitle } from '@/enums/modules/asset/AssetType.enum'
@@ -48,21 +49,41 @@ interface IProps {
   isPreview?: boolean
 }
 
-withDefaults(defineProps<IProps>(), {
+const props = withDefaults(defineProps<IProps>(), {
   isPreview: false
 })
 
 interface IEmits {
   delete: [id: number]
-  update: []
 }
 
 const emits = defineEmits<IEmits>()
 
-const pagination = defineModel<IPagination>('pagination')
+const pagination = ref<IPagination>({ page: 1, totalPage: 1, count: 0, limit: 10 })
+const sortBy = ref<string>('')
+const sortOrder = ref<'asc' | 'desc'>('desc')
+const localItems = ref<DocumentAssetFormValues[]>([]) as Ref<DocumentAssetFormValues[]>
+const displayItems = ref<DocumentAssetFormValues[]>([]) as Ref<DocumentAssetFormValues[]>
 
-const sortBy = defineModel<string>('sortBy', { default: '' })
-const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
+function updatePagination (): void {
+  const startItem = ((pagination.value.page ?? 1) - 1) * (pagination.value.limit ?? 10)
+  const endItem = (pagination.value.page ?? 1) * (pagination.value.limit ?? 10)
+  displayItems.value = localItems.value.slice(startItem, endItem)
+}
+
+function syncItems (newItems: DocumentAssetFormValues[]): void {
+  localItems.value = [...newItems]
+  pagination.value.count = newItems.length
+  pagination.value.totalPage = Math.ceil(pagination.value.count / (pagination.value.limit ?? 10)) || 1
+  pagination.value.page = 1
+  updatePagination()
+}
+
+watch(
+  (): DocumentAssetFormValues[] => props.items, (items: DocumentAssetFormValues[]): void => {
+    syncItems(items)
+  }, { immediate: true, deep: true }
+)
 
 const columns = computed<IColumn<DocumentAssetFormValues>[]>((): IColumn<DocumentAssetFormValues>[] => {
   const baseColumns: IColumn<DocumentAssetFormValues>[] = [

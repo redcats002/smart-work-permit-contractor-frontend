@@ -4,12 +4,14 @@
       {{ `${formatter.numberFormat(value)} บาท` || '-' }}
     </template>
   </DisplayList>
-  <FileAttachment
-    v-if="data?.files?.length"
-    :files="data.files" />
-  <Empty
-    v-else
-    title="ไม่มีไฟล์แนบ" />
+  <div class="mt-4">
+    <FileAttachment
+      v-if="data?.files?.length"
+      :files="data.files" />
+    <Empty
+      v-else
+      title="ไม่มีไฟล์แนบ" />
+  </div>
 </template>
 
 <script setup lang="ts">
