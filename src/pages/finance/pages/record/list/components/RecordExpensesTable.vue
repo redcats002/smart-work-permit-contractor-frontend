@@ -12,27 +12,21 @@
         {{ item.idNo }}
       </LinkText>
     </template>
-    <template #[`item.actions`]="{ item }">
+    <!-- <template #[`item.actions`]="{ item }">
       <div class="flex justify-end">
         <BaseActionMenu :items="getActionItems(item)" />
       </div>
-    </template>
+    </template> -->
   </BaseTable>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { toast } from '@/plugins/toast'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
-import { handleLoading } from '@/utils/HandleLoading'
 import type { IExpensesList } from '@/models/response/expenses/ExpensesRes.model'
 import type { IColumn } from '@/models/Table.model'
 import { formatTitle } from '@/enums/modules/finance/ExpenseType.enum'
-import ExpensesProvider, { type IExpensesProvider } from '@/resources/provider/expenses/Expenses.provider'
-import type { IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
-import BaseActionMenu from '@/components/base/BaseActionMenu.vue'
 import LinkText from '@/components/button/LinkText.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
@@ -47,8 +41,8 @@ interface IEmits {
 }
 const emits = defineEmits<IEmits>()
 
-const router = useRouter()
-const expensesService: IExpensesProvider = new ExpensesProvider()
+// const router = useRouter()
+// const expensesService: IExpensesProvider = new ExpensesProvider()
 
 const pagination = defineModel<IPagination>('pagination', { required: true })
 const sortBy = defineModel<string>('sortBy', { default: '' })
@@ -57,37 +51,37 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 const { formatDate } = useDayjs()
 
 const columns = ref<IColumn<IExpensesList>[]>([
-  { field: 'idNo', header: 'เลขที่', sortable: true, align: 'left', style: { width: '130px', minWidth: '130px' } },
+  { field: 'idNo', header: 'เลขที่ใบค่าใช้จ่าย', sortable: true, align: 'left', style: { width: '130px', minWidth: '130px' } },
   { field: 'createdAt', header: 'วันที่', align: 'left', style: { width: '120px', minWidth: '120px' }, value: (e: IExpensesList): string => formatDate(e.expenseDate) },
   { field: 'type', header: 'รับ/จ่าย', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IExpensesList): string => formatTitle(e.type) },
-  { field: 'expenseType', header: 'ประเภท', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' } },
-  { field: 'expenseCategory', header: 'หมวดหมู่ค่าใช้จ่าย', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' } },
-  { field: 'amount', header: 'มูลค่า (บาท)', sortable: true, align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IExpensesList): string => formatter.numberFormat(e.amount) },
-  { field: 'actions', header: '', align: 'right', style: { width: '80px', minWidth: '80px' } }
+  { field: 'expenseCategory', header: 'หมวดหมู่ค่าใช้จ่าย', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IExpensesList): string => e?.expenseCategory || '-' },
+  { field: 'expenseType', header: 'ประเภท', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IExpensesList): string => e?.expenseType || '-' },
+  { field: 'amount', header: 'มูลค่า (บาท)', sortable: true, align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IExpensesList): string => formatter.numberFormat2Decimal(e.amount) }
+  // { field: 'actions', header: '', align: 'right', style: { width: '80px', minWidth: '80px' } }
 ])
 
-function getActionItems (item: IExpensesList): IMenuItemAction[] {
-  return [
-    {
-      label: 'แก้ไข',
-      key: 'edit',
-      type: 'TEXT',
-      action: (): void => {
-        router.push({ name: 'ExpenseEditPage', params: { id: item.id } })
-      }
-    },
-    {
-      label: 'ลบ',
-      key: 'delete',
-      type: 'DELETE',
-      action: (): void => {
-        handleLoading(async (): Promise<void> => {
-          await expensesService.deleteExpenses(item.id)
-          toast.success('ดำเนินการสำเร็จ')
-          emits('update')
-        })
-      }
-    }
-  ]
-}
+// function getActionItems (item: IExpensesList): IMenuItemAction[] {
+//   return [
+//     {
+//       label: 'แก้ไข',
+//       key: 'edit',
+//       type: 'TEXT',
+//       action: (): void => {
+//         router.push({ name: 'ExpenseEditPage', params: { id: item.id } })
+//       }
+//     },
+//     {
+//       label: 'ลบ',
+//       key: 'delete',
+//       type: 'DELETE',
+//       action: (): void => {
+//         handleLoading(async (): Promise<void> => {
+//           await expensesService.deleteExpenses(item.id)
+//           toast.success('ดำเนินการสำเร็จ')
+//           emits('update')
+//         })
+//       }
+//     }
+//   ]
+// }
 </script>

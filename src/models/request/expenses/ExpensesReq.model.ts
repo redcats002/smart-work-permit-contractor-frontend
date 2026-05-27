@@ -24,4 +24,4 @@ export interface ICreateExpensesPayload {
   files: IExpensesFile[]
 }
 
-export type IUpdateExpensesPayload = ICreateExpensesPayload
+export interface IUpdateExpensesPayload extends ICreateExpensesPayload {}

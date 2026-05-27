@@ -1,4 +1,5 @@
 import type { ExpensesTypeEnum } from '@/enums/modules/finance/ExpenseType.enum'
+import type { IBranchList } from '../branch/BranchRes.model'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 
 export interface IExpensesFile {
@@ -31,6 +32,7 @@ export interface IExpensesById {
   expenseCategoryId: number
   expenseCategory: string
   reason: string
+  branch: IBranchList
   files: IExpensesFile[]
 }
 
