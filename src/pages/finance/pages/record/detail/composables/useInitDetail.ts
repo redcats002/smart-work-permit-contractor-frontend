@@ -17,7 +17,8 @@ export function useInitDetail (data?: Partial<IExpensesById>): Ref<IExpensesById
     expenseCategoryId: data?.expenseCategoryId ?? 0,
     expenseCategory: data?.expenseCategory ?? '',
     reason: data?.reason ?? '',
-    branch: data?.branch ?? { id: '', name: '', status: 'ACTIVE' },
+    referBranchId: data?.referBranchId ?? undefined,
+    referBranchName: data?.referBranchName ?? '',
     files: data?.files ?? []
   })
 }

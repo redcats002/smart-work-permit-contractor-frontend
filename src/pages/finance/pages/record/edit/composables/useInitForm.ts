@@ -12,7 +12,7 @@ export function useInitForm (form: Ref<ExpensesFormValues>, data: IExpensesById)
     amount: data.amount ?? 0,
     expenseDate: data.expenseDate ?? '',
     reason: data.reason ?? '',
-    referBranchId: data?.branch?.id ?? undefined,
+    referBranchId: data?.referBranchId ?? undefined,
     files: (data.files ?? []).map((f: IExpensesFile): IMedia => ({ name: f.name, url: f.url, path: f.path }))
   }
 }
