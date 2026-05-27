@@ -28,9 +28,6 @@
             @delete="onRemoveItem($event)" />
         </div>
         <SelectedDocsTable
-          v-model:pagination="pagination"
-          v-model:sort-by="sortBy"
-          v-model:sort-order="sortOrder"
           :items="form.assets"
           is-preview
           @delete="onRemoveItem($event)" />
@@ -42,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
@@ -62,7 +59,6 @@ import SelectedDocsTable from '../components/SelectedDocsTable.vue'
 import { useDocumentMovement } from '@/pages/stock/pages/create/composables/useDocumentMovement'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import useList from '../../list/composables/asset/useList'
 import { usePayload } from '../composables/usePayload'
 import { DocumentMovementSchema } from '../schema/document-movement'
 
@@ -74,11 +70,6 @@ const resolver = zodResolver(DocumentMovementSchema)
 const { form, formKey, removeItem, resetForm } = useDocumentMovement()
 
 const visible = ref<boolean>(false)
-const {
-  pagination,
-  sortBy,
-  sortOrder
-} = useList()
 
 async function useSubmit (): Promise<void> {
   await DocumentStorageService.createDocumentMovement(usePayload(form.value))
@@ -102,8 +93,6 @@ function onRemoveItem (id: number): void {
 function onCancel (): void {
   router.push({ name: 'DocumentMovementListPage' })
 }
-
-onMounted((): void => {})
 
 </script>
 
