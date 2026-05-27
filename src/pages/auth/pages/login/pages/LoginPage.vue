@@ -2,7 +2,7 @@
   <section
     id="login-page"
     class="w-screen h-screen grid place-content-center">
-    <div class="w-136">
+    <div class="w-full max-w-136 md:w-300 px-4 sm:px-0">
       <BaseContainer class="rounded-3xl!">
         <template v-if="state === 'AUTH'">
           <AuthHeader

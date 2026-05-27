@@ -1,3 +1,4 @@
+import type { IEntity } from '@/models/Global.model'
 import type { ExpensesTypeEnum } from '@/enums/modules/finance/ExpenseType.enum'
 import type { IBranchList } from '../branch/BranchRes.model'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
@@ -8,14 +9,15 @@ export interface IExpensesFile {
   path: string
 }
 
-export interface IExpensesList {
-  id: number
-  idNo: string
-  createdAt: string
+export interface IExpensesList extends IEntity {
   expenseDate: string
   type: ExpensesTypeEnum
-  expenseType: string
-  expenseCategory: string
+  expenseTypeId?: number
+  expenseType?: string
+  expenseCategoryId?: number
+  expenseCategory?: string
+  referBranchId?: string
+  referBranchName?: string
   amount: number
 }
 
@@ -27,10 +29,12 @@ export interface IExpensesById {
   amount: number
   createdBy: string
   type: ExpensesTypeEnum
-  expenseTypeId: number
-  expenseType: string
-  expenseCategoryId: number
-  expenseCategory: string
+  expenseTypeId?: number
+  expenseType?: string
+  expenseCategoryId?: number
+  expenseCategory?: string
+  referBranchId?: string
+  referBranchName?: string
   reason: string
   branch: IBranchList
   files: IExpensesFile[]

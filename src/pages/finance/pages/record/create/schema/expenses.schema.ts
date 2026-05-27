@@ -11,7 +11,7 @@ export const ExpensesSchema = z.object({
   expenseDate: schema.date('วันที่จ่าย'),
   reason: z.string().optional(),
   files: z.array(schema.media).min(1, 'กรุณาแนบไฟล์อย่างน้อย 1 ไฟล์'),
-  branchId: schema.id('สาขา')
+  referBranchId: schema.id('สาขา')
 }).superRefine((data, ctx) => {
   if (data.expenseCategoryId && !data.expenseTypeId) {
     ctx.addIssue({

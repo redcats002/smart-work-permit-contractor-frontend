@@ -4,7 +4,7 @@
     Mobile  : fixed overlay that slides in from the left via translate-x
   -->
   <aside
-    :class="isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
+    :class="isOpen ? 'translate-x-0 z-100' : '-translate-x-full md:translate-x-0'"
     class="fixed md:relative inset-y-0 left-0 z-10 w-64 h-screen bg-white border-r border-r-(--p-gray-5) flex flex-col p-4 transition-transform duration-300 ease-in-out">
     <!-- Logo Section -->
     <div class="border-b border-b-(--p-red)">
@@ -72,11 +72,11 @@
 import { computed } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '@/stores/Auth'
+import { type TPermissionModule } from '@/utils/Permission'
 import useLogout from '@/pages/auth/composables/useLogout'
 import { useAppDrawer } from '@/composables/useAppDrawer'
 import { usePermission } from '@/composables/usePermission'
 import { routes } from '@/router'
-import { type TPermissionModule } from '@/utils/Permission'
 import { Icon } from '@iconify/vue'
 import AppDrawerMenu from './AppDrawerMenu.vue'
 import AppDrawerSubMenu, { type ISubMenuItem } from './AppDrawerSubMenu.vue'

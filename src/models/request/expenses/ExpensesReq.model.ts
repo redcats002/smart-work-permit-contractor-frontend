@@ -17,7 +17,7 @@ export interface ICreateExpensesPayload {
   type: TExpensesType
   expenseCategoryId?: number
   expenseTypeId?: number
-  branchId?: string
+  referBranchId?: string
   amount: number
   expenseDate: string
   reason: string

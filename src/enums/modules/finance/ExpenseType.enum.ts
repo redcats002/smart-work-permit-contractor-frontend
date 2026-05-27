@@ -3,29 +3,47 @@ import type { TBaseOption } from '@/models/Global.model'
 export enum ExpensesTypeEnum {
   '' = '',
   'GENERAL_INCOME' = 'GENERAL_INCOME',
+  'EXTERNAL_EXPENSE' = 'EXTERNAL_EXPENSE',
+  'INTERNAL_EXPENSE' = 'INTERNAL_EXPENSE',
   'CAPITAL_INCREASE' = 'CAPITAL_INCREASE',
-  'EXTERNAL_EXPENSES' = 'EXTERNAL_EXPENSES',
-  'INTERNAL_EXPENSES' = 'INTERNAL_EXPENSES',
-  'RETURN_ON_INVESTMENT' = 'RETURN_ON_INVESTMENT',
-  'RECEIVE_A_GRANT' = 'RECEIVE_A_GRANT',
-  'FUNDING' = 'FUNDING'
+  'CAPITAL_REFUND' = 'CAPITAL_REFUND',
+  'FUND_IN' = 'FUND_IN',
+  'FUND_OUT' = 'FUND_OUT',
+  // Not show in ui
+  'CAPITAL_PAYMENT' = 'CAPITAL_PAYMENT', // ชำระทุน
+  'CAPITAL_RECEIVE' = 'CAPITAL_RECEIVE' // รับทุน
 }
 
+// {
+//   GENERAL_INCOME // รายรับทั่วไป
+//   EXTERNAL_EXPENSE // รายจ่ายภายนอก
+//   INTERNAL_EXPENSE // รายจ่ายภายใน
+//   CAPITAL_INCREASE // เพิ่มทุน
+//   CAPITAL_REFUND // คืนทุน
+//   CAPITAL_PAYMENT // ชำระทุน
+//   CAPITAL_RECEIVE // รับทุน
+//   FUND_IN // รับทุน (ศูนย์การเงิน)
+//   FUND_OUT // จ่ายทุน (ศูนย์การเงิน)
+// }
 export type TExpensesType = keyof typeof ExpensesTypeEnum
 
 const titleMap: Record<TExpensesType, string> = {
   '': '',
   [ExpensesTypeEnum.GENERAL_INCOME]: 'รายรับทั่วไป',
   [ExpensesTypeEnum.CAPITAL_INCREASE]: 'เพิ่มทุน',
-  [ExpensesTypeEnum.EXTERNAL_EXPENSES]: 'รายจ่ายภายนอก',
-  [ExpensesTypeEnum.INTERNAL_EXPENSES]: 'รายจ่ายภายใน',
-  [ExpensesTypeEnum.RETURN_ON_INVESTMENT]: 'คืนทุน',
-  [ExpensesTypeEnum.RECEIVE_A_GRANT]: 'รับทุน (ศูนย์การเงิน)',
-  [ExpensesTypeEnum.FUNDING]: 'จ่ายทุน (ศูนย์การเงิน)'
+  [ExpensesTypeEnum.EXTERNAL_EXPENSE]: 'รายจ่ายภายนอก',
+  [ExpensesTypeEnum.INTERNAL_EXPENSE]: 'รายจ่ายภายใน',
+  [ExpensesTypeEnum.CAPITAL_REFUND]: 'คืนทุน',
+  [ExpensesTypeEnum.FUND_IN]: 'รับทุน (ศูนย์การเงิน)',
+  [ExpensesTypeEnum.FUND_OUT]: 'จ่ายทุน (ศูนย์การเงิน)',
+  // Not show in ui
+  [ExpensesTypeEnum.CAPITAL_PAYMENT]: 'ชำระทุน',
+  [ExpensesTypeEnum.CAPITAL_RECEIVE]: 'รับทุน'
 }
 
 export const ExpenseTypeItems: TBaseOption[] = Object.values(ExpensesTypeEnum)
   .filter(Boolean)
+  .filter((e: ExpensesTypeEnum): boolean => e !== ExpensesTypeEnum.CAPITAL_PAYMENT && e !== ExpensesTypeEnum.CAPITAL_RECEIVE)
   .map(
     (e: TExpensesType): TBaseOption => ({
       label: formatTitle(e),
@@ -46,16 +64,16 @@ export const ExpensesTypeCapitalItems: TBaseOption[] = ExpenseTypeItems.filter(
 export function isCapitalExpense (type?: TExpensesType): boolean {
   return (
     type === ExpensesTypeEnum.CAPITAL_INCREASE
-    || type === ExpensesTypeEnum.RETURN_ON_INVESTMENT
-    || type === ExpensesTypeEnum.RECEIVE_A_GRANT
-    || type === ExpensesTypeEnum.FUNDING
+    || type === ExpensesTypeEnum.CAPITAL_REFUND
+    || type === ExpensesTypeEnum.FUND_IN
+    || type === ExpensesTypeEnum.FUND_OUT
   )
 }
 
 export function isPaymentExpense (type?: TExpensesType): boolean {
   return (
-    type === ExpensesTypeEnum.EXTERNAL_EXPENSES
-    || type === ExpensesTypeEnum.INTERNAL_EXPENSES
+    type === ExpensesTypeEnum.EXTERNAL_EXPENSE
+    || type === ExpensesTypeEnum.INTERNAL_EXPENSE
     || type === ExpensesTypeEnum.GENERAL_INCOME
   )
 }

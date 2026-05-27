@@ -1,13 +1,12 @@
 <template>
   <div class="flex flex-col justify-center items-center gap-4">
-    <h1 class="text-3xl font-bold text-center text-primary">
+    <h1 class="text-2xl sm:text-3xl font-bold text-center text-primary">
       {{ title }}
     </h1>
     <img
       alt="mittae-siam-logo"
-      class="object-contain"
-      src="/assets/images/logo.png"
-      width="200">
+      class="object-contain w-36 sm:w-48"
+      src="/assets/images/logo.png">
     <p
       v-if="description"
       class="text-center mt-2 text-font-gray">

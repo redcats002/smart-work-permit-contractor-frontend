@@ -15,7 +15,7 @@ export function usePayload (form: ExpensesFormValues): ICreateExpensesPayload {
   if (isPaymentExpense(form.type)) return paymentPayload
   const capitalPayload: ICreateExpensesPayload = {
     type: form.type,
-    branchId: form.branchId,
+    referBranchId: form.referBranchId,
     expenseDate: form.expenseDate,
     amount: form.amount,
     files: form.files,
