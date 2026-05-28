@@ -31,7 +31,7 @@ import PrintButton from '@/components/button/PrintButton.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import AllStockFilter from '../components/AllStockFilter.vue'
 import AllStockTable from '../components/AllStockTable.vue'
-import useList from '../composables/useList'
+import useList from '../composables/useList.ts'
 
 const {
   items,

@@ -17,7 +17,7 @@ export default {
     {
       path: 'list',
       name: 'AllStockListPage',
-      component: (): ComponentOptions => import('@/pages/reports/pages/all-stock/page/AllStockListPage.vue'),
+      component: (): ComponentOptions => import('@/pages/reports/pages/all-stock/pages/AllStockListPage.vue'),
       meta: {
         auth: true,
         title: 'รายงานสรุปสต็อกสินค้ารวม',
