@@ -1,7 +1,7 @@
 import type { IEntity } from '@/models/Global.model'
 import type { TTitleName } from '@/enums/TitleName.enum'
-import type { TReceiptPaymentMethod } from './PaymentMethod.enum'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
+import type { TReceiptPaymentMethod } from './PaymentMethod.enum'
 
 export interface IReceiptCustomer {
   id: number | null
@@ -139,6 +139,7 @@ export interface IReceiptFeeBreakdown {
 
 export interface IReceiptInstallmentCreate {
   id: number
+  order: number
   status: string
   dueDate: string
   penaltyFee: IReceiptFeeBreakdown
