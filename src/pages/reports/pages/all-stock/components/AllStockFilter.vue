@@ -8,6 +8,7 @@
         <DatePickerInput
           v-model="model"
           date-format="mm/yy"
+          placeholder="เลือกเดือน"
           view="month"
           @update:model-value="onSearch()" />
       </div>
