@@ -1,12 +1,7 @@
 <template>
-  <section id="daily-summary-detail-page">
+  <section id="daily-summary-create-page">
     <PageTitle />
     <BackButton />
-    <div class="flex justify-end">
-      <PrintButton
-        icon="material-symbols:print-outline-rounded"
-        label="พิมพ์" />
-    </div>
     <BaseContainer class="mt-4">
       <div class="flex flex-col gap-2">
         <div
@@ -22,17 +17,16 @@
       </div>
     </BaseContainer>
     <BasePage>
-      <DailySummaryDetailItemTable :items="itemData?.items || []" />
+      <DailySummaryCreateDetailTable :items="findData?.detail || []" />
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
         <BaseContainer>
-          <div class="flex flex-col gap-1.5">
+          <div class="flex flex-col gap-1.5 h-full">
             <p class="text-sm font-bold text-[#333]">
               หมายเหตุ
             </p>
-            <div class="flex gap-1 text-sm">
-              <span>:</span>
-              <span class="whitespace-pre-line">{{ itemData?.reason || '-' }}</span>
-            </div>
+            <Textarea
+              v-model="reason"
+              class="flex-1 w-full" />
           </div>
         </BaseContainer>
         <BaseContainer>
@@ -56,6 +50,12 @@
           </div>
         </BaseContainer>
       </div>
+      <div class="flex gap-4 mt-4">
+        <ConfirmButton
+          label="ยืนยัน"
+          @click="onConfirm()" />
+        <CancelButton :to="{ name: 'DailySummaryListPage' }" />
+      </div>
     </BasePage>
   </section>
 </template>
@@ -66,10 +66,11 @@ import { formatter } from '@/utils/Formatter'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BackButton from '@/components/button/BackButton.vue'
-import PrintButton from '@/components/button/PrintButton.vue'
+import CancelButton from '@/components/button/CancelButton.vue'
+import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
-import DailySummaryDetailItemTable from '../components/DailySummaryDetailItemTable.vue'
-import useList from '../composables/useList'
+import DailySummaryCreateDetailTable from '../components/DailySummaryCreateDetailTable.vue'
+import useCreate from '../composables/useCreate'
 
 interface IRow {
   label: string
@@ -82,31 +83,30 @@ interface ISummaryRow {
   divider?: boolean
 }
 
-const { itemData, fetch } = useList()
+const { findData, reason, fetch, onConfirm } = useCreate()
 
 const infoRows = computed((): IRow[] => [
-  { label: 'สาขา', value: itemData.value?.branchName || '-' },
-  { label: 'เลขที่เอกสาร', value: itemData.value?.idNo || '-' },
-  { label: 'วันที่', value: itemData.value?.date ? itemData.value.date : '-' },
-  { label: 'โดย', value: itemData.value?.createdBy || '-' }
+  { label: 'สาขา', value: findData.value?.branchName || '-' },
+  { label: 'วันที่', value: findData.value?.date ? findData.value.date : '-' },
+  { label: 'โดย', value: findData.value?.createdBy || '-' }
 ])
 
 const summaryRows = computed((): ISummaryRow[] => {
   const fmt = (v: number): string => formatter.numberFormatNoDecimal(v)
-  const d = itemData.value
+  const s = findData.value?.summaries
   return [
-    { label: 'ยอดคงเหลือยกมา', value: fmt(d?.openBalance ?? 0) },
+    { label: 'ยอดคงเหลือยกมา', value: fmt(s?.openBalance ?? 0) },
     { divider: true },
-    { label: 'รับค่างวด', value: fmt(d?.installmentReceive ?? 0) },
-    { label: 'รับค่าดำเนินการ', value: fmt(d?.continuedReceive ?? 0) },
-    { label: 'รับค่าอื่นๆ', value: fmt(d?.otherReceive ?? 0) },
+    { label: 'รับค่างวด', value: fmt(s?.installmentReceive ?? 0) },
+    { label: 'รับค่าดำเนินการ', value: fmt(s?.continuedReceive ?? 0) },
+    { label: 'รับค่าอื่นๆ', value: fmt(s?.otherReceive ?? 0) },
     { divider: true },
-    { label: 'ยอดเงินกู้', value: fmt(d?.loanAmount ?? 0) },
+    { label: 'ยอดเงินกู้', value: fmt(s?.loanAmount ?? 0) },
     { divider: true },
-    { label: 'ยอดรับรวม', value: fmt(d?.sumReceive ?? 0) },
-    { label: 'ยอดจ่ายรวม', value: fmt(d?.sumPay ?? 0) },
+    { label: 'ยอดรับรวม', value: fmt(s?.sumReceive ?? 0) },
+    { label: 'ยอดจ่ายรวม', value: fmt(s?.sumPay ?? 0) },
     { divider: true },
-    { label: 'ยอดคงเหลือยกไป', value: fmt(d?.closingBalance ?? 0) }
+    { label: 'ยอดคงเหลือยกไป', value: fmt(s?.closingBalance ?? 0) }
   ]
 })
 

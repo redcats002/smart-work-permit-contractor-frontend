@@ -4,51 +4,57 @@
     v-model:sort-by="sortBy"
     v-model:sort-order="sortOrder"
     :columns="columns"
-    :items="props.items"
+    :items="items"
     @update="emits('update')" />
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { formatter } from '@/utils/Formatter'
+import type { IDailySummaryListItem } from '@/models/response/report/daily-summary/DailySummaryRes'
 import type { IColumn } from '@/models/Table.model'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
-import type { IDailySummaryList } from '@/models/response/report/daily-summary/DailySummaryRes'
-import { useDayjs } from '@/utils/Dayjs'
 
 interface IProps {
-  items: any[]
+  items: IDailySummaryListItem[]
 }
 
-const props = defineProps<IProps>()
+defineProps<IProps>()
 
 interface IEmits {
-  delete: [id: number]
   update: []
 }
 
 const emits = defineEmits<IEmits>()
-const { formatDate } = useDayjs()
-const pagination = defineModel<IPagination>('pagination', {
-  required: true
-})
 
+const pagination = defineModel<IPagination>('pagination', { required: true })
 const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
-const columns = ref<IColumn<IDailySummaryList>[]>([
+const columns = ref<IColumn<IDailySummaryListItem>[]>([
   {
     field: 'date',
     header: 'สรุปประจำวันที่',
     sortable: true,
-    align: 'left',
-    style: { width: '120px', minWidth: '120px' },
-    value: (e: IDailySummaryList): string => formatDate(e?.date ?? undefined)
+    style: { width: '140px', minWidth: '140px' },
+    value: (e: IDailySummaryListItem): string => e.date
   },
-  { field: 'principalAmount', header: 'ยอดคงเหลือยกมา', sortable: false, align: 'left', style: { width: '140px', minWidth: '140px' }, class: 'red--text font-weight-bold' },
-  { field: 'currentBalance', header: 'ยอดคงเหลือยกไป', sortable: false, align: 'right', style: { width: '140px', minWidth: '140px' }, class: 'red--text font-weight-bold' }
+  {
+    field: 'openBalance',
+    header: 'ยอดคงเหลือยกมา',
+    align: 'right',
+    style: { width: '160px', minWidth: '160px' },
+    value: (e: IDailySummaryListItem): string => formatter.numberFormatNoDecimal(e.openBalance)
+  },
+  {
+    field: 'closingBalance',
+    header: 'ยอดคงเหลือยกไป',
+    align: 'right',
+    style: { width: '160px', minWidth: '160px' },
+    value: (e: IDailySummaryListItem): string => formatter.numberFormatNoDecimal(e.closingBalance)
+  }
 ])
-
 </script>
 
 <style scoped></style>
