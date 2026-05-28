@@ -23,6 +23,7 @@
             :files="detail.files"
             :images="detail.images" />
           <AssetHistorySection
+            :asset-id="assetId"
             :loan-amount="detail.contract.loanAmount"
             :sale-date="detail.saleDate"
             :sale-price="detail.salePrice"

@@ -2,6 +2,7 @@ import type { IEntity } from '@/models/Global.model'
 import type { TAssetStatus } from '@/enums/modules/asset/AssetStatus.enum'
 import type { TAssetType } from '@/enums/modules/asset/AssetType.enum'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
+import type { TDocumentStorageMovementStatus } from '@/enums/modules/document-storage/DocumentStorageMovementStatus.enum'
 import type { IBasePaginationResponse } from '../Response.model'
 
 // --- List ---
@@ -106,3 +107,15 @@ export interface IGetContractAssetDetailResponse {
 export interface IActionContractAssetResponse {
   message: string
 }
+
+// --- Document Movement ---
+export interface IDocumentMovementItem extends IEntity {
+  date: string
+  origin: string
+  destination: string
+  sentBy: string
+  receivedBy: string
+  status: TDocumentStorageMovementStatus
+}
+
+export type TGetDocumentMovementListResponse = IBasePaginationResponse<IDocumentMovementItem>
