@@ -73,8 +73,8 @@ const placeholderText = computed((): string | undefined => {
   return undefined
 })
 
-async function fetch (): Promise<void> {
-  suggestions.value = await props.fetchSuggestions()
+async function fetch (query?: string): Promise<void> {
+  suggestions.value = await props.fetchSuggestions(query)
 }
 
 async function search (query?: string): Promise<void> {
@@ -155,7 +155,8 @@ watch(
 )
 
 onMounted((): void => {
-  fetch()
+  const hasValue = !isEmptyModelValue(model.value) && model.value !== ''
+  fetch(hasValue && selectedName.value ? selectedName.value : undefined)
 })
 </script>
 
