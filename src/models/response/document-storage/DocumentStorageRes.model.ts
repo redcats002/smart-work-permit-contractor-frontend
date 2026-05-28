@@ -55,7 +55,8 @@ export interface IDocumentMovementList extends IEntity {
 
 export interface IAssetMovementItem extends IEntity {
   asset: IAssetMovementList
-  locationName?: string
+  originalLocationName?: string
+  destinationLocationName?: string
 }
 
 export interface IAssetMovementList extends IEntity {
