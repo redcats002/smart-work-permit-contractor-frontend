@@ -168,3 +168,19 @@
 		color: #333333;
 	}
 }
+
+/* ─────────────────────────────────────────
+   Animation
+   ───────────────────────────────────────── */
+@theme {
+	/* animate-fade-in */
+	--animate-fade-in: fade-in 0.2s ease-in-out;
+	@keyframes fade-in {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+}
