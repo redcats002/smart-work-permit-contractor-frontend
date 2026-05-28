@@ -1,153 +1,32 @@
 import { ref, type Ref } from 'vue'
-import { toast } from '@/plugins/toast'
+import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IGetDailySummaryDetailListRequest } from '@/models/request/report/daily-summary/DailySummaryDetail'
-import type { IDailySummaryDetailList } from '@/models/response/report/daily-summary/DailySummaryDetailRes'
-import usePagination, { type IUsePagination } from '@/composables/usePagination'
+import type { IDailySummaryById } from '@/models/response/report/daily-summary/DailySummaryRes'
+import DailySummaryProvider, { type IDailySummaryProvider } from '@/resources/provider/report/DailySummary.provider'
 
-interface IDailySummaryDetail extends IUsePagination {
-  filters: Ref<IGetDailySummaryDetailListRequest>
-  items: Ref<IDailySummaryDetailList | undefined>
+interface IUseDetail {
+  itemData: Ref<IDailySummaryById | undefined>
   fetch(): void
-  onClearFilters(): void
-  onDelete(id: number): void
 }
-export default function useList (): IDailySummaryDetail {
-  // const DeilyInstallmentService: any = new Provider()
 
-  const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
+export default function useList (): IUseDetail {
+  const DailySummaryService: IDailySummaryProvider = new DailySummaryProvider()
+  const route = useRoute()
 
-  const filters = ref<IGetDailySummaryDetailListRequest>({})
-  const items = ref<IDailySummaryDetailList>()
+  const itemData = ref<IDailySummaryById | undefined>(undefined)
 
-  // const paginateQuery = computed((): any => {
-  //   const normalizedFilters = normalizeFilters(filters.value)
-  //   return {
-  //     search: search.value,
-  //     page: pagination.value.page,
-  //     limit: pagination.value.limit,
-  //     sortBy: sortBy.value || undefined,
-  //     sortOrder: sortOrder.value,
-  //     ...normalizedFilters
-  //   }
-  // })
-
-  // mock
-  const mockResponse = {
-    data: {
-      branch: 'พญาไท',
-      invoiceNo: '12312312121',
-      date: '2026-03-20T14:30:00',
-      items: [
-        {
-          id: 1,
-          date: '2026-03-20T14:30:00',
-          paymentCode: '102',
-          categoryName: 'A001-1 ค่าน้ำ',
-          transactionType: 'รับ',
-          amount: 120000,
-          totalAmount: 120000,
-          installmentAmount: 120000,
-          totalInterest: 120000,
-          principalAmount: 1500000,
-          currentBalance: 1635000
-        },
-        {
-          id: 2,
-          date: '2026-03-20T14:30:00',
-          paymentCode: '103',
-          categoryName: 'A001-2 ค่าไฟ',
-          transactionType: 'รับ',
-          amount: 120000,
-          totalAmount: 120000,
-          installmentAmount: 120000,
-          totalInterest: 120000,
-          principalAmount: 750000,
-          currentBalance: 865000
-        },
-        {
-          id: 3,
-          date: '2026-03-20T14:30:00',
-          paymentCode: '104',
-          categoryName: 'A002-1 ค่าวัสดุอุปกรณ์',
-          transactionType: 'รับ',
-          amount: 120000,
-          totalAmount: 120000,
-          installmentAmount: 120000,
-          totalInterest: 120000,
-          principalAmount: 1200000,
-          currentBalance: 1370000
-        },
-        {
-          id: 4,
-          date: '2026-03-20T14:30:00',
-          paymentCode: '105',
-          categoryName: 'A001-3 ค่าโทรศัพท์',
-          transactionType: 'จ่าย',
-          amount: 120000,
-          totalAmount: 120000,
-          installmentAmount: 120000,
-          totalInterest: 120000,
-          principalAmount: 1000000,
-          currentBalance: 880000
-        }
-      ]
-    },
-    total: 4,
-    lastPage: 1,
-    perPage: pagination.value.limit || 10,
-    currentPage: pagination.value.page || 1
-  } as any
   async function useFetch (): Promise<void> {
-    // const response = await EmployeeService.getEmployeePaginate(paginateQuery.value)
-    // items.value = response?.data || []
-    // pagination.value = extractPagination(response)
-    const response = mockResponse as any
-
-    items.value = response?.data || {}
-    pagination.value = extractPagination(response)
-    syncQuery({ ...normalizeFilters(filters.value) })
-  }
-
-  async function useDelete (id: number): Promise<void> {
-    console.log(id)
-    // await DeilyInstallmentService.deleteDeilyInstallment(id)
-    fetch()
-    toast.success('ลบรายการสําเร็จ')
-  }
-
-  function normalizeFilters (value: any): Partial<any> {
-    return {
-      ...value
-    }
+    const id = Number(route.params.id)
+    const response = await DailySummaryService.getDailySummaryById(id)
+    itemData.value = response?.data
   }
 
   function fetch (): void {
     handleLoading(useFetch)
   }
 
-  function onDelete (id: number): void {
-    handleLoading((): Promise<void> => useDelete(id))
-  }
-
-  function onClearFilters (): void {
-    reset()
-    filters.value = {}
-  }
-
   return {
-    filters,
-    items,
-    pagination,
-    sortBy,
-    sortOrder,
-    search,
-    fetch,
-    onClearFilters,
-    onDelete,
-    extractPagination,
-    syncQuery,
-    reset,
-    resetPagination
+    itemData,
+    fetch
   }
 }

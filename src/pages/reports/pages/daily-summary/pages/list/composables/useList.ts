@@ -1,102 +1,39 @@
-import { ref, type Ref } from 'vue'
-import { toast } from '@/plugins/toast'
+import { computed, ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IGetDailySummaryList } from '@/models/request/report/daily-summary/DailySummary.model'
-import type { IDailySummaryList } from '@/models/response/report/daily-summary/DailySummaryRes'
+import type { IDailySummaryListItem } from '@/models/response/report/daily-summary/DailySummaryRes'
+import DailySummaryProvider from '@/resources/provider/report/DailySummary.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
-interface IDailySummary extends IUsePagination {
+interface IUseList extends IUsePagination {
   filters: Ref<IGetDailySummaryList>
-  items: Ref<IDailySummaryList[]>
+  items: Ref<IDailySummaryListItem[]>
   fetch(): void
   onSearch(): void
   onClearFilters(): void
-  onDelete(id: number): void
 }
-export default function useList (): IDailySummary {
-  // const DeilyInstallmentService: any = new Provider()
+
+export default function useList (): IUseList {
+  const DailySummaryService = new DailySummaryProvider()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IGetDailySummaryList>({})
-  const items = ref<IDailySummaryList[]>([])
+  const items = ref<IDailySummaryListItem[]>([])
 
-  // const paginateQuery = computed((): any => {
-  //   const normalizedFilters = normalizeFilters(filters.value)
-  //   return {
-  //     search: search.value,
-  //     page: pagination.value.page,
-  //     limit: pagination.value.limit,
-  //     sortBy: sortBy.value || undefined,
-  //     sortOrder: sortOrder.value,
-  //     ...normalizedFilters
-  //   }
-  // })
+  const paginateQuery = computed((): IGetDailySummaryList => ({
+    page: pagination.value.page,
+    limit: pagination.value.limit,
+    sortBy: sortBy.value || undefined,
+    sortOrder: sortOrder.value,
+    ...filters.value
+  }))
 
-  // mock
-  const mockResponse = {
-    data: [
-      {
-        id: 1,
-        branchName: 'สำนักงานใหญ่ (กรุงเทพฯ)',
-        contractCount: 150,
-        principalAmount: 1500000,
-        principalWithInterest: 1850000,
-        debtCutOff: 200000,
-        discount: 15000,
-        currentBalance: 1635000,
-        date: '2026-03-20T14:30:00'
-      },
-      {
-        id: 2,
-        branchName: 'สาขาขอนแก่น',
-        contractCount: 85,
-        principalAmount: 750000,
-        principalWithInterest: 920000,
-        debtCutOff: 50000,
-        discount: 5000,
-        currentBalance: 865000,
-        date: '2026-03-20T14:30:00'
-      },
-      {
-        id: 3,
-        branchName: 'สาขาเชียงใหม่',
-        contractCount: 120,
-        principalAmount: 1200000,
-        principalWithInterest: 1480000,
-        debtCutOff: 100000,
-        discount: 10000,
-        currentBalance: 1370000,
-        date: '2026-03-20T14:30:00'
-      }
-    ],
-    total: 3,
-    lastPage: 1,
-    perPage: pagination.value.limit || 10,
-    currentPage: pagination.value.page || 1
-  }
   async function useFetch (): Promise<void> {
-    // const response = await EmployeeService.getEmployeePaginate(paginateQuery.value)
-    // items.value = response?.data || []
-    // pagination.value = extractPagination(response)
-    const response = mockResponse as any
-
+    const response = await DailySummaryService.getDailySummaryList(paginateQuery.value)
     items.value = response?.data || []
     pagination.value = extractPagination(response)
-    syncQuery({ ...normalizeFilters(filters.value) })
-  }
-
-  async function useDelete (id: number): Promise<void> {
-    console.log(id)
-    // await DeilyInstallmentService.deleteDeilyInstallment(id)
-    fetch()
-    toast.success('ลบลูกค้าสําเร็จ')
-  }
-
-  function normalizeFilters (value: any): Partial<any> {
-    return {
-      ...value
-    }
+    syncQuery({ ...filters.value })
   }
 
   function onSearch (): void {
@@ -108,13 +45,9 @@ export default function useList (): IDailySummary {
     handleLoading(useFetch)
   }
 
-  function onDelete (id: number): void {
-    handleLoading((): Promise<void> => useDelete(id))
-  }
-
   function onClearFilters (): void {
-    filters.value = {}
     reset()
+    filters.value = {}
   }
 
   return {
@@ -128,7 +61,6 @@ export default function useList (): IDailySummary {
     onSearch,
     resetPagination,
     onClearFilters,
-    onDelete,
     extractPagination,
     syncQuery,
     reset

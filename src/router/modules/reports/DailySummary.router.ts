@@ -25,6 +25,16 @@ export default {
       }
     },
     {
+      path: 'create',
+      name: 'DailySummaryCreatePage',
+      component: (): ComponentOptions => import('@/pages/reports/pages/daily-summary/pages/create/page/DailySummaryCreatePage.vue'),
+      meta: {
+        auth: true,
+        title: 'สร้างรายงานสรุปประจำวัน',
+        icon: 'mdi:file-document-outline'
+      }
+    },
+    {
       path: 'detail/:id',
       name: 'DailySummaryDetailListPage',
       component: (): ComponentOptions => import('@/pages/reports/pages/daily-summary/pages/detail/page/DailySummaryDetailListPage.vue'),

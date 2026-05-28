@@ -1,38 +1,40 @@
 <template>
-  <section id="employee-list-page">
+  <section id="daily-summary-list-page">
     <PageTitle />
     <BackButton />
     <DailySummaryFilter
       v-model:filters="filters"
-      v-model:search="search"
-      @clear="onClearFilters()"
       @search="onSearch()">
       <CreateButton
+        :to="{ name: 'DailySummaryCreatePage' }"
         label="สรุปประจำวัน" />
     </DailySummaryFilter>
     <BasePage>
-      <div>
-        <DailySummaryTable
-          v-model:pagination="pagination"
-          v-model:sort-by="sortBy"
-          v-model:sort-order="sortOrder"
-          :items="items"
-          @delete="onDelete($event)"
-          @update="fetch()" />
-      </div>
+      <DailySummaryTable
+        v-model:pagination="pagination"
+        v-model:sort-by="sortBy"
+        v-model:sort-order="sortOrder"
+        :items="items"
+        :row-class="() => 'cursor-pointer'"
+        @row-click="onRowClick($event)"
+        @update="fetch()" />
     </BasePage>
   </section>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import BasePage from '@/components/base/BasePage.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import CreateButton from '@/components/button/CreateButton.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
-import DailySummaryFilter from '../../list/components/DailySummaryFilter.vue'
-import DailySummaryTable from '../../list/components/DailySummaryTable.vue'
+import type { IDailySummaryListItem } from '@/models/response/report/daily-summary/DailySummaryRes'
+import DailySummaryFilter from '../components/DailySummaryFilter.vue'
+import DailySummaryTable from '../components/DailySummaryTable.vue'
 import useList from '../composables/useList'
+
+const router = useRouter()
 
 const {
   filters,
@@ -40,17 +42,17 @@ const {
   pagination,
   sortBy,
   sortOrder,
-  search,
   fetch,
-  onClearFilters,
-  onDelete,
   onSearch
 } = useList()
+
+function onRowClick (event: { data: IDailySummaryListItem }): void {
+  router.push({ name: 'DailySummaryDetailListPage', params: { id: event.data.id } })
+}
 
 onMounted((): void => {
   fetch()
 })
-
 </script>
 
 <style scoped></style>

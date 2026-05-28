@@ -1,14 +1,24 @@
-import type { IEntity, TBaseModel } from '@/models/Global.model'
 import type { IBasePaginationResponse } from '../../Response.model'
 
-export interface IBranchIncomeExpenseList extends IEntity {
-  category: TBaseModel
-  income: number
-  expense: number
-}
-export interface IBranchIncomeExpenseSummary {
-  totalIncome: number
-  totalExpense: number
+export interface IBranchIncomeExpenseItem {
+  date: string
+  type: string
+  code: number
+  amount: number
+  branchName?: string
+  referBranchName?: string
 }
 
-export interface TGetBranchIncomeExpenseListResponse extends IBasePaginationResponse<IBranchIncomeExpenseList>, IBranchIncomeExpenseSummary {}
+export interface IBranchIncomeExpenseCodeSummary {
+  code101: number
+  code102: number
+  code103: number
+  code104: number
+  code105: number
+  code106: number
+  total: number
+}
+
+export interface TGetBranchIncomeExpenseListResponse extends IBasePaginationResponse<IBranchIncomeExpenseItem> {
+  summary: IBranchIncomeExpenseCodeSummary
+}

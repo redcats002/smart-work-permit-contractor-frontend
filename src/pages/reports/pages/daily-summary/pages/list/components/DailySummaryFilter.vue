@@ -1,29 +1,14 @@
 <template>
   <BaseTop>
-    <div>
-      <SearchInput
-        v-model="model"
-        @search="onSearch()" />
-    </div>
-    <div>
-      <BaseModal
-        class="md:w-100!"
-        label="ตัวกรอง">
-        <template #activator="{ open }">
-          <FilterButton @click="open()" />
-        </template>
-        <!-- <div class="flex flex-col gap-5">
-            <div class="w-fit">
-              <LabelField
-                label="สถานะ" />
-            </div>
-          </div> -->
-        <template #footer="{ close }">
-          <FormActionFilter
-            @clear="onClear(close)"
-            @search="onModalSearch(close)" />
-        </template>
-      </BaseModal>
+    <div class="relative w-52">
+      <DatePickerInput
+        v-model="month"
+        date-format="' '"
+        view="month"
+        @update:model-value="onMonthChange()" />
+      <span class="absolute left-3 right-10 top-1/2 -translate-y-1/2 text-sm pointer-events-none truncate">
+        {{ monthLabel || 'เลือกเดือน' }}
+      </span>
     </div>
     <Spacer />
     <div>
@@ -33,43 +18,54 @@
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+import { useDayjs } from '@/utils/Dayjs'
+import type { IGetDailySummaryList } from '@/models/request/report/daily-summary/DailySummary.model'
 import BaseTop from '@/components/base/BaseTop.vue'
-import FilterButton from '@/components/button/FilterButton.vue'
-import FormActionFilter from '@/components/button/FormActionFilter.vue'
 import Spacer from '@/components/flex/Spacer.vue'
-// import LabelField from '@/components/input/LabelField.vue'
-import SearchInput from '@/components/input/SearchInput.vue'
-import BaseModal from '@/components/modal/BaseModal.vue'
+import DatePickerInput from '@/components/input/DatePickerInput.vue'
 
 interface IEmits {
   search: []
-  modalSearch: []
-  clear: []
 }
 
 const emits = defineEmits<IEmits>()
 
-const model = defineModel<string>({ default: '' })
-defineModel<any>('filters', { default: (): any => ({}) })
+const filter = defineModel<IGetDailySummaryList>('filters', { default: (): IGetDailySummaryList => ({}) })
 
-function onSearch (): void {
+const dayjs = useDayjs()
+const month = ref<Date | null>(new Date())
+
+const THAI_MONTHS: string[] = [
+  'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+  'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+]
+
+const monthLabel = computed((): string => {
+  if (!month.value) return ''
+  const d = dayjs(month.value)
+  return `${THAI_MONTHS[d.month()]} ${d.year() + 543}`
+})
+
+function setFilter (): void {
+  if (!month.value) {
+    filter.value = {}
+    return
+  }
+  filter.value = {
+    startDate: dayjs(month.value).startOf('month').toISOString(),
+    endDate: dayjs(month.value).endOf('month').toISOString()
+  }
+}
+
+function onMonthChange (): void {
+  setFilter()
   emits('search')
 }
 
-function onModalSearch (close: () => void): void {
-  emits('search')
-  emits('modalSearch')
-  close()
-}
-
-function onClear (close: () => void): void {
-  emits('search')
-  emits('clear')
-  close()
-}
-
+onMounted((): void => {
+  setFilter()
+})
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
