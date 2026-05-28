@@ -6,13 +6,14 @@
       v-for="(file, _i) in files"
       :key="`${file?.name}-${_i}`">
       <a
+        v-tooltip="decodeURIComponent(file.name)"
         :href="resolvedHref(file)"
         class="border border-[#BDBDBD] rounded-lg overflow-hidden flex flex-col items-center justify-center max-w-40 w-40
         transition-all hover:border-red-500 hover:scale-[1.02]"
         target="_blank">
         <img
           v-if="isImageFile(file)"
-          :alt="file.name"
+          :alt="decodeURIComponent(file.name)"
           :src="resolvedHref(file)"
           class="w-full h-28 object-cover">
         <div
@@ -23,7 +24,7 @@
             style="font-size: 90px;" />
         </div>
         <div class="text-sm text-center px-2 pb-2 truncate w-full">
-          {{ file.name }}
+          {{ decodeURIComponent(file.name) }}
         </div>
       </a>
     </template>
