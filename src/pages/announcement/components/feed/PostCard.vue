@@ -46,8 +46,8 @@
     <!-- Attachments -->
     <div class="space-y-2">
       <div
-        v-sanitize.basic="content"
-        class="text-sm" />
+        v-sanitize="[sanitizeRichTextConfig, content]"
+        class="text-sm [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:ml-1" />
       <FileAttachment :files="files" />
     </div>
   </BaseContainer>
@@ -62,6 +62,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { sanitizeRichTextConfig } from '@/plugins/sanitize.plugin'
 import { toast } from '@/plugins/toast'
 import { useDayjs } from '@/utils/Dayjs'
 import { handleLoading } from '@/utils/HandleLoading'
