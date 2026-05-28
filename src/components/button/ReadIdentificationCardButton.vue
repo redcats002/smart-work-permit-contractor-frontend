@@ -158,7 +158,7 @@ async function doReadIdCard (): Promise<void> {
       const readResp = await wait(
         (m: any): any => (m.Message === 'ReadIDCardR' || m.Message === 'AutoReadIDCardE') && m.Status === 0, 15000
       )
-      console.log(readResp)
+      console.info(readResp)
       const dataSplit = (readResp?.IDAText || readResp?.ID_Text)?.split('#')
       const gender = dataSplit[17] === '1' ? 'MALE' : 'FEMALE'
       const title = switchTitle(dataSplit[1])
@@ -180,7 +180,7 @@ async function doReadIdCard (): Promise<void> {
           province: dataSplit[16]
         }
       }
-      console.log(payload)
+      console.info(payload)
       toast.success('อ่านบัตรสำเร็จ')
       emits('readSuccess', payload)
     } catch (err: any) {
