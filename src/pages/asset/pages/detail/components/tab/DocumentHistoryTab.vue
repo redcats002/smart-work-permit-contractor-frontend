@@ -1,65 +1,69 @@
 <template>
   <BaseTable
+    v-model:pagination="pagination"
+    v-model:sort-by="sortBy"
+    v-model:sort-order="sortOrder"
     :columns="columns"
     :items="items"
     disable-auto-left-padding
-    hide-pagination>
+    @update="fetch()">
     <template #[`item.status`]="{ item }">
-      <BaseChip
-        :append-icon="statusIcon(item.status)"
-        :label="item.status"
-        :text-class="statusTextClass(item.status)"
-        :wrapper-class="statusWrapperClass(item.status)" />
+      <div class="flex justify-end">
+        <ChipMovementStatus :value="item?.status" />
+      </div>
     </template>
   </BaseTable>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { handleLoading } from '@/utils/HandleLoading'
+import type { IDocumentMovementItem } from '@/models/response/contract-asset/ContractAssetRes.model'
 import type { IColumn } from '@/models/Table.model'
-import BaseChip from '@/components/chip/BaseChip.vue'
+import type { IContractAssetProvider } from '@/resources/provider/contract-asset/ContractAsset.provider'
+import ContractAssetProvider from '@/resources/provider/contract-asset/ContractAsset.provider'
 import BaseTable from '@/components/table/BaseTable.vue'
-
-export interface IAssetHistoryItem {
-  id: number
-  date: string
-  origin: string
-  destination: string
-  sentBy: string
-  receivedBy: string
-  status: string
-}
+import ChipMovementStatus from '@/pages/stock/pages/list/components/ChipMovementStatus.vue'
+import usePagination from '@/composables/usePagination'
 
 interface IProps {
-  items?: IAssetHistoryItem[]
+  assetId: number
 }
 
-withDefaults(defineProps<IProps>(), {
-  items: (): IAssetHistoryItem[] => []
-})
+const props = defineProps<IProps>()
 defineOptions({ inheritAttrs: false })
 
-const columns = ref<IColumn<IAssetHistoryItem>[]>([
-  { field: 'date', header: 'วันที่', align: 'left', style: { minWidth: '100px' } },
-  { field: 'origin', header: 'ต้นทาง', align: 'left', style: { minWidth: '220px' } },
-  { field: 'destination', header: 'ปลายทาง', align: 'left', style: { minWidth: '220px' } },
-  { field: 'sentBy', header: 'ย้ายโดย', align: 'left', style: { minWidth: '200px' } },
-  { field: 'receivedBy', header: 'รับโดย', align: 'left', style: { minWidth: '160px' } },
-  { field: 'status', header: 'สถานะ', align: 'right', style: { minWidth: '110px' } }
+const ContractAssetService: IContractAssetProvider = new ContractAssetProvider()
+
+const { pagination, sortBy, sortOrder, extractPagination } = usePagination({ inheritQuery: false })
+
+const items = ref<IDocumentMovementItem[]>([])
+
+const columns = ref<IColumn<IDocumentMovementItem>[]>([
+  { field: 'date', header: 'วันที่', align: 'left', style: { maxWidth: '100px' } },
+  { field: 'origin', header: 'ต้นทาง', align: 'left', style: { maxWidth: '220px' } },
+  { field: 'destination', header: 'ปลายทาง', align: 'left', style: { maxWidth: '220px' } },
+  { field: 'sentBy', header: 'ย้ายโดย', align: 'left', style: { maxWidth: '200px' } },
+  { field: 'receivedBy', header: 'รับโดย', align: 'left', style: { maxWidth: '160px' } },
+  { field: 'status', header: 'สถานะ', align: 'right', style: { maxWidth: '110px' } }
 ])
 
-function statusWrapperClass (status: string): string {
-  if (status === 'รอรับ') return 'border-[#FFF6DB] bg-[#FFF6DB] text-[#FFC000]'
-  return 'border-[#CFFFE3] bg-[#CFFFE3] text-[#219653]'
+async function useFetch (): Promise<void> {
+  const res = await ContractAssetService.getDocumentMovement(props.assetId, {
+    page: pagination.value.page,
+    limit: pagination.value.limit,
+    sortBy: sortBy.value,
+    sortOrder: sortOrder.value
+  })
+  items.value = res.data ?? []
+  pagination.value = extractPagination(res)
 }
 
-function statusTextClass (status: string): string {
-  if (status === 'รอรับ') return 'text-[#FFC000]'
-  return 'text-[#219653]'
+function fetch (): void {
+  handleLoading(useFetch)
 }
 
-function statusIcon (status: string): string {
-  if (status === 'รอรับ') return 'solar:clock-circle-linear'
-  return 'solar:check-circle-linear'
-}
+onMounted((): void => {
+  fetch()
+})
 </script>

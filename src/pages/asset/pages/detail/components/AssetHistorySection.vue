@@ -29,6 +29,7 @@ import BaseTabWindow from '@/components/base/BaseTabWindow.vue'
 import { useInitDetail } from '../composables/useInitDetail'
 
 interface IProps {
+  assetId: number
   loanAmount: number
   salePrice: number | null
   saleDate: string | null

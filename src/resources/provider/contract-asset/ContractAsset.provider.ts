@@ -1,8 +1,9 @@
-import type { IGetContractAssetList, ISellContractAssetPayload, IUpdateContractAssetStatusPayload } from '@/models/request/contract/ContractAssetReq.model'
+import type { IGetContractAssetList, IGetDocumentMovementList, ISellContractAssetPayload, IUpdateContractAssetStatusPayload } from '@/models/request/contract/ContractAssetReq.model'
 import type {
   IActionContractAssetResponse,
   IGetContractAssetDetailResponse,
-  TGetContractAssetListResponse
+  TGetContractAssetListResponse,
+  TGetDocumentMovementListResponse
 } from '@/models/response/contract-asset/ContractAssetRes.model'
 import HttpRequest from '@/resources/HttpRequest'
 
@@ -11,6 +12,7 @@ export interface IContractAssetProvider {
   getContractAssetDetail(id: number): Promise<IGetContractAssetDetailResponse>
   sellContractAsset(id: number, payload: ISellContractAssetPayload): Promise<IActionContractAssetResponse>
   updateContractAssetStatus(id: number, payload: IUpdateContractAssetStatusPayload): Promise<IActionContractAssetResponse>
+  getDocumentMovement(id: number, query: IGetDocumentMovementList): Promise<TGetDocumentMovementListResponse>
 }
 
 class ContractAssetProvider extends HttpRequest implements IContractAssetProvider {
@@ -30,6 +32,10 @@ class ContractAssetProvider extends HttpRequest implements IContractAssetProvide
 
   async updateContractAssetStatus (id: number, payload: IUpdateContractAssetStatusPayload): Promise<IActionContractAssetResponse> {
     return this.patch(`${this.urlPrefix}/status/${id}`, payload)
+  }
+
+  async getDocumentMovement (id: number, query: IGetDocumentMovementList): Promise<TGetDocumentMovementListResponse> {
+    return this.get(`${this.urlPrefix}/document-movement/${id}`, query)
   }
 }
 

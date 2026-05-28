@@ -7,6 +7,8 @@ export interface IGetContractAssetList extends IBasePaginationRequest {
   status?: TAssetStatus
 }
 
+export interface IGetDocumentMovementList extends IBasePaginationRequest {}
+
 export interface ISellContractAssetPayload {
   salePrice: number
 }
