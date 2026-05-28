@@ -59,6 +59,7 @@ const selectedName = defineModel<string | null>('selectedName', { default: null 
 
 const innerModel = ref<any | any[] | null>(props.multiple ? [] : null)
 const suggestions = ref<any[]>([])
+const cache = new Map<string, any[]>()
 const optionLabel = computed((): string => props.optionLabel ?? 'name')
 const getOptionValue = (item: T): any => props.getOptionValue?.(item) ?? (item as any)?.id
 const mapOptionToModel = (item: T): any => props.mapOptionToModel?.(item) ?? getOptionValue(item)
@@ -73,12 +74,19 @@ const placeholderText = computed((): string | undefined => {
   return undefined
 })
 
-async function fetch (): Promise<void> {
-  suggestions.value = await props.fetchSuggestions()
+async function fetch (query?: string): Promise<void> {
+  const key = query ?? ''
+  if (cache.has(key)) {
+    suggestions.value = [...cache.get(key)!]
+    return
+  }
+  const result = await props.fetchSuggestions(query)
+  cache.set(key, result)
+  suggestions.value = result
 }
 
 async function search (query?: string): Promise<void> {
-  suggestions.value = await props.fetchSuggestions(query)
+  await fetch(query)
 
   const normalizedQuery = query?.trim().toLowerCase()
 
@@ -146,6 +154,7 @@ watch(
 
 watch(
   (): unknown[] | undefined => props.refreshDeps, (): void => {
+    cache.clear()
     model.value = props.multiple ? [] : emptyModelValue.value
     innerModel.value = props.multiple ? [] : null
     selectedName.value = null
@@ -155,7 +164,9 @@ watch(
 )
 
 onMounted((): void => {
-  fetch()
+  const hasValue = !isEmptyModelValue(model.value) && model.value !== ''
+  if (!hasValue) return
+  fetch(hasValue && selectedName.value ? selectedName.value : undefined)
 })
 </script>
 

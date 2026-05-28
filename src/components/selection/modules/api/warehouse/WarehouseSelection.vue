@@ -15,12 +15,14 @@
 import { useAttrs } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel } from '@/models/Global.model'
+import type { IGetWarehouseList } from '@/models/request/warehouse/WarehouseReq.model'
 import type { IWarehouseList } from '@/models/response/warehouse/WarehouseRes.model'
 import WarehouseProvider, { type IWarehouseProvider } from '@/resources/provider/warehouse/Warehouse.provider'
 import BaseSelection from '@/components/selection/modules/BaseSelection.vue'
 import usePagination from '@/composables/usePagination'
 
 interface IProps {
+  query?: IGetWarehouseList
   invalid?: boolean
   disabledIds?: number[]
   showClear?: boolean
@@ -37,6 +39,7 @@ const { pagination } = usePagination({ inheritQuery: false })
 
 const fetchSuggestions = async (): Promise<TBaseModel[]> => await handleLoading(async (): Promise<TBaseModel[]> => {
   const response = await WarehouseService.getWarehousePaginate({
+    ...props.query,
     page: pagination.value.page,
     limit: 9999
   })

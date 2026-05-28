@@ -38,6 +38,8 @@ const dayjs = useDayjs()
 const leftItems = computed((): IDisplayList[] => [
   { label: 'สถานะ', key: 'status', value: props.data.status, hideColon: true },
   { label: 'เลขที่ใบย้ายเอกสาร', key: 'idNo', value: props.data.idNo || '-' },
+  { label: 'คลังต้นทาง', key: 'originWarehouse', value: props.data.originWarehouse?.name || '-' },
+  { label: 'คลังปลายทาง', key: 'destinationWarehouse', value: props.data.destinationWarehouse?.name || '-' },
   { label: 'เหตุผล', key: 'reason', value: props.data.reason || '-' }
 ])
 

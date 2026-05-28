@@ -20,7 +20,7 @@ const emits = defineEmits<IEmits>()
 
 const items = ref<IMenuItemAction[]>([
   // { label: 'แก้ไข', key: 'edit', type: 'TEXT', action: (): void => { emits('edit') } },
-  { label: 'ยกเลิก', key: 'delete', action: (): void => { emits('delete') }, type: 'DELETE' }
+  { label: 'ยกเลิก', key: 'delete', action: (): void => { emits('delete') }, type: 'DELETE', deleteProps: { title: 'คุณต้องการยกเลิกใช่หรือไม่?', description1: 'การยกเลิกนี้ไม่สามารถย้อนกลับได้' } }
 ])
 
 

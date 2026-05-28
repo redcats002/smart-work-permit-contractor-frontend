@@ -98,7 +98,7 @@ const columns = computed<IColumn<IAssetMovementItem>[]>((): IColumn<IAssetMoveme
   { field: 'asset.contract.idNo', header: 'เลขที่สัญญา', sortable: true, style: { width: '130px', minWidth: '130px' } },
   { field: 'asset.contract.customer', header: 'ชื่อลูกค้า', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IAssetMovementItem): string => formatter.fullName(e?.asset.contract?.customer) },
   { field: 'asset.type', header: 'ประเภท', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IAssetMovementItem): string => formatTitle(e?.asset.type) || '-' },
-  { field: 'asset.location', header: 'จุดจัดเก็บ', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IAssetMovementItem): string => e?.locationName || '-' }
+  { field: 'asset.location', header: 'จุดจัดเก็บ', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IAssetMovementItem): string => e?.destinationLocationName || '-' }
 ]))
 
 async function useFetch (): Promise<void> {

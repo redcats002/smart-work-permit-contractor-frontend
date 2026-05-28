@@ -211,9 +211,9 @@ async function fetchInstallments (id: number): Promise<void> {
     contractNo: c.idNo,
     selectAll: false,
     selectAllTick: 0,
-    installments: c.installments.map((item: IReceiptInstallmentCreate, idx: number): IInstallmentItem => ({
+    installments: c.installments.map((item: IReceiptInstallmentCreate): IInstallmentItem => ({
       ...item,
-      installmentNo: idx + 1
+      installmentNo: item?.order || 0
     }))
   }))
   installmentAmounts.value = {}
