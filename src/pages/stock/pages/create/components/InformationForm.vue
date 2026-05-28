@@ -14,6 +14,9 @@
         v-model="model.originalWarehouseId"
         :disabled-ids="[model.destinationWarehouseId]"
         :invalid="invalid"
+        :query="{
+          branchId: String(authStore.branch?.id) || '-1'
+        }"
         name="originalWarehouseId"
         @update:model-value="onChangeOriginal($event)" />
     </LabelField>
@@ -27,6 +30,9 @@
         v-model="model.destinationWarehouseId"
         :disabled-ids="[model.originalWarehouseId]"
         :invalid="invalid"
+        :query="{
+          branchId: '-1'
+        }"
         name="destinationWarehouseId"
         show-clear
         @update:model-value="onChangeDestination()" />
@@ -43,6 +49,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useAuthStore } from '@/stores/Auth'
 import type { IFormState } from '@/models/Form.model'
 import LabelField from '@/components/input/LabelField.vue'
 import ConfirmModal from '@/components/modal/ConfirmModal.vue'
@@ -54,6 +61,8 @@ interface IProps {
 }
 
 defineProps<IProps>()
+
+const authStore = useAuthStore()
 
 const model = defineModel<DocumentMovementFormValues>({
   default: useFormInitialValues()

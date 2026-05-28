@@ -8,6 +8,7 @@ export interface IUpdateWarehousePayload extends ICreateWarehousePayload {}
 
 export interface IGetWarehouseList extends IBasePaginationRequest {
   status?: TWarehouseStatus
+  branchId?: string
 }
 export interface IGetLocationList extends IBasePaginationRequest {
   warehouseId?: number
