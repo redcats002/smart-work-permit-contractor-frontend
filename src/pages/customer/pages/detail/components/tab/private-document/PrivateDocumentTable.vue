@@ -14,7 +14,7 @@
         class="text-blue-500 underline text-sm"
         rel="noopener noreferrer"
         target="_blank">
-        {{ item.fileName || 'ดูไฟล์' }}
+        {{ decodeURIComponent(item?.fileName || 'ดูไฟล์') }}
       </a>
       <span
         v-else
