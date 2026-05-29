@@ -101,7 +101,7 @@ class CustomerProvider extends HttpRequest implements ICustomerProvider {
   }
 
   public async getCustomerPaymentHistory (id: TBaseParamsId, query: IGetCustomerPaymentHistoryList): Promise<TGetCustomerPaymentHistoryListResponse> {
-    const response = await this.get(`${this.urlPrefix}/${id}/payment-history`, query)
+    const response = await this.get(`${this.urlPrefix}/${id}/receipts`, query)
     return response
   }
 

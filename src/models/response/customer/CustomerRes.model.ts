@@ -1,4 +1,5 @@
-import type { IEntity, TBaseModel } from '@/models/Global.model'
+import type { IEntity, IEntityId, TBaseModel } from '@/models/Global.model'
+import type { TPaymentMethod } from '@/enums/modules/contract/PaymentMethod.enum'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import type { TAssetType } from '@/enums/modules/asset/AssetType.enum'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
@@ -45,9 +46,12 @@ export interface ICustomerContractList extends IEntity {
   contractLoanType: TBaseModel
   isLate: boolean
 }
-export interface ICustomerPaymentHistoryList extends IEntity {
-  paymentMethod: TBaseModel
-  paymentAmount: number
+export interface ICustomerPaymentHistoryList {
+  paidAt: string
+  receipt: IEntityId
+  contract: IEntityId
+  amount: number
+  paymentType: TPaymentMethod
 }
 export interface ICustomerContactHistoryList extends IEntity {
   contactAt: string

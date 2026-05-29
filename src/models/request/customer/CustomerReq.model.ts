@@ -18,7 +18,7 @@ export interface IGetCustomerContractList extends Omit<IBasePaginationRequest, '
   status?: TContractStatus
 }
 export interface IGetCustomerPaymentHistoryList extends IBasePaginationRequest {
-  paymentMethod?: TPaymentMethod
+  paymentType?: TPaymentMethod
 }
 export interface IGetCustomerContactHistoryList extends IBasePaginationRequest {
   userId?: string
