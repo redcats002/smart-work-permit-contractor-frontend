@@ -2,7 +2,7 @@
   <BaseTop>
     <div>
       <SearchInput
-        v-model="model"
+        v-model="search"
         @search="onSearch()" />
     </div>
     <div>
@@ -16,7 +16,7 @@
           <LabelField
             label="วิธีการชำระ">
             <PaymentMethodSelection
-              v-model="filters!.paymentMethod"
+              v-model="filters!.paymentType"
               placeholder="เลือกวิธีการชำระ" />
           </LabelField>
         </div>
@@ -54,8 +54,8 @@ interface IEmits {
 
 const emits = defineEmits<IEmits>()
 
-const model = defineModel<string>('search', { default: '' })
-defineModel<ICustomerPaymentHistoryFilter>('filters', { default: (): ICustomerPaymentHistoryFilter => ({}) })
+const search = defineModel<string>('search', { default: '' })
+const filters = defineModel<ICustomerPaymentHistoryFilter>('filters', { default: (): ICustomerPaymentHistoryFilter => ({}) })
 
 function onSearch (): void {
   emits('search')

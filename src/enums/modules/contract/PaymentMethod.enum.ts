@@ -1,15 +1,15 @@
 import type { TBaseOption } from '@/models/Global.model'
 
 export enum PaymentMethodEnum {
-  EMPLOYEE = 'EMPLOYEE',
-  CASHIER = 'CASHIER'
+  CASH = 'CASH',
+  BANK_TRANSFER = 'BANK_TRANSFER'
 }
 
 export type TPaymentMethod = keyof typeof PaymentMethodEnum
 
 const titleMap: Record<TPaymentMethod, string> = {
-  [PaymentMethodEnum.CASHIER]: 'หน้าสาขา',
-  [PaymentMethodEnum.EMPLOYEE]: 'พนักงาน'
+  [PaymentMethodEnum.CASH]: 'เงินสด',
+  [PaymentMethodEnum.BANK_TRANSFER]: 'QR พร้อมเพย์'
 }
 
 export const PaymentMethodItems: TBaseOption[] = Object.values(PaymentMethodEnum).map(
