@@ -26,6 +26,10 @@ import Title from '../Title.vue'
 import ContactHistoryTable from './ContactHistoryTable.vue'
 import ModalContractHistory from './ModalContractHistory.vue'
 
+defineOptions({
+  inheritAttrs: false
+})
+
 const ContractHistoryService: IContractHistoryProvider = new ContractHistoryProvider()
 
 const route = useRoute()

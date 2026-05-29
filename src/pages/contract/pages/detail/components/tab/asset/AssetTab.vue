@@ -22,6 +22,9 @@ import Empty from '@/components/display/Empty.vue'
 import type { TAssetCategory } from '@/pages/contract/pages/create/schema/pre-contract.schema'
 import AssetSection from '@/pages/contract/pages/pre-contract-detail/components/AssetSection.vue'
 
+defineOptions({
+  inheritAttrs: false
+})
 const route = useRoute()
 
 const ContractService: IContractProvider = new ContractProvider()

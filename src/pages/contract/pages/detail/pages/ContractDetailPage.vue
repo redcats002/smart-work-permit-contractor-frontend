@@ -13,9 +13,7 @@
     <BasePage>
       <div class="grid grid-cols-1 gap-2.5">
         <InformationDetail
-          :data="contract"
-          @delete="onCancelled()"
-          @edit="onEdit()" />
+          :data="contract" />
         <ContractTab :data="contract" />
       </div>
     </BasePage>

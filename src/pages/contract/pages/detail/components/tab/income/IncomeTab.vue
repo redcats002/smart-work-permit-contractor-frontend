@@ -28,6 +28,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
+import type { TActionMode } from '@/models/Global.model'
 import type { IGetIncomeList } from '@/models/request/contract-income/ContractIncomeReq.model'
 import type { IContractIncomeList } from '@/models/response/contract-income/ContractIncomeRes.model'
 import ContractIncomeProvider, { type IContractIncomeProvider } from '@/resources/provider/contract-income/ContractIncome.provider'
@@ -35,8 +36,11 @@ import CreateButton from '@/components/button/CreateButton.vue'
 import usePagination from '@/composables/usePagination'
 import Title from '../Title.vue'
 import IncomeTable from './IncomeTable.vue'
-import type { TActionMode } from '@/models/Global.model'
 import ModalIncome from './ModalIncome.vue'
+
+defineOptions({
+  inheritAttrs: false
+})
 
 const ContractIncomeService: IContractIncomeProvider = new ContractIncomeProvider()
 

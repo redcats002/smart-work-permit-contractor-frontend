@@ -28,6 +28,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
+import type { TActionMode } from '@/models/Global.model'
 import type { IGetDocumentList } from '@/models/request/contract-document/ContractDocumentReq.model'
 import type { IContractDocumentList } from '@/models/response/contract-document/ContractDocumentRes.model'
 import ContractDocumentProvider, { type IContractDocumentProvider } from '@/resources/provider/contract-document/ContractDocument.provider'
@@ -35,8 +36,11 @@ import CreateButton from '@/components/button/CreateButton.vue'
 import usePagination from '@/composables/usePagination'
 import Title from '../Title.vue'
 import DocumentTable from './DocumentTable.vue'
-import type { TActionMode } from '@/models/Global.model'
 import ModalDocument from './ModalDocument.vue'
+
+defineOptions({
+  inheritAttrs: false
+})
 
 const ContractDocumentService: IContractDocumentProvider = new ContractDocumentProvider()
 

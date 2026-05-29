@@ -22,6 +22,10 @@ import usePagination from '@/composables/usePagination'
 import Title from '../Title.vue'
 import GuarantorTable from './GuarantorTable.vue'
 
+defineOptions({
+  inheritAttrs: false
+})
+
 const ContractService: IContractProvider = new ContractProvider()
 
 const route = useRoute()
