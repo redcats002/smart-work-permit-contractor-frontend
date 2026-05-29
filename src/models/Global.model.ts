@@ -14,6 +14,11 @@ export interface IEntity {
   updatedBy?: IAuthor
 }
 
+export interface IEntityId {
+  id: string | number
+  idNo?: string
+}
+
 export interface IBaseOption<T = string | number> {
   label: string
   value?: T | null | boolean
