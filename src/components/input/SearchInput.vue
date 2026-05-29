@@ -5,7 +5,7 @@
       icon="system-uicons:search" />
     <InputText
       v-model="model"
-      class="h-9"
+      class="h-9 transition-all focus:border-b focus:border-primary!"
       placeholder="ค้นหา"
       pt:root="flex-1 rounded-s-sm w-full rounded-none pl-11 border-0 border-b border-gray-400! bg-transparent"
       variant="outlined"
