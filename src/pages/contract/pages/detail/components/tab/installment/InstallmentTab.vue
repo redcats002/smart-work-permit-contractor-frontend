@@ -57,13 +57,17 @@ import useDev from '@/composables/useDev'
 import usePagination from '@/composables/usePagination'
 import InstallmentTable from './InstallmentTable.vue'
 
-const ContractService: IContractProvider = new ContractProvider()
-const InvoiceService: IInvoiceProvider = new InvoiceProvider()
-
 interface IProps {
   data: IContractById
 }
 const props = defineProps<IProps>()
+defineOptions({
+  inheritAttrs: false
+})
+
+const ContractService: IContractProvider = new ContractProvider()
+const InvoiceService: IInvoiceProvider = new InvoiceProvider()
+
 
 const route = useRoute()
 const { pagination, sortBy, sortOrder, syncQuery, extractPagination } = usePagination()

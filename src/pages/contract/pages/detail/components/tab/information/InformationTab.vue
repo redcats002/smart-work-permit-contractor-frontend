@@ -18,8 +18,10 @@ import DisplayList, { type IDisplayList } from '@/components/display/DisplayList
 interface IProps {
   data: IContractById
 }
-
 const props = defineProps<IProps>()
+defineOptions({
+  inheritAttrs: false
+})
 
 const { formatDate } = useDayjs()
 

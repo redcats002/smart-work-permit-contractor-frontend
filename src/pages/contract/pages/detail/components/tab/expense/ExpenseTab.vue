@@ -28,6 +28,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
+import type { TActionMode } from '@/models/Global.model'
 import type { IGetExpenseList } from '@/models/request/contract-expense/ContractExpenseReq.model'
 import type { IContractExpenseList } from '@/models/response/contract-expense/ContractExpenseRes.model'
 import ContractExpenseProvider, { type IContractExpenseProvider } from '@/resources/provider/contract-expense/ContractExpense.provider'
@@ -35,8 +36,11 @@ import CreateButton from '@/components/button/CreateButton.vue'
 import usePagination from '@/composables/usePagination'
 import Title from '../Title.vue'
 import ExpenseTable from './ExpenseTable.vue'
-import type { TActionMode } from '@/models/Global.model'
 import ModalExpense from './ModalExpense.vue'
+
+defineOptions({
+  inheritAttrs: false
+})
 
 const ContractExpenseService: IContractExpenseProvider = new ContractExpenseProvider()
 

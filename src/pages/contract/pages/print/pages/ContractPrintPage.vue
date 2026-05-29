@@ -2,9 +2,9 @@
   <div>
     <div class="fixed bottom-6 right-6 z-50 print:hidden">
       <Button
-        icon="pi pi-print"
-        label="พิมพ์"
-        @click="onPrint()" />
+        @click="onPrint()">
+        <Icon icon="solar:printer-2-bold" /> <span>พิมพ์</span>
+      </Button>
     </div>
     <A4Paper>
       <div class="bg-white">
@@ -307,6 +307,7 @@ import { formatter } from '@/utils/Formatter'
 import type { IContractCustomer } from '@/models/response/contract/ContractRes.model'
 import { isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
 import A4Paper from '@/components/paper/A4Paper.vue'
+import { Icon } from '@iconify/vue'
 import { storeToRefs } from 'pinia'
 import { useInitPrint } from '../composables/useInitPrint'
 

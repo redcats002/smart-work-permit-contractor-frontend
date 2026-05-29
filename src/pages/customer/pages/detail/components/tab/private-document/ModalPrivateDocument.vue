@@ -82,7 +82,7 @@
           <span class="font-bold text-gray-700 whitespace-nowrap">ชื่อเอกสาร</span>
           <span>: {{ item?.name || '-' }}</span>
           <span class="font-bold text-gray-700 whitespace-nowrap">ชื่อไฟล์</span>
-          <span>: {{ item?.fileName || '-' }}</span>
+          <span>: {{ decodeURIComponent(item?.fileName || '-') }}</span>
           <span class="font-bold text-gray-700 whitespace-nowrap">จุดจัดเก็บ</span>
           <span>: {{ item?.location?.name || '-' }}</span>
         </div>
