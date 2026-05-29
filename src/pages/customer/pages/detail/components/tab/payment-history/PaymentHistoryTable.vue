@@ -7,14 +7,14 @@
     :items="items"
     disable-auto-left-padding
     @update="emits('update')">
-    <template #[`item.receipt.id`]="{ item }">
+    <template #[`item.receipt.idNo`]="{ item }">
       <LinkText
         :id="item.receipt?.id"
         :to="{ name: 'ReceiptDetailPage', params: { id: item.receipt?.id } }">
         {{ item.receipt?.idNo || '-' }}
       </LinkText>
     </template>
-    <template #[`item.contract.id`]="{ item }">
+    <template #[`item.contract.idNo`]="{ item }">
       <LinkText
         :id="item.contract?.id"
         :to="{ name: 'ContractDetailPage', params: { id: item.contract?.id } }">
@@ -58,8 +58,8 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<ICustomerPaymentHistoryList>[]>([
   { field: 'paidAt', header: 'วันที่ทำรายการ', align: 'left', style: { width: '140px', minWidth: '140px' }, value: (e: ICustomerPaymentHistoryList): string => dayjs.formatDate(e?.paidAt || '') },
-  { field: 'receipt.id', header: 'เลขที่ใบเสร็จ', sortable: true, align: 'left', style: { width: '150px', minWidth: '150px' } },
-  { field: 'contract.id', header: 'เลขที่สัญญา', align: 'left', style: { width: '150px', minWidth: '150px' } },
+  { field: 'receipt.idNo', header: 'เลขที่ใบเสร็จ', sortable: true, align: 'left', style: { width: '150px', minWidth: '150px' } },
+  { field: 'contract.idNo', header: 'เลขที่สัญญา', align: 'left', style: { width: '150px', minWidth: '150px' } },
   { field: 'amount', header: 'ยอดชำระ (บาท)', align: 'right', style: { width: '150px', minWidth: '150px' }, value: (e: ICustomerPaymentHistoryList): string => formatter.numberFormat2Decimal(e?.amount || 0) },
   { field: 'paymentType', header: 'วิธีการชำระ', align: 'left', style: { width: '160px', minWidth: '160px' }, value: (e: ICustomerPaymentHistoryList): string => formatTitle(e?.paymentType) }
 ])
