@@ -92,6 +92,7 @@ export function usePagination ({ inheritQuery }: IProps = { inheritQuery: true }
     sortBy.value = ''
     sortOrder.value = 'desc'
     pagination.value = { count: 0, page: 1, limit: 10, totalPage: 0 }
+    router.replace({ query: { page: 1, limit: 10, sortBy: '', sortOrder: 'desc', search: '' } })
   }
 
   return {
