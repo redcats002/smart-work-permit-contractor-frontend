@@ -36,3 +36,7 @@ dist-ssr
 
 # Global Components TypeScript declaration files
 components.d.ts
+
+# results automate tests
+test-results
+playwright-report

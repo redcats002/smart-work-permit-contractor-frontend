@@ -41,6 +41,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@iconify/vue": "^5.0.0",
+    "@playwright/test": "^1.60.0",
     "@stylistic/eslint-plugin": "^5.10.0",
     "@types/humps": "^2.0.6",
     "@types/js-cookie": "^3.0.6",
