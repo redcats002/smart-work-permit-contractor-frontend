@@ -40,6 +40,7 @@
         :key="`${ci}-${j}`">
         <CardInstallment
           :data="item"
+          :initial-selected="isPreSelected(ci, Number(item.id))"
           :installment-no="item.installmentNo"
           :select-all="contract.selectAll"
           :select-all-tick="contract.selectAllTick"
@@ -147,6 +148,12 @@ const ReceiptService: IReceiptProvider = new ReceiptProvider()
 const customerIdQuery = computed((): number | null => {
   return route?.query?.customerId ? Number(route.query.customerId) : null
 })
+const contractIdQuery = computed((): number | null => {
+  return route?.query?.contractId ? Number(route.query.contractId) : null
+})
+const installmentIdQuery = computed((): number | null => {
+  return route?.query?.installmentId ? Number(route.query.installmentId) : null
+})
 const customer = useInitDetail()
 const customerId = ref<number | null>(customerIdQuery.value)
 
@@ -164,6 +171,12 @@ const totalAmount = computed((): number =>
 function onInstallmentChange (id: number, payload: IInstallmentChangePayload): void {
   installmentAmounts.value = { ...installmentAmounts.value, [id]: payload.amount }
   installmentDiscounts.value = { ...installmentDiscounts.value, [id]: payload.discountPenaltyFee }
+}
+
+function isPreSelected (contractIdx: number, itemId: number): boolean {
+  if (!contractIdQuery.value || !installmentIdQuery.value) return false
+  const contract = contracts.value[contractIdx]
+  return contract.contractId === contractIdQuery.value && itemId === installmentIdQuery.value
 }
 
 function isContractIndeterminate (contractIdx: number): boolean {

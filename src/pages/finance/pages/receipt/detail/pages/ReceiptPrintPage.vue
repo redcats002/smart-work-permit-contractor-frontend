@@ -33,12 +33,15 @@ onMounted((): void => {
 })
 </script>
 
-<style scoped>
+<style>
 @media print {
+  html,
+  body {
+    background-color: white !important;
+  }
 
   body * {
     visibility: hidden;
-    background-color: white !important;
   }
 
   .no-print {
@@ -55,12 +58,12 @@ onMounted((): void => {
     left: 0;
     top: 0;
     width: 100%;
+    background-color: white !important;
   }
 
   @page {
     size: A4;
-    background-color: white !important;
+    margin: 0;
   }
-
 }
 </style>
