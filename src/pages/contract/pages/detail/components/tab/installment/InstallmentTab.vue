@@ -34,6 +34,7 @@
       v-model:sort-order="sortOrder"
       :items="items"
       @create-invoice="onCreateInvoice($event)"
+      @payment="onPayment($event)"
       @update="fetch()"
       @update-collection-fee="onUpdateCollectionFee($event)"
       @update-legal-fee="onUpdateLegalFee($event)" />
@@ -42,7 +43,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
@@ -68,8 +69,9 @@ defineOptions({
 const ContractService: IContractProvider = new ContractProvider()
 const InvoiceService: IInvoiceProvider = new InvoiceProvider()
 
-
 const route = useRoute()
+const router = useRouter()
+
 const { pagination, sortBy, sortOrder, syncQuery, extractPagination } = usePagination()
 const { isAlpha, isDev } = useDev()
 
@@ -140,6 +142,10 @@ function onTestDueDate (): void {
     toast.success('ทดสอบวันครบกำหนดสำเร็จ')
     fetch()
   })
+}
+
+function onPayment (id: number): void {
+  router.push({ name: 'ReceiptCreatePage', query: { customerId: mainBorrowerId.value, installmentId: id, contractId: contractId.value } })
 }
 
 function fetch (): void {
