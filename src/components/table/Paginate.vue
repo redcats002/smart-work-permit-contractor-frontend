@@ -40,7 +40,7 @@
         class="px-2 text-surface-400">
         <Icon
           class="size-4 text-[#62748E]"
-          icon="mdi:ellipse-outline" />
+          icon="lucide:ellipsis" />
       </span>
       <button
         v-else
