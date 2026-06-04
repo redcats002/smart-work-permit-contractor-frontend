@@ -267,6 +267,7 @@ interface IProps {
   installmentNo: number
   selectAll?: boolean
   selectAllTick?: number
+  initialSelected?: boolean
 }
 
 interface IEmits {
@@ -362,8 +363,10 @@ watch(currentDiscount, (val: number): void => {
 })
 
 onMounted((): void => {
+  selected.value = props.initialSelected ?? false
   customAmount.value = props.data.total.outstanding
   emits('change', { amount: currentAmount.value, discountPenaltyFee: currentDiscount.value })
+  if (props.initialSelected) emits('select', true)
 })
 </script>
 
