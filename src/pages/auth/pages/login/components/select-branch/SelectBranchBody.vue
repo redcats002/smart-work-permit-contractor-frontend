@@ -3,6 +3,7 @@
     <template v-if="branches.length">
       <div
         v-for="(branch, i) in branches"
+        :id="`branch-${i}`"
         :key="`branch-${i}`"
         class="grid grid-cols-1 gap-2 p-4 rounded-lg border-gray-400 border w-full bg-white cursor-pointer hover:bg-gray-100 active:bg-gray-500 transition-all"
         @click.passive="onSelect(branch)">
