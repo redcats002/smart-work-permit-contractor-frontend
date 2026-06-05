@@ -57,8 +57,8 @@ useSocket({ initial: true })
 const notificationStore = useNotificationStore()
 const { isOpen, close, toggle } = useAppDrawer()
 
-onMounted((): void => {
-  notificationStore.initialize()
+onMounted(async (): Promise<void> => {
+  await notificationStore.initialize()
 })
 </script>
 

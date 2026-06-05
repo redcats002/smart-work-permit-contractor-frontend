@@ -1,4 +1,4 @@
-import { onBeforeUnmount, onMounted, ref, type Ref } from 'vue'
+import { onBeforeUnmount, ref, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
 import type { IPublicGatewayResponse } from '@/models/response/public/ResponsePublic.model'
 import usePublicGateway from '@/resources/gateway/usePublic.gateway'
@@ -9,9 +9,9 @@ import { useAuthStore } from './Auth'
 interface IUseNotification {
   isNewAnnouncement: Ref<boolean>
   isNewWork: Ref<boolean>
-  readAnnouncement(): void
-  readWork(): void
-  initialize (): void
+  readAnnouncement(): Promise<void>
+  readWork(): Promise<void>
+  initialize (): Promise<void>
   destroy (): void
 }
 
@@ -24,8 +24,8 @@ export const useNotificationStore = defineStore(
 
     const { isConnected, destroyWatcher, initWatcher } = usePublicGateway(useFetch)
 
-    const isNewAnnouncement = ref<boolean>(true)
-    const isNewWork = ref<boolean>(true)
+    const isNewAnnouncement = ref<boolean>(false)
+    const isNewWork = ref<boolean>(false)
 
     async function useFetch (e: IPublicGatewayResponse): Promise<void> {
       const promises: Promise<void>[] = []
@@ -46,13 +46,16 @@ export const useNotificationStore = defineStore(
       isNewWork.value = response.hasUnread
     }
 
-    function initialize (): void {
-      onMounted(async (): Promise<void> => {
-        await router.isReady()
-        if (isConnected.value || !authStore.isAuthenticated) return
-        console.info('initial notification watcher')
-        initWatcher()
-      })
+    async function initialize (): Promise<void> {
+      await router.isReady()
+      if ((isConnected.value || !authStore.isAuthenticated)) return
+      console.info('initial notification watcher')
+      const promises: Promise<void>[] = [
+        readAnnouncement(),
+        readWork()
+      ]
+      await Promise.allSettled(promises)
+      initWatcher()
     }
 
     function destroy (): void {
