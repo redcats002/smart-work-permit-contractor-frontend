@@ -32,6 +32,7 @@ interface IAuthStore {
   branch: Ref<IBranch>
   // branchToken: Ref<IToken>
   isSeedAccount: ComputedRef<boolean>
+  isAuthenticated: ComputedRef<boolean>
   userLogin(user: IUser, token: string): void
   branchLogin(branch: IBranch): void
   setUserImage(image: string): void
@@ -72,6 +73,9 @@ export const useAuthStore = defineStore(
 
     const isSeedAccount = computed((): boolean => {
       return user.value.email === 'systemuser@email.com'
+    })
+    const isAuthenticated = computed((): boolean => {
+      return !!user.value.id
     })
 
     function userLogin (userValue: IUser, token: string): void {
@@ -132,8 +136,9 @@ export const useAuthStore = defineStore(
     return {
       user,
       userToken,
-      isSeedAccount,
       branch,
+      isSeedAccount,
+      isAuthenticated,
       setUserImage,
       // branchToken,
       userLogin,

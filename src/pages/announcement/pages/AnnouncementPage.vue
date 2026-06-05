@@ -1,5 +1,9 @@
 <template>
   <section id="announcement-page">
+    <NewContentButton
+      :show="notificationStore.isNewAnnouncement"
+      label="มีประกาศใหม่"
+      @click="onNewContent()" />
     <PageTitle />
     <BasePage>
       <PostComposer
@@ -17,10 +21,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { toast } from '@/plugins/toast'
+import { useNotificationStore } from '@/stores/Notification'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IAnnouncementProvider } from '@/resources/provider/announcement/Announcement.provider'
 import AnnouncementProvider from '@/resources/provider/announcement/Announcement.provider'
 import BasePage from '@/components/base/BasePage.vue'
+import NewContentButton from '@/components/button/NewContentButton.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import PostComposer from '../components/composer/PostComposer.vue'
 import FeedList from '../components/feed/FeedList.vue'
@@ -29,6 +35,7 @@ import { usePayload } from '../composables/usePayload'
 import type { AnnouncementCreateAnnouncement } from '../schemas/announcement.schema'
 
 const list = useList()
+const notificationStore = useNotificationStore()
 const form = ref<AnnouncementCreateAnnouncement>({
   content: '',
   attachments: []
@@ -37,6 +44,11 @@ const form = ref<AnnouncementCreateAnnouncement>({
 function handleCreated (): void {
   list.reset()
   list.fetch()
+}
+
+function onNewContent (): void {
+  notificationStore.readAnnouncement()
+  handleCreated()
 }
 const AnnouncementService: IAnnouncementProvider = new AnnouncementProvider()
 

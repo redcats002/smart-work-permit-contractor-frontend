@@ -1,12 +1,11 @@
 import { computed, ref, type Ref } from 'vue'
+import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IGetAnnouncementList, IUpdateAnnouncementPayload } from '@/models/request/announcement/AnnouncementReq.model'
 import type { IAnnouncementList } from '@/models/response/announcement/AnnouncementRes.model'
 import type { IAnnouncementProvider } from '@/resources/provider/announcement/Announcement.provider'
 import AnnouncementProvider from '@/resources/provider/announcement/Announcement.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
-import { toast } from '@/plugins/toast'
-
 
 interface IUseList extends IUsePagination {
   filters: Ref<IGetAnnouncementList>

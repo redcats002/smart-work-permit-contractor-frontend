@@ -44,13 +44,22 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
+import { useNotificationStore } from '@/stores/Notification'
 import AppDrawer from '@/components/app/AppDrawer.vue'
 import ProfileCard from '@/components/nav/ProfileCard.vue'
 import RouteTransition from '@/components/transition/RouteTransition.vue'
 import { useAppDrawer } from '@/composables/useAppDrawer'
+import { useSocket } from '@/composables/useSocket'
 import { Icon } from '@iconify/vue'
 
+useSocket({ initial: true })
+const notificationStore = useNotificationStore()
 const { isOpen, close, toggle } = useAppDrawer()
+
+onMounted((): void => {
+  notificationStore.initialize()
+})
 </script>
 
 <style scoped>

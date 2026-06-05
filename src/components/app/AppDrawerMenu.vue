@@ -11,6 +11,14 @@
       ]"
       :href="href"
       @click="!disabled && navigate($event)">
+      <Icon
+        v-if="notify"
+        :class="{
+          'text-primary': !isActive,
+          'text-white': isActive,
+        }"
+        class="animate-pulse"
+        icon="mdi:circle-medium" />
       <img
         v-if="isImageIcon"
         :class="(isActive || isExactActive || isRootActive) && !disabled && 'brightness-0 invert'"
@@ -40,11 +48,16 @@ interface IProps {
   label: string
   icon: string
   activeIcon?: string
+  notify?: boolean
   to: RouteLocationRaw
   disabled?: boolean
 }
 
-const props = defineProps<IProps>()
+const props = withDefaults(defineProps<IProps>(), {
+  disabled: false,
+  activeIcon: '',
+  notify: false
+})
 
 const route = useRoute()
 const router = useRouter()

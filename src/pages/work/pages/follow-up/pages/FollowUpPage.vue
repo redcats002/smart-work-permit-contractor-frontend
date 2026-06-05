@@ -1,5 +1,9 @@
 <template>
   <section id="work-follow-up-list-page">
+    <NewContentButton
+      :show="notificationStore.isNewWork"
+      label="มีงานใหม่"
+      @click="onNewContent()" />
     <PageTitle />
     <WorkFilter
       v-model:search="search"
@@ -31,9 +35,11 @@
 
 <script setup lang="ts">
 import { onMounted, watch } from 'vue'
+import { useNotificationStore } from '@/stores/Notification'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTab from '@/components/base/BaseTab.vue'
 import BaseTabWindow from '@/components/base/BaseTabWindow.vue'
+import NewContentButton from '@/components/button/NewContentButton.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import WorkFilter from '../components/WorkFilter.vue'
 import useInit from '../composables/useInit'
@@ -41,6 +47,12 @@ import useList from '../composables/useList'
 
 const { tab, tabItems } = useInit()
 const { search, items, pagination, sortBy, sortOrder, fetch, onClearFilters, onSearch } = useList(tab)
+const notificationStore = useNotificationStore()
+
+function onNewContent (): void {
+  notificationStore.readWork()
+  fetch()
+}
 
 
 onMounted((): void => {
