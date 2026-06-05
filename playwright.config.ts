@@ -1,4 +1,8 @@
+import { existsSync, mkdirSync } from 'fs'
 import { defineConfig, devices } from '@playwright/test'
+
+const AUTH_FILE = 'src/tests/automate/.auth/user.json'
+mkdirSync('src/tests/automate/.auth', { recursive: true })
 
 export default defineConfig({
   testDir: './src/tests/automate',
@@ -14,8 +18,16 @@ export default defineConfig({
   },
   projects: [
     {
+      name: 'setup',
+      testMatch: '**/fixtures/auth.setup.ts'
+    },
+    {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
+      use: {
+        ...devices['Desktop Chrome'],
+        ...(existsSync(AUTH_FILE) ? { storageState: AUTH_FILE } : {})
+      },
+      dependencies: ['setup']
     }
   ],
   webServer: {

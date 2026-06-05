@@ -13,17 +13,23 @@
         {{ description2 }}
       </p>
     </div>
-    <FormAction
-      :confirm-label="confirmLabel"
-      mode="delete"
-      fluid
-      @cancel="visible = false"
-      @confirm="emits('confirm')" />
+    <div class="flex gap-2.5 w-full">
+      <ConfirmButton
+        :label="confirmLabel"
+        mode="delete"
+        type="button"
+        fluid
+        @click="onConfirm()" />
+      <CancelButton
+        fluid
+        @click="visible = false" />
+    </div>
   </BaseModal>
 </template>
 
 <script setup lang="ts">
-import FormAction from '../button/FormAction.vue'
+import CancelButton from '../button/CancelButton.vue'
+import ConfirmButton from '../button/ConfirmButton.vue'
 import BaseModal from './BaseModal.vue'
 
 export interface IDeleteModalProps {
@@ -46,6 +52,11 @@ withDefaults(defineProps<IProps>(), {
 })
 const emits = defineEmits<IEmits>()
 const visible = defineModel<boolean>({ default: false })
+
+function onConfirm (): void {
+  emits('confirm')
+  visible.value = false
+}
 
 
 </script>

@@ -7,6 +7,7 @@
     :to="to"
     class="w-full h-10.5 md:w-49.5
     disabled:bg-white! disabled:border-(--p-gray-5)! disabled:text-(--p-gray-5)!"
+    data-testid="cancel-button"
     type="button"
     unstyled
     @click="onClick($event)">

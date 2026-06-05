@@ -1,9 +1,12 @@
-import { ref, type Ref } from 'vue'
+import { computed, ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
-
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 import type { IDailyBranchSummaryFilter } from '@/models/modules/report/daily-branch-summary/Filter.model'
-import type { IDailyBranchSummaryList, TGetDailyBranchSummaryListResponse } from '@/models/response/report/daily-branch-summary/DailyBranchSummaryRes.model'
+import type { IGetDailyBranchSummaryList } from '@/models/request/report/daily-branch-summary/DailyBranchSummaryReq.model'
+import type { IDailyBranchSummaryList } from '@/models/response/report/daily-branch-summary/DailyBranchSummaryRes.model'
+import DailyBranchSummaryProvider, { type IDailyBranchSummaryProvider } from '@/resources/provider/report/DailyBranchSummary.provider'
+
+const DailyBranchSummaryService: IDailyBranchSummaryProvider = new DailyBranchSummaryProvider()
 
 interface IUseList extends IUsePagination {
   filters: Ref<IDailyBranchSummaryFilter>
@@ -12,75 +15,29 @@ interface IUseList extends IUsePagination {
   onSearch(): void
   onClearFilters(): void
 }
+
 export default function useList (): IUseList {
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IDailyBranchSummaryFilter>({})
   const items = ref<IDailyBranchSummaryList[]>([])
-  // mock
-  const mockResponse: TGetDailyBranchSummaryListResponse = {
-    data: [
-      {
-        id: 1,
-        branchName: 'สำนักงานใหญ่',
-        financeReceive: 10000,
-        cancellationCost: 10000,
-        contractReplacementFee: 10000,
-        financeRelease: 10000,
-        insuranceCost: 10000,
-        lawyerFee: 10000,
-        processingFee: 10000,
-        remainingBalance: 10000,
-        sell: 10000
-      },
-      {
-        id: 2,
-        branchName: 'สำนักงานใหญ่2',
-        financeReceive: 10000,
-        cancellationCost: 10000,
-        contractReplacementFee: 10000,
-        financeRelease: 10000,
-        insuranceCost: 10000,
-        lawyerFee: 10000,
-        processingFee: 10000,
-        remainingBalance: 10000,
-        sell: 10000
-      },
-      {
-        id: 3,
-        branchName: 'สำนักงานใหญ่3',
-        financeReceive: 10000,
-        cancellationCost: 10000,
-        contractReplacementFee: 10000,
-        financeRelease: 10000,
-        insuranceCost: 10000,
-        lawyerFee: 10000,
-        processingFee: 10000,
-        remainingBalance: 10000,
-        sell: 10000
-      }
-    ],
-    count: 3,
-    totalPage: 1,
-    limit: 10,
-    page: 1,
-    message: 'success'
-  }
 
+  const paginateQuery = computed((): IGetDailyBranchSummaryList => ({
+    search: search.value,
+    page: pagination.value.page,
+    limit: pagination.value.limit,
+    sortBy: sortBy.value || undefined,
+    sortOrder: sortOrder.value,
+    branchId: filters.value.branchId,
+    startDate: filters.value.startDate,
+    endDate: filters.value.endDate
+  }))
 
   async function useFetch (): Promise<void> {
-    // const response = await EmployeeService.getEmployeePaginate(paginateQuery.value)
-    // items.value = response?.data || []
-    const response = mockResponse as any
-    items.value = response.data || []
+    const response = await DailyBranchSummaryService.getDailyBranchSummaryPaginate(paginateQuery.value)
+    items.value = response?.data || []
     pagination.value = extractPagination(response)
-    syncQuery({ ...normalizeFilters(filters.value) })
-  }
-
-  function normalizeFilters (value: IDailyBranchSummaryFilter): Partial<IDailyBranchSummaryFilter> {
-    return {
-      ...value
-    }
+    syncQuery({ ...paginateQuery.value })
   }
 
   function onSearch (): void {
@@ -95,7 +52,6 @@ export default function useList (): IUseList {
   function onClearFilters (): void {
     reset()
   }
-
 
   return {
     filters,

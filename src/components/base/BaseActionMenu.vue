@@ -1,6 +1,7 @@
 <template>
   <div>
     <div
+      id="action-menu-trigger"
       aria-controls="overlay_menu"
       aria-haspopup="true"
       class="flex items-center justify-end cursor-pointer hover:text-surface-100"
