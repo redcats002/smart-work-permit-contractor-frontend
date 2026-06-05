@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, type Page, test } from '@playwright/test'
 
 const BASE_URL = 'http://localhost:8080'
 const LOGIN_URL = `${BASE_URL}/auth/login`
@@ -35,15 +35,13 @@ test.describe('Login', () => {
     await page.locator('[id="branch-1"]').click()
   })
 
-  test('login then select branch — redirect to home', async ({ page }: { page: any }): Promise<void> => {
+  test('login then select branch — redirect to home', async ({ page }: { page: Page }): Promise<void> => {
     await page.getByLabel('อีเมล').fill('systemuser@email.com')
     await page.getByLabel('รหัสผ่าน').fill('password123')
     await page.getByRole('button', { name: 'ถัดไป' }).click()
-
-    // wait for branch list
+    await page.waitForLoadState('networkidle')
     await expect(page.locator('[id="branch-1"]')).toBeVisible({ timeout: 10_000 })
     await page.locator('[id="branch-1"]').click()
-
     await expect(page).toHaveURL(`${BASE_URL}/announcement?page=1&limit=3&search=&sortBy=&sortOrder=desc`, { timeout: 10_000 })
   })
 
