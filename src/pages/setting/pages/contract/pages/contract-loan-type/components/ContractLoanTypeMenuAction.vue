@@ -1,6 +1,8 @@
 <template>
   <div>
-    <BaseActionMenu :items="items" />
+    <BaseActionMenu
+      :id="`action-menu-trigger-${index}`"
+      :items="items" />
     <ModalContractLoanTypeAction
       v-if="item.id"
       :id="item.id"
@@ -21,6 +23,7 @@ import ModalContractLoanTypeAction from './ModalContractLoanTypeAction.vue'
 
 interface IProps {
   item: IContractLoanTypeList
+  index: number
 }
 
 interface IEmits {

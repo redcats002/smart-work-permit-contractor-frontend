@@ -5,7 +5,8 @@
     v-bind="$attrs"
     class="flex items-center rounded-sm!
     h-10.5 w-full md:w-49.5
-    text-white transition-all duration-200">
+    text-white transition-all duration-200"
+    data-testid="confirm-button">
     <div class="text-sm font-medium">
       {{ label }}
     </div>

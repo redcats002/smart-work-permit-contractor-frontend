@@ -40,3 +40,4 @@ components.d.ts
 # results automate tests
 test-results
 playwright-report
+src/tests/automate/.auth

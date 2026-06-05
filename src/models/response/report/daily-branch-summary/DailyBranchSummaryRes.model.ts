@@ -1,18 +1,18 @@
-import type { IEntity } from '@/models/Global.model'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../../Response.model'
 
-export interface IDailyBranchSummaryList extends IEntity {
+export interface IDailyBranchSummaryList {
+  branchId: string
   branchName: string
   financeReceive: number
   financeRelease: number
   processingFee: number
-  sell: number
-  insuranceCost: number
-  cancellationCost: number
+  salePrice: number
+  depositFee: number
+  cancelContractFee: number
   lawyerFee: number
   contractReplacementFee: number
-  remainingBalance: number
+  outstanding: number
 }
 
-export interface TGetDailyBranchSummaryListResponse extends IBasePaginationResponse<IDailyBranchSummaryList> {}
-export interface TActionDailyBranchSummary extends IBaseSuccessResponse<boolean> {}
+export type TGetDailyBranchSummaryListResponse = IBasePaginationResponse<IDailyBranchSummaryList>
+export type TActionDailyBranchSummary = IBaseSuccessResponse<boolean>

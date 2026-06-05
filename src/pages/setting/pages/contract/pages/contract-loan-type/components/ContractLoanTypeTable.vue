@@ -7,10 +7,11 @@
     :items="items"
     disable-auto-left-padding
     @update="emits('update')">
-    <template #[`item.action`]="{ item }">
+    <template #[`item.action`]="{ item, index }">
       <ContractLoanTypeMenuAction
         v-if="item?.id"
         v-model="form"
+        :index="index"
         :item="item"
         @delete="emits('delete', $event)"
         @edit="emits('edit', $event)" />

@@ -4,6 +4,9 @@ const BASE_URL = 'http://localhost:8080'
 const LOGIN_URL = `${BASE_URL}/auth/login`
 
 test.describe('Login', () => {
+  // clear auth state — login tests must start unauthenticated
+  test.use({ storageState: { cookies: [], origins: [] } })
+
   test.beforeEach(async ({ page }: { page: any }): Promise<void> => {
     await page.goto(LOGIN_URL)
   })
@@ -22,8 +25,8 @@ test.describe('Login', () => {
   })
 
   test('login success — show branch selection', async ({ page }: { page: any }): Promise<void> => {
-    await page.getByLabel('อีเมล').fill(process.env.TEST_EMAIL ?? 'systemuser@email.com')
-    await page.getByLabel('รหัสผ่าน').fill(process.env.TEST_PASSWORD ?? 'password123')
+    await page.getByLabel('อีเมล').fill('systemuser@email.com')
+    await page.getByLabel('รหัสผ่าน').fill('password123')
     await page.getByRole('button', { name: 'ถัดไป' }).click()
 
     // after login API, branch selection screen appears
@@ -33,15 +36,15 @@ test.describe('Login', () => {
   })
 
   test('login then select branch — redirect to home', async ({ page }: { page: any }): Promise<void> => {
-    await page.getByLabel('อีเมล').fill(process.env.TEST_EMAIL ?? 'systemuser@email.com')
-    await page.getByLabel('รหัสผ่าน').fill(process.env.TEST_PASSWORD ?? 'password123')
+    await page.getByLabel('อีเมล').fill('systemuser@email.com')
+    await page.getByLabel('รหัสผ่าน').fill('password123')
     await page.getByRole('button', { name: 'ถัดไป' }).click()
 
     // wait for branch list
     await expect(page.locator('[id="branch-1"]')).toBeVisible({ timeout: 10_000 })
     await page.locator('[id="branch-1"]').click()
 
-    await expect(page).toHaveURL(`${BASE_URL}/announcement`, { timeout: 10_000 })
+    await expect(page).toHaveURL(`${BASE_URL}/announcement?page=1&limit=3&search=&sortBy=&sortOrder=desc`, { timeout: 10_000 })
   })
 
   test('login fail — show error toast', async ({ page }: { page: any }): Promise<void> => {
