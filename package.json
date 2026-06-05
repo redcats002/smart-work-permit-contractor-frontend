@@ -16,6 +16,8 @@
     "test": "vitest --watch --reporter=verbose",
     "test:run": "vitest run --reporter=verbose",
     "test:coverage": "vitest run --coverage",
+    "test:playwright": "bunx playwright test",
+    "test:playwright-ui": "bunx playwright test --ui",
     "prepare": "husky"
   },
   "dependencies": {

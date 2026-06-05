@@ -1,17 +1,16 @@
-import { expect, test } from '@playwright/test'
+import { expect, type Page, test } from '@playwright/test'
 
-const BASE_URL = 'http://localhost:8080'
-const SETTING_LIST_URL = `${BASE_URL}/setting/list`
-const CONTRACT_LOAN_TYPE_URL = `${BASE_URL}/setting/contract/contract-loan-type/list`
+const SETTING_LIST_URL = `/setting/list`
+const CONTRACT_LOAN_TYPE_URL = `/setting/contract/contract-loan-type/list`
 
 test.describe('Setting / Contract Loan Type', () => {
-  test.beforeEach(async ({ page }: { page: any }): Promise<void> => {
+  test.beforeEach(async ({ page }: { page: Page }): Promise<void> => {
     await page.goto(CONTRACT_LOAN_TYPE_URL)
     await page.waitForLoadState('networkidle')
   })
 
   test.describe('Setting List', () => {
-    test('navigate to contract-loan-type from setting list', async ({ page }: { page: any }): Promise<void> => {
+    test('navigate to contract-loan-type from setting list', async ({ page }: { page: Page }): Promise<void> => {
       await page.goto(SETTING_LIST_URL)
       await page.waitForLoadState('networkidle')
 
@@ -20,13 +19,13 @@ test.describe('Setting / Contract Loan Type', () => {
       await expect(page).toHaveURL(/contract-loan-type/, { timeout: 5_000 })
     })
 
-    test('list — show table', async ({ page }: { page: any }): Promise<void> => {
+    test('list — show table', async ({ page }: { page: Page }): Promise<void> => {
       await expect(page.locator('table')).toBeVisible()
     })
   })
 
   test.describe('Setting / Create / Contract Loan Type', () => {
-    test('create — cancel closes modal', async ({ page }: { page: any }): Promise<void> => {
+    test('create — cancel closes modal', async ({ page }: { page: Page }): Promise<void> => {
       await page.getByRole('button', { name: 'เพิ่มประเภทเงินกู้ใหม่' }).click()
       await expect(page.locator('[role="dialog"]')).toBeVisible()
 
@@ -34,7 +33,7 @@ test.describe('Setting / Contract Loan Type', () => {
       await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 3_000 })
     })
 
-    test('create — validation error on empty submit', async ({ page }: { page: any }): Promise<void> => {
+    test('create — validation error on empty submit', async ({ page }: { page: Page }): Promise<void> => {
       await page.getByRole('button', { name: 'เพิ่มประเภทเงินกู้ใหม่' }).click()
 
       await page.getByRole('button', { name: 'ยืนยัน' }).click()
@@ -43,7 +42,7 @@ test.describe('Setting / Contract Loan Type', () => {
       await expect(page.locator('[name="name"]')).toBeVisible()
     })
 
-    test('create — add new loan type', async ({ page }: { page: any }): Promise<void> => {
+    test('create — add new loan type', async ({ page }: { page: Page }): Promise<void> => {
       await page.getByRole('button', { name: 'เพิ่มประเภทเงินกู้ใหม่' }).click()
       await expect(page.locator('[role="dialog"]')).toBeVisible()
 
@@ -54,12 +53,12 @@ test.describe('Setting / Contract Loan Type', () => {
       await page.getByRole('button', { name: 'ยืนยัน' }).last().click()
 
       await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5_000 })
-      await expect(page.getByText('Test สินเชื่อเบื่อบ้าน')).toBeVisible()
+      await expect(page.getByText('Test สินเชื่อเบื่อบ้าน', { exact: true })).toBeVisible()
     })
   })
 
   test.describe('Setting / Update / Contract Loan Type', () => {
-    test('update — edit first loan type', async ({ page }: { page: any }): Promise<void> => {
+    test('update — edit first loan type', async ({ page }: { page: Page }): Promise<void> => {
       // CREATE BEFORE UPDATE
       await page.getByRole('button', { name: 'เพิ่มประเภทเงินกู้ใหม่' }).click()
       await expect(page.locator('[role="dialog"]')).toBeVisible()
@@ -71,7 +70,7 @@ test.describe('Setting / Contract Loan Type', () => {
       await page.getByRole('button', { name: 'ยืนยัน' }).last().click()
 
       await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5_000 })
-      await expect(page.getByText('Test สินเชื่อเบื่อบ้าน For Update')).toBeVisible()
+      await expect(page.getByText('Test สินเชื่อเบื่อบ้าน For Update', { exact: true })).toBeVisible()
 
       // UPDATE
       await page.locator('[id="action-menu-trigger-0"]').first().click()
@@ -87,12 +86,12 @@ test.describe('Setting / Contract Loan Type', () => {
       await page.getByRole('button', { name: 'ยืนยัน' }).last().click()
 
       await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5_000 })
-      await expect(page.getByText('Updated Test สินเชื่อเบื่อบ้าน For Update')).toBeVisible()
+      await expect(page.getByText('Updated Test สินเชื่อเบื่อบ้าน For Update', { exact: true })).toBeVisible()
     })
   })
 
   test.describe.serial('Setting / Delete / Contract Loan Type', () => {
-    test('delete — cancel keeps row count', async ({ page }: { page: any }): Promise<void> => {
+    test('delete — cancel keeps row count', async ({ page }: { page: Page }): Promise<void> => {
       await page.getByRole('button', { name: 'เพิ่มประเภทเงินกู้ใหม่' }).click()
       await expect(page.locator('[role="dialog"]')).toBeVisible()
 
@@ -103,30 +102,31 @@ test.describe('Setting / Contract Loan Type', () => {
       await page.getByRole('button', { name: 'ยืนยัน' }).last().click()
 
       await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5_000 })
-      await expect(page.getByText('Test สินเชื่อเบื่อบ้าน For Update')).toBeVisible()
+      await page.waitForLoadState('networkidle')
+      await expect(page.getByText('Test สินเชื่อเบื่อบ้าน For Update', { exact: true })).toBeVisible({ timeout: 5_000 })
 
       const rows = page.locator('tbody tr')
       const countBefore = await rows.count()
 
-      await page.locator('[id="action-menu-trigger-0"]').first().click()
+      await page.getByRole('row', { name: 'Test สินเชื่อเบื่อบ้าน For Update' }).locator('#action-menu-trigger').first().click()
       await page.getByRole('menuitem', { name: 'ลบ' }).click()
 
       await expect(page.locator('[role="dialog"]')).toBeVisible()
-      await page.getByRole('button', { name: 'ยกเลิก' }).click()
+      await page.getByTestId('cancel-button').click()
 
       await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5_000 })
       await expect(rows).toHaveCount(countBefore)
     })
 
-    test('delete — confirm removes row', async ({ page }: { page: any }): Promise<void> => {
+    test('delete — confirm removes row', async ({ page }: { page: Page }): Promise<void> => {
       const rows = page.locator('tbody tr')
       const countBefore = await rows.count()
 
-      await page.locator('[id="action-menu-trigger-0"]').first().click()
+      await page.getByRole('row', { name: 'Test สินเชื่อเบื่อบ้าน For Update' }).locator('#action-menu-trigger').first().click()
       await page.getByRole('menuitem', { name: 'ลบ' }).click()
 
       await expect(page.locator('[role="dialog"]')).toBeVisible()
-      await page.getByRole('button', { name: 'ใช่, ฉันต้องการลบ' }).click()
+      await page.getByTestId('confirm-button').click()
 
       await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5_000 })
       await expect(rows).toHaveCount(countBefore - 1)

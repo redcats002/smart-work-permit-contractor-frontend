@@ -10,7 +10,7 @@ class NotificationProvider extends HttpRequest implements INotificationProvider 
   private urlPrefix: string = '/api/v1/notification'
 
   public async checkNotification (query: ICheckNotification): Promise<TGetNotificationResponse> {
-    return this.get(this.urlPrefix, query)
+    return this.get(`${this.urlPrefix}/check`, query)
   }
 }
 

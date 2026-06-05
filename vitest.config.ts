@@ -10,7 +10,8 @@ export default defineConfig({
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
-      'src/tests/automate/**'
+      'src/tests/automate/**',
+      'src/pages/**/tests/**'
     ]
     // projects: [
     //   defineProject({
