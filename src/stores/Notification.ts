@@ -50,7 +50,7 @@ export const useNotificationStore = defineStore(
       onMounted(async (): Promise<void> => {
         await router.isReady()
         if (isConnected.value || !authStore.isAuthenticated) return
-        console.log('initial notification watcher')
+        console.info('initial notification watcher')
         initWatcher()
       })
     }
