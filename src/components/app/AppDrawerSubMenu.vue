@@ -7,6 +7,14 @@
         isAnyChildActive && 'bg-(--p-red)! text-white!'
       ]"
       @click="toggle()">
+      <Icon
+        v-if="notify"
+        :class="{
+          'text-primary': !isAnyChildActive,
+          'text-white': isAnyChildActive,
+        }"
+        class="animate-pulse"
+        icon="mdi:circle-medium" />
       <img
         v-if="isImageIcon"
         :class="isAnyChildActive && 'brightness-0 invert'"
@@ -67,11 +75,15 @@ export interface ISubMenuItem {
 interface IProps {
   label: string
   icon: string
+  notify?: boolean
   children: ISubMenuItem[]
   disabled?: boolean
 }
 
-const props = defineProps<IProps>()
+const props = withDefaults(defineProps<IProps>(), {
+  disabled: false,
+  notify: false
+})
 
 const route = useRoute()
 const router = useRouter()

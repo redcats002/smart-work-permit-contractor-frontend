@@ -44,12 +44,14 @@
             :children="menu.children"
             :disabled="menu.disabled"
             :icon="menu.icon"
-            :label="menu.label" />
+            :label="menu.label"
+            :notify="menu.notify" />
           <AppDrawerMenu
             v-else
             :disabled="menu.disabled"
             :icon="menu.icon"
             :label="menu.label"
+            :notify="menu.notify"
             :to="menu.to!" />
         </template>
       </div>
@@ -62,6 +64,7 @@
           :disabled="menu.disabled"
           :icon="menu.icon"
           :label="menu.label"
+          :notify="menu.notify"
           :to="menu.to!" />
       </div>
     </nav>
@@ -72,6 +75,7 @@
 import { computed } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '@/stores/Auth'
+import { useNotificationStore } from '@/stores/Notification.ts'
 import { type TPermissionModule } from '@/utils/Permission'
 import useLogout from '@/pages/auth/composables/useLogout'
 import { useAppDrawer } from '@/composables/useAppDrawer'
@@ -83,6 +87,7 @@ import AppDrawerSubMenu, { type ISubMenuItem } from './AppDrawerSubMenu.vue'
 
 const { isOpen, close } = useAppDrawer()
 const { hasPermission } = usePermission()
+const notificationStore = useNotificationStore()
 
 const { logout } = useLogout()
 
@@ -91,6 +96,7 @@ interface IMenuItem {
   icon: string
   key: string
   to?: string
+  notify?: boolean
   disabled?: boolean
   children?: ISubMenuItem[]
 }
@@ -144,6 +150,7 @@ const menuItems = computed<IMenuItem[]>((): IMenuItem[] => {
           label: (routeMeta?.menuTitle || routeMeta?.title) ?? childMenuItems[0].label,
           icon,
           key,
+          notify: getNotifyFlag(route),
           to: childMenuItems[0].to
         }
       ]
@@ -154,6 +161,7 @@ const menuItems = computed<IMenuItem[]>((): IMenuItem[] => {
         label: (routeMeta?.menuTitle || routeMeta?.title) ?? childMenuItems[0].label,
         icon,
         key,
+        notify: getNotifyFlag(route),
         children: childMenuItems.map((item: IMenuRouteItem): ISubMenuItem => ({
           label: item.label,
           to: item.to,
@@ -163,6 +171,12 @@ const menuItems = computed<IMenuItem[]>((): IMenuItem[] => {
     ]
   })
 })
+
+function getNotifyFlag (route: RouteRecordRaw): boolean {
+  if (route.name === 'WorkPage') return notificationStore.isNewWork
+  if (route.name === 'AnnouncementPage') return notificationStore.isNewAnnouncement
+  return false
+}
 
 function normalizePath (parentPath: string, path: string): string {
   if (path.startsWith('/')) {
