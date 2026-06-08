@@ -15,6 +15,12 @@ export interface IActionLogList extends IEntity {
 }
 export interface IActionLogById extends IEntity {}
 
+export interface IActionLogCompare {
+  beforePayload: Record<string, unknown> | null
+  afterPayload: Record<string, unknown> | null
+}
+
 export type TGetActionLogListResponse = IBasePaginationResponse<IActionLogList>
 export type TGetActionLogByIdResponse = IBaseSuccessResponse<IActionLogById>
+export type TGetActionLogCompareResponse = IBaseSuccessResponse<IActionLogCompare>
 export type TActionActionLog = IBaseSuccessResponse<boolean>

@@ -15,7 +15,23 @@
         {{ item?.userNo || '-' }}
       </LinkText>
     </template>
+    <template #[`item.compare`]="{ item }">
+      <div
+        v-if="item.action === ActionLogTypeEnum.CREATE || item.action === ActionLogTypeEnum.UPDATE"
+        class="flex justify-center">
+        <Button
+          class="p-1.5 rounded"
+          @click="openCompare(item.id)">
+          <Icon
+            icon="mdi:compare"
+            width="18" />
+        </Button>
+      </div>
+    </template>
   </BaseTable>
+  <ModalActionLogCompare
+    :id="compareId"
+    v-model="compareVisible" />
 </template>
 
 <script setup lang="ts">
@@ -24,11 +40,13 @@ import { useDayjs } from '@/utils/Dayjs'
 import { getTableIndex } from '@/utils/Table'
 import type { IActionLogList } from '@/models/response/action-log/ActionLogRes.model'
 import type { IColumn } from '@/models/Table.model'
-import { formatTitle } from '@/enums/modules/action-log/ActionLogType.enum'
 import { formatMenuTitle } from '@/enums/modules/action-log/ActionLogMenu.enum'
+import { ActionLogTypeEnum, formatTitle } from '@/enums/modules/action-log/ActionLogType.enum'
 import LinkText from '@/components/button/LinkText.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
+import { Icon } from '@iconify/vue'
+import ModalActionLogCompare from './ModalActionLogCompare.vue'
 
 interface IProps {
   items: IActionLogList[]
@@ -53,6 +71,14 @@ const pagination = defineModel<IPagination>('pagination', {
 const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
+const compareVisible = ref(false)
+const compareId = ref<string | number>(0)
+
+function openCompare (id: string | number): void {
+  compareId.value = id
+  compareVisible.value = true
+}
+
 const columns = ref<IColumn<IActionLogList>[]>([
   { header: 'ลำดับ', style: { width: '70px', minWidth: '70px' }, field: 'index' },
   { header: 'วันที่', field: 'createdAtDate', sortable: true, style: { width: '120px', minWidth: '120px' }, value: (item: IActionLogList): string => formatDate(item.createdAtDate) },
@@ -62,7 +88,8 @@ const columns = ref<IColumn<IActionLogList>[]>([
   { header: 'ชื่อเมนูที่ใช้งาน', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, field: 'frontendMenuName', value: (item: IActionLogList): string => formatMenuTitle(item.frontendMenuName) },
   { header: 'การเข้าถึง', style: { width: '80px', minWidth: '80px' }, field: 'action', value: (item: IActionLogList): string => formatTitle(item.action) },
   { header: 'เลขที่เอกสาร', style: { width: '130px', minWidth: '130px' }, field: 'ref' },
-  { header: 'สาขา', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, field: 'branch' }
+  { header: 'สาขา', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, field: 'branch' },
+  { header: 'เปลี่ยนแปลง', field: 'compare', align: 'center', style: { width: '110px', minWidth: '110px' } }
 ])
 </script>
 
