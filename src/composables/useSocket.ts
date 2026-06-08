@@ -1,22 +1,31 @@
-// composables/useSocket.ts
 import { onBeforeMount, onUnmounted, ref, type Ref } from 'vue'
 import { useAuthStore } from '@/stores/Auth'
-import { handleLoading } from '@/utils/HandleLoading'
-import io, { type Socket } from 'socket.io-client'
-import useResource from './useResource'
+import type { TAnnouncementSocketEvent, TWorkSocketEvent } from '@/stores/Notification'
+
+export type TSocketBasic = 'connect' | 'disconnect'
+export type TSocketEvent = TWorkSocketEvent | TAnnouncementSocketEvent | TSocketBasic
+
+export interface ISocketMessage {
+  event: TSocketEvent
+  data: ISocketData
+  timestamp: string
+}
+export interface ISocketData {
+  id: number
+}
 
 interface IUseSocket {
-  socket: Ref<Socket | null>
+  socket: Ref<WebSocket | null>
   roomId: Ref<string | null>
-  message: Ref<string>
-  messages: Ref<string[]>
+  // message: Ref<string>
+  // messages: Ref<string[]>
   isConnected: Ref<boolean>
   isRoomJoined: Ref<boolean>
-  sendMessage(): void
+  // sendMessage(): void
   connect(): void
   disconnect(): void
-  joinRoom (_branchId: number | null): void
-  leaveRoom (): void
+  // joinRoom (_branchId: number | null): void
+  // leaveRoom (): void
   on(event: string, callback: (data: any) => void): void
   off(event: string, callback?: (data: any) => void): void
   emit(event: string, data: any): void
@@ -26,135 +35,172 @@ interface IUseSocketOptions {
   initial?: boolean
 }
 
-const socket = ref<Socket | null>(null)
+const socket = ref<WebSocket | null>(null)
 const roomId = ref<string | null>(null)
 const isRoomJoined = ref<boolean>(false)
 const isConnected = ref<boolean>(false)
 
+const eventListeners = new Map<string, Set<(data: any) => void>>()
+let reconnectCount = 0
+let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+let intentionalDisconnect = false
+
+const MAX_RECONNECT_ATTEMPTS = 5
+const RECONNECT_DELAY_MS = 10_000
+
+function buildWsUrl (): string {
+  const apiUrl: string = import.meta.env.VITE_APP_API_URL ?? 'http://localhost:3000'
+  const wsPath: string = import.meta.env.VITE_APP_WEBSOCKET ?? 'ws'
+  const base = apiUrl
+  const result = `${base.replace(/^http/, 'ws')}/${wsPath}`
+  return result
+}
+
+function dispatchEvent (event: TSocketEvent, data: ISocketData | null): void {
+  eventListeners.get(event)?.forEach((cb: (data: any) => void): void => {
+    cb(data)
+  })
+}
+
 export function useSocket (options: IUseSocketOptions = { initial: false }): IUseSocket {
   const authStore = useAuthStore()
-  const resource = useResource()
-  const url = resource.getRequestUrl('/v1/socket')
 
-  const message = ref<string>('')
-  const messages = ref<string[]>([])
+  // const message = ref<string>('')
+  // const messages = ref<string[]>([])
 
-  // * Join branch when init
-  function joinRoom (_branchId: string | number | null): void {
-    handleLoading((): void => {
-      if (!_branchId) throw Error('Please enter a room ID')
-      if (!isRoomJoined.value) { // Join only if not already joined
-        roomId.value = _branchId?.toString()
-        socket.value?.emit('joinRoom', _branchId)
-        isRoomJoined.value = true
-      }
-    })
+  // function joinRoom (_branchId: string | number | null): void {
+  //   handleLoading((): void => {
+  //     if (!_branchId) throw Error('Please enter a room ID')
+  //     if (!isRoomJoined.value) {
+  //       roomId.value = _branchId?.toString()
+  //       emit('joinRoom', _branchId)
+  //       isRoomJoined.value = true
+  //     }
+  //   })
+  // }
+
+  // function leaveRoom (): void {
+  //   handleLoading((): void => {
+  //     if (!roomId.value) return
+  //     emit('leaveRoom', roomId.value)
+  //     roomId.value = null
+  //     isRoomJoined.value = false
+  //   })
+  // }
+
+  // function sendMessage (): void {
+  //   handleLoading((): void => {
+  //     if (!roomId.value && !message.value) throw Error('Please enter a room and a message')
+  //     emit('sendMessage', { message: message.value, room: `queue-room-${roomId.value}` })
+  //     message.value = ''
+  //   })
+  // }
+
+  function on (event: string, callback: (data: any) => void): void {
+    if (!eventListeners.has(event)) eventListeners.set(event, new Set())
+    eventListeners.get(event)!.add(callback)
   }
 
-  // * Leave branch when close
-  function leaveRoom (): void {
-    handleLoading((): void => {
-      // if (!roomId.value) throw Error('You are not in a room')
-      if (!roomId.value) return
-      socket.value?.emit('leaveRoom', roomId.value)
-      roomId.value = null // Clear the room ID after leaving
-      isRoomJoined.value = false
-    })
-  }
-
-  // * Method for debugged
-  function sendMessage (): void {
-    handleLoading((): void => {
-      if (!roomId.value && !message.value) throw Error('Please enter a room and a message')
-      socket.value?.emit('sendMessage', { message: message.value, room: `queue-room-${roomId.value}` })
-      message.value = '' // Clear the message after sending
-    })
-  }
-
-  // * Initialize the WebSocket connection
-  function connect (): void {
-    const VITE_APP_WEBSOCKET = import.meta.env.VITE_APP_WEBSOCKET
-    const seconds = 10
-
-    let newUrl = url
-    if (newUrl.includes('alpha')) newUrl = newUrl.replace('/alpha', '')
-    if (newUrl.includes('staging')) newUrl = newUrl.replace('/staging', '')
-
-    if (!authStore.branch?.id) return // Join room is need branch id
-    if (socket.value) return // Prevent multiple connections
-
-    socket.value = io(newUrl, {
-      path: `/${VITE_APP_WEBSOCKET}`,
-      autoConnect: true,
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000 * seconds
-    })
-    if (!socket.value.connected) socket.value.connect()
-    isConnected.value = true
-    // * For debugged
-    on('sendMessage', (msg: string): void => {
-      messages.value.push(msg)
-    })
-
-    on('connect', (): void => {
-      joinRoom(authStore.branch?.id)
-    })
-    on('disconnect', (): void => {
-      leaveRoom()
-    })
-  }
-
-  // * Disconnect the WebSocket
-  function disconnect (): void {
-    if (socket.value) {
-      socket.value.disconnect()
-      socket.value = null
-      isConnected.value = false
+  function off (event: string, callback?: (data: any) => void): void {
+    if (!eventListeners.has(event)) return
+    if (callback) {
+      eventListeners.get(event)!.delete(callback)
+    } else {
+      eventListeners.delete(event)
     }
   }
 
-  // * Subscribe to a specific event
-  function on (event: string, callback: (data: any) => void): void {
-    if (!socket.value) return
-    socket.value.on(event, callback)
-  }
-
-  // * Unsubscribe from a specific event
-  function off (event: string, callback?: (data: any) => void): void {
-    if (!socket.value) return
-    socket.value.off(event, callback)
-  }
-
-  // * Emit an event to the server
   function emit (event: string, data: any): void {
-    if (!socket.value) return
-    socket.value.emit(event, data)
+    if (!socket.value || socket.value.readyState !== WebSocket.OPEN) return
+    socket.value.send(JSON.stringify({ event, data }))
   }
 
-  // * Initialize the connection when the composable is used
+  function scheduleReconnect (): void {
+    if (reconnectCount >= MAX_RECONNECT_ATTEMPTS) return
+    reconnectCount++
+    reconnectTimer = setTimeout((): void => {
+      connect()
+    }, RECONNECT_DELAY_MS)
+  }
+
+  function connect (): void {
+    if (!authStore.branch?.id) return
+    if (socket.value) return
+    intentionalDisconnect = false
+    const ws = new WebSocket(buildWsUrl())
+    socket.value = ws
+
+
+    ws.addEventListener('open', (): void => {
+      isConnected.value = true
+      reconnectCount = 0
+      // joinRoom(authStore.branch?.id ?? null)
+      dispatchEvent('connect', null)
+    })
+
+    ws.addEventListener('close', (): void => {
+      socket.value = null
+      isConnected.value = false
+      roomId.value = null
+      isRoomJoined.value = false
+      dispatchEvent('disconnect', null)
+      if (!intentionalDisconnect) scheduleReconnect()
+    })
+
+    ws.addEventListener('message', (event: MessageEvent): void => {
+      try {
+        const { event: name, data } = JSON.parse(event.data as string) as ISocketMessage
+        console.log(name, data)
+        dispatchEvent(name, data)
+      } catch {
+        console.error('[useSocket] Failed to parse message', event.data)
+      }
+    })
+
+    ws.addEventListener('error', (event: Event): void => {
+      console.error('[useSocket] WebSocket error', event)
+    })
+  }
+
+  function disconnect (): void {
+    intentionalDisconnect = true
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer)
+      reconnectTimer = null
+    }
+    if (socket.value) {
+      // if (roomId.value && socket.value.readyState === WebSocket.OPEN) {
+      //   socket.value.send(JSON.stringify({ event: 'leaveRoom', data: roomId.value }))
+      // }
+      socket.value.close()
+      socket.value = null
+      isConnected.value = false
+      roomId.value = null
+      isRoomJoined.value = false
+    }
+  }
+
   onBeforeMount((): void => {
     if (!options?.initial) return
     disconnect()
     connect()
   })
 
-  // * Clean up the connection when the app is destroyed
   onUnmounted((): void => {
     if (!options?.initial) return
     disconnect()
   })
 
   return {
-    socket: socket as any,
+    socket: socket as Ref<WebSocket | null>,
     isConnected,
     isRoomJoined,
-    message,
-    messages,
+    // message,
+    // messages,
     roomId,
-    joinRoom,
-    leaveRoom,
-    sendMessage,
+    // joinRoom,
+    // leaveRoom,
+    // sendMessage,
     on,
     off,
     emit,

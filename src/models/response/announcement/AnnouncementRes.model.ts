@@ -16,6 +16,7 @@ export interface IAnnouncementList extends IEntity {
   content: string
   createdAt: string
   author: IAuthor
+  isRead: boolean
   attachments: IAttachments[]
 }
 

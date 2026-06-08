@@ -3,7 +3,7 @@
     <NewContentButton
       :show="notificationStore.isNewWork"
       label="มีงานใหม่"
-      @click="onNewContent()" />
+      @click="fetch()" />
     <PageTitle />
     <WorkFilter
       v-model:filters="filters"
@@ -50,10 +50,6 @@ const { tab, tabItems } = useInit()
 const { filters, search, fetch, onClearFilters, items, pagination, sortBy, sortOrder, onSearch } = useList(tab)
 const notificationStore = useNotificationStore()
 
-function onNewContent (): void {
-  notificationStore.readWork()
-  fetch()
-}
 
 onMounted((): void => {
   fetch()

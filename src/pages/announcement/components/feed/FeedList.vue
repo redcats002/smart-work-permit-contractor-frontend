@@ -9,6 +9,7 @@
       :created-at="post.createdAt"
       :files="post.attachments"
       :image="post.author.image"
+      :is-read="post.isRead"
       :order="i"
       :role="post.author.role"
       @deleted="emits('refresh')"

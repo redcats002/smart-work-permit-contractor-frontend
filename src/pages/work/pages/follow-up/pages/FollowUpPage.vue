@@ -3,7 +3,7 @@
     <NewContentButton
       :show="notificationStore.isNewWork"
       label="มีงานใหม่"
-      @click="onNewContent()" />
+      @click="fetch()" />
     <PageTitle />
     <WorkFilter
       v-model:search="search"
@@ -48,11 +48,6 @@ import useList from '../composables/useList'
 const { tab, tabItems } = useInit()
 const { search, items, pagination, sortBy, sortOrder, fetch, onClearFilters, onSearch } = useList(tab)
 const notificationStore = useNotificationStore()
-
-function onNewContent (): void {
-  notificationStore.readWork()
-  fetch()
-}
 
 
 onMounted((): void => {

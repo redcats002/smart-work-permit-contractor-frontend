@@ -1,5 +1,6 @@
 import { computed, ref, type Ref } from 'vue'
 import { toast } from '@/plugins/toast'
+import { useNotificationStore } from '@/stores/Notification'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IGetAnnouncementList, IUpdateAnnouncementPayload } from '@/models/request/announcement/AnnouncementReq.model'
 import type { IAnnouncementList } from '@/models/response/announcement/AnnouncementRes.model'
@@ -21,7 +22,7 @@ interface IUseList extends IUsePagination {
 const DEFAULT_LIMIT = 3
 export default function useList (): IUseList {
   const AnnouncementService: IAnnouncementProvider = new AnnouncementProvider()
-
+  const notificationStore = useNotificationStore()
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
   pagination.value.limit = DEFAULT_LIMIT
 
@@ -98,7 +99,10 @@ export default function useList (): IUseList {
     }
 
 
-    handleLoading((): Promise<void> => useFetch(isLoadMore))
+    handleLoading(async (): Promise<void> => {
+      await useFetch(isLoadMore)
+      await notificationStore.readAnnouncement()
+    })
   }
 
   async function loadMore (): Promise<void> {
