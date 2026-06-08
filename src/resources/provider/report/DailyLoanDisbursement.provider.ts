@@ -10,6 +10,7 @@ class DailyLoanDisbursementProvider extends HttpRequest implements IDailyLoanDis
   private urlPrefix: string = '/api/v1/management/report/daily-loan-disbursement'
 
   public async getDailyLoanDisbursementPaginate (query: IGetDailyLoanDisbursementList): Promise<TGetDailyLoanDisbursementListResponse> {
+    this.setLogHeaders({ menu: 'REPORT', subMenu: 'รายงานปล่อยสินเชื่อประจำวัน' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }

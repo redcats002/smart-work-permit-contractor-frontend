@@ -10,6 +10,7 @@ class LoanDisbursementSummaryProvider extends HttpRequest implements ILoanDisbur
   private urlPrefix: string = '/api/v1/management/report/loan-disbursement-summary'
 
   public async getLoanDisbursementSummaryPaginate (query: IGetLoanDisbursementSummaryList): Promise<TGetLoanDisbursementSummaryListResponse> {
+    this.setLogHeaders({ menu: 'REPORT', subMenu: 'รายงานสรุปการปล่อยสินเชื่อ' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }

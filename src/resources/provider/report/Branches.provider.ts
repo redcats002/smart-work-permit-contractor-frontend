@@ -10,6 +10,7 @@ class ReportBranchesProvider extends HttpRequest implements IReportBranchesProvi
   private urlPrefix: string = '/api/v1/management/report/branch-summary'
 
   public async getReportBranchesPaginate (query: IGetBranchSummaryReportList): Promise<TGetBranchSummaryReportListResponse> {
+    this.setLogHeaders({ menu: 'REPORT', subMenu: 'รายงานสาขา' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }

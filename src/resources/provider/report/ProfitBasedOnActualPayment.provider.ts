@@ -11,6 +11,7 @@ class ProfitBasedOnActualPaymentProvider extends HttpRequest implements IProfitB
 
   public async getProfitBasedOnActualPaymentPaginate (query: IGetProfitBasedOnActualPaymentList):
   Promise<TGetProfitBasedOnActualPaymentListResponse> {
+    this.setLogHeaders({ menu: 'REPORT', subMenu: 'รายงานกำไรตามการรับชำระจริง' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }

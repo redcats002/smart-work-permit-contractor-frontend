@@ -64,7 +64,7 @@ import { formatter } from '@/utils/Formatter'
 import type { IContractAssetDetail } from '@/models/response/contract-asset/ContractAssetRes.model'
 import type { TAssetStatus } from '@/enums/modules/asset/AssetStatus.enum'
 import { formatTitle } from '@/enums/modules/asset/AssetStatus.enum'
-import { formatTitle as formatTypeTitle } from '@/enums/modules/asset/AssetType.enum'
+import { formatTitle as formatTypeTitle, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
 import BaseActionMenu, { type IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import LinkText from '@/components/button/LinkText.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
@@ -90,7 +90,7 @@ const assetItems = computed((): IDisplayList[] => [
   { key: 'idNo', label: 'เลขที่หลักทรัพย์', value: props.detail.idNo },
   { key: 'type', label: 'ประเภทหลักทรัพย์', value: formatTypeTitle(props.detail.type) },
   { key: 'loanAmount', label: 'ยอดประเมินหลักทรัพย์', value: formatter.numberFormat(props.detail.contract.loanAmount) },
-  { key: 'address', label: 'ที่อยู่หลักทรัพย์', value: props.detail.realEstateForm?.address ?? '-' },
+  { key: 'address', label: 'ที่อยู่หลักทรัพย์', value: props.detail.realEstateForm?.address ?? '-', hidden: isVehicleAsset(props.detail.type) },
   { key: 'location', label: 'จุดจัดเก็บเอกสารหลักทรัพย์', value: props.detail.location?.name ?? '-' }
 ])
 

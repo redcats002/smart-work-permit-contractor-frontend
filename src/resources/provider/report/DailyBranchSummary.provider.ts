@@ -10,6 +10,7 @@ class DailyBranchSummaryProvider extends HttpRequest implements IDailyBranchSumm
   private urlPrefix: string = '/api/v1/management/report/daily-branch-summary'
 
   public async getDailyBranchSummaryPaginate (query: IGetDailyBranchSummaryList): Promise<TGetDailyBranchSummaryListResponse> {
+    this.setLogHeaders({ menu: 'REPORT', subMenu: 'รายงานสรุปประจำวันรวมทุกสาขา' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }

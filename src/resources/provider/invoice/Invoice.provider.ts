@@ -20,22 +20,27 @@ class InvoiceProvider extends HttpRequest implements IInvoiceProvider {
   private urlPrefix: string = '/api/v1/management/invoice'
 
   public async getInvoicePaginate (query: IGetInvoiceList): Promise<TGetInvoiceListResponse> {
+    this.setLogHeaders({ menu: 'DOCUMENT-FINANCE', subMenu: 'ใบแจ้งหนี้' })
     return this.get(this.urlPrefix, query)
   }
 
   public async getInvoiceById (invoiceId: TBaseParamsId): Promise<TGetInvoiceByIdResponse> {
+    this.setLogHeaders({ menu: 'DOCUMENT-FINANCE', subMenu: 'ใบแจ้งหนี้' })
     return this.get(`${this.urlPrefix}/${invoiceId}`)
   }
 
   public async getInvoiceInstallmentById (installmentId: TBaseParamsId): Promise<TGetInvoiceInstallmentByIdResponse> {
+    this.setLogHeaders({ menu: 'DOCUMENT-FINANCE', subMenu: 'ใบแจ้งหนี้' })
     return this.get(`${this.urlPrefix}/${installmentId}/installment`)
   }
 
   public async createInvoice (id: TBaseParamsId, payload: ICreateInvoicePayload[]): Promise<TActionInvoice> {
+    this.setLogHeaders({ menu: 'DOCUMENT-FINANCE', subMenu: 'ใบแจ้งหนี้' })
     return this.post(`${this.urlPrefix}/${id}`, { item: payload })
   }
 
   public async deleteInvoice (id: TBaseParamsId): Promise<TActionInvoice> {
+    this.setLogHeaders({ menu: 'DOCUMENT-FINANCE', subMenu: 'ใบแจ้งหนี้' })
     return this.delete(`${this.urlPrefix}/${id}`)
   }
 }

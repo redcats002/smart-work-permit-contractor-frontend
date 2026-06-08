@@ -12,6 +12,7 @@ class CurrentComparativeAccountProvider extends HttpRequest implements ICurrentC
   public async getCurrentComparativeAccountPaginate (
     query: IGetCurrentComparativeList
   ): Promise<TGetCurrentComparativeAccountListResponse> {
+    this.setLogHeaders({ menu: 'REPORT', subMenu: 'รายงานสรุปบัญชีเทียบปัจจุบัน' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }

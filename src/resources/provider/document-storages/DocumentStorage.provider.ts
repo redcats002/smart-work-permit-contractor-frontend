@@ -32,26 +32,31 @@ class DocumentStorageProvider extends HttpRequest implements IDocumentStoragePro
   private urlPrefix: string = '/api/v1/management/document-storages'
 
   public async getDocumentAssetsPaginate (query?: IGetDocumentAssetsList): Promise<TGetDocumentAssetsListResponse> {
+    this.setLogHeaders({ menu: 'DOCUMENT-STORAGE', subMenu: 'รายการเอกสารหลักทรัพย์' })
     const response = await this.get(`${this.urlPrefix}/assets`, query)
     return response
   }
 
   public async getDocumentMovementPaginate (query?: IGetDocumentMovementList): Promise<TGetDocumentMovementListResponse> {
+    this.setLogHeaders({ menu: 'DOCUMENT-STORAGE', subMenu: 'ย้ายเอกสาร' })
     const response = await this.get(`${this.urlPrefix}/movement`, query)
     return response
   }
 
   public async getDocumentMovementFindOne (id: TBaseParamsId): Promise<TGetDocumentMovementByIdResponse> {
+    this.setLogHeaders({ menu: 'DOCUMENT-STORAGE', subMenu: 'ย้ายเอกสาร' })
     const response = await this.get(`${this.urlPrefix}/movement/${id}`)
     return response
   }
 
   public async createDocumentMovement (payload: ICreateDocumentMovementPayload): Promise<TActionDocumentMovement> {
+    this.setLogHeaders({ menu: 'DOCUMENT-STORAGE', subMenu: 'ย้ายเอกสาร > สร้างการย้ายเอกสารใหม่' })
     const response = await this.post(`${this.urlPrefix}/movement`, payload)
     return response
   }
 
   public async receiveDocumentMovement (id: TBaseParamsId, payload: IReceiveDocumentMovementPayload): Promise<TActionDocumentMovement> {
+    this.setLogHeaders({ menu: 'DOCUMENT-STORAGE', subMenu: 'ย้ายเอกสาร > รับเอกสาร' })
     const response = await this.put(`${this.urlPrefix}/movement/${id}`, payload)
     return response
   }
@@ -60,11 +65,13 @@ class DocumentStorageProvider extends HttpRequest implements IDocumentStoragePro
     warehouseId: TBaseParamsId,
     query?: IGetDocumentMovementAssetsList
   ): Promise<TGetDocumentMovementAssetsListResponse> {
+    this.setLogHeaders({ menu: 'DOCUMENT-STORAGE', subMenu: 'ย้ายเอกสาร' })
     const response = await this.get(`${this.urlPrefix}/movement/${warehouseId}/assets`, query)
     return response
   }
 
   public async cancelledDocumentMovement (id: TBaseParamsId): Promise<TActionDocumentMovement> {
+    this.setLogHeaders({ menu: 'DOCUMENT-STORAGE', subMenu: 'ย้ายเอกสาร > ยกเลิกเอกสาร' })
     const response = await this.delete(`${this.urlPrefix}/movement/${id}`)
     return response
   }
