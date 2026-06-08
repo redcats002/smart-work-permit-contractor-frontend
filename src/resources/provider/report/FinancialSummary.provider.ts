@@ -10,7 +10,7 @@ class FinancialSummaryProvider extends HttpRequest implements IFinancialSummaryP
   private urlPrefix: string = '/api/v1/management/report/financial-summary'
 
   public async getFinancialSummaryPaginate (query: IGetFinancialSummaryReportList): Promise<TGetFinancialSummaryReportListResponse> {
-    this.setLogHeaders({ menu: 'REPORT' })
+    this.setLogHeaders({ menu: 'REPORT', subMenu: 'รายงานสรุปรับ / ปล่อยสินเชื่อ / ค่าใช้จ่าย' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }

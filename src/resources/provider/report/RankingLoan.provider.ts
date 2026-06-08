@@ -10,7 +10,7 @@ class RankingLoanProvider extends HttpRequest implements IRankingLoanProvider {
   private urlPrefix: string = '/api/v1/management/report/ranking-loan'
 
   public async getRankingLoanList (query: IGetRankLoanList): Promise<TGetRankLoanListResponse> {
-    this.setLogHeaders({ menu: 'REPORT' })
+    this.setLogHeaders({ menu: 'REPORT', subMenu: 'รายงาน 1 - 25 การรับสินเชื่อ' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }

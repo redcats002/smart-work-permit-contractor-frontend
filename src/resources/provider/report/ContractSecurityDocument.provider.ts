@@ -12,7 +12,7 @@ class ContractSecurityDocumentProvider extends HttpRequest implements IContractS
   public async getContractSecurityDocumentPaginate (
     query: IGetContractSecurityDocumentReportList
   ): Promise<TGetContractSecurityDocumentReportListResponse> {
-    this.setLogHeaders({ menu: 'REPORT' })
+    this.setLogHeaders({ menu: 'REPORT', subMenu: 'รายงานสัญญาและเอกสารหลักทรัพย์' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }

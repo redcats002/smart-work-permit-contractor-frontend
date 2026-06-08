@@ -10,7 +10,7 @@ class BranchIncomeExpenseProvider extends HttpRequest implements IBranchIncomeEx
   private urlPrefix: string = '/api/v1/management/report/branch-income-expense'
 
   public async getBranchIncomeExpensePaginate (query: IGetBranchIncomeExpenseList): Promise<TGetBranchIncomeExpenseListResponse> {
-    this.setLogHeaders({ menu: 'REPORT' })
+    this.setLogHeaders({ menu: 'REPORT', subMenu: 'รายงานการรับ/จ่ายประจำสาขา' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }

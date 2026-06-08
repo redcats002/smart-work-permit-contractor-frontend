@@ -10,7 +10,7 @@ class DailyInstallmentPaymentProvider extends HttpRequest implements IDailyInsta
   private urlPrefix: string = '/api/v1/management/report/daily-installment-payment'
 
   public async getDailyInstallmentPaymentPaginate (query: IGetDailyInstallmentList): Promise<TGetDailyInstallmentPaymentListResponse> {
-    this.setLogHeaders({ menu: 'REPORT' })
+    this.setLogHeaders({ menu: 'REPORT', subMenu: 'รายงานรับชำระค่างวดประจำวัน' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }
