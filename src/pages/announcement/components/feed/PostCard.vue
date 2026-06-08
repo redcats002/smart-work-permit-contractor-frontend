@@ -23,7 +23,7 @@
             </span>
 
             <span
-              v-if="order === 0"
+              v-if="!isRead"
               class="bg-primary text-white text-xs px-2 py-0.5 rounded-full">
               ใหม่
             </span>
@@ -85,6 +85,7 @@ interface IProps {
   content: string
   authorName: string
   role: TEmployeeRole
+  isRead: boolean
   createdAt: string
 }
 

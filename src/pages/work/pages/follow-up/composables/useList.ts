@@ -1,4 +1,5 @@
 import { computed, ref, type Ref } from 'vue'
+import { useNotificationStore } from '@/stores/Notification'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IGetDebtCollectionList } from '@/models/request/work/WorkReq.model'
 import type { IDebtCollectionList } from '@/models/response/work/WorkRes.model'
@@ -18,6 +19,7 @@ interface IUseList extends IUsePagination {
 
 export default function useList (tab: Ref<TFollowUpTab>): IUseList {
   const WorkService: IWorkProvider = new WorkProvider()
+  const notificationStore = useNotificationStore()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
@@ -47,7 +49,10 @@ export default function useList (tab: Ref<TFollowUpTab>): IUseList {
   }
 
   function fetch (): void {
-    handleLoading(useFetch)
+    handleLoading(async () => {
+      await useFetch()
+      await notificationStore.readWork()
+    })
   }
 
   function onClearFilters (): void {
