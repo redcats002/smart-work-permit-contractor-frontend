@@ -13,23 +13,23 @@ class AnnouncementProvider extends HttpRequest implements IAnnouncementProvider 
   private urlPrefix: string = '/api/v1/management/announcement'
 
   public async getAnnouncementPaginate (query: IGetAnnouncementList): Promise<TGetAnnouncementListResponse> {
-    const response = await this.get(`${this.urlPrefix}`, query)
-    return response
+    this.setLogHeaders({ menu: 'ANNOUNCEMENT' })
+    return this.get(this.urlPrefix, query)
   }
 
   public async createAnnouncement (payload: ICreateAnnouncementPayload): Promise<TActionAnnouncement> {
-    const response = await this.post(`${this.urlPrefix}`, payload)
-    return response
+    this.setLogHeaders({ menu: 'ANNOUNCEMENT' })
+    return this.post(this.urlPrefix, payload)
   }
 
   public async updateAnnouncement (id: number, payload: IUpdateAnnouncementPayload): Promise<TActionAnnouncement> {
-    const response = await this.put(`${this.urlPrefix}/${id}`, payload)
-    return response
+    this.setLogHeaders({ menu: 'ANNOUNCEMENT' })
+    return this.put(`${this.urlPrefix}/${id}`, payload)
   }
 
   public async deleteAnnouncement (id: number): Promise<TActionAnnouncement> {
-    const response = await this.delete(`${this.urlPrefix}/${id}`)
-    return response
+    this.setLogHeaders({ menu: 'ANNOUNCEMENT' })
+    return this.delete(`${this.urlPrefix}/${id}`)
   }
 }
 

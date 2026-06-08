@@ -21,21 +21,25 @@ class ContractHistoryProvider extends HttpRequest implements IContractHistoryPro
   private urlPrefix: string = '/api/v1/management/contract-contact-history'
 
   public async getContractHistoryList (id: TBaseParamsId, query?: IGetContactHistoryList): Promise<TGetContractHistoryListResponse> {
+    this.setLogHeaders({ menu: 'CONTRACT', subMenu: 'สัญญา > ประวัติการติดต่อ' })
     const response = await this.get(`${this.urlPrefix}/paginate/${id}`, query)
     return response
   }
 
   public async getContractHistoryById (id: TBaseParamsId): Promise<TGetContractHistoryByIdResponse> {
+    this.setLogHeaders({ menu: 'CONTRACT', subMenu: 'สัญญา > ประวัติการติดต่อ' })
     const response = await this.get(`${this.urlPrefix}/${id}`)
     return response
   }
 
   public async createContractHistory (id: TBaseParamsId, payload: ICreateContractHistoryPayload): Promise<TActionContractHistoryResponse> {
+    this.setLogHeaders({ menu: 'CONTRACT', subMenu: 'สัญญา > ประวัติการติดต่อ' })
     const response = await this.post(`${this.urlPrefix}/${id}`, payload)
     return response
   }
 
   public async deleteContractHistory (id: TBaseParamsId): Promise<TActionContractHistoryResponse> {
+    this.setLogHeaders({ menu: 'CONTRACT', subMenu: 'สัญญา > ประวัติการติดต่อ' })
     const response = await this.delete(`${this.urlPrefix}/${id}`)
     return response
   }

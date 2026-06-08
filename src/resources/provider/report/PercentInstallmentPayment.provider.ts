@@ -12,6 +12,7 @@ class PercentInstallmentPaymentProvider extends HttpRequest implements IPercentI
   public async getPercentInstallmentPaymentPaginate (
     query: IGetPercentInstallmentList
   ): Promise<TGetPercentInstallmentListResponse> {
+    this.setLogHeaders({ menu: 'REPORT' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }

@@ -20,22 +20,27 @@ class ExpensesProvider extends HttpRequest implements IExpensesProvider {
   private urlPrefix: string = '/api/v1/management/record-expense'
 
   public async getExpensesPaginate (query: IGetExpensesList): Promise<TGetExpensesListResponse> {
+    this.setLogHeaders({ menu: 'DOCUMENT-FINANCE', subMenu: 'บันทึกค่าใช้จ่าย' })
     return this.get(this.urlPrefix, query)
   }
 
   public async getExpensesById (id: TBaseParamsId): Promise<TGetExpensesDetailResponse> {
+    this.setLogHeaders({ menu: 'DOCUMENT-FINANCE', subMenu: 'บันทึกค่าใช้จ่าย' })
     return this.get(`${this.urlPrefix}/${id}`)
   }
 
   public async createExpenses (payload: ICreateExpensesPayload): Promise<TCreateExpensesResponse> {
+    this.setLogHeaders({ menu: 'DOCUMENT-FINANCE', subMenu: 'บันทึกค่าใช้จ่าย > เพิ่มบันทึกค่าใช้จ่ายใหม่' })
     return this.post(this.urlPrefix, payload)
   }
 
   public async updateExpenses (id: TBaseParamsId, payload: IUpdateExpensesPayload): Promise<TCreateExpensesResponse> {
+    this.setLogHeaders({ menu: 'DOCUMENT-FINANCE', subMenu: 'บันทึกค่าใช้จ่าย' })
     return this.put(`${this.urlPrefix}/${id}`, payload)
   }
 
   public async deleteExpenses (id: TBaseParamsId): Promise<TActionExpenses> {
+    this.setLogHeaders({ menu: 'DOCUMENT-FINANCE', subMenu: 'บันทึกค่าใช้จ่าย' })
     return this.delete(`${this.urlPrefix}/${id}`)
   }
 }

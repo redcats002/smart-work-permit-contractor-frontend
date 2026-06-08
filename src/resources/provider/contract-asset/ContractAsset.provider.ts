@@ -19,22 +19,27 @@ class ContractAssetProvider extends HttpRequest implements IContractAssetProvide
   private urlPrefix: string = '/api/v1/management/contract-assets'
 
   async getContractAssetPaginate (query: IGetContractAssetList): Promise<TGetContractAssetListResponse> {
+    this.setLogHeaders({ menu: 'CONTRACT-ASSETS' })
     return this.get(this.urlPrefix, query)
   }
 
   async getContractAssetDetail (id: number): Promise<IGetContractAssetDetailResponse> {
+    this.setLogHeaders({ menu: 'CONTRACT-ASSETS' })
     return this.get(`${this.urlPrefix}/${id}`)
   }
 
   async sellContractAsset (id: number, payload: ISellContractAssetPayload): Promise<IActionContractAssetResponse> {
+    this.setLogHeaders({ menu: 'CONTRACT-ASSETS', subMenu: 'ขายต่อ/ประมูล' })
     return this.patch(`${this.urlPrefix}/${id}/sell`, payload)
   }
 
   async updateContractAssetStatus (id: number, payload: IUpdateContractAssetStatusPayload): Promise<IActionContractAssetResponse> {
+    this.setLogHeaders({ menu: 'CONTRACT-ASSETS', subMenu: 'แก้ไขสถานะหลักทรัพย์' })
     return this.patch(`${this.urlPrefix}/status/${id}`, payload)
   }
 
   async getDocumentMovement (id: number, query: IGetDocumentMovementList): Promise<TGetDocumentMovementListResponse> {
+    this.setLogHeaders({ menu: 'CONTRACT-ASSETS', subMenu: 'ประวัติการจัดเก็บเอกสาร' })
     return this.get(`${this.urlPrefix}/document-movement/${id}`, query)
   }
 }

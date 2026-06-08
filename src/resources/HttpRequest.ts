@@ -1,16 +1,20 @@
 import axios, { type AxiosInstance } from 'axios'
-import { getCurrentMenu, getCurrentPath } from '@/utils/RouterHeader'
 import { onRequest, onRequestError, onResponse, onResponseError } from './Interceptors'
+
+export interface IActionLogHeaders {
+  menu: string
+  subMenu?: string
+}
 
 interface IHttpRequest {
   axiosInstance: AxiosInstance
   setHeader(data: ISetHeader): void
-  get(endPoint: string, data: object, config?: object): Promise<any>
+  get(endPoint: string, data?: object, config?: object): Promise<any>
   download(endPoint: string, data?: object): Promise<any>
-  post(endPoint: string, data: object, config?: object): Promise<any>
+  post(endPoint: string, data?: object, config?: object): Promise<any>
   put(endPoint: string, data: object, config?: object): Promise<any>
-  patch(endPoint: string, data: object, config?: object): Promise<any>
-  delete(endPoint: string, params?: object, data?: object): Promise<any>
+  patch(endPoint: string, data?: object, config?: object): Promise<any>
+  delete(endPoint: string, params?: object, data?: object, config?: object): Promise<any>
 }
 
 export interface ISetHeader {
@@ -20,6 +24,8 @@ export interface ISetHeader {
 
 class HttpRequest implements IHttpRequest {
   private url: string
+
+  private _logHeaders: Record<string, string> = {}
 
   public axiosInstance: AxiosInstance
 
@@ -40,10 +46,13 @@ class HttpRequest implements IHttpRequest {
     })
 
     this.axiosInstance.interceptors.request.use((config: any): any => {
-      const path: string = getCurrentPath()
-      const menu: string = getCurrentMenu()
-      if (path) config.headers['x-current-path'] = encodeURIComponent(path)
-      if (menu) config.headers['x-current-menu'] = encodeURIComponent(menu)
+      Object.assign(config.headers, this._logHeaders)
+      this._logHeaders = {}
+      if (config.url) config.headers['x-current-path'] = encodeURIComponent(config.url)
+      const payload: unknown = config.params ?? config.data
+      if (payload != null) {
+        config.headers['x-current-payload'] = typeof payload === 'string' ? encodeURIComponent(payload) : encodeURIComponent(JSON.stringify(payload))
+      }
       return onRequest(config)
     }, onRequestError)
 
@@ -82,11 +91,17 @@ class HttpRequest implements IHttpRequest {
     return this.axiosInstance.patch(endPoint, data, config)
   }
 
-  public delete (endPoint: string, params?: object, data?: object): Promise<any> {
+  public delete (endPoint: string, params?: object, data?: object, config?: object): Promise<any> {
     return this.axiosInstance.delete(endPoint, {
       params,
-      data
+      data,
+      ...config
     })
+  }
+
+  protected setLogHeaders (opts: IActionLogHeaders): void {
+    this._logHeaders = { 'x-current-menu': opts.menu }
+    if (opts.subMenu) this._logHeaders['x-current-sub-menu'] = encodeURIComponent(opts.subMenu)
   }
 }
 

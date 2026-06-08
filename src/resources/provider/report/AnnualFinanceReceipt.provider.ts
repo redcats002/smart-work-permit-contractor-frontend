@@ -10,6 +10,7 @@ class AnnualFinanceReceiptProvider extends HttpRequest implements IAnnualFinance
   private urlPrefix: string = '/api/v1/management/report/annual-finance-receipt'
 
   public async getAnnualFinanceReceiptPaginate (query: IGetAnnualFinanceReceiptList): Promise<TGetAnnualFinanceReceiptListResponse> {
+    this.setLogHeaders({ menu: 'REPORT' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }

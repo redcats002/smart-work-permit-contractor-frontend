@@ -23,26 +23,31 @@ class ContractExpenseProvider extends HttpRequest implements IContractExpensePro
   private urlPrefix: string = '/api/v1/management/contract-expense'
 
   public async getExpenseList (id: TBaseParamsId, query?: IGetExpenseList): Promise<TGetContractExpenseListResponse> {
+    this.setLogHeaders({ menu: 'CONTRACT', subMenu: 'สัญญา > ค่าใช้จ่าย' })
     const response = await this.get(`${this.urlPrefix}/paginate/${id}`, query)
     return response
   }
 
   public async getExpenseById (id: TBaseParamsId): Promise<TGetContractExpenseByIdResponse> {
+    this.setLogHeaders({ menu: 'CONTRACT', subMenu: 'สัญญา > ค่าใช้จ่าย' })
     const response = await this.get(`${this.urlPrefix}/${id}`)
     return response
   }
 
   public async createExpense (id: TBaseParamsId, payload: ICreateExpense): Promise<TActionContractExpenseResponse> {
+    this.setLogHeaders({ menu: 'CONTRACT', subMenu: 'สัญญา > ค่าใช้จ่าย' })
     const response = await this.post(`${this.urlPrefix}/${id}`, payload)
     return response
   }
 
   public async updateExpense (id: TBaseParamsId, payload: IUpdateExpense): Promise<TActionContractExpenseResponse> {
+    this.setLogHeaders({ menu: 'CONTRACT', subMenu: 'สัญญา > ค่าใช้จ่าย' })
     const response = await this.put(`${this.urlPrefix}/${id}`, payload)
     return response
   }
 
   public async deleteExpense (id: TBaseParamsId): Promise<TActionContractExpenseResponse> {
+    this.setLogHeaders({ menu: 'CONTRACT', subMenu: 'สัญญา > ค่าใช้จ่าย' })
     const response = await this.delete(`${this.urlPrefix}/${id}`)
     return response
   }

@@ -12,6 +12,7 @@ class OverdueCustomerProvider extends HttpRequest implements IOverdueCustomerPro
   public async getOverdueCustomerPaginate (
     query: IGetOverdueCustomerList
   ): Promise<TGetOverdueCustomerListResponse> {
+    this.setLogHeaders({ menu: 'REPORT' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }

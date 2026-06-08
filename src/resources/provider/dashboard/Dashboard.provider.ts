@@ -12,14 +12,17 @@ class DashboardProvider extends HttpRequest implements IDashboardProvider {
   private urlPrefix: string = '/api/v1/management/dashboard'
 
   async getCard (query: IDashboardCardQuery): Promise<TDashboardCardResponse> {
+    this.setLogHeaders({ menu: 'DASHBOARD' })
     return this.get(`${this.urlPrefix}/card`, query)
   }
 
   async getChartMarket (query: IDashboardChartQuery): Promise<TDashboardChartResponse> {
+    this.setLogHeaders({ menu: 'DASHBOARD' })
     return this.get(`${this.urlPrefix}/chart-market`, query)
   }
 
   async getChartLoan (query: IDashboardChartQuery): Promise<TDashboardChartResponse> {
+    this.setLogHeaders({ menu: 'DASHBOARD' })
     return this.get(`${this.urlPrefix}/chart-loan`, query)
   }
 }

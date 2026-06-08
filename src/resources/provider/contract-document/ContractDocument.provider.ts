@@ -22,26 +22,31 @@ class ContractDocumentProvider extends HttpRequest implements IContractDocumentP
   private urlPrefix: string = '/api/v1/management/contract-document'
 
   public async getDocumentList (id: TBaseParamsId, query?: IGetDocumentList): Promise<TGetDocumentListResponse> {
+    this.setLogHeaders({ menu: 'CONTRACT', subMenu: 'สัญญา > รายการเอกสาร' })
     const response = await this.get(`${this.urlPrefix}/paginate/${id}`, query)
     return response
   }
 
   public async getDocumentById (id: TBaseParamsId): Promise<TGetDocumentListResponse> {
+    this.setLogHeaders({ menu: 'CONTRACT', subMenu: 'สัญญา > รายการเอกสาร' })
     const response = await this.get(`${this.urlPrefix}/${id}`)
     return response
   }
 
   public async createDocument (contractId: TBaseParamsId, payload: ICreateDocument): Promise<TActionContractDocumentResponse> {
+    this.setLogHeaders({ menu: 'CONTRACT', subMenu: 'สัญญา > รายการเอกสาร' })
     const response = await this.post(`${this.urlPrefix}/${contractId}`, payload)
     return response
   }
 
   public async updateDocument (id: TBaseParamsId, payload: IUpdateDocument): Promise<TActionContractDocumentResponse> {
+    this.setLogHeaders({ menu: 'CONTRACT', subMenu: 'สัญญา > รายการเอกสาร' })
     const response = await this.put(`${this.urlPrefix}/${id}`, payload)
     return response
   }
 
   public async deleteDocument (documentId: TBaseParamsId): Promise<TActionContractDocumentResponse> {
+    this.setLogHeaders({ menu: 'CONTRACT', subMenu: 'สัญญา > รายการเอกสาร' })
     const response = await this.delete(`${this.urlPrefix}/${documentId}`)
     return response
   }

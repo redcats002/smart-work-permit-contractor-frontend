@@ -12,6 +12,7 @@ class OutstandingDebtorProvider extends HttpRequest implements IOutstandingDebto
   public async getOutstandingDebtorPaginate (
     query: IGetOutstandingDebtorList
   ): Promise<TGetOutstandingDebtorListResponse> {
+    this.setLogHeaders({ menu: 'REPORT' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }
