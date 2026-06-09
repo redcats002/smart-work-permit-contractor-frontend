@@ -2,8 +2,8 @@
   <Dialog
     v-bind="$attrs"
     v-model:visible="visible"
+    :class="size === 'wide' ? 'md:w-[75vw] max-w-[1200px] w-9/10' : 'md:w-220 w-9/10'"
     :dismissable-mask="dismissableMask"
-    class="md:w-220 w-9/10"
     modal
     @hide="close()"
     @show="open()">
@@ -65,6 +65,7 @@ interface IProps {
   label?: string
   headerAlign?: 'left' | 'center'
   dismissableMask?: boolean
+  size?: 'default' | 'wide'
 }
 
 interface IEmits {
@@ -76,7 +77,8 @@ interface IEmits {
 withDefaults(defineProps<IProps>(), {
   label: '',
   headerAlign: 'left',
-  dismissableMask: true
+  dismissableMask: true,
+  size: 'default'
 })
 const emits = defineEmits<IEmits>()
 

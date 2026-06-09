@@ -19,26 +19,31 @@ class CustomerGroupProvider extends HttpRequest implements ICustomerGroupProvide
   private urlPrefix: string = '/api/v1/management/customer-group'
 
   public async getCustomerGroupPaginate (query: IGetCustomerGroupList): Promise<TGetCustomerGroupListResponse> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'กลุ่มลูกค้า' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }
 
   public async createCustomerGroup (payload: ICreateCustomerGroupPayload): Promise<TActionCustomerGroup> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'กลุ่มลูกค้า' })
     const response = await this.post(`${this.urlPrefix}`, payload)
     return response
   }
 
   public async updateCustomerGroup (id: TBaseParamsId, payload: IUpdateCustomerGroupPayload): Promise<TActionCustomerGroup> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'กลุ่มลูกค้า' })
     const response = await this.put(`${this.urlPrefix}/${id}`, payload)
     return response
   }
 
   public async deleteCustomerGroup (id: TBaseParamsId): Promise<TActionCustomerGroup> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'กลุ่มลูกค้า' })
     const response = await this.delete(`${this.urlPrefix}/${id}`)
     return response
   }
 
   public async getCustomerGroupFindOne (id: TBaseParamsId): Promise<TGetCustomerGroupByIdResponse> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'กลุ่มลูกค้า' })
     const response = await this.get(`${this.urlPrefix}/${id}`)
     return response
   }

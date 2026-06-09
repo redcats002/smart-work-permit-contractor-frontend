@@ -21,32 +21,38 @@ class WarehouseProvider extends HttpRequest implements IWarehouseProvider {
   private urlPrefix: string = '/api/v1/management/warehouse'
 
   public async getWarehousePaginate (query: IGetWarehouseList): Promise<TGetWarehouseListResponse> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'คลังสินค้า' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }
 
   public async createWarehouse (payload: ICreateWarehousePayload): Promise<TActionWarehouse> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'คลังสินค้า' })
     const response = await this.post(`${this.urlPrefix}`, payload)
     return response
   }
 
   public async updateWarehouse (id: TBaseParamsId, payload: IUpdateWarehousePayload): Promise<TActionWarehouse> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'คลังสินค้า' })
     const response = await this.put(`${this.urlPrefix}/${id}`, payload)
     return response
   }
 
   public async deleteWarehouse (id: number): Promise<TActionWarehouse> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'คลังสินค้า' })
     const response = await this.delete(`${this.urlPrefix}/${id}`)
     return response
   }
 
   public async getWarehouseFindOne (id: TBaseParamsId): Promise<TGetWarehouseByIdResponse> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'คลังสินค้า' })
     const response = await this.get(`${this.urlPrefix}/${id}`)
     return response
   }
 
 
   public async getLocationPaginate (query: IGetLocationList): Promise<TGetLocationListResponse> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'คลังสินค้า' })
     const response = await this.get(`${this.urlPrefix}/location/pagination`, query)
     return response
   }

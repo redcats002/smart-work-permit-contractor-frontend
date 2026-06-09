@@ -15,26 +15,31 @@ class HowDidFindUsProvider extends HttpRequest implements IHowDidFindUsProvider 
   private urlPrefix: string = '/api/v1/management/how-did-find-us'
 
   public async getHowDidFindUsPaginate (query: IGetHowDidFindUsList): Promise<TGetHowDidFindUsListResponse> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'ช่องทางการรู้จักเรา' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }
 
   public async createHowDidFindUs (payload: ICreateHowDidFindUsPayload): Promise<TActionHowDidFindUs> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'ช่องทางการรู้จักเรา' })
     const response = await this.post(`${this.urlPrefix}`, payload)
     return response
   }
 
   public async updateHowDidFindUs (id: TBaseParamsId, payload: IUpdateHowDidFindUsPayload): Promise<TActionHowDidFindUs> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'ช่องทางการรู้จักเรา' })
     const response = await this.put(`${this.urlPrefix}/${id}`, payload)
     return response
   }
 
   public async deleteHowDidFindUs (id: TBaseParamsId): Promise<TActionHowDidFindUs> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'ช่องทางการรู้จักเรา' })
     const response = await this.delete(`${this.urlPrefix}/${id}`)
     return response
   }
 
   public async getHowDidFindUsFindOne (id: TBaseParamsId): Promise<TGetHowDidFindUsByIdResponse> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'ช่องทางการรู้จักเรา' })
     const response = await this.get(`${this.urlPrefix}/${id}`)
     return response
   }

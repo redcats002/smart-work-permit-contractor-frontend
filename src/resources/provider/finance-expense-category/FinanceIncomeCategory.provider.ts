@@ -23,11 +23,13 @@ class FinanceExpenseCategoryProvider extends HttpRequest implements IFinanceExpe
   private urlPrefix: string = '/api/v1/management/finance-expense-category'
 
   public async getFinanceExpenseCategoryPaginate (query: IGetFinanceExpenseCategoryList): Promise<TGetFinanceExpenseCategoryListResponse> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'หมวดหมู่ค่าใช้จ่าย' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }
 
   public async createFinanceExpenseCategory (payload: ICreateFinanceExpenseCategoryPayload): Promise<TActionFinanceExpenseCategory> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'หมวดหมู่ค่าใช้จ่าย' })
     const response = await this.post(`${this.urlPrefix}`, payload)
     return response
   }
@@ -36,16 +38,19 @@ class FinanceExpenseCategoryProvider extends HttpRequest implements IFinanceExpe
     id: TBaseParamsId,
     payload: IUpdateFinanceExpenseCategoryPayload
   ): Promise<TActionFinanceExpenseCategory> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'หมวดหมู่ค่าใช้จ่าย' })
     const response = await this.put(`${this.urlPrefix}/${id}`, payload)
     return response
   }
 
   public async deleteFinanceExpenseCategory (id: TBaseParamsId): Promise<TActionFinanceExpenseCategory> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'หมวดหมู่ค่าใช้จ่าย' })
     const response = await this.delete(`${this.urlPrefix}/${id}`)
     return response
   }
 
   public async getFinanceExpenseCategoryFindOne (id: TBaseParamsId): Promise<TGetFinanceExpenseCategoryByIdResponse> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'หมวดหมู่ค่าใช้จ่าย' })
     const response = await this.get(`${this.urlPrefix}/${id}`)
     return response
   }

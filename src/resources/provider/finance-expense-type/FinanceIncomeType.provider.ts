@@ -23,26 +23,31 @@ class FinanceExpenseTypeProvider extends HttpRequest implements IFinanceExpenseT
   private urlPrefix: string = '/api/v1/management/finance-expense-type'
 
   public async getFinanceExpenseTypePaginate (query: IGetFinanceExpenseTypeList): Promise<TGetFinanceExpenseTypeListResponse> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'ประเภทค่าใช้จ่าย' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }
 
   public async createFinanceExpenseType (payload: ICreateFinanceExpenseTypePayload): Promise<TActionFinanceExpenseType> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'ประเภทค่าใช้จ่าย' })
     const response = await this.post(`${this.urlPrefix}`, payload)
     return response
   }
 
   public async updateFinanceExpenseType (id: TBaseParamsId, payload: IUpdateFinanceExpenseTypePayload): Promise<TActionFinanceExpenseType> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'ประเภทค่าใช้จ่าย' })
     const response = await this.put(`${this.urlPrefix}/${id}`, payload)
     return response
   }
 
   public async deleteFinanceExpenseType (id: TBaseParamsId): Promise<TActionFinanceExpenseType> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'ประเภทค่าใช้จ่าย' })
     const response = await this.delete(`${this.urlPrefix}/${id}`)
     return response
   }
 
   public async getFinanceExpenseTypeFindOne (id: TBaseParamsId): Promise<TGetFinanceExpenseTypeByIdResponse> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'ประเภทค่าใช้จ่าย' })
     const response = await this.get(`${this.urlPrefix}/${id}`)
     return response
   }

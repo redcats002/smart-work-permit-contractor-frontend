@@ -23,26 +23,31 @@ class FinanceIncomeTypeProvider extends HttpRequest implements IFinanceIncomeTyp
   private urlPrefix: string = '/api/v1/management/finance-income-type'
 
   public async getFinanceIncomeTypePaginate (query: IGetFinanceIncomeTypeList): Promise<TGetFinanceIncomeTypeListResponse> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'ประเภทรายได้' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }
 
   public async createFinanceIncomeType (payload: ICreateFinanceIncomeTypePayload): Promise<TActionFinanceIncomeType> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'ประเภทรายได้' })
     const response = await this.post(`${this.urlPrefix}`, payload)
     return response
   }
 
   public async updateFinanceIncomeType (id: TBaseParamsId, payload: IUpdateFinanceIncomeTypePayload): Promise<TActionFinanceIncomeType> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'ประเภทรายได้' })
     const response = await this.put(`${this.urlPrefix}/${id}`, payload)
     return response
   }
 
   public async deleteFinanceIncomeType (id: TBaseParamsId): Promise<TActionFinanceIncomeType> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'ประเภทรายได้' })
     const response = await this.delete(`${this.urlPrefix}/${id}`)
     return response
   }
 
   public async getFinanceIncomeTypeFindOne (id: TBaseParamsId): Promise<TGetFinanceIncomeTypeByIdResponse> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'ประเภทรายได้' })
     const response = await this.get(`${this.urlPrefix}/${id}`)
     return response
   }

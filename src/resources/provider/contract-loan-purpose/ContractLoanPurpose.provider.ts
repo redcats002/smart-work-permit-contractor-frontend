@@ -23,26 +23,31 @@ class ContractLoanPurposeProvider extends HttpRequest implements IContractLoanPu
   private urlPrefix: string = '/api/v1/management/contract-loan-purpose'
 
   public async getContractLoanPurposePaginate (query: IGetContractLoanPurposeList): Promise<TGetContractLoanPurposeListResponse> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'วัตถุประสงค์สินเชื่อ' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }
 
   public async createContractLoanPurpose (payload: ICreateContractLoanPurposePayload): Promise<TActionContractLoanPurpose> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'วัตถุประสงค์สินเชื่อ' })
     const response = await this.post(`${this.urlPrefix}`, payload)
     return response
   }
 
   public async updateContractLoanPurpose (id: TBaseParamsId, payload: IUpdateContractLoanPurposePayload): Promise<TActionContractLoanPurpose> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'วัตถุประสงค์สินเชื่อ' })
     const response = await this.put(`${this.urlPrefix}/${id}`, payload)
     return response
   }
 
   public async deleteContractLoanPurpose (id: TBaseParamsId): Promise<TActionContractLoanPurpose> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'วัตถุประสงค์สินเชื่อ' })
     const response = await this.delete(`${this.urlPrefix}/${id}`)
     return response
   }
 
   public async getContractLoanPurposeFindOne (id: TBaseParamsId): Promise<TGetContractLoanPurposeByIdResponse> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'วัตถุประสงค์สินเชื่อ' })
     const response = await this.get(`${this.urlPrefix}/${id}`)
     return response
   }

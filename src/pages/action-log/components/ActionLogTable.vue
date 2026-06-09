@@ -21,7 +21,7 @@
         class="flex justify-center">
         <Button
           class="p-1.5 rounded"
-          @click="openCompare(item.id)">
+          @click="openCompare(item.id, item.frontendMenuName)">
           <Icon
             icon="mdi:compare"
             width="18" />
@@ -31,7 +31,8 @@
   </BaseTable>
   <ModalActionLogCompare
     :id="compareId"
-    v-model="compareVisible" />
+    v-model="compareVisible"
+    :module="compareModule" />
 </template>
 
 <script setup lang="ts">
@@ -73,9 +74,11 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const compareVisible = ref(false)
 const compareId = ref<string | number>(0)
+const compareModule = ref('')
 
-function openCompare (id: string | number): void {
+function openCompare (id: string | number, module: string): void {
   compareId.value = id
+  compareModule.value = module
   compareVisible.value = true
 }
 
