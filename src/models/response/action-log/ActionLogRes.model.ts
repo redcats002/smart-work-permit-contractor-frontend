@@ -3,16 +3,19 @@ import type { ActionLogType } from '@/enums/modules/action-log/ActionLogType.enu
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 
 export interface IActionLogList extends IEntity {
-  createdAtDate: string
-  createdAtTime: string
-  userId?: number // TODO: future key
+  createdAtDate: Date
+  createdAtTime: Date
   userNo: string
   userName: string
   frontendMenuName: string
+  frontendSubMenuName: string
+  payload: string
   action: ActionLogType
   ref: string
   branch: string
 }
+
+
 export interface IActionLogById extends IEntity {}
 
 export interface IActionLogCompare {
