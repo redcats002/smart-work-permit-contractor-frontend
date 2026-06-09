@@ -1,8 +1,9 @@
 import axios, { type AxiosInstance } from 'axios'
+import type { ActionLogMenu } from '@/enums/modules/action-log/ActionLogMenu.enum'
 import { onRequest, onRequestError, onResponse, onResponseError } from './Interceptors'
 
 export interface IActionLogHeaders {
-  menu: string
+  menu: ActionLogMenu
   subMenu?: string
 }
 
