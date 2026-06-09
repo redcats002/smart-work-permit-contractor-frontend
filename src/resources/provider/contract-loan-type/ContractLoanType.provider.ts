@@ -23,26 +23,31 @@ class ContractLoanTypeProvider extends HttpRequest implements IContractLoanTypeP
   private urlPrefix: string = '/api/v1/management/contract-loan-type'
 
   public async getContractLoanTypePaginate (query: IGetContractLoanTypeList): Promise<TGetContractLoanTypeListResponse> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'ประเภทสินเชื่อ' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }
 
   public async createContractLoanType (payload: ICreateContractLoanTypePayload): Promise<TActionContractLoanType> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'ประเภทสินเชื่อ' })
     const response = await this.post(`${this.urlPrefix}`, payload)
     return response
   }
 
   public async updateContractLoanType (id: TBaseParamsId, payload: IUpdateContractLoanTypePayload): Promise<TActionContractLoanType> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'ประเภทสินเชื่อ' })
     const response = await this.put(`${this.urlPrefix}/${id}`, payload)
     return response
   }
 
   public async deleteContractLoanType (id: TBaseParamsId): Promise<TActionContractLoanType> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'ประเภทสินเชื่อ' })
     const response = await this.delete(`${this.urlPrefix}/${id}`)
     return response
   }
 
   public async getContractLoanTypeFindOne (id: TBaseParamsId): Promise<TGetContractLoanTypeByIdResponse> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'ประเภทสินเชื่อ' })
     const response = await this.get(`${this.urlPrefix}/${id}`)
     return response
   }

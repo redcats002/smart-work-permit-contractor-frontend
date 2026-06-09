@@ -23,26 +23,31 @@ class CustomerOccupationProvider extends HttpRequest implements ICustomerOccupat
   private urlPrefix: string = '/api/v1/management/customer-occupation'
 
   public async getCustomerOccupationPaginate (query: IGetCustomerOccupationList): Promise<TGetCustomerOccupationListResponse> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'อาชีพ' })
     const response = await this.get(`${this.urlPrefix}`, query)
     return response
   }
 
   public async createCustomerOccupation (payload: ICreateCustomerOccupationPayload): Promise<TActionCustomerOccupation> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'อาชีพ' })
     const response = await this.post(`${this.urlPrefix}`, payload)
     return response
   }
 
   public async updateCustomerOccupation (id: TBaseParamsId, payload: IUpdateCustomerOccupationPayload): Promise<TActionCustomerOccupation> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'อาชีพ' })
     const response = await this.put(`${this.urlPrefix}/${id}`, payload)
     return response
   }
 
   public async deleteCustomerOccupation (id: TBaseParamsId): Promise<TActionCustomerOccupation> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'อาชีพ' })
     const response = await this.delete(`${this.urlPrefix}/${id}`)
     return response
   }
 
   public async getCustomerOccupationFindOne (id: TBaseParamsId): Promise<TGetCustomerOccupationByIdResponse> {
+    this.setLogHeaders({ menu: 'SETTING', subMenu: 'อาชีพ' })
     const response = await this.get(`${this.urlPrefix}/${id}`)
     return response
   }
