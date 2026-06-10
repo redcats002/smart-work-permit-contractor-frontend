@@ -11,7 +11,8 @@
         :class="iconClass"
         :icon="icon"
         :stroke-width="2"
-        class="size-5 text-primary hover:text-primary-900 transition-all duration-200" />
+        class="size-5 text-primary hover:text-primary-900 transition-all duration-200"
+        data-testid="action-menu-trigger" />
     </div>
     <Menu
       id="overlay_menu"
