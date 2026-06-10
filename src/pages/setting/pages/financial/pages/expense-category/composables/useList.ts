@@ -23,6 +23,7 @@ export default function useList (): IUseList {
     await category.useDelete(id)
     type.reset()
     selectCategoryId.value = null
+    category.fetch()
   }
   async function onSelectCategory ({ data }: DataTableRowClickEvent<IFinanceExpenseCategoryList>): Promise<void> {
     selectCategoryId.value = typeof data?.id === 'number' ? data.id : null

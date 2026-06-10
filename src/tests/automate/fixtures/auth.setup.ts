@@ -1,8 +1,8 @@
-import { test as setup } from '@playwright/test'
+import { type Page, test as setup } from '@playwright/test'
 
 const AUTH_FILE = 'src/tests/automate/.auth/user.json'
 
-setup('authenticate', async ({ page }: { page: any }): Promise<void> => {
+setup('authenticate', async ({ page }: { page: Page }): Promise<void> => {
   await page.goto('http://localhost:8080/auth/login')
 
   await page.getByLabel('อีเมล').fill('systemuser@email.com')

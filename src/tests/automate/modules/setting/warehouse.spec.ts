@@ -18,12 +18,31 @@ async function createWarehouse (page: Page, name: string, prefix: string): Promi
   await page.waitForLoadState('networkidle')
 }
 
+// bubbles: false prevents PrimeVue's document-level outside-click handler from firing
+// in the same tick, which would immediately close the menu after opening it
+async function openActionMenu (page: Page): Promise<void> {
+  await page.getByTestId('action-menu-trigger').last().click()
+  await expect(page.locator('#overlay_menu')).toBeVisible()
+}
+
 async function navigateToWarehouseDetail (page: Page, name: string): Promise<void> {
   await page.goto(LIST_URL)
   await page.waitForLoadState('networkidle')
   await expect(page.locator('tbody').getByText(name, { exact: true })).toBeVisible({ timeout: 10_000 })
   await page.locator('tbody tr').filter({ hasText: name }).getByRole('link').click()
   await expect(page).toHaveURL(/warehouse\/\d+/, { timeout: 5_000 })
+  await page.waitForLoadState('networkidle')
+  await page.waitForLoadState('domcontentloaded')
+  await page.waitForLoadState('load')
+}
+
+async function deleteCreatedWarehouse (page: Page, name: string): Promise<void> {
+  await navigateToWarehouseDetail(page, name)
+  await openActionMenu(page)
+  await page.locator('#overlay_menu').getByRole('menuitem', { name: 'ลบ' }).click()
+  await expect(page.locator('[role="dialog"]')).toBeVisible()
+  await page.getByTestId('confirm-button').click()
+  await expect(page).toHaveURL(/warehouse\/list/, { timeout: 10_000 })
   await page.waitForLoadState('networkidle')
 }
 
@@ -52,44 +71,60 @@ test.describe('Setting / Warehouse', () => {
     })
 
     test('create — add new warehouse', async ({ page }: { page: Page }): Promise<void> => {
-      await createWarehouse(page, 'Test คลัง', 'TST')
-      await expect(page.locator('tbody').getByText('Test คลัง', { exact: true })).toBeVisible({ timeout: 10_000 })
+      const name = `Test คลัง ${Math.random().toString(36).slice(2, 6).toUpperCase()}`
+      const prefix = Math.random().toString(36).slice(2, 5).toUpperCase()
+      await createWarehouse(page, name, prefix)
+      await expect(page.locator('tbody').getByText(name, { exact: true })).toBeVisible({ timeout: 10_000 })
+
+      await deleteCreatedWarehouse(page, name)
     })
   })
 
   test.describe('Setting / Update / Warehouse', () => {
     test('update — edit warehouse from detail page', async ({ page }: { page: Page }): Promise<void> => {
-      await createWarehouse(page, 'Test คลัง For Update', 'TFU')
-      await navigateToWarehouseDetail(page, 'Test คลัง For Update')
+      const name = `Test คลัง For Update ${Math.random().toString(36).slice(2, 6).toUpperCase()}`
+      const prefix = Math.random().toString(36).slice(2, 5).toUpperCase()
+      const updatedName = `Updated ${name}`
+      await createWarehouse(page, name, prefix)
+      await navigateToWarehouseDetail(page, name)
 
-      await page.locator('#action-menu-trigger').click()
-      await page.getByRole('menuitem', { name: 'แก้ไข' }).click()
+      await openActionMenu(page)
+      await page.locator('#overlay_menu').getByRole('menuitem', { name: 'แก้ไข' }).click()
 
-      await expect(page).toHaveURL(/warehouse\/\d+\/edit/, { timeout: 5_000 })
+      await expect(page).toHaveURL(/warehouse\/edit\/\d+/, { timeout: 5_000 })
       await page.waitForLoadState('networkidle')
 
       const nameInput = page.getByLabel('ชื่อคลัง')
       await nameInput.clear()
-      await nameInput.fill('Updated Test คลัง For Update')
+      await nameInput.fill(updatedName)
 
       await page.getByRole('button', { name: 'ยืนยัน' }).click()
       await expect(page.locator('[role="dialog"]').last()).toBeVisible()
       await page.getByRole('button', { name: 'ยืนยัน' }).last().click()
 
-      // Edit redirects back to detail page, not list
       await expect(page).toHaveURL(/warehouse\/\d+/, { timeout: 10_000 })
       await page.waitForLoadState('networkidle')
-      await expect(page.getByText('Updated Test คลัง For Update', { exact: true })).toBeVisible({ timeout: 10_000 })
+      await expect(page.getByText(updatedName, { exact: true })).toBeVisible({ timeout: 10_000 })
+
+      await deleteCreatedWarehouse(page, updatedName)
     })
   })
 
   test.describe.serial('Setting / Delete / Warehouse', () => {
-    test('delete — cancel stays on detail page', async ({ page }: { page: Page }): Promise<void> => {
-      await createWarehouse(page, 'Test คลัง For Delete', 'TFD')
-      await navigateToWarehouseDetail(page, 'Test คลัง For Delete')
+    let deleteName: string
+    let deletePrefix: string
 
-      await page.locator('#action-menu-trigger').click()
-      await page.getByRole('menuitem', { name: 'ลบ' }).click()
+    test.beforeAll(async (): Promise<void> => {
+      deleteName = `Test คลัง For Delete ${Math.random().toString(36).slice(2, 6).toUpperCase()}`
+      deletePrefix = Math.random().toString(36).slice(2, 5).toUpperCase()
+    })
+
+    test('delete — cancel stays on detail page', async ({ page }: { page: Page }): Promise<void> => {
+      await createWarehouse(page, deleteName, deletePrefix)
+      await navigateToWarehouseDetail(page, deleteName)
+
+      await openActionMenu(page)
+      await page.locator('#overlay_menu').getByRole('menuitem', { name: 'ลบ' }).click()
 
       await expect(page.locator('[role="dialog"]')).toBeVisible()
       await page.getByTestId('cancel-button').click()
@@ -103,10 +138,10 @@ test.describe('Setting / Warehouse', () => {
       await page.waitForLoadState('networkidle')
       const countBefore = await page.locator('tbody tr').count()
 
-      await navigateToWarehouseDetail(page, 'Test คลัง For Delete')
+      await navigateToWarehouseDetail(page, deleteName)
 
-      await page.locator('#action-menu-trigger').click()
-      await page.getByRole('menuitem', { name: 'ลบ' }).click()
+      await openActionMenu(page)
+      await page.locator('#overlay_menu').getByRole('menuitem', { name: 'ลบ' }).click()
 
       await expect(page.locator('[role="dialog"]')).toBeVisible()
       await page.getByTestId('confirm-button').click()
