@@ -18,7 +18,7 @@
       </LinkText>
     </template>
     <template #[`item.status`]="{ item }">
-      <ChipAssetStatus :value="item.status ?? undefined" />
+      <ChipPreContractStatus :value="item.status ?? undefined" />
     </template>
   </BaseTable>
 </template>
@@ -33,7 +33,7 @@ import type { TTitleName } from '@/enums/TitleName.enum'
 import LinkText from '@/components/button/LinkText.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
-import ChipAssetStatus from './ChipPreContractStatus.vue'
+import ChipPreContractStatus from './ChipPreContractStatus.vue'
 
 interface IProps {
   items: IPreContractList[]

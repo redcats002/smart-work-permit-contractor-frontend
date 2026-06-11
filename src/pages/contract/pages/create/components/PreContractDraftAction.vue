@@ -15,11 +15,18 @@
       type="submit"
       outlined
       @click="emits('setSubmitMode','DRAFT')" />
-    <Button
-      class="w-full md:w-49.5"
-      label="ยกเลิก"
-      outlined
-      @click="emits('cancel')" />
+    <ConfirmModal
+      label="ยกเลิกการประเมินหลักทรัพย์?"
+      @confirm="emits('cancel')">
+      <template #activator="{open}">
+        <Button
+          class="w-full md:w-49.5"
+          label="ยกเลิก"
+          outlined
+          @click="open()" />
+      </template>
+    </ConfirmModal>
+
     <button
       ref="submitBtnRef"
       class="hidden"
