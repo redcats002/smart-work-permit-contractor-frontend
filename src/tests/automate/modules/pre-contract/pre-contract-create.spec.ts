@@ -15,6 +15,46 @@ async function selectFromModal (page: Page, placeholder: string, searchText: str
   await page.waitForLoadState('networkidle')
 }
 
+async function fillVehicleForm (page: Page): Promise<void> {
+  const staffName = 'Nonthakorn'
+  const customerName = 'กันต์'
+
+  await selectFromModal(page, 'พนักงานประเมิน', staffName)
+  await selectFromModal(page, 'ลูกค้า', customerName)
+
+  await page.getByRole('combobox', { name: 'เลือกหมวดหมู่หลักทรัพย์' }).click()
+  await page.getByRole('option', { name: 'ยานพาหนะ - รถยนต์' }).click()
+  await page.getByRole('textbox', { name: 'ยี่ห้อ*' }).fill('Toyota')
+
+  await page.getByRole('textbox', { name: 'รุ่น*' }).click()
+  await page.getByRole('textbox', { name: 'รุ่น*' }).fill('Camry')
+
+  await page.getByRole('textbox', { name: 'สี*' }).click()
+  await page.getByRole('textbox', { name: 'สี*' }).fill('ขาว')
+
+  await page.getByRole('textbox', { name: 'เลขทะเบียนรถ*' }).click()
+  await page.getByRole('textbox', { name: 'เลขทะเบียนรถ*' }).fill('กข 1234')
+
+  await page.getByRole('combobox', { name: 'เลือกจังหวัด' }).click()
+  await page.getByText('กรุงเทพมหานคร').click()
+
+  await page.getByRole('combobox', { name: 'เลือกปีที่ผลิต' }).click()
+  await page.getByRole('listbox').getByRole('option', { name: '2021' }).click()
+  await expect(page.getByRole('listbox')).toHaveCount(0, { timeout: 3_000 })
+
+  await page.getByRole('combobox', { name: 'เลือกปีที่จดทะเบียน' }).click()
+  await page.getByRole('listbox').getByRole('option', { name: '2022' }).click()
+
+  await page.getByRole('textbox', { name: 'หมายเลขตัวถัง*' }).click()
+  await page.getByRole('textbox', { name: 'หมายเลขตัวถัง*' }).fill('VIN12345678901234')
+
+  await page.getByRole('textbox', { name: 'หมายเลขเครื่อง*' }).click()
+  await page.getByRole('textbox', { name: 'หมายเลขเครื่อง*' }).fill('ENG1234567890')
+
+  await page.getByRole('spinbutton', { name: 'กรอกเลขไมล์' }).click()
+  await page.getByRole('spinbutton', { name: 'กรอกเลขไมล์' }).fill('5000').then(() => page.getByRole('spinbutton', { name: 'กรอกเลขไมล์' }).press('Enter'))
+}
+
 test.describe('Pre-Contract Create', () => {
   test.beforeEach(async ({ page }: { page: Page }): Promise<void> => {
     await page.goto(CREATE_URL)
@@ -30,50 +70,21 @@ test.describe('Pre-Contract Create', () => {
     await expect(page.getByRole('button', { name: 'ยกเลิก' })).toBeVisible({ timeout: 5_000 })
   })
 
-  test('cancel — navigate back to contract list', async ({ page }: { page: Page }): Promise<void> => {
+  test('cancel — calls cancel API and navigates to contract list', async ({ page }: { page: Page }): Promise<void> => {
+    await fillVehicleForm(page)
+
+    await page.getByRole('button', { name: 'ร่าง' }).click()
+    await page.waitForLoadState('networkidle')
+    await page.waitForURL('**/contract/pre-contract/edit/**')
+
     await page.getByRole('button', { name: 'ยกเลิก' }).click()
-    await page.waitForURL('**/contract/list')
+    await page.getByRole('dialog').getByRole('button', { name: 'ยืนยัน' }).click()
+    await page.waitForLoadState('networkidle')
+    await page.waitForURL('**/contract/list?tab=preContract')
   })
 
   test('create pre-contract as DRAFT with vehicle asset', async ({ page }: { page: Page }): Promise<void> => {
-    const staffName = 'Nonthakorn'
-    const customerName = 'กันต์'
-
-    await selectFromModal(page, 'พนักงานประเมิน', staffName)
-    await selectFromModal(page, 'ลูกค้า', customerName)
-
-
-    await page.getByRole('combobox', { name: 'เลือกหมวดหมู่หลักทรัพย์' }).click()
-    await page.getByRole('option', { name: 'ยานพาหนะ - รถยนต์' }).click()
-    await page.getByRole('textbox', { name: 'ยี่ห้อ*' }).fill('Toyota')
-
-    await page.getByRole('textbox', { name: 'รุ่น*' }).click()
-    await page.getByRole('textbox', { name: 'รุ่น*' }).fill('Camry')
-
-    await page.getByRole('textbox', { name: 'สี*' }).click()
-    await page.getByRole('textbox', { name: 'สี*' }).fill('ขาว')
-
-    await page.getByRole('textbox', { name: 'เลขทะเบียนรถ*' }).click()
-    await page.getByRole('textbox', { name: 'เลขทะเบียนรถ*' }).fill('กข 1234')
-
-    await page.getByRole('combobox', { name: 'เลือกจังหวัด' }).click()
-    await page.getByText('กรุงเทพมหานคร').click()
-
-    await page.getByRole('combobox', { name: 'เลือกปีที่ผลิต' }).click()
-    await page.getByRole('listbox').getByRole('option', { name: '2021' }).click()
-    await expect(page.getByRole('listbox')).toHaveCount(0, { timeout: 3_000 })
-
-    await page.getByRole('combobox', { name: 'เลือกปีที่จดทะเบียน' }).click()
-    await page.getByRole('listbox').getByRole('option', { name: '2022' }).click()
-
-    await page.getByRole('textbox', { name: 'หมายเลขตัวถัง*' }).click()
-    await page.getByRole('textbox', { name: 'หมายเลขตัวถัง*' }).fill('VIN12345678901234')
-
-    await page.getByRole('textbox', { name: 'หมายเลขเครื่อง*' }).click()
-    await page.getByRole('textbox', { name: 'หมายเลขเครื่อง*' }).fill('ENG1234567890')
-
-    await page.getByRole('spinbutton', { name: 'กรอกเลขไมล์' }).click()
-    await page.getByRole('spinbutton', { name: 'กรอกเลขไมล์' }).fill('5000').then(() => page.getByRole('spinbutton', { name: 'กรอกเลขไมล์' }).press('Enter'))
+    await fillVehicleForm(page)
 
     await page.getByRole('button', { name: 'ร่าง' }).click()
     await page.waitForLoadState('networkidle')
