@@ -96,6 +96,13 @@ export function useInit (): IUseInit {
     router.push({ name: 'PreContractDetailPage', params: { id: response?.id } })
   }
 
+  async function useCancel (): Promise<void> {
+    if (!route.params.id) return
+    await ContractService.cancelledPreContract(Number(route.params.id))
+    toast.success('ยกเลิกประเมินหลักทรัพย์สำเร็จ')
+    router.push({ name: 'ContractListPage', query: { tab: 'preContract' } })
+  }
+
   function onSubmit (event: FormSubmitEvent): void {
     if (!event.valid) {
       scrollToFirstError(event.errors)
@@ -118,7 +125,7 @@ export function useInit (): IUseInit {
   }
 
   function onCancel (): void {
-    router.push({ name: 'ContractListPage' })
+    handleLoading(useCancel)
   }
 
   function setSubmitMode (mode: TPreContractStatus): void {

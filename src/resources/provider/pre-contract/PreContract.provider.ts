@@ -37,6 +37,7 @@ export interface IPreContractProvider {
   confirmMortgage (id: TBaseParamsId, payload: IConfirmMortgagePayload): Promise<TConfirmMortgagePreContract>
   makeAContract (id: TBaseParamsId, payload: IMakeAContractPayload): Promise<TMakeAContractPreContract>
   updatePreAsset (id: TBaseParamsId, payload: IUpdatePreAssetPayload): Promise<TUpdatePreAssetPreContract>
+  cancelledPreContract (id: TBaseParamsId): Promise<TActionPreContract>
 }
 
 class PreContractProvider extends HttpRequest implements IPreContractProvider {
@@ -63,6 +64,12 @@ class PreContractProvider extends HttpRequest implements IPreContractProvider {
   public async getContractFindOne (id: TBaseParamsId): Promise<TGetPreContractByIdResponse> {
     this.setLogHeaders({ menu: 'CONTRACT', subMenu: 'ประเมินหลักทรัพย์' })
     const response = await this.get(`${this.urlPrefix}/${id}`)
+    return response
+  }
+
+  public async cancelledPreContract (id: TBaseParamsId): Promise<TActionPreContract> {
+    this.setLogHeaders({ menu: 'CONTRACT', subMenu: 'ประเมินหลักทรัพย์ > ยกเลิก' })
+    const response = await this.patch(`${this.urlPrefix}/cancelled/${id}`)
     return response
   }
 
