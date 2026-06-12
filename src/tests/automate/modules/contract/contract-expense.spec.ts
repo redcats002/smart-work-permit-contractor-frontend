@@ -13,33 +13,27 @@ async function navigateToContractDetail (page: Page): Promise<void> {
   await page.waitForLoadState('networkidle')
 }
 
-async function openIncomeTab (page: Page): Promise<void> {
-  await page.locator('div.cursor-pointer').filter({ hasText: /^รายได้$/ }).click()
+async function openExpenseTab (page: Page): Promise<void> {
+  await page.locator('div.cursor-pointer').filter({ hasText: /^ค่าใช้จ่าย$/ }).click()
   await page.waitForLoadState('networkidle')
 }
 
-async function deleteEntry (page: Page, rowText: string): Promise<void> {
-  await page.waitForLoadState('networkidle')
-  await page.locator('tbody tr').filter({ hasText: rowText }).locator('#action-menu-trigger').click({ timeout: 5_000, delay: 100 })
-  await page.getByRole('menuitem', { name: 'ลบ' }).click()
-  await expect(page.locator('[role="dialog"]')).toBeVisible()
-  await page.getByRole('button', { name: 'ใช่, ฉันต้องการลบ' }).click()
-  await page.waitForLoadState('networkidle')
-}
-
-async function createIncome (page: Page, note: string): Promise<void> {
-  await page.getByRole('button', { name: 'บันทึกรายได้' }).click()
+async function createExpense (page: Page, note: string): Promise<void> {
+  await page.getByRole('button', { name: 'บันทึกค่าใช้จ่าย' }).click()
   await expect(page.locator('[role="dialog"]')).toBeVisible()
 
-  // Select income category (first available)
+  // Select expense category (first available)
   await page.locator('[role="dialog"] [role="combobox"]').first().click()
   await page.waitForLoadState('networkidle')
   await page.waitForLoadState('domcontentloaded')
   await page.waitForLoadState('load')
   await expect(page.getByRole('option').first()).toBeVisible({ timeout: 5_000 })
   await page.getByRole('option').first().click({ timeout: 5_000 })
+  await page.waitForLoadState('networkidle')
+  await page.waitForLoadState('domcontentloaded')
+  await page.waitForLoadState('load')
 
-  // Select income type (first available)
+  // Select expense type (first available — depends on selected category)
   await page.locator('[role="dialog"] [role="combobox"]').nth(1).click()
   await page.waitForLoadState('networkidle')
   await page.waitForLoadState('domcontentloaded')
@@ -47,8 +41,11 @@ async function createIncome (page: Page, note: string): Promise<void> {
   await expect(page.getByRole('option').first()).toBeVisible({ timeout: 5_000 })
   await page.getByRole('option').first().click({ timeout: 5_000, delay: 100, force: true })
   await page.getByRole('option').first().click({ timeout: 5_000, delay: 100, force: true })
+  await page.waitForLoadState('networkidle')
+  await page.waitForLoadState('domcontentloaded')
+  await page.waitForLoadState('load')
 
-  // Fill note (name="note" scopes to the note field, avoiding AutoComplete inputs)
+  // Fill note
   await page.getByRole('textbox', { name: 'คำอธิบาย*' }).click()
   await page.getByRole('textbox', { name: 'คำอธิบาย*' }).fill(note)
 
@@ -66,68 +63,76 @@ async function createIncome (page: Page, note: string): Promise<void> {
   await page.waitForLoadState('load')
 }
 
-test.describe('Contract / Detail / Income', () => {
+async function deleteEntry (page: Page, rowText: string): Promise<void> {
+  await page.waitForLoadState('networkidle')
+  await page.locator('tbody tr').filter({ hasText: rowText }).locator('#action-menu-trigger').click({ timeout: 5_000, delay: 100 })
+  await page.getByRole('menuitem', { name: 'ลบ' }).click()
+  await expect(page.locator('[role="dialog"]')).toBeVisible()
+  await page.getByRole('button', { name: 'ใช่, ฉันต้องการลบ' }).click()
+  await page.waitForLoadState('networkidle')
+}
+
+test.describe('Contract / Detail / Expense', () => {
   test.beforeEach(async ({ page }: { page: Page }): Promise<void> => {
     await navigateToContractDetail(page)
-    await openIncomeTab(page)
+    await openExpenseTab(page)
   })
 
   test.afterEach(async ({ page }: { page: Page }): Promise<void> => {
     await page.waitForTimeout(500)
   })
 
-  test('income tab — shows table and create button', async ({ page }: { page: Page }): Promise<void> => {
+  test('expense tab — shows table and create button', async ({ page }: { page: Page }): Promise<void> => {
     await expect(page.locator('table')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'บันทึกรายได้' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'บันทึกค่าใช้จ่าย' })).toBeVisible()
   })
 
-  test('income — cancel create modal', async ({ page }: { page: Page }): Promise<void> => {
-    await page.getByRole('button', { name: 'บันทึกรายได้' }).click()
+  test('expense — cancel create modal', async ({ page }: { page: Page }): Promise<void> => {
+    await page.getByRole('button', { name: 'บันทึกค่าใช้จ่าย' }).click()
     await expect(page.locator('[role="dialog"]')).toBeVisible()
 
     await page.getByRole('button', { name: 'ยกเลิก' }).click()
-    // await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 3_000 })
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 3_000 })
   })
 
-  test('income — create new income entry', async ({ page }: { page: Page }): Promise<void> => {
+  test('expense — create new expense entry', async ({ page }: { page: Page }): Promise<void> => {
     const randomSuffix = Math.floor(Math.random() * 1000)
-    const note = `Test รายได้ ${randomSuffix}`
-    await createIncome(page, note)
+    const note = `Test ค่าใช้จ่าย ${randomSuffix}`
+    await createExpense(page, note)
     await expect(page.locator('tbody').getByText(note, { exact: true })).toBeVisible({ timeout: 10_000 })
     await deleteEntry(page, note)
   })
 
-  test.describe.serial('Contract / Detail / Income / Update & Delete', () => {
+  test.describe.serial('Contract / Detail / Expense / Update & Delete', () => {
     const randomSuffix = Math.floor(Math.random() * 1000)
-    const name = `Test รายได้ For Update ${randomSuffix}`
-    test('income — edit income entry from read modal', async ({ page }: { page: Page }): Promise<void> => {
-      await createIncome(page, name)
+    const name = `Test ค่าใช้จ่าย For Update ${randomSuffix}`
+
+    test('expense — edit expense entry', async ({ page }: { page: Page }): Promise<void> => {
+      await createExpense(page, name)
       await expect(page.locator('tbody').getByText(name, { exact: true })).toBeVisible({ timeout: 10_000 })
       await page.waitForLoadState('networkidle')
-      await page.waitForLoadState('domcontentloaded')
-      await page.waitForLoadState('load')
 
-      // Open READ modal via action menu
       await page.locator('tbody tr').filter({ hasText: name }).locator('#action-menu-trigger').click({ timeout: 5_000, delay: 100 })
       await page.getByRole('menuitem', { name: 'แก้ไข' }).click()
       await expect(page.locator('[role="dialog"]')).toBeVisible()
       await page.waitForLoadState('networkidle')
-      await page.waitForLoadState('domcontentloaded')
-      await page.waitForLoadState('load')
 
-      // Clear and refill note
       const noteInput = page.locator('[role="dialog"] [name="note"]')
-      await noteInput.clear()
-      await noteInput.fill(`Updated ${name}`)
+      await noteInput.focus()
+      await noteInput.clear({ timeout: 5_000, force: true })
+      await page.waitForLoadState('load')
+      await noteInput.fill(`Updated ${name}`, { timeout: 5_000, force: true })
 
       await page.getByRole('button', { name: 'ยืนยัน' }).click()
       await expect(page.locator('[role="dialog"]').last()).toBeVisible()
       await page.getByRole('button', { name: 'ยืนยัน' }).last().click()
+      await page.waitForLoadState('load')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForLoadState('networkidle')
       await expect(page.locator('tbody').getByText(`Updated ${name}`, { exact: true })).toBeVisible({ timeout: 10_000 })
     })
 
-    test('income — delete income entry', async ({ page }: { page: Page }): Promise<void> => {
+    test('expense — delete expense entry', async ({ page }: { page: Page }): Promise<void> => {
       await deleteEntry(page, `Updated ${name}`)
     })
   })

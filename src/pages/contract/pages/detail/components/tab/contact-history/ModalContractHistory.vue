@@ -37,7 +37,6 @@
           tag="div"
           hide-error
           required>
-          {{ formData.topic }}
           <ContractLoanPurposeSelection
             v-model:selected-name="formData.topic"
             :invalid="invalid"
