@@ -11,7 +11,7 @@
       v-model:sort-by="sortBy"
       v-model:sort-order="sortOrder"
       :items="items"
-      @delete="openModal('DELETE', $event)"
+      @delete="onDelete($event)"
       @edit="openModal('UPDATE', $event)"
       @read="openModal('READ', $event)"
       @update="fetch()" />
@@ -27,6 +27,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TActionMode } from '@/models/Global.model'
 import type { IGetExpenseList } from '@/models/request/contract-expense/ContractExpenseReq.model'
@@ -89,6 +90,14 @@ function openModal (mode: TActionMode, item?: IContractExpenseList): void {
   modalMode.value = mode
   selectedItem.value = item
   modalVisible.value = true
+}
+
+function onDelete (item: IContractExpenseList): void {
+  handleLoading(async (): Promise<void> => {
+    await ContractExpenseService.deleteExpense(item.id)
+    toast.success('ลบค่าใช้จ่ายสำเร็จ')
+    fetch()
+  })
 }
 
 onMounted((): void => {

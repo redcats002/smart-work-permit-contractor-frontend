@@ -146,23 +146,6 @@
           <FileAttachment :files="formRead.file" />
         </div>
       </div>
-
-      <!-- DELETE MODE -->
-      <div
-        v-else-if="currentMode === 'DELETE'"
-        class="grid gap-6">
-        <div class="flex flex-col items-center justify-center text-sm text-gray-700 gap-1 py-4">
-          <p>คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้</p>
-          <p class="text-surface-500">
-            หากลบแล้ว ข้อมูลนี้จะถูกลบอย่างถาวรไม่สามารถย้อนกลับได้
-          </p>
-        </div>
-        <FormAction
-          confirm-label="ใช่, ฉันต้องการลบ"
-          mode="delete"
-          @cancel="close()"
-          @confirm="onDelete(close)" />
-      </div>
     </template>
   </BaseModal>
 </template>
@@ -231,7 +214,7 @@ const modalLabel = computed((): string => {
     CREATE: 'บันทึกค่าใช้จ่าย',
     UPDATE: 'แก้ไขค่าใช้จ่าย',
     READ: 'รายละเอียด',
-    DELETE: 'ยืนยันการลบ'
+    DELETE: ''
   }
   return labels[currentMode.value]
 })
@@ -318,17 +301,6 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
       await ContractExpenseService.updateExpense(itemId, values)
       toast.success('แก้ไขค่าใช้จ่ายสำเร็จ')
     }
-    emits('update')
-    close()
-  })
-}
-
-function onDelete (close: () => void): void {
-  const id = props.item?.id
-  if (!id) return
-  handleLoading(async (): Promise<void> => {
-    await ContractExpenseService.deleteExpense(id)
-    toast.success('ลบค่าใช้จ่ายสำเร็จ')
     emits('update')
     close()
   })

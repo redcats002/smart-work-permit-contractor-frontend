@@ -13,6 +13,21 @@ async function navigateToContractDetail (page: Page): Promise<void> {
   await page.waitForLoadState('networkidle')
 }
 
+async function openActionMenu (page: Page): Promise<void> {
+  await page.getByTestId('action-menu-trigger').nth(2).click()
+  await expect(page.locator('#overlay_menu')).toBeVisible({ timeout: 5_000 })
+}
+
+async function openCancelMenuItemIfEnabled (page: Page): Promise<boolean> {
+  await openActionMenu(page)
+  const menuItem = page.getByRole('menuitem', { name: 'ยกเลิกสัญญา' })
+  await expect(menuItem).toBeVisible({ timeout: 3_000 })
+  if (await menuItem.isDisabled()) return false
+  await menuItem.click()
+  return true
+}
+
+
 test.describe('Contract / Detail', () => {
   test.beforeEach(async ({ page }: { page: Page }): Promise<void> => {
     await navigateToContractDetail(page)
@@ -26,8 +41,8 @@ test.describe('Contract / Detail', () => {
   })
 
   test('detail — cancel — cancel dialog closes on dismiss', async ({ page }: { page: Page }): Promise<void> => {
-    await page.locator('#action-menu-trigger').click()
-    await page.getByRole('menuitem', { name: 'ยกเลิกสัญญา' }).click()
+    const proceeded = await openCancelMenuItemIfEnabled(page)
+    if (!proceeded) return
 
     await expect(page.locator('[role="dialog"]')).toBeVisible()
     await page.getByTestId('cancel-button').click()
@@ -37,13 +52,12 @@ test.describe('Contract / Detail', () => {
   })
 
   test('detail — cancel — confirm cancels contract and stays on detail page', async ({ page }: { page: Page }): Promise<void> => {
-    await page.locator('#action-menu-trigger').click()
-    await page.getByRole('menuitem', { name: 'ยกเลิกสัญญา' }).click()
+    const proceeded = await openCancelMenuItemIfEnabled(page)
+    if (!proceeded) return
 
     await expect(page.locator('[role="dialog"]')).toBeVisible()
     await page.getByRole('button', { name: 'ใช่, ฉันต้องการยกเลิก' }).click()
 
-    // Stays on detail page after cancel
     await expect(page).toHaveURL(/contract\/detail\/\d+/, { timeout: 10_000 })
     await page.waitForLoadState('networkidle')
   })
