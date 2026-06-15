@@ -39,20 +39,13 @@
         <template
           v-for="menu in menuItems"
           :key="`top-${menu.label}`">
-          <AppDrawerSubMenu
-            v-if="menu.children?.length"
+          <AppDrawerMenu
             :children="menu.children"
             :disabled="menu.disabled"
             :icon="menu.icon"
             :label="menu.label"
-            :notify="menu.notify" />
-          <AppDrawerMenu
-            v-else
-            :disabled="menu.disabled"
-            :icon="menu.icon"
-            :label="menu.label"
             :notify="menu.notify"
-            :to="menu.to!" />
+            :to="menu.to" />
         </template>
       </div>
 
@@ -82,8 +75,7 @@ import { useAppDrawer } from '@/composables/useAppDrawer'
 import { usePermission } from '@/composables/usePermission'
 import { routes } from '@/router'
 import { Icon } from '@iconify/vue'
-import AppDrawerMenu from './AppDrawerMenu.vue'
-import AppDrawerSubMenu, { type ISubMenuItem } from './AppDrawerSubMenu.vue'
+import AppDrawerMenu, { type ISubMenuItem } from './drawer/AppDrawerMenu.vue'
 
 const { isOpen, close } = useAppDrawer()
 const { hasPermission } = usePermission()

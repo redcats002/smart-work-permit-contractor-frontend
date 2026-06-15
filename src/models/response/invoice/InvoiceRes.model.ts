@@ -72,4 +72,5 @@ export interface IInvoiceInstallment {
 export type TGetInvoiceListResponse = IBasePaginationResponse<IInvoiceList>
 export type TGetInvoiceByIdResponse = IBaseSuccessResponse<IInvoiceDetail>
 export type TGetInvoiceInstallmentByIdResponse = IBaseSuccessResponse<IInvoiceInstallment>
+export type TCreateInvoiceResponse = IBaseSuccessResponse<IInvoiceList>
 export type TActionInvoice = IBaseSuccessResponse<boolean>

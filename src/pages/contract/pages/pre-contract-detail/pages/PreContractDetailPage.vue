@@ -17,8 +17,8 @@
       <BackButton />
       <Spacer />
       <PreContractDetailMenuAction
-        v-if="false"
         :status="contract?.status"
+        @cancel="onCancel()"
         @edit="onEdit()" />
     </BaseTop>
     <BasePage>

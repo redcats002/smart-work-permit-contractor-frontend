@@ -97,7 +97,10 @@ export function useInit (): IUseInit {
   }
 
   async function useCancel (): Promise<void> {
-    if (!route.params.id) return
+    if (!route.params.id) {
+      router.push({ name: 'ContractListPage', query: { tab: 'preContract' } })
+      return
+    }
     await ContractService.cancelledPreContract(Number(route.params.id))
     toast.success('ยกเลิกประเมินหลักทรัพย์สำเร็จ')
     router.push({ name: 'ContractListPage', query: { tab: 'preContract' } })

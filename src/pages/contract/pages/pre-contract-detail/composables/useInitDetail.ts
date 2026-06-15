@@ -11,6 +11,7 @@ import type { TAssetCategory } from '../../create/schema/pre-contract.schema'
 import { readyForAppraisal as readyForLandAppraisal } from '../schema/land.schema'
 import type { MakeContractFormValues, PreAssetWarehouseFormValues } from '../schema/make-contract.schema'
 import { readyForAppraisal as readyForVehicleAppraisal } from '../schema/vehicle.schema'
+import { toast } from '@/plugins/toast'
 
 export interface IUseInitDetail {
   contractId: ComputedRef<string | string[]>
@@ -78,12 +79,23 @@ export function useInitDetail (): IUseInitDetail {
     contract.value = res.data
   }
 
+  async function useCancel (): Promise<void> {
+    if (!contractId.value) {
+      router.push({ name: 'ContractListPage', query: { tab: 'preContract' } })
+      return
+    }
+    await PreContractService.cancelledPreContract(Number(route.params.id))
+    toast.success('ยกเลิกประเมินหลักทรัพย์สำเร็จ')
+    router.push({ name: 'ContractListPage', query: { tab: 'preContract' } })
+  }
+
   function onEdit (): void {
     router.push({ name: 'PreContractEditPage', params: { id: contractId.value } })
   }
 
+
   function onCancel (): void {
-    router.push({ name: 'ContractListPage' })
+    handleLoading(useCancel)
   }
 
   function onActiveAsset (index?: number): void {
