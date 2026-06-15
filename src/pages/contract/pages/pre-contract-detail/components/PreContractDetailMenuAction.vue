@@ -14,20 +14,32 @@ interface IProps {
 }
 interface IEmits {
   edit: []
-  delete: []
+  cancel: []
 }
 
-withDefaults(defineProps<IProps>(), {
+const props = withDefaults(defineProps<IProps>(), {
   status: undefined
 })
 const emits = defineEmits<IEmits>()
 
 const items = computed((): IMenuItemAction[] => [
+  // {
+  //   key: 'edit',
+  //   type: 'TEXT',
+  //   label: 'แก้ไข',
+  //   action: (): void => emits('edit')
+  // },
   {
-    key: 'edit',
-    type: 'TEXT',
-    label: 'แก้ไข',
-    action: (): void => emits('edit')
+    key: 'delete',
+    type: 'DELETE',
+    label: 'ยกเลิก',
+    action: (): void => emits('cancel'),
+    deleteProps: {
+      title: 'ยกเลิกสัญญา',
+      description1: 'คุณต้องการยกเลิกสัญญานี้หรือไม่',
+      confirmLabel: 'ยืนยัน'
+    },
+    disabled: props?.status === 'CANCELLED'
   }
 ])
 

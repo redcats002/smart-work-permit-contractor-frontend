@@ -115,8 +115,10 @@ function normalizeFilters (value: IGetInstallmentList): Partial<IGetInstallmentL
 
 function onCreateInvoice (id: number): void {
   handleLoading(async (): Promise<void> => {
-    await InvoiceService.createInvoice(id, []) // WAIT BACKEND
+    const response = await InvoiceService.createInvoice(id, []) // WAIT BACKEND
     toast.success('ออกใบแจ้งหนี้สำเร็จ')
+    const url = router.resolve({ name: 'InvoiceDetailPage', params: { id: response?.data.id } })
+    window.open(url.href, '_blank')
   })
 }
 

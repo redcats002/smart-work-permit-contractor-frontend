@@ -1,6 +1,7 @@
 import type { ICreateInvoicePayload, IGetInvoiceList } from '@/models/request/invoice/InvoiceReq.model'
 import type {
   TActionInvoice,
+  TCreateInvoiceResponse,
   TGetInvoiceByIdResponse,
   TGetInvoiceInstallmentByIdResponse,
   TGetInvoiceListResponse
@@ -12,7 +13,7 @@ export interface IInvoiceProvider {
   getInvoicePaginate(query: IGetInvoiceList): Promise<TGetInvoiceListResponse>
   getInvoiceById (invoiceId: TBaseParamsId): Promise<TGetInvoiceByIdResponse>
   getInvoiceInstallmentById (installmentId: TBaseParamsId): Promise<TGetInvoiceInstallmentByIdResponse>
-  createInvoice (id: TBaseParamsId, payload: ICreateInvoicePayload[]): Promise<TActionInvoice>
+  createInvoice (id: TBaseParamsId, payload: ICreateInvoicePayload[]): Promise<TCreateInvoiceResponse>
   deleteInvoice(id: TBaseParamsId): Promise<TActionInvoice>
 }
 
@@ -34,7 +35,7 @@ class InvoiceProvider extends HttpRequest implements IInvoiceProvider {
     return this.get(`${this.urlPrefix}/${installmentId}/installment`)
   }
 
-  public async createInvoice (id: TBaseParamsId, payload: ICreateInvoicePayload[]): Promise<TActionInvoice> {
+  public async createInvoice (id: TBaseParamsId, payload: ICreateInvoicePayload[]): Promise<TCreateInvoiceResponse> {
     this.setLogHeaders({ menu: 'DOCUMENT-FINANCE', subMenu: 'ใบแจ้งหนี้' })
     return this.post(`${this.urlPrefix}/${id}`, { item: payload })
   }
