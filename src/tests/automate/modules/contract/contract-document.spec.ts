@@ -1,6 +1,27 @@
 import { expect, type Page, test } from '@playwright/test'
+import { mockContractListAndDetail } from '../../fixtures/contract.fixture'
+import { mockCrudResource, mockRoute, paginatedResponse } from '../../fixtures/mockApi'
 
 const LIST_URL = '/contract/list'
+
+interface IDocumentFixture {
+  id: number
+  date: string
+  note: string
+  documentType: string
+  location: { id: number, name: string }
+}
+
+function makeDocumentFixture (overrides: Partial<IDocumentFixture> = {}): IDocumentFixture {
+  return {
+    id: 1,
+    date: '2024-01-01',
+    note: 'Seed Document',
+    documentType: 'OTHER',
+    location: { id: 1, name: 'Mock Warehouse' },
+    ...overrides
+  }
+}
 
 async function navigateToContractDetail (page: Page): Promise<void> {
   await page.goto(LIST_URL)
@@ -60,6 +81,19 @@ async function deleteEntry (page: Page, rowText: string): Promise<void> {
 
 test.describe('Contract / Detail / Document', () => {
   test.beforeEach(async ({ page }: { page: Page }): Promise<void> => {
+    await mockContractListAndDetail(page, { contractId: 555 })
+    await mockCrudResource<IDocumentFixture>({
+      page,
+      basePath: '/api/v1/management/contract-document',
+      listPath: '/api/v1/management/contract-document/paginate/:contractId',
+      createPath: '/api/v1/management/contract-document/:contractId',
+      seed: [],
+      buildCreated: (body: Record<string, unknown>, id: number): IDocumentFixture => makeDocumentFixture({ id, ...body })
+    })
+    await mockRoute(page, '**/api/v1/management/warehouse**', {
+      method: 'GET',
+      body: paginatedResponse([{ id: 1, name: 'Mock Warehouse', status: 'ACTIVE' }])
+    })
     await navigateToContractDetail(page)
     await openDocumentTab(page)
   })
@@ -89,33 +123,32 @@ test.describe('Contract / Detail / Document', () => {
     await deleteEntry(page, note)
   })
 
-  test.describe.serial('Contract / Detail / Document / Update & Delete', () => {
+  // edit-then-delete acts on the same row across one continuous flow (mocked store is
+  // fresh per test, so this can't be split into separate serial tests like the original
+  // real-backend version — kept as one test to preserve the edit-then-delete sequence)
+  test('document — edit then delete document entry', async ({ page }: { page: Page }): Promise<void> => {
     const randomSuffix = Math.floor(Math.random() * 1000)
     const name = `Test เอกสาร For Update ${randomSuffix}`
 
-    test('document — edit document entry', async ({ page }: { page: Page }): Promise<void> => {
-      await createDocument(page, name)
-      await expect(page.locator('tbody').getByText(name, { exact: true })).toBeVisible({ timeout: 10_000 })
-      await page.waitForLoadState('networkidle')
+    await createDocument(page, name)
+    await expect(page.locator('tbody').getByText(name, { exact: true })).toBeVisible({ timeout: 10_000 })
+    await page.waitForLoadState('networkidle')
 
-      await page.locator('tbody tr').filter({ hasText: name }).locator('#action-menu-trigger').click({ timeout: 5_000, delay: 100 })
-      await page.getByRole('menuitem', { name: 'แก้ไข' }).click()
-      await expect(page.locator('[role="dialog"]')).toBeVisible()
-      await page.waitForLoadState('networkidle')
+    await page.locator('tbody tr').filter({ hasText: name }).locator('#action-menu-trigger').click({ timeout: 5_000, delay: 100 })
+    await page.getByRole('menuitem', { name: 'แก้ไข' }).click()
+    await expect(page.locator('[role="dialog"]')).toBeVisible()
+    await page.waitForLoadState('networkidle')
 
-      const noteInput = page.locator('[role="dialog"] [name="note"]')
-      await noteInput.clear()
-      await noteInput.fill(`Updated ${name}`)
+    const noteInput = page.locator('[role="dialog"] [name="note"]')
+    await noteInput.clear()
+    await noteInput.fill(`Updated ${name}`)
 
-      await page.getByRole('button', { name: 'ยืนยัน' }).click()
-      await expect(page.locator('[role="dialog"]').last()).toBeVisible()
-      await page.getByRole('button', { name: 'ยืนยัน' }).last().click()
-      await page.waitForLoadState('networkidle')
-      await expect(page.locator('tbody').getByText(`Updated ${name}`, { exact: true })).toBeVisible({ timeout: 10_000 })
-    })
+    await page.getByRole('button', { name: 'ยืนยัน' }).click()
+    await expect(page.locator('[role="dialog"]').last()).toBeVisible()
+    await page.getByRole('button', { name: 'ยืนยัน' }).last().click()
+    await page.waitForLoadState('networkidle')
+    await expect(page.locator('tbody').getByText(`Updated ${name}`, { exact: true })).toBeVisible({ timeout: 10_000 })
 
-    test('document — delete document entry', async ({ page }: { page: Page }): Promise<void> => {
-      await deleteEntry(page, `Updated ${name}`)
-    })
+    await deleteEntry(page, `Updated ${name}`)
   })
 })

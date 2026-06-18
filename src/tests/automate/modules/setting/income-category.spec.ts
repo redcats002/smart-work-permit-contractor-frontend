@@ -1,6 +1,25 @@
 import { expect, type Page, test } from '@playwright/test'
+import { mockCrudResource } from '../../fixtures/mockApi'
 
 const URL = '/setting/financial/finance-income-category/list'
+
+interface IIncomeCategoryFixture {
+  id: number
+  name: string
+}
+
+interface IIncomeTypeFixture {
+  id: number
+  name: string
+}
+
+function makeIncomeCategoryFixture (overrides: Partial<IIncomeCategoryFixture> = {}): IIncomeCategoryFixture {
+  return { id: 1, name: 'Seed หมวดหมู่รายได้', ...overrides }
+}
+
+function makeIncomeTypeFixture (overrides: Partial<IIncomeTypeFixture> = {}): IIncomeTypeFixture {
+  return { id: 1, name: 'Seed ประเภทรายได้', ...overrides }
+}
 
 async function openCategoryCreateModal (page: Page): Promise<void> {
   const categoryTable = page.locator('table').first()
@@ -43,6 +62,20 @@ async function deleteCategoryItem (page: Page, name: string): Promise<void> {
 
 test.describe('Setting / Income Category', () => {
   test.beforeEach(async ({ page }: { page: Page }): Promise<void> => {
+    await mockCrudResource<IIncomeCategoryFixture>({
+      page,
+      basePath: '/api/v1/management/finance-income-category',
+      supportsDetail: false,
+      seed: [makeIncomeCategoryFixture({ id: 1 })],
+      buildCreated: (body: Record<string, unknown>, id: number): IIncomeCategoryFixture => makeIncomeCategoryFixture({ id, ...body })
+    })
+    await mockCrudResource<IIncomeTypeFixture>({
+      page,
+      basePath: '/api/v1/management/finance-income-type',
+      supportsDetail: false,
+      seed: [makeIncomeTypeFixture({ id: 1 })],
+      buildCreated: (body: Record<string, unknown>, id: number): IIncomeTypeFixture => makeIncomeTypeFixture({ id, ...body })
+    })
     await page.goto(URL)
     await page.waitForLoadState('networkidle')
   })
@@ -143,8 +176,11 @@ test.describe('Setting / Income Category', () => {
     })
 
     test('delete category — confirm removes row', async ({ page }: { page: Page }): Promise<void> => {
+      // each test gets a fresh mocked store (see outer beforeEach), so this test
+      // creates its own row rather than relying on the previous test's row surviving
       await page.goto(URL)
       await page.waitForLoadState('networkidle')
+      await createCategory(page, deleteName)
 
       const categoryTable = page.locator('table').first()
       // const rows = categoryTable.locator('tbody tr')

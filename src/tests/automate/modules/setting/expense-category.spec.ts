@@ -1,6 +1,26 @@
 import { expect, type Page, test } from '@playwright/test'
+import { mockCrudResource } from '../../fixtures/mockApi'
 
 const URL = '/setting/financial/finance-expense-category/list'
+
+interface IExpenseCategoryFixture {
+  id: number
+  name: string
+  externalInternalExpense: string
+}
+
+interface IExpenseTypeFixture {
+  id: number
+  name: string
+}
+
+function makeExpenseCategoryFixture (overrides: Partial<IExpenseCategoryFixture> = {}): IExpenseCategoryFixture {
+  return { id: 1, name: 'Seed หมวดหมู่ค่าใช้จ่าย', externalInternalExpense: 'EXTERNAL', ...overrides }
+}
+
+function makeExpenseTypeFixture (overrides: Partial<IExpenseTypeFixture> = {}): IExpenseTypeFixture {
+  return { id: 1, name: 'Seed ประเภทค่าใช้จ่าย', ...overrides }
+}
 
 async function openCategoryCreateModal (page: Page): Promise<void> {
   const categoryTable = page.locator('table').first()
@@ -41,6 +61,20 @@ async function deleteCategoryItem (page: Page, name: string): Promise<void> {
 
 test.describe('Setting / Expense Category', () => {
   test.beforeEach(async ({ page }: { page: Page }): Promise<void> => {
+    await mockCrudResource<IExpenseCategoryFixture>({
+      page,
+      basePath: '/api/v1/management/finance-expense-category',
+      supportsDetail: false,
+      seed: [makeExpenseCategoryFixture({ id: 1 })],
+      buildCreated: (body: Record<string, unknown>, id: number): IExpenseCategoryFixture => makeExpenseCategoryFixture({ id, ...body })
+    })
+    await mockCrudResource<IExpenseTypeFixture>({
+      page,
+      basePath: '/api/v1/management/finance-expense-type',
+      supportsDetail: false,
+      seed: [makeExpenseTypeFixture({ id: 1 })],
+      buildCreated: (body: Record<string, unknown>, id: number): IExpenseTypeFixture => makeExpenseTypeFixture({ id, ...body })
+    })
     await page.goto(URL)
     await page.waitForLoadState('networkidle')
   })
@@ -138,8 +172,11 @@ test.describe('Setting / Expense Category', () => {
     })
 
     test('delete category — confirm removes row', async ({ page }: { page: Page }): Promise<void> => {
+      // each test gets a fresh mocked store (see outer beforeEach), so this test
+      // creates its own row rather than relying on the previous test's row surviving
       await page.goto(URL)
       await page.waitForLoadState('networkidle')
+      await createCategory(page, deleteName)
 
       const categoryTable = page.locator('table').first()
 

@@ -1,4 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
+import { mockContractListAndDetail } from '../../fixtures/contract.fixture'
 
 const LIST_URL = '/contract/list'
 
@@ -30,6 +31,7 @@ async function openCancelMenuItemIfEnabled (page: Page): Promise<boolean> {
 
 test.describe('Contract / Detail', () => {
   test.beforeEach(async ({ page }: { page: Page }): Promise<void> => {
+    await mockContractListAndDetail(page, { contractId: 555 })
     await navigateToContractDetail(page)
   })
 

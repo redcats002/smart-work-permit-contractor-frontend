@@ -1,4 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
+import { actionResponse, mockRoute, paginatedResponse } from '../../fixtures/mockApi'
 
 const CREATE_URL = '/contract/pre-contract/create'
 
@@ -57,6 +58,37 @@ async function fillVehicleForm (page: Page): Promise<void> {
 
 test.describe('Pre-Contract Create', () => {
   test.beforeEach(async ({ page }: { page: Page }): Promise<void> => {
+    await mockRoute(page, '**/api/v1/user**', {
+      method: 'GET',
+      body: paginatedResponse([{ id: 1, idNo: 'EMP-1', firstName: 'Nonthakorn', lastName: 'Mock', status: 'ACTIVE' }])
+    })
+    await mockRoute(page, '**/api/v1/management/customer**', {
+      method: 'GET',
+      body: paginatedResponse([{ id: 1, idNo: 'CUS-1', firstName: 'กันต์', lastName: 'Mock', phoneNumber: '0800000000', status: 'ACTIVE' }])
+    })
+    await mockRoute(page, '**/api/v1/management/customer/1', {
+      method: 'GET',
+      body: actionResponse({ id: 1, idNo: 'CUS-1', firstName: 'กันต์', lastName: 'Mock', phoneNumber: '0800000000', status: 'ACTIVE' })
+    })
+    // createContract's real response is the bare entity (no {data} envelope) — see useInit.ts useSubmit() reading `response?.id` directly
+    await mockRoute(page, '**/api/v1/management/pre-contract', {
+      method: 'POST',
+      body: { id: 999 }
+    })
+    await mockRoute(page, '**/api/v1/management/pre-contract/999', {
+      method: 'GET',
+      body: actionResponse({
+        id: 999,
+        status: 'DRAFT',
+        preAssets: [],
+        customer: { id: 1 },
+        sellMan: { id: 1 }
+      })
+    })
+    await mockRoute(page, '**/api/v1/management/pre-contract/cancelled/999', {
+      method: 'PATCH',
+      body: actionResponse(true)
+    })
     await page.goto(CREATE_URL)
     await page.waitForURL(`**${CREATE_URL}`)
   })

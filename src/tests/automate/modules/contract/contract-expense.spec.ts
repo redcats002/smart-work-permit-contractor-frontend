@@ -1,6 +1,31 @@
 import { expect, type Page, test } from '@playwright/test'
+import { mockContractListAndDetail } from '../../fixtures/contract.fixture'
+import { mockCrudResource, mockRoute, paginatedResponse } from '../../fixtures/mockApi'
 
 const LIST_URL = '/contract/list'
+
+interface IExpenseFixture {
+  id: number
+  date: string
+  note: string
+  amount: number
+  vatType: string
+  expenseCategory: { id: number, name: string }
+  expenseType: { id: number, name: string }
+}
+
+function makeExpenseFixture (overrides: Partial<IExpenseFixture> = {}): IExpenseFixture {
+  return {
+    id: 1,
+    date: '2024-01-01',
+    note: 'Seed Expense',
+    amount: 100,
+    vatType: 'NONE',
+    expenseCategory: { id: 1, name: 'Mock Expense Category' },
+    expenseType: { id: 1, name: 'Mock Expense Type' },
+    ...overrides
+  }
+}
 
 async function navigateToContractDetail (page: Page): Promise<void> {
   await page.goto(LIST_URL)
@@ -41,6 +66,7 @@ async function createExpense (page: Page, note: string): Promise<void> {
   await expect(page.getByRole('option').first()).toBeVisible({ timeout: 5_000 })
   await page.getByRole('option').first().click({ timeout: 5_000, delay: 100, force: true })
   await page.getByRole('option').first().click({ timeout: 5_000, delay: 100, force: true })
+  await page.getByRole('option').first().click({ timeout: 5_000, delay: 100, force: true })
   await page.waitForLoadState('networkidle')
   await page.waitForLoadState('domcontentloaded')
   await page.waitForLoadState('load')
@@ -74,6 +100,23 @@ async function deleteEntry (page: Page, rowText: string): Promise<void> {
 
 test.describe('Contract / Detail / Expense', () => {
   test.beforeEach(async ({ page }: { page: Page }): Promise<void> => {
+    await mockContractListAndDetail(page, { contractId: 555 })
+    await mockCrudResource<IExpenseFixture>({
+      page,
+      basePath: '/api/v1/management/contract-expense',
+      listPath: '/api/v1/management/contract-expense/paginate/:contractId',
+      createPath: '/api/v1/management/contract-expense/:contractId',
+      seed: [],
+      buildCreated: (body: Record<string, unknown>, id: number): IExpenseFixture => makeExpenseFixture({ id, ...body })
+    })
+    await mockRoute(page, '**/api/v1/management/finance-expense-category**', {
+      method: 'GET',
+      body: paginatedResponse([{ id: 1, name: 'Mock Expense Category' }])
+    })
+    await mockRoute(page, '**/api/v1/management/finance-expense-type**', {
+      method: 'GET',
+      body: paginatedResponse([{ id: 1, name: 'Mock Expense Type' }])
+    })
     await navigateToContractDetail(page)
     await openExpenseTab(page)
   })
@@ -103,37 +146,36 @@ test.describe('Contract / Detail / Expense', () => {
     await deleteEntry(page, note)
   })
 
-  test.describe.serial('Contract / Detail / Expense / Update & Delete', () => {
+  // edit-then-delete acts on the same row across one continuous flow (mocked store is
+  // fresh per test, so this can't be split into separate serial tests like the original
+  // real-backend version — kept as one test to preserve the edit-then-delete sequence)
+  test('expense — edit then delete expense entry', async ({ page }: { page: Page }): Promise<void> => {
     const randomSuffix = Math.floor(Math.random() * 1000)
     const name = `Test ค่าใช้จ่าย For Update ${randomSuffix}`
 
-    test('expense — edit expense entry', async ({ page }: { page: Page }): Promise<void> => {
-      await createExpense(page, name)
-      await expect(page.locator('tbody').getByText(name, { exact: true })).toBeVisible({ timeout: 10_000 })
-      await page.waitForLoadState('networkidle')
+    await createExpense(page, name)
+    await expect(page.locator('tbody').getByText(name, { exact: true })).toBeVisible({ timeout: 10_000 })
+    await page.waitForLoadState('networkidle')
 
-      await page.locator('tbody tr').filter({ hasText: name }).locator('#action-menu-trigger').click({ timeout: 5_000, delay: 100 })
-      await page.getByRole('menuitem', { name: 'แก้ไข' }).click()
-      await expect(page.locator('[role="dialog"]')).toBeVisible()
-      await page.waitForLoadState('networkidle')
+    await page.locator('tbody tr').filter({ hasText: name }).locator('#action-menu-trigger').click({ timeout: 5_000, delay: 100 })
+    await page.getByRole('menuitem', { name: 'แก้ไข' }).click()
+    await expect(page.locator('[role="dialog"]')).toBeVisible()
+    await page.waitForLoadState('networkidle')
 
-      const noteInput = page.locator('[role="dialog"] [name="note"]')
-      await noteInput.focus()
-      await noteInput.clear({ timeout: 5_000, force: true })
-      await page.waitForLoadState('load')
-      await noteInput.fill(`Updated ${name}`, { timeout: 5_000, force: true })
+    const noteInput = page.locator('[role="dialog"] [name="note"]')
+    await noteInput.focus()
+    await noteInput.clear({ timeout: 5_000, force: true })
+    await page.waitForLoadState('load')
+    await noteInput.fill(`Updated ${name}`, { timeout: 5_000, force: true })
 
-      await page.getByRole('button', { name: 'ยืนยัน' }).click()
-      await expect(page.locator('[role="dialog"]').last()).toBeVisible()
-      await page.getByRole('button', { name: 'ยืนยัน' }).last().click()
-      await page.waitForLoadState('load')
-      await page.waitForLoadState('domcontentloaded')
-      await page.waitForLoadState('networkidle')
-      await expect(page.locator('tbody').getByText(`Updated ${name}`, { exact: true })).toBeVisible({ timeout: 10_000 })
-    })
+    await page.getByRole('button', { name: 'ยืนยัน' }).click()
+    await expect(page.locator('[role="dialog"]').last()).toBeVisible()
+    await page.getByRole('button', { name: 'ยืนยัน' }).last().click()
+    await page.waitForLoadState('load')
+    await page.waitForLoadState('domcontentloaded')
+    await page.waitForLoadState('networkidle')
+    await expect(page.locator('tbody').getByText(`Updated ${name}`, { exact: true })).toBeVisible({ timeout: 10_000 })
 
-    test('expense — delete expense entry', async ({ page }: { page: Page }): Promise<void> => {
-      await deleteEntry(page, `Updated ${name}`)
-    })
+    await deleteEntry(page, `Updated ${name}`)
   })
 })

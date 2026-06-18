@@ -1,6 +1,16 @@
 import { expect, type Page, test } from '@playwright/test'
+import { mockCrudResource } from '../../fixtures/mockApi'
 
 const URL = '/setting/contract/contract-loan-purpose/list'
+
+interface IContractLoanPurposeFixture {
+  id: number
+  name: string
+}
+
+function makeContractLoanPurposeFixture (overrides: Partial<IContractLoanPurposeFixture> = {}): IContractLoanPurposeFixture {
+  return { id: 1, name: 'Seed Loan Purpose', ...overrides }
+}
 
 async function createLoanPurpose (page: Page, name: string): Promise<void> {
   await page.getByRole('button', { name: 'เพิ่มวัตถุประสงค์การกู้ใหม่' }).click()
@@ -30,6 +40,13 @@ async function deleteItem (page: Page, name: string): Promise<void> {
 
 test.describe('Setting / Contract Loan Purpose', () => {
   test.beforeEach(async ({ page }: { page: Page }): Promise<void> => {
+    await mockCrudResource<IContractLoanPurposeFixture>({
+      page,
+      basePath: '/api/v1/management/contract-loan-purpose',
+      supportsDetail: false,
+      seed: [makeContractLoanPurposeFixture({ id: 1 })],
+      buildCreated: (body: Record<string, unknown>, id: number): IContractLoanPurposeFixture => makeContractLoanPurposeFixture({ id, ...body })
+    })
     await page.goto(URL)
     await page.waitForLoadState('networkidle')
   })
@@ -115,8 +132,11 @@ test.describe('Setting / Contract Loan Purpose', () => {
     })
 
     test('delete — confirm removes row', async ({ page }: { page: Page }): Promise<void> => {
+      // each test gets a fresh mocked store (see outer beforeEach), so this test
+      // creates its own row rather than relying on the previous test's row surviving
       await page.goto(URL)
       await page.waitForLoadState('networkidle')
+      await createLoanPurpose(page, deleteName)
 
       const rows = page.locator('tbody tr')
       const countBefore = await rows.count()

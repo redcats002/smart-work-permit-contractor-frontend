@@ -25,11 +25,23 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { previousRoutePath } from '@/router'
 
+const route = useRoute()
 const router = useRouter()
 
+function getDomain (path: string): string {
+  return path.split('/').filter(Boolean)[0] ?? ''
+}
+
 function back (): void {
-  router.back()
+  const sameDomain = previousRoutePath && getDomain(previousRoutePath) === getDomain(route.path)
+
+  if (sameDomain) {
+    router.back()
+  } else {
+    router.push({ name: 'AnnouncementPage' })
+  }
 }
 </script>
