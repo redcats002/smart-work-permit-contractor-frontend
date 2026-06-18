@@ -1,4 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
+import { actionResponse, mockRoute, paginatedResponse } from '../../fixtures/mockApi'
 
 const LOGIN_URL = `/auth/login`
 
@@ -7,6 +8,28 @@ test.describe('Login', () => {
   test.use({ storageState: { cookies: [], origins: [] } })
 
   test.beforeEach(async ({ page }: { page: Page }): Promise<void> => {
+    await mockRoute(page, '**/api/v1/auth/public/login', {
+      method: 'POST',
+      body: actionResponse({
+        user: { id: '1', name: 'System User', firstName: 'System', lastName: 'User', email: 'systemuser@email.com' },
+        token: 'mock-access-token'
+      })
+    })
+    await mockRoute(page, '**/api/v1/auth/active-branches', {
+      method: 'GET',
+      body: paginatedResponse([
+        { id: '0', name: 'Mock Branch 0', logo: '', status: 'ACTIVE' },
+        { id: '1', name: 'Mock Branch 1', logo: '', status: 'ACTIVE' }
+      ])
+    })
+    await mockRoute(page, '**/api/v1/auth/select-active-branch', {
+      method: 'POST',
+      body: actionResponse({ activeOrganizationId: '1' })
+    })
+    await mockRoute(page, '**/api/v1/management/announcement**', {
+      method: 'GET',
+      body: paginatedResponse([], { limit: 3 })
+    })
     await page.goto(LOGIN_URL)
   })
 
@@ -45,6 +68,13 @@ test.describe('Login', () => {
   })
 
   test('login fail — show error toast', async ({ page }: { page: Page }): Promise<void> => {
+    // overrides the beforeEach's success mock — last-registered route wins
+    await mockRoute(page, '**/api/v1/auth/public/login', {
+      method: 'POST',
+      status: 401,
+      body: { code: 401, message: 'Invalid email or password' }
+    })
+
     await page.getByLabel('อีเมล').fill('wrong@example.com')
     await page.getByLabel('รหัสผ่าน').fill('wrongpassword')
     await page.getByRole('button', { name: 'ถัดไป' }).click()

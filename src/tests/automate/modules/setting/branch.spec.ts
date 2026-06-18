@@ -1,7 +1,18 @@
 import { expect, type Page, test } from '@playwright/test'
+import { mockCrudResource } from '../../fixtures/mockApi'
 
 const LIST_URL = '/setting/other/branch/list'
 const CREATE_URL = '/setting/other/branch/create'
+
+interface IBranchFixture {
+  id: number
+  name: string
+  status: string
+}
+
+function makeBranchFixture (overrides: Partial<IBranchFixture> = {}): IBranchFixture {
+  return { id: 1, name: 'Seed สาขา', status: 'ACTIVE', ...overrides }
+}
 
 async function fillBranchTimeSlot (page: Page): Promise<void> {
   await page.getByRole('button', { name: 'วัน/เวลา ทำการ' }).click()
@@ -56,7 +67,8 @@ async function openActionMenu (page: Page): Promise<void> {
 
 async function navigateToBranchDetail (page: Page, name: string): Promise<void> {
   await page.goto(LIST_URL)
-  await page.waitForLoadState('networkidle')
+  await page.waitForLoadState('load')
+  await page.waitForLoadState('domcontentloaded')
   await expect(page.locator('tbody').getByText(name, { exact: true })).toBeVisible({ timeout: 10_000 })
   await page.locator('tbody tr').filter({ hasText: name }).getByRole('link').click()
   await expect(page).toHaveURL(/setting\/other\/branch\/([\s\S]*)/, { timeout: 5_000 })
@@ -77,6 +89,12 @@ async function deleteCreatedBranch (page: Page, name: string): Promise<void> {
 
 test.describe('Setting / Branch', () => {
   test.beforeEach(async ({ page }: { page: Page }): Promise<void> => {
+    await mockCrudResource<IBranchFixture>({
+      page,
+      basePath: '/api/v1/management/branch',
+      seed: [makeBranchFixture({ id: 1 })],
+      buildCreated: (body: Record<string, unknown>, id: number): IBranchFixture => makeBranchFixture({ id, ...body })
+    })
     await page.goto(LIST_URL)
     await page.waitForLoadState('networkidle')
   })
@@ -178,6 +196,9 @@ test.describe('Setting / Branch', () => {
     })
 
     test('delete — confirm redirects to list and removes row', async ({ page }: { page: Page }): Promise<void> => {
+      // each test gets a fresh mocked store (see outer beforeEach), so this test
+      // creates its own row rather than relying on the previous test's row surviving
+      await createBranch(page, deleteName, deleteIdNo)
       await page.goto(LIST_URL)
       await page.waitForLoadState('networkidle')
       const countBefore = await page.locator('tbody tr').count()

@@ -1,7 +1,19 @@
 import { expect, type Page, test } from '@playwright/test'
+import { mockCrudResource } from '../../fixtures/mockApi'
 
 const LIST_URL = '/setting/other/warehouse/list'
 const CREATE_URL = '/setting/other/warehouse/create'
+
+interface IWarehouseFixture {
+  id: number
+  idNo: string
+  name: string
+  status: string
+}
+
+function makeWarehouseFixture (overrides: Partial<IWarehouseFixture> = {}): IWarehouseFixture {
+  return { id: 1, idNo: 'WH-1', name: 'Seed คลัง', status: 'ACTIVE', ...overrides }
+}
 
 async function createWarehouse (page: Page, name: string, prefix: string): Promise<void> {
   await page.goto(CREATE_URL)
@@ -48,6 +60,12 @@ async function deleteCreatedWarehouse (page: Page, name: string): Promise<void> 
 
 test.describe('Setting / Warehouse', () => {
   test.beforeEach(async ({ page }: { page: Page }): Promise<void> => {
+    await mockCrudResource<IWarehouseFixture>({
+      page,
+      basePath: '/api/v1/management/warehouse',
+      seed: [makeWarehouseFixture({ id: 1 })],
+      buildCreated: (body: Record<string, unknown>, id: number): IWarehouseFixture => makeWarehouseFixture({ id, idNo: `WH-${id}`, ...body })
+    })
     await page.goto(LIST_URL)
     await page.waitForLoadState('networkidle')
   })
@@ -134,6 +152,9 @@ test.describe('Setting / Warehouse', () => {
     })
 
     test('delete — confirm redirects to list and removes row', async ({ page }: { page: Page }): Promise<void> => {
+      // each test gets a fresh mocked store (see outer beforeEach), so this test
+      // creates its own row rather than relying on the previous test's row surviving
+      await createWarehouse(page, deleteName, deletePrefix)
       await page.goto(LIST_URL)
       await page.waitForLoadState('networkidle')
       const countBefore = await page.locator('tbody tr').count()

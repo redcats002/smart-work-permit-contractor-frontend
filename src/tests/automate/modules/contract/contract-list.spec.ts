@@ -1,4 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
+import { mockContractListAndDetail } from '../../fixtures/contract.fixture'
 
 const LIST_URL = '/contract/list'
 
@@ -9,6 +10,7 @@ async function switchToContractTab (page: Page): Promise<void> {
 
 test.describe('Contract / List', () => {
   test.beforeEach(async ({ page }: { page: Page }): Promise<void> => {
+    await mockContractListAndDetail(page, { contractId: 555 })
     await page.goto(LIST_URL)
     await page.waitForLoadState('networkidle')
   })

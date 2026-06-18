@@ -72,10 +72,13 @@ const router: Router = createRouter({
 
 const DEFAULT_TITLE: string = 'Mittae Siam Management'
 
-router.afterEach((to: RouteLocationNormalized, _from: RouteLocationNormalized, failure: NavigationFailure | void | undefined): void => {
+export let previousRoutePath: string | null = null
+
+router.afterEach((to: RouteLocationNormalized, from: RouteLocationNormalized, failure: NavigationFailure | void | undefined): void => {
   if (isNavigationFailure(failure)) return
   document.title = to?.meta?.title ? `${DEFAULT_TITLE} | ${to.meta.title}` : DEFAULT_TITLE
   void updateFromRoute(to)
+  previousRoutePath = from.fullPath
 })
 
 router.onError((error: Error, to: RouteLocationNormalized): void => {

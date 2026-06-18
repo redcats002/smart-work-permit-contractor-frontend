@@ -1,6 +1,16 @@
 import { expect, type Page, test } from '@playwright/test'
+import { mockCrudResource } from '../../fixtures/mockApi'
 
 const URL = '/setting/other/how-did-find-us/list'
+
+interface IHowDidFindUsFixture {
+  id: number
+  name: string
+}
+
+function makeHowDidFindUsFixture (overrides: Partial<IHowDidFindUsFixture> = {}): IHowDidFindUsFixture {
+  return { id: 1, name: 'Seed Channel', ...overrides }
+}
 
 async function createChannel (page: Page, name: string): Promise<void> {
   await page.getByRole('button', { name: 'เพิ่มช่องทางใหม่' }).click()
@@ -30,6 +40,13 @@ async function deleteItem (page: Page, name: string): Promise<void> {
 
 test.describe('Setting / How Did Find Us', () => {
   test.beforeEach(async ({ page }: { page: Page }): Promise<void> => {
+    await mockCrudResource<IHowDidFindUsFixture>({
+      page,
+      basePath: '/api/v1/management/how-did-find-us',
+      supportsDetail: false,
+      seed: [makeHowDidFindUsFixture({ id: 1 })],
+      buildCreated: (body: Record<string, unknown>, id: number): IHowDidFindUsFixture => makeHowDidFindUsFixture({ id, ...body })
+    })
     await page.goto(URL)
     await page.waitForLoadState('networkidle')
   })
@@ -115,8 +132,11 @@ test.describe('Setting / How Did Find Us', () => {
     })
 
     test('delete — confirm removes row', async ({ page }: { page: Page }): Promise<void> => {
+      // each test gets a fresh mocked store (see outer beforeEach), so this test
+      // creates its own row rather than relying on the previous test's row surviving
       await page.goto(URL)
       await page.waitForLoadState('networkidle')
+      await createChannel(page, deleteName)
 
       const rows = page.locator('tbody tr')
       const countBefore = await rows.count()

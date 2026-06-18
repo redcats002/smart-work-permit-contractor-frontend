@@ -1,6 +1,31 @@
 import { expect, type Page, test } from '@playwright/test'
+import { mockContractListAndDetail } from '../../fixtures/contract.fixture'
+import { mockCrudResource, mockRoute, paginatedResponse } from '../../fixtures/mockApi'
 
 const LIST_URL = '/contract/list'
+
+interface IIncomeFixture {
+  id: number
+  date: string
+  note: string
+  amount: number
+  vatType: string
+  incomeCategory: { id: number, name: string }
+  incomeType: { id: number, name: string }
+}
+
+function makeIncomeFixture (overrides: Partial<IIncomeFixture> = {}): IIncomeFixture {
+  return {
+    id: 1,
+    date: '2024-01-01',
+    note: 'Seed Income',
+    amount: 100,
+    vatType: 'NONE',
+    incomeCategory: { id: 1, name: 'Mock Income Category' },
+    incomeType: { id: 1, name: 'Mock Income Type' },
+    ...overrides
+  }
+}
 
 async function navigateToContractDetail (page: Page): Promise<void> {
   await page.goto(LIST_URL)
@@ -68,6 +93,23 @@ async function createIncome (page: Page, note: string): Promise<void> {
 
 test.describe('Contract / Detail / Income', () => {
   test.beforeEach(async ({ page }: { page: Page }): Promise<void> => {
+    await mockContractListAndDetail(page, { contractId: 555 })
+    await mockCrudResource<IIncomeFixture>({
+      page,
+      basePath: '/api/v1/management/contract-income',
+      listPath: '/api/v1/management/contract-income/paginate/:contractId',
+      createPath: '/api/v1/management/contract-income/:contractId',
+      seed: [],
+      buildCreated: (body: Record<string, unknown>, id: number): IIncomeFixture => makeIncomeFixture({ id, ...body })
+    })
+    await mockRoute(page, '**/api/v1/management/finance-income-category**', {
+      method: 'GET',
+      body: paginatedResponse([{ id: 1, name: 'Mock Income Category' }])
+    })
+    await mockRoute(page, '**/api/v1/management/finance-income-type**', {
+      method: 'GET',
+      body: paginatedResponse([{ id: 1, name: 'Mock Income Type' }])
+    })
     await navigateToContractDetail(page)
     await openIncomeTab(page)
   })
@@ -97,38 +139,38 @@ test.describe('Contract / Detail / Income', () => {
     await deleteEntry(page, note)
   })
 
-  test.describe.serial('Contract / Detail / Income / Update & Delete', () => {
+  // edit-then-delete acts on the same row across one continuous flow (mocked store is
+  // fresh per test, so this can't be split into separate serial tests like the original
+  // real-backend version — kept as one test to preserve the edit-then-delete sequence)
+  test('income — edit then delete income entry', async ({ page }: { page: Page }): Promise<void> => {
     const randomSuffix = Math.floor(Math.random() * 1000)
     const name = `Test รายได้ For Update ${randomSuffix}`
-    test('income — edit income entry from read modal', async ({ page }: { page: Page }): Promise<void> => {
-      await createIncome(page, name)
-      await expect(page.locator('tbody').getByText(name, { exact: true })).toBeVisible({ timeout: 10_000 })
-      await page.waitForLoadState('networkidle')
-      await page.waitForLoadState('domcontentloaded')
-      await page.waitForLoadState('load')
 
-      // Open READ modal via action menu
-      await page.locator('tbody tr').filter({ hasText: name }).locator('#action-menu-trigger').click({ timeout: 5_000, delay: 100 })
-      await page.getByRole('menuitem', { name: 'แก้ไข' }).click()
-      await expect(page.locator('[role="dialog"]')).toBeVisible()
-      await page.waitForLoadState('networkidle')
-      await page.waitForLoadState('domcontentloaded')
-      await page.waitForLoadState('load')
+    await createIncome(page, name)
+    await expect(page.locator('tbody').getByText(name, { exact: true })).toBeVisible({ timeout: 10_000 })
+    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
+    await page.waitForLoadState('load')
 
-      // Clear and refill note
-      const noteInput = page.locator('[role="dialog"] [name="note"]')
-      await noteInput.clear()
-      await noteInput.fill(`Updated ${name}`)
+    // Open READ modal via action menu
+    await page.locator('tbody tr').filter({ hasText: name }).locator('#action-menu-trigger').click({ timeout: 5_000, delay: 100 })
+    await page.getByRole('menuitem', { name: 'แก้ไข' }).click()
+    await expect(page.locator('[role="dialog"]')).toBeVisible()
+    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
+    await page.waitForLoadState('load')
 
-      await page.getByRole('button', { name: 'ยืนยัน' }).click()
-      await expect(page.locator('[role="dialog"]').last()).toBeVisible()
-      await page.getByRole('button', { name: 'ยืนยัน' }).last().click()
-      await page.waitForLoadState('networkidle')
-      await expect(page.locator('tbody').getByText(`Updated ${name}`, { exact: true })).toBeVisible({ timeout: 10_000 })
-    })
+    // Clear and refill note
+    const noteInput = page.locator('[role="dialog"] [name="note"]')
+    await noteInput.clear()
+    await noteInput.fill(`Updated ${name}`)
 
-    test('income — delete income entry', async ({ page }: { page: Page }): Promise<void> => {
-      await deleteEntry(page, `Updated ${name}`)
-    })
+    await page.getByRole('button', { name: 'ยืนยัน' }).click()
+    await expect(page.locator('[role="dialog"]').last()).toBeVisible()
+    await page.getByRole('button', { name: 'ยืนยัน' }).last().click()
+    await page.waitForLoadState('networkidle')
+    await expect(page.locator('tbody').getByText(`Updated ${name}`, { exact: true })).toBeVisible({ timeout: 10_000 })
+
+    await deleteEntry(page, `Updated ${name}`)
   })
 })

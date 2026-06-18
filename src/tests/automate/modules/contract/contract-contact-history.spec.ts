@@ -1,6 +1,27 @@
 import { expect, type Page, test } from '@playwright/test'
+import { mockContractListAndDetail } from '../../fixtures/contract.fixture'
+import { mockCrudResource, mockRoute, paginatedResponse } from '../../fixtures/mockApi'
 
 const LIST_URL = '/contract/list'
+
+interface IContactHistoryFixture {
+  id: number
+  contactAt: string
+  topic: string
+  note: string
+  employee: { id: number, firstName: string, lastName: string }
+}
+
+function makeContactHistoryFixture (overrides: Partial<IContactHistoryFixture> = {}): IContactHistoryFixture {
+  return {
+    id: 1,
+    contactAt: '2024-01-01',
+    topic: 'OTHER',
+    note: 'Seed Contact',
+    employee: { id: 1, firstName: 'Mock', lastName: 'Employee' },
+    ...overrides
+  }
+}
 
 async function navigateToContractDetail (page: Page): Promise<void> {
   await page.goto(LIST_URL)
@@ -51,6 +72,21 @@ async function createContactHistory (page: Page, note: string): Promise<void> {
 
 test.describe('Contract / Detail / Contact History', () => {
   test.beforeEach(async ({ page }: { page: Page }): Promise<void> => {
+    await mockContractListAndDetail(page, { contractId: 555 })
+    await mockCrudResource<IContactHistoryFixture>({
+      page,
+      basePath: '/api/v1/management/contract-contact-history',
+      listPath: '/api/v1/management/contract-contact-history/paginate/:contractId',
+      createPath: '/api/v1/management/contract-contact-history/:contractId',
+      supportsUpdate: false,
+      supportsDelete: false,
+      seed: [],
+      buildCreated: (body: Record<string, unknown>, id: number): IContactHistoryFixture => makeContactHistoryFixture({ id, ...body })
+    })
+    await mockRoute(page, '**/api/v1/management/contract-loan-purpose**', {
+      method: 'GET',
+      body: paginatedResponse([{ id: 1, name: 'Mock Topic' }])
+    })
     await navigateToContractDetail(page)
     await openContactHistoryTab(page)
   })

@@ -1,6 +1,16 @@
 import { expect, type Page, test } from '@playwright/test'
+import { mockCrudResource } from '../../fixtures/mockApi'
 
 const URL = '/setting/customer/customer-group/list'
+
+interface ICustomerGroupFixture {
+  id: number
+  name: string
+}
+
+function makeCustomerGroupFixture (overrides: Partial<ICustomerGroupFixture> = {}): ICustomerGroupFixture {
+  return { id: 1, name: 'Seed Customer Group', ...overrides }
+}
 
 async function createCustomerGroup (page: Page, name: string): Promise<void> {
   await page.getByRole('button', { name: 'เพิ่มกลุ่มลูกค้าใหม่' }).click()
@@ -30,6 +40,13 @@ async function deleteItem (page: Page, name: string): Promise<void> {
 
 test.describe('Setting / Customer Group', () => {
   test.beforeEach(async ({ page }: { page: Page }): Promise<void> => {
+    await mockCrudResource<ICustomerGroupFixture>({
+      page,
+      basePath: '/api/v1/management/customer-group',
+      supportsDetail: false,
+      seed: [makeCustomerGroupFixture({ id: 1 })],
+      buildCreated: (body: Record<string, unknown>, id: number): ICustomerGroupFixture => makeCustomerGroupFixture({ id, ...body })
+    })
     await page.goto(URL)
     await page.waitForLoadState('networkidle')
   })
@@ -115,8 +132,11 @@ test.describe('Setting / Customer Group', () => {
     })
 
     test('delete — confirm removes row', async ({ page }: { page: Page }): Promise<void> => {
+      // each test gets a fresh mocked store (see outer beforeEach), so this test
+      // creates its own row rather than relying on the previous test's row surviving
       await page.goto(URL)
       await page.waitForLoadState('networkidle')
+      await createCustomerGroup(page, deleteName)
 
       const rows = page.locator('tbody tr')
       const countBefore = await rows.count()
