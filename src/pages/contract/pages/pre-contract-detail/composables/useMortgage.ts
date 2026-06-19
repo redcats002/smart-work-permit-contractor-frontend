@@ -1,6 +1,7 @@
 import { computed, nextTick, ref, type Ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { toast } from '@/plugins/toast'
+import { useDayjs } from '@/utils/Dayjs'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToTop } from '@/utils/ScrollToTop'
 import type { IConfirmMortgagePayload } from '@/models/request/pre-contract/PreContractReq.model'
@@ -26,7 +27,14 @@ export function useMortgage (useFetch: () => void): IUseMortgage {
 
 
   async function useConfirmMortgage (): Promise<void> {
-    await PreContractService.confirmMortgage(contractId.value, formMortgage.value)
+    const dayjs = useDayjs()
+    const now = dayjs()
+    const contractedAt = dayjs(formMortgage.value.contractedAt).toDate()
+    contractedAt.setHours(now.hour(), now.minute(), now.second(), now.millisecond())
+    await PreContractService.confirmMortgage(contractId.value, {
+      ...formMortgage.value,
+      contractedAt
+    })
     toast.success('ยืนยันการจำนองสำเร็จ')
     useFetch()
   }

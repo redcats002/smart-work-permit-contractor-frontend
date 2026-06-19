@@ -2,6 +2,7 @@
   <DatePicker
     v-model="pickerValue"
     :date-format="dateFormat"
+    :disabled="disabled"
     :icon-position="iconPosition"
     :manual-input="false"
     v-bind="attrs"
@@ -22,8 +23,9 @@ defineOptions({
 const model = defineModel<Date | Date[] | string | string[] | null>()
 const startModel = defineModel<Date | string | null | undefined>('start')
 const endModel = defineModel<Date | string | null | undefined>('end')
-withDefaults(defineProps<{ dateFormat?: string, iconPosition?: 'prepend' | 'append' }>(), {
+withDefaults(defineProps<{ dateFormat?: string, disabled?: boolean, iconPosition?: 'prepend' | 'append' }>(), {
   dateFormat: 'dd/mm/yy',
+  disabled: false,
   iconPosition: 'append'
 })
 
