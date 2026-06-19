@@ -108,7 +108,9 @@
           <template #default="{ invalid }">
             <DatePickerInput
               v-model="model.contractedAt"
+              :disabled="isStaging || isProd"
               :invalid="invalid"
+              :max-date="new Date()"
               name="contractedAt"
               placeholder="กรุณากรอกวันที่ทำสัญญา" />
           </template>
@@ -173,6 +175,7 @@ import ContractLoanPurposeSelection from '@/components/selection/modules/api/con
 import ContractLoanTypeSelection from '@/components/selection/modules/api/contract-loan-type/ContractLoanTypeSelection.vue'
 import ModalCustomerSelection from '@/components/selection/modules/api/customer/ModalCustomerSelection.vue'
 import HowDidFindUsSelection from '@/components/selection/modules/api/how-did-find-us/HowDidFindUsSelection.vue'
+import useDev from '@/composables/useDev'
 import { Icon } from '@iconify/vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
@@ -194,9 +197,11 @@ interface IEmits {
 const props = withDefaults(defineProps<IProps>(), {
   primaryCustomer: null
 })
-const emit = defineEmits<IEmits>()
+const emits = defineEmits<IEmits>()
 
 const model = defineModel<MortgageFormValues>({ required: true })
+
+const { isStaging, isProd } = useDev()
 
 const formRef = useTemplateRef<IFormType>('formRef')
 const resolver = zodResolver(MortgageSchema)
@@ -262,7 +267,7 @@ function onSubmit (event: FormSubmitEvent): void {
     return
   }
   usePayload()
-  emit('confirmed')
+  emits('confirmed')
 }
 
 async function submit (): Promise<void> {

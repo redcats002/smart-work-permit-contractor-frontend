@@ -4,6 +4,7 @@ interface IUseDev {
   isDev: ComputedRef<boolean>
   isAlpha: ComputedRef<boolean>
   isStaging: ComputedRef<boolean>
+  isProd: ComputedRef<boolean>
 }
 
 export default function useDev (): IUseDev {
@@ -25,6 +26,12 @@ export default function useDev (): IUseDev {
     const isStagingHost = window.location.hostname === 'mittae-siam-management-staging.vercel.app'
     return isStagingEnv || isStagingHost
   })
+  const isProd = computed((): boolean => {
+    const prodEnvs = ['prod', 'production']
+    const isProdEnv = prodEnvs.includes(import.meta.env.VITE_APP_ENV)
+    const isProdHost = window.location.hostname === 'mittae-siam-management.vercel.app'
+    return isProdEnv || isProdHost
+  })
 
-  return { isDev, isAlpha, isStaging }
+  return { isDev, isAlpha, isStaging, isProd }
 }
