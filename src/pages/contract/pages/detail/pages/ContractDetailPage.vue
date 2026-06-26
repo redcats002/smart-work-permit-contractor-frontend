@@ -6,8 +6,10 @@
       <Spacer />
       <ContractDetailMenuAction
         :status="contract.status"
+        @close-account="onCloseAccount()"
         @delete="onCancelled()"
         @edit="onEdit()"
+        @finance="onFinance()"
         @print="onPrint()" />
     </BaseTop>
     <BasePage>
@@ -79,6 +81,14 @@ function onCancelled (): void {
 
 function onPrint (): void {
   router.push({ name: 'ContractPrintPage', params: { id: contractId.value } })
+}
+
+function onFinance (): void {
+  router.push({ name: 'ContractFinancePage', params: { id: contractId.value } })
+}
+
+function onCloseAccount (): void {
+  router.push({ name: 'ContractCloseAccountPage', params: { id: contractId.value } })
 }
 
 onMounted((): void => {

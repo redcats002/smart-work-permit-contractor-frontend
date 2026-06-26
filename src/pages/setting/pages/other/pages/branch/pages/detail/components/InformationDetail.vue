@@ -63,6 +63,7 @@ const items = computed((): IDisplayList<IBranchById>[] => {
     { label: 'เลขประจำตัวผู้เสียภาษี', key: 'taxId', value: props.data?.taxId },
     { label: 'วันที่เปิดสาขา', key: 'openAt', value: dayjs.formatDate(props.data?.openAt) },
     { label: 'เปิดทำการมาแล้ว', key: 'operatingSince', value: dayjs.formatAge(props.data?.openAt) || '-' },
+    { label: 'หัวหน้าสาย', key: 'lineHead', value: props.data?.lineHead || '-' },
     { label: 'ที่อยู่', key: 'address', value: formatter.fullAddress({ address: props.data?.address, district: props.data?.district, postCode: props.data?.postCode, province: props.data?.province, subDistrict: props.data?.subDistrict }) || '-' },
     { label: 'วัน/เวลา ทำการ', key: 'branchTimes', value: props.data?.branchTimes }
   ]
