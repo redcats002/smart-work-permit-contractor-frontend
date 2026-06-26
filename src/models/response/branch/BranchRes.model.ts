@@ -18,6 +18,7 @@ export interface IBranchById extends IEntity {
   province: string
   postCode: string
   branchTimes: IBranchTime[]
+  lineHead?: string
 }
 
 export type TGetBranchListResponse = IBasePaginationResponse<IBranchList>
