@@ -44,6 +44,18 @@
           :max-date="dayjs().toDate()"
           name="openAt" />
       </LabelField>
+      <LabelField
+        v-slot="{invalid}"
+        :form="form"
+        label="หัวหน้าสาย"
+        name="lineHead"
+        required>
+        <BranchSelection
+          :invalid="invalid"
+          name="lineHead"
+          placeholder="เลือกสาขา"
+          multiple />
+      </LabelField>
     </div>
   </div>
 </template>
@@ -58,6 +70,7 @@ import { BranchStatusEnum } from '@/enums/modules/branch/BranchStatus.enum'
 import DatePickerInput from '@/components/input/DatePickerInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import Switch from '@/components/input/Switch.vue'
+import BranchSelection from '@/components/selection/modules/api/branch/BranchSelection.vue'
 import { type BranchFormValues, useFormInitialValues } from '../schema/branch.schema'
 
 interface IProps {

@@ -3,6 +3,7 @@ import type { RouteRecordRaw } from 'vue-router'
 import EmployeeRouter from '../Employee.router'
 import BranchRouter from './Branch.router'
 import HowDidFindUsRouter from './HowDidFindUs.router'
+import ManagementStructureRouter from './ManagementStructure.router'
 import WarehouseRouter from './Warehouse.router'
 
 const prefix = 'other'
@@ -23,6 +24,7 @@ export default {
     EmployeeRouter,
     WarehouseRouter,
     BranchRouter,
+    ManagementStructureRouter,
     HowDidFindUsRouter
   ]
 } as RouteRecordRaw
