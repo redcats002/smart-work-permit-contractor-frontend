@@ -6,6 +6,7 @@ import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToTop } from '@/utils/ScrollToTop'
 import type { IConfirmMortgagePayload } from '@/models/request/pre-contract/PreContractReq.model'
 import PreContractProvider, { type IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
+import useDev from '@/composables/useDev'
 import { useFormInitialValues } from '../schema/mortgage.schema'
 
 interface IUseMortgage {
@@ -22,9 +23,10 @@ export function useMortgage (useFetch: () => void): IUseMortgage {
 
   const isMortgageFormVisible = ref<boolean>(false)
   const formMortgage = ref<IConfirmMortgagePayload>(useFormInitialValues())
+  const { isStaging, isProd } = useDev()
+
 
   const contractId = computed((): string | string[] => route.params.id)
-
 
   async function useConfirmMortgage (): Promise<void> {
     const dayjs = useDayjs()
@@ -33,7 +35,7 @@ export function useMortgage (useFetch: () => void): IUseMortgage {
     contractedAt.setHours(now.hour(), now.minute(), now.second(), now.millisecond())
     await PreContractService.confirmMortgage(contractId.value, {
       ...formMortgage.value,
-      contractedAt
+      contractedAt: isStaging || isProd ? contractedAt : formMortgage.value?.contractedAt
     })
     toast.success('ยืนยันการจำนองสำเร็จ')
     useFetch()
