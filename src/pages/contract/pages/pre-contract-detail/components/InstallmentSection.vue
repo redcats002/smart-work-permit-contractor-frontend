@@ -122,13 +122,13 @@ import { nextTick, ref, useTemplateRef, watch } from 'vue'
 import { formatter } from '@/utils/Formatter'
 import { handleValidate, scrollToFirstError } from '@/utils/HandleSubmit'
 import type { IFormType } from '@/models/Form.model'
-import type { TInterestType } from '@/enums/modules/contract/InterestType.enum'
+import { type InterestTypeEnum, type TInterestType } from '@/enums/modules/contract/InterestType.enum'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import InterestTypeSelection from '@/components/selection/modules/static/interest-type/InterestTypeSelection.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import useInstallment, { type IInstallmentRow } from '../composables/useInstallment'
+import { type IInstallmentRow, useInstallment } from '../composables/useInstallment'
 import { type InstallmentFormValues, InstallmentSchema } from '../schema/make-contract.schema'
 import InstallmentTable from './InstallmentTable.vue'
 
@@ -138,6 +138,7 @@ interface IInstallmentContract {
   interestType?: TInterestType
   annualInterestRate: number
   lateFee: number
+  contractedAt?: string
 }
 
 interface IExposes {
@@ -147,9 +148,6 @@ interface IProps {
   contract: IInstallmentContract
 }
 const props = withDefaults(defineProps<IProps>(), {})
-
-const { computeInstallmentSchedule, computeMonthlyPayment, computeTotalInterest, computeLateFee } = useInstallment()
-
 
 const form = defineModel<InstallmentFormValues>({ required: true })
 const resolver = zodResolver(InstallmentSchema)
@@ -168,10 +166,16 @@ async function recalculate (): Promise<void> {
     totalInterest.value = 0
     return
   }
-  monthlyPayment.value = computeMonthlyPayment(v)
-  totalInterest.value = computeTotalInterest(v)
-  schedule.value = computeInstallmentSchedule(v)
-  form.value.lateFee = computeLateFee(v)
+  schedule.value = useInstallment({
+    loanAmount: v.loanAmount,
+    installmentCount: v.installmentCount,
+    interestType: v.interestType as InterestTypeEnum,
+    annualInterestRate: v.annualInterestRate,
+    contractedAt: props.contract.contractedAt ? new Date(props.contract.contractedAt) : new Date()
+  })
+  monthlyPayment.value = schedule.value[0]?.installment ?? 0
+  totalInterest.value = schedule.value.reduce((acc: number, row: IInstallmentRow): number => acc + row.interest, 0)
+  form.value.lateFee = Math.floor((v.loanAmount * 0.05) / 365)
   mount()
 }
 
