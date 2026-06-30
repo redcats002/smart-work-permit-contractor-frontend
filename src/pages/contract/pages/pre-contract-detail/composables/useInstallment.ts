@@ -1,126 +1,56 @@
-import type { InstallmentFormValues } from '../schema/make-contract.schema'
+import { InterestTypeEnum } from '@/enums/modules/contract/InterestType.enum'
+import dayjs from 'dayjs'
 
 export interface IInstallmentRow {
-  period: number
+  order: number
   dueDate: string
   interest: number
+  outstandingInterest: number
   principal: number
-  payment: number
-  balance: number
+  outstandingPrincipal: number
+  installment: number
+  remainingPrincipal: number
 }
 
-interface IUseInstallment {
-  computeInstallmentSchedule: (values: InstallmentFormValues, startDate?: Date) => IInstallmentRow[]
-  computeMonthlyPayment: (values: InstallmentFormValues) => number
-  computeTotalInterest: (values: InstallmentFormValues) => number
-  computeLateFee: (values: InstallmentFormValues) => number
+export interface IOperationInstallment {
+  loanAmount: number
+  installmentCount: number
+  interestType: InterestTypeEnum
+  annualInterestRate: number
+  contractedAt: Date
 }
-export default function useInstallment (): IUseInstallment {
-  function computeInstallmentSchedule (
-    values: InstallmentFormValues,
-    startDate: Date = new Date()
-  ): IInstallmentRow[] {
-    const { loanAmount, installmentCount: installments, interestType, annualInterestRate } = values
-    if (!loanAmount || !installments || installments <= 0) return []
 
-    const rows: IInstallmentRow[] = []
-    const monthlyRate = annualInterestRate / 100 / 12
+export function useInstallment (operation: IOperationInstallment): IInstallmentRow[] {
+  const { loanAmount, installmentCount, interestType, annualInterestRate, contractedAt } = operation
+  if (!loanAmount || !installmentCount || installmentCount <= 0) return []
 
-    if (interestType === 'FLAT_RATE') {
-      const totalInterest = loanAmount * (annualInterestRate / 100) * (installments / 12)
-      const principalPerPeriod = loanAmount / installments
-      const interestPerPeriod = totalInterest / installments
-      const payment = principalPerPeriod + interestPerPeriod
-      let balance = loanAmount
+  const dayAt = Number(dayjs(contractedAt).format('D'))
+  const startFirstInstallment = dayjs(contractedAt).date(dayAt >= 28 ? 28 : dayAt).startOf('day')
 
-      for (let i = 1; i <= installments; i++) {
-        const due = new Date(startDate)
-        due.setMonth(startDate.getMonth() + i)
-        balance = Math.max(0, balance - principalPerPeriod)
-        rows.push({
-          period: i,
-          dueDate: due.toISOString(),
-          interest: interestPerPeriod,
-          principal: principalPerPeriod,
-          payment,
-          balance
-        })
-      }
-    } else {
-    // Reducing balance
-      const payment = monthlyRate === 0
-        ? loanAmount / installments
-        : (
-          (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, installments))
-          / (Math.pow(1 + monthlyRate, installments) - 1)
-        )
-      let balance = loanAmount
+  const installments: IInstallmentRow[] = []
+  let remainingPrincipal = loanAmount
 
-      for (let i = 1; i <= installments; i++) {
-        const due = new Date(startDate)
-        due.setMonth(startDate.getMonth() + i)
-        const interest = balance * monthlyRate
-        const principal = payment - interest
-        balance = Math.max(0, balance - principal)
-        rows.push({
-          period: i,
-          dueDate: due.toISOString(),
-          interest,
-          principal,
-          payment,
-          balance: i === installments ? 0 : balance
-        })
-      }
+  if (interestType === InterestTypeEnum.FLAT_RATE) {
+    const totalInterest = loanAmount * (annualInterestRate / 100) * (installmentCount / 12)
+    const interest = totalInterest / installmentCount
+    const principal = loanAmount / installmentCount
+
+    for (let i = 0; i < installmentCount; i++) {
+      remainingPrincipal -= principal
+      installments.push({
+        order: i + 1,
+        dueDate: startFirstInstallment.add(i + 1, 'month').toISOString(),
+        interest,
+        outstandingInterest: interest,
+        principal,
+        outstandingPrincipal: principal,
+        installment: interest + principal,
+        remainingPrincipal: Math.max(0, remainingPrincipal)
+      })
     }
-
-    return rows
+  } else if (interestType === InterestTypeEnum.EFFECTIVE_RATE) {
+    throw new Error('กำลังปรับปรุงวิธีคำนวณ ลดต้นลดดอก')
   }
 
-  function computeMonthlyPayment (values: InstallmentFormValues): number {
-    const { loanAmount, installmentCount: installments, interestType, annualInterestRate } = values
-    if (!loanAmount || !installments || installments <= 0) return 0
-    const monthlyRate = annualInterestRate / 100 / 12
-
-    if (interestType === 'FLAT_RATE') {
-      const totalInterest = loanAmount * (annualInterestRate / 100) * (installments / 12)
-      return (loanAmount + totalInterest) / installments
-    }
-    if (monthlyRate === 0) return loanAmount / installments
-    return (
-      (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, installments))
-      / (Math.pow(1 + monthlyRate, installments) - 1)
-    )
-  }
-
-  function computeTotalInterest (values: InstallmentFormValues): number {
-    const { loanAmount, installmentCount: installments, interestType, annualInterestRate } = values
-    if (!loanAmount || !installments || installments <= 0) return 0
-
-    if (interestType === 'FLAT_RATE') {
-      return loanAmount * (annualInterestRate / 100) * (installments / 12)
-    }
-    const monthlyRate = annualInterestRate / 100 / 12
-    if (monthlyRate === 0) return 0
-    const payment = (
-      (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, installments))
-      / (Math.pow(1 + monthlyRate, installments) - 1)
-    )
-    return payment * installments - loanAmount
-  }
-
-  function computeLateFee (values: InstallmentFormValues): number {
-    const { loanAmount } = values
-    if (!loanAmount) return 0
-    // For demonstration, let's assume late fee is 5% of the loan amount
-    const lateFeeRate = 0.05
-    const lateFeeFull = loanAmount * lateFeeRate
-    return Math.floor(lateFeeFull / 365)
-  }
-
-  return {
-    computeInstallmentSchedule,
-    computeMonthlyPayment,
-    computeTotalInterest,
-    computeLateFee
-  }
+  return installments
 }
