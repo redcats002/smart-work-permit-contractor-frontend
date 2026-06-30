@@ -8,7 +8,7 @@
     disable-auto-left-padding
     @update="emits('update')">
     <template #[`item.idNo`]="{ item }">
-      <LinkText :to="{}">
+      <LinkText :to="{ name: 'ContractDetailPage', params: { id: item?.id } }">
         {{ item?.idNo }}
       </LinkText>
     </template>
