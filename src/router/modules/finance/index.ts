@@ -70,6 +70,28 @@ export default {
     },
 
     {
+      path: 'close-account/:id',
+      name: 'CloseAccountPage',
+      component: (): ComponentOptions => import('@/pages/finance/pages/close-account/pages/CloseAccountPage.vue'),
+      meta: {
+        auth: true,
+        title: 'ปิดบัญชี',
+        icon: 'solar:bill-list-bold',
+        back: { name: 'ReceiptListPage' }
+      }
+    },
+    {
+      path: 're-finance/:id',
+      name: 'ReFinancePage',
+      component: (): ComponentOptions => import('@/pages/finance/pages/re-finance/pages/ReFinancePage.vue'),
+      meta: {
+        auth: true,
+        title: 'ปิดบัญชี',
+        icon: 'solar:bill-list-bold',
+        back: { name: 'ReceiptListPage' }
+      }
+    },
+    {
       path: 'expense/list',
       name: 'ExpenseListPage',
       component: (): ComponentOptions => import('@/pages/finance/pages/record/list/pages/RecordExpensesListPage.vue'),
