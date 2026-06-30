@@ -84,11 +84,11 @@ function onPrint (): void {
 }
 
 function onFinance (): void {
-  router.push({ name: 'ContractFinancePage', params: { id: contractId.value } })
+  router.push({ name: 'ReFinancePage', params: { id: contractId.value } })
 }
 
 function onCloseAccount (): void {
-  router.push({ name: 'ContractCloseAccountPage', params: { id: contractId.value } })
+  router.push({ name: 'CloseAccountPage', params: { id: contractId.value } })
 }
 
 onMounted((): void => {
