@@ -37,7 +37,7 @@
             v-else
             :style="row.isTotal ? 'font-weight: 800; text-decoration: underline;' : ''"
             class="text-sm text-[#333] ml-auto">
-            {{ formatNumber(row[col.key]) }}
+            {{ formatNumber(row?.[col.key] as number) }}
           </span>
         </div>
       </div>
