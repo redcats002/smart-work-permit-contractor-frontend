@@ -43,7 +43,11 @@ export const VehicleAssetTypeItems: TBaseOption[] = AssetTypeItems.filter(
 )
 
 export const LandAssetTypeItems: TBaseOption[] = AssetTypeItems.filter(
-  (e: TBaseOption): boolean => String(e.value).startsWith('NS3') || e.value === 'APARTMENT_ROOM'
+  (e: TBaseOption): boolean => String(e.value).startsWith('NS3')
+)
+
+export const ApartmentAssetTypeItems: TBaseOption[] = AssetTypeItems.filter(
+  (e: TBaseOption): boolean => String(e.value).startsWith('APARTMENT_')
 )
 
 export function isVehicleAsset (type?: string | null): boolean {
@@ -53,5 +57,10 @@ export function isVehicleAsset (type?: string | null): boolean {
 
 export function isLandAsset (type?: string | null): boolean {
   if (!type) return false
-  return type.startsWith('NS3') || type === 'APARTMENT_ROOM'
+  return type.startsWith('NS3')
+}
+
+export function isApartmentAsset (type?: string | null): boolean {
+  if (!type) return false
+  return type.startsWith('APARTMENT_')
 }
