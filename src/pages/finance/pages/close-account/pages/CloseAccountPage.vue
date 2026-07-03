@@ -16,12 +16,14 @@
 
     <BasePage>
       <AdditionalExpensesTable
-        @add="onAddExpense()"
+        :rows="additionalExpenses"
+        @add="openModalAdd()"
         @remove="onRemoveExpense($event)" />
     </BasePage>
 
     <BasePage>
-      <PaymentSummary />
+      <PaymentSummary
+        :other-expenses="otherExpenses" />
     </BasePage>
 
     <BasePage>
@@ -33,6 +35,10 @@
     <BasePage>
       <PaymentMethodSelector v-model="paymentMethod" />
     </BasePage>
+
+    <SaveExpenseModal
+      v-model="showExpenseModal"
+      @submit="onExpenseSubmit($event)" />
 
     <BasePage>
       <div class="flex gap-4 items-center flex-wrap">
@@ -54,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import BasePage from '@/components/base/BasePage.vue'
@@ -62,21 +68,35 @@ import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
+import type { IAdditionalExpenseRow } from '../components/AdditionalExpensesTable.vue'
+import AdditionalExpensesTable from '../components/AdditionalExpensesTable.vue'
 import CustomerInfoCard from '../components/CustomerInfoCard.vue'
 import InstallmentTable from '../components/InstallmentTable.vue'
-import AdditionalExpensesTable from '../components/AdditionalExpensesTable.vue'
-import PaymentSummary from '../components/PaymentSummary.vue'
 import PaymentMethodSelector, { type TPaymentMethod } from '../components/PaymentMethodSelector.vue'
+import PaymentSummary from '../components/PaymentSummary.vue'
+import SaveExpenseModal from '../components/SaveExpenseModal.vue'
 
 const router = useRouter()
 const paymentMethod = ref<TPaymentMethod>('cash')
+const showExpenseModal = ref<boolean>(false)
+const additionalExpenses = ref<IAdditionalExpenseRow[]>([])
 
-function onAddExpense (): void {
-  toast.info('เพิ่มรายการค่าใช้จ่ายอื่นๆ')
-}
+const otherExpenses = computed((): number => additionalExpenses.value.reduce((total: number, expense: IAdditionalExpenseRow): number =>
+  total + expense.amount, 0))
 
 function onRemoveExpense (index: number): void {
-  toast.info(`ลบรายการที่ ${index + 1}`)
+  additionalExpenses.value.splice(index, 1)
+}
+
+function onExpenseSubmit (data: { note: string, amount: number }): void {
+  additionalExpenses.value.push({
+    label: data.note,
+    amount: data.amount
+  })
+}
+
+function openModalAdd (): void {
+  showExpenseModal.value = true
 }
 
 function onSubmit (): void {

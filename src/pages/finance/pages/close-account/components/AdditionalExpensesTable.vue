@@ -26,10 +26,10 @@
           <span class="text-sm font-bold text-[#333]">รายการ</span>
         </div>
         <div
-          v-for="(row, i) in rows"
+          v-for="(row, i) in displayRows"
           :key="`label-${i}`"
           :class="row.isTotal ? 'bg-[#e0e0e0]' : 'bg-white'"
-          class="h-14 px-4 py-2 flex items-center w-full border-b border-[#e0e0e0]">
+          class="h-14 px-4 py-2 flex items-center w-full border-b-[0.5px] border-[#e0e0e0]">
           <span
             :class="row.isTotal ? 'font-bold' : 'font-normal'"
             class="text-sm text-[#333]">
@@ -43,10 +43,10 @@
           <span class="text-sm font-bold text-[#333]">รวม</span>
         </div>
         <div
-          v-for="(row, i) in rows"
+          v-for="(row, i) in displayRows"
           :key="`total-${i}`"
           :class="row.isTotal ? 'bg-[#e0e0e0]' : 'bg-white'"
-          class="h-14 px-4 py-2 flex items-center justify-end gap-2 w-full border-b border-[#e0e0e0]">
+          class="h-14 px-4 py-2 flex items-center justify-end gap-2 w-full border-b-[0.5px] border-[#e0e0e0]">
           <span
             v-if="row.isTotal"
             class="text-sm text-[#333]"
@@ -57,12 +57,15 @@
             <span class="text-sm font-normal text-[#333]">{{ formatNumber(row.amount) }}</span>
             <button
               aria-label="ลบรายการ"
-              class="size-4 flex items-center justify-center text-[#bd0102] hover:opacity-70 cursor-pointer"
+              class="flex items-center justify-center cursor-pointer hover:opacity-70"
               type="button"
               @click="emits('remove', i)">
-              <Icon
-                class="size-4"
-                icon="ic:baseline-delete" />
+              <div class="relative size-4">
+                <div class="absolute inset-0 rounded-full bg-[#bd0102]/10" />
+                <Icon
+                  class="absolute inset-0 m-auto size-3 text-[#bd0102]"
+                  icon="solar:trash-bin-2-linear" />
+              </div>
             </button>
           </template>
         </div>
@@ -72,6 +75,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { formatter } from '@/utils/Formatter'
 import { Icon } from '@iconify/vue'
 
@@ -90,16 +94,21 @@ interface IEmits {
   remove: [index: number]
 }
 
-withDefaults(defineProps<IProps>(), {
+const props = withDefaults(defineProps<IProps>(), {
   rows: (): IAdditionalExpenseRow[] => [
     { label: 'ค่าประกันไถ่ถอน ที่ดิน', amount: 500 },
     { label: 'ค่าเบี้ยปรับ', amount: 500 },
-    { label: 'ค่ายกเลิกสัญญา', amount: 500 },
-    { label: 'รวม', amount: 1500, isTotal: true }
+    { label: 'ค่ายกเลิกสัญญา', amount: 500 }
   ]
 })
 
 const emits = defineEmits<IEmits>()
+
+const displayRows = computed((): IAdditionalExpenseRow[] => {
+  const dataRows = props.rows.filter((r: IAdditionalExpenseRow): boolean => !r.isTotal)
+  const total = dataRows.reduce((sum: number, r: IAdditionalExpenseRow): number => sum + r.amount, 0)
+  return [...dataRows, { label: 'รวม', amount: total, isTotal: true }]
+})
 
 function formatNumber (value: number): string {
   return formatter.numberFormat(value)

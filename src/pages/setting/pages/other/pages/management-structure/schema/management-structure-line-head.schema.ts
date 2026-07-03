@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export const ManagementStructureLineHeadSchema = z.object({
   name: z.string().min(1, 'กรุณากรอกชื่อหัวหน้าสาย'),
-  zoneManagerId: z
+  parentId: z
     .number()
     .min(1, 'กรุณาเลือกผู้จัดการเขต')
     .optional()
@@ -14,6 +14,6 @@ export type ManagementStructureLineHeadFormValues = z.infer<typeof ManagementStr
 export function useFormInitialValues (): ManagementStructureLineHeadFormValues {
   return {
     name: '',
-    zoneManagerId: 0
+    parentId: 0
   }
 }

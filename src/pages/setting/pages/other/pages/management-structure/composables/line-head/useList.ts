@@ -1,17 +1,18 @@
 import { computed, ref, type Ref } from 'vue'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { IActionManagementStructureLineHeadPayload, IGetManagementStructureLineHeadList } from '@/models/request/management-structure-line-head/ManagementStructureLineHeadReq.model'
-import type { IManagementStructureLineHeadList } from '@/models/response/management-structure-line-head/ManagementStructureLineHeadRes.model'
+import type { ICreateManagementPositionPayload, IGetManagementPositionList } from '@/models/request/management-position/ManagementPositionReq.model'
+import type { IManagementPositionList } from '@/models/response/management-position/ManagementPositionRes.model'
 import type { TBaseParamsId } from '@/models/response/Response.model'
-import ManagementStructureLineHeadProvider, { type IManagementStructureLineHeadProvider } from '@/resources/provider/management-structure-line-head/ManagementStructureLineHead.provider'
+import { EManagementPosition } from '@/enums/modules/management-structure/ManagementPosition.enum'
+import ManagementPositionProvider, { type IManagementPositionProvider } from '@/resources/provider/management-position/ManagementPosition.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
-import { useFormInitialValues } from '../../schema/management-structure-zone-manager.schema'
+import { useFormInitialValues } from '../../schema/management-structure-line-head.schema'
 import { useCreatePayload, useUpdatePayload } from './usePayload'
 
 interface IUseList extends IUsePagination {
-  items: Ref<IManagementStructureLineHeadList[]>
-  form: Ref<IActionManagementStructureLineHeadPayload>
+  items: Ref<IManagementPositionList[]>
+  form: Ref<ICreateManagementPositionPayload>
   useFetch: () => Promise<void>
   onCreate: () => void
   onUpdate: (id: TBaseParamsId) => void
@@ -20,49 +21,57 @@ interface IUseList extends IUsePagination {
   reset: () => void
 }
 
-export default function useList (zoneManagerId: Ref<TBaseParamsId | null>): IUseList {
-  const ManagementStructureLineHeadService: IManagementStructureLineHeadProvider = new ManagementStructureLineHeadProvider()
+export default function useList (parentId: Ref<TBaseParamsId | null>): IUseList {
+  const ManagementPositionService: IManagementPositionProvider = new ManagementPositionProvider()
 
-  const items = ref<IManagementStructureLineHeadList[]>([])
-  const form = ref<IActionManagementStructureLineHeadPayload>(useFormInitialValues())
+  const items = ref<IManagementPositionList[]>([])
+  const form = ref<ICreateManagementPositionPayload>({
+    managementPosition: EManagementPosition.LINE_MANAGER,
+    ...useFormInitialValues()
+  })
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
-  const paginateQuery = computed((): IGetManagementStructureLineHeadList => {
+  const paginateQuery = computed((): IGetManagementPositionList => {
     return {
       search: search.value,
       page: pagination.value.page,
       limit: pagination.value.limit,
       sortBy: sortBy.value || undefined,
       sortOrder: sortOrder.value,
-      zoneManagerId: typeof zoneManagerId.value === 'number' ? zoneManagerId.value : Number(zoneManagerId.value)
+      managementPosition: EManagementPosition.LINE_MANAGER,
+      parentId: typeof parentId.value === 'number' ? parentId.value : Number(parentId.value) || undefined
     }
   })
 
   async function useFetch (): Promise<void> {
-    const response = await ManagementStructureLineHeadService.getManagementStructureLineHeadPaginate(paginateQuery.value)
+    const response = await ManagementPositionService.getManagementPositionPaginate(paginateQuery.value)
     items.value = response?.data || []
     pagination.value = extractPagination(response)
-    syncQuery({ zoneManagerId: zoneManagerId.value })
+    syncQuery({ parentId: parentId.value })
   }
   async function useCreate (): Promise<void> {
     normalizeForm()
-    await ManagementStructureLineHeadService.createManagementStructureLineHead(useCreatePayload(form.value))
+    await ManagementPositionService.createManagementPosition(useCreatePayload({
+      name: form.value.name,
+      managementPosition: EManagementPosition.LINE_MANAGER,
+      parentId: form.value.parentId
+    }))
     toast.success('ดำเนินการสำเร็จ')
     await useFetch()
   }
   async function useUpdate (id: TBaseParamsId): Promise<void> {
     normalizeForm()
-    await ManagementStructureLineHeadService.updateManagementStructureLineHead(id, useUpdatePayload(form.value))
+    await ManagementPositionService.updateManagementPosition(id, useUpdatePayload(form.value))
     toast.success('ดำเนินการสำเร็จ')
     await useFetch()
   }
   async function useDelete (id: TBaseParamsId): Promise<void> {
-    await ManagementStructureLineHeadService.deleteManagementStructureLineHead(id)
+    await ManagementPositionService.deleteManagementPosition(id)
     toast.success('ดำเนินการสำเร็จ')
     await useFetch()
   }
   function normalizeForm (): void {
-    form.value.zoneManagerId = typeof zoneManagerId.value === 'number' ? zoneManagerId.value : Number(zoneManagerId.value)
+    form.value.parentId = typeof parentId.value === 'number' ? parentId.value : Number(parentId.value)
   }
   function onCreate (): void {
     handleLoading(useCreate)

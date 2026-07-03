@@ -11,23 +11,23 @@
         :value="otherExpenses"
         label="ค่าใช้จ่ายอื่นๆ" />
 
-      <div class="flex items-center gap-2.5 h-10">
-        <span class="text-sm font-bold text-[#333] whitespace-nowrap">ส่วนลดดอกเบี้ย</span>
+      <div class="flex gap-[10px] h-[40px] items-center w-[312px]">
+        <span class="text-[14px] font-bold text-[#333] whitespace-nowrap">ส่วนลดดอกเบี้ย</span>
         <input
           v-model.number="interestDiscountMonth"
-          class="bg-white border border-[#bdbdbd] h-10 w-14 rounded text-sm text-center focus:outline-none focus:border-[#bd0102]"
+          class="bg-white border border-[#bdbdbd] h-[40px] w-[57px] rounded-[4px] text-[14px] text-center focus:outline-none focus:border-[#bd0102]"
           type="number">
-        <span class="text-sm font-normal text-[#333]">เดือน</span>
-        <span class="text-sm font-normal text-[#333]">:</span>
-        <span class="text-sm font-normal text-[#333]">{{ formatNumber(interestDiscountValue) }}</span>
+        <span class="text-[14px] font-normal text-[#333] whitespace-nowrap">เดือน</span>
+        <span class="text-[14px] font-normal text-[#333] whitespace-nowrap">:</span>
+        <span class="text-[14px] font-normal text-[#333] whitespace-nowrap">{{ formatNumber(interestDiscountValue) }}</span>
       </div>
 
-      <div class="flex items-center gap-2.5 h-10 w-[260px]">
-        <span class="text-sm font-bold text-[#333] w-[148px]">ส่วนลดอื่นๆ</span>
-        <span class="text-sm font-bold text-[#333]">:</span>
+      <div class="flex gap-[10px] h-[40px] items-center w-[260px]">
+        <span class="text-[14px] font-bold text-[#333] w-[148px] whitespace-nowrap">ส่วนลดอื่นๆ</span>
+        <span class="text-[14px] font-bold text-[#333] whitespace-nowrap">:</span>
         <input
           v-model.number="otherDiscount"
-          class="bg-white border border-[#bdbdbd] flex-1 h-10 min-w-0 rounded text-sm px-2 focus:outline-none focus:border-[#bd0102]"
+          class="bg-white border border-[#bdbdbd] flex-1 h-[40px] min-w-0 rounded-[4px] text-[14px] px-2 focus:outline-none focus:border-[#bd0102]"
           type="number">
       </div>
 
@@ -54,7 +54,7 @@ interface IProps {
 const props = withDefaults(defineProps<IProps>(), {
   principal: 80000,
   interest: 12000,
-  otherExpenses: 1500,
+  otherExpenses: 0,
   interestDiscountPerMonth: 0
 })
 

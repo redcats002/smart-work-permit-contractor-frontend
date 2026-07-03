@@ -44,18 +44,40 @@
           :max-date="dayjs().toDate()"
           name="openAt" />
       </LabelField>
-      <LabelField
-        v-slot="{invalid}"
+      <ManagementPositionLineHeadSelection
+        v-model="model.managementPositionId"
         :form="form"
         label="หัวหน้าสาย"
-        name="lineHead"
-        required>
-        <BranchSelection
-          :invalid="invalid"
-          name="lineHead"
-          placeholder="เลือกสาขา"
-          multiple />
-      </LabelField>
+        name="managementPositionId"
+        placeholder="เลือกหัวหน้าสาย"
+        required />
+      <div>
+        <div class="label-section mb-1">
+          <span class="text-sm font-bold required">การคิด%ยอดเก็บ ในรายงาน</span>
+        </div>
+        <div class="flex gap-4 items-center">
+          <label class="flex gap-2 items-center cursor-pointer">
+            <input
+              v-model="model.includeInReport"
+              :checked="model.includeInReport === true"
+              :value="true"
+              class="accent-[#bd0102] size-4"
+              name="includeInReport"
+              type="radio">
+            <span class="text-base text-[#333]">นับยอดเก็บ</span>
+          </label>
+          <label class="flex gap-2 items-center cursor-pointer">
+            <input
+              v-model="model.includeInReport"
+              :checked="model.includeInReport === false"
+              :value="false"
+              class="accent-[#bd0102] size-4"
+              name="includeInReport"
+              type="radio">
+            <span class="text-base text-[#333]">ไม่นับยอดเก็บ</span>
+          </label>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -70,7 +92,7 @@ import { BranchStatusEnum } from '@/enums/modules/branch/BranchStatus.enum'
 import DatePickerInput from '@/components/input/DatePickerInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import Switch from '@/components/input/Switch.vue'
-import BranchSelection from '@/components/selection/modules/api/branch/BranchSelection.vue'
+import ManagementPositionLineHeadSelection from '@/components/selection/modules/api/management-position-line-head/ManagementPositionLineHeadSelection.vue'
 import { type BranchFormValues, useFormInitialValues } from '../schema/branch.schema'
 
 interface IProps {
@@ -95,9 +117,9 @@ const isActive = computed({
   }
 })
 
-function handlePasteNumber (evt: ClipboardEvent, key: keyof BranchFormValues): void {
-  model.value[key] = ''
-  model.value[key] = paste.number(evt)
+function handlePasteNumber (evt: ClipboardEvent, key: Extract<keyof BranchFormValues, string>): void {
+  (model.value as Record<string, unknown>)[key] = ''
+  ;(model.value as Record<string, unknown>)[key] = paste.number(evt)
   formKey.value++
 }
 
@@ -110,5 +132,9 @@ function handlePasteTaxId (evt: ClipboardEvent): void {
 </script>
 
 <style scoped>
-
+.label-section > span.required::after {
+  content: '*';
+  color: var(--color-primary-500);
+  margin-left: 4px;
+}
 </style>

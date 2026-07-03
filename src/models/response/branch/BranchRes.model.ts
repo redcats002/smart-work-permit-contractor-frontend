@@ -1,11 +1,18 @@
 import type { IEntity } from '@/models/Global.model'
 import type { IBranchTime } from '@/models/modules/branch/BranchTime.model'
 import type { TBranchStatus } from '@/enums/modules/branch/BranchStatus.enum'
+import type { EManagementPosition } from '@/enums/modules/management-structure/ManagementPosition.enum'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 
 export interface IBranchList extends IEntity {
   name: string
   status: TBranchStatus
+}
+
+export interface IManagementPosition {
+  id: number
+  managementPosition: EManagementPosition
+  name: string
 }
 export interface IBranchById extends IEntity {
   status: TBranchStatus
@@ -18,7 +25,8 @@ export interface IBranchById extends IEntity {
   province: string
   postCode: string
   branchTimes: IBranchTime[]
-  lineHead?: string
+  managementPosition?: IManagementPosition
+  includeInReport?: boolean
 }
 
 export type TGetBranchListResponse = IBasePaginationResponse<IBranchList>
