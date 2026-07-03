@@ -37,6 +37,8 @@ export const BranchSchema = z.object({
   openAt: schema.date('วันเปิดสาขา'),
   idNo: z.string().min(1, 'กรุณากรอก Branch Code'),
   taxId: z.string().min(1, 'กรุณากรอก Tax ID'),
+  managementPositionId: schema.id('กรุณาเลือกหัวหน้าสาย'),
+  includeInReport: z.boolean(),
   branchTimes: z.array(BranchTimeSchema).min(1, 'กรุณาเพิ่มวันและเวลาทำการ'),
   ...AddressSchema.shape
 })
@@ -57,6 +59,8 @@ export function useFormInitialValues (): BranchFormValues {
     idNo: '',
     taxId: '',
     openAt: '',
+    managementPositionId: null,
+    includeInReport: true,
     address: '',
     subDistrict: '',
     district: '',
@@ -77,6 +81,8 @@ export function useDev (): BranchFormValues {
     province: '',
     postCode: '',
     subDistrict: '',
+    managementPositionId: null,
+    includeInReport: true,
     branchTimes: [],
     openAt: dayjs().toDate(),
     status: BranchStatusEnum.ACTIVE
