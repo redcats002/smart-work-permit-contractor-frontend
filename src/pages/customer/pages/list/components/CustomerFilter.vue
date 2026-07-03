@@ -14,6 +14,13 @@
         </template>
         <div class="flex flex-col gap-5">
           <LabelField
+            label="ประเภทบุคคล">
+            <PersonalTypeSelection
+              v-model="filters.personalType"
+              placeholder="ทั้งหมด"
+              show-clear />
+          </LabelField>
+          <LabelField
             label="กลุ่มลูกค้า">
             <CustomerGroupSelection
               v-model="filters.customerGroupId"
@@ -53,6 +60,7 @@ import SearchInput from '@/components/input/SearchInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import CustomerGroupSelection from '@/components/selection/modules/api/customer-group/CustomerGroupSelection.vue'
 import CustomerStatusSelection from '@/components/selection/modules/static/customer-status/CustomerStatusSelection.vue'
+import PersonalTypeSelection from '@/components/selection/modules/static/personal-type/PersonalTypeSelection.vue'
 
 interface IEmits {
   search: []

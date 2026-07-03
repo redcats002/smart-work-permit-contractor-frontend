@@ -1,9 +1,10 @@
 import type { IEntity, IEntityId, TBaseModel } from '@/models/Global.model'
-import type { TPaymentMethod } from '@/enums/modules/contract/PaymentMethod.enum'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import type { TAssetType } from '@/enums/modules/asset/AssetType.enum'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
+import type { TPaymentMethod } from '@/enums/modules/contract/PaymentMethod.enum'
 import type { TCustomerStatus } from '@/enums/modules/customer/CustomerStatus.enum'
+import type { TPersonalType } from '@/enums/modules/customer/PersonalType.enum'
 import type { TEstateStatus } from '@/enums/modules/estate/EstateStatus.enum'
 import type { TTitleName } from '@/enums/TitleName.enum'
 import type { ICustomerGroupList } from '../customer-group/CustomerGroupRes.model'
@@ -18,20 +19,22 @@ export interface ICustomerList extends IEntity {
   phoneNumber: string
   phoneNumber2?: string
   customerGroup?: TBaseModel
+  personalType?: TPersonalType // TODO: need from backend and wait to test
   status: TCustomerStatus
 }
 export interface ICustomerById extends IEntity {
   status: TCustomerStatus
+  personalType: TPersonalType
   idCard: string
-  titleName: TTitleName
+  titleName?: TTitleName
   firstName: string
-  lastName: string
+  lastName?: string
   phoneNumber: string
   phoneNumber2?: string
-  birthDate: string
-  workAddress: IAddressRequest
+  birthDate?: string
+  workAddress?: IAddressRequest
   mainAddress: IAddressRequest
-  currentAddress: IAddressRequest
+  currentAddress?: IAddressRequest
   customerGroup?: ICustomerGroupList
   occupation?: ICustomerOccupationList
   email?: string

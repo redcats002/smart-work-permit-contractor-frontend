@@ -3,14 +3,26 @@ import type { TAssetType } from '@/enums/modules/asset/AssetType.enum'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
 import type { TPaymentMethod } from '@/enums/modules/contract/PaymentMethod.enum'
 import type { TCustomerStatus } from '@/enums/modules/customer/CustomerStatus.enum'
+import type { TPersonalType } from '@/enums/modules/customer/PersonalType.enum'
 import type { CustomerFormValues } from '@/pages/customer/pages/create/schema/customer.schema'
 import type { IBasePaginationRequest } from '../Request.model'
 
+// titleName/lastName/birthDate/occupationId/currentAddress/workAddress are omitted from the payload for CORPORATE customers
+type TCorporateOmittedFields = 'titleName' | 'lastName' | 'birthDate' | 'occupationId' | 'currentAddress' | 'workAddress'
+
 export interface IActionCustomerPayload extends ICreateCustomerPayload, IUpdateCustomerPayload {}
-export interface ICreateCustomerPayload extends CustomerFormValues {}
+export interface ICreateCustomerPayload extends Omit<CustomerFormValues, TCorporateOmittedFields> {
+  titleName?: CustomerFormValues['titleName']
+  lastName?: CustomerFormValues['lastName']
+  birthDate?: CustomerFormValues['birthDate']
+  occupationId?: CustomerFormValues['occupationId']
+  currentAddress?: CustomerFormValues['currentAddress']
+  workAddress?: CustomerFormValues['workAddress']
+}
 export interface IUpdateCustomerPayload extends ICreateCustomerPayload {}
 
 export interface IGetCustomerList extends Omit<IBasePaginationRequest, 'status'> {
+  personalType?: TPersonalType
   status?: TCustomerStatus
   customerGroupId?: number
 }

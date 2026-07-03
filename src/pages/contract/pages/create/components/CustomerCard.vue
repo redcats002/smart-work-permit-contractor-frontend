@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="data"
-    class="border border-surface-200 rounded-md p-4">
+    :class="['border border-surface-200 rounded-md p-4', { 'border-none! p-0!': hideBorder }]">
     <DisplayList :items="items">
       <template #[`value.status`]>
         <ChipCustomerStatus :value="data.status" />
@@ -19,33 +19,48 @@ import { computed } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
+import { formatTitle } from '@/enums/modules/customer/PersonalType.enum'
 import CitizenId from '@/components/display/CitizenId.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
 import ChipCustomerStatus from '@/pages/customer/pages/list/components/ChipCustomerStatus.vue'
 
 interface IProps {
   data?: ICustomerById
+  hideBorder?: boolean
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-  data: undefined
+  data: undefined,
+  hideBorder: false
 })
 
-const { formatDate, formatAge } = useDayjs()
+const dayjs = useDayjs()
 
 const items = computed((): IDisplayList[] => {
-  const d = props.data
-  if (!d) return []
-  return [
-    { key: 'status', label: 'สถานะ', value: d.status },
-    { key: 'idNo', label: 'เลขที่ลูกค้า', value: d.idNo || '-' },
-    { key: 'idCard', label: 'เลขบัตรประชาชน', value: d.idCard },
-    { key: 'birthDate', label: 'วันเกิด', value: formatDate(d.birthDate ?? undefined) },
-    { key: 'age', label: 'อายุ', value: formatAge(d.birthDate ?? undefined) },
-    { key: 'customerGroup', label: 'กลุ่มลูกค้า', value: d.customerGroup?.name || '-' },
-    { key: 'occupation', label: 'อาชีพ', value: d.occupation?.name || '-' },
-    { key: 'phoneNumber', label: 'เบอร์โทร', value: formatter.fullPhoneNumber({ phoneNumber: d.phoneNumber, phoneNumber2: d.phoneNumber2 }) },
-    { key: 'email', label: 'อีเมล', value: d.email || '-' }
+  const individual: IDisplayList[] = [
+    { label: 'สถานะ', key: 'status', value: props.data?.status, hideColon: true },
+    { label: 'เลขที่ลูกค้า', key: 'idNo', value: props.data?.idNo },
+    { label: 'ประเภทบุคคล', key: 'personalType', value: formatTitle(props.data?.personalType) },
+    { label: 'เลขบัตรประชาชน', key: 'idCard', value: props.data?.idCard },
+    { label: 'ชื่อ', key: 'name', value: props.data ? formatter.fullName(props.data) : '-' },
+    { label: 'วันเดือนปีเกิด', key: 'birthDate', value: props.data?.birthDate ? dayjs.formatDate(props.data?.birthDate) : '-' },
+    { label: 'อายุ', key: 'age', value: props.data?.birthDate ? dayjs.formatAge(props.data?.birthDate) : '-' },
+    { label: 'กลุ่มลูกค้า', key: 'customerGroup', value: props.data?.customerGroup?.name || '-' },
+    { label: 'อาชีพ', key: 'occupation', value: props.data?.occupation?.name || '-' },
+    { label: 'เบอร์โทร', key: 'phoneNumber', value: props.data ? formatter.fullPhoneNumber(props.data) : '-' },
+    { label: 'อีเมล', key: 'email', value: props.data?.email }
   ]
+  const corporate: IDisplayList[] = [
+    { label: 'สถานะ', key: 'status', value: props.data?.status, hideColon: true },
+    { label: 'เลขที่ลูกค้า', key: 'idNo', value: props.data?.idNo },
+    { label: 'ประเภทบุคคล', key: 'personalType', value: formatTitle(props.data?.personalType) },
+    { label: 'เลขประจำตัวผู้เสียภาษี', key: 'idCard', value: props.data?.idCard },
+    { label: 'ชื่อ', key: 'name', value: formatter.fullName(props.data) || '-' },
+    { label: 'กลุ่มลูกค้า', key: 'customerGroup', value: props.data?.customerGroup?.name || '-' },
+    { label: 'เบอร์โทร', key: 'phoneNumber', value: props.data ? formatter.fullPhoneNumber(props.data) : '-' },
+    { label: 'อีเมล', key: 'email', value: props.data?.email }
+  ]
+  if (props.data?.personalType === 'INDIVIDUAL') return individual
+  return corporate
 })
 </script>

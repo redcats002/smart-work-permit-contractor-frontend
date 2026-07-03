@@ -13,13 +13,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
-import { useInitDetail } from '@/pages/customer/pages/detail/composables/useInitDetail'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
+import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import CitizenId from '@/components/display/CitizenId.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
+import { useInitDetail } from '@/pages/customer/pages/detail/composables/useInitDetail'
 import ChipCustomerStatus from '@/pages/customer/pages/list/components/ChipCustomerStatus.vue'
 
 interface IProps {
@@ -37,7 +37,7 @@ const items = computed((): IDisplayList[] => [
   { label: 'เลขบัตรประชาชน', key: 'idCard', value: detail.value.idCard },
   { label: 'ชื่อ', key: 'name', value: formatter.fullName(detail.value) },
   { label: 'วันเดือนปีเกิด', key: 'birthDate', value: dayjs.formatDate(detail.value.birthDate) },
-  { label: 'อายุ', key: 'age', value: dayjs.formatAge(detail.value.birthDate) },
+  { label: 'อายุ', key: 'age', value: detail.value.birthDate ? dayjs.formatAge(detail.value?.birthDate) : '-' },
   { label: 'กลุ่มลูกค้า', key: 'customerGroup', value: detail.value.customerGroup?.name || '-' },
   { label: 'อาชีพ', key: 'occupation', value: detail.value.occupation?.name || '-' },
   { label: 'เบอร์โทร', key: 'phoneNumber', value: detail.value.phoneNumber },

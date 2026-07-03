@@ -1,5 +1,6 @@
 <template>
   <div>
+    {{ console.log(form) }}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
       <Switch
         v-model="isActive"
@@ -8,15 +9,45 @@
         true-label="ใช้งาน"
         handle />
       <LabelField
+        class="col-span-3"
+        label="ประเภทบุคคล"
+        hide-error
+        required>
+        <div class="flex items-center gap-5">
+          <div
+            v-for="(item, i) in PersonalTypeItems"
+            :key="`${item.value}-${i}`"
+            class="flex items-center gap-2 cursor-pointer">
+            <RadioButton
+              v-model="model.personalType"
+              :disabled="disablePersonalType"
+              :value="item.value"
+              name="personalType" />
+            <span class="text-sm">{{ item.label }}</span>
+          </div>
+        </div>
+      </LabelField>
+      <LabelField
         v-model="model.idCard"
         :form="form"
-        label="เลขบัตรประชาชน"
+        :label="isCorporate ? 'เลขประจำตัวผู้เสียภาษี' : 'เลขบัตรประชาชน'"
         name="idCard"
+        placeholder="X-XXXX-XXXXX-XX-X"
         hide-error
         required
         @keypress="keypress.thaiCitizenId"
         @paste="handlePasteIdCard($event)" />
       <LabelField
+        v-if="isCorporate"
+        v-model="model.firstName"
+        :form="form"
+        label="ชื่อ"
+        name="firstName"
+        placeholder="บริษัท"
+        hide-error
+        required />
+      <LabelField
+        v-else
         v-model="model.firstName"
         v-model:prepend-option="model.titleName"
         :form="form"
@@ -24,37 +55,20 @@
         label="ชื่อ"
         name="firstName"
         name-prepend-option="titleName"
+        placeholder="กรอกชื่อ"
         hide-error
         required />
-      <!-- <div class="w-full grid grid-cols-2 gap-5">
-        <LabelField
-          v-slot="{ invalid }"
-          :form="form"
-          label="คำนำหน้า"
-          name="titleName"
-          hide-error>
-          <TitleNameSelection
-            v-model="model.titleName"
-            :invalid="invalid"
-            name="titleName"
-            dropdown />
-        </LabelField>
-        <LabelField
-          v-model="model.firstName"
-          :form="form"
-          label="ชื่อ"
-          name="firstName"
-          hide-error
-          required />
-      </div> -->
       <LabelField
+        v-if="!isCorporate"
         v-model="model.lastName"
         :form="form"
         label="นามสกุล"
         name="lastName"
+        placeholder="กรอกนามสกุล"
         hide-error
         required />
       <LabelField
+        v-if="!isCorporate"
         v-slot="{ invalid }"
         :form="form"
         label="วันเดือนปีเกิด"
@@ -65,7 +79,8 @@
           v-model="model.birthDate"
           :invalid="invalid"
           :max-date="dayjs().toDate()"
-          name="birthDate" />
+          name="birthDate"
+          placeholder="DD/MM/YYYY" />
       </LabelField>
       <LabelField
         v-slot="{ invalid }"
@@ -79,6 +94,7 @@
           show-clear />
       </LabelField>
       <LabelField
+        v-if="!isCorporate"
         v-slot="{ invalid }"
         :form="form"
         label="อาชีพ"
@@ -117,6 +133,7 @@
         :form="form"
         label="อีเมล"
         name="email"
+        placeholder="email@mail.com"
         hide-error
         @keypress="keypress.emailNoThai($event)" />
     </div>
@@ -129,8 +146,8 @@ import { useDayjs } from '@/utils/Dayjs'
 import keypress from '@/utils/Keypress'
 import paste from '@/utils/Paste'
 import type { IFormState } from '@/models/Form.model'
-import type { ICreateCustomerPayload } from '@/models/request/customer/CustomerReq.model'
 import { CustomerStatusEnum } from '@/enums/modules/customer/CustomerStatus.enum'
+import { PersonalTypeEnum, PersonalTypeItems } from '@/enums/modules/customer/PersonalType.enum'
 import { TitleNameItems } from '@/enums/TitleName.enum'
 import DatePickerInput from '@/components/input/DatePickerInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
@@ -138,20 +155,26 @@ import PhoneNumberInput from '@/components/input/PhoneNumberInput.vue'
 import Switch from '@/components/input/Switch.vue'
 import CustomerGroupSelection from '@/components/selection/modules/api/customer-group/CustomerGroupSelection.vue'
 import CustomerOccupationSelection from '@/components/selection/modules/api/customer-occupation/CustomerOccupationSelection.vue'
-import { useFormInitialValues } from '../schema/customer.schema'
+import { type CustomerFormValues, useFormInitialValues } from '../schema/customer.schema'
 
 interface IProps {
   form?: IFormState
+  disablePersonalType?: boolean
 }
 
-defineProps<IProps>()
+withDefaults(defineProps<IProps>(), {
+  form: undefined,
+  disablePersonalType: false
+})
 
 const dayjs = useDayjs()
 
-const model = defineModel<ICreateCustomerPayload>({
-  default: useFormInitialValues()
+const model = defineModel<CustomerFormValues>({
+  default: (): CustomerFormValues => useFormInitialValues()
 })
 const formKey = defineModel<number>('formKey', { required: true })
+
+const isCorporate = computed((): boolean => model.value?.personalType === PersonalTypeEnum.CORPORATE)
 
 const isActive = computed({
   get (): boolean {
@@ -162,7 +185,7 @@ const isActive = computed({
   }
 })
 
-function handlePasteNumber (evt: ClipboardEvent, key: keyof ICreateCustomerPayload): void {
+function handlePasteNumber (evt: ClipboardEvent, key: keyof CustomerFormValues): void {
   model.value[key] = ''
   model.value[key] = paste.citizenId(evt)
   formKey.value++
