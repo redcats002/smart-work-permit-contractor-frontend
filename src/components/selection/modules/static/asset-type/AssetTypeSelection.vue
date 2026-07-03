@@ -7,7 +7,7 @@
     :fetch-options="fetchOptions"
     :is-empty-model-value="isEmptyModelValue"
     :map-option-to-model="mapOptionToModel"
-    :refresh-deps="[props.category]"
+    :refresh-deps="[category]"
     option-label="name" />
 </template>
 

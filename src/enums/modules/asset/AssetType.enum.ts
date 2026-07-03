@@ -5,6 +5,7 @@ export enum AssetTypeEnum {
   NS3K_VACANT_LAND = 'NS3K_VACANT_LAND',
   NS3_WITH_BUILDING = 'NS3_WITH_BUILDING',
   NS3_VACANT_LAND = 'NS3_VACANT_LAND',
+  APARTMENT_ROOM = 'APARTMENT_ROOM',
   VEHICLE_CAR = 'VEHICLE_CAR',
   VEHICLE_MOTORCYCLE = 'VEHICLE_MOTORCYCLE',
   VEHICLE_FARM_MACHINERY = 'VEHICLE_FARM_MACHINERY',
@@ -18,6 +19,7 @@ const titleMap: Record<TAssetType, string> = {
   [AssetTypeEnum.NS3K_VACANT_LAND]: 'ที่ดิน น.ส.3 ก. - ไม่มีสิ่งปลูกสร้าง',
   [AssetTypeEnum.NS3_WITH_BUILDING]: 'ที่ดิน น.ส.3 - มีสิ่งปลูกสร้าง',
   [AssetTypeEnum.NS3_VACANT_LAND]: 'ที่ดิน น.ส.3 - ไม่มีสิ่งปลูกสร้าง',
+  [AssetTypeEnum.APARTMENT_ROOM]: 'ห้องชุด - อาคารชุด',
   [AssetTypeEnum.VEHICLE_CAR]: 'ยานพาหนะ - รถยนต์',
   [AssetTypeEnum.VEHICLE_MOTORCYCLE]: 'ยานพาหนะ - รถจักรยานยนต์',
   [AssetTypeEnum.VEHICLE_FARM_MACHINERY]: 'ยานพาหนะ - เครื่องจักรการเกษตร',
@@ -41,7 +43,7 @@ export const VehicleAssetTypeItems: TBaseOption[] = AssetTypeItems.filter(
 )
 
 export const LandAssetTypeItems: TBaseOption[] = AssetTypeItems.filter(
-  (e: TBaseOption): boolean => String(e.value).startsWith('NS3')
+  (e: TBaseOption): boolean => String(e.value).startsWith('NS3') || e.value === 'APARTMENT_ROOM'
 )
 
 export function isVehicleAsset (type?: string | null): boolean {
@@ -51,5 +53,5 @@ export function isVehicleAsset (type?: string | null): boolean {
 
 export function isLandAsset (type?: string | null): boolean {
   if (!type) return false
-  return type.startsWith('NS3')
+  return type.startsWith('NS3') || type === 'APARTMENT_ROOM'
 }
