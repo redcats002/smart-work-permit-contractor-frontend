@@ -66,7 +66,7 @@ defineProps<IProps>()
 const loadingStore = useLoadingStore()
 
 const model = defineModel<WarehouseFormValues>({
-  default: useFormInitialValues()
+  default: (): WarehouseFormValues => useFormInitialValues()
 })
 
 function onAdd (): void {

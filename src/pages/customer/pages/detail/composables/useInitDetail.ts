@@ -24,6 +24,7 @@ export function useInitDetail (data?: Partial<ICustomerById>): Ref<ICustomerById
     phoneNumber: data?.phoneNumber ?? '',
     birthDate: data?.birthDate ?? '',
     email: data?.email ?? '',
+    personalType: data?.personalType ?? 'INDIVIDUAL',
     mainAddress: {
       address: data?.mainAddress?.address ?? '',
       subDistrict: data?.mainAddress?.subDistrict ?? '',

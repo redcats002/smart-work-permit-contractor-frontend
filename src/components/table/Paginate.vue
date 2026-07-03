@@ -118,12 +118,12 @@ const emits = defineEmits<{
 }>()
 
 const pagination = defineModel<IPagination>('pagination', {
-  default: {
+  default: (): IPagination => ({
     page: 1,
     totalPage: 1,
     count: 0,
     limit: 10
-  }
+  })
 })
 
 const limitOptions = ref<IPagination['limit'][]>([

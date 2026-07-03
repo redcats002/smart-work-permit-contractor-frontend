@@ -41,7 +41,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const items = defineModel<WarehouseLocationFormValues[]>('items', {
-  default: []
+  default: (): WarehouseLocationFormValues[] => []
 })
 const columns = ref<IColumn<WarehouseLocationFormValues>[]>([
   { field: 'status', header: 'สถานะ', style: { width: '120px', minWidth: '120px' } },

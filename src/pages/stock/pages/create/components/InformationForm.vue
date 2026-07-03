@@ -65,7 +65,7 @@ defineProps<IProps>()
 const authStore = useAuthStore()
 
 const model = defineModel<DocumentMovementFormValues>({
-  default: useFormInitialValues()
+  default: (): DocumentMovementFormValues => useFormInitialValues()
 })
 const visibleConfirm = ref<boolean>(false)
 

@@ -104,7 +104,7 @@ defineProps<IProps>()
 const dayjs = useDayjs()
 
 const model = defineModel<BranchFormValues>({
-  default: useFormInitialValues()
+  default: (): BranchFormValues => useFormInitialValues()
 })
 const formKey = defineModel<number>('formKey', { required: true })
 
