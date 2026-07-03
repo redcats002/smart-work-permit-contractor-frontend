@@ -46,6 +46,7 @@ import { computed, ref } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import type { IContractById, IContractCustomer } from '@/models/response/contract/ContractRes.model'
+import { formatTitle } from '@/enums/modules/customer/PersonalType.enum.ts'
 import type { TTitleName } from '@/enums/TitleName.enum'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import CitizenId from '@/components/display/CitizenId.vue'
@@ -70,7 +71,8 @@ const primaryCustomer = computed((): IContractCustomer | undefined => props.data
 
 const customerItems = computed((): IDisplayList[] => {
   const c = primaryCustomer.value
-  return [
+  const individual = [
+    { label: 'ประเภทบุคคล', key: 'personalType', value: formatTitle(c?.personalType) },
     { key: 'idCard', label: 'เลขบัตรประชาชน', value: c?.idCard || '-' },
     { key: 'name', label: 'ชื่อ', value: formatter.fullName({ titleName: (c?.titleName ?? undefined) as TTitleName, firstName: c?.firstName, lastName: c?.lastName }) },
     { key: 'birthDate', label: 'วันเดือนปีเกิด', value: formatDate(c?.birthDate ?? undefined) },
@@ -78,6 +80,15 @@ const customerItems = computed((): IDisplayList[] => {
     { key: 'phoneNumber', label: 'เบอร์โทร', value: formatter.fullPhoneNumber({ phoneNumber: c?.phoneNumber, phoneNumber2: c?.phoneNumber2 }) },
     { key: 'mainAddress', label: 'ที่อยู่ตามบัตรประชาชน', value: c?.mainAddress ? formatter.fullAddress(c.mainAddress) : '-' }
   ]
+  const corporate = [
+    { label: 'ประเภทบุคคล', key: 'personalType', value: formatTitle(c?.personalType) },
+    { key: 'idCard', label: 'เลขประจำตัวผู้เสียภาษี', value: c?.idCard || '-' },
+    { key: 'name', label: 'ชื่อ', value: formatter.fullName({ titleName: (c?.titleName ?? undefined) as TTitleName, firstName: c?.firstName, lastName: c?.lastName }) },
+    { key: 'phoneNumber', label: 'เบอร์โทร', value: formatter.fullPhoneNumber({ phoneNumber: c?.phoneNumber, phoneNumber2: c?.phoneNumber2 }) },
+    { key: 'mainAddress', label: 'ที่อยู่ตาม', value: c?.mainAddress ? formatter.fullAddress(c.mainAddress) : '-' }
+  ]
+  if (c?.personalType === 'INDIVIDUAL') return individual
+  return corporate
 })
 
 const contractItems = computed((): IDisplayList[] => [

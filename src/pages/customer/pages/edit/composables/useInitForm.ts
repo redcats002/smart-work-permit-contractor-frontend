@@ -2,6 +2,7 @@ import type { Ref } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import type { CustomerStatusEnum } from '@/enums/modules/customer/CustomerStatus.enum'
+import { PersonalTypeEnum } from '@/enums/modules/customer/PersonalType.enum'
 import type { ETitleName } from '@/enums/TitleName.enum'
 import type { CustomerFormValues } from '../../create/schema/customer.schema'
 
@@ -13,10 +14,11 @@ export function useInitForm (form: Ref<CustomerFormValues>, data: ICustomerById)
   const workSameCurrent = data?.workAddress?.isSameCurrentAddress || false
   form.value = {
     ...data,
+    personalType: data.personalType || PersonalTypeEnum.INDIVIDUAL,
     idCard: data.idCard,
-    titleName: data.titleName as ETitleName,
+    titleName: (data.titleName ?? '') as ETitleName,
     firstName: data.firstName,
-    lastName: data.lastName,
+    lastName: data.lastName ?? '',
     phoneNumber: data.phoneNumber,
     phoneNumber2: data.phoneNumber2 ?? '',
     birthDate: (data.birthDate ? dayjs(data.birthDate).toDate() : '') as unknown as string,
