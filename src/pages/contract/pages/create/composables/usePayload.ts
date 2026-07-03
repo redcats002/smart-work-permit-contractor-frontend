@@ -41,6 +41,27 @@ export function usePayload (form: PreContractFormValues, selectedCustomer: ICust
           vehicleIdentificationNo: c.vehicleForm?.vehicleIdentificationNo || '',
           engineNumber: c.vehicleForm?.engineNumber || '',
           mileage: c.vehicleForm?.mileage || 0
+        },
+        // Apartment/Condo fields
+        apartmentCondoForm: {
+          landNo: c.apartmentCondoForm?.landNo || '',
+          address: c.apartmentCondoForm?.address || '',
+          subDistrict: c.apartmentCondoForm?.subDistrict || '',
+          district: c.apartmentCondoForm?.district || '',
+          province: c.apartmentCondoForm?.province || '',
+          postCode: c.apartmentCondoForm?.postCode || '',
+          urlGoogleMap: c.apartmentCondoForm?.urlGoogleMap || '',
+          landAreaRai: c.apartmentCondoForm?.landAreaRai || 0,
+          landAreaNgan: c.apartmentCondoForm?.landAreaNgan || 0,
+          landAreaSquareWah: c.apartmentCondoForm?.landAreaSquareWah || 0,
+          unitNumber: c.apartmentCondoForm?.unitNumber || '',
+          floorNumber: c.apartmentCondoForm?.floorNumber || '',
+          buildingNumber: c.apartmentCondoForm?.buildingNumber || '',
+          buildingName: c.apartmentCondoForm?.buildingName || '',
+          buildingRegistrationNumber: c.apartmentCondoForm?.buildingRegistrationNumber || '',
+          roomAreaSquareMeter: c.apartmentCondoForm?.roomAreaSquareMeter || 0,
+          roomHeightMeter: c.apartmentCondoForm?.roomHeightMeter || 0,
+          commonPropertyOwnershipRatio: c.apartmentCondoForm?.commonPropertyOwnershipRatio || ''
         }
       })
     )

@@ -39,7 +39,7 @@ interface IProps {
 defineProps<IProps>()
 
 const model = defineModel<WarehouseFormValues>({
-  default: useFormInitialValues()
+  default: (): WarehouseFormValues => useFormInitialValues()
 })
 
 const isActive = computed({

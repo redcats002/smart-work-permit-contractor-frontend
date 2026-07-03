@@ -1,12 +1,14 @@
 import { z } from 'zod'
 import { PreAssetSchema as FormSchema } from '../../create/schema/pre-contract.schema'
+import { ModalApartmentSchema } from './apartment.schema'
 import { ModalLandSchema } from './land.schema'
 import { ModalVehicleSchema } from './vehicle.schema'
 
 export const PreAssetUpdateSchema = z.object({
   ...FormSchema.shape,
   realEstateForm: ModalLandSchema,
-  vehicleForm: ModalVehicleSchema
+  vehicleForm: ModalVehicleSchema,
+  apartmentCondoForm: ModalApartmentSchema
 })
 
 export type PreAssetUpdateValues = z.infer<typeof PreAssetUpdateSchema>
@@ -45,6 +47,29 @@ export function useInitForm (): PreAssetUpdateValues {
       mileage: 0,
       type: '',
       detail: ''
+    },
+    // Apartment/Condo fields
+    apartmentCondoForm: {
+      type: '',
+      detail: '',
+      landNo: '',
+      address: '',
+      subDistrict: '',
+      district: '',
+      province: '',
+      postCode: '',
+      urlGoogleMap: '',
+      landAreaRai: 0,
+      landAreaNgan: 0,
+      landAreaSquareWah: 0,
+      unitNumber: '',
+      floorNumber: '',
+      buildingNumber: '',
+      buildingName: '',
+      buildingRegistrationNumber: '',
+      roomAreaSquareMeter: 0,
+      roomHeightMeter: 0,
+      commonPropertyOwnershipRatio: ''
     }
   }
 }

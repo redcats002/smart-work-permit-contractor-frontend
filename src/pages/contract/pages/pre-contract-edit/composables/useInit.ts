@@ -44,7 +44,8 @@ export function useInit (): IUseInit {
           type: c.type,
           images: c.images || [],
           realEstateForm: c?.realEstateForm,
-          vehicleForm: c?.vehicleForm
+          vehicleForm: c?.vehicleForm,
+          apartmentCondoForm: c?.apartmentCondoForm
         })
       ),
       customerId: res.data.customer.id,

@@ -195,19 +195,19 @@ const emits = defineEmits<{
 
 const resolvedTableClass = computed((): string | object => props.tableClass || 'w-full')
 
-const selectedItems = defineModel<any[]>('selection', { default: [] })
+const selectedItems = defineModel<any[]>('selection', { default: (): any[] => [] })
 const expandedRows = defineModel<Record<string, any> | any[]>('expandedRows', {
   default: (): Record<string, any> => ({})
 })
 const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc' | ''>('sortOrder', { default: 'desc' })
 const pagination = defineModel<IPagination>('pagination', {
-  default: {
+  default: (): IPagination => ({
     page: 1,
     totalPage: 1,
     count: 0,
     limit: 10
-  }
+  })
 })
 
 function displayValue (value: any, type: 'item' | 'footer' = 'item'): any {

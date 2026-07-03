@@ -66,7 +66,7 @@ const items = computed((): IDisplayList[] => {
     { label: 'เลขที่ลูกค้า', key: 'idNo', value: props.data.idNo },
     { label: 'เลขบัตรประชาชน', key: 'idCard', value: props.data.idCard },
     { label: 'วันเดือนปีเกิด', key: 'birthDate', value: dayjs.formatDate(props.data.birthDate) },
-    { label: 'อายุ', key: 'age', value: dayjs.formatAge(props.data.birthDate) },
+    { label: 'อายุ', key: 'age', value: props.data?.birthDate ? dayjs.formatAge(props.data?.birthDate) : '-' },
     { label: 'กลุ่มลูกค้า', key: 'customerGroup', value: props.data.customerGroup?.name || '-' },
     { label: 'อาชีพ', key: 'occupation', value: props.data.occupation?.name || '-' },
     { label: 'เบอร์โทร', key: 'phoneNumber', value: props.data.phoneNumber },

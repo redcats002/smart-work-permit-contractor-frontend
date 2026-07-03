@@ -1,5 +1,7 @@
 <template>
-  <div class="w-full grid grid-cols-1 gap-2.5">
+  <div
+    :class="gridClass"
+    class="w-full grid grid-cols-1 gap-2.5">
     <template
       v-for="(item, i) in items"
       :key="`item-${String(item.key)}-${i}`">
@@ -49,6 +51,7 @@ export interface IDisplayList<T = any> {
 }
 
 interface IProps<T = any> {
+  gridClass?: string
   items?: IDisplayList<T>[]
   rowClass?: string
   labelClass?: string
@@ -56,6 +59,7 @@ interface IProps<T = any> {
 }
 
 withDefaults(defineProps<IProps>(), {
+  gridClass: undefined,
   items: (): IDisplayList[] => [],
   rowClass: 'grid-cols-2 md:grid-cols-3',
   labelClass: '',

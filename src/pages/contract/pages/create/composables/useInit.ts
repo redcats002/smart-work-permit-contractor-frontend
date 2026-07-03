@@ -6,7 +6,7 @@ import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import type { TBaseParamsId } from '@/models/response/Response.model'
-import { isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
+import { isApartmentAsset, isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
 import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import CustomerProvider, { type ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import PreContractProvider, { type IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
@@ -65,6 +65,7 @@ export function useInit (): IUseInit {
     for (const e of form.value.preAssets) {
       if (isVehicleAsset(e.type)) return 'VEHICLE'
       if (isLandAsset(e.type)) return 'LAND'
+      if (isApartmentAsset(e.type)) return 'APARTMENT'
     }
     return null
   })
