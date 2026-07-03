@@ -5,6 +5,7 @@
       <BackButton />
       <Spacer />
       <ReadIdentificationCardButton
+        v-if="!isCorporate"
         @read-success="onReadIdCard($event)" />
     </BaseTop>
     <BasePage>
@@ -16,39 +17,11 @@
           :resolver="resolver"
           class="flex flex-col gap-5"
           @submit="onSubmit($event)">
-          <BaseContainer>
-            <InformationForm
-              v-model="form"
-              v-model:form-key="formKey"
-              :form="$form" />
-          </BaseContainer>
-          <BaseContainer>
-            <AddressForm
-              v-model="mainAddress"
-              :form="$form"
-              type="MAIN"
-              @use-same-citizen-address="mount()"
-              @use-same-current-address="mount()" />
-          </BaseContainer>
-          <BaseContainer>
-            <AddressForm
-              v-model="currentAddress"
-              :citizen-address="mainAddress"
-              :form="$form"
-              type="CURRENT"
-              @use-same-citizen-address="mount()"
-              @use-same-current-address="mount()" />
-          </BaseContainer>
-          <BaseContainer>
-            <AddressForm
-              v-model="workAddress"
-              :citizen-address="mainAddress"
-              :current-address-ref="currentAddress"
-              :form="$form"
-              type="WORK"
-              @use-same-citizen-address="mount()"
-              @use-same-current-address="mount()" />
-          </BaseContainer>
+          <CustomerForm
+            v-model="form"
+            v-model:form-key="formKey"
+            :form="$form"
+            disable-personal-type />
           <FormAction @cancel="onCancel()" />
         </Form>
       </div>
@@ -62,11 +35,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import type { ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import CustomerProvider from '@/resources/provider/customer/Customer.provider'
-import BaseContainer from '@/components/base/BaseContainer.vue'
+import { PersonalTypeEnum } from '@/enums/modules/customer/PersonalType.enum'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
@@ -74,11 +46,10 @@ import FormAction from '@/components/button/FormAction.vue'
 import type { IReadIdCardResult } from '@/components/button/ReadIdentificationCardButton.vue'
 import ReadIdentificationCardButton from '@/components/button/ReadIdentificationCardButton.vue'
 import Spacer from '@/components/flex/Spacer.vue'
-import AddressForm from '@/components/input/AddressForm.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
+import CustomerForm from '@/pages/customer/components/CustomerForm.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import InformationForm from '../../create/components/InformationForm.vue'
 import { mapIdCardToCustomer } from '../../create/composables/useIdCardMapper'
 import { type CustomerFormValues, CustomerSchema, useFormInitialValues } from '../../create/schema/customer.schema'
 import { useInitForm } from '../composables/useInitForm'
@@ -96,20 +67,7 @@ const resolver = zodResolver(CustomerSchema)
 
 const customerId = computed((): string => route?.params?.id as string ?? '')
 
-const mainAddress = computed({
-  get (): IAddressRequest { return form.value.mainAddress },
-  set (e: IAddressRequest): void { form.value.mainAddress = e }
-})
-
-const currentAddress = computed({
-  get (): IAddressRequest { return form.value.currentAddress },
-  set (e: IAddressRequest): void { form.value.currentAddress = e }
-})
-
-const workAddress = computed<IAddressRequest>({
-  get (): IAddressRequest { return form.value.workAddress },
-  set (e: IAddressRequest): void { form.value.workAddress = e }
-})
+const isCorporate = computed((): boolean => form.value.personalType === PersonalTypeEnum.CORPORATE)
 
 // Map the API response shape (ICustomerById) → CustomerFormValues
 function useInit (data: ICustomerById): void {
@@ -130,7 +88,6 @@ async function useSubmit (): Promise<void> {
 }
 
 async function onSubmit (event: FormSubmitEvent): Promise<void> {
-  mount()
   if (!event.valid) {
     scrollToFirstError(event.errors)
     return

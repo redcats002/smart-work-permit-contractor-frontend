@@ -1,9 +1,12 @@
 import { computed, ref, type Ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { ICustomerFilter } from '@/models/modules/customer/Filter.model'
 import type { IGetCustomerList } from '@/models/request/customer/CustomerReq.model'
 import type { ICustomerList } from '@/models/response/customer/CustomerRes.model'
+import type { TCustomerStatus } from '@/enums/modules/customer/CustomerStatus.enum'
+import type { TPersonalType } from '@/enums/modules/customer/PersonalType.enum'
 import CustomerProvider, { type ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
@@ -19,9 +22,14 @@ interface IUseList extends IUsePagination {
 export default function useList (): IUseList {
   const CustomerService: ICustomerProvider = new CustomerProvider()
 
+  const route = useRoute()
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
-  const filters = ref<ICustomerFilter>({})
+  const filters = ref<ICustomerFilter>({
+    customerGroupId: route?.query?.customerGroupId ? Number(route.query.customerGroupId) : undefined,
+    status: route?.query?.status ? String(route.query.status) as TCustomerStatus : undefined,
+    personalType: route?.query?.personalType ? String(route.query.personalType) as TPersonalType : undefined
+  })
   const items = ref<ICustomerList[]>([])
 
   const paginateQuery = computed((): IGetCustomerList => {
@@ -53,7 +61,8 @@ export default function useList (): IUseList {
     return {
       ...value,
       customerGroupId: filters.value?.customerGroupId,
-      status: filters.value?.status
+      status: filters.value?.status,
+      personalType: filters.value?.personalType
     }
   }
 

@@ -5,14 +5,15 @@
       v-bind="attrs"
       v-model="model"
       :autocomplete="autocomplete"
-      :class="attrs.multiple ? 'min-h-9 shadow-none!' : 'h-9 shadow-none!'"
+      :class="attrs?.multiple ? 'min-h-9 shadow-none!' : 'h-9 shadow-none!'"
       :dropdown="dropdown"
       :name="name"
       :placeholder="placeholder"
       class="w-full"
       dropdown-class="bg-white"
       fluid
-      @blur="editing = false">
+      @blur="setEditing(false)"
+      @focus="setEditing(true)">
       <template #dropdownicon>
         <Icon
           class="size-5 text-surface-400"
@@ -91,6 +92,10 @@ const displayLabel = computed((): string => {
   if (!model.value || Array.isArray(model.value) || typeof model.value !== 'object') return ''
   return String((model.value as any)?.[optionLabel.value] ?? '')
 })
+
+function setEditing (value: boolean): void {
+  editing.value = value
+}
 
 async function startEditing (): Promise<void> {
   editing.value = true
