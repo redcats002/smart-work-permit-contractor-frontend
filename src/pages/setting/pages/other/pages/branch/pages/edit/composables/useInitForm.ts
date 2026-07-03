@@ -14,6 +14,8 @@ export function useInitForm (form: Ref<BranchFormValues>, data: IBranchById): vo
     idNo: data?.idNo || '',
     name: data?.name || '',
     openAt: (data.openAt ? dayjs(data.openAt).toISOString() : '') as unknown as string,
+    managementPositionId: data?.managementPosition?.id ?? null,
+    includeInReport: data?.includeInReport ?? true,
     branchTimes: data?.branchTimes.map((item: IBranchTime): BranchTimeFormValues => ({
       ...item,
       closeTime: item.closeTime,

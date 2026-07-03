@@ -1,15 +1,15 @@
-import type { ICreateManagementStructureLineHeadPayload, IUpdateManagementStructureLineHeadPayload } from '@/models/request/management-structure-line-head/ManagementStructureLineHeadReq.model'
+import type { ICreateManagementPositionPayload, IUpdateManagementPositionPayload } from '@/models/request/management-position/ManagementPositionReq.model'
 import type { ManagementStructureLineHeadFormValues } from '../../schema/management-structure-line-head.schema'
 
-export function useCreatePayload (form: ManagementStructureLineHeadFormValues): ICreateManagementStructureLineHeadPayload {
+export function useCreatePayload (form: ManagementStructureLineHeadFormValues & { managementPosition?: string }): ICreateManagementPositionPayload {
   return {
     ...form,
-    zoneManagerId: form.zoneManagerId || undefined
-  }
+    parentId: form.parentId || undefined
+  } as ICreateManagementPositionPayload
 }
-export function useUpdatePayload (form: ManagementStructureLineHeadFormValues): IUpdateManagementStructureLineHeadPayload {
+export function useUpdatePayload (form: ManagementStructureLineHeadFormValues & { managementPosition?: string }): IUpdateManagementPositionPayload {
   return {
     ...form,
-    zoneManagerId: form.zoneManagerId || undefined
-  }
+    parentId: form.parentId || undefined
+  } as IUpdateManagementPositionPayload
 }

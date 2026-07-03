@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue'
-import type { IManagementStructureZoneManagerList } from '@/models/response/management-structure-zone-manager/ManagementStructureZoneManagerRes.model'
+import type { IManagementPositionList } from '@/models/response/management-position/ManagementPositionRes.model'
 import type { TBaseParamsId } from '@/models/response/Response.model'
 import type { DataTableRowClickEvent } from 'primevue'
 import useListZoneManager from './zone-manager/useList'
@@ -10,7 +10,7 @@ interface IUseList {
   lineHead: ReturnType<typeof useListLineHead>
   selectZoneManagerId: Ref<number | null>
   onDeleteZoneManager (id: TBaseParamsId): Promise<void>
-  onSelectZoneManager: (event: DataTableRowClickEvent<IManagementStructureZoneManagerList>) => Promise<void>
+  onSelectZoneManager: (event: DataTableRowClickEvent<IManagementPositionList>) => Promise<void>
 }
 
 export default function useList (): IUseList {
@@ -25,7 +25,7 @@ export default function useList (): IUseList {
     selectZoneManagerId.value = null
     zoneManager.fetch()
   }
-  async function onSelectZoneManager ({ data }: DataTableRowClickEvent<IManagementStructureZoneManagerList>): Promise<void> {
+  async function onSelectZoneManager ({ data }: DataTableRowClickEvent<IManagementPositionList>): Promise<void> {
     selectZoneManagerId.value = typeof data?.id === 'number' ? data.id : null
     await lineHead.useFetch()
   }
