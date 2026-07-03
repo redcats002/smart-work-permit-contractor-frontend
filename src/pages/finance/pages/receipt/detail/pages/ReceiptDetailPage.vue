@@ -227,7 +227,7 @@ const customerItems = computed((): IDisplayList[] => [
 const receiptItems = computed((): IDisplayList[] => [
   { label: 'เลขที่ใบเสร็จ', key: 'receiptNo', value: form.value.idNo ?? '-' },
   { label: 'วันที่รับเงิน', key: 'dateOfPayment', value: dayjs.formatDate(form.value.paidAt ?? undefined) },
-  { label: 'ผู้รับเงิน', key: 'receivedBy', value: form.value.receivedBy?.fullName ?? '-' },
+  { label: 'ผู้รับเงิน', key: 'receivedBy', value: form.value.receivedBy?.fullName || '-' },
   { label: 'สาขา', key: 'branch', value: form.value.branch?.name ?? '-' },
   { label: 'ช่องทางการชำระเงิน', key: 'paymentType', value: formatTitle(form.value.paymentType ?? undefined) }
 ])
