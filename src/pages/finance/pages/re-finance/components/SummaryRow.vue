@@ -1,16 +1,17 @@
 <template>
-  <div class="flex items-center gap-1 text-sm w-[268px]">
+  <div class="flex gap-[2px] items-center text-[14px] text-[#333] w-[268px]">
     <span
-      :class="bold ? 'w-[162px]' : 'w-[162px]'"
-      class="font-bold text-[#333]">
+      class="font-bold w-[162px]">
       {{ label }}
     </span>
-    <span class="font-normal text-[#333]">:</span>
-    <span
-      :style="bold ? 'font-weight: 800;' : ''"
-      class="font-normal text-[#333]">
-      {{ formatNumber(value) }}
-    </span>
+    <div class="flex gap-[2px] items-center whitespace-nowrap">
+      <span class="font-normal">:</span>
+      <span
+        :style="bold ? 'font-weight: 800;' : ''"
+        class="font-normal">
+        {{ formatNumber(value) }}
+      </span>
+    </div>
   </div>
 </template>
 
