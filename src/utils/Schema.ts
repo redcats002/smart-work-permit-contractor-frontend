@@ -1,6 +1,7 @@
 import type { IMedia } from '@/resources/provider/Upload.provider'
 import z from 'zod'
 import { useDayjs } from './Dayjs'
+import { formatter } from './Formatter'
 
 interface ISchema {
   id: (label: string) => z.ZodOptional<z.ZodType<number | string, any, any>>
@@ -8,6 +9,18 @@ interface ISchema {
   date: (label: string) => z.ZodType<string, any, any>
   media: z.ZodType<IMedia, any, any>
   richText: (label: string) => z.ZodType<string, any, any>
+  numericField: (message: string) => z.ZodType<number, any, any>
+}
+
+const numericField = (message: string) => {
+  return z.preprocess((value: unknown): unknown => {
+    if (value == null || value === '') return ''
+    if (typeof value === 'string') {
+      const parsed = formatter.numberParseFloat(value)
+      return Number.isNaN(parsed) ? value : parsed
+    }
+    return value
+  }, z.number().min(0, message).default(0))
 }
 
 const id = (label: string): z.ZodOptional<z.ZodType<number | string, any, any>> => {
@@ -91,5 +104,6 @@ export const schema: ISchema = {
   enum: enumSchema,
   date,
   media,
-  richText
+  richText,
+  numericField
 }
