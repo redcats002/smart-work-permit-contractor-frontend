@@ -14,6 +14,15 @@
           {{ formatTitle(asset.type) }}
         </p>
         <DisplayList
+          :items="assetStatusItems"
+          class="mb-2"
+          label-class="text-font-gray!">
+          <template #[`value.status`]>
+            <ChipAssetStatus
+              :value="asset.status" />
+          </template>
+        </DisplayList>
+        <DisplayList
           :items="items"
           class="mb-2"
           label-class="text-font-gray!" />
@@ -33,11 +42,12 @@ import { computed } from 'vue'
 import type { IContractAssetDetail } from '@/models/response/contract-asset/ContractAssetRes.model.ts'
 import { formatTitle } from '@/enums/modules/asset/AssetType.enum'
 import BaseGalleria from '@/components/base/BaseGalleria.vue'
-import DisplayList from '@/components/display/DisplayList.vue'
+import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
 import FileAttachment from '@/components/display/FileAttachment.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import AssetEmpty from '@/pages/contract/pages/pre-contract-detail/components/AssetEmpty.vue'
 import { type IAssetDisplayItemsInput, useAssetDisplayItems } from '@/pages/contract/pages/pre-contract-detail/composables/useAssetDisplayItems'
+import ChipAssetStatus from '@/pages/stock/pages/list/components/asset/ChipAssetStatus.vue'
 
 interface IProps {
   asset?: IContractAssetDetail | null
@@ -55,6 +65,12 @@ const items = useAssetDisplayItems(computed((): IAssetDisplayItemsInput | null =
   vehicleForm: props.asset.vehicleForm,
   apartmentForm: props.asset.apartmentForm
 }))
+
+const assetStatusItems = computed((): IDisplayList[] => {
+  return [
+    { key: 'status', label: 'สถานะหลักทรัพย์', value: props.asset?.status ?? '-' }
+  ]
+})
 
 </script>
 

@@ -1,7 +1,7 @@
 <template>
   <BaseModal
     v-model="visible"
-    class="md:w-240!"
+    class="md:w-7xl!"
     label="กรอกข้อมูลหลักทรัพย์"
     @open="emits('open', asset)">
     <template #default>

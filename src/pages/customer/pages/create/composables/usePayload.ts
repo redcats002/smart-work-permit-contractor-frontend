@@ -10,11 +10,11 @@ export function usePayload (form: CustomerFormValues): ICreateCustomerPayload {
     phoneNumber2: form?.phoneNumber2?.replaceAll(/-/g, '') || undefined,
     email: form?.email || undefined,
     customerGroupId: form?.customerGroupId,
+    currentAddress: form.currentAddress,
+    workAddress: form.workAddress,
     occupationId: isCorporate ? undefined : form?.occupationId,
     titleName: isCorporate ? undefined : form.titleName,
     lastName: isCorporate ? undefined : form.lastName,
-    birthDate: isCorporate ? undefined : form.birthDate,
-    currentAddress: isCorporate ? undefined : form.currentAddress,
-    workAddress: isCorporate ? undefined : form.workAddress
+    birthDate: isCorporate ? undefined : form.birthDate
   }
 }
