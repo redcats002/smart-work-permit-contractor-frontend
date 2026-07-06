@@ -57,7 +57,6 @@ export interface IAssetDisplayItemsInput {
 export function useAssetDisplayItems (asset: Ref<IAssetDisplayItemsInput | null | undefined>): ComputedRef<IDisplayList[]> {
   return computed((): IDisplayList[] => {
     const data = asset.value
-
     if (isLandAsset(data?.type)) {
       const realEstateForm = data?.realEstateForm
       const fullAddress = formatter.fullAddress({
@@ -76,7 +75,6 @@ export function useAssetDisplayItems (asset: Ref<IAssetDisplayItemsInput | null 
         { label: 'จุดจัดเก็บ', value: data?.locationName, key: 'location', hidden: !data?.locationName }
       ]
     }
-
     if (isApartmentAsset(data?.type)) {
       const apartmentForm = data?.apartmentForm
       const fullAddress = formatter.fullAddress({

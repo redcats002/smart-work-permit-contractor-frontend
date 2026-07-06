@@ -5,6 +5,15 @@ import { z } from 'zod'
 
 export type TAssetCategory = 'VEHICLE' | 'LAND' | 'APARTMENT' | null
 
+export function getAssetCategory (assets: Array<{ type?: string | null }>): TAssetCategory {
+  for (const e of assets) {
+    if (isVehicleAsset(e.type)) return 'VEHICLE'
+    if (isLandAsset(e.type)) return 'LAND'
+    if (isApartmentAsset(e.type)) return 'APARTMENT'
+  }
+  return null
+}
+
 function addRequired (ctx: z.RefinementCtx, path: (string | number)[], message: string): void {
   ctx.addIssue({ code: 'custom', path, message })
 }
@@ -24,6 +33,7 @@ export const LandSchema = z.object({
   landAreaNgan: z.number().default(0),
   landAreaSquareWah: z.number().default(0)
 })
+
 export const ApartmentCondoSchema = z.object({
   landNo: z.string().default(''),
   address: z.string().default(''),

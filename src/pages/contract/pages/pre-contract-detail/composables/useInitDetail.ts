@@ -1,17 +1,17 @@
 import { computed, type ComputedRef, ref, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IEvaluateGroupList } from '@/models/modules/pre-contract/Evaluator.model'
 import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import type { IPreContractById } from '@/models/response/pre-contract/PreContractRes.model'
-import { isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
 import type { TEvaluatorLevel } from '@/enums/modules/contract/EvaluatorLevel.enum'
 import PreContractProvider, { type IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
-import type { TAssetCategory } from '../../create/schema/pre-contract.schema'
+import { getAssetCategory, type TAssetCategory } from '../../create/schema/pre-contract.schema'
+import { readyForApartmentAppraisal } from '../schema/apartment.schema'
 import { readyForAppraisal as readyForLandAppraisal } from '../schema/land.schema'
 import type { MakeContractFormValues, PreAssetWarehouseFormValues } from '../schema/make-contract.schema'
 import { readyForAppraisal as readyForVehicleAppraisal } from '../schema/vehicle.schema'
-import { toast } from '@/plugins/toast'
 
 export interface IUseInitDetail {
   contractId: ComputedRef<string | string[]>
@@ -48,14 +48,7 @@ export function useInitDetail (): IUseInitDetail {
   const modalVisible = ref<boolean>(false)
   const modalAsset = ref<IPreAssetList | null>(null)
 
-  const assetCategory = computed((): TAssetCategory => {
-    if (!contract.value?.preAssets.length) return null
-    for (const e of contract.value.preAssets) {
-      if (isVehicleAsset(e.type)) return 'VEHICLE'
-      if (isLandAsset(e.type)) return 'LAND'
-    }
-    return null
-  })
+  const assetCategory = computed((): TAssetCategory => getAssetCategory(contract.value?.preAssets ?? []))
 
   const existedGroup = computed((): TEvaluatorLevel[] => {
     if (!contract.value) return []
@@ -67,8 +60,9 @@ export function useInitDetail (): IUseInitDetail {
     if (!contract.value) return false
     return (
       contract.value?.preAssets.every((preAsset: IPreAssetList): boolean => {
-        if (readyForVehicleAppraisal(preAsset) && assetCategory.value !== 'LAND') return true
+        if (readyForVehicleAppraisal(preAsset) && assetCategory.value === 'VEHICLE') return true
         if (readyForLandAppraisal(preAsset) && assetCategory.value === 'LAND') return true
+        if (readyForApartmentAppraisal(preAsset) && assetCategory.value === 'APARTMENT') return true
         return false
       }) ?? false
     )

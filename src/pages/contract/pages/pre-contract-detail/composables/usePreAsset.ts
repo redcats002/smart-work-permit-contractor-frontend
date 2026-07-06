@@ -37,6 +37,14 @@ export function usePreAsset (useFetch: () => Promise<void>): IUsePreAsset {
         landAreaRai: formatter.numberParseFloat(formPreAsset.value?.realEstateForm?.landAreaRai || 0),
         landAreaSquareWah: formatter.numberParseFloat(formPreAsset.value?.realEstateForm?.landAreaSquareWah || 0)
       },
+      apartmentCondoForm: {
+        ...formPreAsset.value?.apartmentCondoForm,
+        landAreaNgan: formatter.numberParseFloat(formPreAsset.value?.apartmentCondoForm?.landAreaNgan || 0),
+        landAreaRai: formatter.numberParseFloat(formPreAsset.value?.apartmentCondoForm?.landAreaRai || 0),
+        landAreaSquareWah: formatter.numberParseFloat(formPreAsset.value?.apartmentCondoForm?.landAreaSquareWah || 0),
+        roomAreaSquareMeter: formatter.numberParseFloat(formPreAsset.value?.apartmentCondoForm?.roomAreaSquareMeter || 0),
+        roomHeightMeter: formatter.numberParseFloat(formPreAsset.value?.apartmentCondoForm?.roomHeightMeter || 0)
+      },
       images: await getUploadImages(formPreAsset.value.images as IMedia[])
     }
   }

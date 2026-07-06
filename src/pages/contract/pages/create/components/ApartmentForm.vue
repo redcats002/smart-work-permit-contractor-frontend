@@ -1,13 +1,12 @@
 <template>
   <div class="grid grid-cols-1 gap-5">
     <LabelField
-      v-model="model.landNo"
+      v-model="model.address"
       :form="form"
-      :name="`${namePrefix}.landNo`"
+      :name="`${namePrefix}.address`"
       label="ที่อยู่"
       placeholder="กรอกที่อยู่"
-      hide-error
-      required />
+      hide-error />
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
       <LabelField
         v-slot="{ invalid }"
