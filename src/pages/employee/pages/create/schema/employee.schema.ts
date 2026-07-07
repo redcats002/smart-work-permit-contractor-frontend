@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/typedef */
 import { generator } from '@/utils/Generator'
 // import { regex } from '@/utils/Regex'
 import { schema } from '@/utils/Schema'
 import { EmployeeRoleEnum } from '@/enums/modules/employee/EmployeeRole.enum'
 import { EmployeeStatusEnum } from '@/enums/modules/employee/EmployeeStatus.enum'
+import { EManagementPosition } from '@/enums/modules/management-structure/ManagementPosition.enum'
 import { ETitleName } from '@/enums/TitleName.enum'
 import { z } from 'zod'
 
@@ -33,6 +35,8 @@ export const EmployeeSchema = z.object({
   // ── Classification ───────────────────────────────────────────────────────
   status: schema.enum(EmployeeStatusEnum, 'กรุณาเลือกสถานะลูกค้า').default(EmployeeStatusEnum.INACTIVE),
   role: schema.enum(EmployeeRoleEnum, 'ตำแหน่ง'),
+  managementPositionType: z.nativeEnum(EManagementPosition).optional(),
+  managementPositionId: schema.id('ตำแหน่งผังบริการ'),
   branchIds: z.array(schema.id('สาขา')).min(1, 'กรุณาเลือกสาขาอย่างน้อย 1 สาขา').optional().default([]),
 
   // ── Citizen / Home Address ───────────────────────────────────────────────
@@ -60,6 +64,32 @@ export const EmployeeSchema = z.object({
     urlGoogleMap: z.string().optional(),
     isSameCurrentAddress: z.boolean().optional()
   })
+}).superRefine((data, ctx) => {
+  if (data.role === EmployeeRoleEnum.SUPERVISOR) {
+    if (!data.managementPositionType) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'กรุณาเลือกตำแหน่งผังบริหาร',
+        path: ['managementPositionType']
+      })
+    }
+    if (!data.managementPositionId) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'กรุณาเลือกตำแหน่ง',
+        path: ['managementPositionId']
+      })
+    }
+  }
+  if (data.role === EmployeeRoleEnum.STAFF) {
+    if (!data.branchIds || data.branchIds.length === 0) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'กรุณาเลือกสาขาอย่างน้อย 1 สาขา',
+        path: ['branchIds']
+      })
+    }
+  }
 })
 
 export type EmployeeFormValues = z.infer<typeof EmployeeSchema>
@@ -76,6 +106,8 @@ export function useDev (): EmployeeFormValues {
     email: '',
     password: '',
     role: '',
+    managementPositionType: undefined,
+    managementPositionId: null,
     branchIds: [],
     image: null,
     // Classification
@@ -118,6 +150,8 @@ export function useFormInitialValues (): EmployeeFormValues {
     dateOfBirth: '',
     email: '',
     role: '',
+    managementPositionType: undefined,
+    managementPositionId: null,
     branchIds: [],
     // Classification
     status: EmployeeStatusEnum.ACTIVE,

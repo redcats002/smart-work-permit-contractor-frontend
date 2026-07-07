@@ -29,6 +29,8 @@ export interface IEmployeeById extends IEntity {
   currentAddress: IAddressRequest
   email?: string
   role: TEmployeeRole
+  managementPositionType?: string
+  managementPositionId?: number
   branches: IBranchList[]
 }
 

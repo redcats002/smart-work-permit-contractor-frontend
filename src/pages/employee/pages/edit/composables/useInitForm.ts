@@ -28,6 +28,8 @@ export function useInitForm (form: Ref<EmployeeFormValues>, data: IEmployeeById)
     idCard: data?.idCard || '',
     phoneNumber: data?.phoneNumber || '',
     role: data?.role || undefined,
+    managementPositionType: data?.managementPositionType || undefined,
+    managementPositionId: data?.managementPositionId ?? null,
     status: data?.status || undefined,
     title: data?.title as ETitleName
   }
