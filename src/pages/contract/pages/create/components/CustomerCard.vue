@@ -38,7 +38,7 @@ const dayjs = useDayjs()
 
 const items = computed((): IDisplayList[] => {
   const individual: IDisplayList[] = [
-    { label: 'สถานะ', key: 'status', value: props.data?.status, hideColon: true },
+    { label: 'สถานะ', key: 'status', value: props.data?.status, hideColon: true, hidden: !props.data?.status },
     { label: 'เลขที่ลูกค้า', key: 'idNo', value: props.data?.idNo },
     { label: 'ประเภทบุคคล', key: 'personalType', value: formatTitle(props.data?.personalType) },
     { label: 'เลขบัตรประชาชน', key: 'idCard', value: props.data?.idCard },
@@ -48,17 +48,17 @@ const items = computed((): IDisplayList[] => {
     { label: 'กลุ่มลูกค้า', key: 'customerGroup', value: props.data?.customerGroup?.name || '-' },
     { label: 'อาชีพ', key: 'occupation', value: props.data?.occupation?.name || '-' },
     { label: 'เบอร์โทร', key: 'phoneNumber', value: props.data ? formatter.fullPhoneNumber(props.data) : '-' },
-    { label: 'อีเมล', key: 'email', value: props.data?.email }
+    { label: 'อีเมล', key: 'email', value: props.data?.email || '-' }
   ]
   const corporate: IDisplayList[] = [
-    { label: 'สถานะ', key: 'status', value: props.data?.status, hideColon: true },
+    { label: 'สถานะ', key: 'status', value: props.data?.status, hideColon: true, hidden: !props.data?.status },
     { label: 'เลขที่ลูกค้า', key: 'idNo', value: props.data?.idNo },
     { label: 'ประเภทบุคคล', key: 'personalType', value: formatTitle(props.data?.personalType) },
     { label: 'เลขประจำตัวผู้เสียภาษี', key: 'idCard', value: props.data?.idCard },
     { label: 'ชื่อ', key: 'name', value: formatter.fullName(props.data) || '-' },
     { label: 'กลุ่มลูกค้า', key: 'customerGroup', value: props.data?.customerGroup?.name || '-' },
     { label: 'เบอร์โทร', key: 'phoneNumber', value: props.data ? formatter.fullPhoneNumber(props.data) : '-' },
-    { label: 'อีเมล', key: 'email', value: props.data?.email }
+    { label: 'อีเมล', key: 'email', value: props.data?.email || '-' }
   ]
   if (props.data?.personalType === 'INDIVIDUAL') return individual
   return corporate

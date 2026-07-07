@@ -1,9 +1,18 @@
 import { schema } from '@/utils/Schema'
-import { AssetTypeEnum, isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
+import { AssetTypeEnum, isApartmentAsset, isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
 import { PreContractStatusEnum } from '@/enums/modules/contract/PreContractStatus.enum'
 import { z } from 'zod'
 
-export type TAssetCategory = 'VEHICLE' | 'LAND' | null
+export type TAssetCategory = 'VEHICLE' | 'LAND' | 'APARTMENT' | null
+
+export function getAssetCategory (assets: Array<{ type?: string | null }>): TAssetCategory {
+  for (const e of assets) {
+    if (isVehicleAsset(e.type)) return 'VEHICLE'
+    if (isLandAsset(e.type)) return 'LAND'
+    if (isApartmentAsset(e.type)) return 'APARTMENT'
+  }
+  return null
+}
 
 function addRequired (ctx: z.RefinementCtx, path: (string | number)[], message: string): void {
   ctx.addIssue({ code: 'custom', path, message })
@@ -24,6 +33,27 @@ export const LandSchema = z.object({
   landAreaNgan: z.number().default(0),
   landAreaSquareWah: z.number().default(0)
 })
+
+export const ApartmentCondoSchema = z.object({
+  landNo: z.string().default(''),
+  address: z.string().default(''),
+  subDistrict: z.string().default(''),
+  district: z.string().default(''),
+  province: z.string().default(''),
+  postCode: z.string().default(''),
+  urlGoogleMap: z.string().default(''),
+  landAreaRai: z.number().default(0),
+  landAreaNgan: z.number().default(0),
+  landAreaSquareWah: z.number().default(0),
+  unitNumber: z.string().default(''),
+  floorNumber: z.string().default(''),
+  buildingNumber: z.string().default(''),
+  buildingName: z.string().default(''),
+  buildingRegistrationNumber: z.string().default(''),
+  roomAreaSquareMeter: z.number().default(0),
+  roomHeightMeter: z.number().default(0),
+  commonPropertyOwnershipRatio: z.string().default('')
+})
 export const VehicleSchema = z.object({
   brand: z.string().default(''),
   color: z.string().default(''),
@@ -43,6 +73,7 @@ const PreAssetBaseSchema = z.object({
   detail: z.string().default(''),
   realEstateForm: LandSchema.optional(),
   vehicleForm: VehicleSchema.optional(),
+  apartmentCondoForm: ApartmentCondoSchema.optional(),
   images: z.array(schema.media).optional().default([])
 })
 
@@ -74,6 +105,22 @@ export const PreAssetSchema = PreAssetBaseSchema.superRefine((data: IPreAssetBas
     if (!data.realEstateForm?.province) addRequired(ctx, ['realEstateForm', 'province'], 'กรุณาเลือกจังหวัด')
     if (!data.realEstateForm?.postCode) addRequired(ctx, ['realEstateForm', 'postCode'], 'กรุณากรอกรหัสไปรษณีย์')
   }
+  if (isApartmentAsset(data.type)) {
+    if (!data.detail) addRequired(ctx, ['detail'], 'กรุณากรอกรายละเอียด')
+    if (!data.apartmentCondoForm?.landNo) addRequired(ctx, ['apartmentCondoForm', 'landNo'], 'กรุณากรอกโฉนดที่ดินเลขที่')
+    if (!data.apartmentCondoForm?.subDistrict) addRequired(ctx, ['apartmentCondoForm', 'subDistrict'], 'กรุณาเลือกตำบล')
+    if (!data.apartmentCondoForm?.district) addRequired(ctx, ['apartmentCondoForm', 'district'], 'กรุณาเลือกอำเภอ')
+    if (!data.apartmentCondoForm?.province) addRequired(ctx, ['apartmentCondoForm', 'province'], 'กรุณาเลือกจังหวัด')
+    if (!data.apartmentCondoForm?.postCode) addRequired(ctx, ['apartmentCondoForm', 'postCode'], 'กรุณากรอกรหัสไปรษณีย์')
+    if (!data.apartmentCondoForm?.unitNumber) addRequired(ctx, ['apartmentCondoForm', 'unitNumber'], 'กรุณากรอกห้องชุดเลขที่')
+    if (!data.apartmentCondoForm?.floorNumber) addRequired(ctx, ['apartmentCondoForm', 'floorNumber'], 'กรุณากรอกชั้นที่')
+    if (!data.apartmentCondoForm?.buildingNumber) addRequired(ctx, ['apartmentCondoForm', 'buildingNumber'], 'กรุณากรอกอาคารเลขที่')
+    if (!data.apartmentCondoForm?.buildingName) addRequired(ctx, ['apartmentCondoForm', 'buildingName'], 'กรุณากรอกชื่ออาคารชุด')
+    if (!data.apartmentCondoForm?.buildingRegistrationNumber) addRequired(ctx, ['apartmentCondoForm', 'buildingRegistrationNumber'], 'กรุณากรอกทะเบียนอาคารชุดเลขที่')
+    if (!data.apartmentCondoForm?.roomAreaSquareMeter) addRequired(ctx, ['apartmentCondoForm', 'roomAreaSquareMeter'], 'กรุณากรอกเนื้อที่')
+    if (!data.apartmentCondoForm?.roomHeightMeter) addRequired(ctx, ['apartmentCondoForm', 'roomHeightMeter'], 'กรุณากรอกความสูง')
+    if (!data.apartmentCondoForm?.commonPropertyOwnershipRatio) addRequired(ctx, ['apartmentCondoForm', 'commonPropertyOwnershipRatio'], 'กรุณากรอกอัตราส่วนกรรมสิทธิ์')
+  }
 })
 
 export type PreAssetFormValues = z.infer<typeof PreAssetSchema>
@@ -90,12 +137,13 @@ type IPreContractBase = z.infer<typeof PreContractBaseSchema>
 export const PreContractSchema = PreContractBaseSchema.superRefine((data: IPreContractBase, ctx: z.RefinementCtx): void => {
   const hasVehicle = data.preAssets.some((e: PreAssetFormValues): boolean => isVehicleAsset(e.type))
   const hasLand = data.preAssets.some((e: PreAssetFormValues): boolean => isLandAsset(e.type))
+  const hasApartment = data.preAssets.some((e: PreAssetFormValues): boolean => isApartmentAsset(e.type))
 
-  if (hasVehicle && hasLand) {
+  if ([hasVehicle, hasLand, hasApartment].filter(Boolean).length > 1) {
     ctx.addIssue({
       code: 'custom',
       path: ['preAssets', 0, 'type'],
-      message: 'ไม่สามารถผสมประเภทยานพาหนะและที่ดินในสัญญาเดียวกันได้'
+      message: 'ไม่สามารถผสมประเภทยานพาหนะ ที่ดิน และห้องชุดในสัญญาเดียวกันได้'
     })
   }
 
@@ -111,6 +159,7 @@ export const PreContractSchema = PreContractBaseSchema.superRefine((data: IPreCo
 export type PreContractFormValues = z.infer<typeof PreContractSchema>
 export type LandFormValues = z.infer<typeof LandSchema>
 export type VehicleFormValues = z.infer<typeof VehicleSchema>
+export type ApartmentCondoFormValues = z.infer<typeof ApartmentCondoSchema>
 
 export function createPreAssetBase (): PreAssetFormValues {
   return {
@@ -146,6 +195,27 @@ export function createPreAssetBase (): PreAssetFormValues {
       vehicleIdentificationNo: '',
       engineNumber: '',
       mileage: null
+    },
+    // Apartment/Condo fields
+    apartmentCondoForm: {
+      landNo: '',
+      address: '',
+      subDistrict: '',
+      district: '',
+      province: '',
+      postCode: '',
+      urlGoogleMap: '',
+      landAreaRai: 0,
+      landAreaNgan: 0,
+      landAreaSquareWah: 0,
+      unitNumber: '',
+      floorNumber: '',
+      buildingNumber: '',
+      buildingName: '',
+      buildingRegistrationNumber: '',
+      roomAreaSquareMeter: 0,
+      roomHeightMeter: 0,
+      commonPropertyOwnershipRatio: ''
     }
   }
 }

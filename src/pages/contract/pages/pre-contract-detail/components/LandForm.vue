@@ -25,30 +25,15 @@
         placeholder="กรอกรายละเอียด"
         hide-error
         required />
-      <LabelField
-        v-model="model.landNo"
-        :form="form"
-        label="เลขที่ดิน"
-        name="landNo"
-        placeholder="กรอกเลขที่ดิน"
-        hide-error
-        required />
-      <LabelField
-        v-model="model.surveyNo"
-        :form="form"
-        label="เลขหน้าสำรวจ"
-        name="surveyNo"
-        placeholder="กรอกเลขหน้าสำรวจ"
-        hide-error
-        required />
     </div>
     <Divider />
+    <span class="text-sm font-bold text-surface-600">ตำแหน่งที่ดิน</span>
     <LabelField
       v-model="model.address"
       :form="form"
-      label="ตำแหน่งที่ดิน"
+      label="ที่อยู่"
       name="address"
-      placeholder="กรอกตำแหน่งที่ดิน"
+      placeholder="กรอกที่อยู่"
       hide-error />
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <LabelField
@@ -120,8 +105,24 @@
       placeholder="กรอก URL Google Map"
       hide-error />
     <Divider />
-    <span class="text-sm font-bold text-surface-600">ระวางรูปถ่ายทางอากาศ</span>
+    <span class="text-sm font-bold text-surface-600">ทะเบียน</span>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <LabelField
+        v-model="model.landNo"
+        :form="form"
+        label="เลขที่ดิน"
+        name="landNo"
+        placeholder="กรอกเลขที่ดิน"
+        hide-error
+        required />
+      <LabelField
+        v-model="model.surveyNo"
+        :form="form"
+        label="เลขหน้าสำรวจ"
+        name="surveyNo"
+        placeholder="กรอกเลขหน้าสำรวจ"
+        hide-error
+        required />
       <LabelField
         v-model="model.aerialPhotoMapNo"
         :form="form"

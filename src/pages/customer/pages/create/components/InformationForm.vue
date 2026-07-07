@@ -1,32 +1,35 @@
 <template>
   <div>
-    {{ console.log(form) }}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
       <Switch
         v-model="isActive"
-        class="col-span-3"
+        class="md:col-span-3"
         false-label="ปิดใช้งาน"
         true-label="ใช้งาน"
         handle />
-      <LabelField
-        class="col-span-3"
-        label="ประเภทบุคคล"
-        hide-error
-        required>
-        <div class="flex items-center gap-5">
-          <div
-            v-for="(item, i) in PersonalTypeItems"
-            :key="`${item.value}-${i}`"
-            class="flex items-center gap-2 cursor-pointer">
-            <RadioButton
-              v-model="model.personalType"
-              :disabled="disablePersonalType"
-              :value="item.value"
-              name="personalType" />
-            <span class="text-sm">{{ item.label }}</span>
+      <div
+        class="md:grid md:grid-cols-3 md:col-span-3">
+        <LabelField
+          label="ประเภทบุคคล"
+          tag="div"
+          hide-error
+          required>
+          <div class="flex items-center gap-5">
+            <div
+              v-for="(item, i) in PersonalTypeItems"
+              :key="`${item.value}-${i}`"
+              class="flex items-center gap-2 cursor-pointer">
+              <RadioButton
+                v-model="model.personalType"
+                :disabled="disablePersonalType"
+                :value="item.value"
+                name="personalType" />
+              <span class="text-sm">{{ item.label }}</span>
+            </div>
           </div>
-        </div>
-      </LabelField>
+        </LabelField>
+      </div>
+
       <LabelField
         v-model="model.idCard"
         :form="form"
@@ -40,6 +43,9 @@
       <LabelField
         v-if="isCorporate"
         v-model="model.firstName"
+        :class="{
+          'md:col-span-2': isCorporate,
+        }"
         :form="form"
         label="ชื่อ"
         name="firstName"
@@ -82,17 +88,22 @@
           name="birthDate"
           placeholder="DD/MM/YYYY" />
       </LabelField>
-      <LabelField
-        v-slot="{ invalid }"
-        :form="form"
-        label="กลุ่มลูกค้า"
-        name="customerGroupId"
-        hide-error>
-        <CustomerGroupSelection
-          v-model="model.customerGroupId"
-          :invalid="invalid"
-          show-clear />
-      </LabelField>
+      <div
+        :class="{
+          'md:grid md:grid-cols-3 md:col-span-3': isCorporate
+        }">
+        <LabelField
+          v-slot="{ invalid }"
+          :form="form"
+          label="กลุ่มลูกค้า"
+          name="customerGroupId"
+          hide-error>
+          <CustomerGroupSelection
+            v-model="model.customerGroupId"
+            :invalid="invalid"
+            show-clear />
+        </LabelField>
+      </div>
       <LabelField
         v-if="!isCorporate"
         v-slot="{ invalid }"

@@ -2,12 +2,12 @@
   <BaseContainer>
     <div
       :class="{
-        'grid-cols=1 md:grid-cols-[180px_1fr]': isLand,
-        'grid-cols-1': !isLand
+        'grid-cols=1 md:grid-cols-[180px_1fr]': isMultiTab,
+        'grid-cols-1': !isMultiTab
       }"
       class="grid gap-6 min-h-80">
       <div
-        v-if="isLand"
+        v-if="isMultiTab"
         class="flex flex-col border-r border-surface-200 pr-4 gap-1">
         <Button
           v-for="(col, i) in preAssets"
@@ -80,16 +80,17 @@
 
 <script setup lang="ts">
 import { computed, useTemplateRef } from 'vue'
-import { formatter } from '@/utils/Formatter'
 import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import { formatTitle } from '@/enums/modules/asset/AssetType.enum'
 import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BaseGalleria from '@/components/base/BaseGalleria.vue'
-import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
+import DisplayList from '@/components/display/DisplayList.vue'
 import FileAttachment from '@/components/display/FileAttachment.vue'
 import LabelField from '@/components/input/LabelField.vue'
+import { type IAssetDisplayItemsInput, useAssetDisplayItems } from '@/pages/contract/pages/pre-contract-detail/composables/useAssetDisplayItems.ts'
 import type { TAssetCategory } from '../../create/schema/pre-contract.schema'
+import { readyForApartmentAppraisal } from '../schema/apartment.schema'
 import { readyForAppraisal as readyForLandAppraisal } from '../schema/land.schema'
 import type { PreAssetWarehouseFormValues } from '../schema/make-contract.schema'
 import { readyForAppraisal as readyForVehicleAppraisal } from '../schema/vehicle.schema'
@@ -126,9 +127,12 @@ const assetWarehouseFormRef = useTemplateRef<InstanceType<typeof AssetWarehouseF
 const preAssets = defineModel<PreAssetWarehouseFormValues[]>('preAssets', { required: true })
 
 const isLand = computed((): boolean => props.assetCategory === 'LAND')
+const isApartment = computed((): boolean => props.assetCategory === 'APARTMENT')
+const isMultiTab = computed((): boolean => isLand.value || isApartment.value)
 const btnText = computed((): string => {
-  if (readyForVehicleAppraisal(props.activeAsset) && !isLand.value) return 'แก้ไขรายละเอียดสินทรัพย์'
+  if (readyForVehicleAppraisal(props.activeAsset) && props.assetCategory === 'VEHICLE') return 'แก้ไขรายละเอียดสินทรัพย์'
   if (readyForLandAppraisal(props.activeAsset) && isLand.value) return 'แก้ไขรายละเอียดสินทรัพย์'
+  if (readyForApartmentAppraisal(props.activeAsset) && isApartment.value) return 'แก้ไขรายละเอียดสินทรัพย์'
   return `ใส่รายละเอียดสินทรัพย์`
 })
 const isShowEdit = computed((): boolean => {
@@ -136,34 +140,23 @@ const isShowEdit = computed((): boolean => {
   return props.activeAsset !== undefined && props.status !== undefined && editableStatus.includes(props.status)
 })
 
-const items = computed((): IDisplayList[] => {
-  if (isLand.value) {
-    const fullAddress = formatter.fullAddress({
-      address: props.activeAsset?.realEstateForm.address || '',
-      subDistrict: props.activeAsset?.realEstateForm.subDistrict || '',
-      district: props.activeAsset?.realEstateForm.district || '',
-      province: props.activeAsset?.realEstateForm.province || '',
-      postCode: props.activeAsset?.realEstateForm.postCode || '',
-      urlGoogleMap: props.activeAsset?.realEstateForm.urlGoogleMap || ''
-    })
-    return [
-      { label: 'เลขที่ดิน', value: props.activeAsset?.realEstateForm.landNo || '-', key: 'landNo', hidden: !props.activeAsset?.realEstateForm.landNo },
-      { label: 'เลขหน้าสำรวจ', value: props.activeAsset?.realEstateForm.surveyNo || '-', key: 'surveyNo', hidden: !props.activeAsset?.realEstateForm.surveyNo },
-      { label: 'ที่อยู่หลักทรัพย์', value: fullAddress, key: 'address', extUrl: props.activeAsset?.realEstateForm.urlGoogleMap || '', hidden: !fullAddress },
-      { label: 'ระวางรูปถ่ายทางอากาศ', value: `หมายเลข ${props.activeAsset?.realEstateForm.aerialPhotoMapNo || '-'} แผ่นที่ ${props.activeAsset?.realEstateForm.aerialPhotoSheet || '-'}`, key: 'aerialPhotoMapNo', hidden: !props.activeAsset?.realEstateForm.aerialPhotoMapNo && !props.activeAsset?.realEstateForm.aerialPhotoSheet },
-      { label: 'จุดจัดเก็บ', value: props.activeAsset?.location?.name, key: 'location', hidden: !props.activeAsset?.location?.name }
-    ]
+const items = useAssetDisplayItems(computed((): IAssetDisplayItemsInput | null => {
+  if (!props.activeAsset) return null
+  return {
+    type: props.activeAsset.type,
+    detail: props.activeAsset.detail,
+    locationName: props.activeAsset.location?.name,
+    realEstateForm: props.activeAsset.realEstateForm,
+    vehicleForm: {
+      manufactureYear: props.activeAsset.vehicleForm?.manufactureYear || '',
+      mileage: props.activeAsset.vehicleForm?.mileage || 0,
+      plateNo: props.activeAsset.vehicleForm?.plateNo || '',
+      registrationYear: props.activeAsset.vehicleForm?.registrationYear || '',
+      vehicleIdentificationNo: props.activeAsset.vehicleForm?.vehicleIdentificationNo || ''
+    },
+    apartmentForm: props.activeAsset.apartmentCondoForm
   }
-  return [
-    { label: 'รายละเอียดหลักทรัพย์', value: props.activeAsset?.detail || '-', key: 'detail', hidden: !props.activeAsset?.detail },
-    { label: 'เลขทะเบียนรถ', value: props.activeAsset?.vehicleForm?.plateNo || '-', key: 'plateNo', hidden: !props.activeAsset?.vehicleForm?.plateNo },
-    { label: 'ปีที่ผลิต', value: props.activeAsset?.vehicleForm?.manufactureYear || '-', key: 'manufactureYear', hidden: !props.activeAsset?.vehicleForm?.manufactureYear },
-    { label: 'ปีที่จดทะเบียน', value: props.activeAsset?.vehicleForm?.registrationYear || '-', key: 'registrationYear', hidden: !props.activeAsset?.vehicleForm?.registrationYear },
-    { label: 'หมายเลขตัวถัง', value: props.activeAsset?.vehicleForm?.vehicleIdentificationNo || '-', key: 'vehicleIdentificationNo', hidden: !props.activeAsset?.vehicleForm?.vehicleIdentificationNo },
-    { label: 'เลขไมล์ (กม.)', value: props.activeAsset?.vehicleForm?.mileage || '-', key: 'mileage', hidden: !props.activeAsset?.vehicleForm?.mileage },
-    { label: 'จุดจัดเก็บ', value: props.activeAsset?.location?.name, key: 'location', hidden: !props.activeAsset?.location?.name }
-  ]
-})
+}))
 
 function onActiveAsset (index: number): void {
   emits('active', undefined)

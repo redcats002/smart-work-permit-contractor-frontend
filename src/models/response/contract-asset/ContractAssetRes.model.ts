@@ -84,6 +84,18 @@ export interface IContractAssetVehicleForm extends IEntity {
   mileage: number
 }
 
+export interface IContractAssetApartmentForm extends IEntity {
+  landNo: string
+  unitNumber: string
+  floorNumber: string
+  buildingNumber: string
+  buildingName: string
+  buildingRegistrationNumber: string
+  roomAreaSquareMeter: number
+  roomHeightMeter: number
+  commonPropertyOwnershipRatio: string
+}
+
 export interface IContractAssetDetail extends IEntity {
   idNo: string
   type: TAssetType
@@ -97,6 +109,7 @@ export interface IContractAssetDetail extends IEntity {
   contract: IContractAssetDetailContract
   realEstateForm: IContractAssetRealEstateForm | null
   vehicleForm: IContractAssetVehicleForm | null
+  apartmentForm: IContractAssetApartmentForm | null
 }
 
 export interface IGetContractAssetDetailResponse {

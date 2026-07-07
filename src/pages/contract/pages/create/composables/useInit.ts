@@ -6,7 +6,6 @@ import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
 import type { TBaseParamsId } from '@/models/response/Response.model'
-import { isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
 import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import CustomerProvider, { type ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import PreContractProvider, { type IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
@@ -14,6 +13,7 @@ import type { FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import {
   createPreAssetBase,
+  getAssetCategory,
   type PreContractFormValues,
   PreContractSchema,
   type TAssetCategory,
@@ -61,13 +61,7 @@ export function useInit (): IUseInit {
     const customerId = route?.query?.customerId ? Number(route.query.customerId) : null
     return customerId
   })
-  const assetCategory = computed((): TAssetCategory => {
-    for (const e of form.value.preAssets) {
-      if (isVehicleAsset(e.type)) return 'VEHICLE'
-      if (isLandAsset(e.type)) return 'LAND'
-    }
-    return null
-  })
+  const assetCategory = computed((): TAssetCategory => getAssetCategory(form.value.preAssets))
 
   const canAddAsset = computed((): boolean => {
     if (!assetCategory.value) return false

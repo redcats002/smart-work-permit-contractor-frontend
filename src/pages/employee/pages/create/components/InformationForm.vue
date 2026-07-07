@@ -148,7 +148,7 @@ defineProps<IProps>()
 const dayjs = useDayjs()
 
 const model = defineModel<ICreateEmployeePayload>({
-  default: useFormInitialValues()
+  default: (): ICreateEmployeePayload => useFormInitialValues()
 })
 
 const isActive = computed({

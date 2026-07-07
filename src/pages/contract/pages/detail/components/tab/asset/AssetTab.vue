@@ -16,10 +16,9 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IContractAssetList } from '@/models/response/contract/ContractRes.model'
-import { isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
 import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
 import Empty from '@/components/display/Empty.vue'
-import type { TAssetCategory } from '@/pages/contract/pages/create/schema/pre-contract.schema'
+import { getAssetCategory, type TAssetCategory } from '@/pages/contract/pages/create/schema/pre-contract.schema'
 import AssetSection from '@/pages/contract/pages/pre-contract-detail/components/AssetSection.vue'
 
 defineOptions({
@@ -38,14 +37,7 @@ const activeAsset = computed((): IContractAssetList | null => {
   return assets.value?.[activeIndex.value]
 })
 
-const assetCategory = computed((): TAssetCategory => {
-  if (!assets.value?.length) return null
-  for (const e of assets.value) {
-    if (isVehicleAsset(e.type)) return 'VEHICLE'
-    if (isLandAsset(e.type)) return 'LAND'
-  }
-  return null
-})
+const assetCategory = computed((): TAssetCategory => getAssetCategory(assets.value ?? []))
 
 async function useFetch (): Promise<void> {
   const res = await ContractService.getContractAssets(contractId.value)

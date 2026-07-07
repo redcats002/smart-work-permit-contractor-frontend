@@ -1,20 +1,42 @@
 <template>
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-    <div class="rounded-xl border border-surface-200 bg-white p-5 relative">
+  <Teleport to="body">
+    <BaseModal
+      v-model="showStatusModal"
+      class="md:w-140!"
+      header-align="left"
+      label="สถานะหลักทรัพย์">
+      <template #default>
+        <AssetStatusSelection
+          v-model="selectedStatus"
+          :contract-status="detail.contract.status"
+          placeholder="เลือกสถานะ" />
+      </template>
+      <template #footer>
+        <div class="flex items-center gap-4">
+          <Button
+            class="bg-[#C00000]! hover:bg-[#a30000]! text-white! flex items-center justify-center rounded-md! h-10.5 min-w-28 px-6"
+            @click="confirmStatusChange()">
+            <span class="text-sm font-medium">ยืนยัน</span>
+          </Button>
+          <Button
+            class="bg-white! text-[#C00000]! border-[#C00000]! flex items-center justify-center rounded-md! h-10.5 min-w-28 px-6"
+            @click="closeStatusModal()">
+            <span class="text-sm font-medium">ยกเลิก</span>
+          </Button>
+        </div>
+      </template>
+    </BaseModal>
+  </Teleport>
+  <div class="grid grid-cols-1 gap-4 relative">
+    <div class="rounded-xl border border-surface-200 bg-white p-5">
       <div
         v-if="isAbleToChangeStatus"
-        class="flex justify-end">
+        class="absolute top-2.5 right-2.5 flex justify-end">
         <BaseActionMenu :items="actionItems" />
       </div>
-      <DisplayList :items="assetItems">
-        <template #[`value.status`]>
-          <ChipAssetStatus :value="detail.status" />
-        </template>
-      </DisplayList>
-    </div>
-
-    <div class="rounded-xl border border-surface-200 bg-white p-5">
-      <DisplayList :items="contractItems">
+      <DisplayList
+        :items="contractItems"
+        grid-class="grid-cols-1 md:grid-cols-2">
         <template #[`value.contractStatus`]>
           <ChipContractStatus :value="detail.contract.status" />
         </template>
@@ -28,33 +50,6 @@
       </DisplayList>
     </div>
   </div>
-
-  <BaseModal
-    v-model="showStatusModal"
-    class="md:w-140!"
-    header-align="left"
-    label="สถานะหลักทรัพย์">
-    <template #default>
-      <AssetStatusSelection
-        v-model="selectedStatus"
-        :contract-status="detail.contract.status"
-        placeholder="เลือกสถานะ" />
-    </template>
-    <template #footer>
-      <div class="flex items-center gap-4">
-        <Button
-          class="bg-[#C00000]! hover:bg-[#a30000]! text-white! flex items-center justify-center rounded-md! h-10.5 min-w-28 px-6"
-          @click="confirmStatusChange()">
-          <span class="text-sm font-medium">ยืนยัน</span>
-        </Button>
-        <Button
-          class="bg-white! text-[#C00000]! border-[#C00000]! flex items-center justify-center rounded-md! h-10.5 min-w-28 px-6"
-          @click="closeStatusModal()">
-          <span class="text-sm font-medium">ยกเลิก</span>
-        </Button>
-      </div>
-    </template>
-  </BaseModal>
 </template>
 
 <script setup lang="ts">
@@ -63,15 +58,12 @@ import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import type { IContractAssetDetail } from '@/models/response/contract-asset/ContractAssetRes.model'
 import type { TAssetStatus } from '@/enums/modules/asset/AssetStatus.enum'
-import { formatTitle } from '@/enums/modules/asset/AssetStatus.enum'
-import { formatTitle as formatTypeTitle, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
 import BaseActionMenu, { type IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import LinkText from '@/components/button/LinkText.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import AssetStatusSelection from '@/components/selection/modules/static/asset-status/AssetStatusSelection.vue'
 import ChipContractStatus from '@/pages/contract/pages/list/components/ChipContractStatus.vue'
-import ChipAssetStatus from '@/pages/stock/pages/list/components/asset/ChipAssetStatus.vue'
 
 interface IProps {
   detail: IContractAssetDetail
@@ -85,19 +77,10 @@ const emits = defineEmits<IEmits>()
 
 const dayjs = useDayjs()
 
-const assetItems = computed((): IDisplayList[] => [
-  { key: 'status', label: 'สถานะหลักทรัพย์', value: formatTitle(props.detail.status) },
-  { key: 'idNo', label: 'เลขที่หลักทรัพย์', value: props.detail.idNo },
-  { key: 'type', label: 'ประเภทหลักทรัพย์', value: formatTypeTitle(props.detail.type) },
-  { key: 'loanAmount', label: 'ยอดประเมินหลักทรัพย์', value: formatter.numberFormat(props.detail.contract.loanAmount) },
-  { key: 'address', label: 'ที่อยู่หลักทรัพย์', value: props.detail.realEstateForm?.address ?? '-', hidden: isVehicleAsset(props.detail.type) },
-  { key: 'location', label: 'จุดจัดเก็บเอกสารหลักทรัพย์', value: props.detail.location?.name ?? '-' }
-])
-
 const contractItems = computed((): IDisplayList[] => [
   { key: 'contractStatus', label: 'สถานะสัญญา', value: props.detail.contract.status },
-  { key: 'contractNo', label: 'เลขที่สัญญา', value: props.detail.contract.idNo },
   { key: 'contractDate', label: 'วันที่ทำสัญญา', value: dayjs.formatDateTime(props.detail.contract?.contractedAt) },
+  { key: 'contractNo', label: 'เลขที่สัญญา', value: props.detail.contract.idNo },
   { key: 'sellMan', label: 'พนักงาน', value: formatter.fullName(props.detail.contract.sellMan) }
 ])
 

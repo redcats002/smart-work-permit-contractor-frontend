@@ -44,7 +44,17 @@ export function useInit (): IUseInit {
           type: c.type,
           images: c.images || [],
           realEstateForm: c?.realEstateForm,
-          vehicleForm: c?.vehicleForm
+          vehicleForm: c?.vehicleForm,
+          apartmentCondoForm: {
+            ...c?.apartmentCondoForm,
+            address: c?.apartmentCondoForm?.address,
+            buildingName: c?.apartmentCondoForm?.buildingName,
+            roomAreaSquareMeter: c?.apartmentCondoForm?.roomAreaSquareMeter,
+            roomHeightMeter: c?.apartmentCondoForm?.roomHeightMeter,
+            landAreaRai: c?.apartmentCondoForm?.landAreaRai,
+            landAreaNgan: c?.apartmentCondoForm?.landAreaNgan,
+            landAreaSquareWah: c?.apartmentCondoForm?.landAreaSquareWah
+          }
         })
       ),
       customerId: res.data.customer.id,

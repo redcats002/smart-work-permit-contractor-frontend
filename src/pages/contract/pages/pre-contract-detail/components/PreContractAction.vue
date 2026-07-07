@@ -46,11 +46,17 @@
         </template>
       </ConfirmModal>
     </template>
-    <CancelButton
-      :disabled="disabled"
-      theme="primary"
-      outlined
-      @click="emits('cancel')" />
+    <ConfirmModal
+      label="ยกเลิกการประเมิน"
+      @confirm="emits('cancel')">
+      <template #activator="{ open }">
+        <CancelButton
+          :disabled="disabled"
+          theme="primary"
+          outlined
+          @click="open()" />
+      </template>
+    </ConfirmModal>
   </div>
 </template>
 

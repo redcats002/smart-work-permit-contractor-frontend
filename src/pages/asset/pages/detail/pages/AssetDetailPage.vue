@@ -16,12 +16,10 @@
           <Skeleton height="12rem" />
         </template>
         <template v-else-if="detail">
+          <AssetItemSection :asset="detail" />
           <AssetInfoSection
             :detail="detail"
             @update:asset-status="onUpdateStatus($event)" />
-          <AssetMediaSection
-            :files="detail.files"
-            :images="detail.images" />
           <AssetHistorySection
             :asset-id="assetId"
             :loan-amount="detail.contract.loanAmount"
@@ -45,7 +43,7 @@ import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import AssetHistorySection from '../components/AssetHistorySection.vue'
 import AssetInfoSection from '../components/AssetInfoSection.vue'
-import AssetMediaSection from '../components/AssetMediaSection.vue'
+import AssetItemSection from '../components/AssetItemSection.vue'
 import { useDetail } from '../composables/useDetail'
 
 const route = useRoute()

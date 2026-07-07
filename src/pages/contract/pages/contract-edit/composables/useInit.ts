@@ -6,9 +6,8 @@ import { handleLoading } from '@/utils/HandleLoading'
 import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import type { IUpdateContractPayload } from '@/models/request/contract/ContractReq.model'
 import type { IContractById } from '@/models/response/contract/ContractRes.model'
-import { isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
 import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
-import type { TAssetCategory } from '../../create/schema/pre-contract.schema'
+import { getAssetCategory, type TAssetCategory } from '../../create/schema/pre-contract.schema'
 import { useInitDetail as useInitContractDetail } from '../../detail/composables/useInitDetail'
 import type InstallmentSection from '../../pre-contract-detail/components/InstallmentSection.vue'
 import type { InstallmentFormValues, PreAssetWarehouseFormValues } from '../../pre-contract-detail/schema/make-contract.schema'
@@ -51,14 +50,7 @@ export function useInit (): IUseInit {
     activeIndex.value !== undefined ? assets.value[activeIndex.value] ?? null : null
   )
 
-  const assetCategory = computed((): TAssetCategory => {
-    if (!assets.value.length) return null
-    for (const e of assets.value) {
-      if (isVehicleAsset(e.type)) return 'VEHICLE'
-      if (isLandAsset(e.type)) return 'LAND'
-    }
-    return null
-  })
+  const assetCategory = computed((): TAssetCategory => getAssetCategory(assets.value))
 
   async function useFetch (): Promise<void> {
     const [contractRes, assetsRes] = await Promise.all([
