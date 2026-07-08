@@ -1,13 +1,8 @@
-import type { IEntity } from '@/models/Global.model'
-import type { IBasePaginationResponse, IBaseSuccessResponse } from '../../Response.model'
+import type { ILeaderBranchReportItem, ILeaderBranchReportSummary } from '@/models/response/leader-branch-report/LeaderBranchReportRes.model'
+import type { IBasePaginationResponse } from '../../Response.model'
 
-export interface IBranchHeadSummaryList extends IEntity {
-  branchName: string
-  costPerInstallment: number
-  percentageCollection: number | null
-  collectionAmount: number
-  releaseAmount: number
+export type IBranchHeadSummaryList = ILeaderBranchReportItem
+
+export interface TGetBranchHeadSummaryListResponse extends IBasePaginationResponse<IBranchHeadSummaryList> {
+  summary?: ILeaderBranchReportSummary
 }
-
-export interface TGetBranchHeadSummaryListResponse extends IBasePaginationResponse<IBranchHeadSummaryList> {}
-export interface TActionBranchHeadSummary extends IBaseSuccessResponse<boolean> {}

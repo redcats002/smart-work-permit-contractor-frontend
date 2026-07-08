@@ -9,12 +9,12 @@
     <template #[`item.index`]="{ index }">
       {{ index + 1 }}
     </template>
-    <template #[`item.percentageCollection`]="{ item }">
+    <template #[`item.percentReceive`]="{ item }">
       <span
-        :class="item.percentageCollection != null ? 'text-green-500' : 'text-red-400'">
+        :class="item.percentReceive ? 'text-green-500' : 'text-red-400'">
         {{
-          item.percentageCollection
-            ? formatter.numberFormat(item.percentageCollection)
+          item.percentReceive
+            ? formatter.numberFormat(item.percentReceive)
             : 'ไม่นับยอดเก็บ'
         }}
       </span>
@@ -36,7 +36,6 @@ interface IProps {
 
 const props = defineProps<IProps>()
 
-
 const pagination = defineModel<IPagination>('pagination', {
   required: true
 })
@@ -47,17 +46,10 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 const columns = ref<IColumn<IBranchHeadSummaryList>[]>([
   { field: 'index', header: 'ลำดับ', align: 'left', style: { width: '70px', minWidth: '70px' }, width: 60 },
   { field: 'branchName', header: 'สาขา', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, width: 150 },
-  { field: 'costPerInstallment', header: 'ค่างวดต่องวด', align: 'left', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IBranchHeadSummaryList): string => formatter.numberFormat(e.costPerInstallment) },
-  {
-    field: 'percentageCollection',
-    header: 'การคิด%ยอดเก็บ',
-    align: 'left',
-    style: { width: '100px', minWidth: '100px' },
-    width: 120,
-    value: (e: IBranchHeadSummaryList): string => e.percentageCollection ? formatter.numberFormat(e.percentageCollection) : 'ไม่นับยอดเก็บ'
-  },
-  { field: 'collectionAmount', header: 'ยอดเก็บ', align: 'left', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IBranchHeadSummaryList): string => formatter.numberFormat(e.collectionAmount) },
-  { field: 'releaseAmount', header: 'ยอดปล่อย', align: 'left', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IBranchHeadSummaryList): string => formatter.numberFormat(e.releaseAmount) }
+  { field: 'monthlyInstallment', header: 'ค่างวดต่องวด', align: 'left', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IBranchHeadSummaryList): string => formatter.numberFormat(e.monthlyInstallment) },
+  { field: 'percentReceive', header: 'การคิด%ยอดเก็บ', align: 'left', style: { width: '100px', minWidth: '100px' }, width: 120 },
+  { field: 'receiveAmount', header: 'ยอดเก็บ', align: 'left', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IBranchHeadSummaryList): string => formatter.numberFormat(e.receiveAmount) },
+  { field: 'principal', header: 'ยอดปล่อย', align: 'left', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IBranchHeadSummaryList): string => formatter.numberFormat(e.principal) }
 ])
 </script>
 
