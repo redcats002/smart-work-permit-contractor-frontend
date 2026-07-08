@@ -7,11 +7,19 @@
     </BaseTop>
 
     <BasePage>
-      <CustomerInfoCard />
+      <CustomerInfoCard
+        :age="customer?.age"
+        :birth-date="customer?.birthDate"
+        :customer-group="customer?.customerGroup?.name"
+        :customer-name="`${customer?.titleName} ${customer?.firstName} ${customer?.lastName}`"
+        :email="customer?.email"
+        :id-card="customer?.idCard"
+        :occupation="customer?.occupation?.name"
+        :phone-numbers="customer?.phoneNumber" />
     </BasePage>
 
     <BasePage>
-      <InstallmentTable />
+      <InstallmentTable :rows="installmentRows" />
     </BasePage>
 
     <BasePage>
@@ -23,12 +31,14 @@
 
     <BasePage>
       <PaymentSummary
-        :other-expenses="otherExpenses" />
+        :interest="contract?.summary?.interest"
+        :other-expenses="otherExpenses"
+        :principal="contract?.summary?.principal" />
     </BasePage>
 
     <BasePage>
       <div class="bg-[#ffd1d1] rounded-lg p-4 w-full flex justify-center">
-        <span class="text-base text-[#bd0102]">ยอดชำระรวม 83,000 บาท</span>
+        <span class="text-base text-[#bd0102]">ยอดชำระรวม {{ formatNumber(grandTotal) }} บาท</span>
       </div>
     </BasePage>
 
@@ -42,12 +52,19 @@
 
     <BasePage>
       <div class="flex gap-4 items-center flex-wrap">
-        <button
-          class="bg-[#bd0102] hover:bg-[#a00001] h-10 px-6 rounded text-white text-base cursor-pointer"
-          type="button"
-          @click="onSubmit()">
-          ถัดไป
-        </button>
+        <ConfirmModal
+          description="ยืนยันการรีไฟแนนซ์สัญญานี้?"
+          label="ยืนยันการรีไฟแนนซ์"
+          @confirm="onSubmit()">
+          <template #activator="{ open }">
+            <button
+              class="bg-[#bd0102] hover:bg-[#a00001] h-10 px-6 rounded text-white text-base cursor-pointer"
+              type="button"
+              @click="open()">
+              ถัดไป
+            </button>
+          </template>
+        </ConfirmModal>
         <button
           class="bg-white border border-[#bd0102] hover:bg-[#fff5f5] h-10 px-6 rounded text-[#bd0102] text-base cursor-pointer"
           type="button"
@@ -60,15 +77,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
+import { handleLoading } from '@/utils/HandleLoading'
+import { formatter } from '@/utils/Formatter'
+import { PaymentMethodEnum } from '@/enums/modules/contract/PaymentMethod.enum'
+import type { IRefinanceContract, IRefinanceCustomer, IRefinanceExpense, IRefinanceInstallment } from '@/models/response/refinance/RefinanceRes.model'
+import RefinanceProvider, { type IRefinanceProvider } from '@/resources/provider/refinance/Refinance.provider'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
+import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import type { IAdditionalExpenseRow } from '../components/AdditionalExpensesTable.vue'
+import type { IInstallmentRow } from '../components/InstallmentTable.vue'
 import AdditionalExpensesTable from '../components/AdditionalExpensesTable.vue'
 import CustomerInfoCard from '../components/CustomerInfoCard.vue'
 import InstallmentTable from '../components/InstallmentTable.vue'
@@ -76,13 +100,43 @@ import PaymentMethodSelector, { type TPaymentMethod } from '../components/Paymen
 import PaymentSummary from '../components/PaymentSummary.vue'
 import SaveExpenseModal from '../components/SaveExpenseModal.vue'
 
+const route = useRoute()
 const router = useRouter()
+const RefinanceService: IRefinanceProvider = new RefinanceProvider()
+
+const contractId = computed((): string => route.params?.id as string)
 const paymentMethod = ref<TPaymentMethod>('cash')
 const showExpenseModal = ref<boolean>(false)
 const additionalExpenses = ref<IAdditionalExpenseRow[]>([])
+const customer = ref<IRefinanceCustomer | null>(null)
+const contract = ref<IRefinanceContract | null>(null)
+const expenses = ref<IRefinanceExpense[]>([])
+
+const installmentRows = computed((): IInstallmentRow[] => {
+  if (!contract.value?.installments) return []
+  return contract.value.installments.map((item: IRefinanceInstallment): IInstallmentRow => ({
+    label: `งวดที่ ${item.order}`,
+    penalty: item.penaltyFee,
+    collection: item.collectionFee,
+    lawyer: item.legalFee,
+    principal: item.principal,
+    interest: item.interest,
+    total: item.total
+  }))
+})
 
 const otherExpenses = computed((): number => additionalExpenses.value.reduce((total: number, expense: IAdditionalExpenseRow): number =>
   total + expense.amount, 0))
+
+const grandTotal = computed((): number => {
+  const summary = contract.value?.summary
+  if (!summary) return 0
+  return summary.principal + summary.interest + otherExpenses.value
+})
+
+function formatNumber (value: number): string {
+  return formatter.numberFormat(value)
+}
 
 function onRemoveExpense (index: number): void {
   additionalExpenses.value.splice(index, 1)
@@ -99,12 +153,34 @@ function openModalAdd (): void {
   showExpenseModal.value = true
 }
 
-function onSubmit (): void {
+async function useFetch (): Promise<void> {
+  const { data } = await RefinanceService.getRefinance(contractId.value)
+  customer.value = data.customer
+  contract.value = data.contract
+}
+
+async function useSubmit (): Promise<void> {
+  const paymentTypeMap: Record<TPaymentMethod, PaymentMethodEnum> = {
+    cash: PaymentMethodEnum.CASH,
+    qr: PaymentMethodEnum.BANK_TRANSFER
+  }
+  await RefinanceService.createRefinance(contractId.value, {
+    paymentType: paymentTypeMap[paymentMethod.value],
+    otherExpenses: expenses.value
+  })
   toast.success('ดำเนินการสำเร็จ')
   router.push({ name: 'ReceiptListPage' })
+}
+
+function onSubmit (): void {
+  handleLoading(useSubmit)
 }
 
 function onCancel (): void {
   router.push({ name: 'ReceiptListPage' })
 }
+
+onMounted((): void => {
+  handleLoading(useFetch)
+})
 </script>

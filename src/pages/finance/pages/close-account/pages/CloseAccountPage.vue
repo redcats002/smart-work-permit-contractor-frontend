@@ -52,12 +52,19 @@
 
     <BasePage>
       <div class="flex gap-4 items-center flex-wrap">
-        <button
-          class="bg-[#bd0102] hover:bg-[#a00001] h-10 px-6 rounded text-white text-base cursor-pointer"
-          type="button"
-          @click="onSubmit()">
-          ถัดไป
-        </button>
+        <ConfirmModal
+          description="ยืนยันการปิดบัญชีสัญญานี้?"
+          label="ยืนยันการปิดบัญชี"
+          @confirm="onSubmit()">
+          <template #activator="{ open }">
+            <button
+              class="bg-[#bd0102] hover:bg-[#a00001] h-10 px-6 rounded text-white text-base cursor-pointer"
+              type="button"
+              @click="open()">
+              ถัดไป
+            </button>
+          </template>
+        </ConfirmModal>
         <button
           class="bg-white border border-[#bd0102] hover:bg-[#fff5f5] h-10 px-6 rounded text-[#bd0102] text-base cursor-pointer"
           type="button"
@@ -81,6 +88,7 @@ import CloseContractProvider, { type ICloseContractProvider } from '@/resources/
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
+import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import type { IAdditionalExpenseRow } from '../components/AdditionalExpensesTable.vue'

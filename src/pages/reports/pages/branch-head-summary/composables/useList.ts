@@ -1,84 +1,46 @@
-import { ref, type Ref } from 'vue'
+import { computed, ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
-
-import usePagination, { type IUsePagination } from '@/composables/usePagination'
 import type { IBranchHeadSummaryFilter } from '@/models/modules/report/branch-head-summary/Filter.model'
-import type { IBranchHeadSummaryList, TGetBranchHeadSummaryListResponse } from '@/models/response/report/branch-head-summary/BranchHeadSummaryRes.model'
-// import type { IGetPercentInstallmentList } from '@/models/request/report/percent-installment/PercentInstallmentReq.model'
+import type { IGetBranchHeadSummaryList } from '@/models/request/report/branch-head-summary/BranchHeadSummaryReq.model'
+import type { IBranchHeadSummaryList } from '@/models/response/report/branch-head-summary/BranchHeadSummaryRes.model'
+import LeaderBranchReportProvider, { type ILeaderBranchReportProvider } from '@/resources/provider/report/LeaderBranchReport.provider'
+import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
 interface IUseList extends IUsePagination {
   filters: Ref<IBranchHeadSummaryFilter>
   items: Ref<IBranchHeadSummaryList[]>
+  summary: Ref<IBranchHeadSummaryList | null>
   fetch(): void
   onSearch(): void
   onClearFilters(): void
 }
+
 export default function useList (): IUseList {
+  const LeaderBranchReportService: ILeaderBranchReportProvider = new LeaderBranchReportProvider()
+
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IBranchHeadSummaryFilter>({})
   const items = ref<IBranchHeadSummaryList[]>([])
-  // mock
-  const mockResponse: TGetBranchHeadSummaryListResponse = {
-    data: [
-      {
-        id: 1,
-        branchName: 'สำนักงานใหญ่',
-        costPerInstallment: 125,
-        percentageCollection: 75.43,
-        collectionAmount: 120000,
-        releaseAmount: 120000
-      },
-      {
-        id: 2,
-        branchName: 'สำนักงานใหญ่2',
-        costPerInstallment: 34,
-        percentageCollection: null,
-        collectionAmount: 120000,
-        releaseAmount: 120000
-      },
-      {
-        id: 3,
-        branchName: 'สำนักงานใหญ่3',
-        costPerInstallment: 69,
-        percentageCollection: 75.43,
-        collectionAmount: 120000,
-        releaseAmount: 120000
-      }
+  const summary = ref<IBranchHeadSummaryList | null>(null)
 
-    ],
-    page: 1,
-    limit: 10,
-    count: 3,
-    message: 'success',
-    totalPage: 1
-  }
-
-  // const paginateQuery = computed((): IGetPercentInstallmentList => {
-  //   const normalizedFilters = normalizeFilters(filters.value)
-  //   return {
-  //     page: pagination.value.page,
-  //     limit: pagination.value.limit,
-  //     sortBy: sortBy.value || undefined,
-  //     sortOrder: sortOrder.value,
-  //     ...normalizedFilters
-  //   }
-  // })
+  const paginateQuery = computed((): IGetBranchHeadSummaryList => {
+    return {
+      search: search.value,
+      page: pagination.value.page,
+      limit: pagination.value.limit,
+      sortBy: sortBy.value || undefined,
+      sortOrder: sortOrder.value,
+      ...filters.value
+    }
+  })
 
   async function useFetch (): Promise<void> {
-    // const response = await EmployeeService.getEmployeePaginate(paginateQuery.value)
-    // items.value = response?.data || []
-    const response = mockResponse as any
-    items.value = response.data || []
+    const response = await LeaderBranchReportService.getLeaderBranchReportPaginate(paginateQuery.value)
+    items.value = response?.data || []
+    summary.value = response?.summary || null
     pagination.value = extractPagination(response)
-    syncQuery({ ...normalizeFilters(filters.value) })
-  }
-
-
-  function normalizeFilters (value: IBranchHeadSummaryFilter): Partial<IBranchHeadSummaryFilter> {
-    return {
-      ...value
-    }
+    syncQuery({ ...filters.value })
   }
 
   function onSearch (): void {
@@ -94,10 +56,10 @@ export default function useList (): IUseList {
     reset()
   }
 
-
   return {
     filters,
     items,
+    summary,
     pagination,
     sortBy,
     sortOrder,
