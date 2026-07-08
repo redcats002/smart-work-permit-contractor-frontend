@@ -15,7 +15,7 @@
         <span class="text-[14px] font-bold text-[#333] whitespace-nowrap">ส่วนลดดอกเบี้ย</span>
         <input
           v-model.number="interestDiscountMonth"
-          class="bg-white border border-[#bdbdbd] h-[40px] w-[57px] rounded-[4px] text-[14px] text-center focus:outline-none focus:border-[#bd0102]"
+          class="no-spinner bg-white border border-[#bdbdbd] h-[40px] w-[57px] rounded-[4px] text-[14px] text-center focus:outline-none focus:border-[#bd0102]"
           type="number">
         <span class="text-[14px] font-normal text-[#333] whitespace-nowrap">เดือน</span>
         <span class="text-[14px] font-normal text-[#333] whitespace-nowrap">:</span>
@@ -27,7 +27,7 @@
         <span class="text-[14px] font-bold text-[#333] whitespace-nowrap">:</span>
         <input
           v-model.number="otherDiscount"
-          class="bg-white border border-[#bdbdbd] flex-1 h-[40px] min-w-0 rounded-[4px] text-[14px] px-2 focus:outline-none focus:border-[#bd0102]"
+          class="no-spinner bg-white border border-[#bdbdbd] flex-1 h-[40px] min-w-0 rounded-[4px] text-[14px] px-2 focus:outline-none focus:border-[#bd0102]"
           type="number">
       </div>
 
@@ -75,3 +75,14 @@ function formatNumber (value: number): string {
   return formatter.numberFormat(value)
 }
 </script>
+
+<style scoped>
+.no-spinner::-webkit-inner-spin-button,
+.no-spinner::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.no-spinner[type='number'] {
+  -moz-appearance: textfield;
+}
+</style>
