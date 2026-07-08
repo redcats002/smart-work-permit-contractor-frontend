@@ -35,7 +35,7 @@ export const EmployeeSchema = z.object({
   // ── Classification ───────────────────────────────────────────────────────
   status: schema.enum(EmployeeStatusEnum, 'กรุณาเลือกสถานะลูกค้า').default(EmployeeStatusEnum.INACTIVE),
   role: schema.enum(EmployeeRoleEnum, 'ตำแหน่ง'),
-  managementPositionType: z.nativeEnum(EManagementPosition).optional(),
+  managementPositionType: schema.enum(EManagementPosition, 'ตำแหน่งผังบริหาร').optional(),
   managementPositionId: schema.id('ตำแหน่งผังบริการ'),
   branchIds: z.array(schema.id('สาขา')).min(1, 'กรุณาเลือกสาขาอย่างน้อย 1 สาขา').optional().default([]),
 
