@@ -46,6 +46,7 @@ export interface IContractById extends IEntity {
   finalInstallmentDate: string
   finalInstallment: number
   periodCount: number
+  refinanceAmount: number
   loanAmount: number
   interestType?: TInterestType
   annualInterestRate: number
