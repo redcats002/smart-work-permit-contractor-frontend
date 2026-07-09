@@ -3,6 +3,7 @@
     <Title
       title="ประวัติการติดต่อ">
       <ModalContractHistory
+        :disabled="!isAbleToAction"
         @submit="fetch()" />
     </Title>
     <ContactHistoryTable
@@ -20,15 +21,23 @@ import { useRoute } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IGetContactHistoryList } from '@/models/request/contract-history/ContractHistoryReq.model'
 import type { IContractContactHistoryList } from '@/models/response/contract-history/ContractHistoryRes.model'
+import type { IContractById } from '@/models/response/contract/ContractRes.model.ts'
+import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum.ts'
 import ContractHistoryProvider, { type IContractHistoryProvider } from '@/resources/provider/contract-history/ContractHistory.provider'
 import usePagination from '@/composables/usePagination'
 import Title from '../Title.vue'
 import ContactHistoryTable from './ContactHistoryTable.vue'
 import ModalContractHistory from './ModalContractHistory.vue'
 
+interface IProps {
+  data: IContractById
+}
+
 defineOptions({
   inheritAttrs: false
 })
+
+const props = defineProps<IProps>()
 
 const ContractHistoryService: IContractHistoryProvider = new ContractHistoryProvider()
 
@@ -38,6 +47,10 @@ const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = 
 const filters = ref<IGetContactHistoryList>({})
 const items = ref<IContractContactHistoryList[]>([])
 const contractId = computed((): number => route?.params?.id ? Number(route.params.id) : 0)
+const isAbleToAction = computed((): boolean => {
+  const ableStatus: TContractStatus[] = ['PENDING']
+  return ableStatus.includes(props.data?.status)
+})
 
 const paginateQuery = computed((): IGetContactHistoryList => {
   const normalizedFilters = normalizeFilters(filters.value)

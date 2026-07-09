@@ -7,6 +7,7 @@
       <ContractDetailMenuAction
         :status="contract.status"
         @close-account="onCloseAccount()"
+        @create-refinance="onCreateRefinance()"
         @delete="onCancelled()"
         @edit="onEdit()"
         @finance="onFinance()"
@@ -89,6 +90,10 @@ function onFinance (): void {
 
 function onCloseAccount (): void {
   router.push({ name: 'CloseAccountPage', params: { id: contractId.value } })
+}
+
+function onCreateRefinance (): void {
+  router.push({ name: 'ContractRefinancePage', params: { id: contractId.value } })
 }
 
 onMounted((): void => {
