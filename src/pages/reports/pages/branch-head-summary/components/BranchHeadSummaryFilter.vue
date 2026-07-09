@@ -13,13 +13,20 @@
           <FilterButton @click="open()" />
         </template>
         <div class="flex flex-col gap-5">
+          <LabelField label="สาขา">
+            <BranchSelection
+              v-model="filterModel.branchId"
+              show-clear />
+          </LabelField>
           <LabelField
+            v-if="isDev"
             v-slot="{ invalid }"
             :form="{}"
+            class="w-full"
             label="ช่วงเวลา"
             name="period"
             tag="div">
-            <Select
+            <SelectInput
               v-model="filterModel.period"
               :invalid="invalid"
               :options="periodOptions"
@@ -30,10 +37,17 @@
               show-clear />
           </LabelField>
           <LabelField
-            v-model="filterModel.date"
+            v-if="isDev"
             :form="{}"
+            class="w-full"
             label="วันที่"
-            name="date" />
+            name="date"
+            tag="div">
+            <DatePickerInput
+              v-model="filterModel.date"
+              :date-format="'dd/mm/yy'"
+              placeholder="เลือกวันที่" />
+          </LabelField>
         </div>
         <template #footer="{ close }">
           <FormActionFilter
@@ -42,7 +56,7 @@
         </template>
       </BaseModal>
     </div>
-    <Spacer />
+    <Spacer class="hidden md:flex" />
     <div>
       <slot />
     </div>
@@ -57,10 +71,13 @@ import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
 import Spacer from '@/components/flex/Spacer.vue'
+import DatePickerInput from '@/components/input/DatePickerInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import SearchInput from '@/components/input/SearchInput.vue'
+import SelectInput from '@/components/input/SelectInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
-import Select from '@/volt/Select.vue'
+import BranchSelection from '@/components/selection/modules/api/branch/BranchSelection.vue'
+import useDev from '@/composables/useDev'
 
 interface IEmits {
   search: []
@@ -70,7 +87,9 @@ interface IEmits {
 
 const emits = defineEmits<IEmits>()
 
-const model = defineModel<string>({ default: '' })
+const { isDev } = useDev()
+
+const model = defineModel<string>('search', { default: '' })
 const filterModel = defineModel<IBranchHeadSummaryFilter>('filters', { default: (): IBranchHeadSummaryFilter => ({}) })
 
 const periodOptions = ref([
@@ -91,6 +110,7 @@ function onModalSearch (close: () => void): void {
 
 function onClear (close: () => void): void {
   filterModel.value = {}
+  emits('search')
   emits('clear')
   close()
 }
