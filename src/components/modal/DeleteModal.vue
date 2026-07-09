@@ -5,6 +5,13 @@
     class="md:w-fit!"
     header-align="center"
     modal>
+    <template #activator="{ open, close }">
+      <slot
+        :close="close"
+        :open="open"
+        :visible="visible"
+        name="activator" />
+    </template>
     <div class="flex flex-col items-center justify-center text-sm text-[#333333] mb-5">
       <p>
         {{ description1 }}
