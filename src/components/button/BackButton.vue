@@ -2,7 +2,7 @@
   <Button
     v-bind="$attrs"
     :as="isBack ? RouterLink : 'button'"
-    :to="isBack ? route.meta.back : {}"
+    :to="isBack ? resolvedBack : {}"
     class="bg-white! md:bg-transparent! text-[#333333]! px-4
     border! border-gray-200! md:border-none
     flex items-center hover:bg-gray-200!"
@@ -29,6 +29,22 @@ const router = useRouter()
 const { isDev } = useDev()
 
 const isBack = computed<boolean>((): boolean => !!route?.meta?.back)
+
+type RouteBack = { name: string, params?: Record<string, string>, query?: Record<string, string> }
+
+const resolvedBack = computed<RouteBack | undefined>((): RouteBack | undefined => {
+  const back = route.meta.back as RouteBack | undefined
+  if (!back) return undefined
+  const resolve = (obj: Record<string, string>): Record<string, string> =>
+    Object.fromEntries(
+      Object.entries(obj).map(([k, v]: any): any => [k, String(v).startsWith(':') ? String(route.params[v.slice(1)] ?? v) : v])
+    )
+  return {
+    ...back,
+    ...(back.params ? { params: resolve(back.params) } : {}),
+    ...(back.query ? { query: resolve(back.query) } : {})
+  }
+})
 
 function validate (): void {
   if (!isBack.value) {

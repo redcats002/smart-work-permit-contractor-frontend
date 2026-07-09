@@ -3,6 +3,7 @@
     <div class="flex items-center justify-between flex-wrap gap-2">
       <Title title="รายการรายได้" />
       <CreateButton
+        :disabled="!isAbleToAction"
         label="บันทึกรายได้"
         @click="openModal('CREATE')" />
     </div>
@@ -32,6 +33,8 @@ import { handleLoading } from '@/utils/HandleLoading'
 import type { TActionMode } from '@/models/Global.model'
 import type { IGetIncomeList } from '@/models/request/contract-income/ContractIncomeReq.model'
 import type { IContractIncomeList } from '@/models/response/contract-income/ContractIncomeRes.model'
+import type { IContractById } from '@/models/response/contract/ContractRes.model.ts'
+import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum.ts'
 import ContractIncomeProvider, { type IContractIncomeProvider } from '@/resources/provider/contract-income/ContractIncome.provider'
 import CreateButton from '@/components/button/CreateButton.vue'
 import usePagination from '@/composables/usePagination'
@@ -39,9 +42,15 @@ import Title from '../Title.vue'
 import IncomeTable from './IncomeTable.vue'
 import ModalIncome from './ModalIncome.vue'
 
+interface IProps {
+  data: IContractById
+}
+
 defineOptions({
   inheritAttrs: false
 })
+
+const props = defineProps<IProps>()
 
 const ContractIncomeService: IContractIncomeProvider = new ContractIncomeProvider()
 
@@ -51,7 +60,10 @@ const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = 
 const filters = ref<IGetIncomeList>({})
 const items = ref<IContractIncomeList[]>([])
 const contractId = computed((): number => route?.params?.id ? Number(route.params.id) : 0)
-
+const isAbleToAction = computed((): boolean => {
+  const ableStatus: TContractStatus[] = ['PENDING']
+  return ableStatus.includes(props.data?.status)
+})
 const paginateQuery = computed((): IGetIncomeList => {
   const normalizedFilters = normalizeFilters(filters.value)
   return {

@@ -133,6 +133,7 @@ import { type InstallmentFormValues, InstallmentSchema } from '../schema/make-co
 import InstallmentTable from './InstallmentTable.vue'
 
 interface IInstallmentContract {
+  refinanceAmount?: number
   loanAmount: number
   installmentCount: number
   interestType?: TInterestType
@@ -146,8 +147,11 @@ interface IExposes {
 }
 interface IProps {
   contract: IInstallmentContract
+  isRefinance?: boolean
 }
-const props = withDefaults(defineProps<IProps>(), {})
+const props = withDefaults(defineProps<IProps>(), {
+  isRefinance: false
+})
 
 const form = defineModel<InstallmentFormValues>({ required: true })
 const resolver = zodResolver(InstallmentSchema)
@@ -181,7 +185,7 @@ async function recalculate (): Promise<void> {
 
 function useInit (): void {
   form.value = {
-    loanAmount: props.contract.loanAmount,
+    loanAmount: props.isRefinance ? (props.contract?.refinanceAmount || 0) : props.contract.loanAmount,
     installmentCount: props.contract.installmentCount,
     interestType: props.contract.interestType,
     annualInterestRate: props.contract.annualInterestRate,

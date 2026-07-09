@@ -71,6 +71,12 @@ export default {
         layout: 'blank',
         title: 'พิมพ์สัญญา'
       }
+    },
+    {
+      path: 'refinance/:id',
+      name: 'ContractRefinancePage',
+      component: (): ComponentOptions => import('@/pages/contract/pages/refinance/pages/ContractRefinancePage.vue'),
+      meta: { auth: true, title: 'รายละเอียดสัญญา', back: { name: 'ContractDetailPage', params: { id: ':id' } } }
     }
   ]
 } as RouteRecordRaw

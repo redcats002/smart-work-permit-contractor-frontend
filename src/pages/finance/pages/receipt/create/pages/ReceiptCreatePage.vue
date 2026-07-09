@@ -20,9 +20,19 @@
       :key="ci">
       <!-- Contract header -->
       <BasePage>
-        <div class="bg-[#D31145] rounded-lg px-4 py-4 flex items-center justify-between">
-          <span class="text-white font-bold text-base">เลขที่สัญญา : {{ contract.contractNo }}</span>
-          <div class="flex">
+        <div
+          class="bg-[#D31145] rounded-lg px-4 py-4 flex items-center justify-between cursor-pointer"
+          @click="toggleCollapse(ci)">
+          <div class="flex items-center gap-2">
+            <Icon
+              :class="collapsed.has(ci) ? '-rotate-90' : 'rotate-0'"
+              class="text-white size-5 transition-transform"
+              icon="mdi:chevron-down" />
+            <span class="text-white font-bold text-base">เลขที่สัญญา : {{ contract.contractNo }}</span>
+          </div>
+          <div
+            class="flex"
+            @click.stop>
             <CheckboxInput
               :indeterminate="isContractIndeterminate(ci)"
               :model-value="contract.selectAll"
@@ -37,6 +47,7 @@
       <!-- Installment cards -->
       <BasePage
         v-for="(item, j) in contract.installments"
+        v-show="!collapsed.has(ci)"
         :key="`${ci}-${j}`">
         <CardInstallment
           :data="item"
@@ -122,6 +133,7 @@ import CheckboxInput from '@/components/input/CheckboxInput.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import CardInstallment from '../components/CardInstallment.vue'
 import InformationDetail from '../components/InformationDetail.vue'
+import { Icon } from '@iconify/vue'
 import { useInitDetail } from '../composables/useInitDetail'
 
 interface IInstallmentItem extends IReceiptInstallmentCreate {
@@ -158,6 +170,13 @@ const customer = useInitDetail()
 const customerId = ref<number | null>(customerIdQuery.value)
 
 const contracts = ref<IInstallmentContract[]>([])
+const collapsed = ref<Set<number>>(new Set())
+
+function toggleCollapse (ci: number): void {
+  if (collapsed.value.has(ci)) collapsed.value.delete(ci)
+  else collapsed.value.add(ci)
+  collapsed.value = new Set(collapsed.value) // ponytail: trigger reactivity
+}
 const paymentMethod = ref<TReceiptPaymentMethod>(EReceiptPaymentMethod.CASH)
 const installmentAmounts = ref<Record<number, number>>({})
 const installmentDiscounts = ref<Record<number, number>>({})

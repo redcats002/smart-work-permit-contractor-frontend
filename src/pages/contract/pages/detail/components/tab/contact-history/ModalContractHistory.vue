@@ -6,6 +6,7 @@
     @open="onOpen()">
     <template #activator="{ open }">
       <CreateButton
+        :disabled="disabled"
         label="บันทึกการติดต่อ"
         @click="open()" />
     </template>
@@ -83,9 +84,17 @@ import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { ContractHistorySchema, useFormInitialValues } from './schema/contract-history.schema'
 
+interface IProps {
+  disabled?: boolean
+}
+
 interface IEmits {
   submit: []
 }
+
+withDefaults(defineProps<IProps>(), {
+  disabled: false
+})
 
 const ContractHistoryService: IContractHistoryProvider = new ContractHistoryProvider()
 const route = useRoute()

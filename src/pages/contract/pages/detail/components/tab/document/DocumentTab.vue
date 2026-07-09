@@ -3,6 +3,7 @@
     <div class="flex items-center justify-between flex-wrap gap-2">
       <Title title="รายการเอกสาร" />
       <CreateButton
+        :disabled="!isAbleToAction"
         label="บันทึกเอกสาร"
         @click="openModal('CREATE')" />
     </div>
@@ -32,6 +33,8 @@ import { handleLoading } from '@/utils/HandleLoading'
 import type { TActionMode } from '@/models/Global.model'
 import type { IGetDocumentList } from '@/models/request/contract-document/ContractDocumentReq.model'
 import type { IContractDocumentList } from '@/models/response/contract-document/ContractDocumentRes.model'
+import type { IContractById } from '@/models/response/contract/ContractRes.model.ts'
+import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum.ts'
 import ContractDocumentProvider, { type IContractDocumentProvider } from '@/resources/provider/contract-document/ContractDocument.provider'
 import CreateButton from '@/components/button/CreateButton.vue'
 import usePagination from '@/composables/usePagination'
@@ -39,9 +42,15 @@ import Title from '../Title.vue'
 import DocumentTable from './DocumentTable.vue'
 import ModalDocument from './ModalDocument.vue'
 
+interface IProps {
+  data: IContractById
+}
+
 defineOptions({
   inheritAttrs: false
 })
+
+const props = defineProps<IProps>()
 
 const ContractDocumentService: IContractDocumentProvider = new ContractDocumentProvider()
 
@@ -51,6 +60,10 @@ const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = 
 const filters = ref<IGetDocumentList>({})
 const items = ref<IContractDocumentList[]>([])
 const contractId = computed((): number => route?.params?.id ? Number(route.params.id) : 0)
+const isAbleToAction = computed((): boolean => {
+  const ableStatus: TContractStatus[] = ['PENDING']
+  return ableStatus.includes(props.data?.status)
+})
 
 const paginateQuery = computed((): IGetDocumentList => {
   const normalizedFilters = normalizeFilters(filters.value)

@@ -3,6 +3,7 @@
     <div class="flex items-center justify-between flex-wrap gap-2">
       <Title title="รายการค่าใช้จ่าย" />
       <CreateButton
+        :disabled="!isAbleToAction"
         label="บันทึกค่าใช้จ่าย"
         @click="openModal('CREATE')" />
     </div>
@@ -32,6 +33,8 @@ import { handleLoading } from '@/utils/HandleLoading'
 import type { TActionMode } from '@/models/Global.model'
 import type { IGetExpenseList } from '@/models/request/contract-expense/ContractExpenseReq.model'
 import type { IContractExpenseList } from '@/models/response/contract-expense/ContractExpenseRes.model'
+import type { IContractById } from '@/models/response/contract/ContractRes.model.ts'
+import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum.ts'
 import ContractExpenseProvider, { type IContractExpenseProvider } from '@/resources/provider/contract-expense/ContractExpense.provider'
 import CreateButton from '@/components/button/CreateButton.vue'
 import usePagination from '@/composables/usePagination'
@@ -39,9 +42,16 @@ import Title from '../Title.vue'
 import ExpenseTable from './ExpenseTable.vue'
 import ModalExpense from './ModalExpense.vue'
 
+interface IProps {
+  data: IContractById
+}
+
 defineOptions({
   inheritAttrs: false
 })
+
+const props = defineProps<IProps>()
+
 
 const ContractExpenseService: IContractExpenseProvider = new ContractExpenseProvider()
 
@@ -51,6 +61,10 @@ const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery } = 
 const filters = ref<IGetExpenseList>({})
 const items = ref<IContractExpenseList[]>([])
 const contractId = computed((): number => route?.params?.id ? Number(route.params.id) : 0)
+const isAbleToAction = computed((): boolean => {
+  const ableStatus: TContractStatus[] = ['PENDING']
+  return ableStatus.includes(props.data?.status)
+})
 
 const paginateQuery = computed((): IGetExpenseList => {
   const normalizedFilters = normalizeFilters(filters.value)

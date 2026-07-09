@@ -16,13 +16,16 @@
           @confirm="onTestDueDate()">
           <template #activator="{open}">
             <Button
+              :disabled="!isAbleToTestDueDate"
               class="text-sm"
               label="ทดสอบวันครบกำหนด"
               variant="outlined"
               @click="open()" />
           </template>
         </ConfirmModal>
-        <router-link :to="{ name: 'ReceiptCreatePage', query: { customerId: mainBorrowerId } }">
+        <router-link
+          v-if="isAbleToPayment"
+          :to="{ name: 'ReceiptCreatePage', query: { customerId: mainBorrowerId } }">
           <ConfirmButton
             label="ชำระเงิน" />
         </router-link>
@@ -49,6 +52,7 @@ import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IGetInstallmentList } from '@/models/request/contract/ContractReq.model'
 import type { IBorrowersItems, IContractById, IContractInstallmentList } from '@/models/response/contract/ContractRes.model'
+import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum.ts'
 import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
 import InvoiceProvider, { type IInvoiceProvider } from '@/resources/provider/invoice/Invoice.provider'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
@@ -79,6 +83,14 @@ const filters = ref<IGetInstallmentList>({})
 const items = ref<IContractInstallmentList[]>([])
 
 const contractId = computed((): number => route?.params?.id ? Number(route.params.id) : 0)
+const isAbleToPayment = computed((): boolean => {
+  const ableStatus: TContractStatus[] = ['PENDING']
+  return ableStatus.includes(props.data?.status)
+})
+const isAbleToTestDueDate = computed((): boolean => {
+  const ableStatus: TContractStatus[] = ['PENDING']
+  return ableStatus.includes(props.data?.status)
+})
 const paginateQuery = computed((): IGetInstallmentList => {
   const normalizedFilters = normalizeFilters(filters.value)
   return {

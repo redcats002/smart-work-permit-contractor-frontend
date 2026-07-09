@@ -57,12 +57,12 @@ export function readyForApartmentAppraisal (preAsset?: IPreAssetList | null): bo
       && preAsset?.apartmentCondoForm?.district
       && preAsset?.apartmentCondoForm?.province
       && preAsset?.apartmentCondoForm?.postCode
-      && preAsset?.apartmentCondoForm?.roomAreaSquareMeter
-      && preAsset?.apartmentCondoForm?.roomHeightMeter
+      && (preAsset?.apartmentCondoForm?.roomAreaSquareMeter
+        || preAsset?.apartmentCondoForm?.roomHeightMeter)
       && preAsset?.apartmentCondoForm?.commonPropertyOwnershipRatio
-      && preAsset?.apartmentCondoForm?.landAreaRai
-      && preAsset?.apartmentCondoForm?.landAreaNgan
-      && preAsset?.apartmentCondoForm?.landAreaSquareWah
+      && (preAsset?.apartmentCondoForm?.landAreaRai
+        || preAsset?.apartmentCondoForm?.landAreaNgan
+        || preAsset?.apartmentCondoForm?.landAreaSquareWah)
 
   if (valid) return true
   return false

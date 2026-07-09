@@ -17,6 +17,7 @@ import useTabItems, {
 export function useInitDetail (data?: Partial<IContractById>): Ref<IContractById> {
   return ref<IContractById>({
     ...data,
+    refinanceAmount: data?.refinanceAmount || 0,
     outstanding: data?.outstanding || { interest: 0, principal: 0, total: 0 },
     periodCount: data?.periodCount || 0,
     annualInterestRate: data?.annualInterestRate || 0,
