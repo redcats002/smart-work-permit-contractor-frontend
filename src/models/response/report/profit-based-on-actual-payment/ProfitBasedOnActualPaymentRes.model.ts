@@ -8,7 +8,7 @@ export interface IProfitBasedOnActualPaymentList extends Omit<IEntity, 'idNo'> {
   contract: IEntityId
   contractYear: number
   customerName: string
-  numberOfInstallment: number
+  paidAtPattern: string
   allPrincipal: number
   allInterest: number
   receiveInstallmentAmount: number
