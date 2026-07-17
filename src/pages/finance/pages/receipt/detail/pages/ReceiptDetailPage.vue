@@ -4,7 +4,10 @@
     <BasePage>
       <div class="flex justify-between mb-4">
         <BackButton />
-        <PrintButton @click="onPrint()" />
+        <div class="flex items-center gap-2">
+          <PrintButton @click="onPrint()" />
+          <BaseActionMenu :items="actionItems" />
+        </div>
       </div>
 
       <!-- Info section -->
@@ -194,10 +197,15 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { toast } from '@/plugins/toast'
 import { useDayjs } from '@/utils/Dayjs'
+import { handleLoading } from '@/utils/HandleLoading'
 import { formatter } from '@/utils/Formatter'
 import { formatTitle } from '@/models/response/receipt/PaymentMethod.enum'
 import type { IReceiptDetailContract, IReceiptDetailInstallment } from '@/models/response/receipt/ReceiptRes.model'
+import ReceiptProvider, { type IReceiptProvider } from '@/resources/provider/receipt/Receipt.provider'
+import type { IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
+import BaseActionMenu from '@/components/base/BaseActionMenu.vue'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BackButton from '@/components/button/BackButton.vue'
@@ -211,6 +219,8 @@ const router = useRouter()
 const route = useRoute()
 const { form, fetchById } = useDetail()
 const dayjs = useDayjs()
+const ReceiptService: IReceiptProvider = new ReceiptProvider()
+const receiptId = computed((): number => Number(route.params.id))
 
 const customerItems = computed((): IDisplayList[] => [
   { label: 'ชื่อ', key: 'name', value: formatter.fullName(form.value.customer) },
@@ -237,6 +247,24 @@ const totalAll = computed((): number => {
     return acc + contract.installments.reduce((sum: number, item: IReceiptDetailInstallment): number => sum + item.totalInstallment, 0)
   }, 0)
 })
+
+const isPendingRefinance = computed((): boolean => form.value.receiptType === 'PENDING_REFINANCE')
+
+const actionItems = computed((): IMenuItemAction[] => [
+  {
+    label: 'ยกเลิกใบเสร็จ',
+    key: 'cancel-receipt',
+    type: 'DELETE',
+    disabled: isPendingRefinance.value,
+    action: (): void => {
+      handleLoading(async (): Promise<void> => {
+        await ReceiptService.deleteReceipt(receiptId.value)
+        toast.success('ดำเนินการสำเร็จ')
+        router.push({ name: 'ReceiptListPage' })
+      })
+    }
+  }
+])
 
 function onPrint (): void {
   router.push({ name: 'ReceiptPrintPage', params: { id: route.params.id } })
