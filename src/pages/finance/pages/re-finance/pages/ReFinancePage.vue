@@ -168,7 +168,7 @@ async function useFetch (): Promise<void> {
   customer.value = data.customer
   contract.value = data.contract
 
-  const receiptRef = (data.customer as unknown as { receiptReference?: { id: number, qrImage: string, expired: string } | null }).receiptReference
+  const receiptRef = data.customer.receiptReference
   checkReceiptReference(receiptRef)
 }
 

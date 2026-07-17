@@ -1,5 +1,6 @@
 import type { EVatType } from '@/enums/modules/Vat.enum'
 import type { IBaseSuccessResponse } from '../Response.model'
+import type { IReceiptReference } from '../receipt/ReceiptRes.model'
 
 export interface IRefinanceFile {
   name: string
@@ -44,6 +45,7 @@ export interface IRefinanceCustomer {
   phoneNumber: string
   phoneNumber2: string
   email: string
+  receiptReference?: IReceiptReference | null
 }
 
 export interface IRefinanceInstallment {
