@@ -84,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
@@ -92,7 +92,6 @@ import { formatter } from '@/utils/Formatter'
 import { PaymentMethodEnum } from '@/enums/modules/contract/PaymentMethod.enum'
 import type { ICloseContractCustomer, ICloseContractContract, ICloseContractExpense, ICloseContractInstallment } from '@/models/response/close-contract/CloseContractRes.model'
 import CloseContractProvider, { type ICloseContractProvider } from '@/resources/provider/close-contract/CloseContract.provider'
-import ReceiptProvider, { type IReceiptProvider } from '@/resources/provider/receipt/Receipt.provider'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
@@ -108,12 +107,12 @@ import PaymentMethodSelector, { type TPaymentMethod } from '../components/Paymen
 import PaymentSummary from '../components/PaymentSummary.vue'
 import SaveExpenseModal from '../components/SaveExpenseModal.vue'
 import ThaiQRPaymentModal from '@/pages/finance/pages/receipt/create/components/ThaiQRPaymentModal.vue'
-import useGateway from '@/resources/gateway/useGateway'
+import { useQRPayment, type IQRPaymentResponse } from '@/composables/useQRPayment'
 
 const route = useRoute()
 const router = useRouter()
 const CloseContractService: ICloseContractProvider = new CloseContractProvider()
-const ReceiptService: IReceiptProvider = new ReceiptProvider()
+const { qrModalVisible, qrImage, qrTrxId, qrExpiresAt, handleQRResponse, checkReceiptReference, cancelQrCode } = useQRPayment()
 
 const contractId = computed((): string => route.params?.id as string)
 const paymentMethod = ref<TPaymentMethod>('cash')
@@ -122,10 +121,6 @@ const additionalExpenses = ref<IAdditionalExpenseRow[]>([])
 const customer = ref<ICloseContractCustomer | null>(null)
 const contract = ref<ICloseContractContract | null>(null)
 const expenses = ref<ICloseContractExpense[]>([])
-const qrModalVisible = ref<boolean>(false)
-const qrImage = ref<string>('')
-const qrTrxId = ref<string>('')
-const qrExpiresAt = ref<string>('')
 
 const installmentRows = computed((): IInstallmentRow[] => {
   if (!contract.value?.installments) return []
@@ -174,12 +169,7 @@ async function useFetch (): Promise<void> {
   contract.value = data.contract
 
   const receiptRef = (data.customer as unknown as { receiptReference?: { id: number, qrImage: string, expired: string } | null }).receiptReference
-  if (receiptRef?.qrImage && receiptRef.expired && new Date(receiptRef.expired).getTime() > Date.now()) {
-    qrImage.value = receiptRef.qrImage
-    qrTrxId.value = String(receiptRef.id)
-    qrExpiresAt.value = receiptRef.expired
-    qrModalVisible.value = true
-  }
+  checkReceiptReference(receiptRef)
 }
 
 async function useSubmit (): Promise<void> {
@@ -190,12 +180,9 @@ async function useSubmit (): Promise<void> {
   const response = await CloseContractService.createCloseContract(contractId.value, {
     paymentType: paymentTypeMap[paymentMethod.value],
     otherExpenses: expenses.value
-  }) as unknown as { data: { qrImage?: string, expired?: string, trxId?: string } }
+  }) as unknown as { data: IQRPaymentResponse }
   if (paymentMethod.value === 'qr' && response.data?.qrImage) {
-    qrImage.value = response.data.qrImage
-    qrTrxId.value = response.data.trxId ?? ''
-    qrExpiresAt.value = response.data.expired ?? ''
-    qrModalVisible.value = true
+    handleQRResponse(response.data)
     return
   }
   toast.success('ดำเนินการสำเร็จ')
@@ -212,30 +199,11 @@ function onCancel (): void {
 
 async function onQrCancel (): Promise<void> {
   if (customer.value?.id) {
-    await ReceiptService.cancelQrCode(customer.value.id)
+    await cancelQrCode(customer.value.id)
   }
-  qrImage.value = ''
-  qrTrxId.value = ''
-  qrExpiresAt.value = ''
 }
-
-function onPaymentCallback (): void {
-  qrModalVisible.value = false
-  qrImage.value = ''
-  qrTrxId.value = ''
-  qrExpiresAt.value = ''
-  toast.success('ชำระเงินสำเร็จ')
-  router.push({ name: 'ReceiptListPage' })
-}
-
-const paymentGateway = useGateway('callback-payment-qrcode', onPaymentCallback)
 
 onMounted((): void => {
   handleLoading(useFetch)
-  paymentGateway.initWatcher()
-})
-
-onUnmounted((): void => {
-  paymentGateway.destroyWatcher()
 })
 </script>

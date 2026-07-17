@@ -123,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { formatter } from '@/utils/Formatter'
@@ -144,7 +144,7 @@ import InformationDetail from '../components/InformationDetail.vue'
 import ThaiQRPaymentModal from '../components/ThaiQRPaymentModal.vue'
 import { Icon } from '@iconify/vue'
 import { useInitDetail } from '../composables/useInitDetail'
-import useGateway from '@/resources/gateway/useGateway'
+import { useQRPayment, type IQRPaymentResponse } from '@/composables/useQRPayment'
 
 interface IInstallmentItem extends IReceiptInstallmentCreate {
   installmentNo: number
@@ -166,6 +166,7 @@ interface IInstallmentChangePayload {
 const route = useRoute()
 const router = useRouter()
 const ReceiptService: IReceiptProvider = new ReceiptProvider()
+const { qrModalVisible, qrImage, qrTrxId, qrExpiresAt, handleQRResponse, checkReceiptReference, cancelQrCode } = useQRPayment()
 
 const customerIdQuery = computed((): number | null => {
   return route?.query?.customerId ? Number(route.query.customerId) : null
@@ -191,10 +192,6 @@ const paymentMethod = ref<TReceiptPaymentMethod>(EReceiptPaymentMethod.CASH)
 const installmentAmounts = ref<Record<number, number>>({})
 const installmentDiscounts = ref<Record<number, number>>({})
 const installmentSelected = ref<Record<number, boolean>>({})
-const qrModalVisible = ref<boolean>(false)
-const qrImage = ref<string>('')
-const qrTrxId = ref<string>('')
-const qrExpiresAt = ref<string>('')
 
 
 const totalAmount = computed((): number =>
@@ -268,12 +265,7 @@ async function fetchInstallments (id: number): Promise<void> {
 
   // Check for unpaid QR receipt reference
   const receiptRef = (data.customer as IReceiptCustomerInfo).receiptReference
-  if (receiptRef?.qrImage && receiptRef.expired && new Date(receiptRef.expired).getTime() > Date.now()) {
-    qrImage.value = receiptRef.qrImage
-    qrTrxId.value = String(receiptRef.id)
-    qrExpiresAt.value = receiptRef.expired
-    qrModalVisible.value = true
-  }
+  checkReceiptReference(receiptRef)
 }
 
 async function onCustomerChange (): Promise<void> {
@@ -310,11 +302,8 @@ async function onSubmit (): Promise<void> {
           }))
           .filter((c: IReceiptContractPayload): boolean => c.installments.length > 0)
       }
-      const response = await ReceiptService.createReceipt(payload) as unknown as { data: { trxId: string, qrImage: string, expired: string } }
-      qrImage.value = response.data?.qrImage ?? ''
-      qrTrxId.value = response.data?.trxId ?? ''
-      qrExpiresAt.value = response.data?.expired ?? ''
-      qrModalVisible.value = true
+      const response = await ReceiptService.createReceipt(payload) as unknown as { data: IQRPaymentResponse }
+      handleQRResponse(response.data ?? {})
     })
     return
   }
@@ -347,11 +336,8 @@ function onCancel (): void {
 
 async function onQrCancel (): Promise<void> {
   if (customerId.value) {
-    await ReceiptService.cancelQrCode(customerId.value)
+    await cancelQrCode(customerId.value)
   }
-  qrImage.value = ''
-  qrTrxId.value = ''
-  qrExpiresAt.value = ''
 }
 
 function onInitCustomer (): void {
@@ -359,25 +345,9 @@ function onInitCustomer (): void {
   onCustomerChange()
 }
 
-function onPaymentCallback (): void {
-  qrModalVisible.value = false
-  qrImage.value = ''
-  qrTrxId.value = ''
-  qrExpiresAt.value = ''
-  toast.success('ชำระเงินสำเร็จ')
-  router.push({ name: 'ReceiptListPage' })
-}
-
-const paymentGateway = useGateway('callback-payment-qrcode', onPaymentCallback)
-
 onMounted(async (): Promise<void> => {
   await router.isReady()
   onInitCustomer()
-  paymentGateway.initWatcher()
-})
-
-onUnmounted((): void => {
-  paymentGateway.destroyWatcher()
 })
 </script>
 
