@@ -156,6 +156,23 @@ export interface IReceiptContractItem {
   installments: IReceiptInstallmentCreate[]
 }
 
+export interface IReceiptReference {
+  id: number
+  qrImage: string
+  expired: string
+  receiptType: string
+  normalPayload: Array<{
+    id: number
+    installments: Array<{
+      id: number
+      discountPenaltyFee: number
+      amount: number
+    }>
+  }>
+  branchId: string
+  createdByEmployeeId: string
+}
+
 export interface IReceiptCustomerInfo {
   id: number
   idNo: string
@@ -169,6 +186,7 @@ export interface IReceiptCustomerInfo {
   email: string
   customerGroup: { id: number, name: string } | null
   occupation: { id: number, name: string } | null
+  receiptReference?: IReceiptReference | null
 }
 
 export interface IReceiptInstallmentsByCustomer {
