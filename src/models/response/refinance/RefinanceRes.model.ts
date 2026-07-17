@@ -1,4 +1,6 @@
 import type { EVatType } from '@/enums/modules/Vat.enum'
+import type { IQRPaymentResponse } from '@/composables/useQRPayment'
+import type { IReceiptReference } from '../receipt/ReceiptRes.model'
 import type { IBaseSuccessResponse } from '../Response.model'
 
 export interface IRefinanceFile {
@@ -44,6 +46,7 @@ export interface IRefinanceCustomer {
   phoneNumber: string
   phoneNumber2: string
   email: string
+  receiptReference?: IReceiptReference | null
 }
 
 export interface IRefinanceInstallment {
@@ -85,5 +88,5 @@ export interface IRefinanceActionData {
 }
 
 export type TGetRefinanceResponse = IBaseSuccessResponse<IRefinanceData>
-export type TCreateRefinanceResponse = IBaseSuccessResponse<IRefinanceActionData>
+export type TCreateRefinanceResponse = IBaseSuccessResponse<IRefinanceActionData | IQRPaymentResponse>
 export type TMakeAContractResponse = IBaseSuccessResponse<boolean>

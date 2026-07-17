@@ -12,6 +12,9 @@
         {{ item.idNo }}
       </LinkText>
     </template>
+    <template #[`item.receiptStatus`]="{ item }">
+      <ChipReceiptStatus :value="item?.receiptStatus" />
+    </template>
   </BaseTable>
 </template>
 
@@ -21,9 +24,11 @@ import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import type { IReceiptList } from '@/models/response/receipt/ReceiptRes.model'
 import type { IColumn } from '@/models/Table.model'
+import { formatTitle } from '@/enums/modules/finance/receipt/ReceiptType.enum'
 import LinkText from '@/components/button/LinkText.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
+import ChipReceiptStatus from './ChipReceiptStatus.vue'
 
 interface IProps {
   items: IReceiptList[]
@@ -52,6 +57,8 @@ const columns = ref<IColumn<IReceiptList>[]>([
     bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' },
     value: (e: IReceiptList): string => e.customer.fullName ?? ''
   },
-  { field: 'totalAmount', header: 'มูลค่า (บาท)', sortable: true, align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IReceiptList): string => formatter.numberFormat(e.totalAmount ?? 0) }
+  { field: 'totalAmount', header: 'มูลค่า (บาท)', sortable: true, align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IReceiptList): string => formatter.numberFormat(e.totalAmount ?? 0) },
+  { field: 'receiptType', header: 'ประเภท', align: 'left', style: { width: '100px', minWidth: '100px' }, value: (e: IReceiptList): string => formatTitle(e?.receiptType) },
+  { field: 'receiptStatus', header: 'สถานะ', align: 'left', style: { width: '100px', minWidth: '100px' } }
 ])
 </script>

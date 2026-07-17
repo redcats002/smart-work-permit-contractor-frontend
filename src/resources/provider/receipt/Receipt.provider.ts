@@ -14,6 +14,7 @@ export interface IReceiptProvider {
   deleteReceipt(id: TBaseParamsId): Promise<TActionReceipt>
   createReceipt(payload: ICreateReceiptPayload): Promise<TActionReceipt>
   getInstallmentsByCustomerId(customerId: TBaseParamsId): Promise<TGetReceiptInstallmentsResponse>
+  cancelQrCode(customerId: TBaseParamsId): Promise<TActionReceipt>
 }
 
 class ReceiptProvider extends HttpRequest implements IReceiptProvider {
@@ -42,6 +43,11 @@ class ReceiptProvider extends HttpRequest implements IReceiptProvider {
   public async getInstallmentsByCustomerId (customerId: TBaseParamsId): Promise<TGetReceiptInstallmentsResponse> {
     this.setLogHeaders({ menu: 'DOCUMENT-FINANCE', subMenu: 'ใบเสร็จรับเงิน' })
     return this.get(`${this.urlPrefix}/installments/${customerId}`)
+  }
+
+  public async cancelQrCode (customerId: TBaseParamsId): Promise<TActionReceipt> {
+    this.setLogHeaders({ menu: 'DOCUMENT-FINANCE', subMenu: 'ใบเสร็จรับเงิน > ยกเลิก QR Code' })
+    return this.delete(`${this.urlPrefix}/cancel-qrcode/${customerId}`)
   }
 }
 

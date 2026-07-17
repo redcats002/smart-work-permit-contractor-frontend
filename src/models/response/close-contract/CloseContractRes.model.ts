@@ -1,4 +1,6 @@
 import type { EVatType } from '@/enums/modules/Vat.enum'
+import type { IQRPaymentResponse } from '@/composables/useQRPayment'
+import type { IReceiptReference } from '../receipt/ReceiptRes.model'
 import type { IBaseSuccessResponse } from '../Response.model'
 
 export interface ICloseContractFile {
@@ -44,6 +46,7 @@ export interface ICloseContractCustomer {
   phoneNumber: string
   phoneNumber2: string
   email: string
+  receiptReference?: IReceiptReference | null
 }
 
 export interface ICloseContractInstallment {
@@ -79,5 +82,10 @@ export interface ICloseContractData {
   contract: ICloseContractContract
 }
 
+export interface ICloseContractResponse {
+  discountAmount: number
+  totalAmount: number
+}
+
 export type TGetCloseContractResponse = IBaseSuccessResponse<ICloseContractData>
-export type TActionCloseContract = IBaseSuccessResponse<boolean>
+export type TActionCloseContract = IBaseSuccessResponse<ICloseContractResponse | IQRPaymentResponse>

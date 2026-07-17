@@ -1,5 +1,8 @@
 import type { IEntity } from '@/models/Global.model'
+import type { TReceiptStatus } from '@/enums/modules/finance/receipt/ReceiptStatus.enum'
+import type { TReceiptType } from '@/enums/modules/finance/receipt/ReceiptType.enum'
 import type { TTitleName } from '@/enums/TitleName.enum'
+import type { IQRPaymentResponse } from '@/composables/useQRPayment'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 import type { TReceiptPaymentMethod } from './PaymentMethod.enum'
 
@@ -40,11 +43,10 @@ export interface IReceiptList extends IEntity {
   receiptDate: string | null
   customer: IReceiptCustomer
   totalValue: number | null
-
-  id: number
-  idNo: string
   paidAt: Date | null | string
   totalAmount: number
+  receiptStatus: TReceiptStatus
+  receiptType: TReceiptType
 }
 
 export interface IReceiptDetailItems {
@@ -197,4 +199,4 @@ export interface IReceiptInstallmentsByCustomer {
 export type TGetReceiptListResponse = IBasePaginationResponse<IReceiptList>
 export type TGetReceiptDetailResponse = IBaseSuccessResponse<IReceiptById>
 export type TGetReceiptInstallmentsResponse = IBaseSuccessResponse<IReceiptInstallmentsByCustomer>
-export type TActionReceipt = IBaseSuccessResponse<boolean>
+export type TActionReceipt = IBaseSuccessResponse<boolean | IQRPaymentResponse>

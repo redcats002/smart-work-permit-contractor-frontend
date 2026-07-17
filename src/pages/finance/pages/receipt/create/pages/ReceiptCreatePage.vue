@@ -71,7 +71,7 @@
 
     <!-- Payment method -->
     <BasePage>
-      <div class="flex gap-[13px] items-center">
+      <div class="flex gap-3.25 items-center">
         <!-- Cash card -->
         <div
           class="bg-white drop-shadow-[1px_1px_2px_rgba(51,51,51,0.25)] flex flex-1 flex-col items-center p-4 rounded-lg cursor-pointer"
@@ -142,6 +142,7 @@ import PageTitle from '@/components/nav/PageTitle.vue'
 import CardInstallment from '../components/CardInstallment.vue'
 import InformationDetail from '../components/InformationDetail.vue'
 import ThaiQRPaymentModal from '../components/ThaiQRPaymentModal.vue'
+import { useQRPayment } from '@/composables/useQRPayment'
 import { Icon } from '@iconify/vue'
 import { useInitDetail } from '../composables/useInitDetail'
 
@@ -165,6 +166,7 @@ interface IInstallmentChangePayload {
 const route = useRoute()
 const router = useRouter()
 const ReceiptService: IReceiptProvider = new ReceiptProvider()
+const { qrModalVisible, qrImage, qrTrxId, qrExpiresAt, handlePaymentResponse, checkReceiptReference, cancelQrCode } = useQRPayment()
 
 const customerIdQuery = computed((): number | null => {
   return route?.query?.customerId ? Number(route.query.customerId) : null
@@ -190,10 +192,6 @@ const paymentMethod = ref<TReceiptPaymentMethod>(EReceiptPaymentMethod.CASH)
 const installmentAmounts = ref<Record<number, number>>({})
 const installmentDiscounts = ref<Record<number, number>>({})
 const installmentSelected = ref<Record<number, boolean>>({})
-const qrModalVisible = ref<boolean>(false)
-const qrImage = ref<string>('')
-const qrTrxId = ref<string>('')
-const qrExpiresAt = ref<string>('')
 
 
 const totalAmount = computed((): number =>
@@ -267,12 +265,7 @@ async function fetchInstallments (id: number): Promise<void> {
 
   // Check for unpaid QR receipt reference
   const receiptRef = (data.customer as IReceiptCustomerInfo).receiptReference
-  if (receiptRef?.qrImage && receiptRef.expired && new Date(receiptRef.expired).getTime() > Date.now()) {
-    qrImage.value = receiptRef.qrImage
-    qrTrxId.value = String(receiptRef.id)
-    qrExpiresAt.value = receiptRef.expired
-    qrModalVisible.value = true
-  }
+  checkReceiptReference(receiptRef)
 }
 
 async function onCustomerChange (): Promise<void> {
@@ -289,32 +282,6 @@ async function onCustomerChange (): Promise<void> {
 async function onSubmit (): Promise<void> {
   if (!customerId.value) {
     toast.error('กรุณาเลือกลูกค้า')
-    return
-  }
-  if (paymentMethod.value === EReceiptPaymentMethod.BANK_TRANSFER) {
-    await handleLoading(async (): Promise<void> => {
-      const payload: ICreateReceiptPayload = {
-        paymentType: paymentMethod.value,
-        customerId: customerId.value!,
-        contracts: contracts.value
-          .map((c: IInstallmentContract): IReceiptContractPayload => ({
-            id: c.contractId,
-            installments: c.installments
-              .filter((item: IInstallmentItem): boolean => (installmentAmounts.value[item.id] ?? 0) > 0)
-              .map((item: IInstallmentItem): IReceiptInstallmentPayload => ({
-                id: item.id,
-                discountPenaltyFee: installmentDiscounts.value[item.id] ?? 0,
-                amount: installmentAmounts.value[item.id] ?? 0
-              }))
-          }))
-          .filter((c: IReceiptContractPayload): boolean => c.installments.length > 0)
-      }
-      const response = await ReceiptService.createReceipt(payload) as unknown as { data: { trxId: string, qrImage: string, expired: string } }
-      qrImage.value = response.data?.qrImage ?? ''
-      qrTrxId.value = response.data?.trxId ?? ''
-      qrExpiresAt.value = response.data?.expired ?? ''
-      qrModalVisible.value = true
-    })
     return
   }
   await handleLoading(async (): Promise<void> => {
@@ -334,7 +301,8 @@ async function onSubmit (): Promise<void> {
         }))
         .filter((c: IReceiptContractPayload): boolean => c.installments.length > 0)
     }
-    await ReceiptService.createReceipt(payload)
+    const response = await ReceiptService.createReceipt(payload)
+    if (handlePaymentResponse(response)) return
     toast.success('ดำเนินการสำเร็จ')
     router.push({ name: 'ReceiptListPage' })
   })
@@ -344,10 +312,10 @@ function onCancel (): void {
   router.push({ name: 'ReceiptListPage' })
 }
 
-function onQrCancel (): void {
-  qrImage.value = ''
-  qrTrxId.value = ''
-  qrExpiresAt.value = ''
+async function onQrCancel (): Promise<void> {
+  if (customerId.value) {
+    await cancelQrCode(customerId.value)
+  }
 }
 
 function onInitCustomer (): void {

@@ -73,6 +73,13 @@
         </button>
       </div>
     </BasePage>
+
+    <ThaiQRPaymentModal
+      v-model="qrModalVisible"
+      :expires-at="qrExpiresAt"
+      :qr-image="qrImage"
+      :trx-id="qrTrxId"
+      @cancel="onQrCancel()" />
   </section>
 </template>
 
@@ -80,32 +87,34 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
-import { handleLoading } from '@/utils/HandleLoading'
 import { formatter } from '@/utils/Formatter'
-import { PaymentMethodEnum } from '@/enums/modules/contract/PaymentMethod.enum'
+import { handleLoading } from '@/utils/HandleLoading'
 import type { IRefinanceContract, IRefinanceCustomer, IRefinanceExpense, IRefinanceInstallment } from '@/models/response/refinance/RefinanceRes.model'
 import RefinanceProvider, { type IRefinanceProvider } from '@/resources/provider/refinance/Refinance.provider'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
-import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 import Spacer from '@/components/flex/Spacer.vue'
+import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import type { IAdditionalExpenseRow } from '../components/AdditionalExpensesTable.vue'
-import type { IInstallmentRow } from '../components/InstallmentTable.vue'
 import AdditionalExpensesTable from '../components/AdditionalExpensesTable.vue'
 import CustomerInfoCard from '../components/CustomerInfoCard.vue'
+import type { IInstallmentRow } from '../components/InstallmentTable.vue'
 import InstallmentTable from '../components/InstallmentTable.vue'
-import PaymentMethodSelector, { type TPaymentMethod } from '../components/PaymentMethodSelector.vue'
 import PaymentSummary from '../components/PaymentSummary.vue'
 import SaveExpenseModal from '../components/SaveExpenseModal.vue'
+import PaymentMethodSelector, { type TReceiptPaymentMethodLocal } from '@/pages/finance/components/shared/PaymentMethodSelector.vue'
+import ThaiQRPaymentModal from '@/pages/finance/pages/receipt/create/components/ThaiQRPaymentModal.vue'
+import { useQRPayment } from '@/composables/useQRPayment'
 
 const route = useRoute()
 const router = useRouter()
 const RefinanceService: IRefinanceProvider = new RefinanceProvider()
+const { qrModalVisible, qrImage, qrTrxId, qrExpiresAt, handlePaymentResponse, checkReceiptReference, cancelQrCode, mapPaymentType } = useQRPayment()
 
 const contractId = computed((): string => route.params?.id as string)
-const paymentMethod = ref<TPaymentMethod>('cash')
+const paymentMethod = ref<TReceiptPaymentMethodLocal>('cash')
 const showExpenseModal = ref<boolean>(false)
 const additionalExpenses = ref<IAdditionalExpenseRow[]>([])
 const customer = ref<IRefinanceCustomer | null>(null)
@@ -114,19 +123,22 @@ const expenses = ref<IRefinanceExpense[]>([])
 
 const installmentRows = computed((): IInstallmentRow[] => {
   if (!contract.value?.installments) return []
-  return contract.value.installments.map((item: IRefinanceInstallment): IInstallmentRow => ({
-    label: `งวดที่ ${item.order}`,
-    penalty: item.penaltyFee,
-    collection: item.collectionFee,
-    lawyer: item.legalFee,
-    principal: item.principal,
-    interest: item.interest,
-    total: item.total
-  }))
+  return contract.value.installments.map(
+    (item: IRefinanceInstallment): IInstallmentRow => ({
+      label: `งวดที่ ${item.order}`,
+      penalty: item.penaltyFee,
+      collection: item.collectionFee,
+      lawyer: item.legalFee,
+      principal: item.principal,
+      interest: item.interest,
+      total: item.total
+    })
+  )
 })
 
-const otherExpenses = computed((): number => additionalExpenses.value.reduce((total: number, expense: IAdditionalExpenseRow): number =>
-  total + expense.amount, 0))
+const otherExpenses = computed((): number =>
+  additionalExpenses.value.reduce((total: number, expense: IAdditionalExpenseRow): number => total + expense.amount, 0)
+)
 
 const grandTotal = computed((): number => {
   const summary = contract.value?.summary
@@ -157,17 +169,17 @@ async function useFetch (): Promise<void> {
   const { data } = await RefinanceService.getRefinance(contractId.value)
   customer.value = data.customer
   contract.value = data.contract
+
+  const receiptRef = data.customer.receiptReference
+  checkReceiptReference(receiptRef)
 }
 
 async function useSubmit (): Promise<void> {
-  const paymentTypeMap: Record<TPaymentMethod, PaymentMethodEnum> = {
-    cash: PaymentMethodEnum.CASH,
-    qr: PaymentMethodEnum.BANK_TRANSFER
-  }
-  await RefinanceService.createRefinance(contractId.value, {
-    paymentType: paymentTypeMap[paymentMethod.value],
+  const response = await RefinanceService.createRefinance(contractId.value, {
+    paymentType: mapPaymentType(paymentMethod.value),
     otherExpenses: expenses.value
   })
+  if (handlePaymentResponse(response)) return
   toast.success('ดำเนินการสำเร็จ')
   router.push({ name: 'ReceiptListPage' })
 }
@@ -178,6 +190,12 @@ function onSubmit (): void {
 
 function onCancel (): void {
   router.push({ name: 'ReceiptListPage' })
+}
+
+async function onQrCancel (): Promise<void> {
+  if (customer.value?.id) {
+    await cancelQrCode(customer.value.id)
+  }
 }
 
 onMounted((): void => {
