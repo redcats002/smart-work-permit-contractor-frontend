@@ -71,7 +71,7 @@
 
     <!-- Payment method -->
     <BasePage>
-      <div class="flex gap-[13px] items-center">
+      <div class="flex gap-3.25 items-center">
         <!-- Cash card -->
         <div
           class="bg-white drop-shadow-[1px_1px_2px_rgba(51,51,51,0.25)] flex flex-1 flex-col items-center p-4 rounded-lg cursor-pointer"
@@ -142,9 +142,9 @@ import PageTitle from '@/components/nav/PageTitle.vue'
 import CardInstallment from '../components/CardInstallment.vue'
 import InformationDetail from '../components/InformationDetail.vue'
 import ThaiQRPaymentModal from '../components/ThaiQRPaymentModal.vue'
+import { useQRPayment } from '@/composables/useQRPayment'
 import { Icon } from '@iconify/vue'
 import { useInitDetail } from '../composables/useInitDetail'
-import { useQRPayment, type IQRPaymentResponse } from '@/composables/useQRPayment'
 
 interface IInstallmentItem extends IReceiptInstallmentCreate {
   installmentNo: number
@@ -166,7 +166,7 @@ interface IInstallmentChangePayload {
 const route = useRoute()
 const router = useRouter()
 const ReceiptService: IReceiptProvider = new ReceiptProvider()
-const { qrModalVisible, qrImage, qrTrxId, qrExpiresAt, handleQRResponse, checkReceiptReference, cancelQrCode } = useQRPayment()
+const { qrModalVisible, qrImage, qrTrxId, qrExpiresAt, handlePaymentResponse, checkReceiptReference, cancelQrCode } = useQRPayment()
 
 const customerIdQuery = computed((): number | null => {
   return route?.query?.customerId ? Number(route.query.customerId) : null
@@ -284,29 +284,6 @@ async function onSubmit (): Promise<void> {
     toast.error('กรุณาเลือกลูกค้า')
     return
   }
-  if (paymentMethod.value === EReceiptPaymentMethod.BANK_TRANSFER) {
-    await handleLoading(async (): Promise<void> => {
-      const payload: ICreateReceiptPayload = {
-        paymentType: paymentMethod.value,
-        customerId: customerId.value!,
-        contracts: contracts.value
-          .map((c: IInstallmentContract): IReceiptContractPayload => ({
-            id: c.contractId,
-            installments: c.installments
-              .filter((item: IInstallmentItem): boolean => (installmentAmounts.value[item.id] ?? 0) > 0)
-              .map((item: IInstallmentItem): IReceiptInstallmentPayload => ({
-                id: item.id,
-                discountPenaltyFee: installmentDiscounts.value[item.id] ?? 0,
-                amount: installmentAmounts.value[item.id] ?? 0
-              }))
-          }))
-          .filter((c: IReceiptContractPayload): boolean => c.installments.length > 0)
-      }
-      const response = await ReceiptService.createReceipt(payload) as unknown as { data: IQRPaymentResponse }
-      handleQRResponse(response.data ?? {})
-    })
-    return
-  }
   await handleLoading(async (): Promise<void> => {
     const payload: ICreateReceiptPayload = {
       paymentType: paymentMethod.value,
@@ -324,7 +301,8 @@ async function onSubmit (): Promise<void> {
         }))
         .filter((c: IReceiptContractPayload): boolean => c.installments.length > 0)
     }
-    await ReceiptService.createReceipt(payload)
+    const response = await ReceiptService.createReceipt(payload)
+    if (handlePaymentResponse(response)) return
     toast.success('ดำเนินการสำเร็จ')
     router.push({ name: 'ReceiptListPage' })
   })

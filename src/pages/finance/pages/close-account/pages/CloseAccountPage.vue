@@ -87,35 +87,40 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
-import { handleLoading } from '@/utils/HandleLoading'
 import { formatter } from '@/utils/Formatter'
-import { PaymentMethodEnum } from '@/enums/modules/contract/PaymentMethod.enum'
-import type { ICloseContractCustomer, ICloseContractContract, ICloseContractExpense, ICloseContractInstallment } from '@/models/response/close-contract/CloseContractRes.model'
+import { handleLoading } from '@/utils/HandleLoading'
+import type {
+  ICloseContractContract,
+  ICloseContractCustomer,
+  ICloseContractExpense,
+  ICloseContractInstallment
+} from '@/models/response/close-contract/CloseContractRes.model'
 import CloseContractProvider, { type ICloseContractProvider } from '@/resources/provider/close-contract/CloseContract.provider'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
-import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 import Spacer from '@/components/flex/Spacer.vue'
+import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import type { IAdditionalExpenseRow } from '../components/AdditionalExpensesTable.vue'
-import type { IInstallmentRow } from '../components/InstallmentTable.vue'
 import AdditionalExpensesTable from '../components/AdditionalExpensesTable.vue'
 import CustomerInfoCard from '../components/CustomerInfoCard.vue'
+import type { IInstallmentRow } from '../components/InstallmentTable.vue'
 import InstallmentTable from '../components/InstallmentTable.vue'
-import PaymentMethodSelector, { type TPaymentMethod } from '../components/PaymentMethodSelector.vue'
 import PaymentSummary from '../components/PaymentSummary.vue'
 import SaveExpenseModal from '../components/SaveExpenseModal.vue'
+import type { TReceiptPaymentMethodLocal } from '@/pages/finance/components/shared/PaymentMethodSelector.vue'
+import PaymentMethodSelector from '@/pages/finance/components/shared/PaymentMethodSelector.vue'
 import ThaiQRPaymentModal from '@/pages/finance/pages/receipt/create/components/ThaiQRPaymentModal.vue'
-import { useQRPayment, type IQRPaymentResponse } from '@/composables/useQRPayment'
+import { useQRPayment } from '@/composables/useQRPayment'
 
 const route = useRoute()
 const router = useRouter()
 const CloseContractService: ICloseContractProvider = new CloseContractProvider()
-const { qrModalVisible, qrImage, qrTrxId, qrExpiresAt, handleQRResponse, checkReceiptReference, cancelQrCode } = useQRPayment()
+const { qrModalVisible, qrImage, qrTrxId, qrExpiresAt, mapPaymentType, handlePaymentResponse, checkReceiptReference, cancelQrCode } = useQRPayment()
 
 const contractId = computed((): string => route.params?.id as string)
-const paymentMethod = ref<TPaymentMethod>('cash')
+const paymentMethod = ref<TReceiptPaymentMethodLocal>('cash')
 const showExpenseModal = ref<boolean>(false)
 const additionalExpenses = ref<IAdditionalExpenseRow[]>([])
 const customer = ref<ICloseContractCustomer | null>(null)
@@ -173,18 +178,11 @@ async function useFetch (): Promise<void> {
 }
 
 async function useSubmit (): Promise<void> {
-  const paymentTypeMap: Record<TPaymentMethod, PaymentMethodEnum> = {
-    cash: PaymentMethodEnum.CASH,
-    qr: PaymentMethodEnum.BANK_TRANSFER
-  }
   const response = await CloseContractService.createCloseContract(contractId.value, {
-    paymentType: paymentTypeMap[paymentMethod.value],
+    paymentType: mapPaymentType(paymentMethod.value),
     otherExpenses: expenses.value
-  }) as unknown as { data: IQRPaymentResponse }
-  if (paymentMethod.value === 'qr' && response.data?.qrImage) {
-    handleQRResponse(response.data)
-    return
-  }
+  })
+  if (handlePaymentResponse(response)) return
   toast.success('ดำเนินการสำเร็จ')
   router.push({ name: 'ReceiptListPage' })
 }

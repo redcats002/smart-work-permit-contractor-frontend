@@ -2,7 +2,7 @@
   <div class="flex gap-3 items-center w-full flex-wrap sm:flex-nowrap">
     <button
       :class="modelValue === 'cash' ? 'border-2 border-[#bd0102]' : 'border border-[#bdbdbd]'"
-      class="bg-white rounded-lg shadow-[1px_1px_2px_rgba(51,51,51,0.25)] flex-1 min-w-[160px] p-4 cursor-pointer flex flex-col items-center"
+      class="bg-white rounded-lg shadow-[1px_1px_2px_rgba(51,51,51,0.25)] flex-1 min-w-40 p-4 cursor-pointer flex flex-col items-center"
       type="button"
       @click="emits('update:modelValue', 'cash')">
       <div class="flex items-center gap-1">
@@ -19,7 +19,7 @@
 
     <button
       :class="modelValue === 'qr' ? 'border-2 border-[#bd0102]' : 'border border-[#bdbdbd]'"
-      class="bg-white rounded-lg shadow-[1px_1px_2px_rgba(51,51,51,0.25)] flex-1 min-w-[160px] p-4 cursor-pointer flex flex-col items-center"
+      class="bg-white rounded-lg shadow-[1px_1px_2px_rgba(51,51,51,0.25)] flex-1 min-w-40 p-4 cursor-pointer flex flex-col items-center"
       type="button"
       @click="emits('update:modelValue', 'qr')">
       <div class="flex items-center gap-1">
@@ -37,14 +37,14 @@
 </template>
 
 <script setup lang="ts">
-export type TPaymentMethod = 'cash' | 'qr'
+export type TReceiptPaymentMethodLocal = 'cash' | 'qr'
 
 interface IProps {
-  modelValue: TPaymentMethod
+  modelValue: TReceiptPaymentMethodLocal
 }
 
 interface IEmits {
-  'update:modelValue': [value: TPaymentMethod]
+  'update:modelValue': [value: TReceiptPaymentMethodLocal]
 }
 
 defineProps<IProps>()

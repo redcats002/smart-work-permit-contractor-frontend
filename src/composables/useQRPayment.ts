@@ -1,9 +1,12 @@
 import { onMounted, onUnmounted, ref, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
+import type { IBaseSuccessResponse } from '@/models/response/Response.model'
+import { PaymentMethodEnum } from '@/enums/modules/contract/PaymentMethod.enum'
 import { EPaymentSocketEvent } from '@/enums/modules/finance/PaymentSocketEvent.enum'
 import useGateway from '@/resources/gateway/useGateway'
 import ReceiptProvider, { type IReceiptProvider } from '@/resources/provider/receipt/Receipt.provider'
+import type { TReceiptPaymentMethodLocal } from '@/pages/finance/components/shared/PaymentMethodSelector.vue'
 
 export interface IQRPaymentResponse {
   qrImage?: string
@@ -20,7 +23,10 @@ interface IUseQRPayment {
   qrImage: Ref<string>
   qrTrxId: Ref<string>
   qrExpiresAt: Ref<string>
+  mapPaymentType (paymentMethod: TReceiptPaymentMethodLocal): PaymentMethodEnum
   handleQRResponse(response: IQRPaymentResponse): void
+  isQRResponse(data: unknown): data is IQRPaymentResponse
+  handlePaymentResponse(response: IBaseSuccessResponse<unknown>): boolean
   checkReceiptReference(receiptRef: { id: number, qrImage: string, expired: string } | null | undefined): void
   cancelQrCode(customerId: number): Promise<void>
   onPaymentCallback(): void
@@ -46,6 +52,26 @@ export function useQRPayment (options: IUseQRPaymentOptions = {}): IUseQRPayment
       qrExpiresAt.value = response.expired ?? ''
       qrModalVisible.value = true
     }
+  }
+
+  function mapPaymentType (paymentMethod: TReceiptPaymentMethodLocal): PaymentMethodEnum {
+    const paymentTypeMap: Record<TReceiptPaymentMethodLocal, PaymentMethodEnum> = {
+      cash: PaymentMethodEnum.CASH,
+      qr: PaymentMethodEnum.BANK_TRANSFER
+    }
+    return paymentTypeMap[paymentMethod as TReceiptPaymentMethodLocal] ?? PaymentMethodEnum.CASH
+  }
+
+  function isQRResponse (data: unknown): data is IQRPaymentResponse {
+    return typeof data === 'object' && data !== null && 'qrImage' in data
+  }
+
+  function handlePaymentResponse (response: IBaseSuccessResponse<unknown>): boolean {
+    if (isQRResponse(response.data)) {
+      handleQRResponse(response.data)
+      return true
+    }
+    return false
   }
 
   function checkReceiptReference (receiptRef: { id: number, qrImage: string, expired: string } | null | undefined): void {
@@ -96,7 +122,10 @@ export function useQRPayment (options: IUseQRPaymentOptions = {}): IUseQRPayment
     qrImage,
     qrTrxId,
     qrExpiresAt,
+    mapPaymentType,
     handleQRResponse,
+    isQRResponse,
+    handlePaymentResponse,
     checkReceiptReference,
     cancelQrCode,
     onPaymentCallback,
