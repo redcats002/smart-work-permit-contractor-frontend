@@ -73,11 +73,18 @@
         </button>
       </div>
     </BasePage>
+
+    <ThaiQRPaymentModal
+      v-model="qrModalVisible"
+      :expires-at="qrExpiresAt"
+      :qr-image="qrImage"
+      :trx-id="qrTrxId"
+      @cancel="onQrCancel()" />
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
@@ -85,6 +92,7 @@ import { formatter } from '@/utils/Formatter'
 import { PaymentMethodEnum } from '@/enums/modules/contract/PaymentMethod.enum'
 import type { IRefinanceContract, IRefinanceCustomer, IRefinanceExpense, IRefinanceInstallment } from '@/models/response/refinance/RefinanceRes.model'
 import RefinanceProvider, { type IRefinanceProvider } from '@/resources/provider/refinance/Refinance.provider'
+import ReceiptProvider, { type IReceiptProvider } from '@/resources/provider/receipt/Receipt.provider'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
@@ -99,10 +107,13 @@ import InstallmentTable from '../components/InstallmentTable.vue'
 import PaymentMethodSelector, { type TPaymentMethod } from '../components/PaymentMethodSelector.vue'
 import PaymentSummary from '../components/PaymentSummary.vue'
 import SaveExpenseModal from '../components/SaveExpenseModal.vue'
+import ThaiQRPaymentModal from '@/pages/finance/pages/receipt/create/components/ThaiQRPaymentModal.vue'
+import useGateway from '@/resources/gateway/useGateway'
 
 const route = useRoute()
 const router = useRouter()
 const RefinanceService: IRefinanceProvider = new RefinanceProvider()
+const ReceiptService: IReceiptProvider = new ReceiptProvider()
 
 const contractId = computed((): string => route.params?.id as string)
 const paymentMethod = ref<TPaymentMethod>('cash')
@@ -111,6 +122,10 @@ const additionalExpenses = ref<IAdditionalExpenseRow[]>([])
 const customer = ref<IRefinanceCustomer | null>(null)
 const contract = ref<IRefinanceContract | null>(null)
 const expenses = ref<IRefinanceExpense[]>([])
+const qrModalVisible = ref<boolean>(false)
+const qrImage = ref<string>('')
+const qrTrxId = ref<string>('')
+const qrExpiresAt = ref<string>('')
 
 const installmentRows = computed((): IInstallmentRow[] => {
   if (!contract.value?.installments) return []
@@ -157,6 +172,14 @@ async function useFetch (): Promise<void> {
   const { data } = await RefinanceService.getRefinance(contractId.value)
   customer.value = data.customer
   contract.value = data.contract
+
+  const receiptRef = (data.customer as unknown as { receiptReference?: { id: number, qrImage: string, expired: string } | null }).receiptReference
+  if (receiptRef?.qrImage && receiptRef.expired && new Date(receiptRef.expired).getTime() > Date.now()) {
+    qrImage.value = receiptRef.qrImage
+    qrTrxId.value = String(receiptRef.id)
+    qrExpiresAt.value = receiptRef.expired
+    qrModalVisible.value = true
+  }
 }
 
 async function useSubmit (): Promise<void> {
@@ -164,10 +187,17 @@ async function useSubmit (): Promise<void> {
     cash: PaymentMethodEnum.CASH,
     qr: PaymentMethodEnum.BANK_TRANSFER
   }
-  await RefinanceService.createRefinance(contractId.value, {
+  const response = await RefinanceService.createRefinance(contractId.value, {
     paymentType: paymentTypeMap[paymentMethod.value],
     otherExpenses: expenses.value
-  })
+  }) as unknown as { data: { qrImage?: string, expired?: string, trxId?: string } }
+  if (paymentMethod.value === 'qr' && response.data?.qrImage) {
+    qrImage.value = response.data.qrImage
+    qrTrxId.value = response.data.trxId ?? ''
+    qrExpiresAt.value = response.data.expired ?? ''
+    qrModalVisible.value = true
+    return
+  }
   toast.success('ดำเนินการสำเร็จ')
   router.push({ name: 'ReceiptListPage' })
 }
@@ -180,7 +210,32 @@ function onCancel (): void {
   router.push({ name: 'ReceiptListPage' })
 }
 
+async function onQrCancel (): Promise<void> {
+  if (customer.value?.id) {
+    await ReceiptService.cancelQrCode(customer.value.id)
+  }
+  qrImage.value = ''
+  qrTrxId.value = ''
+  qrExpiresAt.value = ''
+}
+
+function onPaymentCallback (): void {
+  qrModalVisible.value = false
+  qrImage.value = ''
+  qrTrxId.value = ''
+  qrExpiresAt.value = ''
+  toast.success('ชำระเงินสำเร็จ')
+  router.push({ name: 'ReceiptListPage' })
+}
+
+const paymentGateway = useGateway('callback-payment-qrcode', onPaymentCallback)
+
 onMounted((): void => {
   handleLoading(useFetch)
+  paymentGateway.initWatcher()
+})
+
+onUnmounted((): void => {
+  paymentGateway.destroyWatcher()
 })
 </script>

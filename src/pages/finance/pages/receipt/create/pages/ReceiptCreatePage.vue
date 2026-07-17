@@ -123,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { formatter } from '@/utils/Formatter'
@@ -144,6 +144,7 @@ import InformationDetail from '../components/InformationDetail.vue'
 import ThaiQRPaymentModal from '../components/ThaiQRPaymentModal.vue'
 import { Icon } from '@iconify/vue'
 import { useInitDetail } from '../composables/useInitDetail'
+import useGateway from '@/resources/gateway/useGateway'
 
 interface IInstallmentItem extends IReceiptInstallmentCreate {
   installmentNo: number
@@ -344,7 +345,10 @@ function onCancel (): void {
   router.push({ name: 'ReceiptListPage' })
 }
 
-function onQrCancel (): void {
+async function onQrCancel (): Promise<void> {
+  if (customerId.value) {
+    await ReceiptService.cancelQrCode(customerId.value)
+  }
   qrImage.value = ''
   qrTrxId.value = ''
   qrExpiresAt.value = ''
@@ -355,9 +359,25 @@ function onInitCustomer (): void {
   onCustomerChange()
 }
 
+function onPaymentCallback (): void {
+  qrModalVisible.value = false
+  qrImage.value = ''
+  qrTrxId.value = ''
+  qrExpiresAt.value = ''
+  toast.success('ชำระเงินสำเร็จ')
+  router.push({ name: 'ReceiptListPage' })
+}
+
+const paymentGateway = useGateway('callback-payment-qrcode', onPaymentCallback)
+
 onMounted(async (): Promise<void> => {
   await router.isReady()
   onInitCustomer()
+  paymentGateway.initWatcher()
+})
+
+onUnmounted((): void => {
+  paymentGateway.destroyWatcher()
 })
 </script>
 
