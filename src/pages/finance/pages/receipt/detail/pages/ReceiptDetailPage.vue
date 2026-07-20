@@ -81,11 +81,11 @@
                 v-for="(item, ii) in contract.installments"
                 :key="`penalty-${ci}-${ii}`"
                 class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
-                <span class="text-[#333] text-sm">{{ formatter.numberFormat(item.penaltyFee) }}</span>
+                <span class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(item.penaltyFee) }}</span>
               </div>
             </template>
             <div class="bg-[#bdbdbd] h-14 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat(form.summary.penaltyFee) }}</span>
+              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat2Decimal(form.summary.penaltyFee) }}</span>
             </div>
           </div>
 
@@ -101,11 +101,11 @@
                 v-for="(item, ii) in contract.installments"
                 :key="`tracking-${ci}-${ii}`"
                 class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
-                <span class="text-[#333] text-sm">{{ formatter.numberFormat(item.collectionFee) }}</span>
+                <span class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(item.collectionFee) }}</span>
               </div>
             </template>
             <div class="bg-[#bdbdbd] h-14 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat(form.summary.collectionFee) }}</span>
+              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat2Decimal(form.summary.collectionFee) }}</span>
             </div>
           </div>
 
@@ -121,11 +121,11 @@
                 v-for="(item, ii) in contract.installments"
                 :key="`lawyer-${ci}-${ii}`"
                 class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
-                <span class="text-[#333] text-sm">{{ formatter.numberFormat(item.legalFee) }}</span>
+                <span class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(item.legalFee) }}</span>
               </div>
             </template>
             <div class="bg-[#bdbdbd] h-14 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat(form.summary.legalFee) }}</span>
+              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat2Decimal(form.summary.legalFee) }}</span>
             </div>
           </div>
 
@@ -141,11 +141,11 @@
                 v-for="(item, ii) in contract.installments"
                 :key="`interest-${ci}-${ii}`"
                 class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
-                <span class="text-[#333] text-sm">{{ formatter.numberFormat(item.interest) }}</span>
+                <span class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(item.interest) }}</span>
               </div>
             </template>
             <div class="bg-[#bdbdbd] h-14 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat(form.summary.interest) }}</span>
+              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat2Decimal(form.summary.interest) }}</span>
             </div>
           </div>
 
@@ -161,11 +161,11 @@
                 v-for="(item, ii) in contract.installments"
                 :key="`principal-${ci}-${ii}`"
                 class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
-                <span class="text-[#333] text-sm">{{ formatter.numberFormat(item.principal) }}</span>
+                <span class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(item.principal) }}</span>
               </div>
             </template>
             <div class="bg-[#bdbdbd] h-14 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat(form.summary.principal) }}</span>
+              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat2Decimal(form.summary.principal) }}</span>
             </div>
           </div>
 
@@ -181,11 +181,11 @@
                 v-for="(item, ii) in contract.installments"
                 :key="`total-${ci}-${ii}`"
                 class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
-                <span class="text-[#333] text-sm">{{ formatter.numberFormat(item.totalInstallment) }}</span>
+                <span class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(item.totalAmount) }}</span>
               </div>
             </template>
             <div class="bg-[#bdbdbd] h-14 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat(totalAll) }}</span>
+              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat2Decimal(totalAll) }}</span>
             </div>
           </div>
         </div>
@@ -203,6 +203,7 @@ import { handleLoading } from '@/utils/HandleLoading'
 import { formatter } from '@/utils/Formatter'
 import { formatTitle } from '@/models/response/receipt/PaymentMethod.enum'
 import type { IReceiptDetailContract, IReceiptDetailInstallment } from '@/models/response/receipt/ReceiptRes.model'
+
 import ReceiptProvider, { type IReceiptProvider } from '@/resources/provider/receipt/Receipt.provider'
 import type { IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 import BaseActionMenu from '@/components/base/BaseActionMenu.vue'
@@ -244,7 +245,7 @@ const receiptItems = computed((): IDisplayList[] => [
 
 const totalAll = computed((): number => {
   return form.value.contracts.reduce((acc: number, contract: IReceiptDetailContract): number => {
-    return acc + contract.installments.reduce((sum: number, item: IReceiptDetailInstallment): number => sum + item.totalInstallment, 0)
+    return acc + contract.installments.reduce((sum: number, item: IReceiptDetailInstallment): number => sum + item.totalAmount, 0)
   }, 0)
 })
 

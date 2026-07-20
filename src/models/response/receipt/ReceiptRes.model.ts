@@ -69,6 +69,7 @@ export interface IReceiptDetailInstallment {
   principal: number
   interest: number
   totalInstallment: number
+  totalAmount: number
   penaltyFee: number
   collectionFee: number
   legalFee: number
