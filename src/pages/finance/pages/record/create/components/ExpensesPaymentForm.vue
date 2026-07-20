@@ -85,6 +85,7 @@
         <FileInput
           v-model="model.files"
           :invalid="invalid"
+          accept="image/*,application/pdf"
           name="files"
           @update:model-value="emits('mount')" />
       </LabelField>

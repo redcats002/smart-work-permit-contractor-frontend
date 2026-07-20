@@ -3,7 +3,7 @@
     <!-- input file ซ่อน -->
     <input
       ref="fileInput"
-      accept=".pdf"
+      :accept="accept"
       class="hidden"
       type="file"
       multiple
@@ -65,12 +65,14 @@ interface IProps {
   form?: IFormState
   name?: string
   invalid?: boolean
+  accept?: string
 }
 
 const props = withDefaults(defineProps<IProps>(), {
   form: undefined,
   name: '',
-  invalid: undefined
+  invalid: undefined,
+  accept: '.pdf'
 })
 
 const fileInput = ref<HTMLInputElement | null>(null)

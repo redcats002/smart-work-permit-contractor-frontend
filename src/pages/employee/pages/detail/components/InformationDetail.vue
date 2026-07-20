@@ -55,7 +55,7 @@ const dayjs = useDayjs()
 const items = computed((): IDisplayList[] => {
   return [
     { label: 'สถานะ', key: 'status', value: props.data.status, hideColon: true },
-    { label: 'เลขที่ลูกค้า', key: 'id', value: props.data?.idNo },
+    { label: 'รหัสพนักงาน', key: 'id', value: props.data?.idNo },
     { label: 'เลขบัตรประชาชน', key: 'idCard', value: props.data?.idCard },
     { label: 'ชื่อ', key: 'name', value: formatter.fullName(props.data) },
     { label: 'วันเดือนปีเกิด', key: 'birthDate', value: dayjs.formatDate(props.data.dateOfBirth) },
