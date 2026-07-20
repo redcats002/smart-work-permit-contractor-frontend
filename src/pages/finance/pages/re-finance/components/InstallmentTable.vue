@@ -18,8 +18,8 @@
         :class="ci === 0 ? 'items-start' : 'items-end justify-end'"
         class="flex flex-1 flex-col min-w-0">
         <div
-          :class="ci === 0 ? 'justify-start px-4' : 'justify-end px-4'"
-          class="bg-white border-b-2 border-[#e0e0e0] h-12 flex flex-col items-end py-2 w-full">
+          :class="ci === 0 ? 'justify-start px-4 items-start' : 'justify-end px-4 items-end'"
+          class="bg-white border-b-2 border-[#e0e0e0] h-12 flex flex-col py-2 w-full">
           <span class="text-sm font-bold text-[#333] whitespace-nowrap">{{ col.label }}</span>
         </div>
         <div
@@ -37,7 +37,7 @@
             v-else
             :style="row.isTotal ? 'font-weight: 800; text-decoration: underline;' : ''"
             class="text-sm text-[#333] ml-auto">
-            {{ formatNumber(row?.[col.key] as number) }}
+            {{ formatter.numberFormat2Decimal(row?.[col.key] as number) }}
           </span>
         </div>
       </div>
@@ -94,8 +94,4 @@ withDefaults(defineProps<IProps>(), {
     { label: 'รวม', penalty: 0, collection: 0, lawyer: 0, principal: 80000, interest: 12000, total: 83000, isTotal: true }
   ]
 })
-
-function formatNumber (value: number): string {
-  return formatter.numberFormat(value)
-}
 </script>
