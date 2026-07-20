@@ -101,6 +101,7 @@ export interface IReceiptById extends IEntity {
     id: string
     name: string
   }
+  receiptType?: TReceiptType | null
   contracts: IReceiptDetailContract[]
   summary: IReceiptSummary
 

@@ -21,6 +21,7 @@ export default function useDetail (): IUseDetail {
     createdAt: '',
     paidAt: '',
     paymentType: null,
+    receiptType: null,
     createBy: {
       id: '',
       idNo: '',
