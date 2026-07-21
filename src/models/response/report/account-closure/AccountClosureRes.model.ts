@@ -12,19 +12,23 @@ interface IContract extends IEntity {
   idNo: string
 }
 
+interface IReceipt extends IEntity {
+  idNo: string
+  receiptType: string
+}
+
 export interface IAccountClosureList extends IEntity {
   date: string
-  receipt: IContract
+  receipt: IReceipt
   contract: IContract
   customer: ICustomerList
   principal: number
   interest: number
-  otherExpenses: number
-  interestDiscount: number
-  otherDiscount: number
-  totalPayment: number
-  assetCategory: string
-  debtorType: string
+  otherExpense: number
+  discountInterest: number
+  discountOther: number
+  totalAmount: number
+  assets: string[]
 }
 
 export type TGetAccountClosureListResponse = IBasePaginationResponse<IAccountClosureList>

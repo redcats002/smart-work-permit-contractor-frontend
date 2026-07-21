@@ -4,6 +4,7 @@
     <BackButton />
     <BasePage>
       <PaymentsForAccountClosureFilter
+        v-model:filters="filters"
         v-model:search="search"
         @clear="onClearFilters()"
         @search="onSearch()">
@@ -35,6 +36,7 @@ import useDebtCollectionPaymentClosure from '../composables/useDebtCollectionPay
 
 const {
   items,
+  filters,
   pagination,
   sortBy,
   sortOrder,

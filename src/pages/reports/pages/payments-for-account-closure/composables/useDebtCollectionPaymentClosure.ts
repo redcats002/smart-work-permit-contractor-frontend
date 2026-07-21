@@ -30,7 +30,9 @@ export default function useDebtCollectionPaymentClosure (): IUseList {
       limit: pagination.value.limit,
       sortBy: sortBy.value || undefined,
       sortOrder: sortOrder.value,
-      search: search.value || undefined
+      search: search.value || undefined,
+      receiptType: filters.value.receiptType || undefined,
+      assetType: filters.value.assetType || undefined
     }
   })
 
@@ -52,6 +54,7 @@ export default function useDebtCollectionPaymentClosure (): IUseList {
 
   function onClearFilters (): void {
     reset()
+    filters.value = {}
   }
 
   return {

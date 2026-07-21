@@ -28,6 +28,8 @@
 import { ref } from 'vue'
 import { formatter } from '@/utils/Formatter'
 import { useDayjs } from '@/utils/Dayjs'
+import { formatTitle as formatReceiptType } from '@/enums/modules/finance/receipt/ReceiptType.enum'
+import { formatTitle as formatAssetType } from '@/enums/modules/asset/AssetType.enum'
 import type { IAccountClosureList } from '@/models/response/report/account-closure/AccountClosureRes.model'
 import type { IColumn } from '@/models/Table.model'
 import type { IPagination } from '@/composables/usePagination'
@@ -93,44 +95,40 @@ const columns = ref<IColumn<IAccountClosureList>[]>([
     value: (e: IAccountClosureList): string => formatter.numberFormat(e.interest)
   },
   {
-    field: 'otherExpenses',
+    field: 'otherExpense',
     header: 'ค่าใช้จ่ายอื่นๆ',
     align: 'right',
-    value: (e: IAccountClosureList): string => formatter.numberFormat(e.otherExpenses)
+    value: (e: IAccountClosureList): string => formatter.numberFormat(e.otherExpense)
   },
   {
-    field: 'interestDiscount',
+    field: 'discountInterest',
     header: 'ส่วนลดดอกเบี้ย',
     align: 'right',
-    value: (e: IAccountClosureList): string => formatter.numberFormat(e.interestDiscount)
+    value: (e: IAccountClosureList): string => formatter.numberFormat(e.discountInterest)
   },
   {
-    field: 'otherDiscount',
+    field: 'discountOther',
     header: 'ส่วนลดอื่นๆ',
     align: 'right',
-    value: (e: IAccountClosureList): string => formatter.numberFormat(e.otherDiscount)
+    value: (e: IAccountClosureList): string => formatter.numberFormat(e.discountOther)
   },
   {
-    field: 'totalPayment',
+    field: 'totalAmount',
     header: 'ยอดชำระรวม',
     align: 'right',
-    value: (e: IAccountClosureList): string => formatter.numberFormat(e.totalPayment)
+    value: (e: IAccountClosureList): string => formatter.numberFormat(e.totalAmount)
   },
   {
-    field: 'otherDiscount2',
-    header: 'ส่วนลดอื่นๆ',
-    align: 'right',
-    value: (e: IAccountClosureList): string => formatter.numberFormat(e.otherDiscount)
-  },
-  {
-    field: 'assetCategory',
+    field: 'assets',
     header: 'หมวดหมู่หลักทรัพย์',
-    align: 'left'
+    align: 'left',
+    value: (e: IAccountClosureList): string => formatAssetType(e.assets?.[0] as any)
   },
   {
-    field: 'debtorType',
+    field: 'receipt.receiptType',
     header: 'ประเภทลูกหนี้ปิดบัญชี',
-    align: 'left'
+    align: 'left',
+    value: (e: IAccountClosureList): string => formatReceiptType(e.receipt.receiptType as any)
   }
 ])
 </script>
