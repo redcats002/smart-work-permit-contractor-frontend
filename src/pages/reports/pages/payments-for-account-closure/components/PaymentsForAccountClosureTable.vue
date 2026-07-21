@@ -80,7 +80,7 @@ const columns = ref<IColumn<IAccountClosureList>[]>([
     field: 'customer',
     header: 'ชื่อลูกค้า',
     align: 'left',
-    value: (e: IAccountClosureList): string => formatter.fullName(e.customer)
+    value: (e: IAccountClosureList): string => e.customer.fullName || '-'
   },
   {
     field: 'principal',

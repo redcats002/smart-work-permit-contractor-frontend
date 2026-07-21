@@ -3,9 +3,9 @@ import type { TTitleName } from '@/enums/TitleName.enum'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../../Response.model'
 
 interface ICustomerList extends IEntity {
+  idNo: string
   titleName: TTitleName
-  firstName: string
-  lastName: string
+  fullName: string
 }
 
 interface IContract extends IEntity {
