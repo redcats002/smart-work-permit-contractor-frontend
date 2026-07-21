@@ -1,147 +1,37 @@
 <template>
-  <div class="table-wrapper">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>วันที่</th>
-          <th>เลขที่ใบเสร็จ</th>
-          <th>เลขที่สัญญา</th>
-          <th>ชื่อลูกค้า</th>
-          <th>การชำระ</th>
-          <th class="text-end">
-            ยอดตัดลูกหนี้
-          </th>
-          <th class="text-end">
-            ส่วนลด
-          </th>
-          <th class="text-end">
-            ยอดรับสุทธิ
-          </th>
-          <th class="text-end">
-            ดอกเบี้ยรับ
-          </th>
-          <th>หมวดหมู่</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <template
-          v-for="item in items"
-          :key="item.id">
-          <tr
-            v-for="(row, index) in item.items"
-            :key="index">
-            <td
-              v-if="index === 0"
-              :rowspan="item.items.length + 1">
-              {{ dayjs.formatDate(item.date) }}
-            </td>
-
-            <td
-              v-if="index === 0"
-              :rowspan="item.items.length + 1"
-              class="text-red-500">
-              {{ item.receipt.idNo }}
-            </td>
-
-            <td
-              v-if="index === 0"
-              :rowspan="item.items.length + 1"
-              class="text-red-500">
-              {{ item.contract.idNo }}
-            </td>
-
-            <td
-              v-if="index === 0"
-              :rowspan="item.items.length + 1">
-              {{ formatter.fullName(item.customer) }}
-            </td>
-
-            <!-- DETAIL -->
-            <td class="border-b text-end">
-              {{ row.paymentMethod }}
-            </td>
-
-            <td class="text-end border-b">
-              {{ formatter.numberFormat(row.cutBalance) }}
-            </td>
-            <td class="text-end border-b">
-              {{ formatter.numberFormat(row.discount) }}
-            </td>
-            <td class="text-end border-b">
-              {{ formatter.numberFormat(row.total) }}
-            </td>
-
-            <!-- RIGHT GROUP -->
-            <td
-              v-if="index === 0"
-              :rowspan="item.items.length + 1"
-              class="text-end">
-              {{ formatter.numberFormat(item.interest) }}
-            </td>
-
-            <td
-              v-if="index === 0"
-              :rowspan="item.items.length + 1">
-              {{ item.category }}
-            </td>
-          </tr>
-
-          <!-- TOTAL ROW -->
-          <tr class="font-bold">
-            <td class="text-end">
-              รวม
-            </td>
-            <td class="text-end">
-              {{ formatter.numberFormat(sum(item.items, 'cutBalance')) }}
-            </td>
-            <td class="text-end">
-              {{ formatter.numberFormat(sum(item.items, 'discount')) }}
-            </td>
-            <td class="text-end">
-              {{ formatter.numberFormat(sum(item.items, 'total')) }}
-            </td>
-          </tr>
-        </template>
-      </tbody>
-
-      <tfoot>
-        <tr class="bg-[#E0E0E0]">
-          <td />
-          <td />
-          <td />
-          <td>รวมทั้งสิ้น {{ items.length }} รายการ</td>
-          <td class="text-end">
-            <!-- HARDCODE -->
-            {{ formatter.numberFormat(120000) }}
-          </td>
-          <td class="text-end">
-            <!-- HARDCODE -->
-            {{ formatter.numberFormat(120000) }}
-          </td>
-          <td class="text-end">
-            <!-- HARDCODE -->
-            {{ formatter.numberFormat(120000) }}
-          </td>
-          <td class="text-end">
-            <!-- HARDCODE -->
-            {{ formatter.numberFormat(120000) }}
-          </td>
-          <td class="text-end">
-            <!-- HARDCODE -->
-            {{ formatter.numberFormat(120000) }}
-          </td>
-          <td />
-        </tr>
-      </tfoot>
-    </table>
-  </div>
+  <BaseTable
+    v-model:pagination="pagination"
+    v-model:sort-by="sortBy"
+    v-model:sort-order="sortOrder"
+    :columns="columns"
+    :items="items"
+    disable-auto-left-padding
+    @update="emits('update')">
+    <template #[`item.receipt.idNo`]="{ item }">
+      <a
+        class="link"
+        href="javascript:void(0)">
+        {{ item.receipt.idNo }}
+      </a>
+    </template>
+    <template #[`item.contract.idNo`]="{ item }">
+      <a
+        class="link"
+        href="javascript:void(0)">
+        {{ item.contract.idNo }}
+      </a>
+    </template>
+  </BaseTable>
 </template>
 
 <script setup lang="ts">
-import { useDayjs } from '@/utils/Dayjs'
+import { ref } from 'vue'
 import { formatter } from '@/utils/Formatter'
+import { useDayjs } from '@/utils/Dayjs'
 import type { IAccountClosureList } from '@/models/response/report/account-closure/AccountClosureRes.model'
+import type { IColumn } from '@/models/Table.model'
+import type { IPagination } from '@/composables/usePagination'
+import BaseTable from '@/components/table/BaseTable.vue'
 
 interface IProps {
   items: IAccountClosureList[]
@@ -149,59 +39,110 @@ interface IProps {
 
 defineProps<IProps>()
 
-const dayjs = useDayjs()
-
-function sum (arr: any[], key: string): any {
-  return arr.reduce((acc: number, cur: any): any => acc + (cur[key] || 0), 0)
+interface IEmits {
+  update: []
 }
 
+const emits = defineEmits<IEmits>()
+
+const dayjs = useDayjs()
+
+const pagination = defineModel<IPagination>('pagination', {
+  required: true
+})
+
+const sortBy = defineModel<string>('sortBy', { default: '' })
+const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
+
+const columns = ref<IColumn<IAccountClosureList>[]>([
+  {
+    field: 'date',
+    header: 'วันที่ใบชำระเงิน',
+    sortable: true,
+    align: 'left',
+    value: (e: IAccountClosureList): string => dayjs.formatDate(e.date)
+  },
+  {
+    field: 'receipt.idNo',
+    header: 'เลขที่ใบเสร็จ',
+    sortable: true,
+    align: 'left'
+  },
+  {
+    field: 'contract.idNo',
+    header: 'เลขที่สัญญา',
+    sortable: true,
+    align: 'left'
+  },
+  {
+    field: 'customer',
+    header: 'ชื่อลูกค้า',
+    align: 'left',
+    value: (e: IAccountClosureList): string => formatter.fullName(e.customer)
+  },
+  {
+    field: 'principal',
+    header: 'เงินต้น',
+    align: 'right',
+    value: (e: IAccountClosureList): string => formatter.numberFormat(e.principal)
+  },
+  {
+    field: 'interest',
+    header: 'ดอกเบี้ย',
+    align: 'right',
+    value: (e: IAccountClosureList): string => formatter.numberFormat(e.interest)
+  },
+  {
+    field: 'otherExpenses',
+    header: 'ค่าใช้จ่ายอื่นๆ',
+    align: 'right',
+    value: (e: IAccountClosureList): string => formatter.numberFormat(e.otherExpenses)
+  },
+  {
+    field: 'interestDiscount',
+    header: 'ส่วนลดดอกเบี้ย',
+    align: 'right',
+    value: (e: IAccountClosureList): string => formatter.numberFormat(e.interestDiscount)
+  },
+  {
+    field: 'otherDiscount',
+    header: 'ส่วนลดอื่นๆ',
+    align: 'right',
+    value: (e: IAccountClosureList): string => formatter.numberFormat(e.otherDiscount)
+  },
+  {
+    field: 'totalPayment',
+    header: 'ยอดชำระรวม',
+    align: 'right',
+    value: (e: IAccountClosureList): string => formatter.numberFormat(e.totalPayment)
+  },
+  {
+    field: 'otherDiscount2',
+    header: 'ส่วนลดอื่นๆ',
+    align: 'right',
+    value: (e: IAccountClosureList): string => formatter.numberFormat(e.otherDiscount)
+  },
+  {
+    field: 'assetCategory',
+    header: 'หมวดหมู่หลักทรัพย์',
+    align: 'left'
+  },
+  {
+    field: 'debtorType',
+    header: 'ประเภทลูกหนี้ปิดบัญชี',
+    align: 'left'
+  }
+])
 </script>
 
 <style scoped>
-.table {
-  width: 100%;
-  font-size: 14px;
-  color: #111827;
+.link {
+  color: #BD0102;
+  cursor: pointer;
+  text-decoration: none;
 }
 
-.table th {
-  background-color: #f9fafb;
-  color: #374151;
-  font-weight: 600;
-  text-align: left;
-  padding: 10px 12px;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid #f3f4f6;
-  vertical-align: top;
-}
-
-.table tbody {
-  background-color: #fafafa;
-}
-
-.font-bold {
-  font-weight: 600;
-}
-
-.p-2 {
-  padding: 8px;
-}
-
-.border-b {
-  border-bottom: 1px solid #E0E0E0 !important;
-}
-
-.rounded-lg {
-  border-radius: 8px;
-}
-
-.table-wrapper {
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  overflow: hidden;
+.link:hover {
+  text-decoration: underline;
 }
 </style>
