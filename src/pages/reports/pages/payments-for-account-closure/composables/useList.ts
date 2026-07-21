@@ -4,7 +4,9 @@ import type { IAccountClosureFilter } from '@/models/modules/report/account-clos
 import type { IAccountClosureList } from '@/models/response/report/account-closure/AccountClosureRes.model'
 import type { IGetAccountClosureList } from '@/models/request/report/account-closure/AccountClosureReq.model'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
-import DebtCollectionPaymentClosureProvider from '@/resources/provider/report/DebtCollectionPaymentClosure.provider'
+import DebtCollectionPaymentClosureProvider, {
+  type IDebtCollectionPaymentClosureProvider
+} from '@/resources/provider/report/DebtCollectionPaymentClosure.provider'
 
 interface IUseList extends IUsePagination {
   filters: Ref<IAccountClosureFilter>
@@ -14,9 +16,9 @@ interface IUseList extends IUsePagination {
   onClearFilters(): void
 }
 
-const DebtCollectionPaymentClosureService: DebtCollectionPaymentClosureProvider = new DebtCollectionPaymentClosureProvider()
+export default function useDebtCollectionPaymentClosure (): IUseList {
+  const DebtCollectionPaymentClosureService: IDebtCollectionPaymentClosureProvider = new DebtCollectionPaymentClosureProvider()
 
-export default function useList (): IUseList {
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
   const filters = ref<IAccountClosureFilter>({})
@@ -28,7 +30,9 @@ export default function useList (): IUseList {
       limit: pagination.value.limit,
       sortBy: sortBy.value || undefined,
       sortOrder: sortOrder.value,
-      search: search.value || undefined
+      search: search.value || undefined,
+      receiptType: filters.value.receiptType || undefined,
+      assetType: filters.value.assetType || undefined
     }
   })
 
@@ -36,13 +40,7 @@ export default function useList (): IUseList {
     const response = await DebtCollectionPaymentClosureService.getDebtCollectionPaymentClosurePaginate(paginateQuery.value)
     items.value = response?.data || []
     pagination.value = extractPagination(response)
-    syncQuery({ ...normalizeFilters(filters.value) })
-  }
-
-  function normalizeFilters (value: IAccountClosureFilter): Partial<IAccountClosureFilter> {
-    return {
-      ...value
-    }
+    syncQuery()
   }
 
   function onSearch (): void {
@@ -56,6 +54,7 @@ export default function useList (): IUseList {
 
   function onClearFilters (): void {
     reset()
+    filters.value = {}
   }
 
   return {

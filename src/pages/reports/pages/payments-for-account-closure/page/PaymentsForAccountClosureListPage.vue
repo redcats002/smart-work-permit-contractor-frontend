@@ -32,7 +32,7 @@ import PrintButton from '@/components/button/PrintButton.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import PaymentsForAccountClosureFilter from '../components/PaymentsForAccountClosureFilter.vue'
 import PaymentsForAccountClosureTable from '../components/PaymentsForAccountClosureTable.vue'
-import useDebtCollectionPaymentClosure from '../composables/useDebtCollectionPaymentClosure'
+import useList from '../composables/useList'
 
 const {
   items,
@@ -44,7 +44,7 @@ const {
   fetch,
   onClearFilters,
   onSearch
-} = useDebtCollectionPaymentClosure()
+} = useList()
 
 onMounted((): void => {
   fetch()
