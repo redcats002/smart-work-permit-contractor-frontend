@@ -26,19 +26,27 @@
       <AdditionalExpensesTable
         :rows="additionalExpenses"
         @add="openModalAdd()"
+        @edit="openModalEdit($event)"
         @remove="onRemoveExpense($event)" />
     </BasePage>
 
     <BasePage>
       <PaymentSummary
+        :collection-fee="contract?.summary?.collectionFee"
+        :installment-interests="installmentInterests"
         :interest="contract?.summary?.interest"
+        :legal-fee="contract?.summary?.legalFee"
         :other-expenses="otherExpenses"
-        :principal="contract?.summary?.principal" />
+        :penalty-fee="contract?.summary?.penaltyFee"
+        :principal="contract?.summary?.principal"
+        @update:discount-interest-month="discountInterestMonth = $event"
+        @update:discount-other="discountOther = $event"
+        @update:grand-total="paymentGrandTotal = $event" />
     </BasePage>
 
     <BasePage>
       <div class="bg-[#ffd1d1] rounded-lg p-4 w-full flex justify-center">
-        <span class="text-base text-[#bd0102]">ยอดชำระรวม {{ formatNumber(grandTotal) }} บาท</span>
+        <span class="text-base text-[#bd0102]">ยอดชำระรวม {{ formatter.numberFormat2Decimal(paymentGrandTotal) }} บาท</span>
       </div>
     </BasePage>
 
@@ -48,6 +56,9 @@
 
     <SaveExpenseModal
       v-model="showExpenseModal"
+      :edit-data="editingExpenseData"
+      :edit-index="editingExpenseIndex"
+      @edit="onExpenseEdit($event)"
       @submit="onExpenseSubmit($event)" />
 
     <BasePage>
@@ -89,13 +100,11 @@ import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
-import type {
-  ICloseContractContract,
-  ICloseContractCustomer,
-  ICloseContractExpense,
-  ICloseContractInstallment
-} from '@/models/response/close-contract/CloseContractRes.model'
+import type { EVatType } from '@/enums/modules/Vat.enum'
+import type { ICloseContractContract, ICloseContractCustomer, ICloseContractInstallment } from '@/models/response/close-contract/CloseContractRes.model'
+import type { ICloseContractExpense, ICloseContractFile } from '@/models/request/close-contract/CloseContractReq.model'
 import CloseContractProvider, { type ICloseContractProvider } from '@/resources/provider/close-contract/CloseContract.provider'
+import UploadProvider, { type IMedia } from '@/resources/provider/Upload.provider'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
@@ -117,16 +126,23 @@ import { useQRPayment } from '@/composables/useQRPayment'
 const route = useRoute()
 const router = useRouter()
 const CloseContractService: ICloseContractProvider = new CloseContractProvider()
+const UploadService = new UploadProvider()
 const { qrModalVisible, qrImage, qrTrxId, qrExpiresAt, mapPaymentType, handlePaymentResponse, checkReceiptReference, cancelQrCode } = useQRPayment()
+
+// expense modal
+const showExpenseModal = ref<boolean>(false)
+const editingExpenseIndex = ref<number | null>(null)
+const editingExpenseData = ref<ICloseContractExpense | null>(null)
+const additionalExpenses = ref<IAdditionalExpenseRow[]>([])
 
 const contractId = computed((): string => route.params?.id as string)
 const paymentMethod = ref<TReceiptPaymentMethodLocal>('cash')
-const showExpenseModal = ref<boolean>(false)
-const additionalExpenses = ref<IAdditionalExpenseRow[]>([])
 const customer = ref<ICloseContractCustomer | null>(null)
 const contract = ref<ICloseContractContract | null>(null)
 const expenses = ref<ICloseContractExpense[]>([])
-
+const paymentGrandTotal = ref<number>(0)
+const discountInterestMonth = ref<number>(0)
+const discountOther = ref<number>(0)
 const installmentRows = computed((): IInstallmentRow[] => {
   if (!contract.value?.installments) return []
   return contract.value.installments.map((item: ICloseContractInstallment): IInstallmentRow => ({
@@ -143,29 +159,48 @@ const installmentRows = computed((): IInstallmentRow[] => {
 const otherExpenses = computed((): number => additionalExpenses.value.reduce((total: number, expense: IAdditionalExpenseRow): number =>
   total + expense.amount, 0))
 
-const grandTotal = computed((): number => {
-  const summary = contract.value?.summary
-  if (!summary) return 0
-  return summary.principal + summary.interest + otherExpenses.value
-})
-
-function formatNumber (value: number): string {
-  return formatter.numberFormat(value)
-}
+const installmentInterests = computed((): number[] =>
+  contract.value?.installments?.map((item: ICloseContractInstallment): number => item.interest) ?? []
+)
 
 function onRemoveExpense (index: number): void {
   additionalExpenses.value.splice(index, 1)
+  expenses.value.splice(index, 1)
 }
 
-function onExpenseSubmit (data: { note: string, amount: number }): void {
+function onExpenseSubmit (data: ICloseContractExpense): void {
   additionalExpenses.value.push({
-    label: data.note,
+    label: data.remark ?? '',
     amount: data.amount
+  })
+  expenses.value.push({
+    amount: data.amount,
+    expenseCategoryId: data.expenseCategoryId,
+    expenseTypeId: data.expenseTypeId,
+    vatType: data.vatType as EVatType,
+    remark: data.remark,
+    files: data.files
   })
 }
 
 function openModalAdd (): void {
+  editingExpenseIndex.value = null
+  editingExpenseData.value = null
   showExpenseModal.value = true
+}
+
+function openModalEdit (index: number): void {
+  editingExpenseIndex.value = index
+  editingExpenseData.value = expenses.value[index] ?? null
+  showExpenseModal.value = true
+}
+
+function onExpenseEdit (payload: { index: number, data: ICloseContractExpense }): void {
+  additionalExpenses.value[payload.index] = {
+    label: payload.data.remark ?? '',
+    amount: payload.data.amount
+  }
+  expenses.value[payload.index] = payload.data
 }
 
 async function useFetch (): Promise<void> {
@@ -177,10 +212,40 @@ async function useFetch (): Promise<void> {
   checkReceiptReference(receiptRef)
 }
 
+async function uploadExpenseFiles (files: IMedia[]): Promise<ICloseContractFile[]> {
+  const uploaded: ICloseContractFile[] = []
+  for (const file of files) {
+    if (file.file && file.isNew) {
+      const response = await UploadService.uploadFile(file.file)
+      uploaded.push({
+        name: response.data.originalName,
+        url: response.data.fileUrl,
+        path: response.data.filePath
+      })
+    } else {
+      uploaded.push({ name: file.name, url: file.url, path: file.path })
+    }
+  }
+  return uploaded
+}
+
 async function useSubmit (): Promise<void> {
+  const expensesWithFiles = await Promise.all(
+    expenses.value.map(async (expense: ICloseContractExpense): Promise<ICloseContractExpense> => {
+      const files = expense.files as IMedia[]
+      if (files && files.length > 0) {
+        const uploadedFiles = await uploadExpenseFiles(files)
+        return { ...expense, files: uploadedFiles }
+      }
+      return expense
+    })
+  )
+
   const response = await CloseContractService.createCloseContract(contractId.value, {
     paymentType: mapPaymentType(paymentMethod.value),
-    otherExpenses: expenses.value
+    discountInterestMonth: discountInterestMonth.value,
+    discountOther: discountOther.value,
+    otherExpenses: expensesWithFiles
   })
   if (handlePaymentResponse(response)) return
   toast.success('ดำเนินการสำเร็จ')

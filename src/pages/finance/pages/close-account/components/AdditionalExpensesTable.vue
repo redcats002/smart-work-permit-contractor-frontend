@@ -56,17 +56,37 @@
           <template v-else>
             <span class="text-sm font-normal text-[#333]">{{ formatNumber(row.amount) }}</span>
             <button
-              aria-label="ลบรายการ"
+              aria-label="แก้ไขรายการ"
               class="flex items-center justify-center cursor-pointer hover:opacity-70"
               type="button"
-              @click="emits('remove', i)">
+              @click="emits('edit', i)">
               <div class="relative size-4">
-                <div class="absolute inset-0 rounded-full bg-[#bd0102]/10" />
+                <div class="absolute inset-0 rounded-full bg-blue-500/10" />
                 <Icon
-                  class="absolute inset-0 m-auto size-3 text-[#bd0102]"
-                  icon="solar:trash-bin-2-linear" />
+                  class="absolute inset-0 m-auto size-3 text-blue-500"
+                  icon="solar:pen-linear" />
               </div>
             </button>
+            <DeleteModal
+              description1="กดยืนยันเพื่อทำการลบ"
+              description2=""
+              title="ยืนยันการดำเนินการ"
+              @confirm="emits('remove', i)">
+              <template #activator="{ open }">
+                <button
+                  aria-label="ลบรายการ"
+                  class="flex items-center justify-center cursor-pointer hover:opacity-70"
+                  type="button"
+                  @click="open()">
+                  <div class="relative size-4">
+                    <div class="absolute inset-0 rounded-full bg-[#bd0102]/10" />
+                    <Icon
+                      class="absolute inset-0 m-auto size-3 text-[#bd0102]"
+                      icon="solar:trash-bin-2-linear" />
+                  </div>
+                </button>
+              </template>
+            </DeleteModal>
           </template>
         </div>
       </div>
@@ -78,6 +98,7 @@
 import { computed } from 'vue'
 import { formatter } from '@/utils/Formatter'
 import { Icon } from '@iconify/vue'
+import DeleteModal from '@/components/modal/DeleteModal.vue'
 
 export interface IAdditionalExpenseRow {
   label: string
@@ -91,6 +112,7 @@ interface IProps {
 
 interface IEmits {
   add: []
+  edit: [index: number]
   remove: [index: number]
 }
 

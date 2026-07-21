@@ -113,6 +113,7 @@
         </LabelField>
 
         <FormAction
+          :description="'ยืนยันเพื่อทำการบันทึกค่าใช้จ่ายอื่นๆ'"
           class="mt-2"
           @cancel="close()" />
       </Form>
@@ -121,33 +122,36 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { toast } from '@/plugins/toast'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { IMedia } from '@/resources/provider/Upload.provider'
 import FormAction from '@/components/button/FormAction.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import UploadInput from '@/components/input/UploadInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import FinanceExpenseCategorySelection from '@/components/selection/modules/api/finance-expense-category/FinanceExpenseCategorySelection.vue'
 import FinanceExpenseTypeSelection from '@/components/selection/modules/api/finance-expense-type/FinanceExpenseTypeSelection.vue'
-import { VatTypeItems } from '@/enums/modules/Vat.enum'
+import { type EVatType, VatTypeItems } from '@/enums/modules/Vat.enum'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { type SaveExpenseFormValues, SaveExpenseSchema, useFormInitialValues } from '../schema/saveExpense.schema'
-
-interface IAdditionalExpense {
-  expenseCategoryId: number | undefined
-  expenseTypeId: number | undefined
-  note: string
-  amount: number
-  file: IMedia[]
-  vatType: string
-}
+import type { ICloseContractExpense, ICloseContractFile } from '@/models/request/close-contract/CloseContractReq.model'
+import type { IMedia } from '@/resources/provider/Upload.provider'
 
 interface IEmits {
-  submit: [data: IAdditionalExpense]
+  submit: [data: ICloseContractExpense]
+  edit: [payload: { index: number, data: ICloseContractExpense }]
 }
+
+interface IProps {
+  editIndex?: number | null
+  editData?: ICloseContractExpense | null
+}
+
+const props = withDefaults(defineProps<IProps>(), {
+  editIndex: null,
+  editData: null
+})
 
 const emits = defineEmits<IEmits>()
 
@@ -156,6 +160,20 @@ const formKey = ref<number>(0)
 const formData = ref<SaveExpenseFormValues>(useFormInitialValues())
 const resolver = zodResolver(SaveExpenseSchema)
 const vatTypeItems = VatTypeItems
+
+watch(visible, (val: boolean): void => {
+  if (val && props.editData) {
+    formData.value = {
+      expenseCategoryId: props.editData.expenseCategoryId,
+      expenseTypeId: props.editData.expenseTypeId,
+      note: props.editData.remark ?? '',
+      amount: props.editData.amount,
+      file: (props.editData.files as IMedia[]) ?? [],
+      vatType: props.editData.vatType
+    }
+    formKey.value++
+  }
+})
 
 function onCategoryChange (): void {
   formData.value.expenseTypeId = undefined
@@ -167,16 +185,23 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
     return
   }
 
-  emits('submit', {
+  const submitData: ICloseContractExpense = {
     expenseCategoryId: event.states?.expenseCategoryId?.value?.id ?? formData.value.expenseCategoryId as number,
     expenseTypeId: event.states?.expenseTypeId?.value?.id ?? formData.value.expenseTypeId as number,
-    note: event.states?.note?.value ?? formData.value.note,
+    remark: event.states?.note?.value ?? formData.value.note,
     amount: event.states?.amount?.value ?? formData.value.amount,
-    file: formData.value.file,
-    vatType: formData.value.vatType as string
-  })
+    files: formData.value.file as ICloseContractFile[],
+    vatType: formData.value.vatType as EVatType
+  }
 
-  toast.success('เพิ่มรายการค่าใช้จ่ายสำเร็จ')
+  if (props.editIndex !== null && props.editIndex !== undefined) {
+    emits('edit', { index: props.editIndex, data: submitData })
+    toast.success('แก้ไขรายการค่าใช้จ่ายสำเร็จ')
+  } else {
+    emits('submit', submitData)
+    toast.success('เพิ่มรายการค่าใช้จ่ายสำเร็จ')
+  }
+
   formData.value = useFormInitialValues()
   formKey.value++
   close()
