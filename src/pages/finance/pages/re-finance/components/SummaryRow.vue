@@ -9,7 +9,7 @@
       <span
         :style="bold ? 'font-weight: 800;' : ''"
         class="font-normal">
-        {{ formatNumber(value) }}
+        {{ formatter.numberFormat2Decimal(value) }}
       </span>
     </div>
   </div>
@@ -25,8 +25,4 @@ interface IProps {
 }
 
 defineProps<IProps>()
-
-function formatNumber (value: number): string {
-  return formatter.numberFormat(value)
-}
 </script>
