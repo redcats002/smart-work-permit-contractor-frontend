@@ -3,29 +3,32 @@ import type { TTitleName } from '@/enums/TitleName.enum'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../../Response.model'
 
 interface ICustomerList extends IEntity {
+  idNo: string
   titleName: TTitleName
-  firstName: string
-  lastName: string
+  fullName: string
 }
 
 interface IContract extends IEntity {
   idNo: string
 }
 
-export interface IItemsAccountClosure {
-  paymentMethod: string
-  cutBalance: number
-  discount: number
-  total: number
+interface IReceipt extends IEntity {
+  idNo: string
+  receiptType: string
 }
+
 export interface IAccountClosureList extends IEntity {
   date: string
-  receipt: IContract
+  receipt: IReceipt
   contract: IContract
   customer: ICustomerList
-  items: IItemsAccountClosure[]
+  principal: number
   interest: number
-  category: string
+  otherExpense: number
+  discountInterest: number
+  discountOther: number
+  totalAmount: number
+  assets: string[]
 }
 
 export type TGetAccountClosureListResponse = IBasePaginationResponse<IAccountClosureList>

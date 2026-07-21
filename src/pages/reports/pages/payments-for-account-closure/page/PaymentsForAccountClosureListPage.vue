@@ -4,6 +4,7 @@
     <BackButton />
     <BasePage>
       <PaymentsForAccountClosureFilter
+        v-model:filters="filters"
         v-model:search="search"
         @clear="onClearFilters()"
         @search="onSearch()">
@@ -12,26 +13,11 @@
           label="พิมพ์" />
       </PaymentsForAccountClosureFilter>
       <div>
-        <div class="font-bold mb-5">
-          ปิดบัญชีก่อนกำหนด
-        </div>
         <PaymentsForAccountClosureTable
           v-model:pagination="pagination"
           v-model:sort-by="sortBy"
           v-model:sort-order="sortOrder"
           :items="items"
-          @update="fetch()" />
-      </div>
-
-      <div>
-        <div class="font-bold mb-5">
-          ปิดปรับ (รีไฟแนนซ์)
-        </div>
-        <PaymentsForAccountClosureTable
-          v-model:pagination="pagination"
-          v-model:sort-by="sortBy"
-          v-model:sort-order="sortOrder"
-          :items="itemsFinance"
           @update="fetch()" />
       </div>
     </BasePage>
@@ -50,7 +36,7 @@ import useList from '../composables/useList'
 
 const {
   items,
-  itemsFinance,
+  filters,
   pagination,
   sortBy,
   sortOrder,
@@ -63,7 +49,6 @@ const {
 onMounted((): void => {
   fetch()
 })
-
 </script>
 
 <style scoped></style>
