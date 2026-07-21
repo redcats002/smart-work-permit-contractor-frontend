@@ -13,8 +13,15 @@ const BASE: IOperationInstallment = {
 }
 
 describe('generateInstallments', (): void => {
-  it('returns empty array when loanAmount is 0', (): void => {
-    expect(useInstallment({ ...BASE, loanAmount: 0 })).toEqual([])
+  it('returns rows with all zeros when loanAmount is 0', (): void => {
+    const rows = useInstallment({ ...BASE, loanAmount: 0 })
+    expect(rows).toHaveLength(12)
+    rows.forEach((row: IInstallmentRow): void => {
+      expect(row.principal).toBe(0)
+      expect(row.interest).toBe(0)
+      expect(row.installment).toBe(0)
+      expect(row.remainingPrincipal).toBe(0)
+    })
   })
 
   it('returns empty array when installmentCount is 0', (): void => {
