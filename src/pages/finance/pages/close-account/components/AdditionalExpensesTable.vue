@@ -51,10 +51,10 @@
             v-if="row.isTotal"
             class="text-sm text-[#333]"
             style="font-weight: 800; text-decoration: underline;">
-            {{ formatNumber(row.amount) }}
+            {{ formatter.numberFormat2Decimal(row.amount) }}
           </span>
           <template v-else>
-            <span class="text-sm font-normal text-[#333]">{{ formatNumber(row.amount) }}</span>
+            <span class="text-sm font-normal text-[#333]">{{ formatter.numberFormat2Decimal(row.amount) }}</span>
             <button
               aria-label="แก้ไขรายการ"
               class="flex items-center justify-center cursor-pointer hover:opacity-70"
@@ -131,8 +131,4 @@ const displayRows = computed((): IAdditionalExpenseRow[] => {
   const total = dataRows.reduce((sum: number, r: IAdditionalExpenseRow): number => sum + r.amount, 0)
   return [...dataRows, { label: 'รวม', amount: total, isTotal: true }]
 })
-
-function formatNumber (value: number): string {
-  return formatter.numberFormat(value)
-}
 </script>
