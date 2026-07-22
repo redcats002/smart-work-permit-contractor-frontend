@@ -5,6 +5,7 @@ import type { TTitleName } from '@/enums/TitleName.enum'
 import type { IQRPaymentResponse } from '@/composables/useQRPayment'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 import type { TReceiptPaymentMethod } from './PaymentMethod.enum'
+import type { ICloseContractFile } from '@/models/request/close-contract/CloseContractReq.model'
 
 export interface IReceiptCustomer {
   id: number | null
@@ -57,15 +58,22 @@ export interface IReceiptDetailItems {
 export interface IReceiptSummary {
   principal: number
   interest: number
+  otherExpenses: number
   totalInstallment: number
   penaltyFee: number
   collectionFee: number
   legalFee: number
+  discountInterest: number
+  discountOther: number
+  totalAmount: number
 }
 
 export interface IReceiptDetailInstallment {
   id: number
   order: number
+  discountInterest: number
+  discountOther: number
+  discountPenaltyFee: number
   principal: number
   interest: number
   totalInstallment: number
@@ -79,6 +87,20 @@ export interface IReceiptDetailContract {
   id: number
   idNo: string
   installments: IReceiptDetailInstallment[]
+}
+
+export interface IReceiptOtherExpense {
+  amount: number
+  remark: string
+  files: ICloseContractFile[]
+  expenseCategory: {
+    id: number
+    name: string
+  }
+  expenseType: {
+    id: number
+    name: string
+  }
 }
 
 export interface IReceiptById extends IEntity {
@@ -105,6 +127,8 @@ export interface IReceiptById extends IEntity {
   receiptType?: TReceiptType | null
   contracts: IReceiptDetailContract[]
   summary: IReceiptSummary
+  otherExpenses: IReceiptOtherExpense[]
+  discountInterestMonth: number
 
   // Compatibility fields if needed by other components - can be marked as optional or removed if fully migrated
   contractId?: number | null

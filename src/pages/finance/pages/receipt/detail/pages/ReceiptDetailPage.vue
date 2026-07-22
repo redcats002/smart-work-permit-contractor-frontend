@@ -29,164 +29,185 @@
 
       <!-- Payment table -->
       <BaseContainer>
-        <div class="flex border border-[#e0e0e0] rounded overflow-hidden">
-          <!-- Col: เลขที่สัญญา -->
-          <div class="w-[120px] shrink-0 flex flex-col">
-            <div class="bg-white border-b-2 border-[#e0e0e0] h-12 flex items-center justify-center px-2">
-              <span class="font-bold text-[#333] text-sm text-center">เลขที่สัญญา</span>
-            </div>
-            <template
-              v-for="(contract, ci) in form.contracts"
-              :key="`contract-${ci}`">
-              <div
-                :style="{ height: `${contract.installments.length * 56}px` }"
-                class="border-b border-[#e0e0e0] flex items-center justify-center px-2">
-                <span class="font-bold text-[#bd0102] text-sm text-center break-all">{{ contract.idNo }}</span>
+        <div class="border border-[#e0e0e0] rounded overflow-hidden">
+          <div class="flex">
+            <!-- Col: เลขที่สัญญา -->
+            <div class="w-[120px] shrink-0 flex flex-col">
+              <div class="bg-white border-b-2 border-[#e0e0e0] h-12 flex items-center justify-center px-2">
+                <span class="font-bold text-[#333] text-sm text-center">เลขที่สัญญา</span>
               </div>
-            </template>
-            <div class="bg-[#bdbdbd] h-14 flex items-center justify-center px-2">
-              <span class="font-bold text-[#333] text-sm">รวม</span>
+              <template
+                v-for="(contract, ci) in form.contracts"
+                :key="`contract-${ci}`">
+                <div
+                  :style="{ height: `${contract.installments.length * 56}px` }"
+                  class="border-b border-[#e0e0e0] flex items-center justify-center px-2">
+                  <span class="font-bold text-[#bd0102] text-sm text-center break-all">{{ contract.idNo }}</span>
+                </div>
+              </template>
+            </div>
+
+            <!-- Col: งวดที่ -->
+            <div class="flex-1 flex flex-col">
+              <div class="bg-white border-b-2 border-[#e0e0e0] h-12 flex items-center justify-center px-2">
+                <span class="font-bold text-[#333] text-sm text-center">งวดที่</span>
+              </div>
+              <template
+                v-for="(contract, ci) in form.contracts"
+                :key="`contract-group-${ci}`">
+                <div
+                  v-for="(item, ii) in contract.installments"
+                  :key="`installment-${ci}-${ii}`"
+                  class="h-14 border-b border-[#e0e0e0] flex items-center justify-center px-2">
+                  <span class="text-[#333] text-sm">{{ item.order }}</span>
+                </div>
+              </template>
+            </div>
+
+            <!-- Col: ค่าปรับ -->
+            <div class="flex-1 flex flex-col">
+              <div class="bg-white border-b-2 border-[#e0e0e0] h-12 flex items-center justify-end px-2">
+                <span class="font-bold text-[#333] text-sm">ค่าปรับ</span>
+              </div>
+              <template
+                v-for="(contract, ci) in form.contracts"
+                :key="`penalty-group-${ci}`">
+                <div
+                  v-for="(item, ii) in contract.installments"
+                  :key="`penalty-${ci}-${ii}`"
+                  class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
+                  <span class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(item.penaltyFee) }}</span>
+                </div>
+              </template>
+            </div>
+
+            <!-- Col: ค่าติดตาม -->
+            <div class="flex-1 flex flex-col">
+              <div class="bg-white border-b-2 border-[#e0e0e0] h-12 flex items-center justify-end px-2">
+                <span class="font-bold text-[#333] text-sm">ค่าติดตาม</span>
+              </div>
+              <template
+                v-for="(contract, ci) in form.contracts"
+                :key="`tracking-group-${ci}`">
+                <div
+                  v-for="(item, ii) in contract.installments"
+                  :key="`tracking-${ci}-${ii}`"
+                  class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
+                  <span class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(item.collectionFee) }}</span>
+                </div>
+              </template>
+            </div>
+
+            <!-- Col: ค่าทนาย -->
+            <div class="flex-1 flex flex-col">
+              <div class="bg-white border-b-2 border-[#e0e0e0] h-12 flex items-center justify-end px-2">
+                <span class="font-bold text-[#333] text-sm">ค่าทนาย</span>
+              </div>
+              <template
+                v-for="(contract, ci) in form.contracts"
+                :key="`lawyer-group-${ci}`">
+                <div
+                  v-for="(item, ii) in contract.installments"
+                  :key="`lawyer-${ci}-${ii}`"
+                  class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
+                  <span class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(item.legalFee) }}</span>
+                </div>
+              </template>
+            </div>
+
+            <!-- Col: ดอกเบี้ย -->
+            <div class="flex-1 flex flex-col">
+              <div class="bg-white border-b-2 border-[#e0e0e0] h-12 flex items-center justify-end px-2">
+                <span class="font-bold text-[#333] text-sm">ดอกเบี้ย</span>
+              </div>
+              <template
+                v-for="(contract, ci) in form.contracts"
+                :key="`interest-group-${ci}`">
+                <div
+                  v-for="(item, ii) in contract.installments"
+                  :key="`interest-${ci}-${ii}`"
+                  class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
+                  <span class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(item.interest) }}</span>
+                </div>
+              </template>
+            </div>
+
+            <!-- Col: เงินต้น -->
+            <div class="flex-1 flex flex-col">
+              <div class="bg-white border-b-2 border-[#e0e0e0] h-12 flex items-center justify-end px-2">
+                <span class="font-bold text-[#333] text-sm">เงินต้น</span>
+              </div>
+              <template
+                v-for="(contract, ci) in form.contracts"
+                :key="`principal-group-${ci}`">
+                <div
+                  v-for="(item, ii) in contract.installments"
+                  :key="`principal-${ci}-${ii}`"
+                  class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
+                  <span class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(item.principal) }}</span>
+                </div>
+              </template>
+            </div>
+
+            <!-- Col: ส่วนลดค่าปรับ -->
+            <div class="flex-1 flex flex-col">
+              <div class="bg-white border-b-2 border-[#e0e0e0] h-12 flex items-center justify-end px-2">
+                <span class="font-bold text-[#333] text-sm">ส่วนลดค่าปรับ</span>
+              </div>
+              <template
+                v-for="(contract, ci) in form.contracts"
+                :key="`discount-penalty-group-${ci}`">
+                <div
+                  v-for="(item, ii) in contract.installments"
+                  :key="`discount-penalty-${ci}-${ii}`"
+                  class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
+                  <span class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(item.discountPenaltyFee) }}</span>
+                </div>
+              </template>
+            </div>
+
+            <!-- Col: รวม -->
+            <div class="flex-1 flex flex-col">
+              <div class="bg-white border-b-2 border-[#e0e0e0] h-12 flex items-center justify-end px-2">
+                <span class="font-bold text-[#333] text-sm">รวม</span>
+              </div>
+              <template
+                v-for="(contract, ci) in form.contracts"
+                :key="`total-group-${ci}`">
+                <div
+                  v-for="(item, ii) in contract.installments"
+                  :key="`total-${ci}-${ii}`"
+                  class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
+                  <span class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(item.totalAmount) }}</span>
+                </div>
+              </template>
             </div>
           </div>
+        </div>
 
-          <!-- Col: งวดที่ -->
-          <div class="flex-1 flex flex-col">
-            <div class="bg-white border-b-2 border-[#e0e0e0] h-12 flex items-center justify-center px-2">
-              <span class="font-bold text-[#333] text-sm text-center">งวดที่</span>
-            </div>
+        <!-- Summary -->
+        <div class="flex justify-end mt-4">
+          <div class="flex flex-col gap-2 w-[280px]">
             <template
-              v-for="(contract, ci) in form.contracts"
-              :key="`contract-group-${ci}`">
+              v-for="(row, i) in summaryRows"
+              :key="`summary-${i}`">
               <div
-                v-for="(item, ii) in contract.installments"
-                :key="`installment-${ci}-${ii}`"
-                class="h-14 border-b border-[#e0e0e0] flex items-center justify-center px-2">
-                <span class="text-[#333] text-sm">{{ item.order }}</span>
+                v-if="row.type === 'text'"
+                class="flex gap-[2px] items-center text-[14px] text-[#333]">
+                <span class="font-bold w-[162px] whitespace-nowrap">{{ row.label }}</span>
+                <div class="flex gap-[2px] items-center whitespace-nowrap">
+                  <span class="font-normal">:</span>
+                  <span
+                    :style="row.bold ? 'font-weight: 800;' : ''"
+                    class="font-normal">{{ row.displayValue }}</span>
+                </div>
               </div>
+              <SummaryRow
+                v-else
+                :bold="row.bold"
+                :label="row.label"
+                :value="row.value ?? 0" />
             </template>
-            <div class="bg-[#bdbdbd] h-14 flex items-center justify-center px-2">
-              <span class="font-bold text-[#333] text-sm">-</span>
-            </div>
-          </div>
-
-          <!-- Col: ค่าปรับ -->
-          <div class="flex-1 flex flex-col">
-            <div class="bg-white border-b-2 border-[#e0e0e0] h-12 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">ค่าปรับ</span>
-            </div>
-            <template
-              v-for="(contract, ci) in form.contracts"
-              :key="`penalty-group-${ci}`">
-              <div
-                v-for="(item, ii) in contract.installments"
-                :key="`penalty-${ci}-${ii}`"
-                class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
-                <span class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(item.penaltyFee) }}</span>
-              </div>
-            </template>
-            <div class="bg-[#bdbdbd] h-14 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat2Decimal(form.summary.penaltyFee) }}</span>
-            </div>
-          </div>
-
-          <!-- Col: ค่าติดตาม -->
-          <div class="flex-1 flex flex-col">
-            <div class="bg-white border-b-2 border-[#e0e0e0] h-12 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">ค่าติดตาม</span>
-            </div>
-            <template
-              v-for="(contract, ci) in form.contracts"
-              :key="`tracking-group-${ci}`">
-              <div
-                v-for="(item, ii) in contract.installments"
-                :key="`tracking-${ci}-${ii}`"
-                class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
-                <span class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(item.collectionFee) }}</span>
-              </div>
-            </template>
-            <div class="bg-[#bdbdbd] h-14 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat2Decimal(form.summary.collectionFee) }}</span>
-            </div>
-          </div>
-
-          <!-- Col: ค่าทนาย -->
-          <div class="flex-1 flex flex-col">
-            <div class="bg-white border-b-2 border-[#e0e0e0] h-12 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">ค่าทนาย</span>
-            </div>
-            <template
-              v-for="(contract, ci) in form.contracts"
-              :key="`lawyer-group-${ci}`">
-              <div
-                v-for="(item, ii) in contract.installments"
-                :key="`lawyer-${ci}-${ii}`"
-                class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
-                <span class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(item.legalFee) }}</span>
-              </div>
-            </template>
-            <div class="bg-[#bdbdbd] h-14 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat2Decimal(form.summary.legalFee) }}</span>
-            </div>
-          </div>
-
-          <!-- Col: ดอกเบี้ย -->
-          <div class="flex-1 flex flex-col">
-            <div class="bg-white border-b-2 border-[#e0e0e0] h-12 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">ดอกเบี้ย</span>
-            </div>
-            <template
-              v-for="(contract, ci) in form.contracts"
-              :key="`interest-group-${ci}`">
-              <div
-                v-for="(item, ii) in contract.installments"
-                :key="`interest-${ci}-${ii}`"
-                class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
-                <span class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(item.interest) }}</span>
-              </div>
-            </template>
-            <div class="bg-[#bdbdbd] h-14 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat2Decimal(form.summary.interest) }}</span>
-            </div>
-          </div>
-
-          <!-- Col: เงินต้น -->
-          <div class="flex-1 flex flex-col">
-            <div class="bg-white border-b-2 border-[#e0e0e0] h-12 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">เงินต้น</span>
-            </div>
-            <template
-              v-for="(contract, ci) in form.contracts"
-              :key="`principal-group-${ci}`">
-              <div
-                v-for="(item, ii) in contract.installments"
-                :key="`principal-${ci}-${ii}`"
-                class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
-                <span class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(item.principal) }}</span>
-              </div>
-            </template>
-            <div class="bg-[#bdbdbd] h-14 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat2Decimal(form.summary.principal) }}</span>
-            </div>
-          </div>
-
-          <!-- Col: รวม -->
-          <div class="flex-1 flex flex-col">
-            <div class="bg-white border-b-2 border-[#e0e0e0] h-12 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">รวม</span>
-            </div>
-            <template
-              v-for="(contract, ci) in form.contracts"
-              :key="`total-group-${ci}`">
-              <div
-                v-for="(item, ii) in contract.installments"
-                :key="`total-${ci}-${ii}`"
-                class="h-14 border-b border-[#e0e0e0] flex items-center justify-end px-2">
-                <span class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(item.totalAmount) }}</span>
-              </div>
-            </template>
-            <div class="bg-[#bdbdbd] h-14 flex items-center justify-end px-2">
-              <span class="font-bold text-[#333] text-sm">{{ formatter.numberFormat2Decimal(totalAll) }}</span>
-            </div>
           </div>
         </div>
       </BaseContainer>
@@ -202,7 +223,6 @@ import { useDayjs } from '@/utils/Dayjs'
 import { handleLoading } from '@/utils/HandleLoading'
 import { formatter } from '@/utils/Formatter'
 import { formatTitle } from '@/models/response/receipt/PaymentMethod.enum'
-import type { IReceiptDetailContract, IReceiptDetailInstallment } from '@/models/response/receipt/ReceiptRes.model'
 
 import ReceiptProvider, { type IReceiptProvider } from '@/resources/provider/receipt/Receipt.provider'
 import type { IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
@@ -214,7 +234,16 @@ import PrintButton from '@/components/button/PrintButton.vue'
 import CitizenId from '@/components/display/CitizenId.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
+import SummaryRow from '@/pages/finance/pages/close-account/components/SummaryRow.vue'
 import useDetail from '../composables/useDetail'
+
+interface ISummaryRow {
+  label: string
+  value?: number
+  displayValue?: string
+  bold?: boolean
+  type: 'row' | 'text'
+}
 
 const router = useRouter()
 const route = useRoute()
@@ -243,11 +272,17 @@ const receiptItems = computed((): IDisplayList[] => [
   { label: 'ช่องทางการชำระเงิน', key: 'paymentType', value: formatTitle(form.value.paymentType ?? undefined) }
 ])
 
-const totalAll = computed((): number => {
-  return form.value.contracts.reduce((acc: number, contract: IReceiptDetailContract): number => {
-    return acc + contract.installments.reduce((sum: number, item: IReceiptDetailInstallment): number => sum + item.totalAmount, 0)
-  }, 0)
-})
+const summaryRows = computed((): ISummaryRow[] => [
+  { label: 'เงินต้น', value: form.value.summary.principal, type: 'row' },
+  { label: 'ดอกเบี้ย', value: form.value.summary.interest, type: 'row' },
+  { label: 'ค่าใช้จ่ายอื่นๆ', value: form.value.summary.otherExpenses, type: 'row' },
+  { label: 'ค่าปรับ', value: form.value.summary.penaltyFee, type: 'row' },
+  { label: 'ค่าติดตาม', value: form.value.summary.collectionFee, type: 'row' },
+  { label: 'ค่าทนาย', value: form.value.summary.legalFee, type: 'row' },
+  { label: `ส่วนลดดอกเบี้ย ${form.value.discountInterestMonth} เดือน`, displayValue: formatter.numberFormat2Decimal(form.value.summary.discountInterest), type: 'text' },
+  { label: 'ส่วนลดอื่นๆ', value: form.value.summary.discountOther, type: 'row' },
+  { label: 'ยอดรวม', value: form.value.summary.totalAmount, bold: true, type: 'row' }
+])
 
 const isPendingRefinance = computed((): boolean => form.value.receiptType === 'PENDING_REFINANCE')
 
