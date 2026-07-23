@@ -6,6 +6,7 @@ import type { IDisplayList } from '@/components/display/DisplayList.vue'
 interface IRealEstateFormInput {
   landNo?: string
   surveyNo?: string
+  titleDeedNo?: string
   address?: string
   subDistrict?: string
   district?: string
@@ -70,6 +71,7 @@ export function useAssetDisplayItems (asset: Ref<IAssetDisplayItemsInput | null 
       return [
         { label: 'เลขที่ดิน', value: realEstateForm?.landNo || '-', key: 'landNo', hidden: !realEstateForm?.landNo },
         { label: 'เลขหน้าสำรวจ', value: realEstateForm?.surveyNo || '-', key: 'surveyNo', hidden: !realEstateForm?.surveyNo },
+        { label: 'โฉนดเลขที่', value: realEstateForm?.titleDeedNo || '-', key: 'titleDeedNo', hidden: !realEstateForm?.titleDeedNo },
         { label: 'ที่อยู่หลักทรัพย์', value: fullAddress, key: 'address', extUrl: realEstateForm?.urlGoogleMap || '', hidden: !fullAddress },
         { label: 'ระวางรูปถ่ายทางอากาศ', value: `หมายเลข ${realEstateForm?.aerialPhotoMapNo || '-'} แผ่นที่ ${realEstateForm?.aerialPhotoSheet || '-'}`, key: 'aerialPhotoMapNo', hidden: !realEstateForm?.aerialPhotoMapNo && !realEstateForm?.aerialPhotoSheet },
         { label: 'จุดจัดเก็บ', value: data?.locationName, key: 'location', hidden: !data?.locationName }

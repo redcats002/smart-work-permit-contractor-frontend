@@ -35,6 +35,7 @@ export function useInitForm (): PreAssetUpdateValues {
       type: '',
       landNo: '',
       surveyNo: '',
+      titleDeedNo: '',
       landAreaSquareWah: 0
     },
     // Vehicle fields

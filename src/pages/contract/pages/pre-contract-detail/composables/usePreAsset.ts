@@ -86,6 +86,7 @@ export function usePreAsset (useFetch: () => Promise<void>): IUsePreAsset {
         detail: asset?.detail || '',
         landNo: asset.realEstateForm?.landNo || '',
         surveyNo: asset.realEstateForm?.surveyNo || '',
+        titleDeedNo: asset.realEstateForm?.titleDeedNo || '',
         aerialPhotoMapNo: asset.realEstateForm?.aerialPhotoMapNo || '',
         aerialPhotoSheet: asset.realEstateForm?.aerialPhotoSheet || '',
         landAreaRai: asset.realEstateForm?.landAreaRai ?? 0,
