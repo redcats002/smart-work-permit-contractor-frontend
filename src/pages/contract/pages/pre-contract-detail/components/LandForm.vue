@@ -123,22 +123,34 @@
         placeholder="กรอกเลขหน้าสำรวจ"
         hide-error
         required />
-      <LabelField
-        v-model="model.aerialPhotoMapNo"
-        :form="form"
-        label="หมายเลข"
-        name="aerialPhotoMapNo"
-        placeholder="กรอกหมายเลข"
-        hide-error
-        required />
-      <LabelField
-        v-model="model.aerialPhotoSheet"
-        :form="form"
-        label="แผ่นที่"
-        name="aerialPhotoSheet"
-        placeholder="กรอกแผ่นที่"
-        hide-error
-        required />
+      <template v-if="isTitleDeed">
+        <LabelField
+          v-model="model.titleDeedNo"
+          :form="form"
+          label="โฉนดเลขที่"
+          name="titleDeedNo"
+          placeholder="กรอกโฉนดเลขที่"
+          hide-error
+          required />
+      </template>
+      <template v-else>
+        <LabelField
+          v-model="model.aerialPhotoMapNo"
+          :form="form"
+          label="หมายเลข"
+          name="aerialPhotoMapNo"
+          placeholder="กรอกหมายเลข"
+          hide-error
+          required />
+        <LabelField
+          v-model="model.aerialPhotoSheet"
+          :form="form"
+          label="แผ่นที่"
+          name="aerialPhotoSheet"
+          placeholder="กรอกแผ่นที่"
+          hide-error
+          required />
+      </template>
     </div>
     <Divider />
     <span class="text-sm font-bold text-surface-600">เนื้อที่</span>
@@ -178,6 +190,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import keypress from '@/utils/Keypress'
 import paste from '@/utils/Paste'
 import type { IFormState } from '@/models/Form.model'
@@ -198,6 +211,10 @@ withDefaults(defineProps<IProps>(), {
 const model = defineModel<ModalLandFormValues>({ required: true })
 const type = defineModel<TAssetType>('type', { required: true })
 const detail = defineModel<string>('detail', { required: true })
+
+const isTitleDeed = computed((): boolean =>
+  type.value === 'TITLE_DEED_WITH_BUILDING' || type.value === 'TITLE_DEED_VACANT_LAND'
+)
 
 function onAddressSelect (data: IAddressData): void {
   model.value.subDistrict = data.subDistrict

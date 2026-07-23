@@ -60,6 +60,6 @@ const columns = ref<IColumn<IInvoiceList>[]>([
       lastName: e.contract?.customer?.lastName ?? undefined
     })
   },
-  { field: 'totalAmount', header: 'มูลค่า (บาท)', sortable: true, align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IInvoiceList): string => formatter.numberFormat(e.totalAmount ?? 0) }
+  { field: 'totalAmount', header: 'มูลค่า (บาท)', sortable: true, align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IInvoiceList): string => formatter.numberFormat2Decimal(e.totalAmount ?? 0) }
 ])
 </script>

@@ -4,6 +4,8 @@
     class="flex gap-2.5 w-full md:w-auto">
     <ConfirmModal
       v-model="modalVisible"
+      :description="props.description"
+      :label="props.label"
       @confirm="onModalConfirm()">
       <template #activator="{ open }">
         <ConfirmButton
@@ -38,6 +40,8 @@ interface IProps {
   cancelDisabled?: boolean
   confirmDisabled?: boolean
   fluid?: boolean
+  label?: string
+  description?: string
 }
 
 interface IEmits {
@@ -53,7 +57,9 @@ const props = withDefaults(defineProps<IProps>(), {
   mode: '',
   cancelDisabled: false,
   confirmDisabled: false,
-  fluid: false
+  fluid: false,
+  label: undefined,
+  description: undefined
 })
 
 const containerRef = useTemplateRef<HTMLElement | null>('containerRef')

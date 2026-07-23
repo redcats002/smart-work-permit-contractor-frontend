@@ -4,15 +4,15 @@ import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model
 import { z } from 'zod'
 import { LandSchema as FormValues } from '../../create/schema/pre-contract.schema'
 
-function numericField (message: string) {
+function numericField (message: string, required: boolean = false) {
   return z.preprocess((value: unknown): unknown => {
-    if (value == null || value === '') return ''
+    if (value == null || value === '') return required ? undefined : 0
     if (typeof value === 'string') {
       const parsed = formatter.numberParseFloat(value)
       return Number.isNaN(parsed) ? value : parsed
     }
     return value
-  }, z.number().min(0, message).default(0))
+  }, required ? z.number({ message }).min(0, message) : z.number().min(0, message).default(0))
 }
 
 export const LandFormSchema = z.object({
@@ -34,17 +34,31 @@ export const ModalLandSchema = z.object({
   detail: z.string().min(1, 'กรุณากรอกรายละเอียดหลักทรัพย์').default(''),
   landNo: z.string().min(1, 'กรุณากรอกเลขที่ดิน'),
   surveyNo: z.string().min(1, 'กรุณากรอกเลขที่สำรวจ'),
+  titleDeedNo: z.string().optional(),
   address: z.string().optional(),
   subDistrict: z.string().min(1, 'กรุณากรอกตำบล'),
   district: z.string().min(1, 'กรุณากรอกอำเภอ'),
   province: z.string().min(1, 'กรุณากรอกจังหวัด'),
   postCode: z.string().min(1, 'กรุณากรอกรหัสไปรษณีย์'),
   urlGoogleMap: z.string().optional(),
-  aerialPhotoMapNo: z.string().min(1, 'กรุณากรอกหมายเลข'),
-  aerialPhotoSheet: z.string().min(1, 'กรุณากรอกเลขที่แผ่น'),
-  landAreaRai: numericField('กรุณากรอกจำนวนไร่'),
-  landAreaNgan: numericField('กรุณากรอกจำนวนงาน'),
-  landAreaSquareWah: numericField('กรุณากรอกจำนวนตารางวา')
+  aerialPhotoMapNo: z.string().optional(),
+  aerialPhotoSheet: z.string().optional(),
+  landAreaRai: numericField('กรุณากรอกจำนวนไร่', true),
+  landAreaNgan: numericField('กรุณากรอกจำนวนงาน', true),
+  landAreaSquareWah: numericField('กรุณากรอกจำนวนตารางวา', true)
+}).superRefine((data: ModalLandFormValues, ctx: z.RefinementCtx) => {
+  const isTitleDeed = data.type === 'TITLE_DEED_WITH_BUILDING' || data.type === 'TITLE_DEED_VACANT_LAND'
+  if (!isTitleDeed) {
+    if (!data.aerialPhotoMapNo) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'กรุณากรอกหมายเลข', path: ['aerialPhotoMapNo'] })
+    }
+    if (!data.aerialPhotoSheet) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'กรุณากรอกเลขที่แผ่น', path: ['aerialPhotoSheet'] })
+    }
+  }
+  if (isTitleDeed && !data.titleDeedNo) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'กรุณากรอกโฉนดเลขที่', path: ['titleDeedNo'] })
+  }
 })
 
 export type ModalLandFormValues = z.infer<typeof ModalLandSchema>

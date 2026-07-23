@@ -191,22 +191,22 @@
                   {{ item.order }}
                 </td>
                 <td class="p-3 text-right">
-                  {{ formatter.numberFormat(item.penaltyFee) }}
+                  {{ formatter.numberFormat2Decimal(item.penaltyFee) }}
                 </td>
                 <td class="p-3 text-right">
-                  {{ formatter.numberFormat(item.collectionFee) }}
+                  {{ formatter.numberFormat2Decimal(item.collectionFee) }}
                 </td>
                 <td class="p-3 text-right">
-                  {{ formatter.numberFormat(item.legalFee) }}
+                  {{ formatter.numberFormat2Decimal(item.legalFee) }}
                 </td>
                 <td class="p-3 text-right">
-                  {{ formatter.numberFormat(item.interest) }}
+                  {{ formatter.numberFormat2Decimal(item.interest) }}
                 </td>
                 <td class="p-3 text-right">
-                  {{ formatter.numberFormat(item.principal) }}
+                  {{ formatter.numberFormat2Decimal(item.principal) }}
                 </td>
                 <td class="p-3 text-right font-semibold">
-                  {{ formatter.numberFormat(item.totalInstallment) }}
+                  {{ formatter.numberFormat2Decimal(item.totalInstallment) }}
                 </td>
               </tr>
             </template>
@@ -220,22 +220,22 @@
                 รวมทั้งสิ้น
               </td>
               <td class="p-3 text-right">
-                {{ formatter.numberFormat(form.summary.penaltyFee) }}
+                {{ formatter.numberFormat2Decimal(form.summary.penaltyFee) }}
               </td>
               <td class="p-3 text-right">
-                {{ formatter.numberFormat(form.summary.collectionFee) }}
+                {{ formatter.numberFormat2Decimal(form.summary.collectionFee) }}
               </td>
               <td class="p-3 text-right">
-                {{ formatter.numberFormat(form.summary.legalFee) }}
+                {{ formatter.numberFormat2Decimal(form.summary.legalFee) }}
               </td>
               <td class="p-3 text-right">
-                {{ formatter.numberFormat(form.summary.interest) }}
+                {{ formatter.numberFormat2Decimal(form.summary.interest) }}
               </td>
               <td class="p-3 text-right">
-                {{ formatter.numberFormat(form.summary.principal) }}
+                {{ formatter.numberFormat2Decimal(form.summary.principal) }}
               </td>
               <td class="p-3 text-right">
-                {{ formatter.numberFormat(totalPrice) }}
+                {{ formatter.numberFormat2Decimal(totalPrice) }}
               </td>
             </tr>
           </tfoot>
@@ -259,7 +259,7 @@
           </div>
 
           <div class="text-base font-semibold">
-            {{ formatter.numberFormat(totalPrice) }}
+            {{ formatter.numberFormat2Decimal(totalPrice) }}
           </div>
         </div>
       </div>
@@ -287,15 +287,15 @@
 
       <div class="grid grid-cols-3 gap-6 mt-6 text-sm font-medium">
         <div>
-          ยอดเงินต้น <span class="ml-2">: {{ formatter.numberFormat(form.summary.principal) }}</span>
+          ยอดเงินต้น <span class="ml-2">: {{ formatter.numberFormat2Decimal(form.summary.principal) }}</span>
         </div>
 
         <div>
-          ดอกเบี้ย <span class="ml-2">: {{ formatter.numberFormat(form.summary.interest) }}</span>
+          ดอกเบี้ย <span class="ml-2">: {{ formatter.numberFormat2Decimal(form.summary.interest) }}</span>
         </div>
 
         <div>
-          ค่าปรับ <span class="ml-2">: {{ formatter.numberFormat(form.summary.penaltyFee) }}</span>
+          ค่าปรับ <span class="ml-2">: {{ formatter.numberFormat2Decimal(form.summary.penaltyFee) }}</span>
         </div>
       </div>
 

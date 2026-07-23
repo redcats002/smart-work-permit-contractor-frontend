@@ -55,8 +55,13 @@ export default function useDetail (): IUseDetail {
       totalInstallment: 0,
       penaltyFee: 0,
       collectionFee: 0,
-      legalFee: 0
-    }
+      legalFee: 0,
+      discountInterest: 0,
+      discountOther: 0,
+      totalAmount: 0
+    },
+    otherExpenses: [],
+    discountInterestMonth: 0
   })
   function fetchById (): void {
     handleLoading(useFetchById)

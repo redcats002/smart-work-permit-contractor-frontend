@@ -21,22 +21,33 @@ export interface IOperationInstallment {
 }
 
 export function useInstallment (operation: IOperationInstallment): IInstallmentRow[] {
+  const round = (n: number): number => Math.round(n * 100) / 100
+  const installments: IInstallmentRow[] = []
   const { loanAmount, installmentCount, interestType, annualInterestRate, contractedAt } = operation
-  if (!loanAmount || !installmentCount || installmentCount <= 0) return []
 
   const dayAt = Number(dayjs(contractedAt).format('D'))
   const startFirstInstallment = dayjs(contractedAt).date(dayAt >= 28 ? 28 : dayAt).startOf('day')
 
-  const installments: IInstallmentRow[] = []
   let remainingPrincipal = loanAmount
 
   if (interestType === InterestTypeEnum.FLAT_RATE) {
     const totalInterest = loanAmount * (annualInterestRate / 100) * (installmentCount / 12)
-    const interest = totalInterest / installmentCount
-    const principal = loanAmount / installmentCount
+    const principalPerInstallment = loanAmount / installmentCount
+    const interestPerInstallment = totalInterest / installmentCount
+
+    let sumPrincipal = 0
+    let sumInterest = 0
 
     for (let i = 0; i < installmentCount; i++) {
-      remainingPrincipal -= principal
+      const isLast = i === installmentCount - 1
+
+      const principal = isLast ? round(loanAmount - sumPrincipal) : round(principalPerInstallment)
+      const interest = isLast ? round(totalInterest - sumInterest) : round(interestPerInstallment)
+
+      sumPrincipal += principal
+      sumInterest += interest
+      remainingPrincipal = round(remainingPrincipal - principal)
+
       installments.push({
         order: i + 1,
         dueDate: startFirstInstallment.add(i + 1, 'month').toISOString(),
@@ -45,7 +56,7 @@ export function useInstallment (operation: IOperationInstallment): IInstallmentR
         principal,
         outstandingPrincipal: principal,
         installment: interest + principal,
-        remainingPrincipal: Math.max(0, remainingPrincipal)
+        remainingPrincipal
       })
     }
   } else if (interestType === InterestTypeEnum.EFFECTIVE_RATE) {
