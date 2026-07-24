@@ -7,7 +7,8 @@
     <template
       #activator="{ open }">
       <ConfirmButton
-        label="ยืนยันราคาประเมิน"
+        label="ประเมินราคาหลักทรัพย์"
+        outlined
         @click="open()" />
     </template>
     <template #default="{ close }">
@@ -41,16 +42,17 @@
 <script setup lang="ts">
 import { toast } from '@/plugins/toast'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { IConfirmAppraisalPayload } from '@/models/request/pre-contract/PreContractReq.model'
+import type { IAppraisalPricePayload } from '@/models/request/pre-contract/PreContractReq.model'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import { ConfirmAppraisalSchema, useFormInitialValues } from '../schema/confirm-appraisal.schema'
+import { AppraisalPriceSchema, useFormInitialValues } from '../../schema/appraisal-price.schema'
 
-interface IProps {}
+interface IProps {
+}
 interface IEmits {
   submit: []
 }
@@ -59,9 +61,9 @@ withDefaults(defineProps<IProps>(), {
 })
 const emits = defineEmits<IEmits>()
 
-const form = defineModel<IConfirmAppraisalPayload>({ required: true })
+const form = defineModel<IAppraisalPricePayload>({ required: true })
 const visible = defineModel<boolean>('visible', { default: false })
-const resolver = zodResolver(ConfirmAppraisalSchema)
+const resolver = zodResolver(AppraisalPriceSchema)
 
 async function onSubmit (event: FormSubmitEvent, close: () => void): Promise<void> {
   if (!event.valid) {

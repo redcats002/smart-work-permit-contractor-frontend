@@ -234,7 +234,7 @@ import { ApartmentAssetTypeItems, type TAssetType } from '@/enums/modules/asset/
 import AddressFieldInput, { type IAddressData } from '@/components/input/AddressFieldInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import SelectInput from '@/components/input/SelectInput.vue'
-import type { ModalApartmentFormValues } from '../schema/apartment.schema'
+import type { ModalApartmentFormValues } from '../../schema/apartment.schema'
 
 interface IProps {
   form?: IFormState

@@ -80,9 +80,9 @@ import LabelField from '@/components/input/LabelField.vue'
 import AssetTypeSelection from '@/components/selection/modules/static/asset-type/AssetTypeSelection.vue'
 import { Icon } from '@iconify/vue'
 import type { PreAssetFormValues } from '../schema/pre-contract.schema'
-import ApartmentForm from './ApartmentForm.vue'
-import LandForm from './LandForm.vue'
-import VehicleForm from './VehicleForm.vue'
+import ApartmentForm from './asset-form/ApartmentForm.vue'
+import LandForm from './asset-form/LandForm.vue'
+import VehicleForm from './asset-form/VehicleForm.vue'
 
 type TAssetCategory = 'VEHICLE' | 'LAND' | 'APARTMENT'
 

@@ -87,7 +87,7 @@
 import type { IFormState } from '@/models/Form.model'
 import AddressFieldInput, { type IAddressData } from '@/components/input/AddressFieldInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
-import type { ApartmentCondoFormValues } from '../schema/pre-contract.schema'
+import type { ApartmentCondoFormValues } from '../../schema/pre-contract.schema'
 
 interface IProps {
   form: IFormState

@@ -6,7 +6,7 @@ import { handleLoading } from '@/utils/HandleLoading'
 import type { IMakeAContractPayload } from '@/models/request/pre-contract/PreContractReq.model'
 import PreContractProvider, { type IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
 import useUpload from '@/composables/useUpload'
-import { type MakeContractFormValues, type PreAssetWarehouseFormValues, useFormInitialValues } from '../schema/make-contract.schema'
+import { type MakeContractFormValues, type PreAssetWarehouseFormValues, useFormInitialValues } from '../../schema/make-contract.schema'
 
 interface IUseMakeContract {
   formMakeContract: Ref<MakeContractFormValues>

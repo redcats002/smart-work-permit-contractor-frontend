@@ -49,8 +49,8 @@ import type { TAssetCategory } from '../../create/schema/pre-contract.schema'
 import { getAssetCategory } from '../../create/schema/pre-contract.schema'
 import InformationDetail from '../../detail/components/InformationDetail.vue'
 import { useInitDetail as useInitDetailContract } from '../../detail/composables/useInitDetail.ts'
-import AssetSection from '../../pre-contract-detail/components/AssetSection.vue'
-import InstallmentSection from '../../pre-contract-detail/components/InstallmentSection.vue'
+import AssetSection from '../../pre-contract-detail/components/make-contract/AssetSection.vue'
+import InstallmentSection from '../../pre-contract-detail/components/make-contract/InstallmentSection.vue'
 import { useMakeContract } from '../composables/useMakeContract.ts'
 
 const route = useRoute()

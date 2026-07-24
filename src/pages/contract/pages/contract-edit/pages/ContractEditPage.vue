@@ -49,8 +49,8 @@ import FormAction from '@/components/button/FormAction.vue'
 import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import InformationDetail from '../../detail/components/InformationDetail.vue'
-import AssetSection from '../../pre-contract-detail/components/AssetSection.vue'
-import InstallmentSection from '../../pre-contract-detail/components/InstallmentSection.vue'
+import AssetSection from '../../pre-contract-detail/components/make-contract/AssetSection.vue'
+import InstallmentSection from '../../pre-contract-detail/components/make-contract/InstallmentSection.vue'
 import { useInit } from '../composables/useInit'
 
 const loadingStore = useLoadingStore()

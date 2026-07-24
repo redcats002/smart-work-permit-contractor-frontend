@@ -7,7 +7,7 @@ import { scrollToTop } from '@/utils/ScrollToTop'
 import type { IConfirmMortgagePayload } from '@/models/request/pre-contract/PreContractReq.model'
 import PreContractProvider, { type IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
 import useDev from '@/composables/useDev'
-import { useFormInitialValues } from '../schema/mortgage.schema'
+import { useFormInitialValues } from '../../schema/mortgage.schema'
 
 interface IUseMortgage {
   formMortgage: Ref<IConfirmMortgagePayload>

@@ -19,7 +19,7 @@ import type { IContractAssetList } from '@/models/response/contract/ContractRes.
 import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
 import Empty from '@/components/display/Empty.vue'
 import { getAssetCategory, type TAssetCategory } from '@/pages/contract/pages/create/schema/pre-contract.schema'
-import AssetSection from '@/pages/contract/pages/pre-contract-detail/components/AssetSection.vue'
+import AssetSection from '@/pages/contract/pages/pre-contract-detail/components/make-contract/AssetSection.vue'
 
 defineOptions({
   inheritAttrs: false

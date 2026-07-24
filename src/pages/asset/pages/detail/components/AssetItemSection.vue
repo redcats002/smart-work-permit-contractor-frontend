@@ -45,7 +45,7 @@ import BaseGalleria from '@/components/base/BaseGalleria.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
 import FileAttachment from '@/components/display/FileAttachment.vue'
 import LabelField from '@/components/input/LabelField.vue'
-import AssetEmpty from '@/pages/contract/pages/pre-contract-detail/components/AssetEmpty.vue'
+import AssetEmpty from '@/pages/contract/pages/pre-contract-detail/components/make-contract/AssetEmpty.vue'
 import { type IAssetDisplayItemsInput, useAssetDisplayItems } from '@/pages/contract/pages/pre-contract-detail/composables/useAssetDisplayItems'
 import ChipAssetStatus from '@/pages/stock/pages/list/components/asset/ChipAssetStatus.vue'
 

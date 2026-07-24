@@ -179,8 +179,8 @@ import useDev from '@/composables/useDev'
 import { Icon } from '@iconify/vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import type { MortgageFormValues } from '../schema/mortgage.schema'
-import { MortgageSchema } from '../schema/mortgage.schema'
+import type { MortgageFormValues } from '../../schema/mortgage.schema'
+import { MortgageSchema } from '../../schema/mortgage.schema'
 
 interface ISelectItem {
   id: number | null

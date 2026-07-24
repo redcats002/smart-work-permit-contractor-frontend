@@ -9,7 +9,7 @@ import type { IContractById } from '@/models/response/contract/ContractRes.model
 import ContractProvider, { type IContractProvider } from '@/resources/provider/contract/Contract.provider'
 import { getAssetCategory, type TAssetCategory } from '../../create/schema/pre-contract.schema'
 import { useInitDetail as useInitContractDetail } from '../../detail/composables/useInitDetail'
-import type InstallmentSection from '../../pre-contract-detail/components/InstallmentSection.vue'
+import type InstallmentSection from '../../pre-contract-detail/components/make-contract/InstallmentSection.vue'
 import type { InstallmentFormValues, PreAssetWarehouseFormValues } from '../../pre-contract-detail/schema/make-contract.schema'
 
 export interface IUseInit {
