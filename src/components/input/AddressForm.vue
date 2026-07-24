@@ -96,7 +96,7 @@
             @select="onAddressSelect($event)" />
         </LabelField>
         <LabelField
-          v-if="type !== 'MAIN'"
+          v-if="type !== 'MAIN' || personalType === 'CORPORATE'"
           v-model="model.urlGoogleMap"
           :form="form"
           :name="googleMapUrl"
