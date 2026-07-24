@@ -6,12 +6,12 @@
     :complete-on-focus="!multiple ? completeOnFocus : undefined"
     :force-selection="!multiple ? forceSelection : undefined"
     :invalid="invalid"
+    :option-disabled="!multiple ? isOptionDisabled : undefined"
     :option-label="optionLabel"
     :options="multiple ? suggestions : undefined"
     :placeholder="placeholderText"
     :show-clear="showClear"
     :suggestions="!multiple ? suggestions : undefined"
-    option-disabled="disabled"
     @complete="search($event?.query)" />
 </template>
 
@@ -101,6 +101,13 @@ async function search (query?: string): Promise<void> {
 
   const unmatched = suggestions.value.filter((item: any): boolean => !matched.includes(item))
   suggestions.value = [...matched, ...unmatched]
+}
+
+function isOptionDisabled (option: T): boolean {
+  if (props.multiple) return false
+  const currentValue = mapOptionToModel(option)
+  const selectedValue = model.value
+  return currentValue != null && selectedValue != null && String(currentValue) === String(selectedValue)
 }
 
 function syncInnerFromId (): void {
