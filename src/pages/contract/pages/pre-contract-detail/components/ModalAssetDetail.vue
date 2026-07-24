@@ -106,7 +106,7 @@ import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { IFormType } from '@/models/Form.model'
 import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import type { TBaseParamsId } from '@/models/response/Response.model'
-import { isApartmentAsset, isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
+import { isApartmentAsset, isLandAllAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
 import FormAction from '@/components/button/FormAction.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
@@ -147,7 +147,7 @@ const apartmentResolver = zodResolver(ModalApartmentSchema)
 const pendingClose = ref<(() => void) | null>(null)
 
 const isVehicle = computed((): boolean => isVehicleAsset(props.asset.type))
-const isLand = computed((): boolean => isLandAsset(props.asset.type))
+const isLand = computed((): boolean => isLandAllAsset(props.asset.type))
 const isApartment = computed((): boolean => isApartmentAsset(props.asset.type))
 
 

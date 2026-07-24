@@ -74,7 +74,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { IFormState } from '@/models/Form.model'
-import { isApartmentAsset, isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
+import { isApartmentAsset, isLandAllAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import AssetTypeSelection from '@/components/selection/modules/static/asset-type/AssetTypeSelection.vue'
@@ -108,7 +108,7 @@ const emits = defineEmits<IEmits>()
 const model = defineModel<PreAssetFormValues>({ required: true })
 
 const isVehicle = computed((): boolean => isVehicleAsset(model.value.type))
-const isLand = computed((): boolean => isLandAsset(model.value.type))
+const isLand = computed((): boolean => isLandAllAsset(model.value.type))
 const isApartment = computed((): boolean => isApartmentAsset(model.value.type))
 
 </script>

@@ -1,6 +1,6 @@
 import { computed, type ComputedRef, type Ref } from 'vue'
 import { formatter } from '@/utils/Formatter'
-import { isApartmentAsset, isLandAsset, type TAssetType } from '@/enums/modules/asset/AssetType.enum'
+import { isApartmentAsset, isLandAllAsset, isTitleDeedAsset, type TAssetType } from '@/enums/modules/asset/AssetType.enum'
 import type { IDisplayList } from '@/components/display/DisplayList.vue'
 
 interface IRealEstateFormInput {
@@ -58,7 +58,7 @@ export interface IAssetDisplayItemsInput {
 export function useAssetDisplayItems (asset: Ref<IAssetDisplayItemsInput | null | undefined>): ComputedRef<IDisplayList[]> {
   return computed((): IDisplayList[] => {
     const data = asset.value
-    if (isLandAsset(data?.type)) {
+    if (isLandAllAsset(data?.type)) {
       const realEstateForm = data?.realEstateForm
       const fullAddress = formatter.fullAddress({
         address: realEstateForm?.address || '',
@@ -68,10 +68,20 @@ export function useAssetDisplayItems (asset: Ref<IAssetDisplayItemsInput | null 
         postCode: realEstateForm?.postCode || '',
         urlGoogleMap: realEstateForm?.urlGoogleMap || ''
       })
+      if (isTitleDeedAsset(data?.type)) {
+        return [
+          { label: 'เลขที่ดิน', value: realEstateForm?.landNo || '-', key: 'landNo', hidden: !realEstateForm?.landNo },
+          { label: 'หน้าสำรวจ', value: realEstateForm?.surveyNo || '-', key: 'surveyNo', hidden: !realEstateForm?.surveyNo },
+          { label: 'โฉนดเลขที่', value: realEstateForm?.titleDeedNo || '-', key: 'titleDeedNo', hidden: !realEstateForm?.titleDeedNo },
+          { label: 'ที่อยู่หลักทรัพย์', value: fullAddress, key: 'address', extUrl: realEstateForm?.urlGoogleMap || '', hidden: !fullAddress },
+          { label: 'ระวางรูปถ่ายทางอากาศ', value: `${realEstateForm?.aerialPhotoSheet || '-'}`, key: 'aerialPhotoSheet', hidden: !realEstateForm?.aerialPhotoSheet },
+          { label: 'จุดจัดเก็บ', value: data?.locationName, key: 'location', hidden: !data?.locationName }
+        ]
+      }
+
       return [
         { label: 'เลขที่ดิน', value: realEstateForm?.landNo || '-', key: 'landNo', hidden: !realEstateForm?.landNo },
-        { label: 'เลขหน้าสำรวจ', value: realEstateForm?.surveyNo || '-', key: 'surveyNo', hidden: !realEstateForm?.surveyNo },
-        { label: 'โฉนดเลขที่', value: realEstateForm?.titleDeedNo || '-', key: 'titleDeedNo', hidden: !realEstateForm?.titleDeedNo },
+        { label: 'หน้าสำรวจ', value: realEstateForm?.surveyNo || '-', key: 'surveyNo', hidden: !realEstateForm?.surveyNo },
         { label: 'ที่อยู่หลักทรัพย์', value: fullAddress, key: 'address', extUrl: realEstateForm?.urlGoogleMap || '', hidden: !fullAddress },
         { label: 'ระวางรูปถ่ายทางอากาศ', value: `หมายเลข ${realEstateForm?.aerialPhotoMapNo || '-'} แผ่นที่ ${realEstateForm?.aerialPhotoSheet || '-'}`, key: 'aerialPhotoMapNo', hidden: !realEstateForm?.aerialPhotoMapNo && !realEstateForm?.aerialPhotoSheet },
         { label: 'จุดจัดเก็บ', value: data?.locationName, key: 'location', hidden: !data?.locationName }

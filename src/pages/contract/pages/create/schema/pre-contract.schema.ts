@@ -1,5 +1,5 @@
 import { schema } from '@/utils/Schema'
-import { AssetTypeEnum, isApartmentAsset, isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
+import { AssetTypeEnum, isApartmentAsset, isLandAllAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
 import { PreContractStatusEnum } from '@/enums/modules/contract/PreContractStatus.enum'
 import { z } from 'zod'
 
@@ -8,7 +8,7 @@ export type TAssetCategory = 'VEHICLE' | 'LAND' | 'APARTMENT' | null
 export function getAssetCategory (assets: Array<{ type?: string | null }>): TAssetCategory {
   for (const e of assets) {
     if (isVehicleAsset(e.type)) return 'VEHICLE'
-    if (isLandAsset(e.type)) return 'LAND'
+    if (isLandAllAsset(e.type)) return 'LAND'
     if (isApartmentAsset(e.type)) return 'APARTMENT'
   }
   return null
@@ -98,7 +98,7 @@ export const PreAssetSchema = PreAssetBaseSchema.superRefine((data: IPreAssetBas
     if (!data.vehicleForm.engineNumber) addRequired(ctx, ['vehicleForm', 'engineNumber'], 'กรุณากรอกหมายเลขเครื่อง')
     if (data.vehicleForm.mileage === null) addRequired(ctx, ['vehicleForm', 'mileage'], 'กรุณากรอกเลขไมล์')
   }
-  if (isLandAsset(data.type)) {
+  if (isLandAllAsset(data.type)) {
     if (!data.detail) addRequired(ctx, ['detail'], 'กรุณากรอกรายละเอียด')
     if (!data.realEstateForm?.subDistrict) addRequired(ctx, ['realEstateForm', 'subDistrict'], 'กรุณาเลือกตำบล')
     if (!data.realEstateForm?.district) addRequired(ctx, ['realEstateForm', 'district'], 'กรุณาเลือกอำเภอ')
@@ -136,7 +136,7 @@ type IPreContractBase = z.infer<typeof PreContractBaseSchema>
 
 export const PreContractSchema = PreContractBaseSchema.superRefine((data: IPreContractBase, ctx: z.RefinementCtx): void => {
   const hasVehicle = data.preAssets.some((e: PreAssetFormValues): boolean => isVehicleAsset(e.type))
-  const hasLand = data.preAssets.some((e: PreAssetFormValues): boolean => isLandAsset(e.type))
+  const hasLand = data.preAssets.some((e: PreAssetFormValues): boolean => isLandAllAsset(e.type))
   const hasApartment = data.preAssets.some((e: PreAssetFormValues): boolean => isApartmentAsset(e.type))
 
   if ([hasVehicle, hasLand, hasApartment].filter(Boolean).length > 1) {

@@ -29,6 +29,14 @@
     <Divider />
     <span class="text-sm font-bold text-surface-600">ตำแหน่งที่ดิน</span>
     <LabelField
+      v-if="isTitleDeed"
+      v-model="model.aerialPhotoSheet"
+      :form="form"
+      label="ระวางรูปถ่ายทางอากาศ"
+      name="aerialPhotoSheet"
+      placeholder="กรอกระวางรูปถ่ายทางอากาศ"
+      hide-error />
+    <LabelField
       v-model="model.address"
       :form="form"
       label="ที่อยู่"
@@ -115,10 +123,13 @@
         placeholder="กรอกเลขที่ดิน"
         hide-error
         required />
+      <div
+        v-if="isTitleDeed"
+        class="invisible md:visible" />
       <LabelField
         v-model="model.surveyNo"
         :form="form"
-        label="เลขหน้าสำรวจ"
+        label="หน้าสำรวจ"
         name="surveyNo"
         placeholder="กรอกเลขหน้าสำรวจ"
         hide-error
