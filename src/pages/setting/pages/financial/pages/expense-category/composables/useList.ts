@@ -9,7 +9,7 @@ interface IUseList {
   category: ReturnType<typeof useListCategory>
   type: ReturnType<typeof useListType>
   selectCategoryId: Ref<TBaseParamsId | null>
-  onDeleteCategory (id: TBaseParamsId): Promise<void>
+  onDeleteCategory (id: TBaseParamsId, callback?: () => void): Promise<void>
   onSelectCategory: (event: DataTableRowClickEvent<IFinanceExpenseCategoryList>) => Promise<void>
 }
 
@@ -19,11 +19,12 @@ export default function useList (): IUseList {
   const category = useListCategory()
   const type = useListType(selectCategoryId)
 
-  async function onDeleteCategory (id: TBaseParamsId): Promise<void> {
+  async function onDeleteCategory (id: TBaseParamsId, callback?: () => void): Promise<void> {
     await category.useDelete(id)
     type.reset()
     selectCategoryId.value = null
     category.fetch()
+    callback?.()
   }
   async function onSelectCategory ({ data }: DataTableRowClickEvent<IFinanceExpenseCategoryList>): Promise<void> {
     selectCategoryId.value = typeof data?.id === 'number' ? data.id : null

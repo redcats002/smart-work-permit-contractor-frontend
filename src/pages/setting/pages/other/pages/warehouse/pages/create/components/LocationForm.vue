@@ -8,7 +8,7 @@
         v-model="model.options[i].isRequirePrefix"
         class="mb-2 w-full md:w-fit"
         false-label="ไม่กำหนดตัวย่อ"
-        true-label="ไม่กำหนดตัวย่อ" />
+        true-label="กำหนดตัวย่อ" />
       <LabelField
         v-model="model.options[i].prefix"
         :disabled="!model.options[i].isRequirePrefix"
