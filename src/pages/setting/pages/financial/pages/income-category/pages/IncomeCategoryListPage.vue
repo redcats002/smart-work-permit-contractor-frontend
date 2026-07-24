@@ -15,7 +15,7 @@
           :items="category.items.value"
           :select-category-id="selectCategoryId"
           @create="category.onCreate()"
-          @delete="onDeleteCategory($event)"
+          @delete="onDelete($event)"
           @edit="category.onUpdate($event)"
           @row-click="onSelectCategory($event)"
           @update="category.fetch()" />
@@ -37,6 +37,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import type { TBaseParamsId } from '@/models/response/Response.model.ts'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
@@ -48,6 +49,11 @@ import useList from '../composables/useList'
 
 const { category, type, selectCategoryId, onSelectCategory, onDeleteCategory } = useList()
 
+function onDelete (id: TBaseParamsId): void {
+  onDeleteCategory(id, (): void => {
+    type.items.value = []
+  })
+}
 
 onMounted((): void => {
   category.fetch()

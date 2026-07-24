@@ -2,8 +2,8 @@ import type { TBaseOption } from '@/models/Global.model'
 
 // 1. กำหนด Enum สำหรับ Role (เพิ่ม ACCOUNTING)
 export enum EmployeeRoleEnum {
-  ADMIN = 'ADMIN',
   SUPER_ADMIN = 'SUPER_ADMIN',
+  ADMIN = 'ADMIN',
   // ACCOUNTING = 'ACCOUNTING',
   SUPERVISOR = 'SUPERVISOR',
   STAFF = 'STAFF'
@@ -14,8 +14,8 @@ export type TEmployeeRole = keyof typeof EmployeeRoleEnum
 
 // 3. Map ภาษาไทยสำหรับแสดงผล (Label)
 const roleTitleMap: Record<TEmployeeRole, string> = {
-  [EmployeeRoleEnum.ADMIN]: 'ผู้ดูแลระบบ (Admin)',
   [EmployeeRoleEnum.SUPER_ADMIN]: 'ผู้ดูแลระบบสูงสุด (Super Admin)',
+  [EmployeeRoleEnum.ADMIN]: 'ผู้ดูแลระบบ (Admin)',
   // [EmployeeRoleEnum.ACCOUNTING]: 'บัญชี (Accounting)',
   [EmployeeRoleEnum.SUPERVISOR]: 'หัวหน้าแผนก (Supervisor)',
   [EmployeeRoleEnum.STAFF]: 'พนักงาน (Staff)'
