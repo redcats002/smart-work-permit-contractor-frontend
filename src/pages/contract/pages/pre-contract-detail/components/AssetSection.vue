@@ -45,7 +45,8 @@
               <DisplayList
                 :items="items"
                 class="mb-2"
-                label-class="text-font-gray!" />
+                label-class="text-font-gray! col-span-2"
+                row-class="grid-cols-2 md:grid-cols-5" />
               <LabelField
                 v-if="activeAsset?.files?.length"
                 label="เอกสารหลักทรัพย์">
