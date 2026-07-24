@@ -6,8 +6,12 @@
     disable-auto-left-padding
     hide-pagination
     @update="emits('update')">
-    <template #[`item.status`]="{ index }">
+    <template #[`item.status`]="{ item, index }">
+      <ChipWarehouseStatus
+        v-if="readonly"
+        :value="item.status" />
       <Switch
+        v-else
         :model-value="items[index].status === 'ACTIVE'"
         :readonly="readonly"
         false-label="ปิด"
@@ -24,6 +28,7 @@ import type { IColumn } from '@/models/Table.model'
 import Switch from '@/components/input/Switch.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { WarehouseLocationFormValues } from '../../create/schema/warehouse.schema'
+import ChipWarehouseStatus from '../../list/components/ChipWarehouseStatus.vue'
 
 interface IProps {
   readonly?: boolean
