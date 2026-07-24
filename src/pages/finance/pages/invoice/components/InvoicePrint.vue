@@ -93,7 +93,7 @@
                 Date of payment
               </div>
             </div>
-            <div>: {{ dayjs(form.createdAt).format('DD/MM/BBBB') }}</div>
+            <div>: {{ dayjs.formatDate(form.createdAt || '') }}</div>
           </div>
           <div class="grid grid-cols-2">
             <div>
@@ -115,7 +115,7 @@
                 Due Date
               </div>
             </div>
-            <div>: {{ dayjs(installmentForm.contractInstallment.dueDate).format('DD/MM/BBBB') }}</div>
+            <div>: {{ dayjs.formatDate(installmentForm.contractInstallment.dueDate || '') }}</div>
           </div>
         </div>
       </div>
@@ -262,11 +262,11 @@
 </template>
 <script setup lang="ts">
 import { computed } from 'vue'
-import { dayjs } from '@/plugins/dayjs.plugin'
 import { formatter } from '@/utils/Formatter'
 import type { IInvoiceDetail, IInvoiceDetailItems, IInvoiceInstallment } from '@/models/response/invoice/InvoiceRes.model'
 import LabelField from '@/components/input/LabelField.vue'
 import { Icon } from '@iconify/vue'
+import { useDayjs } from '@/utils/Dayjs'
 
 interface IEmits {
   onAddRow: []
@@ -280,6 +280,7 @@ interface IProps {
 }
 const props = defineProps<IProps>()
 const emits = defineEmits<IEmits>()
+const dayjs = useDayjs()
 const totalPrice = computed((): number =>
   props.installmentForm.items.reduce((sum: number, item: IInvoiceDetailItems): number => sum + Number(item.amount), 0))
 
