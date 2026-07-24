@@ -7,15 +7,7 @@
     </BaseTop>
 
     <BasePage>
-      <CustomerInfoCard
-        :age="customer?.age"
-        :birth-date="customer?.birthDate"
-        :customer-group="customer?.customerGroup?.name"
-        :customer-name="`${customer?.titleName} ${customer?.firstName} ${customer?.lastName}`"
-        :email="customer?.email"
-        :id-card="customer?.idCard"
-        :occupation="customer?.occupation?.name"
-        :phone-numbers="customer?.phoneNumber" />
+      <CustomerCard :data="customerCardData" />
     </BasePage>
 
     <BasePage>
@@ -100,10 +92,11 @@ import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
-import type { EVatType } from '@/enums/modules/Vat.enum'
-import type { IRefinanceContract, IRefinanceCustomer, IRefinanceInstallment } from '@/models/response/refinance/RefinanceRes.model'
-import type { IRefinanceExpense } from '@/models/request/refinance/RefinanceReq.model'
 import type { ICloseContractFile } from '@/models/request/close-contract/CloseContractReq.model'
+import type { IRefinanceExpense } from '@/models/request/refinance/RefinanceReq.model'
+import type { ICustomerById } from '@/models/response/customer/CustomerRes.model'
+import type { IRefinanceContract, IRefinanceCustomer, IRefinanceInstallment } from '@/models/response/refinance/RefinanceRes.model'
+import type { EVatType } from '@/enums/modules/Vat.enum'
 import RefinanceProvider, { type IRefinanceProvider } from '@/resources/provider/refinance/Refinance.provider'
 import UploadProvider, { type IMedia } from '@/resources/provider/Upload.provider'
 import BasePage from '@/components/base/BasePage.vue'
@@ -114,11 +107,11 @@ import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import type { IAdditionalExpenseRow } from '../components/AdditionalExpensesTable.vue'
 import AdditionalExpensesTable from '../components/AdditionalExpensesTable.vue'
-import CustomerInfoCard from '../components/CustomerInfoCard.vue'
 import type { IInstallmentRow } from '../components/InstallmentTable.vue'
 import InstallmentTable from '../components/InstallmentTable.vue'
 import PaymentSummary from '../components/PaymentSummary.vue'
 import SaveExpenseModal from '../components/SaveExpenseModal.vue'
+import CustomerCard from '@/pages/contract/pages/create/components/CustomerCard.vue'
 import type { TReceiptPaymentMethodLocal } from '@/pages/finance/components/shared/PaymentMethodSelector.vue'
 import PaymentMethodSelector from '@/pages/finance/components/shared/PaymentMethodSelector.vue'
 import ThaiQRPaymentModal from '@/pages/finance/pages/receipt/create/components/ThaiQRPaymentModal.vue'
@@ -167,6 +160,15 @@ const otherExpenses = computed((): number =>
 const installmentInterests = computed((): number[] =>
   contract.value?.installments?.map((item: IRefinanceInstallment): number => item.interest) ?? []
 )
+
+const customerCardData = computed((): ICustomerById | undefined => {
+  if (!customer.value) return undefined
+  return {
+    ...customer.value,
+    personalType: customer.value.personalType || 'INDIVIDUAL',
+    mainAddress: {}
+  } as unknown as ICustomerById
+})
 
 function onRemoveExpense (index: number): void {
   additionalExpenses.value.splice(index, 1)
