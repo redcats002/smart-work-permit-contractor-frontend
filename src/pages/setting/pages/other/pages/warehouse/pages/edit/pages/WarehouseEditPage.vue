@@ -24,7 +24,8 @@
           <BaseContainer>
             <LocationForm
               v-model="form"
-              :form="$form" />
+              :form="$form"
+              @mount="mount()" />
           </BaseContainer>
           <LocationTable :items="form.locations" />
           <FormAction @cancel="onCancel()" />
@@ -94,14 +95,18 @@ function onCancel (): void {
   router.push({ name: 'WarehouseDetailPage', params: { id: warehouseId.value } })
 }
 
+function mount (): void {
+  formKey.value++
+}
+
 function onAuto (): void {
   form.value = { ...useDev() }
-  formKey.value++
+  mount()
 }
 
 function useInit (data: IWarehouseById): void {
   useInitForm(form, data)
-  formKey.value++
+  mount()
 }
 
 onMounted((): void => {

@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue'
+import { onMounted, watch } from 'vue'
 import { useLoadingStore } from '@/stores/Loading'
 import type { IFormState } from '@/models/Form.model'
 import CreateButton from '@/components/button/CreateButton.vue'
@@ -60,8 +60,12 @@ import { useFormInitialValues, type WarehouseFormValues } from '../schema/wareho
 interface IProps {
   form?: IFormState
 }
+interface IEmits {
+  mount: []
+}
 
 defineProps<IProps>()
+const emits = defineEmits<IEmits>()
 
 const loadingStore = useLoadingStore()
 
@@ -79,6 +83,7 @@ function onAdd (): void {
 
 function onRemove (index: number): void {
   model.value.options.splice(index, 1)
+  emits('mount')
 }
 
 function generateLocationTable (): void {
@@ -86,6 +91,10 @@ function generateLocationTable (): void {
   model.value.locations = buildLocationTable(model.value.prefix, model.value.options)
   loadingStore.removeLoading()
 }
+
+onMounted((): void => {
+  generateLocationTable()
+})
 
 watch((): string => model.value.prefix, (): void => {
   generateLocationTable()
