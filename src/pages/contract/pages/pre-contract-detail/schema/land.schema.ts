@@ -22,6 +22,7 @@ export const LandFormSchema = z.object({
   surveyNo: z.string().min(1, 'กรุณากรอกเลขที่สำรวจ'),
   aerialPhotoMapNo: z.string().min(1, 'กรุณากรอกหมายเลข'),
   aerialPhotoSheet: z.string().min(1, 'กรุณากรอกเลขที่แผ่น'),
+  titleDeedNo: z.string().min(1, 'กรุณากรอกโฉนดเลขที่'),
   landAreaRai: numericField('กรุณากรอกจำนวนไร่'),
   landAreaNgan: numericField('กรุณากรอกจำนวนงาน'),
   landAreaSquareWah: numericField('กรุณากรอกจำนวนตารางวา')
