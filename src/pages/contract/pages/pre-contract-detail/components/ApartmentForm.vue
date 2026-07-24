@@ -49,7 +49,7 @@
       <LabelField
         v-slot="{ invalid }"
         :form="form"
-        label="ตำบล"
+        label="แขวง/ตำบล"
         name="subDistrict"
         hide-error
         required>
@@ -58,13 +58,13 @@
           :invalid="invalid"
           address-type="sub-district"
           name="subDistrict"
-          placeholder="เลือกตำบล"
+          placeholder="เลือกแขวง/ตำบล"
           @select="onAddressSelect($event)" />
       </LabelField>
       <LabelField
         v-slot="{ invalid }"
         :form="form"
-        label="อำเภอ"
+        label="เขต/อำเภอ"
         name="district"
         hide-error
         required>
@@ -73,7 +73,7 @@
           :invalid="invalid"
           address-type="district"
           name="district"
-          placeholder="เลือกอำเภอ"
+          placeholder="เลือกเขต/อำเภอ"
           @select="onAddressSelect($event)" />
       </LabelField>
       <LabelField
