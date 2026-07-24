@@ -10,6 +10,7 @@
     <AddressForm
       v-model="mainAddress"
       :form="form"
+      :personal-type="model.personalType"
       type="MAIN"
       @use-same-citizen-address="mount()"
       @use-same-current-address="mount()" />
@@ -20,6 +21,7 @@
         v-model="currentAddress"
         :citizen-address="mainAddress"
         :form="form"
+        :personal-type="model.personalType"
         type="CURRENT"
         @use-same-citizen-address="mount()"
         @use-same-current-address="mount()" />
@@ -30,6 +32,7 @@
         :citizen-address="mainAddress"
         :current-address-ref="currentAddress"
         :form="form"
+        :personal-type="model.personalType"
         type="WORK"
         @use-same-citizen-address="mount()"
         @use-same-current-address="mount()" />

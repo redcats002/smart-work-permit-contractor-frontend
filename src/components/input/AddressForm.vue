@@ -114,6 +114,7 @@
 import { computed, inject, watch } from 'vue'
 import type { IFormState } from '@/models/Form.model'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
+import type { TPersonalType } from '@/enums/modules/customer/PersonalType.enum'
 import AddressFieldInput, { type IAddressData } from '@/components/input/AddressFieldInput.vue'
 import CheckboxInput from '@/components/input/CheckboxInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
@@ -121,6 +122,7 @@ import LabelField from '@/components/input/LabelField.vue'
 interface IProps {
   form?: IFormState
   type?: 'MAIN' | 'CURRENT' | 'WORK'
+  personalType?: TPersonalType
   hideError?: boolean
   citizenAddress?: IAddressRequest
   currentAddressRef?: IAddressRequest
@@ -136,7 +138,8 @@ const props = withDefaults(defineProps<IProps>(), {
   type: 'CURRENT',
   hideError: false,
   citizenAddress: undefined,
-  currentAddressRef: undefined
+  currentAddressRef: undefined,
+  personalType: 'INDIVIDUAL'
 })
 const emits = defineEmits<IEmits>()
 
@@ -167,7 +170,7 @@ const isLocked = computed((): boolean => !!(model.value.isSameCitizenAddress || 
 
 const labelType = computed((): string => {
   if (props.type === 'CURRENT') return 'ที่อยู่ปัจจุบัน'
-  if (props.type === 'MAIN') return 'ที่อยู่ตามบัตรประชาชน'
+  if (props.type === 'MAIN') return props.personalType === 'CORPORATE' ? 'ที่อยู่' : 'ที่อยู่ตามบัตรประชาชน'
   return 'ที่อยู่ที่ทำงาน'
 })
 const address = computed((): string => {
