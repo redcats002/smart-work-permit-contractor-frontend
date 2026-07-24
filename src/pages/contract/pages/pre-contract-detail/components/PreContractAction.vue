@@ -68,8 +68,8 @@ import type { TPreContractStatus } from '@/enums/modules/contract/PreContractSta
 import CancelButton from '@/components/button/CancelButton.vue'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import ConfirmModal from '@/components/modal/ConfirmModal.vue'
-import ModalAssetValuation from './ModalAssetValuation.vue'
-import ModalConfirmAppraisal from './ModalConfirmAppraisal.vue'
+import ModalAssetValuation from './appraisal/ModalAssetValuation.vue'
+import ModalConfirmAppraisal from './appraisal/ModalConfirmAppraisal.vue'
 
 interface IProps {
   disabled?: boolean

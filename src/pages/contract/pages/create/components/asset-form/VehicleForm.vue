@@ -1,65 +1,58 @@
 <template>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
     <LabelField
-      v-slot="{ invalid }"
+      v-model="model.model"
       :form="form"
-      label="ประเภทหลักทรัพย์"
-      name="type"
-      tag="div"
+      :name="`${namePrefix}.model`"
+      label="รุ่น"
+      placeholder="กรอกรุ่น"
       hide-error
-      required>
-      <SelectInput
-        v-model="type"
-        :invalid="invalid"
-        :options="VehicleAssetTypeItems"
-        name="type"
-        option-label="label"
-        option-value="value"
-        placeholder="เลือกประเภทหลักทรัพย์" />
-    </LabelField>
+      required />
     <LabelField
-      v-model="detail"
+      v-model="model.color"
       :form="form"
-      label="รายละเอียดหลักทรัพย์"
-      name="detail"
-      placeholder="กรอกรายละเอียด"
+      :name="`${namePrefix}.color`"
+      label="สี"
+      placeholder="กรอกสี"
       hide-error
       required />
     <LabelField
       v-model="model.plateNo"
       :form="form"
+      :name="`${namePrefix}.plateNo`"
       label="เลขทะเบียนรถ"
-      name="plateNo"
       placeholder="กรอกเลขทะเบียนรถ"
       hide-error
       required />
     <LabelField
       v-slot="{ invalid }"
       :form="form"
+      :name="`${namePrefix}.province`"
       label="จังหวัด"
-      name="province"
       tag="div"
       hide-error
       required>
       <ProvinceSelection
         v-model="model.province"
         :invalid="invalid"
-        name="province"
-        placeholder="เลือกจังหวัด" />
+        :name="`${namePrefix}.province`"
+        address-type="province"
+        placeholder="เลือกจังหวัด"
+        @select="model.province = $event.province" />
     </LabelField>
     <LabelField
       v-slot="{ invalid }"
       :form="form"
+      :name="`${namePrefix}.manufactureYear`"
       label="ปีที่ผลิต"
-      name="manufactureYear"
       tag="div"
       hide-error
       required>
       <SelectInput
         v-model="model.manufactureYear"
         :invalid="invalid"
+        :name="`${namePrefix}.manufactureYear`"
         :options="yearOptions"
-        name="manufactureYear"
         option-label="label"
         option-value="value"
         placeholder="เลือกปีที่ผลิต" />
@@ -67,16 +60,16 @@
     <LabelField
       v-slot="{ invalid }"
       :form="form"
+      :name="`${namePrefix}.registrationYear`"
       label="ปีที่จดทะเบียน"
-      name="registrationYear"
       tag="div"
       hide-error
       required>
       <SelectInput
         v-model="model.registrationYear"
         :invalid="invalid"
+        :name="`${namePrefix}.registrationYear`"
         :options="yearOptions"
-        name="registrationYear"
         option-label="label"
         option-value="value"
         placeholder="เลือกปีที่จดทะเบียน" />
@@ -84,25 +77,33 @@
     <LabelField
       v-model="model.vehicleIdentificationNo"
       :form="form"
+      :name="`${namePrefix}.vehicleIdentificationNo`"
       label="หมายเลขตัวถัง"
-      name="vehicleIdentificationNo"
       placeholder="กรอกหมายเลขตัวถัง"
+      hide-error
+      required />
+    <LabelField
+      v-model="model.engineNumber"
+      :form="form"
+      :name="`${namePrefix}.engineNumber`"
+      label="หมายเลขเครื่อง"
+      placeholder="กรอกหมายเลขเครื่อง"
       hide-error
       required />
     <LabelField
       v-slot="{ invalid }"
       :form="form"
+      :name="`${namePrefix}.mileage`"
       label="เลขไมล์ (กม.)"
-      name="mileage"
       tag="div"
       hide-error
       required>
       <InputNumber
         v-model="model.mileage"
         :invalid="invalid"
+        :name="`${namePrefix}.mileage`"
         :use-grouping="true"
         class="h-9! shadow-none!"
-        name="mileage"
         placeholder="กรอกเลขไมล์"
         fluid />
     </LabelField>
@@ -112,16 +113,15 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { IFormState } from '@/models/Form.model'
-import { type TAssetType, VehicleAssetTypeItems } from '@/enums/modules/asset/AssetType.enum'
 import LabelField from '@/components/input/LabelField.vue'
 import SelectInput from '@/components/input/SelectInput.vue'
 import ProvinceSelection from '@/components/selection/modules/static/province/ProvinceSelection.vue'
-import type { ModalVehicleFormValues } from '../schema/vehicle.schema'
+import type { VehicleFormValues } from '../../schema/pre-contract.schema'
 
 interface IProps {
-  form?: IFormState
+  form: IFormState
+  namePrefix?: string
 }
-
 
 interface IYearOption {
   label: string
@@ -129,12 +129,10 @@ interface IYearOption {
 }
 
 withDefaults(defineProps<IProps>(), {
-  form: undefined
+  namePrefix: ''
 })
 
-const model = defineModel<ModalVehicleFormValues>({ required: true })
-const type = defineModel<TAssetType>('type', { required: true })
-const detail = defineModel<string>('detail', { required: true })
+const model = defineModel<VehicleFormValues>({ required: true })
 
 const currentYear = new Date().getFullYear()
 

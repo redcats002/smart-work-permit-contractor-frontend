@@ -12,7 +12,7 @@
         v-slot="{ invalid }"
         :form="form"
         :name="`${namePrefix}.subDistrict`"
-        label="ตำบล"
+        label="แขวง/ตำบล"
         tag="div"
         hide-error
         required>
@@ -21,14 +21,14 @@
           :invalid="invalid"
           :name="`${namePrefix}.subDistrict`"
           address-type="sub-district"
-          placeholder="เลือกตำบล"
+          placeholder="เลือกแขวง/ตำบล"
           @select="onAddressSelect($event)" />
       </LabelField>
       <LabelField
         v-slot="{ invalid }"
         :form="form"
         :name="`${namePrefix}.district`"
-        label="อำเภอ"
+        label="เขต/อำเภอ"
         tag="div"
         hide-error
         required>
@@ -37,7 +37,7 @@
           :invalid="invalid"
           :name="`${namePrefix}.district`"
           address-type="district"
-          placeholder="เลือกอำเภอ"
+          placeholder="เลือกเขต/อำเภอ"
           @select="onAddressSelect($event)" />
       </LabelField>
       <LabelField
@@ -87,7 +87,7 @@
 import type { IFormState } from '@/models/Form.model'
 import AddressFieldInput, { type IAddressData } from '@/components/input/AddressFieldInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
-import type { ApartmentCondoFormValues } from '../schema/pre-contract.schema'
+import type { ApartmentCondoFormValues } from '../../schema/pre-contract.schema'
 
 interface IProps {
   form: IFormState

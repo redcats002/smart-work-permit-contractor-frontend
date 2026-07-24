@@ -1,3 +1,4 @@
+import type { TPersonalType } from '@/enums/modules/customer/PersonalType.enum'
 import type { EVatType } from '@/enums/modules/Vat.enum'
 import type { IQRPaymentResponse } from '@/composables/useQRPayment'
 import type { IReceiptReference } from '../receipt/ReceiptRes.model'
@@ -46,6 +47,7 @@ export interface IRefinanceCustomer {
   phoneNumber: string
   phoneNumber2: string
   email: string
+  personalType?: TPersonalType
   receiptReference?: IReceiptReference | null
 }
 

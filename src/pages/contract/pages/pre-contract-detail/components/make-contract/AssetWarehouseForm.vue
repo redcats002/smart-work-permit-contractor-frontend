@@ -61,7 +61,7 @@ import UploadInput from '@/components/input/UploadInput.vue'
 import LocationSelection from '@/components/selection/modules/api/location/LocationSelection.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import { type PreAssetWarehouseFormValues, type PreAssetWarehouseListFormValues, PreAssetWarehouseSchema } from '../schema/make-contract.schema'
+import { type PreAssetWarehouseFormValues, type PreAssetWarehouseListFormValues, PreAssetWarehouseSchema } from '../../schema/make-contract.schema'
 
 interface IProps {
   formKey: number

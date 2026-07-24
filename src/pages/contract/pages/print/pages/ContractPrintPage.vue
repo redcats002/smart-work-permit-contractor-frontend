@@ -305,7 +305,7 @@ import { useAuthStore } from '@/stores/Auth'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import type { IContractCustomer } from '@/models/response/contract/ContractRes.model'
-import { isLandAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
+import { isLandAllAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
 import A4Paper from '@/components/paper/A4Paper.vue'
 import { Icon } from '@iconify/vue'
 import { storeToRefs } from 'pinia'
@@ -344,7 +344,7 @@ function citizenId (id?: string): string {
 }
 
 function isLand (type: string): boolean {
-  return isLandAsset(type)
+  return isLandAllAsset(type)
 }
 
 function isVehicle (type: string): boolean {

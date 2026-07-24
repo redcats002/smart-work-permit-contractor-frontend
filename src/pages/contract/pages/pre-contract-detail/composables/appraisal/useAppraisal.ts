@@ -9,9 +9,9 @@ import type {
   IRequestReappraisalPayload
 } from '@/models/request/pre-contract/PreContractReq.model'
 import PreContractProvider, { type IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
-import { useFormInitialValues as useFormAppraisalPrice } from '../schema/appraisal-price.schema'
-import { useFormInitialValues as useFormRequestReappraisal } from '../schema/asset-valuation.schema'
-import { useFormInitialValues as useFormConfirmAppraisal } from '../schema/confirm-appraisal.schema'
+import { useFormInitialValues as useFormAppraisalPrice } from '../../schema/appraisal-price.schema'
+import { useFormInitialValues as useFormRequestReappraisal } from '../../schema/asset-valuation.schema'
+import { useFormInitialValues as useFormConfirmAppraisal } from '../../schema/confirm-appraisal.schema'
 
 interface IUseAppraisal {
   formRequestReappraisal: Ref<IRequestReappraisalPayload>

@@ -50,6 +50,7 @@ export default function useDetail (): IUseDetail {
     },
     contracts: [],
     summary: {
+      otherExpenses: 0,
       principal: 0,
       interest: 0,
       totalInstallment: 0,

@@ -15,7 +15,7 @@
 import { useAttrs } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel, TBaseOption } from '@/models/Global.model'
-import { ApartmentAssetTypeItems, AssetTypeItems, LandAssetTypeItems, VehicleAssetTypeItems } from '@/enums/modules/asset/AssetType.enum'
+import { AssetTypeItems, LandAssetTypeItems, VehicleAssetTypeItems } from '@/enums/modules/asset/AssetType.enum'
 import BaseStaticSelection from '@/components/selection/modules/static/BaseStaticSelection.vue'
 import type { TAssetCategory } from '@/pages/contract/pages/create/schema/pre-contract.schema'
 
@@ -34,8 +34,7 @@ const selectedNameValue = defineModel<string | null>('selectedName', { default: 
 
 function itemsForCategory (): TBaseOption[] {
   if (props.category === 'VEHICLE') return VehicleAssetTypeItems
-  if (props.category === 'LAND') return LandAssetTypeItems
-  if (props.category === 'APARTMENT') return ApartmentAssetTypeItems
+  if (props.category === 'LAND' || props.category === 'APARTMENT') return LandAssetTypeItems
   return AssetTypeItems
 }
 

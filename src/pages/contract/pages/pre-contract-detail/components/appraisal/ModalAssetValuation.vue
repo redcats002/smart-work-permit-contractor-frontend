@@ -77,7 +77,7 @@ import BaseModal from '@/components/modal/BaseModal.vue'
 import EvaluatorLevelSelection from '@/components/selection/modules/static/evaluator-level/EvaluatorLevelSelection.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import { AssetValuationSchema, useFormInitialValues } from '../schema/asset-valuation.schema'
+import { AssetValuationSchema, useFormInitialValues } from '../../schema/asset-valuation.schema'
 
 interface IProps {
   disabled?: boolean

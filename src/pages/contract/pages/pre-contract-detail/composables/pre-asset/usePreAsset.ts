@@ -8,10 +8,10 @@ import type { TBaseParamsId } from '@/models/response/Response.model'
 import PreContractProvider, { type IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
 import type { IMedia } from '@/resources/provider/Upload.provider'
 import useUpload from '@/composables/useUpload'
-import type { ModalApartmentFormValues } from '../schema/apartment.schema'
-import type { ModalLandFormValues } from '../schema/land.schema'
-import { useInitForm } from '../schema/pre-asset.schema'
-import type { ModalVehicleFormValues } from '../schema/vehicle.schema'
+import type { ModalApartmentFormValues } from '../../schema/apartment.schema'
+import type { ModalLandFormValues } from '../../schema/land.schema'
+import { useInitForm } from '../../schema/pre-asset.schema'
+import type { ModalVehicleFormValues } from '../../schema/vehicle.schema'
 
 interface IUsePreAsset {
   formPreAsset: Ref<IUpdatePreAssetPayload>

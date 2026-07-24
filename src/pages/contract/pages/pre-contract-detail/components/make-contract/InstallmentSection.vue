@@ -128,8 +128,8 @@ import LabelField from '@/components/input/LabelField.vue'
 import InterestTypeSelection from '@/components/selection/modules/static/interest-type/InterestTypeSelection.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
-import { type IInstallmentRow, useInstallment } from '../composables/useInstallment'
-import { type InstallmentFormValues, InstallmentSchema } from '../schema/make-contract.schema'
+import { type IInstallmentRow, useInstallment } from '../../composables/make-contract/useInstallment'
+import { type InstallmentFormValues, InstallmentSchema } from '../../schema/make-contract.schema'
 import InstallmentTable from './InstallmentTable.vue'
 
 interface IInstallmentContract {
