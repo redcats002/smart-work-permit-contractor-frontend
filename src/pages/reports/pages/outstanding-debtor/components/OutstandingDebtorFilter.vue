@@ -54,14 +54,14 @@
               placeholder="เลือกวันเริ่มครบสัญญา"
               show-clear />
           </LabelField>
-          <LabelField
+          <!-- <LabelField
             label="วันที่ครบสัญญา (สิ้นสุด)"
             placeholder="ทั้งหมด">
             <DatePickerInput
               v-model="filters.endDateOfFinalInstallmentDate"
               placeholder="เลือกวันสิ้นสุดครบสัญญา"
               show-clear />
-          </LabelField>
+          </LabelField> -->
         </div>
         <template #footer="{ close }">
           <FormActionFilter
