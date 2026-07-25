@@ -10,6 +10,7 @@
         <div class="relative z-10 bg-white rounded-xl shadow-xl flex flex-col items-center p-6 max-w-sm w-full mx-4">
           <!-- Thai QR Payment Card -->
           <div
+            ref="qrCardRef"
             class="border-2 border-[#e0e0e0] rounded-xl overflow-hidden bg-white shadow-sm"
             style="width: 296px; height: 420px;">
             <div class="flex flex-col h-full">
@@ -92,6 +93,7 @@
 
 <script setup lang="ts">
 import { ref, watch, computed, onUnmounted } from 'vue'
+import html2canvas from 'html2canvas'
 
 interface IProps {
   qrImage?: string
@@ -111,6 +113,7 @@ const emit = defineEmits<{
   'cancel': []
 }>()
 
+const qrCardRef = ref<HTMLElement | null>(null)
 const remainingSeconds = ref<number>(0)
 let timerInterval: ReturnType<typeof setInterval> | null = null
 
@@ -149,8 +152,24 @@ function stopTimer (): void {
   }
 }
 
-function onSaveQR (): void {
-  // TODO: download QR image
+async function onSaveQR (): Promise<void> {
+  if (!props.qrImage || !qrCardRef.value) return
+
+  const canvas = await html2canvas(qrCardRef.value, {
+    useCORS: true,
+    backgroundColor: '#ffffff',
+    scale: 2
+  })
+
+  const dataUrl = canvas.toDataURL('image/png')
+  emit('save-qr', dataUrl)
+
+  const link = document.createElement('a')
+  link.href = dataUrl
+  link.download = `qr-payment-${props.trxId || Date.now()}.png`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
 
 function onCancel (): void {
