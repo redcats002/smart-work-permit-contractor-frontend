@@ -52,7 +52,11 @@ export function useDayjs (): TUseDayjs {
     const months = now.diff(birthDate.add(years, 'year'), 'month')
     const days = now.diff(birthDate.add(years, 'year').add(months, 'month'), 'day')
 
-    return `${years} ปี ${months} เดือน ${days} วัน`
+    const parseYears = Number.isNaN(years) ? 0 : years
+    const parseMonths = Number.isNaN(months) ? 0 : months
+    const parseDays = Number.isNaN(days) ? 0 : days
+
+    return `${parseYears} ปี ${parseMonths} เดือน ${parseDays} วัน`
   }
 
   const formatDate = (input?: string | Date): string => {

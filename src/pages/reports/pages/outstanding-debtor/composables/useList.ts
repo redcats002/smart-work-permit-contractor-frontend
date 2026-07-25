@@ -113,3 +113,57 @@ export function useSuccessDebtorList (): ReturnType<typeof useList> {
 export function useAllDebtorList (): ReturnType<typeof useList> {
   return useList()
 }
+
+interface IUsePrintList {
+  items: Ref<IOutstandingDebtorList[]>
+  summary: Ref<IOutStandingDebtorSummary>
+  fetch(filters: IOutstandingDebtorFilter): Promise<void>
+}
+
+function usePrintList (fixedStatus?: TContractStatus): IUsePrintList {
+  const OutstandingDebtorService: IOutstandingDebtorProvider = new OutstandingDebtorProvider()
+
+  const items = ref<IOutstandingDebtorList[]>([])
+  const summary = ref<IOutStandingDebtorSummary>({
+    principal: 0,
+    installmentCount: 0,
+    principalAndInterest: 0,
+    monthlyInstallment: 0,
+    amountPaid: 0,
+    outstanding: 0,
+    latestPaymentAmount: 0
+  })
+
+  async function fetch (filters: IOutstandingDebtorFilter): Promise<void> {
+    const response = await OutstandingDebtorService.getOutstandingDebtorPaginate({
+      ...filters,
+      status: fixedStatus,
+      page: 1,
+      limit: 9999
+    })
+    items.value = response?.data || []
+    summary.value = {
+      principal: response?.summary?.principal || 0,
+      installmentCount: response?.summary?.installmentCount || 0,
+      principalAndInterest: response?.summary?.principalAndInterest || 0,
+      monthlyInstallment: response?.summary?.monthlyInstallment || 0,
+      amountPaid: response?.summary?.amountPaid || 0,
+      outstanding: response?.summary?.outstanding || 0,
+      latestPaymentAmount: response?.summary?.latestPaymentAmount || 0
+    }
+  }
+
+  return { items, summary, fetch }
+}
+
+export function useOutstandingDebtorPrint (): IUsePrintList {
+  return usePrintList(ContractStatusEnum.PENDING)
+}
+
+export function useSuccessDebtorPrint (): IUsePrintList {
+  return usePrintList(ContractStatusEnum.CLOSE_CONTRACT)
+}
+
+export function useAllDebtorPrint (): IUsePrintList {
+  return usePrintList()
+}

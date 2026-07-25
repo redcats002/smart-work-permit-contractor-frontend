@@ -12,12 +12,14 @@
         <template #activator="{ open }">
           <FilterButton @click="open()" />
         </template>
-        <!-- <div class="flex flex-col gap-5">
-            <div class="w-fit">
-              <LabelField
-                label="สถานะ" />
-            </div>
-          </div> -->
+        <div class="flex flex-col gap-5">
+          <div class="w-full">
+            <LabelField
+              label="สาขา">
+              <BranchSelection v-model="filters.branchId" />
+            </LabelField>
+          </div>
+        </div>
         <template #footer="{ close }">
           <FormActionFilter
             @clear="onClear(close)"
@@ -38,9 +40,11 @@ import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
 import FormActionFilter from '@/components/button/FormActionFilter.vue'
 import Spacer from '@/components/flex/Spacer.vue'
+import LabelField from '@/components/input/LabelField.vue'
 // import LabelField from '@/components/input/LabelField.vue'
 import SearchInput from '@/components/input/SearchInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
+import BranchSelection from '@/components/selection/modules/api/branch/BranchSelection.vue'
 
 interface IEmits {
   search: []
@@ -51,7 +55,7 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>('search', { default: '' })
-defineModel<IBranchSummaryReportFilter>('filters', { default: (): IBranchSummaryReportFilter => ({}) })
+const filters = defineModel<IBranchSummaryReportFilter>('filters', { default: (): IBranchSummaryReportFilter => ({}) })
 
 function onSearch (): void {
   emits('search')
@@ -64,6 +68,7 @@ function onModalSearch (close: () => void): void {
 }
 
 function onClear (close: () => void): void {
+  filters.value = {}
   emits('search')
   emits('clear')
   close()

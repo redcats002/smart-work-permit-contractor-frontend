@@ -3,7 +3,11 @@ import { useDayjs } from '@/utils/Dayjs'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IAnnualFinanceReceiptFilter } from '@/models/modules/report/annual-finance-receipt/Filter.model'
 import type { IGetAnnualFinanceReceiptList } from '@/models/request/report/annual-finance-receipt/AnnualFinanceReceiptReq.model'
-import type { IAnnualFinanceReceiptList, IAnnualFinanceReceiptSummary, IMonthData } from '@/models/response/report/annual-finance-receipt/AnnualFinanceReceiptRes.model'
+import type {
+  IAnnualFinanceReceiptList,
+  IAnnualFinanceReceiptSummary,
+  IMonthData
+} from '@/models/response/report/annual-finance-receipt/AnnualFinanceReceiptRes.model'
 import AnnualFinanceReceiptProvider, { type IAnnualFinanceReceiptProvider } from '@/resources/provider/report/AnnualFinanceReceipt.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
@@ -34,6 +38,7 @@ export default function useList (): IUseList {
       limit: pagination.value.limit,
       sortBy: sortBy.value || undefined,
       sortOrder: sortOrder.value,
+      search: search.value,
       ...normalizedFilters
     }
   })

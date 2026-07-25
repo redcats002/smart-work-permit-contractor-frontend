@@ -42,6 +42,7 @@ export default function useList (): IUseList {
       limit: pagination.value.limit,
       sortBy: sortBy.value || undefined,
       sortOrder: sortOrder.value,
+      search: search.value || undefined,
       ...normalizedFilters
     }
   })
