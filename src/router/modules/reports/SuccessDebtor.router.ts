@@ -24,6 +24,16 @@ export default {
         icon: 'eva:list-fill',
         back: { name: 'ReportListPage' }
       }
+    },
+    {
+      path: 'print',
+      name: 'SuccessDebtorPrintPage',
+      component: (): ComponentOptions => import('@/pages/reports/pages/success-debtor/pages/SuccessDebtorPrintPage.vue'),
+      meta: {
+        auth: true,
+        layout: 'blank',
+        title: 'พิมพ์รายงานลูกหนี้ปิดบัญชี'
+      }
     }
   ]
 } as RouteRecordRaw
