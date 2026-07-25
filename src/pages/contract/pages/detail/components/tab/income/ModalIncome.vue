@@ -78,8 +78,7 @@
           label="หลักฐานการชำระ"
           name="url"
           tag="div"
-          hide-error
-          required>
+          hide-error>
           <UploadInput
             v-model="formData.file"
             class="border border-dashed border-gray-700 rounded-md"
