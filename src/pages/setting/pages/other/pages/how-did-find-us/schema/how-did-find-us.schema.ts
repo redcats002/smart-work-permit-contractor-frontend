@@ -2,7 +2,7 @@ import type { IActionHowDidFindUsPayload } from '@/models/request/how-did-find-u
 import { z } from 'zod'
 
 export const HowDidFindUsSchema = z.object({
-  name: z.string().min(1, 'กรุณากรอกชื่ออาชีพ')
+  name: z.string().min(1, 'กรุณากรอกชื่อช่องทางที่พบเรา')
 })
 
 export type HowDidFindUsFormValues = z.infer<typeof HowDidFindUsSchema>
