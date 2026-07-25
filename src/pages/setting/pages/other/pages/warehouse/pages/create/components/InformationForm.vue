@@ -5,6 +5,7 @@
         v-model="isActive"
         class="md:col-span-3"
         false-label="ปิดใช้งาน"
+        name="status"
         true-label="ใช้งาน" />
       <LabelField
         v-model="model.name"

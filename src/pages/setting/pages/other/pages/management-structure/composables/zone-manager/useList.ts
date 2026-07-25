@@ -64,9 +64,11 @@ export default function useList (): IUseList {
     await useFetch()
   }
   async function useDelete (id: TBaseParamsId): Promise<void> {
-    await ManagementPositionService.deleteManagementPosition(id)
-    toast.success('ดำเนินการสำเร็จ')
-    await useFetch()
+    handleLoading(async (): Promise<void> => {
+      await ManagementPositionService.deleteManagementPosition(id)
+      toast.success('ดำเนินการสำเร็จ')
+      await useFetch()
+    })
   }
 
   function onCreate (): void {

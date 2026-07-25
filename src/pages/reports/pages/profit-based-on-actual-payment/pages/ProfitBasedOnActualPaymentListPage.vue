@@ -12,7 +12,8 @@
       <Spacer />
       <PrintButton
         icon="material-symbols:print-outline-rounded"
-        label="พิมพ์" />
+        label="พิมพ์"
+        @click="onPrint()" />
     </ProfitBasedOnActualPaymentFilter>
     <BasePage>
       <ProfitBasedOnActualPaymentTable
@@ -28,6 +29,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
@@ -38,6 +40,7 @@ import ProfitBasedOnActualPaymentFilter from '../components/ProfitBasedOnActualP
 import ProfitBasedOnActualPaymentTable from '../components/ProfitBasedOnActualPaymentTable.vue'
 import useList from '../composables/useList'
 
+const router = useRouter()
 const {
   filters,
   items,
@@ -50,6 +53,18 @@ const {
   onClearFilters,
   onSearch
 } = useList()
+
+function onPrint (): void {
+  router.push({
+    name: 'ProfitBasedOnActualPaymentPrintPage',
+    query: {
+      search: search.value || undefined,
+      branchId: filters.value.branchId || undefined,
+      startDate: filters.value.startDate || undefined,
+      endDate: filters.value.endDate || undefined
+    }
+  })
+}
 
 onMounted((): void => {
   fetch()

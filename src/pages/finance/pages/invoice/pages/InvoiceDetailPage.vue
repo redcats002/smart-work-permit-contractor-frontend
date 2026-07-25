@@ -14,9 +14,7 @@
             :index-chunk="0"
             :installment-form="installmentForm"
             :installment-items="installmentForm.items"
-            class="page"
-            @on-add-row="onAddRow()"
-            @on-delete-row="onDeleteRow($event)" />
+            class="page" />
         </div>
       </div>
       <div
@@ -30,9 +28,7 @@
             :index-chunk="index"
             :installment-form="installmentForm"
             :installment-items="page"
-            class="page"
-            @on-add-row="onAddRow()"
-            @on-delete-row="onDeleteRow($event)" />
+            class="page" />
         </div>
       </div>
     </BasePage>
@@ -58,18 +54,6 @@ const paginatedInstallment = computed((): IInvoiceDetailItems[][] => {
   }
   return chunks
 })
-function onAddRow (): void {
-  installmentForm.value.items.push({
-    name: '',
-    amount: 0,
-    qty: 0,
-    isMain: false
-  })
-}
-
-function onDeleteRow (index: number): void {
-  installmentForm.value.items.splice(index, 1)
-}
 function onPrint (): void {
   window.print()
 }

@@ -6,6 +6,7 @@
       class="flex items-end flex-wrap gap-5 mb-4 ">
       <Switch
         v-model="model.options[i].isRequirePrefix"
+        :name="`options.${i}.isRequirePrefix`"
         class="mb-2 w-full md:w-fit"
         false-label="ไม่กำหนดตัวย่อ"
         true-label="กำหนดตัวย่อ" />
@@ -104,6 +105,4 @@ watch((): WarehouseFormValues['options'] => model.value.options, (): void => {
 }, { deep: true })
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

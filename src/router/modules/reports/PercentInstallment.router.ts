@@ -24,6 +24,17 @@ export default {
         icon: 'eva:list-fill',
         back: { name: 'ReportListPage' }
       }
+    },
+    {
+      path: 'print',
+      name: 'PercentInstallmentPrintPage',
+      component: (): ComponentOptions => import('@/pages/reports/pages/percent-installment-payment/pages/PercentInstallmentPrintPage.vue'),
+      meta: {
+        auth: true,
+        title: 'พิมพ์รายงานรับชำระค่างวดคิดเป็นเปอร์เซ็นต์',
+        layout: 'blank',
+        back: { name: 'PercentInstallmentListPage' }
+      }
     }
   ]
 } as RouteRecordRaw

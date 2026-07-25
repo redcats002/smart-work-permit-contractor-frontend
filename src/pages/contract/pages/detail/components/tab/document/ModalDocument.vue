@@ -31,7 +31,25 @@
           required>
           <DocumentTypeSelection
             v-model="formData.documentType"
-            :invalid="invalid" />
+            :invalid="invalid"
+            name="documentType"
+            placeholder="กรุณาเลือกประเภทเอกสาร" />
+        </LabelField>
+
+        <LabelField
+          v-slot="{ invalid }"
+          :form="$form"
+          label="คลัง"
+          name="warehouseId"
+          tag="div"
+          hide-error
+          required>
+          <WarehouseSelection
+            v-model="formData.warehouseId"
+            :disabled="mode==='UPDATE'"
+            :invalid="invalid"
+            name="warehouseId"
+            placeholder="กรุณาเลือกคลัง" />
         </LabelField>
 
         <LabelField
@@ -42,10 +60,13 @@
           tag="div"
           hide-error
           required>
-          <WarehouseSelection
+          <LocationSelection
             v-model="formData.locationId"
-            :disabled="mode==='UPDATE'"
-            :invalid="invalid" />
+            :disabled="mode==='UPDATE' || !formData.warehouseId"
+            :invalid="invalid"
+            :warehouse-id="formData.warehouseId"
+            name="locationId"
+            placeholder="กรุณาเลือกจุดจัดเก็บ" />
         </LabelField>
 
         <LabelField
@@ -109,6 +130,7 @@ import FileAttachment from '@/components/display/FileAttachment.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import UploadInput from '@/components/input/UploadInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
+import LocationSelection from '@/components/selection/modules/api/location/LocationSelection.vue'
 import WarehouseSelection from '@/components/selection/modules/api/warehouse/WarehouseSelection.vue'
 import DocumentTypeSelection from '@/components/selection/modules/static/document-type/DocumentTypeSelection.vue'
 import useUpload from '@/composables/useUpload'
@@ -195,9 +217,12 @@ function onOpen (): void {
 
 function onSubmit (event: FormSubmitEvent, close: () => void): void {
   if (!event.valid) {
+    console.log(event)
+
     scrollToFirstError(event.errors)
     return
   }
+
   const itemId = props.item?.id
   handleLoading(async (): Promise<void> => {
     const uploadedFiles = await getUploadImages(media.value)

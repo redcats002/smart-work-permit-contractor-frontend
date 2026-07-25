@@ -153,6 +153,7 @@ watch(model, (): void => {
 
 watch(
   options, (): void => {
+    if (allOptions.value.length === 0) return
     syncInnerFromModel()
   }, { immediate: true }
 )

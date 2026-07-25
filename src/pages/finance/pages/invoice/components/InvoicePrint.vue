@@ -147,75 +147,13 @@
               {{ indexChunk * 5 + Number(index) + 1 }}
             </td>
             <td class="p-3">
-              <div
-                v-if="!item.isMain"
-                class="flex items-center justify-start w-full gap-2">
-                <LabelField
-                  v-model="item.name"
-                  class="w-full print:hidden"
-                  tag="div" />
-                <div class="hidden print:block">
-                  {{ item.name }}
-                </div>
-              </div>
-              <div v-else>
-                {{ item.name }}
-              </div>
+              {{ item.name }}
             </td>
             <td class="p-3 text-center">
-              <div
-                v-if="!item.isMain"
-                class="flex items-center justify-end gap-2">
-                <LabelField
-                  class="print:hidden"
-                  tag="div">
-                  <InputNumber
-                    v-model="item.qty"
-                    class="h-9! shadow-none!"
-                    fluid />
-                </LabelField>
-                <div class="hidden print:block w-full text-center flex justify-center">
-                  {{ item.qty }}
-                </div>
-              </div>
-              <div v-else>
-                {{ formatter.numberFormat(item.qty) }}
-              </div>
+              {{ formatter.numberFormat(item.qty) }}
             </td>
             <td class="p-3 text-right">
-              <div
-                v-if="!item.isMain"
-                class="flex items-center justify-end gap-2">
-                <LabelField
-                  class="print:hidden"
-                  tag="div">
-                  <InputNumber
-                    v-model="item.amount"
-                    class="h-9! shadow-none!"
-                    fluid />
-                </LabelField>
-                <div class="hidden print:block">
-                  {{ item.amount }}
-                </div>
-                <Icon
-                  class="text-primary text-[32px] cursor-pointer no-print"
-                  icon="mdi-delete-outline"
-                  @click="onDeleteRow(indexChunk * 5 + Number(index))" />
-              </div>
-              <div v-else>
-                {{ formatter.numberFormat2Decimal(item.amount) }}
-              </div>
-            </td>
-          </tr>
-          <tr class="border-t no-print">
-            <td
-              class="p-3"
-              colspan="4">
-              <div
-                class="text-primary flex items-center text-[14px] gap-2 cursor-pointer"
-                @click="onAddRow()">
-                <Icon icon="mdi-plus" /> <span> เพิ่มรายการ </span>
-              </div>
+              {{ formatter.numberFormat(item.amount) }}
             </td>
           </tr>
         </tbody>
@@ -250,13 +188,13 @@
         ช่องทางการชำระเงิน
       </div>
       <div class="mb-4">
-        1. ชำระได้ที่ มิตรแท้ลีสซิ่ง ทุกสาขา
+        1. ชำระได้ที่ มิตรแท้สยาม ทุกสาขา
       </div>
       <div class="mb-4">
-        2. ชำระผ่าน QR Code PromptPay
+        2. ชำระผ่าน QR Code PromptPay ได้ที่ LINE OA @MittaeSiam
       </div> <img
         class="w-[133px] border"
-        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSteZ_VfYiuxXu9R5CrTqDyPHOr9oFCaAJX8g&s">
+        src="/images/line-add.png">
     </div>
   </div>
 </template>
@@ -265,13 +203,7 @@ import { computed } from 'vue'
 import { dayjs } from '@/plugins/dayjs.plugin'
 import { formatter } from '@/utils/Formatter'
 import type { IInvoiceDetail, IInvoiceDetailItems, IInvoiceInstallment } from '@/models/response/invoice/InvoiceRes.model'
-import LabelField from '@/components/input/LabelField.vue'
-import { Icon } from '@iconify/vue'
 
-interface IEmits {
-  onAddRow: []
-  onDeleteRow: [index: number]
-}
 interface IProps {
   form: IInvoiceDetail
   installmentForm: IInvoiceInstallment
@@ -279,16 +211,8 @@ interface IProps {
   indexChunk: number
 }
 const props = defineProps<IProps>()
-const emits = defineEmits<IEmits>()
 const totalPrice = computed((): number =>
   props.installmentForm.items.reduce((sum: number, item: IInvoiceDetailItems): number => sum + Number(item.amount), 0))
-
-function onAddRow (): void {
-  emits('onAddRow')
-}
-function onDeleteRow (index: number): void {
-  emits('onDeleteRow', index)
-}
 
 </script>
 <style scoped>

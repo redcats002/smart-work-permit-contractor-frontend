@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/typedef */
 import { schema } from '@/utils/Schema'
 import { LocationStatusEnum } from '@/enums/modules/warehouse/LocationStatus.enum'
 import { WarehouseStatusEnum } from '@/enums/modules/warehouse/WarehouseStatus.enum'
@@ -5,10 +6,17 @@ import { z } from 'zod'
 
 export const WarehouseOptionSchema = z.object({
   id: z.number().optional(),
-  isRequirePrefix: z.boolean(),
-  prefix: z.string().min(1, 'กรุณากรอกคำนำหน้าตำแหน่ง'),
-  maxLimit: z.number().min(1, 'กรุณากรอกจำนวนสูงสุดของตำแหน่ง')
-})
+  isRequirePrefix: z.boolean().optional(),
+  prefix: z.string().optional(),
+  maxLimit: z.number().min(1, 'กรุณากรอกจำนวนจุดจัดเก็บ')
+}).refine(
+  (data) => {
+    if (data.isRequirePrefix) {
+      return data.prefix !== undefined && data.prefix.trim() !== ''
+    }
+    return true
+  }, { message: 'กรุณากรอกตัวย่อจุดจัดเก็บ', path: ['prefix'] }
+)
 
 export const WarehouseLocationSchema = z.object({
   id: z.number().optional(),
