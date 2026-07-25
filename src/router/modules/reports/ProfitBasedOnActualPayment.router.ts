@@ -24,6 +24,17 @@ export default {
         icon: 'eva:list-fill',
         back: { name: 'ReportListPage' }
       }
+    },
+    {
+      path: 'print',
+      name: 'ProfitBasedOnActualPaymentPrintPage',
+      component: (): ComponentOptions => import('@/pages/reports/pages/profit-based-on-actual-payment/pages/ProfitBasedOnActualPaymentPrintPage.vue'),
+      meta: {
+        auth: true,
+        title: 'พิมพ์รายงานกำไรตามการรับชำระจริง',
+        layout: 'blank',
+        back: { name: 'ProfitBasedOnActualPaymentListPage' }
+      }
     }
   ]
 } as RouteRecordRaw

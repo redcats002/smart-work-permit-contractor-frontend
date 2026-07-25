@@ -24,6 +24,17 @@ export default {
         icon: 'eva:list-fill',
         back: { name: 'ReportListPage' }
       }
+    },
+    {
+      path: 'print',
+      name: 'PaymentsForAccountClosurePrintPage',
+      component: (): ComponentOptions => import('@/pages/reports/pages/payments-for-account-closure/page/PaymentsForAccountClosurePrintPage.vue'),
+      meta: {
+        auth: true,
+        title: 'พิมพ์รายงานการรับชำระเงินลูกหนี้ปิดบัญชี',
+        layout: 'blank',
+        back: { name: 'PaymentsForAccountListClosurePage' }
+      }
     }
   ]
 } as RouteRecordRaw

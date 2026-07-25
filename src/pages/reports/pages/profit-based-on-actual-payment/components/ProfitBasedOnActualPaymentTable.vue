@@ -83,11 +83,11 @@ const columns = ref<IColumn<IProfitBasedOnActualPaymentList>[]>([
 const itemsFooter = computed((): IFooter[] => {
   const footerConfig: Partial<Record<keyof IProfitBasedOnActualPaymentList, IFooterColConfig<IProfitBasedOnActualPaymentSummary>>> = {
     customerName: { value: 'รวมทั้งสิ้น' },
-    allPrincipal: { value: formatter.numberFormat2Decimal(props.summary?.allPrincipal || 0) },
-    allInterest: { value: formatter.numberFormat2Decimal(props.summary?.allInterest || 0) },
-    receiveInstallmentAmount: { value: formatter.numberFormat2Decimal(props.summary?.receiveInstallmentAmount || 0) },
-    principal: { value: formatter.numberFormat2Decimal(props.summary?.principal || 0) },
-    interest: { value: formatter.numberFormat2Decimal(props.summary?.interest || 0) }
+    allPrincipal: { value: formatter.numberFormat2Decimal(props.summary?.allPrincipal || 0), footerClass: 'text-right' },
+    allInterest: { value: formatter.numberFormat2Decimal(props.summary?.allInterest || 0), footerClass: 'text-right' },
+    receiveInstallmentAmount: { value: formatter.numberFormat2Decimal(props.summary?.receiveInstallmentAmount || 0), footerClass: 'text-right' },
+    principal: { value: formatter.numberFormat2Decimal(props.summary?.principal || 0), footerClass: 'text-right' },
+    interest: { value: formatter.numberFormat2Decimal(props.summary?.interest || 0), footerClass: 'text-right' }
   }
   return generateTableFooter(columns.value, props.summary, footerConfig)
 })

@@ -165,19 +165,23 @@ const loadCard = async (): Promise<void> => {
 }
 
 const loadChartMarket = async (): Promise<void> => {
+  const start = marketingStart.value
+  const end = marketingEnd.value ?? start
   const res = await DashboardService.getChartMarket({
     branchId: branchId.value,
-    startDate: dayjs.formatDateRequest(marketingStart.value ?? undefined),
-    endDate: dayjs.formatDateRequest(marketingEnd.value ?? undefined)
+    startDate: dayjs.formatDateRequest(start ?? undefined),
+    endDate: dayjs.formatDateRequest(end ? dayjs(end).endOf('month').toDate() : undefined)
   })
   marketData.value = res.data
 }
 
 const loadChartLoan = async (): Promise<void> => {
+  const start = loanStart.value
+  const end = loanEnd.value ?? start
   const res = await DashboardService.getChartLoan({
     branchId: branchId.value,
-    startDate: dayjs.formatDateRequest(loanStart.value ?? undefined),
-    endDate: dayjs.formatDateRequest(loanEnd.value ?? undefined)
+    startDate: dayjs.formatDateRequest(start ?? undefined),
+    endDate: dayjs.formatDateRequest(end ? dayjs(end).endOf('month').toDate() : undefined)
   })
   loanData.value = res.data
 }

@@ -36,7 +36,23 @@
             v-model="formData.documentType"
             :invalid="invalid"
             name="documentType"
-            placeholder="เลือกประเภทเอกสาร" />
+            placeholder="กรุณาเลือกประเภทเอกสาร" />
+        </LabelField>
+
+        <LabelField
+          v-slot="{ invalid }"
+          :form="$form"
+          label="คลัง"
+          name="warehouseId"
+          tag="div"
+          hide-error
+          required>
+          <WarehouseSelection
+            v-model="formData.warehouseId"
+            :disabled="mode==='UPDATE'"
+            :invalid="invalid"
+            name="warehouseId"
+            placeholder="กรุณาเลือกคลัง" />
         </LabelField>
 
         <LabelField
@@ -49,10 +65,11 @@
           required>
           <LocationSelection
             v-model="formData.locationId"
-            :disabled="mode==='UPDATE'"
+            :disabled="mode==='UPDATE' || !formData.warehouseId"
             :invalid="invalid"
+            :warehouse-id="formData.warehouseId"
             name="locationId"
-            placeholder="เลือกจุดจัดเก็บ" />
+            placeholder="กรุณาเลือกจุดจัดเก็บ" />
         </LabelField>
 
         <LabelField
@@ -111,14 +128,15 @@ import type { IContractDocumentList } from '@/models/response/contract-document/
 import { DocumentTypeEnum, formatTitle as formatDocumentType } from '@/enums/modules/contract/DocumentType.enum'
 import ContractDocumentProvider, { type IContractDocumentProvider } from '@/resources/provider/contract-document/ContractDocument.provider'
 import type { IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
-import DeleteModal from '@/components/modal/DeleteModal.vue'
 import BaseActionMenu from '@/components/base/BaseActionMenu.vue'
 import FormAction from '@/components/button/FormAction.vue'
 import FileAttachment from '@/components/display/FileAttachment.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import UploadInput from '@/components/input/UploadInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
+import DeleteModal from '@/components/modal/DeleteModal.vue'
 import LocationSelection from '@/components/selection/modules/api/location/LocationSelection.vue'
+import WarehouseSelection from '@/components/selection/modules/api/warehouse/WarehouseSelection.vue'
 import DocumentTypeSelection from '@/components/selection/modules/static/document-type/DocumentTypeSelection.vue'
 import useUpload from '@/composables/useUpload'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
@@ -221,6 +239,7 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
     scrollToFirstError(event.errors)
     return
   }
+
   const itemId = props.item?.id
   handleLoading(async (): Promise<void> => {
     const uploadedFiles = await getUploadImages(media.value)

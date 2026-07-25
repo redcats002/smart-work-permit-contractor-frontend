@@ -105,6 +105,4 @@ watch((): WarehouseFormValues['options'] => model.value.options, (): void => {
 }, { deep: true })
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

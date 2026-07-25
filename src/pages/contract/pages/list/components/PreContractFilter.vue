@@ -21,17 +21,6 @@
               show-clear />
           </LabelField>
         </div>
-        <div>
-          <LabelField
-            label="สาขา"
-            name="branch"
-            tag="div">
-            <BranchSelection
-              v-model="filters.branchId"
-              placeholder="ทั้งหมด"
-              show-clear />
-          </LabelField>
-        </div>
       </div>
     </template>
     <template #footer="{ close }">
@@ -52,7 +41,6 @@ import FormActionFilter from '@/components/button/FormActionFilter.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import SelectInput from '@/components/input/SelectInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
-import BranchSelection from '@/components/selection/modules/api/branch/BranchSelection.vue'
 
 interface IEmits {
   search: []

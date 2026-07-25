@@ -38,7 +38,7 @@
           tag="div"
           hide-error
           required>
-          <ContractLoanPurposeSelection
+          <ContractTopicSelection
             v-model:selected-name="formData.topic"
             :invalid="invalid"
             name="topic" />
@@ -79,7 +79,7 @@ import FormAction from '@/components/button/FormAction.vue'
 import DatePickerInput from '@/components/input/DatePickerInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
-import ContractLoanPurposeSelection from '@/components/selection/modules/api/contract-loan-purpose/ContractLoanPurposeSelection.vue'
+import ContractTopicSelection from '@/components/selection/modules/static/contract-topic/ContractTopicSelection.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { ContractHistorySchema, useFormInitialValues } from './schema/contract-history.schema'
