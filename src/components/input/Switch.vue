@@ -2,6 +2,7 @@
   <div class="flex items-center gap-2.5">
     <ToggleSwitch
       v-model="checked"
+      :name="name"
       :readonly="readonly"
       data-testid="toggle-switch">
       <template
@@ -25,6 +26,7 @@
 import { Icon } from '@iconify/vue'
 
 interface IProps {
+  name?: string
   trueLabel?: string
   falseLabel?: string
   labelClass?: string
@@ -33,6 +35,7 @@ interface IProps {
 }
 
 withDefaults(defineProps<IProps>(), {
+  name: undefined,
   trueLabel: '',
   falseLabel: '',
   labelClass: 'font-bold',
