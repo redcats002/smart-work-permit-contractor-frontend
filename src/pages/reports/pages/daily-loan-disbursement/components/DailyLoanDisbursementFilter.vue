@@ -25,6 +25,7 @@
             placeholder="ทั้งหมด">
             <DatePickerInput
               v-model="filters.startDate"
+              placeholder="เลือกวันที่เริ่มต้น"
               show-clear />
           </LabelField>
           <LabelField
@@ -32,6 +33,7 @@
             placeholder="ทั้งหมด">
             <DatePickerInput
               v-model="filters.endDate"
+              placeholder="เลือกวันที่สิ้นสุด"
               show-clear />
           </LabelField>
         </div>

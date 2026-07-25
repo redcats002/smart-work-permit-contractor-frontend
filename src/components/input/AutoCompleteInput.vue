@@ -48,8 +48,11 @@
     <!-- Covers only the text input area (not the dropdown button) to show correct label -->
     <div
       v-if="displayLabel && !editing && !attrs.multiple"
-      :class="attrs.invalid ? 'border-red-400! dark:border-red-300!' : ''"
-      class="absolute inset-y-0 left-0 right-10 cursor-pointer flex items-center px-3
+      :class="[
+        attrs.invalid ? 'border-red-400! dark:border-red-300!' : '',
+        attrs.disabled ? 'cursor-not-allowed opacity-0' : 'cursor-pointer'
+      ]"
+      class="absolute inset-y-0 left-0 right-10 flex items-center px-3
              bg-surface-0 dark:bg-surface-950 text-surface-700 dark:text-surface-0
              border border-r-0 border-surface-300 dark:border-surface-700 rounded-s-sm
              text-sm overflow-hidden"
@@ -98,6 +101,7 @@ function setEditing (value: boolean): void {
 }
 
 async function startEditing (): Promise<void> {
+  if (attrs.disabled) return
   editing.value = true
   await nextTick()
   const el = (autoCompleteRef.value as any)?.$el?.querySelector('input')

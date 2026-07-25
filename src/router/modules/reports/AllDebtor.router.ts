@@ -24,6 +24,16 @@ export default {
         icon: 'eva:list-fill',
         back: { name: 'ReportListPage' }
       }
+    },
+    {
+      path: 'print',
+      name: 'AllDebtorPrintPage',
+      component: (): ComponentOptions => import('@/pages/reports/pages/all-debtor/pages/AllDebtorPrintPage.vue'),
+      meta: {
+        auth: true,
+        layout: 'blank',
+        title: 'พิมพ์รายงานลูกหนี้ทั้งหมด'
+      }
     }
   ]
 } as RouteRecordRaw

@@ -24,6 +24,16 @@ export default {
         icon: 'eva:list-fill',
         back: { name: 'ReportListPage' }
       }
+    },
+    {
+      path: 'print',
+      name: 'OutstandingDebtorPrintPage',
+      component: (): ComponentOptions => import('@/pages/reports/pages/outstanding-debtor/pages/OutstandingDebtorPrintPage.vue'),
+      meta: {
+        auth: true,
+        layout: 'blank',
+        title: 'พิมพ์รายงานลูกหนี้คงเหลือ'
+      }
     }
   ]
 } as RouteRecordRaw

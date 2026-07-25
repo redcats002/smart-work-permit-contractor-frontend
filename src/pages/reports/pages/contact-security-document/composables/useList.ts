@@ -1,10 +1,13 @@
 import { computed, ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
-import usePagination, { type IUsePagination } from '@/composables/usePagination'
 import type { IContractSecurityDocumentReportFilter } from '@/models/modules/report/contract-security-document/Filter.model'
 import type { IGetContractSecurityDocumentReportList } from '@/models/request/report/contract-security-document/ContractSecurityDocumentReq.model'
-import type { IContractSecurityDocumentReportList, IContractSecurityDocumentReportSummary } from '@/models/response/report/contract-security-document/ContractSecurityDocumentRes.model'
+import type {
+  IContractSecurityDocumentReportList,
+  IContractSecurityDocumentReportSummary
+} from '@/models/response/report/contract-security-document/ContractSecurityDocumentRes.model'
 import ContractSecurityDocumentProvider, { type IContractSecurityDocumentProvider } from '@/resources/provider/report/ContractSecurityDocument.provider'
+import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
 interface IUseList extends IUsePagination {
   filters: Ref<IContractSecurityDocumentReportFilter>
@@ -30,6 +33,7 @@ export default function useList (): IUseList {
       limit: pagination.value.limit,
       sortBy: sortBy.value || undefined,
       sortOrder: sortOrder.value,
+      search: search.value || undefined,
       ...filters.value
     }
   })
