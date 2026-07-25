@@ -31,7 +31,9 @@
           required>
           <DocumentTypeSelection
             v-model="formData.documentType"
-            :invalid="invalid" />
+            :invalid="invalid"
+            name="documentType"
+            placeholder="เลือกประเภทเอกสาร" />
         </LabelField>
 
         <LabelField
@@ -42,10 +44,12 @@
           tag="div"
           hide-error
           required>
-          <WarehouseSelection
+          <LocationSelection
             v-model="formData.locationId"
             :disabled="mode==='UPDATE'"
-            :invalid="invalid" />
+            :invalid="invalid"
+            name="locationId"
+            placeholder="เลือกจุดจัดเก็บ" />
         </LabelField>
 
         <LabelField
@@ -62,6 +66,7 @@
           :form="$form"
           label="คำอธิบาย"
           name="note"
+          placeholder="กรุณากรอกคำอธิบาย"
           required />
 
         <FormAction
@@ -109,7 +114,7 @@ import FileAttachment from '@/components/display/FileAttachment.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import UploadInput from '@/components/input/UploadInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
-import WarehouseSelection from '@/components/selection/modules/api/warehouse/WarehouseSelection.vue'
+import LocationSelection from '@/components/selection/modules/api/location/LocationSelection.vue'
 import DocumentTypeSelection from '@/components/selection/modules/static/document-type/DocumentTypeSelection.vue'
 import useUpload from '@/composables/useUpload'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
