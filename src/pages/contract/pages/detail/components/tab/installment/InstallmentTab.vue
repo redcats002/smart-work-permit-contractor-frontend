@@ -11,7 +11,7 @@
       <span>ตารางการชำระ</span>
       <div class="flex gap-2.5">
         <ConfirmModal
-          v-if="isDev || isAlpha"
+          v-if="isDev || isAlpha || isStaging"
           label="ทดสอบวันครบกำหนด"
           @confirm="onTestDueDate()">
           <template #activator="{open}">
@@ -77,7 +77,7 @@ const route = useRoute()
 const router = useRouter()
 
 const { pagination, sortBy, sortOrder, syncQuery, extractPagination } = usePagination()
-const { isAlpha, isDev } = useDev()
+const { isAlpha, isDev, isStaging } = useDev()
 
 const filters = ref<IGetInstallmentList>({})
 const items = ref<IContractInstallmentList[]>([])
