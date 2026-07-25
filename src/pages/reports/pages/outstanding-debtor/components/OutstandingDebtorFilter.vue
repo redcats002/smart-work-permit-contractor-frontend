@@ -27,6 +27,7 @@
               v-model="filters.interestType"
               :options="interestTypeOptions"
               option-label="label"
+              placeholder="ทั้งหมด"
               show-clear />
           </LabelField>
           <LabelField
@@ -34,6 +35,7 @@
             placeholder="ทั้งหมด">
             <DatePickerInput
               v-model="filters.startDateOfCreatedAt"
+              placeholder="เลือกวันที่เริ่มทำสัญญา"
               show-clear />
           </LabelField>
           <LabelField
@@ -41,6 +43,7 @@
             placeholder="ทั้งหมด">
             <DatePickerInput
               v-model="filters.endDateOfCreatedAt"
+              placeholder="เลือกวันที่สิ้นสุด"
               show-clear />
           </LabelField>
           <LabelField
@@ -48,6 +51,7 @@
             placeholder="ทั้งหมด">
             <DatePickerInput
               v-model="filters.startDateOfFinalInstallmentDate"
+              placeholder="เลือกวันเริ่มครบสัญญา"
               show-clear />
           </LabelField>
           <LabelField
@@ -55,6 +59,7 @@
             placeholder="ทั้งหมด">
             <DatePickerInput
               v-model="filters.endDateOfFinalInstallmentDate"
+              placeholder="เลือกวันสิ้นสุดครบสัญญา"
               show-clear />
           </LabelField>
         </div>
