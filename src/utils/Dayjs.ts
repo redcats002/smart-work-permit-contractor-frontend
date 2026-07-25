@@ -56,13 +56,15 @@ export function useDayjs (): TUseDayjs {
   }
 
   const formatDate = (input?: string | Date): string => {
-    return input ? dayjs(input).format('DD/MM/BB') : '-'
+    // return input ? dayjs(input).format('DD/MM/BB') : '-'
+    return input ? dayjs(input).format('DD/MM/YY') : '-' // use 'YY' for UAT
   }
   const formatTime = (input?: string | Date): string => {
     return input ? dayjs(input).format('HH:mm[น.]') : '-'
   }
   const formatDateTime = (input?: string | Date): string => {
-    return input ? dayjs(input).format('DD/MM/BBBB HH:mm') : '-'
+    // return input ? dayjs(input).format('DD/MM/BBBB HH:mm') : '-'
+    return input ? dayjs(input).format('DD/MM/YYYY HH:mm') : '-' // use 'YYYY' for UAT
   }
 
   $dayjs.formatDurationThai = formatDurationThai

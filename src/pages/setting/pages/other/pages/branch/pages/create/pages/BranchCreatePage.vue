@@ -113,8 +113,9 @@ const isDisabled = computed((): boolean => {
     const isDayEmpty = !item.day || item.day.length === 0
     const isOpenTimeEmpty = !item.openTime || item.openTime.trim() === ''
     const isCloseTimeEmpty = !item.closeTime || item.closeTime.trim() === ''
+    const isTimeInvalid = !!(item.openTime && item.closeTime) && item.openTime >= item.closeTime
 
-    return isDayEmpty || isOpenTimeEmpty || isCloseTimeEmpty
+    return isDayEmpty || isOpenTimeEmpty || isCloseTimeEmpty || isTimeInvalid
   })
 
   return hasInvalidRow

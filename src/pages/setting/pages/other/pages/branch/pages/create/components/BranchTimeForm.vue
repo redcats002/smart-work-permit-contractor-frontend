@@ -41,6 +41,7 @@
         @click="onRemove(i)" />
     </div>
     <CreateButton
+      :disabled="allDaysUsed"
       class="mt-4"
       label="วัน/เวลา ทำการ"
       @click="onAdd()" />
@@ -50,7 +51,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { IFormState } from '@/models/Form.model'
-import type { TDays } from '@/enums/Date.enum'
+import { EDays, type TDays } from '@/enums/Date.enum'
 import CreateButton from '@/components/button/CreateButton.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import TimePickerInput from '@/components/input/TimePickerInput.vue'
@@ -78,6 +79,10 @@ const notAllowDays = computed((): TDays[] => {
     })
   })
   return days
+})
+
+const allDaysUsed = computed((): boolean => {
+  return notAllowDays.value.filter((d: TDays): d is TDays => d !== undefined).length >= Object.values(EDays).length
 })
 
 function onAdd (): void {
