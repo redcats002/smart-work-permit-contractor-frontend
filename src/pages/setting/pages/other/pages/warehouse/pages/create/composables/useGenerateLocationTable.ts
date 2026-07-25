@@ -13,7 +13,7 @@ export function useGenerateLocationTable (
     const maxLimit = Number.isFinite(option.maxLimit) ? Math.floor(option.maxLimit) : 0
     if (maxLimit < 1) return []
 
-    const cleanPrefix = option.isRequirePrefix ? option.prefix.trim() : ''
+    const cleanPrefix = option.isRequirePrefix ? option?.prefix?.trim() : ''
     const nextCombinations: string[] = []
 
     for (const base of combinations) {

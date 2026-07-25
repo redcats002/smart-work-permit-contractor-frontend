@@ -108,7 +108,7 @@
           <template #default="{ invalid }">
             <DatePickerInput
               v-model="model.contractedAt"
-              :disabled="isStaging || isProd"
+              :disabled="isProd"
               :invalid="invalid"
               :max-date="new Date()"
               name="contractedAt"
@@ -201,7 +201,7 @@ const emits = defineEmits<IEmits>()
 
 const model = defineModel<MortgageFormValues>({ required: true })
 
-const { isStaging, isProd } = useDev()
+const { isProd } = useDev()
 
 const formRef = useTemplateRef<IFormType>('formRef')
 const resolver = zodResolver(MortgageSchema)

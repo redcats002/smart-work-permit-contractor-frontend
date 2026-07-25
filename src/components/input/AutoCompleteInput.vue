@@ -48,13 +48,24 @@
     <!-- Covers only the text input area (not the dropdown button) to show correct label -->
     <div
       v-if="displayLabel && !editing && !attrs.multiple"
-      :class="attrs.invalid ? 'border-red-400! dark:border-red-300!' : ''"
-      class="absolute inset-y-0 left-0 right-10 cursor-pointer flex items-center px-3
+      :class="[
+        attrs.invalid ? 'border-red-400! dark:border-red-300!' : '',
+        attrs.disabled ? 'cursor-not-allowed opacity-0' : ''
+      ]"
+      class="z-10 absolute inset-y-0 left-0 right-10 flex items-center
              bg-surface-0 dark:bg-surface-950 text-surface-700 dark:text-surface-0
              border border-r-0 border-surface-300 dark:border-surface-700 rounded-s-sm
              text-sm overflow-hidden"
-      @click="startEditing()">
-      {{ displayLabel }}
+      @click.stop>
+      <div
+        class="flex-1 flex items-center px-3 overflow-hidden cursor-pointer"
+        @click.stop="startEditing()">
+        {{ displayLabel }}
+      </div>
+      <div
+        v-if="showClear"
+        class="flex h-full w-[50px] shrink-0 items-center justify-center cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors duration-200"
+        @mouseenter="clearModel()" />
     </div>
   </div>
 </template>
@@ -87,6 +98,7 @@ const autoCompleteRef = ref<InstanceType<typeof AutoComplete> | null>(null)
 const editing = ref(false)
 
 const optionLabel = computed((): string => String(attrs?.['option-label'] ?? attrs?.optionLabel ?? 'name'))
+const showClear = computed((): boolean => Boolean(attrs?.['show-clear'] ?? attrs?.showClear))
 
 const displayLabel = computed((): string => {
   if (!model.value || Array.isArray(model.value) || typeof model.value !== 'object') return ''
@@ -98,10 +110,15 @@ function setEditing (value: boolean): void {
 }
 
 async function startEditing (): Promise<void> {
+  if (attrs.disabled) return
   editing.value = true
   await nextTick()
   const el = (autoCompleteRef.value as any)?.$el?.querySelector('input')
   el?.focus()
+}
+
+function clearModel (): void {
+  model.value = null
 }
 
 const clearIconClass = computed((): string => `flex h-full shrink-0 items-center justify-center px-2

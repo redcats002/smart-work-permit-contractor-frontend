@@ -24,6 +24,7 @@
             <DatePickerInput
               v-model="filters.year"
               date-format="yy"
+              placeholder="เลือกปี"
               view="year" />
           </LabelField>
         </div>

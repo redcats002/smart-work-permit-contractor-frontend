@@ -4,6 +4,7 @@
     :class="{
       'h-10 w-10': !label
     }"
+    :disabled="disabled"
     :to="to"
     class="flex items-center rounded-sm w-full md:w-fit"
     outlined>
@@ -26,11 +27,13 @@ interface IProps {
   label?: string
   to?: RouteLocationRaw
   icon?: string
+  disabled?: boolean
 }
 withDefaults(defineProps<IProps>(), {
   label: '',
   to: undefined,
-  icon: 'mdi:plus'
+  icon: 'mdi:plus',
+  disabled: false
 })
 </script>
 

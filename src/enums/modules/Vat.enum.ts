@@ -8,7 +8,7 @@ export enum EVatType {
 export type TVatType = keyof typeof EVatType
 
 const titleMap: Record <TVatType, string> = {
-  [EVatType.VAT]: 'Vat',
+  [EVatType.VAT]: 'VAT',
   [EVatType.NON_VAT]: 'Non VAT'
 }
 

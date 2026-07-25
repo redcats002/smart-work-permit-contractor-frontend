@@ -52,17 +52,23 @@ export function useDayjs (): TUseDayjs {
     const months = now.diff(birthDate.add(years, 'year'), 'month')
     const days = now.diff(birthDate.add(years, 'year').add(months, 'month'), 'day')
 
-    return `${years} ปี ${months} เดือน ${days} วัน`
+    const parseYears = Number.isNaN(years) ? 0 : years
+    const parseMonths = Number.isNaN(months) ? 0 : months
+    const parseDays = Number.isNaN(days) ? 0 : days
+
+    return `${parseYears} ปี ${parseMonths} เดือน ${parseDays} วัน`
   }
 
   const formatDate = (input?: string | Date): string => {
-    return input ? dayjs(input).format('DD/MM/BB') : '-'
+    // return input ? dayjs(input).format('DD/MM/BB') : '-'
+    return input ? dayjs(input).format('DD/MM/YY') : '-' // use 'YY' for UAT
   }
   const formatTime = (input?: string | Date): string => {
     return input ? dayjs(input).format('HH:mm[น.]') : '-'
   }
   const formatDateTime = (input?: string | Date): string => {
-    return input ? dayjs(input).format('DD/MM/BBBB HH:mm') : '-'
+    // return input ? dayjs(input).format('DD/MM/BBBB HH:mm') : '-'
+    return input ? dayjs(input).format('DD/MM/YYYY HH:mm') : '-' // use 'YYYY' for UAT
   }
 
   $dayjs.formatDurationThai = formatDurationThai

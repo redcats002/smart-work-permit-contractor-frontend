@@ -1,4 +1,7 @@
 <template>
+  <DeleteModal
+    v-model="showDeleteConfirm"
+    @confirm="onDeleteConfirm()" />
   <BaseModal
     v-model="visible"
     :label="modalLabel"
@@ -83,6 +86,7 @@
           :form="$form"
           label="คำอธิบาย"
           name="note"
+          placeholder="กรุณากรอกคำอธิบาย"
           required />
 
         <FormAction
@@ -130,6 +134,7 @@ import FileAttachment from '@/components/display/FileAttachment.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import UploadInput from '@/components/input/UploadInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
+import DeleteModal from '@/components/modal/DeleteModal.vue'
 import LocationSelection from '@/components/selection/modules/api/location/LocationSelection.vue'
 import WarehouseSelection from '@/components/selection/modules/api/warehouse/WarehouseSelection.vue'
 import DocumentTypeSelection from '@/components/selection/modules/static/document-type/DocumentTypeSelection.vue'
@@ -182,6 +187,20 @@ function switchToEdit (): void {
 
 function switchToDelete (): void {
   currentMode.value = 'DELETE'
+  showDeleteConfirm.value = true
+}
+
+const showDeleteConfirm = ref<boolean>(false)
+
+function onDeleteConfirm (): void {
+  if (!props.item?.id) return
+  handleLoading(async (): Promise<void> => {
+    await ContractDocumentService.deleteDocument(props.item!.id)
+    toast.success('ลบเอกสารสำเร็จ')
+    showDeleteConfirm.value = false
+    visible.value = false
+    emits('update')
+  })
 }
 
 const readMenuItems = computed((): IMenuItemAction[] => [
@@ -217,8 +236,6 @@ function onOpen (): void {
 
 function onSubmit (event: FormSubmitEvent, close: () => void): void {
   if (!event.valid) {
-    console.log(event)
-
     scrollToFirstError(event.errors)
     return
   }

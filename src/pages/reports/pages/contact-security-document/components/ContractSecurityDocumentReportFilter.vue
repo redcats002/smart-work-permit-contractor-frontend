@@ -16,17 +16,22 @@
           <LabelField
             label="สาขา"
             placeholder="ทั้งหมด">
-            <BranchSelection v-model="filters.branchId" />
+            <BranchSelection
+              v-model="filters.branchId" />
           </LabelField>
           <LabelField
             label="วันที่เริ่มต้น"
             placeholder="ทั้งหมด">
-            <DatePickerInput v-model="filters.startDate" />
+            <DatePickerInput
+              v-model="filters.startDate"
+              placeholder="เลือกวันเริ่มต้น" />
           </LabelField>
           <LabelField
             label="วันที่สิ้นสุด"
             placeholder="ทั้งหมด">
-            <DatePickerInput v-model="filters.endDate" />
+            <DatePickerInput
+              v-model="filters.endDate"
+              placeholder="เลือกวันสิ้นสุด" />
           </LabelField>
         </div>
         <template #footer="{ close }">

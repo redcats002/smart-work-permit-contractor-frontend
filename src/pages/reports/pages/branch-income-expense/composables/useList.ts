@@ -1,9 +1,9 @@
 import { computed, ref, type Ref } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
-import { ReportTypeEnum, REPORT_TYPE_COL1_TYPES, REPORT_TYPE_COL2_TYPES } from '@/enums/modules/report/branch-income-expense/ReportType.enum'
 import type { IBranchIncomeExpenseFilter } from '@/models/modules/report/branch-income-expense/Filter.model'
 import type { IGetBranchIncomeExpenseList } from '@/models/request/report/branch-income-expense/BranchIncomeExpenseReq.model'
 import type { IBranchIncomeExpenseCodeSummary, IBranchIncomeExpenseItem } from '@/models/response/report/branch-income-expense/BranchIncomeExpenseRes.model'
+import { REPORT_TYPE_COL1_TYPES, REPORT_TYPE_COL2_TYPES, ReportTypeEnum } from '@/enums/modules/report/branch-income-expense/ReportType.enum'
 import BranchIncomeExpenseProvider from '@/resources/provider/report/BranchIncomeExpense.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
@@ -49,7 +49,9 @@ export default function useList (): IUseList {
   const paginateQuery = computed((): IGetBranchIncomeExpenseList => ({
     sortBy: sortBy.value || undefined,
     sortOrder: sortOrder.value,
-    filter: filters.value.filter
+    filter: filters.value.filter,
+    limit: 999,
+    search: search.value || undefined
   }))
 
   async function useFetch (): Promise<void> {

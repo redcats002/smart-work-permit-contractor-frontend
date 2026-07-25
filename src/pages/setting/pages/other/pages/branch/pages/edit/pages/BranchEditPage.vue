@@ -33,7 +33,9 @@
               v-model:form-key="formKey"
               :form="$form" />
           </BaseContainer>
-          <FormAction @cancel="onCancel()" />
+          <FormAction
+            :confirm-disabled="isDisabled"
+            @cancel="onCancel()" />
         </Form>
       </div>
     </BasePage>
@@ -46,6 +48,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
+import type { EDays } from '@/enums/Date.enum'
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import type { IBranchById } from '@/models/response/branch/BranchRes.model'
 import type { TErrorResponse } from '@/models/response/Response.model'
@@ -98,6 +101,30 @@ const mainAddress = computed({
   }
 })
 
+interface IBranchItem {
+  day: EDays[]
+  openTime: string
+  closeTime: string
+}
+
+const isDisabled = computed((): boolean => {
+  const times = form.value.branchTimes
+
+  if (!times || times.length === 0) {
+    return true
+  }
+
+  const hasInvalidRow = times.some((item: IBranchItem): boolean => {
+    const isDayEmpty = !item.day || item.day.length === 0
+    const isOpenTimeEmpty = !item.openTime || item.openTime.trim() === ''
+    const isCloseTimeEmpty = !item.closeTime || item.closeTime.trim() === ''
+    const isTimeInvalid = !!(item.openTime && item.closeTime) && item.openTime >= item.closeTime
+
+    return isDayEmpty || isOpenTimeEmpty || isCloseTimeEmpty || isTimeInvalid
+  })
+
+  return hasInvalidRow
+})
 
 async function useSubmit (): Promise<void> {
   await BranchService.updateBranch(branchId.value, usePayload(form.value))

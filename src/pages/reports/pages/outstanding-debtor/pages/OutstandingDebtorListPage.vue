@@ -11,7 +11,8 @@
       @search="onSearch()">
       <PrintButton
         icon="material-symbols:print-outline-rounded"
-        label="พิมพ์" />
+        label="พิมพ์"
+        @click="onPrint()" />
     </OutstandingDebtorFilter>
     <BasePage>
       <OutstandingDebtorTable
@@ -27,6 +28,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
@@ -35,6 +37,9 @@ import PageTitle from '@/components/nav/PageTitle.vue'
 import OutstandingDebtorFilter from '../components/OutstandingDebtorFilter.vue'
 import OutstandingDebtorTable from '../components/OutstandingDebtorTable.vue'
 import { useOutstandingDebtorList } from '../composables/useList'
+
+const route = useRoute()
+const router = useRouter()
 
 const {
   filters,
@@ -48,6 +53,10 @@ const {
   onClearFilters,
   onSearch
 } = useOutstandingDebtorList()
+
+function onPrint (): void {
+  router.push({ name: 'OutstandingDebtorPrintPage', query: route.query })
+}
 
 onMounted((): void => {
   fetch()

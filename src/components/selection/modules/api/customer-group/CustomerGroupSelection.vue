@@ -5,6 +5,7 @@
     v-model:selected-name="selectedNameValue"
     :fetch-suggestions="fetchSuggestions"
     :map-option-to-model="mapOptionToModel"
+    :show-clear="showClear"
     option-label="name" />
 </template>
 
@@ -17,6 +18,18 @@ import type { ICustomerGroupProvider } from '@/resources/provider/customer-group
 import CustomerGroupProvider from '@/resources/provider/customer-group/CustomerGroup.provider'
 import BaseSelection from '@/components/selection/modules/BaseSelection.vue'
 import usePagination from '@/composables/usePagination'
+
+interface IProps {
+  showClear?: boolean
+}
+
+withDefaults(defineProps<IProps>(), {
+  showClear: false
+})
+
+defineOptions({
+  inheritAttrs: false
+})
 
 const attrs = useAttrs()
 const CustomerGroupService: ICustomerGroupProvider = new CustomerGroupProvider()
