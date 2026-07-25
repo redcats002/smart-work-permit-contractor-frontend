@@ -1,4 +1,7 @@
 <template>
+  <DeleteModal
+    v-model="showDeleteConfirm"
+    @confirm="onDeleteConfirm()" />
   <BaseModal
     v-model="visible"
     :label="modalLabel"
@@ -158,6 +161,7 @@ import type { IContractIncomeList } from '@/models/response/contract-income/Cont
 import { EVatType, formatTitle as formatVatTitle, VatTypeItems } from '@/enums/modules/Vat.enum'
 import ContractIncomeProvider, { type IContractIncomeProvider } from '@/resources/provider/contract-income/ContractIncome.provider'
 import type { IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
+import DeleteModal from '@/components/modal/DeleteModal.vue'
 import BaseActionMenu from '@/components/base/BaseActionMenu.vue'
 import FormAction from '@/components/button/FormAction.vue'
 import FileAttachment from '@/components/display/FileAttachment.vue'
@@ -224,6 +228,20 @@ function switchToEdit (): void {
 
 function switchToDelete (): void {
   currentMode.value = 'DELETE'
+  showDeleteConfirm.value = true
+}
+
+const showDeleteConfirm = ref<boolean>(false)
+
+function onDeleteConfirm (): void {
+  if (!props.item?.id) return
+  handleLoading(async (): Promise<void> => {
+    await ContractIncomeService.deleteIncome(props.item!.id)
+    toast.success('ลบรายได้สำเร็จ')
+    showDeleteConfirm.value = false
+    visible.value = false
+    emits('update')
+  })
 }
 
 async function populateForm (): Promise<void> {

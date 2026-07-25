@@ -1,4 +1,7 @@
 <template>
+  <DeleteModal
+    v-model="showDeleteConfirm"
+    @confirm="onDeleteConfirm()" />
   <BaseModal
     v-model="visible"
     :label="modalLabel"
@@ -162,6 +165,7 @@ import type { IContractExpenseList } from '@/models/response/contract-expense/Co
 import { EVatType, formatTitle as formatVatTitle, VatTypeItems } from '@/enums/modules/Vat.enum'
 import ContractExpenseProvider, { type IContractExpenseProvider } from '@/resources/provider/contract-expense/ContractExpense.provider'
 import type { IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
+import DeleteModal from '@/components/modal/DeleteModal.vue'
 import BaseActionMenu from '@/components/base/BaseActionMenu.vue'
 import FormAction from '@/components/button/FormAction.vue'
 import FileAttachment from '@/components/display/FileAttachment.vue'
@@ -225,6 +229,20 @@ function switchToEdit (): void {
 
 function switchToDelete (): void {
   currentMode.value = 'DELETE'
+  showDeleteConfirm.value = true
+}
+
+const showDeleteConfirm = ref<boolean>(false)
+
+function onDeleteConfirm (): void {
+  if (!props.item?.id) return
+  handleLoading(async (): Promise<void> => {
+    await ContractExpenseService.deleteExpense(props.item!.id)
+    toast.success('ลบค่าใช้จ่ายสำเร็จ')
+    showDeleteConfirm.value = false
+    visible.value = false
+    emits('update')
+  })
 }
 
 const readMenuItems = computed((): IMenuItemAction[] => [
