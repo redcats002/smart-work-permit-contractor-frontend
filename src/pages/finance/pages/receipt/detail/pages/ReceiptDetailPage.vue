@@ -28,7 +28,7 @@
       </div>
 
       <!-- Payment table -->
-      <BaseContainer>
+      <BaseContainer v-if="form.contracts.length > 0">
         <div class="border border-[#e0e0e0] rounded overflow-hidden">
           <div class="flex">
             <!-- Col: เลขที่สัญญา -->
@@ -42,7 +42,7 @@
                 <div
                   :style="{ height: `${contract.installments.length * 56}px` }"
                   class="border-b border-[#e0e0e0] flex items-center justify-center px-2">
-                  <span class="font-bold text-[#bd0102] text-sm text-center break-all">{{ contract.idNo }}</span>
+                  <span class="font-bold text-[#bd0102] text-sm text-center whitespace-nowrap">{{ contract.idNo }}</span>
                 </div>
               </template>
             </div>

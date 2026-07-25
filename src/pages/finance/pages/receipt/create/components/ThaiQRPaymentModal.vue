@@ -150,7 +150,16 @@ function stopTimer (): void {
 }
 
 function onSaveQR (): void {
-  // TODO: download QR image
+  if (!props.qrImage) return
+
+  emit('save-qr', props.qrImage)
+
+  const link = document.createElement('a')
+  link.href = props.qrImage
+  link.download = `qr-payment-${props.trxId || Date.now()}.png`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
 
 function onCancel (): void {
