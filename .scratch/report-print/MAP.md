@@ -46,6 +46,7 @@ Every module listed in `docs/report-print/GUIDE.md` has a working print page fol
 
 All 7 modules verified: full-project `vue-tsc --noEmit` clean, `eslint` clean.
 - [all-debtor print page re-implementation] — last remaining consumer of the old A4Paper/`usePrint`/`DebtorPrintDocument` pattern. Added `AllDebtorPrint.vue` (same 11-column layout as `OutstandingDebtorPrint.vue`/`SuccessDebtorPrint.vue`) and rewrote `AllDebtorPrintPage.vue`; reused existing `useAllDebtorPrint()`. Route/list-page wiring unchanged. **Deleted `DebtorPrintDocument.vue`** — with all three debtor-report print pages migrated, it had zero remaining consumers.
+- [daily-summary **detail** print page] — resolves the "Not yet specified" two-level-table question for this module: `DailySummaryDetailPrintPage.vue`, fetched by `:id` (single record, not a filtered list) rather than the `limit: 9999` list pattern. Placed in a new sibling `pages/print/` directory (user-specified), parallel to the module's existing `pages/{list,detail,create}/`. `DailySummaryDetailPrint.vue` renders info rows (branch/idNo/date/createdBy) on page 0 only, chunks `items` at `ROWS_PER_PAGE=20` same as every other print body, and renders the reason + summary block only on the last page — mirroring `DailySummaryDetailListPage.vue`'s exact layout. New route `DailySummaryDetailPrintPage` (`print/:id`) distinct from the list's existing `DailySummaryPrintPage` (`print`, no id) on the same parent — no path/name collision.
 
 ## Tickets
 

@@ -54,6 +54,17 @@ export default {
         title: 'รายงานสรุปประจำวัน',
         icon: 'mdi:file-document-outline'
       }
+    },
+    {
+      path: 'print/:id',
+      name: 'DailySummaryDetailPrintPage',
+      component: (): ComponentOptions => import('@/pages/reports/pages/daily-summary/pages/print/pages/DailySummaryDetailPrintPage.vue'),
+      meta: {
+        auth: true,
+        title: 'พิมพ์รายงานสรุปประจำวัน',
+        layout: 'blank',
+        back: { name: 'DailySummaryDetailListPage' }
+      }
     }
   ]
 } as RouteRecordRaw

@@ -5,7 +5,8 @@
     <div class="flex justify-end">
       <PrintButton
         icon="material-symbols:print-outline-rounded"
-        label="พิมพ์" />
+        label="พิมพ์"
+        @click="onPrint()" />
     </div>
     <BaseContainer class="mt-4">
       <div class="flex flex-col gap-2">
@@ -62,6 +63,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { formatter } from '@/utils/Formatter'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
@@ -81,6 +83,9 @@ interface ISummaryRow {
   value?: string
   divider?: boolean
 }
+
+const route = useRoute()
+const router = useRouter()
 
 const { itemData, fetch } = useList()
 
@@ -109,6 +114,10 @@ const summaryRows = computed((): ISummaryRow[] => {
     { label: 'ยอดคงเหลือยกไป', value: fmt(d?.closingBalance ?? 0) }
   ]
 })
+
+function onPrint (): void {
+  router.push({ name: 'DailySummaryDetailPrintPage', params: { id: route.params.id } })
+}
 
 onMounted((): void => {
   fetch()
