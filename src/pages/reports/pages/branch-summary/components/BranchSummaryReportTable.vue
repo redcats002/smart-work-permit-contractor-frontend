@@ -10,7 +10,7 @@
     <template #[`item.idNo`]="{ item }">
       <div
         class="text-primary text-sm flex items-center font-bold">
-        {{ item.idNo }}
+        {{ item?.idNo || '-' }}
       </div>
     </template>
   </BaseTable>

@@ -11,7 +11,7 @@
     @update="emits('update')">
     <template #[`item.idNo`]="{ item }">
       <LinkText :to="{}">
-        {{ item.idNo }}
+        {{ item?.idNo || '-' }}
       </LinkText>
     </template>
   </BaseTable>
@@ -50,8 +50,8 @@ const sortBy = defineModel<string>('sortBy', { default: '' })
 const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 
 const columns = ref<IColumn<IDailyLoanDisbursementList>[]>([
-  { field: 'createdAt', header: 'วันที่', style: { width: '120px', minWidth: '120px' }, value: (e: IDailyLoanDisbursementList): string => dayjs.formatDate(e?.createdAt) },
-  { field: 'idNo', header: 'เลขที่สัญญา', style: { width: '130px', minWidth: '130px' } },
+  { field: 'createdAt', header: 'วันที่', style: { width: '120px', minWidth: '120px' }, value: (e: IDailyLoanDisbursementList): string => dayjs.formatDate(e?.createdAt), sortable: true },
+  { field: 'idNo', header: 'เลขที่สัญญา', style: { width: '130px', minWidth: '130px' }, sortable: true },
   { field: 'customerName', header: 'ชื่อลูกค้า', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' } },
   { field: 'principalAndInterest', header: 'ยอดจัดรวมดอกเบี้ย', align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IDailyLoanDisbursementList): string => formatter.numberFormat2Decimal(e?.principalAndInterest) },
   { field: 'principal', header: 'ยอดจัด', align: 'right', style: { width: '140px', minWidth: '140px' }, value: (e: IDailyLoanDisbursementList): string => formatter.numberFormat2Decimal(e?.principal) },

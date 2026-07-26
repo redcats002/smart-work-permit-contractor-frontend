@@ -1,7 +1,7 @@
 <template>
   <BasePrintPage
     :page-count="totalPages || 1"
-    title="รายงานสรุปรับ / ปล่อยสินเชื่อ / ค่าใช้จ่าย">
+    :title="title">
     <template #default="{ page }">
       <div
         v-if="!items.length"
@@ -89,7 +89,11 @@
 import { computed } from 'vue'
 import { formatter } from '@/utils/Formatter'
 import type { IFinancialSummaryReportList, IFinancialSummaryReportSummary } from '@/models/response/report/financial-summary/FinancialSummaryRes.model'
-import { FinancialSummaryTypeEnum, type TFinancialSummaryType } from '@/enums/modules/report/financial-summary/FinancialSummaryType.enum'
+import {
+  FinancialSummaryTypeEnum,
+  formatFinancialSummaryType,
+  type TFinancialSummaryType
+} from '@/enums/modules/report/financial-summary/FinancialSummaryType.enum'
 import BasePrintPage from '@/components/base/BasePrintPage.vue'
 
 interface IProps {
@@ -104,6 +108,9 @@ const props = withDefaults(defineProps<IProps>(), {
 })
 const ROWS_PER_PAGE = 20
 
+const title = computed((): string => {
+  return `รายงานสรุปรับ / ปล่อยสินเชื่อ / ค่าใช้จ่าย (${formatFinancialSummaryType(props.type)})`
+})
 const showIncome = computed((): boolean => props.type === FinancialSummaryTypeEnum.SUMMARY || props.type === FinancialSummaryTypeEnum.INCOME)
 const showPrincipal = computed((): boolean => props.type === FinancialSummaryTypeEnum.SUMMARY || props.type === FinancialSummaryTypeEnum.PRINCIPAL)
 const showExpenses = computed((): boolean => props.type === FinancialSummaryTypeEnum.SUMMARY || props.type === FinancialSummaryTypeEnum.EXPENSES)
