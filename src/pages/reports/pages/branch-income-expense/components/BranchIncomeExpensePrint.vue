@@ -1,7 +1,7 @@
 <template>
   <BasePrintPage
     :page-count="totalPages || 1"
-    title="รายงานการรับ/จ่ายประจำสาขา">
+    :title="title">
     <template #default="{ page }">
       <div
         v-if="!items.length"
@@ -95,6 +95,7 @@ import { formatter } from '@/utils/Formatter'
 import type { TBranchIncomeExpenseCategoryFilter } from '@/models/modules/report/branch-income-expense/Filter.model'
 import type { IBranchIncomeExpenseItem } from '@/models/response/report/branch-income-expense/BranchIncomeExpenseRes.model'
 import {
+  formatTitle,
   REPORT_TYPE_COL1_FOOTER_LABEL,
   REPORT_TYPE_COL1_LABEL,
   REPORT_TYPE_COL1_TYPES,
@@ -128,6 +129,15 @@ const col1Types = computed((): string[] => REPORT_TYPE_COL1_TYPES[activeReportTy
 const col2Types = computed((): string[] => REPORT_TYPE_COL2_TYPES[activeReportType.value] || [])
 const col1Label = computed((): string => REPORT_TYPE_COL1_LABEL[activeReportType.value])
 const col2Label = computed((): string => REPORT_TYPE_COL2_LABEL[activeReportType.value])
+
+const financeCategoryLabel = computed((): string => {
+  if (props.financeCategory === 'COL1') return col1Label.value
+  if (props.financeCategory === 'COL2') return col2Label.value
+  return 'สรุปรวม'
+})
+
+const title = computed((): string =>
+  `รายงานการรับ/จ่ายประจำสาขา (${formatTitle(activeReportType.value)} - ${financeCategoryLabel.value})`)
 const col1FooterLabel = computed((): string => REPORT_TYPE_COL1_FOOTER_LABEL[activeReportType.value])
 const col2FooterLabel = computed((): string => REPORT_TYPE_COL2_FOOTER_LABEL[activeReportType.value])
 

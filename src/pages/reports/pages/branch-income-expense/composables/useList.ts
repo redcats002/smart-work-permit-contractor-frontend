@@ -50,6 +50,7 @@ export default function useList (): IUseList {
     sortBy: sortBy.value || undefined,
     sortOrder: sortOrder.value,
     filter: filters.value.filter,
+    branchId: filters.value.branchId,
     limit: 999,
     search: search.value || undefined
   }))
@@ -67,7 +68,7 @@ export default function useList (): IUseList {
       code106: 0,
       total: 0
     }
-    syncQuery({ filter: filters.value.filter })
+    syncQuery({ filter: filters.value.filter, branchId: filters.value.branchId })
   }
 
   function onSearch (): void {

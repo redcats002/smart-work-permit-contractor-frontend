@@ -6,11 +6,31 @@
         @search="onSearch()" />
     </div>
     <div>
-      <FilterButton @click="open = true" />
+      <BaseModal
+        class="md:w-100!"
+        label="ตัวกรอง">
+        <template #activator="{ open }">
+          <FilterButton @click="open()" />
+        </template>
+        <div class="grid grid-cols-1 gap-5">
+          <LabelField
+            label="สาขา"
+            placeholder="ทั้งหมด">
+            <BranchSelection
+              v-model="filters.branchId"
+              show-clear />
+          </LabelField>
+        </div>
+        <template #footer="{ close }">
+          <FormActionFilter
+            @clear="onClear(close)"
+            @search="onModalSearch(close)" />
+        </template>
+      </BaseModal>
     </div>
     <Spacer />
     <BranchIncomeExpenseCategorySelection
-      v-model="filter.financeCategory"
+      v-model="filters.financeCategory"
       :report-type="reportType"
       class="grow" />
     <div>
@@ -20,13 +40,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { TReportType } from '@/enums/modules/report/branch-income-expense/ReportType.enum'
 import type { IBranchIncomeExpenseFilter } from '@/models/modules/report/branch-income-expense/Filter.model'
+import type { TReportType } from '@/enums/modules/report/branch-income-expense/ReportType.enum'
 import BaseTop from '@/components/base/BaseTop.vue'
 import FilterButton from '@/components/button/FilterButton.vue'
+import FormActionFilter from '@/components/button/FormActionFilter.vue'
 import Spacer from '@/components/flex/Spacer.vue'
+import LabelField from '@/components/input/LabelField.vue'
 import SearchInput from '@/components/input/SearchInput.vue'
+import BaseModal from '@/components/modal/BaseModal.vue'
+import BranchSelection from '@/components/selection/modules/api/branch/BranchSelection.vue'
 import BranchIncomeExpenseCategorySelection from './BranchIncomeExpenseCategorySelection.vue'
 
 interface IProps {
@@ -44,12 +67,26 @@ interface IEmits {
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>('search', { default: '' })
-const filter = defineModel<IBranchIncomeExpenseFilter>('filters', { default: (): IBranchIncomeExpenseFilter => ({}) })
-
-const open = ref<boolean>(false)
+const filters = defineModel<IBranchIncomeExpenseFilter>('filters', { default: (): IBranchIncomeExpenseFilter => ({}) })
 
 function onSearch (): void {
   emits('search')
+}
+
+function onModalSearch (close: () => void): void {
+  emits('search')
+  emits('modalSearch')
+  close()
+}
+
+function onClear (close: () => void): void {
+  filters.value = {
+    branchId: undefined,
+    financeCategory: filters.value.financeCategory
+  }
+  emits('search')
+  emits('clear')
+  close()
 }
 </script>
 
