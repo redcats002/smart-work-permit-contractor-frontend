@@ -83,6 +83,7 @@ function onModalSearch (close: () => void): void {
 }
 
 function onClear (close: () => void): void {
+  filters.value = {}
   emits('search')
   emits('clear')
   close()
