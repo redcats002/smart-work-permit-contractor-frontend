@@ -31,7 +31,7 @@
           </div>
 
           <!-- Intro paragraph -->
-          <p class="text-justify mb-4 indent-8">
+          <p class="text-justify mb-4 indent-3.5">
             สัญญากู้ยืมเงินฉบับนี้ทำขึ้นระหว่าง
             <span class="d-underline">{{ branch.name }}</span>
             ตั้งอยู่เลขที่
