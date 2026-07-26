@@ -5,7 +5,7 @@ import type { TEmployeeRole } from '@/enums/modules/employee/EmployeeRole.enum'
 import type { TEmployeeStatus } from '@/enums/modules/employee/EmployeeStatus.enum'
 import type { TEstateStatus } from '@/enums/modules/estate/EstateStatus.enum'
 import type { TTitleName } from '@/enums/TitleName.enum'
-import type { IBranchList } from '../branch/BranchRes.model'
+import type { IBranchList, IManagementPosition } from '../branch/BranchRes.model'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 
 export interface IEmployeeList extends IEntity {
@@ -29,8 +29,7 @@ export interface IEmployeeById extends IEntity {
   currentAddress: IAddressRequest
   email?: string
   role: TEmployeeRole
-  managementPositionType?: string
-  managementPositionId?: number
+  managementPosition?: IManagementPosition
   branches: IBranchList[]
 }
 
