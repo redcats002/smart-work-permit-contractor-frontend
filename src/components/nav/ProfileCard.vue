@@ -32,6 +32,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/Auth'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
@@ -40,6 +41,7 @@ import useResolveUrl from '@/composables/useResolveUrl'
 import { Icon } from '@iconify/vue'
 import BaseActionMenu, { type IMenuItemAction } from '../base/BaseActionMenu.vue'
 
+const router = useRouter()
 const authStore = useAuthStore()
 const { logout } = useLogout()
 const { resolveUploadImageUrl } = useResolveUrl()
@@ -47,6 +49,7 @@ const { resolveUploadImageUrl } = useResolveUrl()
 
 const items = computed((): IMenuItemAction[] => {
   const base: IMenuItemAction[] = [
+    { label: 'โปรไฟล์', key: 'profile', type: 'TEXT', action: (): void => { router.push({ name: 'ProfileDetailPage' }) } },
     { label: 'Logout', key: 'logout', type: 'TEXT', action: (): void => { logout() } }
   ]
   return base

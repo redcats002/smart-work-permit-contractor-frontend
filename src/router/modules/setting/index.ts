@@ -4,6 +4,7 @@ import ContractSettingRouter from './ContractSetting.router'
 import CustomerSettingRouter from './CustomerSetting.router'
 import FinancialSettingRouter from './FinancialSetting.router'
 import OtherSettingRouter from './other'
+import ProfileRouter from './Profile.router'
 
 const prefix = '/setting'
 
@@ -32,6 +33,7 @@ export default {
     ContractSettingRouter,
     CustomerSettingRouter,
     FinancialSettingRouter,
-    OtherSettingRouter
+    OtherSettingRouter,
+    ProfileRouter
   ]
 } as RouteRecordRaw
