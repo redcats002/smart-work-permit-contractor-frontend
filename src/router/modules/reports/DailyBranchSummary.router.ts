@@ -24,6 +24,17 @@ export default {
         icon: 'eva:list-fill',
         back: { name: 'ReportListPage' }
       }
+    },
+    {
+      path: 'print',
+      name: 'DailyBranchSummaryPrintPage',
+      component: (): ComponentOptions => import('@/pages/reports/pages/daily-branch-summary/pages/DailyBranchSummaryPrintPage.vue'),
+      meta: {
+        auth: true,
+        title: 'พิมพ์รายงานสรุปประจำวันรวมทุกสาขา',
+        layout: 'blank',
+        back: { name: 'DailyBranchSummaryListPage' }
+      }
     }
   ]
 } as RouteRecordRaw

@@ -13,7 +13,8 @@
           class="w-60" />
         <PrintButton
           icon="material-symbols:print-outline-rounded"
-          label="พิมพ์" />
+          label="พิมพ์"
+          @click="onPrint()" />
       </div>
     </FinancialSummaryReportFilter>
     <BasePage>
@@ -33,6 +34,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { FinancialSummaryTypeEnum, type TFinancialSummaryType } from '@/enums/modules/report/financial-summary/FinancialSummaryType.enum'
 import BasePage from '@/components/base/BasePage.vue'
 import BackButton from '@/components/button/BackButton.vue'
@@ -43,6 +45,7 @@ import FinancialSummaryReportTable from '../components/FinancialSummaryReportTab
 import SelectFinancialSummaryType from '../components/SelectFinancialSummaryType.vue'
 import useList from '../composables/useList'
 
+const router = useRouter()
 const reportType = ref<TFinancialSummaryType>(FinancialSummaryTypeEnum.SUMMARY)
 
 const {
@@ -57,6 +60,16 @@ const {
   onClearFilters,
   onSearch
 } = useList()
+
+function onPrint (): void {
+  router.push({
+    name: 'FinancialSummaryPrintPage',
+    query: {
+      branchId: filters.value.branchId || undefined,
+      type: reportType.value
+    }
+  })
+}
 
 onMounted((): void => {
   fetch()

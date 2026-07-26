@@ -11,7 +11,8 @@
       @search="onSearch()">
       <PrintButton
         icon="material-symbols:print-outline-rounded"
-        label="พิมพ์" />
+        label="พิมพ์"
+        @click="onPrint()" />
     </ContractSecurityDocumentReportFilter>
     <BasePage>
       <ContractSecurityDocumentReportTable
@@ -26,6 +27,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
@@ -34,6 +36,8 @@ import PageTitle from '@/components/nav/PageTitle.vue'
 import ContractSecurityDocumentReportFilter from '../components/ContractSecurityDocumentReportFilter.vue'
 import ContractSecurityDocumentReportTable from '../components/ContractSecurityDocumentReportTable.vue'
 import useList from '../composables/useList'
+
+const router = useRouter()
 
 const {
   filters,
@@ -46,6 +50,17 @@ const {
   onClearFilters,
   onSearch
 } = useList()
+
+function onPrint (): void {
+  router.push({
+    name: 'ContractSecurityDocumentPrintPage',
+    query: {
+      branchId: filters.value.branchId || undefined,
+      startDate: filters.value.startDate || undefined,
+      endDate: filters.value.endDate || undefined
+    }
+  })
+}
 
 onMounted((): void => {
   fetch()

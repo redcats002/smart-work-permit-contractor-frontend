@@ -24,6 +24,17 @@ export default {
         icon: 'eva:list-fill',
         back: { name: 'ReportListPage' }
       }
+    },
+    {
+      path: 'print',
+      name: 'AnnualFinanceReceiptPrintPage',
+      component: (): ComponentOptions => import('@/pages/reports/pages/annual-finance-receipt/pages/AnnualFinanceReceiptPrintPage.vue'),
+      meta: {
+        auth: true,
+        title: 'พิมพ์รายงานสรุปรับไฟแนนซ์ประจำปี',
+        layout: 'blank',
+        back: { name: 'AnnualFinanceReceiptListPage' }
+      }
     }
   ]
 } as RouteRecordRaw

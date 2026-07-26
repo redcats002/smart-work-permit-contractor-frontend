@@ -24,6 +24,17 @@ export default {
         icon: 'eva:list-fill',
         back: { name: 'ReportListPage' }
       }
+    },
+    {
+      path: 'print',
+      name: 'DailyLoanDisbursementPrintPage',
+      component: (): ComponentOptions => import('@/pages/reports/pages/daily-loan-disbursement/pages/DailyLoanDisbursementPrintPage.vue'),
+      meta: {
+        auth: true,
+        title: 'พิมพ์รายงานปล่อยสินเชื่อประจำวัน',
+        layout: 'blank',
+        back: { name: 'DailyLoanDisbursementListPage' }
+      }
     }
   ]
 } as RouteRecordRaw

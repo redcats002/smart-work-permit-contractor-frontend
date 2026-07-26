@@ -23,6 +23,17 @@ export default {
         title: 'รายงานสรุปบัญชีเทียบปัจจุบัน',
         icon: 'eva:list-fill'
       }
+    },
+    {
+      path: 'print',
+      name: 'ComparativePrintPage',
+      component: (): ComponentOptions => import('@/pages/reports/pages/current-comparative-account/pages/list/pages/ComparativePrintPage.vue'),
+      meta: {
+        auth: true,
+        title: 'พิมพ์รายงานสรุปบัญชีเทียบปัจจุบัน',
+        layout: 'blank',
+        back: { name: 'ComparativeListPage' }
+      }
     }
   ]
 } as RouteRecordRaw

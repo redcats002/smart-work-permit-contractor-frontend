@@ -23,6 +23,17 @@ export default {
         title: 'รายงานรับชำระค่างวดประจำวัน',
         icon: 'mdi:file-document-outline'
       }
+    },
+    {
+      path: 'print',
+      name: 'DailyInstallmentPrintPage',
+      component: (): ComponentOptions => import('@/pages/reports/pages/daily-installment-payment/pages/ReportDailyInstallmentPaymentPrintPage.vue'),
+      meta: {
+        auth: true,
+        title: 'พิมพ์รายงานรับชำระค่างวดประจำวัน',
+        layout: 'blank',
+        back: { name: 'DailyInstallmentListPage' }
+      }
     }
   ]
 } as RouteRecordRaw

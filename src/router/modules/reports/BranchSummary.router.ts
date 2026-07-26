@@ -24,6 +24,17 @@ export default {
         icon: 'eva:list-fill',
         back: { name: 'ReportListPage' }
       }
+    },
+    {
+      path: 'print',
+      name: 'BranchSummaryPrintPage',
+      component: (): ComponentOptions => import('@/pages/reports/pages/branch-summary/page/BranchSummaryReportPrintPage.vue'),
+      meta: {
+        auth: true,
+        title: 'พิมพ์รายงานสาขา',
+        layout: 'blank',
+        back: { name: 'BranchSummaryPageListPage' }
+      }
     }
   ]
 } as RouteRecordRaw

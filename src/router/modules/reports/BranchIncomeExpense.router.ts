@@ -24,6 +24,17 @@ export default {
         icon: 'eva:list-fill',
         back: { name: 'ReportListPage' }
       }
+    },
+    {
+      path: 'print',
+      name: 'BranchIncomeExpensePrintPage',
+      component: (): ComponentOptions => import('@/pages/reports/pages/branch-income-expense/pages/BranchIncomeExpensePrintPage.vue'),
+      meta: {
+        auth: true,
+        title: 'พิมพ์รายงานการรับ/จ่ายประจำสาขา',
+        layout: 'blank',
+        back: { name: 'BranchIncomeExpenseListPage' }
+      }
     }
   ]
 } as RouteRecordRaw

@@ -24,6 +24,17 @@ export default {
         icon: 'eva:list-fill',
         back: { name: 'ReportListPage' }
       }
+    },
+    {
+      path: 'print',
+      name: 'ContractSecurityDocumentPrintPage',
+      component: (): ComponentOptions => import('@/pages/reports/pages/contact-security-document/pages/ContractSecurityDocumentReportPrintPage.vue'),
+      meta: {
+        auth: true,
+        title: 'พิมพ์รายงานสัญญาและเอกสารหลักทรัพย์',
+        layout: 'blank',
+        back: { name: 'ContractSecurityDocumentListPage' }
+      }
     }
   ]
 } as RouteRecordRaw
