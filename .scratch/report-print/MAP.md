@@ -30,8 +30,7 @@ Every module listed in `docs/report-print/GUIDE.md` has a working print page fol
 
 ## Out of scope
 
-- Print pages for report modules **not** in the GUIDE list (all-stock, overdue-customer, ranking-loan, branch-summary, branch-head-summary, daily-installment-payment, percent-installment-payment, profit-based-on-actual-payment, loan-disbursement-summary, all-debtor).
-- Migrating `all-debtor`'s print page (old A4Paper/`DebtorPrintDocument` pattern) — `outstanding-debtor` was since migrated by explicit user request (see Decisions so far); `all-debtor` remains on the old pattern and is `DebtorPrintDocument.vue`'s one remaining consumer.
+- Print pages for report modules **not** in the GUIDE list (percent-installment-payment, profit-based-on-actual-payment).
 
 ## Post-map additions (requested after "destination reached")
 
@@ -46,6 +45,7 @@ Every module listed in `docs/report-print/GUIDE.md` has a working print page fol
 - [ranking-loan print page] — `RankingLoanPrint.vue`; `type` (RECEIPT_AMOUNT vs PERCENTAGE) is a client-side-only display toggle never sent to the backend query — carried through the print route's query and re-applied client-side in the print component, matching `RankingLoanTable.vue`'s `isPercent` logic. No pagination model on this list page (`hide-pagination` on `BaseTable`) — print just prints everything returned.
 
 All 7 modules verified: full-project `vue-tsc --noEmit` clean, `eslint` clean.
+- [all-debtor print page re-implementation] — last remaining consumer of the old A4Paper/`usePrint`/`DebtorPrintDocument` pattern. Added `AllDebtorPrint.vue` (same 11-column layout as `OutstandingDebtorPrint.vue`/`SuccessDebtorPrint.vue`) and rewrote `AllDebtorPrintPage.vue`; reused existing `useAllDebtorPrint()`. Route/list-page wiring unchanged. **Deleted `DebtorPrintDocument.vue`** — with all three debtor-report print pages migrated, it had zero remaining consumers.
 
 ## Tickets
 
