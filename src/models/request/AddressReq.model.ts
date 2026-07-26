@@ -1,5 +1,6 @@
 export interface IAddressRequest {
   id?: number // for update
+  villageNo?: string
   address: string
   district: string
   postCode: string

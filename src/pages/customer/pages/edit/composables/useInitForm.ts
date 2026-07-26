@@ -28,6 +28,7 @@ export function useInitForm (form: Ref<CustomerFormValues>, data: ICustomerById)
     occupationId: typeof data.occupation?.id === 'number' ? data.occupation.id : undefined,
     mainAddress: {
       id: mainAddress?.id,
+      villageNo: mainAddress?.villageNo ?? '',
       address: mainAddress?.address ?? '',
       subDistrict: mainAddress?.subDistrict ?? '',
       district: mainAddress?.district ?? '',
@@ -39,6 +40,7 @@ export function useInitForm (form: Ref<CustomerFormValues>, data: ICustomerById)
     },
     currentAddress: {
       id: currentAddress?.id,
+      villageNo: currentAddress?.villageNo ?? '',
       address: currentAddress?.address ?? '',
       subDistrict: currentAddress?.subDistrict ?? '',
       district: currentAddress?.district ?? '',
@@ -50,6 +52,7 @@ export function useInitForm (form: Ref<CustomerFormValues>, data: ICustomerById)
     },
     workAddress: {
       id: workAddress?.id,
+      villageNo: workAddress?.villageNo ?? '',
       address: workAddress?.address ?? '',
       subDistrict: workAddress?.subDistrict ?? '',
       district: workAddress?.district ?? '',

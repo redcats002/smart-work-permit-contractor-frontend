@@ -12,6 +12,7 @@
       :form="form"
       :personal-type="model.personalType"
       type="MAIN"
+      show-village-no
       @use-same-citizen-address="mount()"
       @use-same-current-address="mount()" />
   </BaseContainer>
@@ -23,6 +24,7 @@
         :form="form"
         :personal-type="model.personalType"
         type="CURRENT"
+        show-village-no
         @use-same-citizen-address="mount()"
         @use-same-current-address="mount()" />
     </BaseContainer>
@@ -34,6 +36,7 @@
         :form="form"
         :personal-type="model.personalType"
         type="WORK"
+        show-village-no
         @use-same-citizen-address="mount()"
         @use-same-current-address="mount()" />
     </BaseContainer>

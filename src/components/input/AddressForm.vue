@@ -32,6 +32,16 @@
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <LabelField
+          v-if="showVillageNo"
+          v-model="model.villageNo"
+          :disabled="isLocked"
+          :form="form"
+          :name="villageNo"
+          label="หมู่"
+          placeholder="กรอกหมู่"
+          hide-error
+          @blur="emits('mount')" />
+        <LabelField
           v-slot="{ invalid }"
           :form="form"
           :name="subDistrict"
@@ -126,6 +136,7 @@ interface IProps {
   hideError?: boolean
   citizenAddress?: IAddressRequest
   currentAddressRef?: IAddressRequest
+  showVillageNo?: boolean
 }
 interface IEmits {
   mount: []
@@ -139,12 +150,14 @@ const props = withDefaults(defineProps<IProps>(), {
   hideError: false,
   citizenAddress: undefined,
   currentAddressRef: undefined,
-  personalType: 'INDIVIDUAL'
+  personalType: 'INDIVIDUAL',
+  showVillageNo: false
 })
 const emits = defineEmits<IEmits>()
 
 const model = defineModel<IAddressRequest>({
   default: (): IAddressRequest => ({
+    villageNo: '',
     address: '',
     subDistrict: '',
     district: '',
@@ -157,6 +170,7 @@ const model = defineModel<IAddressRequest>({
 })
 
 const BLANK_ADDRESS = {
+  villageNo: '',
   address: '',
   subDistrict: '',
   district: '',
@@ -172,6 +186,11 @@ const labelType = computed((): string => {
   if (props.type === 'CURRENT') return 'ที่อยู่ปัจจุบัน'
   if (props.type === 'MAIN') return props.personalType === 'CORPORATE' ? 'ที่อยู่' : 'ที่อยู่ตามบัตรประชาชน'
   return 'ที่อยู่ที่ทำงาน'
+})
+const villageNo = computed((): string => {
+  if (props.type === 'CURRENT') return 'currentAddress.villageNo'
+  if (props.type === 'MAIN') return 'mainAddress.villageNo'
+  return 'workAddress.villageNo'
 })
 const address = computed((): string => {
   if (props.type === 'CURRENT') return 'currentAddress.address'
@@ -207,6 +226,7 @@ const googleMapUrl = computed((): string => {
 function syncPcFormValues (data: Partial<IAddressRequest>): void {
   if (!$pcForm?.setValues) return
   $pcForm.setValues({
+    [villageNo.value]: data.villageNo ?? '',
     [address.value]: data.address ?? '',
     [subDistrict.value]: data.subDistrict ?? '',
     [district.value]: data.district ?? '',
@@ -220,6 +240,7 @@ watch(
     if (model.value.isSameCitizenAddress && newVal) {
       model.value = {
         ...model.value,
+        villageNo: newVal.villageNo,
         address: newVal.address,
         subDistrict: newVal.subDistrict,
         district: newVal.district,
@@ -236,6 +257,7 @@ watch(
     if (model.value.isSameCurrentAddress && newVal) {
       model.value = {
         ...model.value,
+        villageNo: newVal.villageNo,
         address: newVal.address,
         subDistrict: newVal.subDistrict,
         district: newVal.district,
@@ -261,6 +283,7 @@ function onUseSameCitizenAddress (isChecked: boolean): void {
       ...model.value,
       isSameCitizenAddress: true,
       isSameCurrentAddress: false,
+      villageNo: props.citizenAddress.villageNo,
       address: props.citizenAddress.address,
       subDistrict: props.citizenAddress.subDistrict,
       district: props.citizenAddress.district,
@@ -281,6 +304,7 @@ function onUseSameCurrentAddress (isChecked: boolean): void {
       ...model.value,
       isSameCurrentAddress: true,
       isSameCitizenAddress: false,
+      villageNo: props.currentAddressRef.villageNo,
       address: props.currentAddressRef.address,
       subDistrict: props.currentAddressRef.subDistrict,
       district: props.currentAddressRef.district,

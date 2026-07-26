@@ -48,6 +48,7 @@ const CustomerBaseSchema = z.object({
   // ── Citizen / Home Address (always required) ─────────────────────────────
   mainAddress: z.object({
     id: z.number().optional(),
+    villageNo: z.string().optional(),
     address: z.string().min(1, 'กรุณากรอกที่อยู่'),
     subDistrict: z.string().min(1, 'กรุณากรอกตำบล/แขวง'),
     district: z.string().min(1, 'กรุณากรอกอำเภอ/เขต'),
@@ -62,6 +63,7 @@ const CustomerBaseSchema = z.object({
   currentAddress: z.object({
     id: z.number().optional(),
     isSameCitizenAddress: z.boolean().optional(), // true = copy from citizen address
+    villageNo: z.string().optional(),
     address: z.string(),
     subDistrict: z.string(),
     district: z.string(),
@@ -76,6 +78,7 @@ const CustomerBaseSchema = z.object({
     id: z.number().optional(),
     isSameCurrentAddress: z.boolean().optional(), // true = copy from current address
     isSameCitizenAddress: z.boolean().optional(), // true = copy from main address
+    villageNo: z.string().optional(),
     address: z.string(),
     subDistrict: z.string(),
     district: z.string(),
@@ -115,6 +118,7 @@ export function useDev (): CustomerFormValues {
     occupationId: undefined,
     // Citizen / Home address
     mainAddress: {
+      villageNo: '1',
       address: 'หลัก',
       subDistrict: 'สายไหม',
       district: 'สายไหม',
@@ -126,6 +130,7 @@ export function useDev (): CustomerFormValues {
     },
     // Current / Mailing address
     currentAddress: {
+      villageNo: '1',
       address: 'ปัจจุบัน',
       subDistrict: 'สายไหม',
       district: 'สายไหม',
@@ -137,6 +142,7 @@ export function useDev (): CustomerFormValues {
     },
     // Work address
     workAddress: {
+      villageNo: '1',
       address: 'ที่ทำงาน',
       subDistrict: 'สายไหม',
       district: 'สายไหม',
@@ -168,6 +174,7 @@ export function useFormInitialValues (): CustomerFormValues {
     occupationId: undefined,
     // Citizen / Home address
     mainAddress: {
+      villageNo: '',
       address: '',
       subDistrict: '',
       district: '',
@@ -179,6 +186,7 @@ export function useFormInitialValues (): CustomerFormValues {
     },
     // Current / Mailing address
     currentAddress: {
+      villageNo: '',
       address: '',
       subDistrict: '',
       district: '',
@@ -190,6 +198,7 @@ export function useFormInitialValues (): CustomerFormValues {
     },
     // Work address
     workAddress: {
+      villageNo: '',
       address: '',
       subDistrict: '',
       district: '',
