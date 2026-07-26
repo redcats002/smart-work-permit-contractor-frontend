@@ -58,14 +58,13 @@ export function useInitDetail (): IUseInitDetail {
 
   const filledAllRequired = computed((): boolean => {
     if (!contract.value) return false
-    return (
-      contract.value?.preAssets.every((preAsset: IPreAssetList): boolean => {
-        if (readyForVehicleAppraisal(preAsset) && assetCategory.value === 'VEHICLE') return true
-        if (readyForLandAppraisal(preAsset) && assetCategory.value === 'LAND') return true
-        if (readyForApartmentAppraisal(preAsset) && assetCategory.value === 'APARTMENT') return true
-        return false
-      }) ?? false
-    )
+    const result = contract.value?.preAssets.every((preAsset: IPreAssetList): boolean => {
+      if (readyForVehicleAppraisal(preAsset) && assetCategory.value === 'VEHICLE') return true
+      if (readyForLandAppraisal(preAsset) && assetCategory.value === 'LAND') return true
+      if (readyForApartmentAppraisal(preAsset) && assetCategory.value === 'APARTMENT') return true
+      return false
+    }) ?? false
+    return result
   })
 
   async function useFetch (): Promise<void> {

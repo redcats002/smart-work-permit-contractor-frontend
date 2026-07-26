@@ -71,31 +71,31 @@ export type ModalLandFormValues = z.infer<typeof ModalLandSchema>
 
 export function readyForAppraisal (preAsset?: IPreAssetList | null): boolean {
   if (isTitleDeedAsset(preAsset?.type)) {
-    if (
-      preAsset?.detail
-      && preAsset?.realEstateForm?.landNo
-      && preAsset?.realEstateForm?.titleDeedNo
-      && preAsset?.realEstateForm?.surveyNo
-      && preAsset?.realEstateForm?.aerialPhotoMapNo
-      && preAsset?.realEstateForm?.aerialPhotoSheet
-      && preAsset?.realEstateForm?.subDistrict
-      && preAsset?.realEstateForm?.district
-      && preAsset?.realEstateForm?.province
-      && preAsset?.realEstateForm?.postCode
-    )
-      return true
+    const checks = {
+      detail: !!preAsset?.detail,
+      landNo: !!preAsset?.realEstateForm?.landNo,
+      titleDeedNo: !!preAsset?.realEstateForm?.titleDeedNo,
+      surveyNo: !!preAsset?.realEstateForm?.surveyNo,
+      subDistrict: !!preAsset?.realEstateForm?.subDistrict,
+      district: !!preAsset?.realEstateForm?.district,
+      province: !!preAsset?.realEstateForm?.province,
+      postCode: !!preAsset?.realEstateForm?.postCode
+    }
+    const result = Object.values(checks).every(Boolean)
+    if (result) return true
   }
-  if (
-    preAsset?.detail
-    && preAsset?.realEstateForm?.landNo
-    && preAsset?.realEstateForm?.surveyNo
-    && preAsset?.realEstateForm?.aerialPhotoMapNo
-    && preAsset?.realEstateForm?.aerialPhotoSheet
-    && preAsset?.realEstateForm?.subDistrict
-    && preAsset?.realEstateForm?.district
-    && preAsset?.realEstateForm?.province
-    && preAsset?.realEstateForm?.postCode
-  )
-    return true
-  return false
+
+  const ns3Checks = {
+    detail: !!preAsset?.detail,
+    landNo: !!preAsset?.realEstateForm?.landNo,
+    surveyNo: !!preAsset?.realEstateForm?.surveyNo,
+    aerialPhotoMapNo: !!preAsset?.realEstateForm?.aerialPhotoMapNo,
+    aerialPhotoSheet: !!preAsset?.realEstateForm?.aerialPhotoSheet,
+    subDistrict: !!preAsset?.realEstateForm?.subDistrict,
+    district: !!preAsset?.realEstateForm?.district,
+    province: !!preAsset?.realEstateForm?.province,
+    postCode: !!preAsset?.realEstateForm?.postCode
+  }
+  const ns3Result = Object.values(ns3Checks).every(Boolean)
+  return ns3Result
 }
