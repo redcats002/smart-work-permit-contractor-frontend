@@ -13,7 +13,7 @@
             width="40px">
           <div>
             <div class="font-bold text-sm">
-              บริษัท มิตรแท้อีสาน จำกัด (สำนักงานใหญ่)
+              บริษัท มิตรแท้อีสาน จำกัด ({{ authStore.branch?.name ?? `สำนักงานใหญ่` }})
             </div>
             <div>133/3 ถนนประชาสโมสร ตำบลในเมือง อำเภอเมืองขอนแก่น จ.ขอนแก่น</div>
             <div>เลขผู้เสียภาษี : 0405546000780</div>
@@ -43,12 +43,17 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '@/stores/Auth'
+
 interface IProps {
   title: string
   pageCount: number
 }
 
 defineProps<IProps>()
+
+const authStore = useAuthStore()
+
 </script>
 
 <style scoped>
