@@ -92,7 +92,8 @@ function onPrint (): void {
     name: 'BranchIncomeExpensePrintPage',
     query: {
       filter: filters.value.filter || undefined,
-      financeCategory: filters.value.financeCategory || undefined
+      financeCategory: filters.value.financeCategory || undefined,
+      branchId: filters.value.branchId || undefined
     }
   })
 }

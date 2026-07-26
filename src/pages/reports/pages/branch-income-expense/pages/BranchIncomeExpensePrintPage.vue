@@ -34,7 +34,8 @@ const filteredItems = computed((): IBranchIncomeExpenseItem[] => {
 async function fetchAll (): Promise<void> {
   const response = await BranchIncomeExpenseService.getBranchIncomeExpensePaginate({
     limit: 9999,
-    filter: reportType.value
+    filter: reportType.value,
+    branchId: route.query?.branchId ? String(route.query?.branchId) : undefined
   })
   items.value = response?.data || []
 }

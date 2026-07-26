@@ -9,28 +9,7 @@
       <ReadIdentificationCardButton
         @read-success="onReadIdCard($event)" />
     </BaseTop>
-    <BasePage class="flex flex-col md:grid md:grid-cols-3 gap-4">
-      <BaseContainer class="h-fit md:order-2 md:col-span-1">
-        <UploadInput
-          v-model="media"
-          :model-image="form.image"
-          accept="image/*"
-          button-upload-class="bg-primary text-white"
-          detail="ไฟล์ JPG, JPEG และ PNG ได้รับอนุญาต"
-          label="เลือกเพื่ออัปโหลดหรือลากและวาง"
-          hide-icon-button
-          single>
-          <template #placeholderIcon>
-            <div class="p-1.5 rounded-lg border border-(--p-gray-5)">
-              <div class="bg-(--p-gray-5) rounded-xl">
-                <Icon
-                  class="size-12 text-(--p-gray-4)"
-                  icon="solar:user-bold" />
-              </div>
-            </div>
-          </template>
-        </UploadInput>
-      </BaseContainer>
+    <BasePage>
       <Form
         :key="formKey"
         v-slot="$form"
@@ -38,46 +17,29 @@
         :resolver="resolver"
         class="flex flex-col gap-5 col-span-2"
         @submit="onSubmit($event)">
-        <BaseContainer>
-          <InformationForm
+        <div class="flex flex-col md:grid md:grid-cols-3 gap-4">
+          <EmployeeForm
             v-model="form"
             v-model:form-key="formKey"
-            :form="$form"
-            @mount="mount()" />
-        </BaseContainer>
-        <BaseContainer>
-          <AddressForm
-            v-model="mainAddress"
-            :form="$form"
-            type="MAIN"
-            @use-same-citizen-address="mount()"
-            @use-same-current-address="mount()" />
-        </BaseContainer>
-        <BaseContainer>
-          <AddressForm
-            v-model="currentAddress"
-            :citizen-address="mainAddress"
-            :form="$form"
-            type="CURRENT"
-            @use-same-citizen-address="mount()"
-            @use-same-current-address="mount()" />
-        </BaseContainer>
-        <FormAction @cancel="onCancel()" />
+            v-model:media="media"
+            :form="$form" />
+        </div>
+        <FormAction
+          class="md:col-span-3"
+          @cancel="onCancel()" />
       </Form>
     </BasePage>
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import type { IEmployeeProvider } from '@/resources/provider/employee/Employee.provider'
 import EmployeeProvider from '@/resources/provider/employee/Employee.provider'
-import BaseContainer from '@/components/base/BaseContainer.vue'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
@@ -86,12 +48,9 @@ import FormAction from '@/components/button/FormAction.vue'
 import type { IReadIdCardResult } from '@/components/button/ReadIdentificationCardButton.vue'
 import ReadIdentificationCardButton from '@/components/button/ReadIdentificationCardButton.vue'
 import Spacer from '@/components/flex/Spacer.vue'
-import AddressForm from '@/components/input/AddressForm.vue'
-import UploadInput from '@/components/input/UploadInput.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
-import InformationForm from '../components/InformationForm.vue'
+import EmployeeForm from '@/pages/employee/components/EmployeeForm.vue'
 import useUpload from '@/composables/useUpload'
-import { Icon } from '@iconify/vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { mapIdCardToEmployee } from '../composables/useIdCardMapper'
@@ -106,15 +65,6 @@ const formKey = ref<number>(0)
 const form = ref<EmployeeFormValues>(useFormInitialValues())
 const resolver = zodResolver(EmployeeSchema)
 const { media, getUploadImages } = useUpload()
-
-const mainAddress = computed({
-  get (): IAddressRequest { return form.value.mainAddress },
-  set (e: IAddressRequest): void { form.value.mainAddress = e }
-})
-const currentAddress = computed({
-  get (): IAddressRequest { return form.value.currentAddress },
-  set (e: IAddressRequest): void { form.value.currentAddress = e }
-})
 
 async function useSubmit (): Promise<void> {
   const images = await getUploadImages()
@@ -154,8 +104,5 @@ function onReadIdCard (data: IReadIdCardResult): void {
 </script>
 
 <style scoped>
-:deep(.custom-upload-btn) {
-  background-color: var(--color-primary);
-  color: white
-}
+
 </style>

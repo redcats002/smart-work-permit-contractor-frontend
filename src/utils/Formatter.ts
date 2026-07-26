@@ -199,7 +199,8 @@ function fullPhoneNumber (e: { phoneNumber?: string, phoneNumber2?: string }): s
 }
 
 function fullAddress (data?: Partial<IAddressRequest>): string {
-  return `${data?.address || ''}, ${data?.district || ''}, ${data?.subDistrict || ''}, ${data?.province || ''}, ${data?.postCode || ''}`
+  const villageNo = data?.villageNo ? `หมู่ ${data.villageNo}` : ''
+  return `${data?.address || ''}, ${villageNo}, ${data?.district || ''}, ${data?.subDistrict || ''}, ${data?.province || ''}, ${data?.postCode || ''}`
     .replace(/(, )+/g, ', ')
     .replace(/^(, )+|(, )+$/g, '')
     .trim()
