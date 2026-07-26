@@ -61,3 +61,8 @@ export const REPORT_TYPE_COL2_FOOTER_LABEL: Record<TReportType, string> = {
   [ReportTypeEnum.INCREASE_PAYMENT]: 'ยอดชำระทุนทั้งหมด',
   [ReportTypeEnum.FUND_IN_FUND_OUT]: 'ยอดคืนทุนทั้งหมด'
 }
+
+export function formatColLabel (reportType?: TReportType): string {
+  if (!reportType) return 'ไม่ระบุ'
+  return REPORT_TYPE_COL1_LABEL[reportType] || REPORT_TYPE_COL2_LABEL[reportType] || 'ไม่พบสถานะ'
+}
