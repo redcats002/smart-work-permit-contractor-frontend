@@ -34,6 +34,7 @@ interface IAuthStore {
   isSeedAccount: ComputedRef<boolean>
   isAuthenticated: ComputedRef<boolean>
   userLogin(user: IUser, token: string): void
+  updateUser(user: Partial<IUser>): void
   branchLogin(branch: IBranch): void
   setUserImage(image: string): void
   logout(): void
@@ -93,6 +94,14 @@ export const useAuthStore = defineStore(
       user.value.imageUrl = imageUrl
     }
 
+    function updateUser (userValue: Partial<IUser>): void {
+      user.value = {
+        ...user.value,
+        ...userValue,
+        name: userValue?.name || formatter.fullName({ ...user.value, ...userValue })
+      }
+    }
+
     function branchLogin (branchValue: IBranch): void {
       branch.value = branchValue
       // branchToken.value = tokenValue
@@ -142,6 +151,7 @@ export const useAuthStore = defineStore(
       setUserImage,
       // branchToken,
       userLogin,
+      updateUser,
       logout,
       branchLogin
     }
