@@ -31,6 +31,7 @@ import { formatter } from '@/utils/Formatter'
 import type { IBranchList } from '@/models/response/branch/BranchRes.model'
 import type { IEmployeeById } from '@/models/response/employee/EmployeeRes.model'
 import { formatTitle } from '@/enums/modules/employee/EmployeeRole.enum'
+import { formatTitle as formatManagementPositionTitle } from '@/enums/modules/management-structure/ManagementPosition.enum'
 import BaseContainer from '@/components/base/BaseContainer.vue'
 import BaseImage from '@/components/base/BaseImage.vue'
 import CitizenId from '@/components/display/CitizenId.vue'
@@ -53,6 +54,13 @@ const emits = defineEmits<IEmits>()
 const dayjs = useDayjs()
 
 const items = computed((): IDisplayList[] => {
+  const isSupervisor = props.data.role === 'SUPERVISOR'
+  const isLineSupervisor = props.data.managementPosition?.managementPosition === 'LINE_MANAGER'
+  const supervisorLineItems: IDisplayList[] = [
+    { label: 'ตำแหน่งผังบริการ', key: 'managementPosition.managementPosition', value: formatManagementPositionTitle(props.data.managementPosition?.managementPosition) || '-' },
+    { label: isLineSupervisor ? 'หัวหน้าสาย' : 'ผู้จัดการเขต', key: 'managementPosition.name', value: props.data.managementPosition?.name || '-' }
+  ]
+
   return [
     { label: 'สถานะ', key: 'status', value: props.data.status, hideColon: true },
     { label: 'รหัสพนักงาน', key: 'id', value: props.data?.idNo },
@@ -63,6 +71,7 @@ const items = computed((): IDisplayList[] => {
     { label: 'อีเมล', key: 'email', value: props.data.email },
     { label: 'เบอร์โทร', key: 'phoneNumber', value: props.data.phoneNumber },
     { label: 'ตำแหน่ง', key: 'role', value: formatTitle(props.data.role) },
+    ...isSupervisor ? supervisorLineItems : [],
     { label: 'สาขา', key: 'branches', value: props.data.branches?.map((e: IBranchList): string => e?.name || '-').join(', ') }
   ]
 })
