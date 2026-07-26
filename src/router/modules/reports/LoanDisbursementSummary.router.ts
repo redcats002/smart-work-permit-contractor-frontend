@@ -24,6 +24,17 @@ export default {
         icon: 'eva:list-fill',
         back: { name: 'ReportListPage' }
       }
+    },
+    {
+      path: 'print',
+      name: 'LoanDisbursementSummaryPrintPage',
+      component: (): ComponentOptions => import('@/pages/reports/pages/loan-disbursement-summary/pages/LoanDisbursementSummaryPrintPage.vue'),
+      meta: {
+        auth: true,
+        title: 'พิมพ์รายงานสรุปการปล่อยสินเชื่อ',
+        layout: 'blank',
+        back: { name: 'LoanDisbursementSummaryListPage' }
+      }
     }
   ]
 } as RouteRecordRaw

@@ -200,6 +200,7 @@
 </template>
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import type { IInvoiceDetail, IInvoiceDetailItems, IInvoiceInstallment } from '@/models/response/invoice/InvoiceRes.model'
 
@@ -210,6 +211,9 @@ interface IProps {
   indexChunk: number
 }
 const props = defineProps<IProps>()
+
+const dayjs = useDayjs()
+
 const totalPrice = computed((): number =>
   props.installmentForm.items.reduce((sum: number, item: IInvoiceDetailItems): number => sum + Number(item.amount), 0))
 

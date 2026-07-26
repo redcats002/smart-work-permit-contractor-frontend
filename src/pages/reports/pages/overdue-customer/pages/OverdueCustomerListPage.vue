@@ -11,7 +11,8 @@
       @search="onSearch()">
       <PrintButton
         icon="material-symbols:print-outline-rounded"
-        label="พิมพ์" />
+        label="พิมพ์"
+        @click="onPrint()" />
     </OverdueCustomerFilter>
     <BasePage>
       <OverdueCustomerTable
@@ -27,6 +28,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
@@ -35,6 +37,8 @@ import PageTitle from '@/components/nav/PageTitle.vue'
 import OverdueCustomerFilter from '../components/OverdueCustomerFilter.vue'
 import OverdueCustomerTable from '../components/OverdueCustomerTable.vue'
 import useList from '../composables/useList'
+
+const router = useRouter()
 
 const {
   filters,
@@ -48,6 +52,15 @@ const {
   onClearFilters,
   onSearch
 } = useList()
+
+function onPrint (): void {
+  router.push({
+    name: 'OverdueCustomerPrintPage',
+    query: {
+      branchId: filters.value.branchId || undefined
+    }
+  })
+}
 
 onMounted((): void => {
   fetch()

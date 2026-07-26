@@ -5,6 +5,11 @@
     <DailySummaryFilter
       v-model:filters="filters"
       @search="onSearch()">
+      <PrintButton
+        class="md:mr-2"
+        icon="material-symbols:print-outline-rounded"
+        label="พิมพ์"
+        @click="onPrint()" />
       <CreateButton
         :to="{ name: 'DailySummaryCreatePage' }"
         label="สรุปประจำวัน" />
@@ -25,11 +30,12 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import type { IDailySummaryListItem } from '@/models/response/report/daily-summary/DailySummaryRes'
 import BasePage from '@/components/base/BasePage.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import CreateButton from '@/components/button/CreateButton.vue'
+import PrintButton from '@/components/button/PrintButton.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
-import type { IDailySummaryListItem } from '@/models/response/report/daily-summary/DailySummaryRes'
 import DailySummaryFilter from '../components/DailySummaryFilter.vue'
 import DailySummaryTable from '../components/DailySummaryTable.vue'
 import useList from '../composables/useList'
@@ -48,6 +54,16 @@ const {
 
 function onRowClick (event: { data: IDailySummaryListItem }): void {
   router.push({ name: 'DailySummaryDetailListPage', params: { id: event.data.id } })
+}
+
+function onPrint (): void {
+  router.push({
+    name: 'DailySummaryPrintPage',
+    query: {
+      startDate: filters.value.startDate || undefined,
+      endDate: filters.value.endDate || undefined
+    }
+  })
 }
 
 onMounted((): void => {

@@ -24,6 +24,17 @@ export default {
         icon: 'eva:list-fill',
         back: { name: 'ReportListPage' }
       }
+    },
+    {
+      path: 'print',
+      name: 'RankingLoanPrintPage',
+      component: (): ComponentOptions => import('@/pages/reports/pages/ranking-loan/page/RankingLoanPrintPage.vue'),
+      meta: {
+        auth: true,
+        title: 'พิมพ์รายงานอันดับ 1-25 การปล่อยสินเชื่อ',
+        layout: 'blank',
+        back: { name: 'RankingLoanListPage' }
+      }
     }
   ]
 } as RouteRecordRaw

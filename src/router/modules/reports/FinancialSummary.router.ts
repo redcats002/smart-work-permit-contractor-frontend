@@ -24,6 +24,17 @@ export default {
         icon: 'eva:list-fill',
         back: { name: 'ReportListPage' }
       }
+    },
+    {
+      path: 'print',
+      name: 'FinancialSummaryPrintPage',
+      component: (): ComponentOptions => import('@/pages/reports/pages/financial-summary/pages/FinancialSummaryReportPrintPage.vue'),
+      meta: {
+        auth: true,
+        title: 'พิมพ์รายงานสรุปรับ / ปล่อยสินเชื่อ / ค่าใช้จ่าย',
+        layout: 'blank',
+        back: { name: 'FinancialSummaryPageListPage' }
+      }
     }
   ]
 } as RouteRecordRaw

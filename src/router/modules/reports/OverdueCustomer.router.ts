@@ -24,6 +24,17 @@ export default {
         icon: 'eva:list-fill',
         back: { name: 'ReportListPage' }
       }
+    },
+    {
+      path: 'print',
+      name: 'OverdueCustomerPrintPage',
+      component: (): ComponentOptions => import('@/pages/reports/pages/overdue-customer/pages/OverdueCustomerPrintPage.vue'),
+      meta: {
+        auth: true,
+        title: 'พิมพ์รายงานลูกค้าค้างชำระ',
+        layout: 'blank',
+        back: { name: 'OverdueCustomerListPage' }
+      }
     }
   ]
 } as RouteRecordRaw

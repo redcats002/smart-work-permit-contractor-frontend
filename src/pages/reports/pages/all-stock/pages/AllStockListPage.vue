@@ -9,7 +9,8 @@
         @search="onSearch()">
         <PrintButton
           icon="material-symbols:print-outline-rounded"
-          label="พิมพ์" />
+          label="พิมพ์"
+          @click="onPrint()" />
       </AllStockFilter>
       <div>
         <AllStockTable
@@ -25,6 +26,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import BasePage from '@/components/base/BasePage.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import PrintButton from '@/components/button/PrintButton.vue'
@@ -32,6 +34,8 @@ import PageTitle from '@/components/nav/PageTitle.vue'
 import AllStockFilter from '../components/AllStockFilter.vue'
 import AllStockTable from '../components/AllStockTable.vue'
 import useList from '../composables/useList.ts'
+
+const router = useRouter()
 
 const {
   items,
@@ -43,6 +47,10 @@ const {
   onClearFilters,
   onSearch
 } = useList()
+
+function onPrint (): void {
+  router.push({ name: 'AllStockPrintPage' })
+}
 
 onMounted((): void => {
   fetch()

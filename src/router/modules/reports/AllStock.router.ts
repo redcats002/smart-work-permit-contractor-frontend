@@ -24,6 +24,17 @@ export default {
         icon: 'eva:list-fill',
         back: { name: 'ReportListPage' }
       }
+    },
+    {
+      path: 'print',
+      name: 'AllStockPrintPage',
+      component: (): ComponentOptions => import('@/pages/reports/pages/all-stock/pages/AllStockPrintPage.vue'),
+      meta: {
+        auth: true,
+        title: 'พิมพ์รายงานสรุปสต็อกสินค้ารวม',
+        layout: 'blank',
+        back: { name: 'AllStockListPage' }
+      }
     }
   ]
 } as RouteRecordRaw

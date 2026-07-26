@@ -25,6 +25,17 @@ export default {
       }
     },
     {
+      path: 'print',
+      name: 'DailySummaryPrintPage',
+      component: (): ComponentOptions => import('@/pages/reports/pages/daily-summary/pages/list/page/DailySummaryPrintPage.vue'),
+      meta: {
+        auth: true,
+        title: 'พิมพ์รายงานสรุปประจำวัน',
+        layout: 'blank',
+        back: { name: 'DailySummaryListPage' }
+      }
+    },
+    {
       path: 'create',
       name: 'DailySummaryCreatePage',
       component: (): ComponentOptions => import('@/pages/reports/pages/daily-summary/pages/create/page/DailySummaryCreatePage.vue'),
