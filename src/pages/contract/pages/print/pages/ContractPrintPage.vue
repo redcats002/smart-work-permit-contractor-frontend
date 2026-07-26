@@ -31,7 +31,7 @@
           </div>
 
           <!-- Intro paragraph -->
-          <p class="text-justify mb-4 indent-3.5">
+          <p class="text-justify mb-4 indent-3">
             สัญญากู้ยืมเงินฉบับนี้ทำขึ้นระหว่าง
             <span class="d-underline">{{ branch.name }}</span>
             ตั้งอยู่เลขที่
@@ -69,7 +69,7 @@
                 </span>
                 <span>
                   <label>หมู่</label>
-                  <span class="d-underline w-5">&nbsp;</span>
+                  <span class="d-underline w-5">{{ item.customer.mainAddress?.villageNo || '-' }}</span>
                 </span>
                 <span>
                   <label>ตำบล</label>
