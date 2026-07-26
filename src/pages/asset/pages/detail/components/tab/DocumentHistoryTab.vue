@@ -43,7 +43,7 @@ const columns = ref<IColumn<IDocumentMovementItem>[]>([
   { field: 'date', header: 'วันที่', align: 'left', style: { maxWidth: '100px' } },
   { field: 'origin', header: 'ต้นทาง', align: 'left', style: { maxWidth: '220px' } },
   { field: 'destination', header: 'ปลายทาง', align: 'left', style: { maxWidth: '220px' } },
-  { field: 'sentBy', header: 'ย้ายโดย', align: 'left', style: { maxWidth: '200px' } },
+  { field: 'createdBy', header: 'ย้ายโดย', align: 'left', style: { maxWidth: '200px' } },
   { field: 'receivedBy', header: 'รับโดย', align: 'left', style: { maxWidth: '160px' } },
   { field: 'status', header: 'สถานะ', align: 'right', style: { maxWidth: '110px' } }
 ])
