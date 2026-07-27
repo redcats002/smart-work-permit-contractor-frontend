@@ -164,6 +164,7 @@ function onPayment (id: number): void {
 }
 
 function onViewReceipt (receiptId: number): void {
+  console.log('onViewReceipt', receiptId)
   router.push({ name: 'ReceiptPrintPage', params: { id: receiptId } })
 }
 

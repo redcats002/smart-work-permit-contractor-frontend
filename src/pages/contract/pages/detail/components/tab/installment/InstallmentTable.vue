@@ -20,13 +20,14 @@
         :collection-fee="item.collectionFee"
         :legal-fee="item.legalFee"
         :payment-status="item.status"
+        :receipt-id="item.items[0]?.receiptId"
         @collection-fee="openFeeModal('collection', item)"
         @create-invoice="emits('createInvoice', Number(item.id))"
         @edit="emits('update')"
         @edit-payment="emits('editPayment', Number(item.id))"
         @legal-fee="openFeeModal('legal', item)"
         @payment="emits('payment', Number(item.id))"
-        @view-receipt="emits('viewReceipt', Number(item.receiptId))" />
+        @view-receipt="emits('viewReceipt', $event)" />
     </template>
     <template #[`item.detail`]="{ item }">
       <div
@@ -131,7 +132,6 @@
       </div>
     </template>
   </BaseTable>
-
   <!-- Fee modals -->
   <InstallmentFeeModal
     v-model="collectionFeeModalVisible"
