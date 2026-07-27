@@ -69,6 +69,7 @@ export interface IDocumentMovementById extends IDocumentMovementList {
   asset: IAssetList
   reason?: string
   receiveDate?: string
+  receivedAt?: string
   items: IAssetMovementItem[]
 }
 
