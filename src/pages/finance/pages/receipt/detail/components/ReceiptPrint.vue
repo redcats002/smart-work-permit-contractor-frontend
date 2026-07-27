@@ -30,7 +30,7 @@
             Receipt
           </div>
           <div class="text-xs opacity-90">
-            ใบเสร็จ/ใบจัดส่งสินค้า
+            ใบเสร็จ
           </div>
         </div>
 
