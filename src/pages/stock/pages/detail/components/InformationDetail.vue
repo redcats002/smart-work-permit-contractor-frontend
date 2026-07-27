@@ -49,7 +49,7 @@ const senderItems = computed((): IDisplayList[] => [
 ])
 
 const receiverItems = computed((): IDisplayList[] => [
-  { label: 'วันที่รับ', key: 'receiveDate', value: props.data.receiveDate ? dayjs.formatDate(props.data.receiveDate) : '-' },
+  { label: 'วันที่รับ', key: 'receivedAt', value: props.data.receivedAt ? dayjs.formatDate(props.data.receivedAt) : '-' },
   { label: 'รับโดย', key: 'receiverName', value: formatter.fullName(props.data.receivedByEmployee) || '-' }
 ])
 
