@@ -149,12 +149,15 @@
         class="border border-[#bdbdbd] rounded h-10 flex items-center justify-end px-4 w-[197px]"
         @click.stop>
         <input
-          :value="formattedCustomAmount"
+          :value="customAmountDisplay"
           class="w-full text-right text-base text-[#333] outline-none bg-transparent"
+          inputmode="decimal"
           type="text"
           @blur="onCustomAmountBlur($event)"
           @click="paymentType = 'custom'"
-          @input="onCustomAmountInput($event)">
+          @focus="onCustomAmountFocus()"
+          @input="onCustomAmountInput($event)"
+          @keydown="onCustomAmountKeydown($event)">
       </div>
     </div>
 
@@ -285,6 +288,8 @@ const dayjs = useDayjs()
 const selected = ref<boolean>(false)
 const paymentType = ref<'full' | 'custom'>('full')
 const customAmount = ref<number>(0)
+const customAmountDisplay = ref<string>('')
+const isEditingCustomAmount = ref<boolean>(false)
 const fineDiscount = ref<boolean>(false)
 const discountAmount = ref<number>(0)
 const isExpanded = ref<boolean>(false)
@@ -347,15 +352,46 @@ const currentDiscount = computed((): number => {
   return discountAmount.value
 })
 
-const formattedCustomAmount = computed((): string => formatter.numberFormat2Decimal(customAmount.value))
+watch(customAmount, (val: number): void => {
+  if (!isEditingCustomAmount.value) {
+    customAmountDisplay.value = formatter.numberFormat2Decimal(val)
+  }
+})
+
+function onCustomAmountFocus (): void {
+  isEditingCustomAmount.value = true
+  const val = customAmount.value
+  customAmountDisplay.value = val != null && !isNaN(val) ? String(val) : ''
+}
+
+function onCustomAmountKeydown (event: KeyboardEvent): void {
+  if (event.key === 'Enter') {
+    ;(event.target as HTMLInputElement).blur()
+    return
+  }
+  const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End']
+  if (allowed.includes(event.key)) return
+  if (event.key === '.') {
+    if ((event.target as HTMLInputElement).value.includes('.')) event.preventDefault()
+    return
+  }
+  if (!(/^[0-9]$/).test(event.key)) event.preventDefault()
+}
 
 function onCustomAmountInput (event: Event): void {
-  const raw = (event.target as HTMLInputElement).value.replace(/,/g, '')
+  const input = event.target as HTMLInputElement
+  let raw = input.value.replace(/[^0-9.]/g, '')
+  const parts = raw.split('.')
+  if (parts.length > 2) raw = parts[0] + '.' + parts.slice(1).join('')
+  customAmountDisplay.value = raw
   customAmount.value = parseFloat(raw) || 0
 }
 
 function onCustomAmountBlur (event: Event): void {
-  (event.target as HTMLInputElement).value = formatter.numberFormat2Decimal(customAmount.value)
+  isEditingCustomAmount.value = false
+  const formatted = formatter.numberFormat2Decimal(customAmount.value)
+  customAmountDisplay.value = formatted
+  ;(event.target as HTMLInputElement).value = formatted
 }
 
 watch((): number | undefined => props.selectAllTick, (): void => {
