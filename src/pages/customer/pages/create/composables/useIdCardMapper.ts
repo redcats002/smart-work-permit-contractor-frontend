@@ -1,6 +1,6 @@
-import type { IReadIdCardResult } from '@/components/button/ReadIdentificationCardButton.vue'
-import { ETitleName } from '@/enums/TitleName.enum'
 import { resolvePostCode } from '@/utils/Address'
+import { ETitleName } from '@/enums/TitleName.enum'
+import type { IReadIdCardResult } from '@/components/button/ReadIdentificationCardButton.vue'
 import type { CustomerFormValues } from '../schema/customer.schema'
 
 const titleMap: Record<string, ETitleName> = {
@@ -22,6 +22,7 @@ export async function mapIdCardToCustomer (data: IReadIdCardResult, current: Cus
     birthDate: data.birthDay,
     mainAddress: {
       ...current.mainAddress,
+      villageNo: addr?.moo || '',
       address: addressText,
       subDistrict: addr.subDistrict,
       district: addr.district,

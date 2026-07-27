@@ -10,6 +10,17 @@
     </div>
   </Button>
 
+  <Button
+    v-if="isDev"
+    class="bg-white"
+    color="secondary"
+    outlined
+    @click="handleMockReadIdCard()">
+    <div class="text-sm font-medium">
+      [Dev] Mock อ่านบัตร
+    </div>
+  </Button>
+
   <Dialog
     v-model:visible="showUrlModal"
     :style="{ width: '28rem' }"
@@ -139,6 +150,30 @@ function handleReadIdCard (): void {
   } else {
     doReadIdCard()
   }
+}
+
+function handleMockReadIdCard (): void {
+  // ponytail: dev-only mock, skips WebSocket agent entirely
+  const payload: IReadIdCardResult = {
+    title: 'Mr.',
+    firstName: 'อัฏฐวัฒน์',
+    lastName: 'วารีรัตน์',
+    gender: 'MALE',
+    nation: 'ไทย',
+    idCard: '1900101262493',
+    birthDay: '1999-11-09T17:00:00.000Z',
+    address: {
+      houseNo: '110/1',
+      moo: 'หมู่ที่ 5',
+      soi: '',
+      road: '',
+      subDistrict: 'ตำบลทองมงคล',
+      district: 'อำเภอบางสะพาน',
+      province: 'จังหวัดประจวบคีรีขันธ์'
+    }
+  }
+  toast.success('อ่านบัตรสำเร็จ (mock)')
+  emits('readSuccess', payload)
 }
 
 function onConfirmUrl (): void {

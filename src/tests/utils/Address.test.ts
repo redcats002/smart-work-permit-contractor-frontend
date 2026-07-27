@@ -8,13 +8,34 @@ vi.mock('thai-address-universal', () => ({
 const { searchAddressBySubDistrict } = await import('thai-address-universal')
 
 describe('resolvePostCode', () => {
-  it('returns postal_code when district and province match', async () => {
+  it('returns postal_code when district and province match (unprefixed input)', async () => {
     vi.mocked(searchAddressBySubDistrict).mockResolvedValue([
       { province: 'กรุงเทพมหานคร', district: 'บางรัก', sub_district: 'สีลม', postal_code: '10500' },
       { province: 'เชียงใหม่', district: 'เมืองเชียงใหม่', sub_district: 'สีลม', postal_code: '50000' }
     ])
 
     const result = await resolvePostCode('สีลม', 'บางรัก', 'กรุงเทพมหานคร')
+
+    expect(result).toBe('10500')
+  })
+
+  it('strips ID-card address prefixes (ตำบล/อำเภอ/จังหวัด) before matching', async () => {
+    vi.mocked(searchAddressBySubDistrict).mockResolvedValue([
+      { province: 'ประจวบคีรีขันธ์', district: 'บางสะพาน', sub_district: 'ทองมงคล', postal_code: '77230' }
+    ])
+
+    const result = await resolvePostCode('ตำบลทองมงคล', 'อำเภอบางสะพาน', 'จังหวัดประจวบคีรีขันธ์')
+
+    expect(searchAddressBySubDistrict).toHaveBeenCalledWith('ทองมงคล')
+    expect(result).toBe('77230')
+  })
+
+  it('strips Bangkok-style prefixes (แขวง/เขต)', async () => {
+    vi.mocked(searchAddressBySubDistrict).mockResolvedValue([
+      { province: 'กรุงเทพมหานคร', district: 'บางรัก', sub_district: 'สีลม', postal_code: '10500' }
+    ])
+
+    const result = await resolvePostCode('แขวงสีลม', 'เขตบางรัก', 'กรุงเทพมหานคร')
 
     expect(result).toBe('10500')
   })
