@@ -149,10 +149,12 @@
         class="border border-[#bdbdbd] rounded h-10 flex items-center justify-end px-4 w-[197px]"
         @click.stop>
         <input
-          v-model.number="customAmount"
+          :value="formattedCustomAmount"
           class="w-full text-right text-base text-[#333] outline-none bg-transparent"
-          type="number"
-          @click="paymentType = 'custom'">
+          type="text"
+          @blur="onCustomAmountBlur($event)"
+          @click="paymentType = 'custom'"
+          @input="onCustomAmountInput($event)">
       </div>
     </div>
 
@@ -344,6 +346,17 @@ const currentDiscount = computed((): number => {
   if (!selected.value || !fineDiscount.value) return 0
   return discountAmount.value
 })
+
+const formattedCustomAmount = computed((): string => formatter.numberFormat2Decimal(customAmount.value))
+
+function onCustomAmountInput (event: Event): void {
+  const raw = (event.target as HTMLInputElement).value.replace(/,/g, '')
+  customAmount.value = parseFloat(raw) || 0
+}
+
+function onCustomAmountBlur (event: Event): void {
+  (event.target as HTMLInputElement).value = formatter.numberFormat2Decimal(customAmount.value)
+}
 
 watch((): number | undefined => props.selectAllTick, (): void => {
   if (props.selectAll !== undefined) selected.value = props.selectAll
