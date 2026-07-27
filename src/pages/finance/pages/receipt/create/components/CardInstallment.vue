@@ -127,7 +127,7 @@
         </div>
         <span class="text-[#333] text-base">ยอดชำระเต็มจำนวน</span>
       </div>
-      <span class="text-[#333] text-base">{{ formatter.numberFormat(fullAmount) }}</span>
+      <span class="text-[#333] text-base">{{ formatter.numberFormat2Decimal(fullAmount) }}</span>
     </div>
 
     <!-- Custom amount option -->
@@ -149,10 +149,12 @@
         class="border border-[#bdbdbd] rounded h-10 flex items-center justify-end px-4 w-[197px]"
         @click.stop>
         <input
-          v-model.number="customAmount"
+          :value="formattedCustomAmount"
           class="w-full text-right text-base text-[#333] outline-none bg-transparent"
-          type="number"
-          @click="paymentType = 'custom'">
+          type="text"
+          @blur="onCustomAmountBlur($event)"
+          @click="paymentType = 'custom'"
+          @input="onCustomAmountInput($event)">
       </div>
     </div>
 
@@ -188,7 +190,7 @@
           class="h-14 flex items-center justify-end px-4 border-b border-[#e0e0e0]">
           <span
             :class="i === tableRows.length - 1 ? 'font-bold' : ''"
-            class="text-[#333] text-sm">{{ formatter.numberFormat(row.amount) }}</span>
+            class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(row.amount) }}</span>
         </div>
       </div>
 
@@ -204,7 +206,7 @@
           class="h-14 flex items-center justify-end px-4 border-b border-[#e0e0e0]">
           <span
             :class="i === tableRows.length - 1 ? 'font-bold' : ''"
-            class="text-[#333] text-sm">{{ formatter.numberFormat(row.paid) }}</span>
+            class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(row.paid) }}</span>
         </div>
       </div>
 
@@ -220,7 +222,7 @@
           class="h-14 flex items-center justify-end px-4 border-b border-[#e0e0e0]">
           <span
             :class="i === tableRows.length - 1 ? 'font-bold' : ''"
-            class="text-[#333] text-sm">{{ formatter.numberFormat(row.remaining) }}</span>
+            class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(row.remaining) }}</span>
         </div>
       </div>
     </div>
@@ -344,6 +346,17 @@ const currentDiscount = computed((): number => {
   if (!selected.value || !fineDiscount.value) return 0
   return discountAmount.value
 })
+
+const formattedCustomAmount = computed((): string => formatter.numberFormat2Decimal(customAmount.value))
+
+function onCustomAmountInput (event: Event): void {
+  const raw = (event.target as HTMLInputElement).value.replace(/,/g, '')
+  customAmount.value = parseFloat(raw) || 0
+}
+
+function onCustomAmountBlur (event: Event): void {
+  (event.target as HTMLInputElement).value = formatter.numberFormat2Decimal(customAmount.value)
+}
 
 watch((): number | undefined => props.selectAllTick, (): void => {
   if (props.selectAll !== undefined) selected.value = props.selectAll

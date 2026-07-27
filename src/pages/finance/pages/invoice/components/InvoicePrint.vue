@@ -122,9 +122,9 @@
     </div> <!-- TABLE -->
     <div class="border-2 border-zinc-700 rounded-xl mt-4">
       <table class="w-full">
-        <thead class="bg-zinc-700 text-white">
-          <tr>
-            <th class="p-3 text-left w-16">
+        <thead class="bg-zinc-700 text-white rounded-2xl">
+          <tr class="rounded-2xl">
+            <th class="p-3 text-left w-16 rounded-tl-md">
               ลำดับ
             </th>
             <th class="p-3 text-left">
@@ -133,7 +133,7 @@
             <th class="p-3 text-center w-24">
               จำนวน
             </th>
-            <th class="p-3 text-right w-32">
+            <th class="p-3 text-right w-32 rounded-tr-md">
               ราคา
             </th>
           </tr>
@@ -153,7 +153,7 @@
               {{ formatter.numberFormat(item.qty) }}
             </td>
             <td class="p-3 text-right">
-              {{ formatter.numberFormat(item.amount) }}
+              {{ formatter.numberFormat2Decimal(item.amount) }}
             </td>
           </tr>
         </tbody>

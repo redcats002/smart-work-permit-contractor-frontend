@@ -2,6 +2,7 @@ import type { TBaseOption } from '@/models/Global.model'
 
 export enum InstallmentStatusEnum {
   PAID = 'PAID', // ชำระแล้ว
+  PARTIAL = 'PARTIAL', // ชำระบางส่วน
   PARTIALLY_PAID = 'PARTIALLY_PAID', // ชำระบางส่วน
   OVERDUE = 'OVERDUE', // เกินกำหนด
   NOT_DUE = 'NOT_DUE', // ยังไม่ถึงกำหนด
@@ -12,6 +13,7 @@ export type TInstallmentStatus = keyof typeof InstallmentStatusEnum
 
 const titleMap: Record<TInstallmentStatus, string> = {
   [InstallmentStatusEnum.PAID]: 'ชำระแล้ว',
+  [InstallmentStatusEnum.PARTIAL]: 'ชำระบางส่วน',
   [InstallmentStatusEnum.PARTIALLY_PAID]: 'ชำระบางส่วน',
   [InstallmentStatusEnum.OVERDUE]: 'เกินกำหนด',
   [InstallmentStatusEnum.NOT_DUE]: 'ยังไม่ถึงกำหนด',
@@ -34,6 +36,8 @@ export function getStatusClass (value?: TInstallmentStatus): string {
   switch (value) {
     case InstallmentStatusEnum.PAID:
       return 'bg-green-100 text-green-600 border-none'
+    case InstallmentStatusEnum.PARTIAL:
+      return 'bg-purple-100 text-blue-600 border-none'
     case InstallmentStatusEnum.PARTIALLY_PAID:
       return 'bg-blue-100 text-blue-600 border-none'
     case InstallmentStatusEnum.OVERDUE:
@@ -51,6 +55,8 @@ export function getIcon (value?: TInstallmentStatus): string {
   switch (value) {
     case InstallmentStatusEnum.PAID:
       return 'icon-park-outline:check-one'
+    case InstallmentStatusEnum.PARTIAL:
+      return 'streamline:graph-arrow-increase'
     case InstallmentStatusEnum.PARTIALLY_PAID:
       return 'streamline:graph-arrow-increase'
     case InstallmentStatusEnum.OVERDUE:
