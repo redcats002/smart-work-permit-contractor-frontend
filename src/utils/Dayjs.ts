@@ -61,7 +61,7 @@ export function useDayjs (): TUseDayjs {
 
   const formatDate = (input?: string | Date): string => {
     // return input ? dayjs(input).format('DD/MM/BB') : '-'
-    return input ? dayjs(input).format('DD/MM/YY') : '-' // use 'YY' for UAT
+    return input ? dayjs(input).format('DD/MM/YYYY') : '-' // use 'YYYY' for UAT
   }
   const formatTime = (input?: string | Date): string => {
     return input ? dayjs(input).format('HH:mm[น.]') : '-'
