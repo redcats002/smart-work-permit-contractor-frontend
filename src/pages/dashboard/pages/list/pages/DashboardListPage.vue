@@ -37,6 +37,7 @@
             v-model:start="marketingStart"
             :center-unit="CHART_MARKET_UNIT"
             :center-value="marketingCenterValue"
+            :color-map="chartColorMap"
             :rows="marketingRows"
             :title="CHART_MARKET_TITLE"
             period-label="ประจำเดือน" />
@@ -45,6 +46,7 @@
             v-model:start="loanStart"
             :center-unit="CHART_LOAN_UNIT"
             :center-value="loanCenterValue"
+            :color-map="chartColorMap"
             :rows="loanRows"
             :title="CHART_LOAN_TITLE"
             period-label="ประจำเดือน" />
@@ -141,8 +143,19 @@ const loanCenterValue = computed((): string => {
   return loanData.value ? formatter.numberFormatNoDecimal(loanData.value.total) : ''
 })
 
+const DONUT_COLORS = ['#72D9C8', '#52AED5', '#F4D67E', '#F46A67', '#FFABB1', '#374153', '#FE8A8A']
+
+const chartColorMap = computed((): Record<number, string> => {
+  const ids = Array.from(new Set([
+    ...(marketData.value?.items ?? []).map((item: IDashboardChartItem): number => item.id),
+    ...(loanData.value?.items ?? []).map((item: IDashboardChartItem): number => item.id)
+  ])).sort((a: number, b: number): number => a - b)
+  return Object.fromEntries(ids.map((id: number, i: number): [number, string] => [id, DONUT_COLORS[i % DONUT_COLORS.length]]))
+})
+
 const marketingRows = computed((): IDashboardDonutRow[] => {
   return (marketData.value?.items ?? []).map((item: IDashboardChartItem): IDashboardDonutRow => ({
+    id: item.id,
     label: item.name,
     value: formatter.numberFormatNoDecimal(item.total),
     unit: CHART_MARKET_UNIT,
@@ -152,6 +165,7 @@ const marketingRows = computed((): IDashboardDonutRow[] => {
 
 const loanRows = computed((): IDashboardDonutRow[] => {
   return (loanData.value?.items ?? []).map((item: IDashboardChartItem): IDashboardDonutRow => ({
+    id: item.id,
     label: item.name,
     value: formatter.numberFormatNoDecimal(item.total),
     unit: CHART_LOAN_UNIT,
