@@ -26,6 +26,8 @@ export function useInitDetail (data?: Partial<ICustomerById>): Ref<ICustomerById
     email: data?.email ?? '',
     personalType: data?.personalType ?? 'INDIVIDUAL',
     mainAddress: {
+      id: data?.mainAddress?.id ?? 0,
+      villageNo: data?.mainAddress?.villageNo ?? '',
       address: data?.mainAddress?.address ?? '',
       subDistrict: data?.mainAddress?.subDistrict ?? '',
       district: data?.mainAddress?.district ?? '',
@@ -36,6 +38,8 @@ export function useInitDetail (data?: Partial<ICustomerById>): Ref<ICustomerById
       isSameCurrentAddress: data?.mainAddress?.isSameCurrentAddress ?? false
     },
     currentAddress: {
+      id: data?.currentAddress?.id ?? 0,
+      villageNo: data?.currentAddress?.villageNo ?? '',
       address: data?.currentAddress?.address ?? '',
       subDistrict: data?.currentAddress?.subDistrict ?? '',
       district: data?.currentAddress?.district ?? '',
@@ -46,6 +50,8 @@ export function useInitDetail (data?: Partial<ICustomerById>): Ref<ICustomerById
       isSameCurrentAddress: data?.currentAddress?.isSameCurrentAddress ?? false
     },
     workAddress: {
+      id: data?.workAddress?.id ?? 0,
+      villageNo: data?.workAddress?.villageNo ?? '',
       address: data?.workAddress?.address ?? '',
       subDistrict: data?.workAddress?.subDistrict ?? '',
       district: data?.workAddress?.district ?? '',
