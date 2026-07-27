@@ -66,25 +66,25 @@
               {{ dayjs.formatDate(item.finalInstallmentDate) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(item.principal) }}
+              {{ formatter.numberFormat2Decimal(item.principal) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(item.principalAndInterest) }}
+              {{ formatter.numberFormat2Decimal(item.principalAndInterest) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(item.amountPaid) }}
+              {{ formatter.numberFormat2Decimal(item.amountPaid) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(item.outstandingPrincipal) }}
+              {{ formatter.numberFormat2Decimal(item.outstandingPrincipal) }}
             </td>
             <td class="p-1.5">
               {{ dayjs.formatDate(item.lastPaidAt) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(item.overdueOutstandingAmount) }}
+              {{ formatter.numberFormat2Decimal(item.overdueOutstandingAmount) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(item.overdueOutstandingCount) }}
+              {{ formatter.numberFormat2Decimal(item.overdueOutstandingCount) }}
             </td>
           </tr>
         </tbody>
@@ -96,23 +96,23 @@
               รวม {{ items.length }} รายการ
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(summary?.principal || 0) }}
+              {{ formatter.numberFormat2Decimal(summary?.principal || 0) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(summary?.principalAndInterest || 0) }}
+              {{ formatter.numberFormat2Decimal(summary?.principalAndInterest || 0) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(summary?.amountPaid || 0) }}
+              {{ formatter.numberFormat2Decimal(summary?.amountPaid || 0) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(summary?.outstandingPrincipal || 0) }}
+              {{ formatter.numberFormat2Decimal(summary?.outstandingPrincipal || 0) }}
             </td>
             <td class="p-1.5" />
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(summary?.overdueOutstandingAmount || 0) }}
+              {{ formatter.numberFormat2Decimal(summary?.overdueOutstandingAmount || 0) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(summary?.overdueOutstandingCount || 0) }}
+              {{ formatter.numberFormat2Decimal(summary?.overdueOutstandingCount || 0) }}
             </td>
           </tr>
         </tfoot>

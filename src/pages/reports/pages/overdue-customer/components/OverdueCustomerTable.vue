@@ -44,24 +44,24 @@ const columns = ref<IColumn<IOverdueCustomerList>[]>([
   { field: 'customerName', header: 'ชื่อลูกค้า', align: 'left', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, width: 160 },
   { field: 'createdAt', header: 'วันที่ทำสัญญา', align: 'left', style: { width: '120px', minWidth: '120px' }, width: 120, value: (e: IOverdueCustomerList): string => dayjs.formatDate(e.createdAt) },
   { field: 'finalInstallmentDate', header: 'วันที่งวดสุดท้าย', align: 'left', style: { width: '120px', minWidth: '120px' }, width: 130, value: (e: IOverdueCustomerList): string => dayjs.formatDate(e.finalInstallmentDate) },
-  { field: 'principal', header: 'ยอดจัด', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 110, value: (e: IOverdueCustomerList): string => formatter.numberFormat(e.principal) },
-  { field: 'principalAndInterest', header: 'ยอดจัดรวมดอกเบี้ย', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 140, value: (e: IOverdueCustomerList): string => formatter.numberFormat(e.principalAndInterest) },
-  { field: 'amountPaid', header: 'ชำระแล้ว', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 110, value: (e: IOverdueCustomerList): string => formatter.numberFormat(e.amountPaid) },
-  { field: 'outstandingPrincipal', header: 'เงินต้นคงเหลือ', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IOverdueCustomerList): string => formatter.numberFormat(e.outstandingPrincipal) },
+  { field: 'principal', header: 'ยอดจัด', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 110, value: (e: IOverdueCustomerList): string => formatter.numberFormat2Decimal(e.principal) },
+  { field: 'principalAndInterest', header: 'ยอดจัดรวมดอกเบี้ย', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 140, value: (e: IOverdueCustomerList): string => formatter.numberFormat2Decimal(e.principalAndInterest) },
+  { field: 'amountPaid', header: 'ชำระแล้ว', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 110, value: (e: IOverdueCustomerList): string => formatter.numberFormat2Decimal(e.amountPaid) },
+  { field: 'outstandingPrincipal', header: 'เงินต้นคงเหลือ', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IOverdueCustomerList): string => formatter.numberFormat2Decimal(e.outstandingPrincipal) },
   { field: 'lastPaidAt', header: 'วันที่ชำระล่าสุด', align: 'left', style: { width: '120px', minWidth: '120px' }, width: 130, value: (e: IOverdueCustomerList): string => dayjs.formatDate(e.lastPaidAt) },
-  { field: 'overdueOutstandingAmount', header: 'ยอดค้างชำระ', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IOverdueCustomerList): string => formatter.numberFormat(e.overdueOutstandingAmount) },
-  { field: 'overdueOutstandingCount', header: 'งวดค้าง', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 90, value: (e: IOverdueCustomerList): string => formatter.numberFormat(e.overdueOutstandingCount) }
+  { field: 'overdueOutstandingAmount', header: 'ยอดค้างชำระ', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IOverdueCustomerList): string => formatter.numberFormat2Decimal(e.overdueOutstandingAmount) },
+  { field: 'overdueOutstandingCount', header: 'งวดค้าง', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 90, value: (e: IOverdueCustomerList): string => formatter.numberFormat2Decimal(e.overdueOutstandingCount) }
 ])
 
 const itemsFooter = computed((): IFooter[] => {
   const footerConfig: Partial<Record<keyof IOverdueCustomerList, IFooterColConfig<IOverdueCustomerSummary>>> = {
     idNo: { value: `รวม ${pagination.value.count || 0} รายการ` },
-    principal: { value: formatter.numberFormat(props.summary?.principal || 0), footerClass: 'text-right' },
-    principalAndInterest: { value: formatter.numberFormat(props.summary?.principalAndInterest || 0), footerClass: 'text-right' },
-    amountPaid: { value: formatter.numberFormat(props.summary?.amountPaid || 0), footerClass: 'text-right' },
-    outstandingPrincipal: { value: formatter.numberFormat(props.summary?.outstandingPrincipal || 0), footerClass: 'text-right' },
-    overdueOutstandingAmount: { value: formatter.numberFormat(props.summary?.overdueOutstandingAmount || 0), footerClass: 'text-right' },
-    overdueOutstandingCount: { value: formatter.numberFormat(props.summary?.overdueOutstandingCount || 0), footerClass: 'text-right' }
+    principal: { value: formatter.numberFormat2Decimal(props.summary?.principal || 0), footerClass: 'text-right' },
+    principalAndInterest: { value: formatter.numberFormat2Decimal(props.summary?.principalAndInterest || 0), footerClass: 'text-right' },
+    amountPaid: { value: formatter.numberFormat2Decimal(props.summary?.amountPaid || 0), footerClass: 'text-right' },
+    outstandingPrincipal: { value: formatter.numberFormat2Decimal(props.summary?.outstandingPrincipal || 0), footerClass: 'text-right' },
+    overdueOutstandingAmount: { value: formatter.numberFormat2Decimal(props.summary?.overdueOutstandingAmount || 0), footerClass: 'text-right' },
+    overdueOutstandingCount: { value: formatter.numberFormat2Decimal(props.summary?.overdueOutstandingCount || 0), footerClass: 'text-right' }
   }
   return generateTableFooter(columns.value, props.summary, footerConfig)
 })

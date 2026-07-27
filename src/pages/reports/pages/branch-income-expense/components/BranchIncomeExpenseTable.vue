@@ -81,10 +81,10 @@ const showCol2 = computed((): boolean => props.financeCategory !== 'COL1')
 
 const columns = computed((): IColumn<IBranchIncomeExpenseItem>[] => {
   const col1AmountFn = (e: IBranchIncomeExpenseItem): string | null =>
-    col1Types.value.includes(e.type) ? formatter.numberFormatNoDecimal(e.amount) : null
+    col1Types.value.includes(e.type) ? formatter.numberFormat2Decimal(e.amount) : null
 
   const col2AmountFn = (e: IBranchIncomeExpenseItem): string | null =>
-    col2Types.value.includes(e.type) ? formatter.numberFormatNoDecimal(e.amount) : null
+    col2Types.value.includes(e.type) ? formatter.numberFormat2Decimal(e.amount) : null
 
   const col1Col: IColumn<IBranchIncomeExpenseItem> = { field: 'col1', header: col1Label.value, align: 'right', style: { width: '150px', minWidth: '150px' }, value: col1AmountFn }
   const col2Col: IColumn<IBranchIncomeExpenseItem> = { field: 'col2', header: col2Label.value, align: 'right', style: { width: '150px', minWidth: '150px' }, value: col2AmountFn }
@@ -116,7 +116,7 @@ const itemsFooter = computed((): IFooter[] => {
     footer.push({
       colspan: 1,
       field: 'col1',
-      value: `${col1FooterLabel.value} ${formatter.numberFormatNoDecimal(totalCol1.value)}`,
+      value: `${col1FooterLabel.value} ${formatter.numberFormat2Decimal(totalCol1.value)}`,
       footerClass: 'text-right font-bold'
     })
   }
@@ -124,7 +124,7 @@ const itemsFooter = computed((): IFooter[] => {
     footer.push({
       colspan: 1,
       field: 'col2',
-      value: `${col2FooterLabel.value} ${formatter.numberFormatNoDecimal(totalCol2.value)}`,
+      value: `${col2FooterLabel.value} ${formatter.numberFormat2Decimal(totalCol2.value)}`,
       footerClass: 'text-right font-bold'
     })
   }

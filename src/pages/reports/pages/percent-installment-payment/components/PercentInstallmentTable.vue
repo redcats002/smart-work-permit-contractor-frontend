@@ -19,10 +19,7 @@
 import { computed, ref } from 'vue'
 import { formatter } from '@/utils/Formatter'
 import { generateTableFooter, type IFooterColConfig } from '@/utils/TableFooter'
-import type {
-  IPercentInstallmentList,
-  IPercentInstallmentSummary
-} from '@/models/response/report/percent-installment/PercentInstallmentRes.model'
+import type { IPercentInstallmentList, IPercentInstallmentSummary } from '@/models/response/report/percent-installment/PercentInstallmentRes.model'
 import type { IColumn, IFooter } from '@/models/Table.model'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
@@ -58,7 +55,7 @@ const columns = ref<IColumn<IPercentInstallmentList>[]>([
     align: 'right',
     style: { width: '140px', minWidth: '140px' },
     width: 120,
-    value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.monthlyInstallment)
+    value: (e: IPercentInstallmentList): string => formatter.numberFormat2Decimal(e.monthlyInstallment)
   },
   {
     field: 'amountPaid',
@@ -66,7 +63,7 @@ const columns = ref<IColumn<IPercentInstallmentList>[]>([
     align: 'right',
     style: { width: '140px', minWidth: '140px' },
     width: 120,
-    value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.amountPaid)
+    value: (e: IPercentInstallmentList): string => formatter.numberFormat2Decimal(e.amountPaid)
   },
   {
     field: 'salePrice',
@@ -74,7 +71,7 @@ const columns = ref<IColumn<IPercentInstallmentList>[]>([
     align: 'right',
     style: { width: '140px', minWidth: '140px' },
     width: 120,
-    value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.salePrice)
+    value: (e: IPercentInstallmentList): string => formatter.numberFormat2Decimal(e.salePrice)
   },
   {
     field: 'totalPenaltyFee',
@@ -82,7 +79,7 @@ const columns = ref<IColumn<IPercentInstallmentList>[]>([
     align: 'right',
     style: { width: '140px', minWidth: '140px' },
     width: 120,
-    value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.totalPenaltyFee)
+    value: (e: IPercentInstallmentList): string => formatter.numberFormat2Decimal(e.totalPenaltyFee)
   },
   {
     field: 'totalCollectionFee',
@@ -90,7 +87,7 @@ const columns = ref<IColumn<IPercentInstallmentList>[]>([
     align: 'right',
     style: { width: '140px', minWidth: '140px' },
     width: 120,
-    value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.totalCollectionFee)
+    value: (e: IPercentInstallmentList): string => formatter.numberFormat2Decimal(e.totalCollectionFee)
   },
   {
     field: 'summary',
@@ -98,7 +95,7 @@ const columns = ref<IColumn<IPercentInstallmentList>[]>([
     align: 'right',
     style: { width: '140px', minWidth: '140px' },
     width: 140,
-    value: (e: IPercentInstallmentList): string => formatter.numberFormat(e.summary)
+    value: (e: IPercentInstallmentList): string => formatter.numberFormat2Decimal(e.summary)
   },
   {
     field: 'percent',
@@ -106,7 +103,7 @@ const columns = ref<IColumn<IPercentInstallmentList>[]>([
     align: 'right',
     style: { width: '100px', minWidth: '100px' },
     width: 100,
-    value: (e: IPercentInstallmentList): string => `${formatter.numberFormat(e.percent)} %`
+    value: (e: IPercentInstallmentList): string => `${formatter.numberFormat2Decimal(e.percent)} %`
   }
 ])
 
@@ -115,31 +112,31 @@ const itemsFooter = computed((): IFooter[] => {
   const footerConfig: TConfig = {
     branchName: { value: 'รวม' },
     monthlyInstallment: {
-      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      format: (v: number): string => formatter.numberFormat2Decimal(v ?? 0),
       footerClass: 'text-right'
     },
     amountPaid: {
-      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      format: (v: number): string => formatter.numberFormat2Decimal(v ?? 0),
       footerClass: 'text-right'
     },
     salePrice: {
-      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      format: (v: number): string => formatter.numberFormat2Decimal(v ?? 0),
       footerClass: 'text-right'
     },
     totalPenaltyFee: {
-      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      format: (v: number): string => formatter.numberFormat2Decimal(v ?? 0),
       footerClass: 'text-right'
     },
     totalCollectionFee: {
-      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      format: (v: number): string => formatter.numberFormat2Decimal(v ?? 0),
       footerClass: 'text-right'
     },
     summary: {
-      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      format: (v: number): string => formatter.numberFormat2Decimal(v ?? 0),
       footerClass: 'text-right'
     },
     percent: {
-      format: (v: number): string => `${formatter.numberFormat(v ?? 0)} %`,
+      format: (v: number): string => `${formatter.numberFormat2Decimal(v ?? 0)} %`,
       footerClass: 'text-right'
     }
   }

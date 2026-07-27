@@ -45,10 +45,10 @@
               {{ item.branch?.idNo || '-' }}
             </td>
             <td class="p-1.5 text-right">
-              {{ isPercent ? `${formatter.numberFormat(item.percent)}%` : formatter.numberFormat(item.paidAmount) }}
+              {{ isPercent ? `${formatter.numberFormat2Decimal(item.percent)}%` : formatter.numberFormat2Decimal(item.paidAmount) }}
             </td>
             <td class="p-1.5 text-center">
-              {{ formatter.numberFormat(item.topCount) }}
+              {{ formatter.numberFormatNoDecimal(item.topCount) }}
             </td>
           </tr>
         </tbody>

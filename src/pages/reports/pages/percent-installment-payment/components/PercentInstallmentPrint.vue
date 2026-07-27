@@ -54,25 +54,25 @@
               {{ item.branchName }}
             </td>
             <td class="p-1.5 text-right border border-zinc-300">
-              {{ formatter.numberFormat(item.monthlyInstallment) }}
+              {{ formatter.numberFormat2Decimal(item.monthlyInstallment) }}
             </td>
             <td class="p-1.5 text-right border border-zinc-300">
-              {{ formatter.numberFormat(item.amountPaid) }}
+              {{ formatter.numberFormat2Decimal(item.amountPaid) }}
             </td>
             <td class="p-1.5 text-right border border-zinc-300">
-              {{ formatter.numberFormat(item.salePrice) }}
+              {{ formatter.numberFormat2Decimal(item.salePrice) }}
             </td>
             <td class="p-1.5 text-right border border-zinc-300">
-              {{ formatter.numberFormat(item.totalPenaltyFee) }}
+              {{ formatter.numberFormat2Decimal(item.totalPenaltyFee) }}
             </td>
             <td class="p-1.5 text-right border border-zinc-300">
-              {{ formatter.numberFormat(item.totalCollectionFee) }}
+              {{ formatter.numberFormat2Decimal(item.totalCollectionFee) }}
             </td>
             <td class="p-1.5 text-right border border-zinc-300">
-              {{ formatter.numberFormat(item.summary) }}
+              {{ formatter.numberFormat2Decimal(item.summary) }}
             </td>
             <td class="p-1.5 text-right border border-zinc-300">
-              {{ formatter.numberFormat(item.percent) }} %
+              {{ formatter.numberFormat2Decimal(item.percent) }} %
             </td>
           </tr>
         </tbody>
@@ -84,25 +84,25 @@
               รวม
             </td>
             <td class="p-1.5 text-right border border-zinc-300">
-              {{ formatter.numberFormat(summary.monthlyInstallment) }}
+              {{ formatter.numberFormat2Decimal(summary.monthlyInstallment) }}
             </td>
             <td class="p-1.5 text-right border border-zinc-300">
-              {{ formatter.numberFormat(summary.amountPaid) }}
+              {{ formatter.numberFormat2Decimal(summary.amountPaid) }}
             </td>
             <td class="p-1.5 text-right border border-zinc-300">
-              {{ formatter.numberFormat(summary.salePrice) }}
+              {{ formatter.numberFormat2Decimal(summary.salePrice) }}
             </td>
             <td class="p-1.5 text-right border border-zinc-300">
-              {{ formatter.numberFormat(summary.totalPenaltyFee) }}
+              {{ formatter.numberFormat2Decimal(summary.totalPenaltyFee) }}
             </td>
             <td class="p-1.5 text-right border border-zinc-300">
-              {{ formatter.numberFormat(summary.totalCollectionFee) }}
+              {{ formatter.numberFormat2Decimal(summary.totalCollectionFee) }}
             </td>
             <td class="p-1.5 text-right border border-zinc-300">
-              {{ formatter.numberFormat(summary.summary) }}
+              {{ formatter.numberFormat2Decimal(summary.summary) }}
             </td>
             <td class="p-1.5 text-right border border-zinc-300">
-              {{ formatter.numberFormat(summary.percent) }} %
+              {{ formatter.numberFormat2Decimal(summary.percent) }} %
             </td>
           </tr>
         </tfoot>

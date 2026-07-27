@@ -45,16 +45,16 @@
               {{ item.branchName }}
             </td>
             <td class="p-1.5">
-              {{ formatter.numberFormat(item.monthlyInstallment) }}
+              {{ formatter.numberFormat2Decimal(item.monthlyInstallment) }}
             </td>
             <td class="p-1.5">
-              {{ item.percentReceive ? formatter.numberFormat(item.percentReceive) : 'ไม่นับยอดเก็บ' }}
+              {{ item.percentReceive ? formatter.numberFormat2Decimal(item.percentReceive) : 'ไม่นับยอดเก็บ' }}
             </td>
             <td class="p-1.5">
-              {{ formatter.numberFormat(item.receiveAmount) }}
+              {{ formatter.numberFormat2Decimal(item.receiveAmount) }}
             </td>
             <td class="p-1.5">
-              {{ formatter.numberFormat(item.principal) }}
+              {{ formatter.numberFormat2Decimal(item.principal) }}
             </td>
           </tr>
         </tbody>

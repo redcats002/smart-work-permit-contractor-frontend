@@ -42,15 +42,15 @@ const sortOrder = defineModel<'asc' | 'desc'>('sortOrder', { default: 'desc' })
 const columns = ref<IColumn<IDailyBranchSummaryList>[]>([
   { field: 'index', header: 'ลำดับ', align: 'left', style: { width: '70px', minWidth: '70px' }, width: 60 },
   { field: 'branchName', header: 'สาขา', align: 'left', style: { width: '160px', minWidth: '160px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, width: 150 },
-  { field: 'financeReceive', header: 'รับไฟแนนซ์', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.financeReceive) },
-  { field: 'financeRelease', header: 'ปล่อยไฟแนนซ์', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.financeRelease) },
-  { field: 'processingFee', header: 'ค่าดำเนินการ', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.processingFee) },
-  { field: 'salePrice', header: 'ขาย', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.salePrice) },
-  { field: 'depositFee', header: 'เงินประกัน', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.depositFee) },
-  { field: 'cancelContractFee', header: 'ยกเลิกสัญญา', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 140, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.cancelContractFee) },
-  { field: 'lawyerFee', header: 'ค่าทนาย', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 100, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.lawyerFee) },
-  { field: 'contractReplacementFee', header: 'เปลี่ยนสัญญา', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 100, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.contractReplacementFee) },
-  { field: 'outstanding', header: 'เงินคงเหลือ', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 100, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat(e.outstanding) }
+  { field: 'financeReceive', header: 'รับไฟแนนซ์', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat2Decimal(e.financeReceive) },
+  { field: 'financeRelease', header: 'ปล่อยไฟแนนซ์', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat2Decimal(e.financeRelease) },
+  { field: 'processingFee', header: 'ค่าดำเนินการ', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat2Decimal(e.processingFee) },
+  { field: 'salePrice', header: 'ขาย', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat2Decimal(e.salePrice) },
+  { field: 'depositFee', header: 'เงินประกัน', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat2Decimal(e.depositFee) },
+  { field: 'cancelContractFee', header: 'ยกเลิกสัญญา', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 140, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat2Decimal(e.cancelContractFee) },
+  { field: 'lawyerFee', header: 'ค่าทนาย', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 100, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat2Decimal(e.lawyerFee) },
+  { field: 'contractReplacementFee', header: 'เปลี่ยนสัญญา', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 100, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat2Decimal(e.contractReplacementFee) },
+  { field: 'outstanding', header: 'เงินคงเหลือ', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 100, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat2Decimal(e.outstanding) }
 ])
 
 type TSummary = Record<keyof Omit<IDailyBranchSummaryList, 'branchId' | 'branchName'>, number>
@@ -70,15 +70,15 @@ const summary = computed((): TSummary => ({
 const itemsFooter = computed((): IFooter[] => {
   const config: Partial<Record<keyof IDailyBranchSummaryList, IFooterColConfig<TSummary>>> = {
     branchName: { value: 'รวมสุทธิ' },
-    financeReceive: { format: formatter.numberFormat, footerClass: 'text-right' },
-    financeRelease: { format: formatter.numberFormat, footerClass: 'text-right' },
-    processingFee: { format: formatter.numberFormat, footerClass: 'text-right' },
-    salePrice: { format: formatter.numberFormat, footerClass: 'text-right' },
-    depositFee: { format: formatter.numberFormat, footerClass: 'text-right' },
-    cancelContractFee: { format: formatter.numberFormat, footerClass: 'text-right' },
-    lawyerFee: { format: formatter.numberFormat, footerClass: 'text-right' },
-    contractReplacementFee: { format: formatter.numberFormat, footerClass: 'text-right' },
-    outstanding: { format: formatter.numberFormat, footerClass: 'text-right' }
+    financeReceive: { format: formatter.numberFormat2Decimal, footerClass: 'text-right' },
+    financeRelease: { format: formatter.numberFormat2Decimal, footerClass: 'text-right' },
+    processingFee: { format: formatter.numberFormat2Decimal, footerClass: 'text-right' },
+    salePrice: { format: formatter.numberFormat2Decimal, footerClass: 'text-right' },
+    depositFee: { format: formatter.numberFormat2Decimal, footerClass: 'text-right' },
+    cancelContractFee: { format: formatter.numberFormat2Decimal, footerClass: 'text-right' },
+    lawyerFee: { format: formatter.numberFormat2Decimal, footerClass: 'text-right' },
+    contractReplacementFee: { format: formatter.numberFormat2Decimal, footerClass: 'text-right' },
+    outstanding: { format: formatter.numberFormat2Decimal, footerClass: 'text-right' }
   }
   return generateTableFooter(columns.value, summary.value, config)
 })

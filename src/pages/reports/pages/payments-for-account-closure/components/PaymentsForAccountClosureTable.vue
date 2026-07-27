@@ -26,14 +26,14 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { formatter } from '@/utils/Formatter'
 import { useDayjs } from '@/utils/Dayjs'
-import { formatTitle as formatReceiptType } from '@/enums/modules/finance/receipt/ReceiptType.enum'
-import { formatTitle as formatAssetType } from '@/enums/modules/asset/AssetType.enum'
+import { formatter } from '@/utils/Formatter'
 import type { IAccountClosureList } from '@/models/response/report/account-closure/AccountClosureRes.model'
 import type { IColumn } from '@/models/Table.model'
-import type { IPagination } from '@/composables/usePagination'
+import { formatTitle as formatAssetType } from '@/enums/modules/asset/AssetType.enum'
+import { formatTitle as formatReceiptType } from '@/enums/modules/finance/receipt/ReceiptType.enum'
 import BaseTable from '@/components/table/BaseTable.vue'
+import type { IPagination } from '@/composables/usePagination'
 
 interface IProps {
   items: IAccountClosureList[]
@@ -86,37 +86,37 @@ const columns = ref<IColumn<IAccountClosureList>[]>([
     field: 'principal',
     header: 'เงินต้น',
     align: 'right',
-    value: (e: IAccountClosureList): string => formatter.numberFormat(e.principal)
+    value: (e: IAccountClosureList): string => formatter.numberFormat2Decimal(e.principal)
   },
   {
     field: 'interest',
     header: 'ดอกเบี้ย',
     align: 'right',
-    value: (e: IAccountClosureList): string => formatter.numberFormat(e.interest)
+    value: (e: IAccountClosureList): string => formatter.numberFormat2Decimal(e.interest)
   },
   {
     field: 'otherExpense',
     header: 'ค่าใช้จ่ายอื่นๆ',
     align: 'right',
-    value: (e: IAccountClosureList): string => formatter.numberFormat(e.otherExpense)
+    value: (e: IAccountClosureList): string => formatter.numberFormat2Decimal(e.otherExpense)
   },
   {
     field: 'discountInterest',
     header: 'ส่วนลดดอกเบี้ย',
     align: 'right',
-    value: (e: IAccountClosureList): string => formatter.numberFormat(e.discountInterest)
+    value: (e: IAccountClosureList): string => formatter.numberFormat2Decimal(e.discountInterest)
   },
   {
     field: 'discountOther',
     header: 'ส่วนลดอื่นๆ',
     align: 'right',
-    value: (e: IAccountClosureList): string => formatter.numberFormat(e.discountOther)
+    value: (e: IAccountClosureList): string => formatter.numberFormat2Decimal(e.discountOther)
   },
   {
     field: 'totalAmount',
     header: 'ยอดชำระรวม',
     align: 'right',
-    value: (e: IAccountClosureList): string => formatter.numberFormat(e.totalAmount)
+    value: (e: IAccountClosureList): string => formatter.numberFormat2Decimal(e.totalAmount)
   },
   {
     field: 'assets',

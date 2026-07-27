@@ -18,15 +18,15 @@
       </LinkText>
     </template>
     <template #[`item.principal`]="{ item }">
-      <div>{{ formatter.numberFormat(item.principal) }}</div>
+      <div>{{ formatter.numberFormat2Decimal(item.principal) }}</div>
       <div>
-        {{ formatter.numberFormat(item.installmentCount) }}
+        {{ formatter.numberFormat2Decimal(item.installmentCount) }}
       </div>
     </template>
     <template #[`item.principalAndInterest`]="{ item }">
-      <div>{{ formatter.numberFormat(item.principalAndInterest) }}</div>
+      <div>{{ formatter.numberFormat2Decimal(item.principalAndInterest) }}</div>
       <div>
-        {{ formatter.numberFormat(item.monthlyInstallment) }}
+        {{ formatter.numberFormat2Decimal(item.monthlyInstallment) }}
       </div>
     </template>
   </BaseTable>
@@ -103,7 +103,7 @@ const columns = ref<IColumn<IOutstandingDebtorList>[]>([
     align: 'right',
     style: { width: '140px', minWidth: '140px' },
     width: 120,
-    value: (e: IOutstandingDebtorList): string => formatter.numberFormat(e.amountPaid)
+    value: (e: IOutstandingDebtorList): string => formatter.numberFormat2Decimal(e.amountPaid)
   },
   {
     field: 'outstanding',
@@ -111,7 +111,7 @@ const columns = ref<IColumn<IOutstandingDebtorList>[]>([
     align: 'right',
     style: { width: '140px', minWidth: '140px' },
     width: 130,
-    value: (e: IOutstandingDebtorList): string => formatter.numberFormat(e.outstanding)
+    value: (e: IOutstandingDebtorList): string => formatter.numberFormat2Decimal(e.outstanding)
   },
   {
     field: 'lastUpdated',
@@ -127,7 +127,7 @@ const columns = ref<IColumn<IOutstandingDebtorList>[]>([
     align: 'right',
     style: { width: '140px', minWidth: '140px' },
     width: 120,
-    value: (e: IOutstandingDebtorList): string => formatter.numberFormat(e.latestPaymentAmount)
+    value: (e: IOutstandingDebtorList): string => formatter.numberFormat2Decimal(e.latestPaymentAmount)
   }
 ])
 
@@ -137,23 +137,23 @@ const itemsFooter = computed((): IFooter[] => {
     idNo: { value: `รวม ${pagination.value.count || 0} รายการ` },
     customerName: { value: '' },
     principal: {
-      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      format: (v: number): string => formatter.numberFormat2Decimal(v ?? 0),
       footerClass: 'text-right'
     },
     principalAndInterest: {
-      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      format: (v: number): string => formatter.numberFormat2Decimal(v ?? 0),
       footerClass: 'text-right'
     },
     amountPaid: {
-      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      format: (v: number): string => formatter.numberFormat2Decimal(v ?? 0),
       footerClass: 'text-right'
     },
     outstanding: {
-      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      format: (v: number): string => formatter.numberFormat2Decimal(v ?? 0),
       footerClass: 'text-right'
     },
     latestPaymentAmount: {
-      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      format: (v: number): string => formatter.numberFormat2Decimal(v ?? 0),
       footerClass: 'text-right'
     }
   }
