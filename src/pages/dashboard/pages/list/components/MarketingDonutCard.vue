@@ -30,8 +30,8 @@
           <ChartJsDonut
             :items="donutItems"
             aria-label="Donut chart" />
-          <div class="absolute inset-6 rounded-full bg-white flex flex-col items-center justify-center">
-            <div class="text-xl font-semibold text-surface-900">
+          <div class="absolute inset-6 rounded-full bg-white flex flex-col items-center justify-center z-auto">
+            <div class="text-xl font-semibold text-surface-900 z-10 px-1 bg-white rounded-lg">
               {{ centerValue }}
             </div>
             <div class="text-sm text-surface-600">
