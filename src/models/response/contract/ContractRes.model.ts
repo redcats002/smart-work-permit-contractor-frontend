@@ -103,6 +103,7 @@ export interface IContractInstallmentList extends IInstallmentRow, IEntity {
   legalFee: number
   outstandingLegalFee: number
   totalPaid: number
+  receiptId?: number
   items: IContractInstallmentItem[]
 }
 

@@ -26,7 +26,7 @@
         @edit-payment="emits('editPayment', Number(item.id))"
         @legal-fee="openFeeModal('legal', item)"
         @payment="emits('payment', Number(item.id))"
-        @view-receipt="emits('viewReceipt', Number(item.id))" />
+        @view-receipt="emits('viewReceipt', Number(item.receiptId))" />
     </template>
     <template #[`item.detail`]="{ item }">
       <div

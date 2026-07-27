@@ -21,6 +21,15 @@ export interface IReceiptCustomer {
   phoneNumber?: string | null
   phoneNumber2?: string | null
   email?: string | null
+  mainAddress?: {
+    id: number
+    villageNo?: string
+    address?: string
+    district?: string
+    subDistrict?: string
+    province?: string
+    postCode?: string
+  } | null
 }
 
 export interface IReceiptPaymentRow {
