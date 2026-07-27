@@ -358,7 +358,7 @@ const totalPrice = computed((): number =>
 )
 
 const totalPriceText = computed((): string => {
-  return `(${formatter.numberToThaiText(totalPrice.value)})`
+  return `(${formatter.numberToThaiText(props.form.summary.totalAmount)})`
 })
 
 const customerAddress = computed((): string => {
