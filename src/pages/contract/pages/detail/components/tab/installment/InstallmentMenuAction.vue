@@ -13,6 +13,7 @@ import BaseActionMenu, { type IMenuItemAction } from '@/components/base/BaseActi
 
 interface IProps {
   paymentStatus: TPaymentStatus
+  receiptId?: number
   collectionFee?: number
   legalFee?: number
 }
@@ -20,7 +21,7 @@ interface IProps {
 interface IEmits {
   edit: []
   createInvoice: []
-  viewReceipt: []
+  viewReceipt: [receiptId: number]
   editPayment: []
   collectionFee: []
   legalFee: []
@@ -43,12 +44,12 @@ const items = computed((): IMenuItemAction[] => {
   switch (props.paymentStatus) {
     case 'PAID':
       return [
-        { label: 'ดูใบเสร็จรับเงิน', key: 'view-receipt', type: 'TEXT', action: (): void => { emits('viewReceipt') }, disabled },
+        { label: 'ดูใบเสร็จรับเงิน', key: 'view-receipt', type: 'TEXT', action: (): void => { emits('viewReceipt', props.receiptId ?? 0) }, disabled },
         { label: 'แก้ไขการชำระ', key: 'edit-payment', type: 'TEXT', action: (): void => { emits('editPayment') }, disabled }
       ]
     case 'PARTIAL':
       return [
-        { label: 'ดูใบเสร็จรับเงิน', key: 'view-receipt', type: 'TEXT', action: (): void => { emits('viewReceipt') }, disabled },
+        { label: 'ดูใบเสร็จรับเงิน', key: 'view-receipt', type: 'TEXT', action: (): void => { emits('viewReceipt', props.receiptId ?? 0) }, disabled },
         { label: collectionFeeLabel.value, key: 'collection-fee', type: 'TEXT', action: (): void => { emits('collectionFee') }, disabled },
         { label: legalFeeLabel.value, key: 'legal-fee', type: 'TEXT', action: (): void => { emits('legalFee') }, disabled },
         { label: 'แก้ไขการชำระ', key: 'edit-payment', type: 'TEXT', action: (): void => { emits('editPayment') }, disabled }

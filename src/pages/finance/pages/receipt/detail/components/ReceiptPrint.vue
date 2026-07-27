@@ -71,7 +71,7 @@
                   Address
                 </div>
               </div>
-              <div>: -</div>
+              <div>: {{ customerAddress }}</div>
             </div>
 
             <div class="grid grid-cols-2">
@@ -259,7 +259,7 @@
           </div>
 
           <div class="text-base font-semibold">
-            {{ formatter.numberFormat2Decimal(totalPrice) }}
+            {{ formatter.numberFormat2Decimal(props.form.summary.totalAmount) }}
           </div>
         </div>
       </div>
@@ -359,6 +359,20 @@ const totalPrice = computed((): number =>
 
 const totalPriceText = computed((): string => {
   return `(${formatter.numberToThaiText(totalPrice.value)})`
+})
+
+const customerAddress = computed((): string => {
+  const addr = props.form.customer?.mainAddress
+  if (!addr) return '-'
+  const parts = [
+    addr.address,
+    addr.villageNo ? `หมู่ ${addr.villageNo}` : '',
+    addr.subDistrict ? `ตำบล${addr.subDistrict}` : '',
+    addr.district ? `อำเภอ${addr.district}` : '',
+    addr.province ? `จังหวัด${addr.province}` : '',
+    addr.postCode
+  ].filter(Boolean)
+  return parts.length ? parts.join(' ') : '-'
 })
 </script>
 

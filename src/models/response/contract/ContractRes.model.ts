@@ -83,6 +83,7 @@ export interface IContractInstallmentItemSummary {
 
 export interface IContractInstallmentItem {
   id: number
+  receiptId: number
   paidAt: string
   summary: IContractInstallmentItemSummary
   details: IContractInstallmentItemDetail[]

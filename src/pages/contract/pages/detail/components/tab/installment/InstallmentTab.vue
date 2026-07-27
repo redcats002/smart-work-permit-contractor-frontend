@@ -40,7 +40,8 @@
       @payment="onPayment($event)"
       @update="fetch()"
       @update-collection-fee="onUpdateCollectionFee($event)"
-      @update-legal-fee="onUpdateLegalFee($event)" />
+      @update-legal-fee="onUpdateLegalFee($event)"
+      @view-receipt="onViewReceipt($event)" />
   </div>
 </template>
 
@@ -160,6 +161,11 @@ function onTestDueDate (): void {
 
 function onPayment (id: number): void {
   router.push({ name: 'ReceiptCreatePage', query: { customerId: mainBorrowerId.value, installmentId: id, contractId: contractId.value } })
+}
+
+function onViewReceipt (receiptId: number): void {
+  console.log('onViewReceipt', receiptId)
+  router.push({ name: 'ReceiptPrintPage', params: { id: receiptId } })
 }
 
 function fetch (): void {
