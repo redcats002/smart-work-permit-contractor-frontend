@@ -44,9 +44,9 @@
       <div class="space-y-2">
         <template v-if="rows.length">
           <DonutRowItem
-            v-for="(row, i) in rows"
-            :key="`${row.label}-${i}`"
-            :color="donutColorMap[row.label]"
+            v-for="row in rows"
+            :key="row.id"
+            :color="donutColorMap[row.id]"
             :label="row.label"
             :percent="row.percent"
             :unit="row.unit"
@@ -82,6 +82,7 @@ interface Props {
   centerValue: string
   centerUnit: string
   rows: IDashboardDonutRow[]
+  colorMap: Record<number, string>
   showSummary?: boolean
 }
 
@@ -94,11 +95,11 @@ const DONUT_COLORS = ['#72D9C8', '#52AED5', '#F4D67E', '#F46A67', '#FFABB1', '#3
 const startDate = defineModel<Date | string | null | undefined>('start')
 const endDate = defineModel<Date | string | null | undefined>('end')
 
-const donutColorMap = computed((): Record<string, string> => {
+const donutColorMap = computed((): Record<number, string> => {
   return Object.fromEntries(
-    donutItems.value.map((item: DonutItem): [string, string] => [
-      item.label,
-      item.color ?? DONUT_COLORS[0]
+    props.rows.map((row: IDashboardDonutRow, i: number): [number, string] => [
+      row.id,
+      props.colorMap[row.id] ?? DONUT_COLORS[i % DONUT_COLORS.length]
     ])
   )
 })
@@ -116,10 +117,10 @@ const parseValue = (value: string): number => {
 }
 
 const donutItems = computed<DonutItem[]>((): DonutItem[] => {
-  return props.rows.map((row: IDashboardDonutRow, i: number): DonutItem => ({
+  return props.rows.map((row: IDashboardDonutRow): DonutItem => ({
     label: row.label,
     value: parsePercent(row.percent),
-    color: DONUT_COLORS[i % DONUT_COLORS.length]
+    color: donutColorMap.value[row.id]
   }))
 })
 

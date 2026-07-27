@@ -83,8 +83,9 @@ export default function useList (): IUseList {
   function onClearFilters (): void {
     reset()
     filters.value = {
-      filter: ReportTypeEnum.RECEIVE_REFUND,
-      financeCategory: 'OVERALL'
+      branchId: undefined,
+      filter: filters.value?.filter,
+      financeCategory: filters.value?.financeCategory
     }
   }
 
