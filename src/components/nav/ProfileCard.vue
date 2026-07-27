@@ -33,9 +33,11 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { toast } from '@/plugins/toast.ts'
 import { useAuthStore } from '@/stores/Auth'
 import { formatter } from '@/utils/Formatter'
 import { handleLoading } from '@/utils/HandleLoading'
+import AuthPublicProvider, { type IAuthPublicProvider } from '@/resources/provider/auth/public/Auth.public.provider.ts'
 import useLogout from '@/pages/auth/composables/useLogout'
 import useResolveUrl from '@/composables/useResolveUrl'
 import { Icon } from '@iconify/vue'
@@ -46,14 +48,22 @@ const authStore = useAuthStore()
 const { logout } = useLogout()
 const { resolveUploadImageUrl } = useResolveUrl()
 
+const AuthPublicService: IAuthPublicProvider = new AuthPublicProvider()
 
 const items = computed((): IMenuItemAction[] => {
   const base: IMenuItemAction[] = [
     { label: 'โปรไฟล์', key: 'profile', type: 'TEXT', action: (): void => { router.push({ name: 'ProfileDetailPage' }) } },
+    { label: 'รีเซ็ตรหัสผ่าน', key: 'resetPassword', type: 'TEXT', action: (): void => { handleLoading(useResetPassword) } },
     { label: 'Logout', key: 'logout', type: 'TEXT', action: (): void => { logout() } }
   ]
   return base
 })
+
+async function useResetPassword (): Promise<void> {
+  if (!authStore.user?.email) throw new Error('Employee email is required for password reset')
+  await AuthPublicService.requestPasswordReset({ email: authStore.user.email })
+  toast.success('กรุณาตรวจสอบอีเมลของคุณ', 'ส่งอีเมลรีเซ็ตรหัสผ่านสำเร็จ')
+}
 
 onMounted((): void => {
   handleLoading(async (): Promise<void> => {

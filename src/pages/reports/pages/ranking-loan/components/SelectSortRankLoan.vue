@@ -1,78 +1,42 @@
 <template>
-  <AutoCompleteInput
-    v-model="innerModel"
-    :suggestions="suggestions"
-    option-label="name"
-    complete-on-focus
-    force-selection
-    @complete="search()" />
+  <BaseStaticSelection
+    v-bind="attrs"
+    v-model="modelValue"
+    v-model:selected-name="selectedNameValue"
+    :empty-model-value="'RECEIPT_AMOUNT'"
+    :fetch-options="fetchOptions"
+    :invalid="invalid"
+    :map-option-to-model="mapOptionToModel"
+    option-label="name" />
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { useAttrs } from 'vue'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { TBaseModel, TBaseOption } from '@/models/Global.model'
 import { RankingLoanTypeItems, type TRankingLoanType } from '@/enums/modules/report/RankingLoan.enum'
-import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
-import usePagination from '@/composables/usePagination'
+import BaseStaticSelection from '@/components/selection/modules/static/BaseStaticSelection.vue'
 
-const model = defineModel<TRankingLoanType>({ default: 'RECEIPT_AMOUNT' })
-const selectedName = defineModel<string | null>('selectedName', { default: null })
+interface IProps {
+  invalid?: boolean
+}
 
-const innerModel = ref<TBaseModel | null>(null)
+withDefaults(defineProps<IProps>(), {
+  invalid: false
+})
+const attrs = useAttrs()
 
-const { pagination } = usePagination()
+const modelValue = defineModel<TRankingLoanType>({ default: 'RECEIPT_AMOUNT' })
+const selectedNameValue = defineModel<string | null>('selectedName', { default: null })
 
-const suggestions = ref<TBaseModel[]>([])
-
-async function useFetch (): Promise<void> {
-  const items = RankingLoanTypeItems
-
-  suggestions.value = (items ?? []).map((item: TBaseOption): TBaseModel => ({
+const fetchOptions = async (): Promise<TBaseModel[]> => await handleLoading(async (): Promise<TBaseModel[]> => (
+  (RankingLoanTypeItems ?? []).map((item: TBaseOption): TBaseModel => ({
     id: item.value!,
     name: item?.label
   }))
-}
+)) ?? []
 
-function fetch (): void {
-  handleLoading(useFetch)
-}
-
-function search (): void {
-  pagination.value.page = 1
-  fetch()
-}
-
-function syncInnerFromId (): void {
-  if (model.value == null) {
-    innerModel.value = null
-    selectedName.value = null
-    return
-  }
-
-  innerModel.value
-    = suggestions.value.find((i: TBaseModel): boolean => i.id === model.value) ?? null
-  selectedName.value = innerModel.value?.name ?? null
-}
-
-watch(innerModel, (val: TBaseModel | null): void => {
-  model.value = val?.id ? val.id as TRankingLoanType : 'RECEIPT_AMOUNT'
-  selectedName.value = val?.name ?? null
-})
-
-watch(model, (): void => {
-  syncInnerFromId()
-})
-
-watch(
-  suggestions, (): void => {
-    syncInnerFromId()
-  }, { immediate: true }
-)
-
-onMounted((): void => {
-  fetch()
-})
+const mapOptionToModel = (item: TBaseModel): TRankingLoanType => item?.id as TRankingLoanType
 </script>
 
 <style scoped></style>

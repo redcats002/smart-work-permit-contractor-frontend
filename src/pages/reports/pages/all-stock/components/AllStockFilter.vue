@@ -3,8 +3,11 @@
     <div class="flex justify-center items-center gap-4">
       <div>
         ประจำเดือน
+        <span v-if="!isFilterable">
+          {{ dayjs().format('MMMM') }}
+        </span>
       </div>
-      <div>
+      <div v-if="isFilterable">
         <DatePickerInput
           v-model="model"
           date-format="mm/yy"
@@ -21,6 +24,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+import { useDayjs } from '@/utils/Dayjs'
 import type { IAllStockFilter } from '@/models/modules/report/all-stock/Filter.model'
 import BaseTop from '@/components/base/BaseTop.vue'
 import Spacer from '@/components/flex/Spacer.vue'
@@ -36,6 +41,10 @@ const emits = defineEmits<IEmits>()
 
 const model = defineModel<string>({ default: '' })
 defineModel<IAllStockFilter>('filters', { default: (): IAllStockFilter => ({}) })
+
+const dayjs = useDayjs()
+
+const isFilterable = ref<boolean>(false)
 
 function onSearch (): void {
   emits('search')

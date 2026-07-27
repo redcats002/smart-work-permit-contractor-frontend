@@ -127,7 +127,8 @@
           <ContractLoanTypeSelection
             v-model="model.contractLoanTypeId"
             :invalid="invalid"
-            name="contractLoanTypeId" />
+            name="contractLoanTypeId"
+            placeholder="กรุณาเลือกประเภทเงินกู้" />
         </LabelField>
 
         <LabelField
@@ -141,7 +142,8 @@
           <ContractLoanPurposeSelection
             v-model="model.contractLoanPurposeId"
             :invalid="invalid"
-            name="contractLoanPurposeId" />
+            name="contractLoanPurposeId"
+            placeholder="กรุณาเลือกวัตถุประสงค์การกู้" />
         </LabelField>
 
         <LabelField
@@ -155,7 +157,8 @@
           <HowDidFindUsSelection
             v-model="model.howDidFindUsId"
             :invalid="invalid"
-            name="howDidFindUsId" />
+            name="howDidFindUsId"
+            placeholder="กรุณาเลือกรู้จักเราจากที่ไหน" />
         </LabelField>
       </div>
     </BaseContainer>

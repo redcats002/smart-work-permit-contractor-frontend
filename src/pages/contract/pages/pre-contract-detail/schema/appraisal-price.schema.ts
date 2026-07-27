@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const AppraisalPriceSchema = z.object({
-  loanAmount: z.number().min(0, 'กรุณากรอกราคา').default(0)
+  loanAmount: z.number().min(1, 'กรุณากรอกราคา').default(0)
 })
 
 export type AppraisalPriceFormValues = z.infer<typeof AppraisalPriceSchema>

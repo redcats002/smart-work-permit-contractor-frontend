@@ -47,6 +47,7 @@
       </ConfirmModal>
     </template>
     <ConfirmModal
+      v-if="status!=='CANCELLED'"
       label="ยกเลิกการประเมิน"
       @confirm="emits('cancel')">
       <template #activator="{ open }">
