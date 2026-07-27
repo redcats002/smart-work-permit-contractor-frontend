@@ -40,7 +40,7 @@ export function useQRPayment (options: IUseQRPaymentOptions = {}): IUseQRPayment
   const router = useRouter()
   const navigateTo = options.navigateTo ?? 'ReceiptListPage'
 
-  const qrModalVisible = ref<boolean>(false)
+  const qrModalVisible = ref<boolean>(true) // Set to true to show the QR modal by default, can be changed based on your requirements
   const qrImage = ref<string>('')
   const qrTrxId = ref<string>('')
   const qrExpiresAt = ref<string>('')
