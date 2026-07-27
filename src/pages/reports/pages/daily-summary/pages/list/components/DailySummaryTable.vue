@@ -45,14 +45,14 @@ const columns = ref<IColumn<IDailySummaryListItem>[]>([
     header: 'ยอดคงเหลือยกมา',
     align: 'right',
     style: { width: '160px', minWidth: '160px' },
-    value: (e: IDailySummaryListItem): string => formatter.numberFormatNoDecimal(e.openBalance)
+    value: (e: IDailySummaryListItem): string => formatter.numberFormat2Decimal(e.openBalance)
   },
   {
     field: 'closingBalance',
     header: 'ยอดคงเหลือยกไป',
     align: 'right',
     style: { width: '160px', minWidth: '160px' },
-    value: (e: IDailySummaryListItem): string => formatter.numberFormatNoDecimal(e.closingBalance)
+    value: (e: IDailySummaryListItem): string => formatter.numberFormat2Decimal(e.closingBalance)
   }
 ])
 </script>

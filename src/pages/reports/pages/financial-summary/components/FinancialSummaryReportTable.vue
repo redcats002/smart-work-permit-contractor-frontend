@@ -56,21 +56,21 @@ const incomeColumn: IColumn<IFinancialSummaryReportList> = {
   header: 'รายรับ',
   align: 'right',
   style: { width: '140px', minWidth: '140px' },
-  value: (e: IFinancialSummaryReportList): string => e.income ? formatter.numberFormatNoDecimal(e.income) : '-'
+  value: (e: IFinancialSummaryReportList): string => e.income ? formatter.numberFormat2Decimal(e.income) : '-'
 }
 const principalColumn: IColumn<IFinancialSummaryReportList> = {
   field: 'principal',
   header: 'ปล่อยสินเชื่อ',
   align: 'right',
   style: { width: '140px', minWidth: '140px' },
-  value: (e: IFinancialSummaryReportList): string => formatter.numberFormatNoDecimal(e.principal)
+  value: (e: IFinancialSummaryReportList): string => formatter.numberFormat2Decimal(e.principal)
 }
 const expensesColumn: IColumn<IFinancialSummaryReportList> = {
   field: 'expenses',
   header: 'รายจ่าย',
   align: 'right',
   style: { width: '140px', minWidth: '140px' },
-  value: (e: IFinancialSummaryReportList): string => e.expenses ? formatter.numberFormatNoDecimal(e.expenses) : '-'
+  value: (e: IFinancialSummaryReportList): string => e.expenses ? formatter.numberFormat2Decimal(e.expenses) : '-'
 }
 
 const columns = computed((): IColumn<IFinancialSummaryReportList>[] => {
@@ -88,9 +88,9 @@ const footerClass = 'text-right font-bold'
 
 const itemsFooter = computed((): IFooter[] => {
   const footerConfig: Partial<Record<keyof IFinancialSummaryReportList, IFooterColConfig<IFinancialSummaryReportSummary>>> = {
-    income: { value: `ยอดรับทั้งหมด ${formatter.numberFormatNoDecimal(props.summary?.income || 0)}`, footerClass, footerStyle },
-    principal: { value: `ยอดปล่อยสินเชื่อทั้งหมด ${formatter.numberFormatNoDecimal(props.summary?.principal || 0)}`, footerClass, footerStyle },
-    expenses: { value: `ยอดจ่ายทั้งหมด ${formatter.numberFormatNoDecimal(props.summary?.expenses || 0)}`, footerClass, footerStyle }
+    income: { value: `ยอดรับทั้งหมด ${formatter.numberFormat2Decimal(props.summary?.income || 0)}`, footerClass, footerStyle },
+    principal: { value: `ยอดปล่อยสินเชื่อทั้งหมด ${formatter.numberFormat2Decimal(props.summary?.principal || 0)}`, footerClass, footerStyle },
+    expenses: { value: `ยอดจ่ายทั้งหมด ${formatter.numberFormat2Decimal(props.summary?.expenses || 0)}`, footerClass, footerStyle }
   }
   return generateTableFooter(columns.value, props.summary, footerConfig)
 })

@@ -44,17 +44,17 @@
             <td
               v-if="showIncome"
               class="p-1.5 text-right">
-              {{ item.income ? formatter.numberFormatNoDecimal(item.income) : '-' }}
+              {{ item.income ? formatter.numberFormat2Decimal(item.income) : '-' }}
             </td>
             <td
               v-if="showPrincipal"
               class="p-1.5 text-right">
-              {{ formatter.numberFormatNoDecimal(item.principal) }}
+              {{ formatter.numberFormat2Decimal(item.principal) }}
             </td>
             <td
               v-if="showExpenses"
               class="p-1.5 text-right">
-              {{ item.expenses ? formatter.numberFormatNoDecimal(item.expenses) : '-' }}
+              {{ item.expenses ? formatter.numberFormat2Decimal(item.expenses) : '-' }}
             </td>
           </tr>
         </tbody>
@@ -66,17 +66,17 @@
             <td
               v-if="showIncome"
               class="p-1.5 text-right">
-              {{ formatter.numberFormatNoDecimal(summary?.income || 0) }}
+              {{ formatter.numberFormat2Decimal(summary?.income || 0) }}
             </td>
             <td
               v-if="showPrincipal"
               class="p-1.5 text-right">
-              {{ formatter.numberFormatNoDecimal(summary?.principal || 0) }}
+              {{ formatter.numberFormat2Decimal(summary?.principal || 0) }}
             </td>
             <td
               v-if="showExpenses"
               class="p-1.5 text-right">
-              {{ formatter.numberFormatNoDecimal(summary?.expenses || 0) }}
+              {{ formatter.numberFormat2Decimal(summary?.expenses || 0) }}
             </td>
           </tr>
         </tfoot>

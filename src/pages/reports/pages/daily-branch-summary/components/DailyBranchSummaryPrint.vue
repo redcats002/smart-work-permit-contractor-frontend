@@ -54,31 +54,31 @@
               {{ item.branchName }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(item.financeReceive) }}
+              {{ formatter.numberFormat2Decimal(item.financeReceive) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(item.financeRelease) }}
+              {{ formatter.numberFormat2Decimal(item.financeRelease) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(item.processingFee) }}
+              {{ formatter.numberFormat2Decimal(item.processingFee) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(item.salePrice) }}
+              {{ formatter.numberFormat2Decimal(item.salePrice) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(item.depositFee) }}
+              {{ formatter.numberFormat2Decimal(item.depositFee) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(item.cancelContractFee) }}
+              {{ formatter.numberFormat2Decimal(item.cancelContractFee) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(item.lawyerFee) }}
+              {{ formatter.numberFormat2Decimal(item.lawyerFee) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(item.contractReplacementFee) }}
+              {{ formatter.numberFormat2Decimal(item.contractReplacementFee) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(item.outstanding) }}
+              {{ formatter.numberFormat2Decimal(item.outstanding) }}
             </td>
           </tr>
         </tbody>
@@ -88,31 +88,31 @@
               รวมสุทธิ
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(summary.financeReceive) }}
+              {{ formatter.numberFormat2Decimal(summary.financeReceive) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(summary.financeRelease) }}
+              {{ formatter.numberFormat2Decimal(summary.financeRelease) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(summary.processingFee) }}
+              {{ formatter.numberFormat2Decimal(summary.processingFee) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(summary.salePrice) }}
+              {{ formatter.numberFormat2Decimal(summary.salePrice) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(summary.depositFee) }}
+              {{ formatter.numberFormat2Decimal(summary.depositFee) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(summary.cancelContractFee) }}
+              {{ formatter.numberFormat2Decimal(summary.cancelContractFee) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(summary.lawyerFee) }}
+              {{ formatter.numberFormat2Decimal(summary.lawyerFee) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(summary.contractReplacementFee) }}
+              {{ formatter.numberFormat2Decimal(summary.contractReplacementFee) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(summary.outstanding) }}
+              {{ formatter.numberFormat2Decimal(summary.outstanding) }}
             </td>
           </tr>
         </tfoot>

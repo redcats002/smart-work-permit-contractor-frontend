@@ -69,22 +69,22 @@
               {{ item.customer.fullName || '-' }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(item.principal) }}
+              {{ formatter.numberFormat2Decimal(item.principal) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(item.interest) }}
+              {{ formatter.numberFormat2Decimal(item.interest) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(item.otherExpense) }}
+              {{ formatter.numberFormat2Decimal(item.otherExpense) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(item.discountInterest) }}
+              {{ formatter.numberFormat2Decimal(item.discountInterest) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(item.discountOther) }}
+              {{ formatter.numberFormat2Decimal(item.discountOther) }}
             </td>
             <td class="p-1.5 text-right font-semibold">
-              {{ formatter.numberFormat(item.totalAmount) }}
+              {{ formatter.numberFormat2Decimal(item.totalAmount) }}
             </td>
             <td class="p-1.5">
               {{ formatAssetType(item.assets?.[0] as any) }}
@@ -102,22 +102,22 @@
               รวมทั้งสิ้น
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(totalPrincipal) }}
+              {{ formatter.numberFormat2Decimal(totalPrincipal) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(totalInterest) }}
+              {{ formatter.numberFormat2Decimal(totalInterest) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(totalOtherExpense) }}
+              {{ formatter.numberFormat2Decimal(totalOtherExpense) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(totalDiscountInterest) }}
+              {{ formatter.numberFormat2Decimal(totalDiscountInterest) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(totalDiscountOther) }}
+              {{ formatter.numberFormat2Decimal(totalDiscountOther) }}
             </td>
             <td class="p-1.5 text-right">
-              {{ formatter.numberFormat(totalAmount) }}
+              {{ formatter.numberFormat2Decimal(totalAmount) }}
             </td>
             <td class="p-1.5" />
             <td class="p-1.5" />

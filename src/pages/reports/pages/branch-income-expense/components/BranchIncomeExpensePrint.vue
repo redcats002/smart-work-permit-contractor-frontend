@@ -55,12 +55,12 @@
             <td
               v-if="showCol1"
               class="p-1.5 text-right">
-              {{ col1Types.includes(item.type) ? formatter.numberFormatNoDecimal(item.amount) : '-' }}
+              {{ col1Types.includes(item.type) ? formatter.numberFormat2Decimal(item.amount) : '-' }}
             </td>
             <td
               v-if="showCol2"
               class="p-1.5 text-right">
-              {{ col2Types.includes(item.type) ? formatter.numberFormatNoDecimal(item.amount) : '-' }}
+              {{ col2Types.includes(item.type) ? formatter.numberFormat2Decimal(item.amount) : '-' }}
             </td>
           </tr>
         </tbody>
@@ -74,12 +74,12 @@
             <td
               v-if="showCol1"
               class="p-1.5 text-right">
-              {{ col1FooterLabel }} {{ formatter.numberFormatNoDecimal(totalCol1) }}
+              {{ col1FooterLabel }} {{ formatter.numberFormat2Decimal(totalCol1) }}
             </td>
             <td
               v-if="showCol2"
               class="p-1.5 text-right">
-              {{ col2FooterLabel }} {{ formatter.numberFormatNoDecimal(totalCol2) }}
+              {{ col2FooterLabel }} {{ formatter.numberFormat2Decimal(totalCol2) }}
             </td>
           </tr>
         </tfoot>
