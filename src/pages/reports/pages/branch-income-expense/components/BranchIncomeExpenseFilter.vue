@@ -82,7 +82,8 @@ function onModalSearch (close: () => void): void {
 function onClear (close: () => void): void {
   filters.value = {
     branchId: undefined,
-    financeCategory: filters.value.financeCategory
+    filter: filters.value?.filter,
+    financeCategory: filters.value?.financeCategory
   }
   emits('search')
   emits('clear')
