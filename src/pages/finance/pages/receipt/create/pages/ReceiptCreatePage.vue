@@ -64,7 +64,7 @@
     <BasePage>
       <div class="bg-[#FFE8ED] rounded-lg px-4 py-4 flex justify-center">
         <span class="text-[#333] text-base font-bold">
-          ยอดชำระรวม {{ formatter.numberFormat(totalAmount) }}
+          ยอดชำระรวม {{ formatter.numberFormat2Decimal(totalAmount) }}
         </span>
       </div>
     </BasePage>

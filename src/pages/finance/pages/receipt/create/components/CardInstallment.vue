@@ -127,7 +127,7 @@
         </div>
         <span class="text-[#333] text-base">ยอดชำระเต็มจำนวน</span>
       </div>
-      <span class="text-[#333] text-base">{{ formatter.numberFormat(fullAmount) }}</span>
+      <span class="text-[#333] text-base">{{ formatter.numberFormat2Decimal(fullAmount) }}</span>
     </div>
 
     <!-- Custom amount option -->
@@ -188,7 +188,7 @@
           class="h-14 flex items-center justify-end px-4 border-b border-[#e0e0e0]">
           <span
             :class="i === tableRows.length - 1 ? 'font-bold' : ''"
-            class="text-[#333] text-sm">{{ formatter.numberFormat(row.amount) }}</span>
+            class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(row.amount) }}</span>
         </div>
       </div>
 
@@ -204,7 +204,7 @@
           class="h-14 flex items-center justify-end px-4 border-b border-[#e0e0e0]">
           <span
             :class="i === tableRows.length - 1 ? 'font-bold' : ''"
-            class="text-[#333] text-sm">{{ formatter.numberFormat(row.paid) }}</span>
+            class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(row.paid) }}</span>
         </div>
       </div>
 
@@ -220,7 +220,7 @@
           class="h-14 flex items-center justify-end px-4 border-b border-[#e0e0e0]">
           <span
             :class="i === tableRows.length - 1 ? 'font-bold' : ''"
-            class="text-[#333] text-sm">{{ formatter.numberFormat(row.remaining) }}</span>
+            class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(row.remaining) }}</span>
         </div>
       </div>
     </div>
