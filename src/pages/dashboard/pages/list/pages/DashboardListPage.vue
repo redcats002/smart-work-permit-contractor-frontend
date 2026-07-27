@@ -122,7 +122,7 @@ const summaryCards = computed((): IDashboardCardItem[] => {
   const d = cardData.value
   return SUMMARY_CARDS.map((card: ICardConfig): IDashboardCardItem => ({
     ...card,
-    amount: formatter.numberFormatNoDecimal(d[card.key as keyof IDashboardCardData])
+    amount: formatter.numberFormat2Decimal(d[card.key as keyof IDashboardCardData])
   }))
 })
 
@@ -131,16 +131,16 @@ const statCards = computed((): IDashboardCardItem[] => {
   const d = cardData.value
   return STAT_CARDS.map((card: ICardConfig): IDashboardCardItem => ({
     ...card,
-    amount: formatter.numberFormatNoDecimal(d[card.key as keyof IDashboardCardData])
+    amount: formatter.numberFormat2Decimal(d[card.key as keyof IDashboardCardData])
   }))
 })
 
 const marketingCenterValue = computed((): string => {
-  return marketData.value ? formatter.numberFormatNoDecimal(marketData.value.total) : ''
+  return marketData.value ? formatter.numberFormat2Decimal(marketData.value.total) : ''
 })
 
 const loanCenterValue = computed((): string => {
-  return loanData.value ? formatter.numberFormatNoDecimal(loanData.value.total) : ''
+  return loanData.value ? formatter.numberFormat2Decimal(loanData.value.total) : ''
 })
 
 const DONUT_COLORS = ['#72D9C8', '#52AED5', '#F4D67E', '#F46A67', '#FFABB1', '#374153', '#FE8A8A']
@@ -167,7 +167,7 @@ const loanRows = computed((): IDashboardDonutRow[] => {
   return (loanData.value?.items ?? []).map((item: IDashboardChartItem): IDashboardDonutRow => ({
     id: item.id,
     label: item.name,
-    value: formatter.numberFormatNoDecimal(item.total),
+    value: formatter.numberFormat2Decimal(item.total),
     unit: CHART_LOAN_UNIT,
     percent: `${item.percent}%`
   }))
