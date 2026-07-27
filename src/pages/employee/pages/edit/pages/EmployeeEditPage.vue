@@ -105,8 +105,8 @@ function mount (): void {
 }
 
 
-function onReadIdCard (data: IReadIdCardResult): void {
-  form.value = mapIdCardToEmployee(data, form.value)
+async function onReadIdCard (data: IReadIdCardResult): Promise<void> {
+  form.value = await mapIdCardToEmployee(data, form.value)
   mount()
 }
 

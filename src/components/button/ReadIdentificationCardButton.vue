@@ -10,6 +10,17 @@
     </div>
   </Button>
 
+  <Button
+    v-if="isDev"
+    class="bg-white"
+    color="secondary"
+    outlined
+    @click="handleMockReadIdCard()">
+    <div class="text-sm font-medium">
+      [Dev] Mock อ่านบัตร
+    </div>
+  </Button>
+
   <Dialog
     v-model:visible="showUrlModal"
     :style="{ width: '28rem' }"
@@ -63,7 +74,9 @@ interface IEmits {
 }
 
 
-const DEFAULT_WS_URL = 'ws://localhost:14820/IDWAgent'
+const IDW_URL = 'ws://localhost:14820/IDWAgent'
+const TDKW_URL = 'ws://localhost:14820/TDKWAgent'
+const DEFAULT_WS_URL = IDW_URL
 
 const attrs = useAttrs()
 const { isDev } = useDev()
@@ -75,14 +88,28 @@ const wsInput = ref(DEFAULT_WS_URL)
 let ws: WebSocket | null = null
 let activeWsUrl = DEFAULT_WS_URL
 
-function openWs (): Promise<WebSocket> {
+function openWs (url: string): Promise<WebSocket> {
   return new Promise((resolve: any, reject: any): void => {
-    if (ws && ws.readyState === WebSocket.OPEN) return resolve(ws)
+    if (ws && ws.readyState === WebSocket.OPEN && activeWsUrl === url) return resolve(ws)
     ws?.close?.()
-    ws = new WebSocket(activeWsUrl)
+    ws = new WebSocket(url)
     ws.onopen = (): void => resolve(ws as WebSocket)
-    ws.onerror = (): any => reject(new Error('เชื่อมต่อ IDW Agent ไม่ได้'))
+    ws.onerror = (): any => reject(new Error(`เชื่อมต่อ ${url} ไม่ได้`))
   })
+}
+
+async function openWsWithFallback (): Promise<void> {
+  try {
+    await openWs(activeWsUrl)
+  } catch {
+    // ponytail: fall back to legacy TDKWAgent if IDWAgent unreachable
+    if (activeWsUrl !== TDKW_URL) {
+      await openWs(TDKW_URL)
+      activeWsUrl = TDKW_URL
+    } else {
+      throw new Error('เชื่อมต่อ Agent ไม่ได้')
+    }
+  }
 }
 
 function send (cmd: Record<string, any>): void {
@@ -125,6 +152,30 @@ function handleReadIdCard (): void {
   }
 }
 
+function handleMockReadIdCard (): void {
+  // ponytail: dev-only mock, skips WebSocket agent entirely
+  const payload: IReadIdCardResult = {
+    title: 'Mr.',
+    firstName: 'อัฏฐวัฒน์',
+    lastName: 'วารีรัตน์',
+    gender: 'MALE',
+    nation: 'ไทย',
+    idCard: '1900101262493',
+    birthDay: '1999-11-09T17:00:00.000Z',
+    address: {
+      houseNo: '110/1',
+      moo: 'หมู่ที่ 5',
+      soi: '',
+      road: '',
+      subDistrict: 'ตำบลทองมงคล',
+      district: 'อำเภอบางสะพาน',
+      province: 'จังหวัดประจวบคีรีขันธ์'
+    }
+  }
+  toast.success('อ่านบัตรสำเร็จ (mock)')
+  emits('readSuccess', payload)
+}
+
 function onConfirmUrl (): void {
   activeWsUrl = wsInput.value.trim() || DEFAULT_WS_URL
   showUrlModal.value = false
@@ -135,7 +186,7 @@ async function doReadIdCard (): Promise<void> {
   handleLoading(async (): Promise<any> => {
     isLoading.value = true
     try {
-      await openWs()
+      await openWsWithFallback()
 
       send({ Command: 'GetReaderList' })
       const listResp = await wait((m: any): any => m.Message === 'GetReaderListR')

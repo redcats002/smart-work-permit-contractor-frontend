@@ -1,5 +1,6 @@
 import type { IReadIdCardResult } from '@/components/button/ReadIdentificationCardButton.vue'
 import { ETitleName } from '@/enums/TitleName.enum'
+import { resolvePostCode } from '@/utils/Address'
 import type { EmployeeFormValues } from '../schema/employee.schema'
 
 const titleMap: Record<string, ETitleName> = {
@@ -8,9 +9,10 @@ const titleMap: Record<string, ETitleName> = {
   'Ms.': ETitleName.MS
 }
 
-export function mapIdCardToEmployee (data: IReadIdCardResult, current: EmployeeFormValues): EmployeeFormValues {
+export async function mapIdCardToEmployee (data: IReadIdCardResult, current: EmployeeFormValues): Promise<EmployeeFormValues> {
   const addr = data.address
   const addressText = [addr.houseNo, addr.moo, addr.soi, addr.road].filter(Boolean).join(' ')
+  const postCode = await resolvePostCode(addr.subDistrict, addr.district, addr.province)
   return {
     ...current,
     idCard: data.idCard,
@@ -23,7 +25,8 @@ export function mapIdCardToEmployee (data: IReadIdCardResult, current: EmployeeF
       address: addressText,
       subDistrict: addr.subDistrict,
       district: addr.district,
-      province: addr.province
+      province: addr.province,
+      postCode
     }
   }
 }
