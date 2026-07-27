@@ -17,7 +17,7 @@
           type="button"
           text
           @click="onActiveAsset(i)">
-          หลักทรัพย์ที่{{ i + 1 }}
+          <span class="pr-1">หลักทรัพย์ที่</span> {{ i + 1 }}
         </Button>
       </div>
       <Transition
