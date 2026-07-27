@@ -70,35 +70,35 @@ const columns = ref<IColumn<ICurrentComparativeAccountList>[]>([
     header: 'เงินต้น (บาท)',
     align: 'right',
     style: { width: '140px', minWidth: '140px' },
-    value: (e: ICurrentComparativeAccountList): string => formatter.numberFormat(e.principal ?? 0)
+    value: (e: ICurrentComparativeAccountList): string => formatter.numberFormat2Decimal(e.principal ?? 0)
   },
   {
     field: 'principalAndInterest',
     header: 'เงินต้นรวมดอกเบี้ย (บาท)',
     align: 'right',
     style: { width: '140px', minWidth: '140px' },
-    value: (e: ICurrentComparativeAccountList): string => formatter.numberFormat(e.principalAndInterest ?? 0)
+    value: (e: ICurrentComparativeAccountList): string => formatter.numberFormat2Decimal(e.principalAndInterest ?? 0)
   },
   {
     field: 'amountPaid',
     header: 'ยอดตัดลูกหนี้ (บาท)',
     align: 'right',
     style: { width: '140px', minWidth: '140px' },
-    value: (e: ICurrentComparativeAccountList): string => formatter.numberFormat(e.amountPaid ?? 0)
+    value: (e: ICurrentComparativeAccountList): string => formatter.numberFormat2Decimal(e.amountPaid ?? 0)
   },
   {
     field: 'settlementDiscount',
     header: 'ส่วนลด (บาท)',
     align: 'right',
     style: { width: '140px', minWidth: '140px' },
-    value: (e: ICurrentComparativeAccountList): string => formatter.numberFormat(e.settlementDiscount ?? 0)
+    value: (e: ICurrentComparativeAccountList): string => formatter.numberFormat2Decimal(e.settlementDiscount ?? 0)
   },
   {
     field: 'remainingAmount',
     header: 'บัญชีเทียบปัจจุบัน (บาท)',
     align: 'right',
     style: { width: '140px', minWidth: '140px' },
-    value: (e: ICurrentComparativeAccountList): string => formatter.numberFormat(e.remainingAmount ?? 0)
+    value: (e: ICurrentComparativeAccountList): string => formatter.numberFormat2Decimal(e.remainingAmount ?? 0)
   }
 ])
 
@@ -112,23 +112,23 @@ const itemsFooter = computed((): IFooter[] => {
       format: (v: number): string => formatter.numberFormat(v ?? 0)
     },
     principal: {
-      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      format: (v: number): string => formatter.numberFormat2Decimal(v ?? 0),
       footerClass: 'text-right'
     },
     principalAndInterest: {
-      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      format: (v: number): string => formatter.numberFormat2Decimal(v ?? 0),
       footerClass: 'text-right'
     },
     amountPaid: {
-      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      format: (v: number): string => formatter.numberFormat2Decimal(v ?? 0),
       footerClass: 'text-right'
     },
     settlementDiscount: {
-      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      format: (v: number): string => formatter.numberFormat2Decimal(v ?? 0),
       footerClass: 'text-right'
     },
     remainingAmount: {
-      format: (v: number): string => formatter.numberFormat(v ?? 0),
+      format: (v: number): string => formatter.numberFormat2Decimal(v ?? 0),
       footerClass: 'text-right'
     }
   }
