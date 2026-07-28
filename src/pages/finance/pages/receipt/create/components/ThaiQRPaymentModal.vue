@@ -26,7 +26,7 @@
               </div>
 
               <img
-                class="mx-auto my-3 h-10"
+                class="mx-auto mt-1 h-16"
                 src="/thai_qr_payment/PromptPay-logo.png">
 
               <!-- QR Code Area -->
@@ -37,12 +37,12 @@
                       v-if="qrImage"
                       :src="qrImage"
                       class="block"
-                      style="width: 180px; height: 180px;">
+                      style="width: 220px; height: 220px;">
                     <!-- Placeholder while loading -->
                     <div
                       v-else
                       class="flex items-center justify-center bg-gray-100 rounded"
-                      style="width: 180px; height: 180px;">
+                      style="width: 220px; height: 220px;">
                       <span class="text-xs text-gray-400">กำลังโหลด...</span>
                     </div>
                   </div>
