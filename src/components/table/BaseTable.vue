@@ -168,6 +168,9 @@ interface IProps {
   footerBgClass?: string
   scrollHeight?: string
 }
+interface IEmits {
+  update: [pagination: IPagination]
+}
 
 const props = withDefaults(defineProps<IProps>(), {
   selectable: false,
@@ -189,9 +192,7 @@ const props = withDefaults(defineProps<IProps>(), {
   scrollHeight: '500px'
 })
 
-const emits = defineEmits<{
-  update: [pagination: IPagination]
-}>()
+const emits = defineEmits<IEmits>()
 
 const resolvedTableClass = computed((): string | object => props.tableClass || 'w-full')
 

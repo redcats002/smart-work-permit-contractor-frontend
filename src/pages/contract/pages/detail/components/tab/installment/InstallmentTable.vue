@@ -120,13 +120,13 @@
             รวม
           </div>
           <div class="flex items-center justify-end text-sm font-bold text-[#333333]">
-            {{ formatter.numberFormat2Decimal(getGrandTotal(data).amount) }}
+            {{ formatter.numberFormat2Decimal(data.summary?.amount) }}
           </div>
           <div class="flex items-center justify-end text-sm font-bold text-[#333333]">
-            {{ formatter.numberFormat2Decimal(getGrandTotal(data).paid) }}
+            {{ formatter.numberFormat2Decimal(data.summary?.paid) }}
           </div>
           <div class="flex items-center justify-end text-sm font-bold text-[#333333]">
-            {{ formatter.numberFormat2Decimal(getGrandTotal(data).outstanding) }}
+            {{ formatter.numberFormat2Decimal(data.summary?.outstanding) }}
           </div>
         </div>
       </div>
@@ -152,7 +152,7 @@
 import { ref } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
-import type { IContractInstallmentItem, IContractInstallmentList } from '@/models/response/contract/ContractRes.model'
+import type { IContractInstallmentList } from '@/models/response/contract/ContractRes.model'
 import type { IColumn } from '@/models/Table.model'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
@@ -162,12 +162,6 @@ import InstallmentFeeModal from './InstallmentFeeModal.vue'
 import InstallmentMenuAction from './InstallmentMenuAction.vue'
 
 const COL_SUB = 'grid-cols-[180px_1fr_130px_130px_130px]'
-
-interface IGrandTotal {
-  amount: number
-  paid: number
-  outstanding: number
-}
 
 interface IProps {
   items: IContractInstallmentList[]
@@ -227,15 +221,6 @@ function toggleExpand (item: IContractInstallmentList): void {
     expandedRows.value = { ...expandedRows.value, [key]: item }
   }
 }
-
-function getGrandTotal (item: IContractInstallmentList): IGrandTotal {
-  return item.items.reduce((acc: IGrandTotal, receiptItem: IContractInstallmentItem): IGrandTotal => ({
-    amount: acc.amount + receiptItem.summary.amount,
-    paid: acc.paid + receiptItem.summary.paid,
-    outstanding: acc.outstanding + receiptItem.summary.outstanding
-  }), { amount: 0, paid: 0, outstanding: 0 })
-}
-
 function openFeeModal (type: 'collection' | 'legal', item: IContractInstallmentList): void {
   selectedItem.value = item
   if (type === 'collection') {
