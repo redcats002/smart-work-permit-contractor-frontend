@@ -105,6 +105,7 @@ export interface IContractInstallmentList extends IInstallmentRow, IEntity {
   outstandingLegalFee: number
   totalPaid: number
   items: IContractInstallmentItem[]
+  summary: IContractInstallmentItemSummary
 }
 
 export interface IContractGuarantorList extends ICustomerList {
