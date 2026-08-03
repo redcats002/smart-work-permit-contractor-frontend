@@ -17,7 +17,7 @@
         :form="$form"
         @mount="mount()" />
     </BaseContainer>
-    <LocationTable :items="model.locations" />
+    <LocationTable v-model:items="model.locations" />
     <FormAction @cancel="emits('cancel')" />
   </Form>
 </template>
