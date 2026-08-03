@@ -56,7 +56,7 @@ import LabelField from '@/components/input/LabelField.vue'
 import Switch from '@/components/input/Switch.vue'
 import { Icon } from '@iconify/vue'
 import { useGenerateLocationTable as buildLocationTable } from '../composables/useGenerateLocationTable'
-import { useFormInitialValues, type WarehouseFormValues } from '../schema/warehouse.schema'
+import { useFormInitialValues, type WarehouseFormValues, type WarehouseLocationFormValues } from '../schema/warehouse.schema'
 
 interface IProps {
   form?: IFormState
@@ -88,6 +88,10 @@ function onRemove (index: number): void {
 }
 
 function generateLocationTable (): void {
+  // Skip regeneration if locations already exist with ids (edit mode)
+  const hasExistingLocations = model.value.locations.some((loc: WarehouseLocationFormValues): boolean => loc.id != null)
+  if (hasExistingLocations) return
+
   loadingStore.addLoading()
   model.value.locations = buildLocationTable(model.value.prefix, model.value.options)
   loadingStore.removeLoading()
