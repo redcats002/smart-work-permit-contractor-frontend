@@ -30,6 +30,18 @@ const items = computed((): IMenuItemAction[] => [
   //   action: (): void => emits('edit')
   // },
   {
+    key: 'power-of-attorney',
+    type: 'TEXT',
+    label: 'ออกเอกสาร หนังสือมอบอำนาจ',
+    disabled: props?.status === 'CANCELLED'
+  },
+  {
+    key: 'agenda',
+    type: 'TEXT',
+    label: 'ออกเอกสาร หนังสือวาระ',
+    disabled: props?.status === 'CANCELLED'
+  },
+  {
     key: 'delete',
     type: 'DELETE',
     label: 'ยกเลิก',

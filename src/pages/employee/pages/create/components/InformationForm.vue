@@ -131,6 +131,20 @@
           @update:model-value="emits('mount')" />
       </LabelField>
     </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mt-5">
+      <LabelField
+        v-slot="{ invalid }"
+        :form="form"
+        label="กลุ่มผู้ตีราคา"
+        name="evaluatorLevel"
+        tag="div"
+        hide-error>
+        <EvaluatorLevelSelection
+          v-model="model.evaluatorLevel"
+          :invalid="invalid"
+          name="evaluatorLevel" />
+      </LabelField>
+    </div>
   </div>
 </template>
 
@@ -150,6 +164,7 @@ import LabelField from '@/components/input/LabelField.vue'
 import PhoneNumberInput from '@/components/input/PhoneNumberInput.vue'
 import Switch from '@/components/input/Switch.vue'
 import BranchSelection from '@/components/selection/modules/api/branch/BranchSelection.vue'
+import EvaluatorLevelSelection from '@/components/selection/modules/static/evaluator-level/EvaluatorLevelSelection.vue'
 import ManagementPositionByTypeSelection from '@/components/selection/modules/api/management-position-by-type/ManagementPositionByTypeSelection.vue'
 import ManagementPositionTypeSelection from '@/components/selection/modules/static/management-position-type/ManagementPositionTypeSelection.vue'
 import RoleSelection from '@/components/selection/modules/static/role/RoleSelection.vue'
