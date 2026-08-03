@@ -114,3 +114,32 @@ Consult the topic file under `.claude/skills/project-conventions/reference/`. Qu
 - Naming → `naming-conventions.md`
 
 Use the skill rather than inventing a parallel pattern.
+
+## Agent harness
+
+### Startup Workflow
+
+Before writing code:
+
+1. Run `./init.sh` (lint + vitest) to verify a clean baseline.
+2. Read `feature_list.json` for feature status and `progress.md` for the last session's state.
+3. Pick ONE feature whose `dependencies` are all `done`.
+
+### Stay in scope
+
+- **One feature at a time** — implement only the active feature from `feature_list.json`.
+- Do not start a feature whose dependencies are not `done`.
+- Do not touch code outside the active feature.
+
+### Definition of Done
+
+- A feature is `done` only when `./init.sh` passes.
+- Record the passing command output in the feature's `evidence` field in `feature_list.json`.
+
+### End of Session
+
+Before ending:
+
+1. Update `feature_list.json` status and evidence.
+2. Append a dated entry to `progress.md` (what changed, what's next).
+3. Fill `session-handoff.md` with blockers, touched files, and the recommended next step.
