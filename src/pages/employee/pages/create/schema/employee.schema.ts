@@ -4,6 +4,7 @@ import { generator } from '@/utils/Generator'
 import { schema } from '@/utils/Schema'
 import { EmployeeRoleEnum } from '@/enums/modules/employee/EmployeeRole.enum'
 import { EmployeeStatusEnum } from '@/enums/modules/employee/EmployeeStatus.enum'
+import { EvaluatorLevelEnum } from '@/enums/modules/contract/EvaluatorLevel.enum'
 import { EManagementPosition } from '@/enums/modules/management-structure/ManagementPosition.enum'
 import { ETitleName } from '@/enums/TitleName.enum'
 import { z } from 'zod'
@@ -38,6 +39,7 @@ export const EmployeeSchema = z.object({
   managementPositionType: schema.enum(EManagementPosition, 'ตำแหน่งผังบริหาร').optional(),
   managementPositionId: schema.id('ตำแหน่งผังบริการ'),
   branchIds: z.array(schema.id('สาขา')).min(1, 'กรุณาเลือกสาขาอย่างน้อย 1 สาขา').optional().default([]),
+  evaluatorLevel: schema.enum(EvaluatorLevelEnum, 'ตำแหน่งสำหรับประเมินราคา').optional(),
 
   // ── Citizen / Home Address ───────────────────────────────────────────────
   mainAddress: z.object({
@@ -109,6 +111,7 @@ export function useDev (): EmployeeFormValues {
     managementPositionType: undefined,
     managementPositionId: null,
     branchIds: [],
+    evaluatorLevel: undefined,
     image: null,
     // Classification
     status: EmployeeStatusEnum.INACTIVE,
@@ -153,6 +156,7 @@ export function useFormInitialValues (): EmployeeFormValues {
     managementPositionType: undefined,
     managementPositionId: null,
     branchIds: [],
+    evaluatorLevel: undefined,
     // Classification
     status: EmployeeStatusEnum.ACTIVE,
     // Citizen / Home address
