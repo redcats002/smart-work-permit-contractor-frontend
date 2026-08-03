@@ -57,7 +57,7 @@ export function formatTitle (status?: TAssetStatus): string {
 export function getStatusClass (value?: TAssetStatus): string {
   switch (value) {
     case AssetStatusEnum.ACTIVE:
-      return 'bg-green-brand-light text-green-brand border-none'
+      return 'bg-blue-brand-light text-blue-brand border-none'
     case AssetStatusEnum.PENDING_SALE:
       return 'bg-yellow-50 text-yellow-600 border-none'
     case AssetStatusEnum.SOLD:
@@ -65,7 +65,9 @@ export function getStatusClass (value?: TAssetStatus): string {
     // case AssetStatusEnum.DONE:
     //   return 'bg-gray-200 text-gray-500 border-none'
     case AssetStatusEnum.PENDING_REFUND:
+      return 'bg-orange-50 text-orange-600 border-none'
     case AssetStatusEnum.REFUNDED:
+      return 'bg-green-50 text-green-600 border-none'
     case AssetStatusEnum.LEGAL_EXECUTION:
       return 'bg-blue-50 text-blue-600 border-none'
     default:
@@ -78,13 +80,15 @@ export function getIcon (value?: TAssetStatus): string {
     case AssetStatusEnum.ACTIVE:
       return 'icon-park-outline:check-one'
     case AssetStatusEnum.PENDING_SALE:
-      return 'solar:clock-circle-linear'
+      return 'mingcute:time-duration-line'
     case AssetStatusEnum.SOLD:
       return 'mdi:tag-outline'
     // case AssetStatusEnum.DONE:
     //   return 'material-symbols:close-rounded'
     case AssetStatusEnum.PENDING_REFUND:
+      return 'tabler:file-time'
     case AssetStatusEnum.REFUNDED:
+      return 'material-symbols:list-alt-check-outline'
     case AssetStatusEnum.LEGAL_EXECUTION:
       return 'mdi:truck-delivery-outline'
     default:
