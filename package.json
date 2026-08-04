@@ -9,6 +9,7 @@
     "build": "bun run typecheck && vite build",
     "build:alpha": "vite build --mode development",
     "build:staging": "vite build --mode staging",
+    "build:production": "vite build --mode production",
     "typecheck": "vue-tsc --noEmit -p tsconfig.app.json",
     "preview": "vite preview",
     "lint": "eslint .",
