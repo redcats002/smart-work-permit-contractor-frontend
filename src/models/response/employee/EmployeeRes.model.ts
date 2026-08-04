@@ -7,6 +7,7 @@ import type { TEstateStatus } from '@/enums/modules/estate/EstateStatus.enum'
 import type { TTitleName } from '@/enums/TitleName.enum'
 import type { IBranchList, IManagementPosition } from '../branch/BranchRes.model'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
+import type { TEvaluatorLevel } from '@/enums/modules/contract/EvaluatorLevel.enum'
 
 export interface IEmployeeList extends IEntity {
   title: TTitleName
@@ -31,6 +32,7 @@ export interface IEmployeeById extends IEntity {
   role: TEmployeeRole
   managementPosition?: IManagementPosition
   branches: IBranchList[]
+  evaluatorLevel: TEvaluatorLevel
 }
 
 export interface IEmployeeContractList extends IEntity {

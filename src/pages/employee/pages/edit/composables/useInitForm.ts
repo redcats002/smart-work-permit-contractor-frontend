@@ -31,6 +31,7 @@ export function useInitForm (form: Ref<EmployeeFormValues>, data: IEmployeeById)
     managementPositionType: data?.managementPosition?.managementPosition || undefined,
     managementPositionId: data?.managementPosition?.id ?? null,
     status: data?.status || undefined,
-    title: data?.title as ETitleName
+    title: data?.title as ETitleName,
+    evaluatorLevel: data?.evaluatorLevel
   }
 }
