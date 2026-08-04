@@ -12,10 +12,11 @@ interface IUseMakeContract {
   formMakeContract: Ref<MakeContractFormValues>
   formKey: Ref<number>
   mount: () => void
+  onConfirmPreMakeContract (): void
   onConfirmMakeContract (): void
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 export function useMakeContract (_useFetch: () => Promise<void>): IUseMakeContract {
   const PreContractService: IPreContractProvider = new PreContractProvider()
 
@@ -48,26 +49,39 @@ export function useMakeContract (_useFetch: () => Promise<void>): IUseMakeContra
     return payload
   }
 
-  async function useConfirmMakeContract (): Promise<void> {
+  async function useConfirmPreMakeContract (): Promise<void> {
     const payload = await usePayload()
-    await PreContractService.makeAContract(contractId.value, payload)
-    toast.success('ทำสัญญาเรียบร้อยแล้ว')
-    // await _useFetch()
-    router.push({ name: 'ContractListPage', query: { tab: 'contract' } })
+    await PreContractService.preMakeAContract(contractId.value, payload)
+    toast.success('สร้างพรีสัญญาเรียบร้อยแล้ว')
+    await _useFetch()
+    // router.push({ name: 'ContractListPage', query: { tab: 'contract' } })
+  }
+
+
+  function onConfirmPreMakeContract (): void {
+    handleLoading(useConfirmPreMakeContract)
   }
 
   function mount (): void {
     formKey.value += 1
   }
 
+  async function useConfirmMakeContract (): Promise<void> {
+    await PreContractService.makeAContract(contractId.value)
+    toast.success('สร้างสัญญาเรียบร้อยแล้ว')
+    router.push({ name: 'ContractListPage', query: { tab: 'contract' } })
+  }
+
   function onConfirmMakeContract (): void {
     handleLoading(useConfirmMakeContract)
   }
+
 
   return {
     formMakeContract,
     formKey,
     mount,
+    onConfirmPreMakeContract,
     onConfirmMakeContract
   }
 }

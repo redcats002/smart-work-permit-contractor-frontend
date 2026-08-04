@@ -35,7 +35,8 @@ export interface IPreContractProvider {
   appraisalPrice (id: TBaseParamsId, payload: IAppraisalPricePayload): Promise<TAppraisalPricePreContract>
   confirmAppraisal (id: TBaseParamsId, payload: IConfirmAppraisalPayload): Promise<TConfirmAppraisalPreContract>
   confirmMortgage (id: TBaseParamsId, payload: IConfirmMortgagePayload): Promise<TConfirmMortgagePreContract>
-  makeAContract (id: TBaseParamsId, payload: IMakeAContractPayload): Promise<TMakeAContractPreContract>
+  preMakeAContract (id: TBaseParamsId, payload: IMakeAContractPayload): Promise<TMakeAContractPreContract>
+  makeAContract (id: TBaseParamsId): Promise<TMakeAContractPreContract>
   updatePreAsset (id: TBaseParamsId, payload: IUpdatePreAssetPayload): Promise<TUpdatePreAssetPreContract>
   cancelledPreContract (id: TBaseParamsId): Promise<TActionPreContract>
 }
@@ -103,9 +104,15 @@ class PreContractProvider extends HttpRequest implements IPreContractProvider {
     return response
   }
 
-  public async makeAContract (id: TBaseParamsId, payload: IMakeAContractPayload): Promise<TMakeAContractPreContract> {
+  public async preMakeAContract (id: TBaseParamsId, payload: IMakeAContractPayload): Promise<TMakeAContractPreContract> {
+    this.setLogHeaders({ menu: 'CONTRACT', subMenu: 'ประเมินหลักทรัพย์ > รอตรวจสอบ' })
+    const response = await this.post(`${this.urlPrefix}/pre-make-contract/${id}`, payload)
+    return response
+  }
+
+  public async makeAContract (id: TBaseParamsId): Promise<TMakeAContractPreContract> {
     this.setLogHeaders({ menu: 'CONTRACT', subMenu: 'ประเมินหลักทรัพย์ > ทำสัญญา' })
-    const response = await this.post(`${this.urlPrefix}/make-contract/${id}`, payload)
+    const response = await this.post(`${this.urlPrefix}/make-contract/${id}`)
     return response
   }
 
