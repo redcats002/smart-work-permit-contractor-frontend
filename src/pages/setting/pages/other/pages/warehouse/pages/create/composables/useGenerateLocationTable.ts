@@ -3,7 +3,8 @@ import type { WarehouseLocationFormValues, WarehouseOptionFormValues } from '../
 
 export function useGenerateLocationTable (
   warehousePrefix: string,
-  options: WarehouseOptionFormValues[]
+  options: WarehouseOptionFormValues[],
+  existingLocations: WarehouseLocationFormValues[] = []
 ): WarehouseLocationFormValues[] {
   if (!options.length) return []
 
@@ -30,9 +31,23 @@ export function useGenerateLocationTable (
   }
 
   const cleanWarehousePrefix = warehousePrefix.trim()
+  const existingByName = new Map<string, WarehouseLocationFormValues>(
+    existingLocations
+      .filter((loc: WarehouseLocationFormValues): boolean => !!loc.name)
+      .map((loc: WarehouseLocationFormValues): [string, WarehouseLocationFormValues] => [loc.name!, loc])
+  )
 
-  return combinations.map((name: string): WarehouseLocationFormValues => ({
-    name: cleanWarehousePrefix ? `${cleanWarehousePrefix}-${name}` : name,
-    status: LocationStatusEnum.ACTIVE
-  }))
+  return combinations.map((name: string): WarehouseLocationFormValues => {
+    const fullName = cleanWarehousePrefix ? `${cleanWarehousePrefix}-${name}` : name
+    const existing = existingByName.get(fullName)
+
+    if (existing) {
+      return { ...existing }
+    }
+
+    return {
+      name: fullName,
+      status: LocationStatusEnum.ACTIVE
+    }
+  })
 }
