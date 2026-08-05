@@ -16,8 +16,7 @@
         label="เอกสารหลักทรัพย์"
         name="files"
         tag="div"
-        hide-error
-        required>
+        hide-error>
         <UploadInput
           v-model="preAssets[i].files"
           class="border border-dashed border-gray-700 rounded-md"
