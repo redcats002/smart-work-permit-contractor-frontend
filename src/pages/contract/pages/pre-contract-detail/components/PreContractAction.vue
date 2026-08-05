@@ -38,10 +38,20 @@
     </template>
     <template v-else-if="isWaitContract">
       <ConfirmModal
-        @confirm="emits('makeContract')">
+        @confirm="emits('preMakeContract')">
         <template #activator="{ open }">
           <ConfirmButton
             label="ยืนยัน"
+            @click="open()" />
+        </template>
+      </ConfirmModal>
+    </template>
+    <template v-else-if="isPendingReview">
+      <ConfirmModal
+        @confirm="emits('makeContract')">
+        <template #activator="{ open }">
+          <ConfirmButton
+            label="ยืนยันการสร้างสัญญา"
             @click="open()" />
         </template>
       </ConfirmModal>
@@ -85,6 +95,7 @@ interface IEmits {
   confirmAppraisal: []
   submitMortgage: []
   confirmMortgage: []
+  preMakeContract: []
   makeContract: []
 }
 
@@ -113,6 +124,10 @@ const isSubmitMortgage = computed((): boolean => {
 })
 const isWaitContract = computed((): boolean => {
   const list: TPreContractStatus[] = ['PENDING_CONTRACT']
+  return list.includes(props.status)
+})
+const isPendingReview = computed((): boolean => {
+  const list: TPreContractStatus[] = ['PENDING_REVIEW']
   return list.includes(props.status)
 })
 </script>

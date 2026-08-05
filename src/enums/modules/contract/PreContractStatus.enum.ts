@@ -7,6 +7,7 @@ export enum PreContractStatusEnum {
   PENDING_MORTGAGE = 'PENDING_MORTGAGE',
   PENDING_CONTRACT = 'PENDING_CONTRACT',
   CANCELLED = 'CANCELLED',
+  PENDING_REVIEW = 'PENDING_REVIEW',
   DONE = 'DONE'
 }
 
@@ -19,6 +20,7 @@ const titleMap: Record<TPreContractStatus, string> = {
   [PreContractStatusEnum.PENDING_MORTGAGE]: 'รอจำนอง',
   [PreContractStatusEnum.PENDING_CONTRACT]: 'รอทำสัญญา',
   [PreContractStatusEnum.CANCELLED]: 'ยกเลิก',
+  [PreContractStatusEnum.PENDING_REVIEW]: 'รอตรวจสอบ',
   [PreContractStatusEnum.DONE]: 'ผลการประเมิน'
 }
 
@@ -50,6 +52,8 @@ export function getStatusClass (value?: TPreContractStatus): string {
       return 'bg-red-100 text-red-600 border-none'
     case PreContractStatusEnum.DONE:
       return 'bg-green-100 text-green-700 border-none'
+    case PreContractStatusEnum.PENDING_REVIEW:
+      return 'bg-[#DBEAFF] text-[#2F80ED] border-none'
     default:
       return 'bg-gray-100 text-gray-600 border-none'
   }
@@ -69,6 +73,8 @@ export function getIcon (value?: TPreContractStatus): string {
       return 'mingcute:time-duration-line'
     case PreContractStatusEnum.CANCELLED:
       return 'mdi:close-circle-outline'
+    case PreContractStatusEnum.PENDING_REVIEW:
+      return 'mdi:magnify'
     case PreContractStatusEnum.DONE:
       return 'mdi:check-circle-outline'
     default:
