@@ -1,5 +1,5 @@
 import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
-import { isLandAllAsset, isVehicleAsset, isApartmentAsset } from '@/enums/modules/asset/AssetType.enum'
+import { formatTitle, isApartmentAsset, isLandAllAsset, isVehicleAsset } from '@/enums/modules/asset/AssetType.enum'
 
 export function formatAssetDetail (asset: IPreAssetList): string {
   const type = asset.type
@@ -7,6 +7,7 @@ export function formatAssetDetail (asset: IPreAssetList): string {
   if (isLandAllAsset(type)) {
     const f = asset.realEstateForm
     return [
+      `ประเภท ${formatTitle(type) || '-'}`,
       asset.detail,
       `เลขที่ ${f?.aerialPhotoMapNo || '-'}`,
       `เลขที่ดิน ${f?.landNo || '-'}`,
@@ -20,6 +21,7 @@ export function formatAssetDetail (asset: IPreAssetList): string {
   if (isVehicleAsset(type)) {
     const f = asset.vehicleForm
     return [
+      `ประเภท ${formatTitle(type) || '-'}`,
       asset.detail,
       `ยี่ห้อ ${f?.brand || '-'}`,
       `รุ่น ${f?.model || '-'}`,
@@ -32,6 +34,7 @@ export function formatAssetDetail (asset: IPreAssetList): string {
   if (isApartmentAsset(type)) {
     const f = asset.apartmentCondoForm
     return [
+      `ประเภท ${formatTitle(type) || '-'}`,
       asset.detail,
       `โฉนดที่ดินเลขที่ ${f?.landNo || '-'}`,
       `ห้องชุดเลขที่ ${f?.unitNumber || '-'}`,

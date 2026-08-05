@@ -23,7 +23,7 @@
             v-model="preAssets[i].files"
             :class="[
               'border border-dashed rounded-md',
-              isFieldInvalid ? 'border-red-400! bg-red-50!' : 'border-gray-700'
+              isFieldInvalid || invalid('files', i) ? 'border-red-400! bg-red-50!' : 'border-gray-700'
             ]"
             detail=""
             icon="material-symbols-light:upload-file-outline"
@@ -49,7 +49,7 @@
         required>
         <LocationSelection
           v-model="preAssets[i].locationId"
-          :invalid="invalid(i)"
+          :invalid="invalid('locationId', i)"
           :name="`${i}.locationId`" />
       </LabelField>
     </div>
@@ -96,13 +96,16 @@ function onSubmit (event: FormSubmitEvent): void {
   }
 }
 
-function invalid (index: number): boolean {
-  const found = !!errors.value.find((error: Record<string, any>): boolean => error.path === `${index}.locationId`)
-  return found
+function invalid (name: string, index: number): boolean {
+  const found = errors.value.find((error: Record<string, any>): boolean => {
+    return error.path === `${index}.${name}`
+  })
+  return !!found
 }
 
 function manualValidateLocation (): boolean {
   try {
+    errors.value = []
     preAssets.value.forEach((asset: PreAssetWarehouseFormValues, index: number): void => {
       if (!asset.files || asset.files.length === 0) {
         errors.value.push({
@@ -120,17 +123,16 @@ function manualValidateLocation (): boolean {
       }
     })
     if (errors.value.length) {
-      errors.value.forEach((error: Record<string, any>): void => {
-        toast.error(error.message)
-      })
+      scrollToFirstError(errors.value)
+      // errors.value.forEach((error: Record<string, any>): void => {
+      //   toast.error(error.message)
+      // })
       return false
     }
     return true
   } catch (error: unknown) {
     toast.error(`เกิดข้อผิดพลาดในการตรวจสอบข้อมูล ${error}`)
     return false
-  } finally {
-    errors.value = []
   }
 }
 
