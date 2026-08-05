@@ -17,6 +17,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useDayjs } from '@/utils/Dayjs'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IDocumentMovementItem } from '@/models/response/contract-asset/ContractAssetRes.model'
 import type { IColumn } from '@/models/Table.model'
@@ -36,11 +37,11 @@ defineOptions({ inheritAttrs: false })
 const ContractAssetService: IContractAssetProvider = new ContractAssetProvider()
 
 const { pagination, sortBy, sortOrder, extractPagination } = usePagination({ inheritQuery: false })
-
+const dayjs = useDayjs()
 const items = ref<IDocumentMovementItem[]>([])
 
 const columns = ref<IColumn<IDocumentMovementItem>[]>([
-  { field: 'date', header: 'วันที่', align: 'left', style: { maxWidth: '100px' } },
+  { field: 'date', header: 'วันที่', align: 'left', style: { maxWidth: '100px' }, value: (item: IDocumentMovementItem): string => item?.date ? dayjs.formatDateTime(item?.date) : '-' },
   { field: 'origin', header: 'ต้นทาง', align: 'left', style: { maxWidth: '220px' } },
   { field: 'destination', header: 'ปลายทาง', align: 'left', style: { maxWidth: '220px' } },
   { field: 'createdBy', header: 'ย้ายโดย', align: 'left', style: { maxWidth: '200px' } },

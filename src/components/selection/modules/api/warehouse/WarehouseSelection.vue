@@ -43,12 +43,12 @@ const fetchSuggestions = async (): Promise<TBaseModel[]> => await handleLoading(
     page: pagination.value.page,
     limit: 9999
   })
-
-  return (response.data ?? []).map((item: IWarehouseList): TBaseModel => ({
+  const result = (response.data ?? []).map((item: IWarehouseList): TBaseModel => ({
     id: item.id!,
     name: item.name,
     disabled: props.disabledIds?.includes(Number(item?.id)) ?? false
   }))
+  return result
 }) ?? []
 
 const mapOptionToModel = (item: TBaseModel): number | null => item?.id != null ? Number(item.id) : null
