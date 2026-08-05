@@ -15,6 +15,7 @@ interface IProps {
 interface IEmits {
   edit: []
   cancel: []
+  print: []
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -22,38 +23,32 @@ const props = withDefaults(defineProps<IProps>(), {
 })
 const emits = defineEmits<IEmits>()
 
-const items = computed((): IMenuItemAction[] => [
-  // {
+
+const items = computed((): IMenuItemAction[] => {
+  const menuItems: IMenuItemAction[] = [
+    // {
   //   key: 'edit',
   //   type: 'TEXT',
   //   label: 'แก้ไข',
   //   action: (): void => emits('edit')
   // },
-  {
-    key: 'power-of-attorney',
-    type: 'TEXT',
-    label: 'ออกเอกสาร หนังสือมอบอำนาจ',
-    disabled: props?.status === 'CANCELLED'
-  },
-  {
-    key: 'agenda',
-    type: 'TEXT',
-    label: 'ออกเอกสาร หนังสือวาระ',
-    disabled: props?.status === 'CANCELLED'
-  },
-  {
-    key: 'delete',
-    type: 'DELETE',
-    label: 'ยกเลิก',
-    action: (): void => emits('cancel'),
-    deleteProps: {
-      title: 'ยกเลิกสัญญา',
-      description1: 'คุณต้องการยกเลิกสัญญานี้หรือไม่',
-      confirmLabel: 'ยืนยัน'
-    },
-    disabled: props?.status === 'CANCELLED'
-  }
-])
+    {
+      key: 'delete',
+      type: 'DELETE',
+      label: 'ยกเลิก',
+      action: (): void => emits('cancel'),
+      deleteProps: {
+        title: 'ยกเลิกสัญญา',
+        description1: 'คุณต้องการยกเลิกสัญญานี้หรือไม่',
+        confirmLabel: 'ยืนยัน'
+      },
+      disabled: props?.status === 'CANCELLED'
+    }
+  ]
+  if (props.status === 'PENDING_REVIEW') menuItems.unshift({ label: 'พิมพ์สัญญา', key: 'print', type: 'TEXT', action: (): void => emits('print') })
+
+  return menuItems
+})
 
 
 </script>

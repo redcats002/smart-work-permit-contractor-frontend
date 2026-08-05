@@ -102,9 +102,11 @@ onMounted((): void => {
 })
 
 watch((): string => model.value.prefix, (): void => {
+  console.log('prefix changed, regenerating location table')
   generateLocationTable()
 })
 watch((): WarehouseFormValues['options'] => model.value.options, (): void => {
+  console.log('options changed, regenerating location table')
   generateLocationTable()
 }, { deep: true })
 </script>

@@ -5,7 +5,7 @@ import type { AssetValuationFormValues } from '@/pages/contract/pages/pre-contra
 import type { ConfirmAppraisalFormValues } from '@/pages/contract/pages/pre-contract-detail/schema/confirm-appraisal.schema'
 import type { MakeContractFormValues } from '@/pages/contract/pages/pre-contract-detail/schema/make-contract.schema'
 import type { MortgageFormValues } from '@/pages/contract/pages/pre-contract-detail/schema/mortgage.schema'
-import type { PreAssetUpdateValues } from '@/pages/contract/pages/pre-contract-detail/schema/pre-asset.schema'
+import type { PreAssetUpdateValues } from '@/pages/contract/pages/pre-contract-detail/schema/pre-asset/pre-asset.schema'
 import type { IBasePaginationRequest } from '../Request.model'
 
 export interface IGetPreContractList extends IBasePaginationRequest {

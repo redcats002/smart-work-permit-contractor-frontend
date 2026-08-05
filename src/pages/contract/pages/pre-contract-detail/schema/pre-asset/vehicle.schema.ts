@@ -1,7 +1,7 @@
 import { schema } from '@/utils/Schema'
 import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import { z } from 'zod'
-import { VehicleSchema as FormValues } from '../../create/schema/pre-contract.schema'
+import { VehicleSchema as FormValues } from '../../../create/schema/pre-contract.schema'
 
 export const VehicleFormSchema = z.object({
   ...FormValues.shape,

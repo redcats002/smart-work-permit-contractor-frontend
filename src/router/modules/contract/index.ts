@@ -73,6 +73,16 @@ export default {
       }
     },
     {
+      path: 'pre-contract/print/:id',
+      name: 'PreContractPrintPage',
+      component: (): ComponentOptions => import('@/pages/contract/pages/pre-contract-print/pages/PreContractPrintPage.vue'),
+      meta: {
+        auth: true,
+        layout: 'blank',
+        title: 'พิมพ์สัญญา'
+      }
+    },
+    {
       path: 'refinance/:id',
       name: 'ContractRefinancePage',
       component: (): ComponentOptions => import('@/pages/contract/pages/refinance/pages/ContractRefinancePage.vue'),

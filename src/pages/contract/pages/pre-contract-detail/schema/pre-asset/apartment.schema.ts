@@ -1,7 +1,7 @@
 import { schema } from '@/utils/Schema'
 import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import { z } from 'zod'
-import { ApartmentCondoSchema as FormValues } from '../../create/schema/pre-contract.schema'
+import { ApartmentCondoSchema as FormValues } from '../../../create/schema/pre-contract.schema'
 
 export const ApartmentFormSchema = z.object({
   ...FormValues.shape,

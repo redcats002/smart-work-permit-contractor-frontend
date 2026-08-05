@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { PreAssetSchema as FormSchema } from '../../create/schema/pre-contract.schema'
+import { PreAssetSchema as FormSchema } from '../../../create/schema/pre-contract.schema'
 import { ModalApartmentSchema } from './apartment.schema'
 import { ModalLandSchema } from './land.schema'
 import { ModalVehicleSchema } from './vehicle.schema'
