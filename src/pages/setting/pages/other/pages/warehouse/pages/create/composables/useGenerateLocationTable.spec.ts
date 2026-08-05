@@ -69,4 +69,62 @@ describe('useGenerateLocationTable', (): void => {
     const result = useGenerateLocationTable('WH', [])
     expect(result).toEqual([])
   })
+
+  it('preserves existing location id when name matches', (): void => {
+    const existing = [
+      { name: 'WH-A1', status: LocationStatusEnum.ACTIVE, id: 10 },
+      { name: 'WH-A2', status: LocationStatusEnum.ACTIVE, id: 20 }
+    ]
+    const result = useGenerateLocationTable('WH', [
+      { isRequirePrefix: true, prefix: 'A', maxLimit: 2 }
+    ], existing)
+
+    expect(result).toEqual([
+      { name: 'WH-A1', status: LocationStatusEnum.ACTIVE, id: 10 },
+      { name: 'WH-A2', status: LocationStatusEnum.ACTIVE, id: 20 }
+    ])
+  })
+
+  it('merges existing and new locations by name', (): void => {
+    const existing = [
+      { name: 'WH-A1', status: LocationStatusEnum.ACTIVE, id: 10 }
+    ]
+    const result = useGenerateLocationTable('WH', [
+      { isRequirePrefix: true, prefix: 'A', maxLimit: 3 }
+    ], existing)
+
+    expect(result).toEqual([
+      { name: 'WH-A1', status: LocationStatusEnum.ACTIVE, id: 10 },
+      { name: 'WH-A2', status: LocationStatusEnum.ACTIVE },
+      { name: 'WH-A3', status: LocationStatusEnum.ACTIVE }
+    ])
+  })
+
+  it('drops existing locations not in generated set', (): void => {
+    const existing = [
+      { name: 'WH-A1', status: LocationStatusEnum.ACTIVE, id: 10 },
+      { name: 'WH-A9', status: LocationStatusEnum.ACTIVE, id: 99 }
+    ]
+    const result = useGenerateLocationTable('WH', [
+      { isRequirePrefix: true, prefix: 'A', maxLimit: 2 }
+    ], existing)
+
+    expect(result).toEqual([
+      { name: 'WH-A1', status: LocationStatusEnum.ACTIVE, id: 10 },
+      { name: 'WH-A2', status: LocationStatusEnum.ACTIVE }
+    ])
+  })
+
+  it('preserves optionIds from existing locations', (): void => {
+    const existing = [
+      { name: 'WH-A1', status: LocationStatusEnum.ACTIVE, id: 5, optionIds: '1,2' }
+    ]
+    const result = useGenerateLocationTable('WH', [
+      { isRequirePrefix: true, prefix: 'A', maxLimit: 1 }
+    ], existing)
+
+    expect(result).toEqual([
+      { name: 'WH-A1', status: LocationStatusEnum.ACTIVE, id: 5, optionIds: '1,2' }
+    ])
+  })
 })

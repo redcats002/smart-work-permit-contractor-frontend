@@ -167,6 +167,8 @@ Use the skill rather than inventing a parallel pattern.
 
 ## Agent harness
 
+> **Full guide:** `docs/GUIDE.md` — harness layout, startup path, definition of done, end-of-session routine.
+
 ### Startup Workflow
 
 Before writing code:
