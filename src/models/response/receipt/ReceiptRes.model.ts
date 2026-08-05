@@ -1,11 +1,12 @@
 import type { IEntity } from '@/models/Global.model'
+import type { ICloseContractFile } from '@/models/request/close-contract/CloseContractReq.model'
+import type { TInstallmentStatus } from '@/enums/modules/contract/InstallmentStatus.enum'
 import type { TReceiptStatus } from '@/enums/modules/finance/receipt/ReceiptStatus.enum'
 import type { TReceiptType } from '@/enums/modules/finance/receipt/ReceiptType.enum'
 import type { TTitleName } from '@/enums/TitleName.enum'
 import type { IQRPaymentResponse } from '@/composables/useQRPayment'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 import type { TReceiptPaymentMethod } from './PaymentMethod.enum'
-import type { ICloseContractFile } from '@/models/request/close-contract/CloseContractReq.model'
 
 export interface IReceiptCustomer {
   id: number | null
@@ -136,6 +137,7 @@ export interface IReceiptById extends IEntity {
   receiptType?: TReceiptType | null
   contracts: IReceiptDetailContract[]
   summary: IReceiptSummary
+  totalOutstandingDebt: number
   otherExpenses: IReceiptOtherExpense[]
   discountInterestMonth: number
 
@@ -177,7 +179,7 @@ export interface IReceiptFeeBreakdown {
 export interface IReceiptInstallmentCreate {
   id: number
   order: number
-  status: string
+  status: TInstallmentStatus
   dueDate: string
   penaltyFee: IReceiptFeeBreakdown
   collectionFee: IReceiptFeeBreakdown

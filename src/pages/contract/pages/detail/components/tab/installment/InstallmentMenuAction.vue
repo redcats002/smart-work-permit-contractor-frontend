@@ -8,11 +8,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useLoadingStore } from '@/stores/Loading'
-import type { TPaymentStatus } from '@/enums/modules/contract/PaymentStatus.enum'
+import type { TInstallmentStatus } from '@/enums/modules/contract/InstallmentStatus.enum'
 import BaseActionMenu, { type IMenuItemAction } from '@/components/base/BaseActionMenu.vue'
 
 interface IProps {
-  paymentStatus: TPaymentStatus
+  paymentStatus: TInstallmentStatus
   receiptId?: number
   collectionFee?: number
   legalFee?: number
@@ -30,7 +30,8 @@ interface IEmits {
 
 const props = withDefaults(defineProps<IProps>(), {
   collectionFee: 0,
-  legalFee: 0
+  legalFee: 0,
+  receiptId: undefined
 })
 const emits = defineEmits<IEmits>()
 

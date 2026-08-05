@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatTitle, getIcon, getStatusClass, type TInstallmentStatus } from '@/enums/modules/finance/InstallmentStatus.enum'
+import { formatTitle, getIcon, getStatusClass, type TInstallmentStatus } from '@/enums/modules/contract/InstallmentStatus.enum'
 import BaseChip from '@/components/chip/BaseChip.vue'
 
 interface IProps {
