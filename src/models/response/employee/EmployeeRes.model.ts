@@ -3,7 +3,7 @@ import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
 import type { TEmployeeRole } from '@/enums/modules/employee/EmployeeRole.enum'
 import type { TEmployeeStatus } from '@/enums/modules/employee/EmployeeStatus.enum'
-import type { TEstateStatus } from '@/enums/modules/estate/EstateStatus.enum'
+import type { TAssetStatus } from '@/enums/modules/asset/AssetStatus.enum'
 import type { TTitleName } from '@/enums/TitleName.enum'
 import type { IBranchList, IManagementPosition } from '../branch/BranchRes.model'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
@@ -56,7 +56,7 @@ export interface IEmployeeEstateList extends IEntity {
   contractIdNo: string
   estateType: TBaseModel
   storage: string
-  estateStatus: TEstateStatus
+  estateStatus: TAssetStatus
 }
 
 export type TGetEmployeeListResponse = IBasePaginationResponse<IEmployeeList>

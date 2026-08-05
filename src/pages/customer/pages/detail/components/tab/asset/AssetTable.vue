@@ -18,7 +18,7 @@
       </LinkText>
     </template>
     <template #[`item.status`]="{ item }">
-      <ChipEstateStatus :value="item?.status" />
+      <ChipAssetStatus :value="item?.status" />
     </template>
   </BaseTable>
 </template>
@@ -32,7 +32,7 @@ import { formatTitle } from '@/enums/modules/asset/AssetType.enum'
 import LinkText from '@/components/button/LinkText.vue'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
-import ChipEstateStatus from './ChipEstateStatus.vue'
+import ChipAssetStatus from '@/pages/stock/pages/list/components/asset/ChipAssetStatus.vue'
 
 interface IProps {
   items: ICustomerAssetList[]

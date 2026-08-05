@@ -3,7 +3,7 @@ import type { ICustomerById, ICustomerDocumentById } from '@/models/response/cus
 import type AddressTab from '../components/tab/address/AddressTab.vue'
 import type ContactHistoryTab from '../components/tab/contact-history/ContactHistoryTab.vue'
 import type ContractTab from '../components/tab/contract/ContractTab.vue'
-import type EstateTab from '../components/tab/estate/EstateTab.vue'
+import type AssetTab from '../components/tab/asset/AssetTab.vue'
 import type PaymentHistoryTab from '../components/tab/payment-history/PaymentHistoryTab.vue'
 import type PrivateDocumentTab from '../components/tab/private-document/PrivateDocumentTab.vue'
 import useTabItems, {
@@ -84,7 +84,7 @@ export type ListComponentType
     | InstanceType<typeof ContractTab>
     | InstanceType<typeof PaymentHistoryTab>
     | InstanceType<typeof ContactHistoryTab>
-    | InstanceType<typeof EstateTab>
+    | InstanceType<typeof AssetTab>
 
 export function useInitTabDetail (): IUseTabItems {
   const Address = importComponent((): Promise<Component> => import('../components/tab/address/AddressTab.vue'))
@@ -92,7 +92,7 @@ export function useInitTabDetail (): IUseTabItems {
   const Contract = importComponent((): Promise<Component> => import('../components/tab/contract/ContractTab.vue'))
   const PaymentHistory = importComponent((): Promise<Component> => import('../components/tab/payment-history/PaymentHistoryTab.vue'))
   const ContactHistory = importComponent((): Promise<Component> => import('../components/tab/contact-history/ContactHistoryTab.vue'))
-  const Estate = importComponent((): Promise<Component> => import('../components/tab/estate/EstateTab.vue'))
+  const Asset = importComponent((): Promise<Component> => import('../components/tab/asset/AssetTab.vue'))
 
   const input = computed((): ITabItemComponent[] => [
     { key: 'Address', label: 'ที่อยู่', instance: Address, value: 'address' },
@@ -100,7 +100,7 @@ export function useInitTabDetail (): IUseTabItems {
     { key: 'Contract', label: 'สัญญา', instance: Contract, value: 'contract' },
     { key: 'PaymentHistory', label: 'ประวัติการชำระเงิน', instance: PaymentHistory, value: 'payment-history' },
     { key: 'ContactHistory', label: 'ประวัติการติดต่อ', instance: ContactHistory, value: 'contact-history' },
-    { key: 'Estate', label: 'หลักทรัพย์', instance: Estate, value: 'estate' }
+    { key: 'Asset', label: 'หลักทรัพย์', instance: Asset, value: 'asset' }
   ])
 
   return useTabItems(input)

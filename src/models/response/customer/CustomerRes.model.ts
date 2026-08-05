@@ -5,7 +5,7 @@ import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.en
 import type { TPaymentMethod } from '@/enums/modules/contract/PaymentMethod.enum'
 import type { TCustomerStatus } from '@/enums/modules/customer/CustomerStatus.enum'
 import type { TPersonalType } from '@/enums/modules/customer/PersonalType.enum'
-import type { TEstateStatus } from '@/enums/modules/estate/EstateStatus.enum'
+import type { TAssetStatus } from '@/enums/modules/asset/AssetStatus.enum'
 import type { TTitleName } from '@/enums/TitleName.enum'
 import type { ICustomerGroupList } from '../customer-group/CustomerGroupRes.model'
 import type { ICustomerOccupationList } from '../customer-occupation/CustomerOccupationRes.model'
@@ -66,7 +66,7 @@ export interface ICustomerContactHistoryList extends IEntity {
 export interface ICustomerAssetList extends IEntity {
   type: TAssetType
   detail: string
-  status: TEstateStatus
+  status: TAssetStatus
   location: TBaseModel
   contract: TBaseModel
 }
