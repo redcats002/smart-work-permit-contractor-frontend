@@ -2,7 +2,7 @@
 
 Before doing any non-trivial work in this repo, read the project skill index at `{.agents, .claude}/skills/project-conventions/SKILL.md` and then load the relevant topic file under `{.agents, .claude}/skills/project-conventions/reference/`. The skill is the canonical convention set for this codebase (one H2 topic per reference file): coding style, naming, architecture, forms, providers, stores, composables, styling, testing, etc. Pull from it rather than inventing a parallel pattern.
 
-The skill describes the _target_ convention set (imported from a downstream production app — Management). Most subsystems it documents (forms, full provider tree, domain pages, tests) are **not yet present** in this template — only HTTP plumbing, plugins, router skeleton, two Pinia stores, a few composables/utils, and one `HomePage.vue` exist today. When adding a new subsystem, follow the skill rather than inventing a new pattern.
+This is a **full production app**, not a template — 12 router modules, ~36 API providers, 15 page domains, 3 Pinia stores, 14 composables, 18 utils. See [Modules](#modules) for the map. When adding a new subsystem, follow the skill rather than inventing a parallel pattern.
 
 ## Commands
 
@@ -25,6 +25,56 @@ ESLint also runs **inside Vite** via `vite-plugin-eslint2` — lint errors surfa
 
 Husky `pre-commit` runs `lint-staged` → `eslint --fix` on staged `*.{js,jsx,ts,tsx,vue}`.
 
+## Modules
+
+> **Maintenance rule — this table is part of the main flow.**
+> When a change adds, removes, or renames a module, changes its route prefix or `permission` key, or changes which provider a module talks to, **update this table in the same commit**. A stale map costs every later session more than the edit costs now.
+
+Each module owns three parallel trees: routes (`src/router/modules/<mod>/`), pages (`src/pages/<mod>/`), providers (`src/resources/provider/<feature>/`). Route prefix comes from the `const prefix` at the top of each module's `index.ts`; `permission` on the root route gates menu + access via `usePermission`.
+
+| Module | Prefix | Permission | Pages (`src/pages/<mod>/pages/`) | Main providers |
+|---|---|---|---|---|
+| `dashboard` | `/dashboard` | `dashboard` | `list` | `dashboard` |
+| `work` | `/work` | `tasks` | `asset-appraisal`, `follow-up` | `work` |
+| `contract` | `/contract` | `contracts` | `list`, `create`, `detail`, `contract-edit`, `pre-contract-detail`, `pre-contract-edit`, `refinance`, `print` | `contract`, `pre-contract`, `contract-document`, `contract-history`, `contract-income`, `contract-expense`, `refinance`, `invoice`, `customer` |
+| `customer` | `/customer` | `customers` | `list`, `create`, `detail`, `edit` | `customer` |
+| `asset` | `/assets` | `assets` | `list`, `detail` | `contract-asset` |
+| `finance` | `/finance` | `finance_docs` | `record`, `receipt`, `invoice`, `close-account`, `re-finance` | `invoice`, `receipt`, `expenses`, `close-contract`, `refinance` |
+| `stock` | `/stock` | `storage` | `list`, `create`, `detail` | `warehouse`, `document-storages` |
+| `reports` | `/reports` | `reports` | `list` + 22 report pages | `report` |
+| `announcement` | `/announcement` | `news` | `AnnouncementPage.vue` | `announcement` |
+| `action-log` | `/action-log` | `audit_logs` | `ActionLogListPage.vue` | `action-log` |
+| `setting` | `/setting` | `settings` | `list`, `contract`, `customer`, `financial`, `other`, `profile` | `branch`, `management-position`, `warehouse`, `employee`, `contract-loan-type`, `contract-loan-purpose`, `customer-group`, `customer-occupation`, `how-did-find-us`, `finance-income-category`, `finance-income-type`, `finance-expense-category`, `finance-expense-type` |
+| `auth` | `/auth` | — (public) | `login`, `reset-password` | `auth/public`, `auth/private` |
+
+**Modules without a top-level router entry** — non-obvious wiring, check before moving files:
+
+- `employee` — pages at `src/pages/employee/`, but routes live in `src/router/modules/setting/Employee.router.ts` (under `/setting`). Providers: `employee`, `auth/public`.
+- `notification` — no pages, no routes. Provider `notification` is consumed only by `stores/Notification.ts`; the store is read by `DefaultLayout`, `AppDrawer`, `useSocket`, and the `work` / `announcement` pages. Cross-cutting — changing it touches the main flow.
+- `common` — `not-found`, `not-permitted`, `not-available`. Routes declared inline in `src/router/index.ts`, all `meta.layout: 'blank'`.
+
+**Sub-trees that are lists, not modules** — do not enumerate these in the table:
+
+- `src/router/modules/reports/*.router.ts` — 22 per-report router files merged by `reports/index.ts`.
+- `src/router/modules/setting/other/` — `Branch`, `Warehouse`, `HowDidFindUs`, `ManagementStructure`.
+- `src/components/selection/modules/api/` (16) and `.../static/` (25) — reusable dropdown components. `api/*` fetch via a provider; `static/*` are hardcoded enum lists.
+
+### Main flow (contract lifecycle)
+
+The spine most changes touch. Break a step here and the app's core path breaks:
+
+```
+customer (create/verify)
+  → work/asset-appraisal (value the collateral)
+    → contract/pre-contract/create  [status PENDING_REVIEW]
+      → contract/pre-contract/:id   (review → approve)
+        → contract/detail/:id       (active contract)
+          → finance/record + finance/receipt   (installments)
+            → finance/close-account | contract/refinance
+```
+
+Cross-cutting on this path: `stores/Auth.ts` (token + permissions), `stores/Notification.ts` + `useSocket` (realtime), `resources/Interceptors.ts` (401 → logout), `utils/Permission.ts`. A change to any of those is a main-flow change — re-read this section and update it if the flow moved.
+
 ## Architecture
 
 ### Entry & plugin registration
@@ -41,7 +91,7 @@ PrimeVue runs in **unstyled** mode — all component styling lives in `src/volt/
 
 ### Router
 
-`src/router/index.ts` boots an HTML5-history router, sets `document.title` from `route.meta.title` in `afterEach`, and is wired into the app via plugins. Auth guard exists only as commented-out code; uncommenting requires `useAuthStore` to expose `userToken.accessToken` (current `stores/Auth.ts` may not match — check before enabling).
+`src/router/index.ts` boots an HTML5-history router, sets `document.title` from `route.meta.title` in `afterEach`, and is wired into the app via plugins. The auth guard is **live**: `beforeEach` redirects to `LoginPage` when `meta.auth` is set and `useAuthStore().userToken.accessToken` is empty. `onError` also retries chunk-load failures up to twice (post-deploy stale-chunk recovery), tracked in `sessionStorage`.
 
 Per-domain routes belong in `src/router/modules/<Domain>.router.ts` and merge into the top-level `routes` array. All page components must be lazy-loaded (`(): ComponentOptions => import(...)`). See skill reference `router-conventions.md` for `meta` fields (`layout`, `auth`, `title`, `menu`, `icon`, `root`).
 
@@ -53,7 +103,7 @@ Per-domain routes belong in `src/router/modules/<Domain>.router.ts` and merge in
 
 All API access goes through `src/resources/HttpRequest.ts` (axios wrapper) + `src/resources/Interceptors.ts`. Base URL comes from `import.meta.env.VITE_APP_API_URL`. Interceptors handle camelCase conversion (humps) and 401 → logout + redirect to `/auth/login`.
 
-New API surfaces extend `HttpRequest`, implement a typed `I<Name>Provider` interface, set a `urlPrefix`, and export as default. Provider files live under `src/resources/provider/<feature>/<Name>.provider.ts` (directory does not yet exist — create when first provider is added). request/response types live in `src/models/request/` and `src/models/response/`.
+New API surfaces extend `HttpRequest`, implement a typed `I<Name>Provider` interface, set a `urlPrefix`, and export as default. Provider files live under `src/resources/provider/<feature>/<Name>.provider.ts` — ~36 feature dirs exist; match an existing one before creating a new dir. Request/response types live in `src/models/request/` and `src/models/response/` (plus `src/models/modules/`).
 
 When instantiating a provider in a page or composable, always declare with the typed interface and a `Service` suffix:
 
@@ -68,7 +118,7 @@ const dashboardProvider = new DashboardProvider()
 
 ### State (Pinia)
 
-Setup-store pattern only — `defineStore('name', () => { ... })`. Persist via `pinia-plugin-persistedstate` configured in `src/plugins/Pinia.plugin.ts`. Existing stores: `useAuthStore` (`stores/Auth.ts`), `useLoadingStore` (`stores/Loading.ts`).
+Setup-store pattern only — `defineStore('name', () => { ... })`. Persist via `pinia-plugin-persistedstate` configured in `src/plugins/Pinia.plugin.ts`. Existing stores: `useAuthStore` (`stores/Auth.ts` — token + permissions), `useLoadingStore` (`stores/Loading.ts`), `useNotificationStore` (`stores/Notification.ts` — paired with `useSocket`).
 
 ### Path alias
 
@@ -135,6 +185,7 @@ Before writing code:
 
 - A feature is `done` only when `./init.sh` passes.
 - Record the passing command output in the feature's `evidence` field in `feature_list.json`.
+- If the change touched module wiring (new/renamed/removed module, changed route prefix, changed `permission` key, new provider dir) or the contract lifecycle, the [Modules](#modules) table and main-flow diagram must match reality before the feature is `done`.
 
 ### End of Session
 
