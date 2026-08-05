@@ -1,12 +1,13 @@
 import { type Component, computed, type Ref } from 'vue'
 import { importComponent, type ITabItemComponent, useTabItems } from '@/composables/useTabItems'
 
+export type TAssetAppraisalTab = 'NewWork' | 'FinishedWork' | (string & {})
+
 interface IUseInit {
-  tab: Ref<string>
+  tab: Ref<TAssetAppraisalTab>
   tabItems: Ref<ITabItemComponent[]>
 }
 
-export type TAssetAppraisalTab = 'NewWork' | 'FinishedWork' | (string & {})
 
 export default function useInit (): IUseInit {
   const NewWorkTab = importComponent((): Promise<Component> => import('../components/tab/NewWorkTable.vue'))
