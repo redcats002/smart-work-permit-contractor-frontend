@@ -13,14 +13,17 @@
           <FilterButton @click="open()" />
         </template>
         <div class="flex flex-col gap-5">
-          <!-- TODO: wait for design -->
           <LabelField
-            v-model="filters!.topic"
-            label="เรื่อง" />
+            label="เรื่อง">
+            <ContractTopicSelection
+              v-model="filters!.topic"
+              name="topic"
+              placeholder="เลือกเรื่อง" />
+          </LabelField>
           <LabelField
             label="โดยพนักงาน">
             <ModalEmployeeSelection
-              v-model="filters!.userId"
+              v-model="filters!.employeeId"
               placeholder="เลือกพนักงาน" />
           </LabelField>
         </div>
@@ -49,6 +52,7 @@ import LabelField from '@/components/input/LabelField.vue'
 import SearchInput from '@/components/input/SearchInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import ModalEmployeeSelection from '@/components/selection/modules/api/employee/ModalEmployeeSelection.vue'
+import ContractTopicSelection from '@/components/selection/modules/static/contract-topic/ContractTopicSelection.vue'
 
 interface IEmits {
   search: []

@@ -34,7 +34,7 @@ const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, res
 
 const filters = ref<IGetCustomerContactHistoryList>({
   topic: route?.query?.topic ? String(route.query.topic) : undefined,
-  userId: route?.query?.userId ? String(route.query.userId) : undefined
+  employeeId: route?.query?.userId ? String(route.query.userId) : undefined
 })
 const items = ref<ICustomerContactHistoryList[]>([])
 
@@ -81,7 +81,7 @@ function fetch (): void {
 
 function onClearFilters (): void {
   filters.value = {
-    userId: undefined,
+    employeeId: undefined,
     topic: undefined
   }
   reset()

@@ -1,6 +1,7 @@
 import type { TAssetStatus } from '@/enums/modules/asset/AssetStatus.enum'
 import type { TAssetType } from '@/enums/modules/asset/AssetType.enum'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
+import type { TContractTopic } from '@/enums/modules/contract/ContractTopic.enum'
 import type { TPaymentMethod } from '@/enums/modules/contract/PaymentMethod.enum'
 import type { TCustomerStatus } from '@/enums/modules/customer/CustomerStatus.enum'
 import type { TPersonalType } from '@/enums/modules/customer/PersonalType.enum'
@@ -33,8 +34,8 @@ export interface IGetCustomerPaymentHistoryList extends IBasePaginationRequest {
   paymentType?: TPaymentMethod
 }
 export interface IGetCustomerContactHistoryList extends IBasePaginationRequest {
-  userId?: string
-  topic?: string
+  employeeId?: string
+  topic?: TContractTopic
 }
 export interface IGetCustomerEstateList extends IBasePaginationRequest {
   type?: TAssetType
