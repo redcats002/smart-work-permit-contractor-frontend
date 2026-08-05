@@ -8,6 +8,7 @@
     <WorkFilter
       v-model:filters="filters"
       v-model:search="search"
+      :tab="tab"
       @clear="onClearFilters()"
       @search="onSearch()" />
     <BasePage>
@@ -56,6 +57,7 @@ onMounted((): void => {
 })
 
 watch(tab, (): void => {
+  if (tab.value === 'FinishedWork') filters.value.status = undefined
   fetch()
 })
 

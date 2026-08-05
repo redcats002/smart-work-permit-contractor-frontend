@@ -1,10 +1,10 @@
+import { z } from 'zod'
 import { schema } from '@/utils/Schema'
 import { InterestTypeEnum } from '@/enums/modules/contract/InterestType.enum'
-import { z } from 'zod'
 
 export const PreAssetWarehouseSchema = z.object({
   id: schema.id('รหัสสินทรัพย์'),
-  files: z.array(schema.media).optional().default([]),
+  files: z.array(schema.media).min(1, 'กรุณาแนบเอกสารหลักทรัพย์อย่างน้อย 1 ไฟล์'),
   locationId: schema.id('จุดจัดเก็บ')
 })
 

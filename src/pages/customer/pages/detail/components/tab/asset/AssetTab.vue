@@ -1,11 +1,11 @@
 <template>
   <div class="grid gap-2.5">
-    <EstateFilter
+    <AssetFilter
       v-model:filters="filters"
       v-model:search="search"
       @clear="onClearFilters()"
       @search="onSearch()" />
-    <EstateTable
+    <AssetTable
       v-model:pagination="pagination"
       v-model:sort-by="sortBy"
       v-model:sort-order="sortOrder"
@@ -25,8 +25,8 @@ import type { TAssetStatus } from '@/enums/modules/asset/AssetStatus.enum'
 import type { TAssetType } from '@/enums/modules/asset/AssetType.enum'
 import CustomerProvider, { type ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import usePagination from '@/composables/usePagination'
-import EstateFilter from './EstateFilter.vue'
-import EstateTable from './EstateTable.vue'
+import AssetFilter from './AssetFilter.vue'
+import AssetTable from './AssetTable.vue'
 
 const CustomerService: ICustomerProvider = new CustomerProvider()
 

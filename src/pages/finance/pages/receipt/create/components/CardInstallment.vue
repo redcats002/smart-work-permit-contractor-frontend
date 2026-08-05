@@ -7,17 +7,17 @@
           height="24"
           icon="fluent:apps-list-20-regular"
           width="24" />
-        <span class="font-bold text-[#333] text-base">งวดที่ {{ installmentNo }}</span>
+        <span class="font-bold text-font-gray text-base">งวดที่ {{ installmentNo }}</span>
       </div>
       <div class="flex items-center">
         <CheckboxInput
           :model-value="selected"
           @update:model-value="onUserCheck($event)" />
-        <div class="text-[#333] text-base">
+        <div class="text-font-gray text-base">
           เลือกชำระ
         </div>
       </div>
-      <!-- <span class="text-[#333] text-base">เลือกชำระ</span> -->
+      <!-- <span class="text-font-gray text-base">เลือกชำระ</span> -->
       <!-- <div
         class="flex items-center gap-2 cursor-pointer"
         @click="selected = !selected">
@@ -31,7 +31,7 @@
             icon="material-symbols:check"
             width="10" />
         </div>
-        <span class="text-[#333] text-base">เลือกชำระ</span>
+        <span class="text-font-gray text-base">เลือกชำระ</span>
       </div> -->
     </div>
 
@@ -42,11 +42,11 @@
     <div class="flex items-center justify-between mx-4">
       <div class="flex items-center gap-2">
         <Icon
-          class="text-[#333]"
+          class="text-font-gray"
           height="24"
           icon="material-symbols-light:find-in-page-outline-rounded"
           width="24" />
-        <span class="text-[#333] text-base">สถานะ</span>
+        <span class="text-font-gray text-base">สถานะ</span>
       </div>
       <ChipInstallmentStatus :value="(data.status as TInstallmentStatus)" />
     </div>
@@ -55,13 +55,13 @@
     <div class="flex items-center justify-between mx-4">
       <div class="flex items-center gap-2">
         <Icon
-          class="text-[#333]"
+          class="text-font-gray"
           height="24"
           icon="proicons:calendar"
           width="24" />
-        <span class="text-[#333] text-base">กำหนดชำระ</span>
+        <span class="text-font-gray text-base">กำหนดชำระ</span>
       </div>
-      <span class="text-[#333] text-base">{{ formattedDate }}</span>
+      <span class="text-font-gray text-base">{{ formattedDate }}</span>
     </div>
 
     <!-- OVERDUE: penalty + discount -->
@@ -72,13 +72,13 @@
       <div class="flex items-center justify-between mx-4">
         <div class="flex items-center gap-2">
           <Icon
-            class="text-[#333]"
+            class="text-font-gray"
             height="24"
             icon="fluent:clock-warning-24-regular"
             width="24" />
-          <span class="text-[#333] text-base">ค่าปรับ</span>
+          <span class="text-font-gray text-base">ค่าปรับ</span>
         </div>
-        <span class="text-[#333] text-base">{{ formatter.numberFormat(data.penaltyFee.outstanding) }}</span>
+        <span class="text-font-gray text-base">{{ formatter.numberFormat(data.penaltyFee.outstanding) }}</span>
       </div>
 
       <!-- Discount row -->
@@ -91,18 +91,18 @@
             class="w-4 h-4 border-2 rounded-sm flex items-center justify-center bg-white">
             <Icon
               v-if="fineDiscount"
-              class="text-white"
+              class="text-primary"
               height="10"
               icon="material-symbols:check"
               width="10" />
           </div>
-          <span class="text-base text-[#333]">ส่วนลดค่าปรับ</span>
+          <span class="text-base text-font-gray hover:text-font-gray-dark">ส่วนลดค่าปรับ</span>
         </div>
         <div class="flex-1">
           <input
             v-model.number="discountAmount"
             :disabled="!fineDiscount"
-            class="w-full h-10 border border-[#bdbdbd] rounded-md px-3 text-base text-[#333] outline-none bg-white disabled:bg-[#f2f2f2]"
+            class="w-full h-10 border border-[#bdbdbd] rounded-md px-3 text-base text-font-gray outline-none bg-white disabled:bg-[#f2f2f2]"
             placeholder="0"
             type="number">
         </div>
@@ -125,9 +125,9 @@
             v-if="paymentType === 'full'"
             class="w-2 h-2 rounded-full bg-[#BD0102]" />
         </div>
-        <span class="text-[#333] text-base">ยอดชำระเต็มจำนวน</span>
+        <span class="text-font-gray text-base">ยอดชำระเต็มจำนวน</span>
       </div>
-      <span class="text-[#333] text-base">{{ formatter.numberFormat2Decimal(fullAmount) }}</span>
+      <span class="text-font-gray text-base">{{ formatter.numberFormat2Decimal(fullAmount) }}</span>
     </div>
 
     <!-- Custom amount option -->
@@ -143,14 +143,14 @@
             v-if="paymentType === 'custom'"
             class="w-2 h-2 rounded-full bg-[#BD0102]" />
         </div>
-        <span class="text-[#333] text-base shrink-0">ระบุจำนวนเงิน</span>
+        <span class="text-font-gray text-base shrink-0">ระบุจำนวนเงิน</span>
       </div>
       <div
         class="border border-[#bdbdbd] rounded h-10 flex items-center justify-end px-4 w-[197px]"
         @click.stop>
         <input
           :value="customAmountDisplay"
-          class="w-full text-right text-base text-[#333] outline-none bg-transparent"
+          class="w-full text-right text-base text-font-gray outline-none bg-transparent"
           inputmode="decimal"
           type="text"
           @blur="onCustomAmountBlur($event)"
@@ -168,7 +168,7 @@
       <!-- Column: รายการ -->
       <div class="flex-1 flex flex-col">
         <div class="bg-white border-b-2 border-[#e0e0e0] h-12 flex items-center px-4">
-          <span class="font-bold text-[#333] text-sm">รายการ</span>
+          <span class="font-bold text-font-gray text-sm">รายการ</span>
         </div>
         <div
           v-for="(row, i) in tableRows"
@@ -177,14 +177,14 @@
           class="h-14 flex items-center px-4 border-b border-[#e0e0e0]">
           <span
             :class="i === tableRows.length - 1 ? 'font-bold' : ''"
-            class="text-[#333] text-sm">{{ row.label }}</span>
+            class="text-font-gray text-sm">{{ row.label }}</span>
         </div>
       </div>
 
       <!-- Column: ยอด -->
       <div class="flex-1 flex flex-col">
         <div class="bg-white border-b-2 border-[#e0e0e0] h-12 flex items-center justify-end px-4">
-          <span class="font-bold text-[#333] text-sm">ยอด</span>
+          <span class="font-bold text-font-gray text-sm">ยอด</span>
         </div>
         <div
           v-for="(row, i) in tableRows"
@@ -193,14 +193,14 @@
           class="h-14 flex items-center justify-end px-4 border-b border-[#e0e0e0]">
           <span
             :class="i === tableRows.length - 1 ? 'font-bold' : ''"
-            class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(row.amount) }}</span>
+            class="text-font-gray text-sm">{{ formatter.numberFormat2Decimal(row.amount) }}</span>
         </div>
       </div>
 
       <!-- Column: ชำระแล้ว -->
       <div class="flex-1 flex flex-col">
         <div class="bg-white border-b-2 border-[#e0e0e0] h-12 flex items-center justify-end px-4">
-          <span class="font-bold text-[#333] text-sm">ชำระแล้ว</span>
+          <span class="font-bold text-font-gray text-sm">ชำระแล้ว</span>
         </div>
         <div
           v-for="(row, i) in tableRows"
@@ -209,14 +209,14 @@
           class="h-14 flex items-center justify-end px-4 border-b border-[#e0e0e0]">
           <span
             :class="i === tableRows.length - 1 ? 'font-bold' : ''"
-            class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(row.paid) }}</span>
+            class="text-font-gray text-sm">{{ formatter.numberFormat2Decimal(row.paid) }}</span>
         </div>
       </div>
 
       <!-- Column: คงเหลือ -->
       <div class="flex-1 flex flex-col">
         <div class="bg-white border-b-2 border-[#e0e0e0] h-12 flex items-center justify-end px-4">
-          <span class="font-bold text-[#333] text-sm">คงเหลือ</span>
+          <span class="font-bold text-font-gray text-sm">คงเหลือ</span>
         </div>
         <div
           v-for="(row, i) in tableRows"
@@ -225,7 +225,7 @@
           class="h-14 flex items-center justify-end px-4 border-b border-[#e0e0e0]">
           <span
             :class="i === tableRows.length - 1 ? 'font-bold' : ''"
-            class="text-[#333] text-sm">{{ formatter.numberFormat2Decimal(row.remaining) }}</span>
+            class="text-font-gray text-sm">{{ formatter.numberFormat2Decimal(row.remaining) }}</span>
         </div>
       </div>
     </div>
@@ -250,7 +250,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import type { IReceiptInstallmentCreate } from '@/models/response/receipt/ReceiptRes.model'
-import { type TInstallmentStatus } from '@/enums/modules/finance/InstallmentStatus.enum'
+import { type TInstallmentStatus } from '@/enums/modules/contract/InstallmentStatus.enum'
 import CheckboxInput from '@/components/input/CheckboxInput.vue'
 import { Icon } from '@iconify/vue'
 import ChipInstallmentStatus from './ChipInstallmentStatus.vue'
@@ -294,7 +294,7 @@ const fineDiscount = ref<boolean>(false)
 const discountAmount = ref<number>(0)
 const isExpanded = ref<boolean>(false)
 
-const isOverdue = computed((): boolean => props.data.status === 'OVERDUE')
+const isOverdue = computed((): boolean => props.data?.status === 'OVERDUE')
 
 const fullAmount = computed((): number => {
   const discount = fineDiscount.value ? discountAmount.value : 0

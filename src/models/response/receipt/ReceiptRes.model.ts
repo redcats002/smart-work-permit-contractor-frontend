@@ -1,11 +1,12 @@
-import type { IEntity } from '@/models/Global.model'
+import type { IAuthor, IEntity } from '@/models/Global.model'
+import type { ICloseContractFile } from '@/models/request/close-contract/CloseContractReq.model'
+import type { TInstallmentStatus } from '@/enums/modules/contract/InstallmentStatus.enum'
 import type { TReceiptStatus } from '@/enums/modules/finance/receipt/ReceiptStatus.enum'
 import type { TReceiptType } from '@/enums/modules/finance/receipt/ReceiptType.enum'
 import type { TTitleName } from '@/enums/TitleName.enum'
 import type { IQRPaymentResponse } from '@/composables/useQRPayment'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 import type { TReceiptPaymentMethod } from './PaymentMethod.enum'
-import type { ICloseContractFile } from '@/models/request/close-contract/CloseContractReq.model'
 
 export interface IReceiptCustomer {
   id: number | null
@@ -113,29 +114,19 @@ export interface IReceiptOtherExpense {
 }
 
 export interface IReceiptById extends IEntity {
-  id: number
-  idNo: string
-  createdAt: string
   paidAt: string
   paymentType: TReceiptPaymentMethod | null
-  createBy: {
-    id: string
-    idNo: string
-    fullName: string
-  }
-  receivedBy: {
-    id: string
-    idNo: string
-    fullName: string
-  }
+  receivedBy: IAuthor
   customer: IReceiptCustomer
   branch: {
     id: string
     name: string
   }
+  createBy: IAuthor
   receiptType?: TReceiptType | null
   contracts: IReceiptDetailContract[]
   summary: IReceiptSummary
+  totalOutstandingDebt: number
   otherExpenses: IReceiptOtherExpense[]
   discountInterestMonth: number
 
@@ -177,7 +168,7 @@ export interface IReceiptFeeBreakdown {
 export interface IReceiptInstallmentCreate {
   id: number
   order: number
-  status: string
+  status: TInstallmentStatus
   dueDate: string
   penaltyFee: IReceiptFeeBreakdown
   collectionFee: IReceiptFeeBreakdown

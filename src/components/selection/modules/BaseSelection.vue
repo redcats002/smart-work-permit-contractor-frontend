@@ -15,8 +15,9 @@
     @complete="search($event?.query)" />
 </template>
 
-<script setup lang="ts" generic="T">
+<script setup lang="ts" generic="T extends TBaseModel">
 import { computed, onMounted, ref, useAttrs, watch } from 'vue'
+import type { TBaseModel } from '@/models/Global.model'
 import AutoCompleteInput from '@/components/input/AutoCompleteInput.vue'
 import MultiSelectInput from '@/components/input/MultiSelectInput.vue'
 
@@ -105,9 +106,10 @@ async function search (query?: string): Promise<void> {
 
 function isOptionDisabled (option: T): boolean {
   if (props.multiple) return false
+  if (option?.disabled) return true
   const currentValue = mapOptionToModel(option)
   const selectedValue = model.value
-  return currentValue != null && selectedValue != null && String(currentValue) === String(selectedValue)
+  return currentValue !== null && selectedValue !== null && String(currentValue) === String(selectedValue)
 }
 
 function syncInnerFromId (): void {

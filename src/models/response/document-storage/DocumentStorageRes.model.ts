@@ -3,7 +3,7 @@ import type { TAssetStatus } from '@/enums/modules/asset/AssetStatus.enum'
 import type { TAssetType } from '@/enums/modules/asset/AssetType.enum'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
 import type { TDocumentStorageMovementStatus } from '@/enums/modules/document-storage/DocumentStorageMovementStatus.enum'
-import type { TEstateStatus } from '@/enums/modules/estate/EstateStatus.enum'
+
 import type { ICustomerList } from '../customer/CustomerRes.model'
 import type { IEmployeeList } from '../employee/EmployeeRes.model'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
@@ -94,7 +94,7 @@ export interface IStockEstateList extends IEntity {
   contractIdNo: string
   estateType: TBaseModel
   storage: string
-  estateStatus: TEstateStatus
+  estateStatus: TAssetStatus
 }
 export interface IStockDocsList extends IEntity {
   docNo: string

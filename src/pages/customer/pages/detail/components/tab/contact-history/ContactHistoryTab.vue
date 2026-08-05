@@ -22,6 +22,7 @@ import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IGetCustomerContactHistoryList, IGetCustomerList } from '@/models/request/customer/CustomerReq.model'
 import type { ICustomerContactHistoryList } from '@/models/response/customer/CustomerRes.model'
+import type { TContractTopic } from '@/enums/modules/contract/ContractTopic.enum.ts'
 import CustomerProvider, { type ICustomerProvider } from '@/resources/provider/customer/Customer.provider'
 import usePagination from '@/composables/usePagination'
 import ContactHistoryFilter from './ContactHistoryFilter.vue'
@@ -33,8 +34,8 @@ const route = useRoute()
 const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
 const filters = ref<IGetCustomerContactHistoryList>({
-  topic: route?.query?.topic ? String(route.query.topic) : undefined,
-  userId: route?.query?.userId ? String(route.query.userId) : undefined
+  topic: route?.query?.topic ? route.query.topic as TContractTopic : undefined,
+  employeeId: route?.query?.userId ? String(route.query.userId) : undefined
 })
 const items = ref<ICustomerContactHistoryList[]>([])
 
@@ -81,7 +82,7 @@ function fetch (): void {
 
 function onClearFilters (): void {
   filters.value = {
-    userId: undefined,
+    employeeId: undefined,
     topic: undefined
   }
   reset()

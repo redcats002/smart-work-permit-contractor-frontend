@@ -14,7 +14,9 @@
         </template>
         <div class="space-y-4">
           <div>
-            <LabelField label="สถานะ">
+            <LabelField
+              v-if="tab==='NewWork'"
+              label="สถานะ">
               <PreContractStatusSelection
                 v-model="filters.status"
                 placeholder="ทั้งหมด"
@@ -55,6 +57,7 @@ import SearchInput from '@/components/input/SearchInput.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import AssetTypeSelection from '@/components/selection/modules/static/asset-type/AssetTypeSelection.vue'
 import PreContractStatusSelection from '@/components/selection/modules/static/pre-contract-status/PreContractStatusSelection.vue'
+import type { TAssetAppraisalTab } from '../composables/useInit'
 
 interface IEmits {
   search: []
@@ -62,7 +65,14 @@ interface IEmits {
   clear: []
 }
 
+interface IProps {
+  tab?: TAssetAppraisalTab
+}
+
 const emits = defineEmits<IEmits>()
+withDefaults(defineProps<IProps>(), {
+  tab: undefined
+})
 
 const model = defineModel<string>('search', { default: '' })
 const filters = defineModel<IWorkAppraisalFilter>('filters', {

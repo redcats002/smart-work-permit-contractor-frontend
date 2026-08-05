@@ -3,7 +3,7 @@ import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model
 import type { IAddressRequest } from '@/models/request/AddressReq.model'
 import type { TContractStatus } from '@/enums/modules/contract/ContractStatus.enum'
 import type { TInterestType } from '@/enums/modules/contract/InterestType.enum'
-import type { TPaymentStatus } from '@/enums/modules/contract/PaymentStatus.enum'
+import type { TInstallmentStatus } from '@/enums/modules/contract/InstallmentStatus.enum'
 import type { IInstallmentRow } from '@/pages/contract/pages/pre-contract-detail/composables/make-contract/useInstallment'
 import type { IBranchList } from '../branch/BranchRes.model'
 import type { IContractLoanPurposeList } from '../contract-loan-purpose/ContractLoanPurposeRes.model'
@@ -91,7 +91,7 @@ export interface IContractInstallmentItem {
 
 export interface IContractInstallmentList extends IInstallmentRow, IEntity {
   order: number
-  status: TPaymentStatus
+  status: TInstallmentStatus
   dueDate: string
   interest: number
   principal: number

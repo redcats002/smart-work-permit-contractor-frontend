@@ -1,0 +1,25 @@
+{
+  "module": "finance",
+  "items": [
+    {
+      "id": "FIN-001",
+      "type": "chore",
+      "name": "Consolidate InstallmentStatus and PaymentStatus enums",
+      "path": "features/001-installment-status-consolidation",
+      "description": "Merged finance/InstallmentStatus and contract/PaymentStatus into a single contract/InstallmentStatus enum. Deleted both source files. Updated 6 consumer files (3 models, 3 components).",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "bunx eslint on all touched files — 0 errors. bunx vue-tsc --noEmit — clean. bunx vitest run — 18 files, 238 tests passed. grep confirms zero remaining references to PaymentStatusEnum or finance/InstallmentStatus."
+    },
+    {
+      "id": "FIN-002",
+      "type": "feature",
+      "name": "Receipt print lite version",
+      "path": "features/002-receipt-print-lite",
+      "description": "Add lite version of receipt print with simplified 3-column table (เลขที่สัญญา, รายละเอียด, ราคา) and ยอดหนี้คงเหลือ summary. Original becomes full version. Default is lite; toggle on localhost via isDev.",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "bunx eslint on touched files — 0 errors. bunx vue-tsc --noEmit — clean. bunx vitest run — 238 tests passed."
+    }
+  ]
+}
