@@ -66,6 +66,7 @@
           :disabled="!filledAllRequired"
           :existed-group="existedGroup"
           :is-mortgage-form-visible="isMortgageFormVisible"
+          :sell-man="contract?.sellMan"
           :status="contract?.status"
           @cancel="onCancel()"
           @confirm-appraisal="onConfirmAppraisal()"

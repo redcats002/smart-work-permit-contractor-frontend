@@ -9,6 +9,7 @@
     <template v-else-if="isConfirmValuation">
       <ModalConfirmAppraisal
         v-model="confirmAppraisal"
+        :sell-man="sellMan"
         @submit="emits('confirmAppraisal')" />
       <ModalAssetValuation
         v-model="requestReappraisal"
@@ -74,6 +75,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { IConfirmAppraisalPayload, IRequestReappraisalPayload } from '@/models/request/pre-contract/PreContractReq.model'
+import type { IEmployeeList } from '@/models/response/employee/EmployeeRes.model'
 import type { TEvaluatorLevel } from '@/enums/modules/contract/EvaluatorLevel.enum'
 import type { TPreContractStatus } from '@/enums/modules/contract/PreContractStatus.enum'
 import CancelButton from '@/components/button/CancelButton.vue'
@@ -87,6 +89,7 @@ interface IProps {
   status?: TPreContractStatus
   isMortgageFormVisible?: boolean
   existedGroup?: TEvaluatorLevel[]
+  sellMan?: IEmployeeList
 }
 interface IEmits {
   cancel: []
@@ -102,7 +105,8 @@ interface IEmits {
 const props = withDefaults(defineProps<IProps>(), {
   status: 'DRAFT',
   isMortgageFormVisible: false,
-  existedGroup: (): TEvaluatorLevel[] => []
+  existedGroup: (): TEvaluatorLevel[] => [],
+  sellMan: undefined
 })
 const emits = defineEmits<IEmits>()
 
