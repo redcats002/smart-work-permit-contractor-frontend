@@ -90,6 +90,7 @@ function onRemove (index: number): void {
 function generateLocationTable (): void {
   loadingStore.addLoading()
   model.value.locations = buildLocationTable(model.value.prefix, model.value.options, model.value.locations)
+  console.log(model.value?.locations)
   loadingStore.removeLoading()
 }
 
