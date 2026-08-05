@@ -2,27 +2,23 @@
 
 ## Current State
 
-**Last Updated:** YYYY-MM-DD HH:MM
-**Session ID:** [optional]
-**Active Feature:** [feat-XXX - Feature Name]
+**Last Updated:** 2026-08-05
+**Active Feature:** PRE-003 + PRE-004 (done)
 
 ## Status
 
 ### What's Done
 
-- [x] [Completed item 1]
-- [x] [Completed item 2]
+- [x] PRE-003: Multi-asset rendering — `ILoanAgreementDocument.asset` → `assets[]`, both composables pass full array, template loops with `formatAssetDetail()`
+- [x] PRE-004: Asset display utility — `formatAssetDetail()` at `src/pages/contract/components/print/utils/formatAssetDetail.ts`, handles land/vehicle/apartment types
 
 ### What's In Progress
 
-- [ ] [Current work item]
-  - Details: [specific task]
-  - Blockers: [if any]
+- Nothing — all tickets done
 
 ### What's Next
 
-1. [Next action item]
-2. [Following action item]
+1. Pick next unblocked item from `docs/modules/pre-contract/feature_list.json`
 
 ## Blockers / Risks
 
@@ -37,14 +33,17 @@
 
 ## Files Modified This Session
 
-- `path/to/file1.ts` - [brief description of change]
-- `path/to/file2.ts` - [brief description of change]
+- `src/pages/contract/components/print/utils/formatAssetDetail.ts` — new utility for asset detail formatting
+- `src/pages/contract/components/print/LoanAgreementDocument.vue` — interface `asset` → `assets[]`, template loop, removed dead code
+- `src/pages/contract/pages/print/composables/useInitPrint.ts` — `asset` → `assets` array
+- `src/pages/contract/pages/pre-contract-print/composables/useInitPreContractPrint.ts` — `asset` → `assets`
+- `src/pages/contract/pages/print/pages/ContractPrintPage.vue` — view-model mapping updated
 
 ## Evidence of Completion
 
-- [ ] Tests pass: `[command and output]`
-- [ ] Type check clean: `[command and output]`
-- [ ] Manual verification: `[what was tested]`
+- [x] Tests pass: `bunx vitest run` — 18 files, 234 tests passed
+- [x] Type check clean: `bunx vue-tsc --noEmit` — no errors
+- [x] Lint clean: `bunx eslint` on 5 touched files — 0 errors
 
 ## Notes for Next Session
 

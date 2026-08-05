@@ -4,6 +4,7 @@ import type { IEmployeeById } from '@/models/response/employee/EmployeeRes.model
 export function useInitDetail (data?: Partial<IEmployeeById>): Ref<IEmployeeById> {
   return ref<IEmployeeById>({
     ...data,
+    evaluatorLevel: data?.evaluatorLevel || 'GENERIC_LEVEL',
     status: data?.status || 'INACTIVE',
     idCard: data?.idCard || '',
     title: data?.title || 'MR',

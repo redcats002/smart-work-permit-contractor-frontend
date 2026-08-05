@@ -3,7 +3,7 @@ import { schema } from '@/utils/Schema'
 import type { IPreAssetList } from '@/models/modules/pre-contract/PreAsset.model'
 import { isTitleDeedAsset } from '@/enums/modules/asset/AssetType.enum'
 import { z } from 'zod'
-import { LandSchema as FormValues } from '../../create/schema/pre-contract.schema'
+import { LandSchema as FormValues } from '../../../create/schema/pre-contract.schema'
 
 function numericField (message: string, required: boolean = false) {
   return z.preprocess(

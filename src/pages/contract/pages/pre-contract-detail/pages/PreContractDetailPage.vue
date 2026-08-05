@@ -19,7 +19,8 @@
       <PreContractDetailMenuAction
         :status="contract?.status"
         @cancel="onCancel()"
-        @edit="onEdit()" />
+        @edit="onEdit()"
+        @print="onPrint()" />
     </BaseTop>
     <BasePage>
       <div class="flex flex-col gap-5 pb-10">
@@ -66,6 +67,7 @@
           :disabled="!filledAllRequired"
           :existed-group="existedGroup"
           :is-mortgage-form-visible="isMortgageFormVisible"
+          :sell-man="contract?.sellMan"
           :status="contract?.status"
           @cancel="onCancel()"
           @confirm-appraisal="onConfirmAppraisal()"
@@ -90,18 +92,18 @@ import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import AppraisalSection from '../components/appraisal/AppraisalSection.vue'
 import AssetSection from '../components/make-contract/AssetSection.vue'
-import InstallmentSection from '../components/make-contract/InstallmentSection.vue'
 import InstallmentPendingReviewSection from '../components/make-contract/InstallmentPendingReviewSection.vue'
-import ModalAssetDetail from '../components/pre-asset/ModalAssetDetail.vue'
+import InstallmentSection from '../components/make-contract/InstallmentSection.vue'
 import MortgageForm from '../components/mortgage/MortgageForm.vue'
+import ModalAssetDetail from '../components/pre-asset/ModalAssetDetail.vue'
 import PreContractAction from '../components/PreContractAction.vue'
 import PreContractDetailMenuAction from '../components/PreContractDetailMenuAction.vue'
 import PreContractInformation from '../components/PreContractInformation.vue'
 import { useAppraisal } from '../composables/appraisal/useAppraisal'
-import { useInitDetail } from '../composables/useInitDetail'
 import { useMakeContract } from '../composables/make-contract/useMakeContract'
 import { useMortgage } from '../composables/mortgage/useMortgage'
 import { usePreAsset } from '../composables/pre-asset/usePreAsset'
+import { useInitDetail } from '../composables/useInitDetail'
 
 const {
   contract,
@@ -117,6 +119,7 @@ const {
   openModal,
   onEdit,
   onCancel,
+  onPrint,
   useFetch,
   fetch
 } = useInitDetail()

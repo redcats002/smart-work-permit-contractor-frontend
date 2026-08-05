@@ -8,7 +8,7 @@
       #activator="{ open }">
       <ConfirmButton
         label="ยืนยันราคาประเมิน"
-        @click="open()" />
+        @click="onActivatorClick(open)" />
     </template>
     <template #default="{ close }">
       <Form
@@ -39,29 +39,51 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { toast } from '@/plugins/toast'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { IConfirmAppraisalPayload } from '@/models/request/pre-contract/PreContractReq.model'
+import type { IEmployeeList } from '@/models/response/employee/EmployeeRes.model'
+import { EmployeeRoleEnum } from '@/enums/modules/employee/EmployeeRole.enum'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import FormAction from '@/components/button/FormAction.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
+import { useAuthStore } from '@/stores/Auth'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { ConfirmAppraisalSchema, useFormInitialValues } from '../../schema/confirm-appraisal.schema'
 
-interface IProps {}
+interface IProps {
+  sellMan?: IEmployeeList
+}
 interface IEmits {
   submit: []
 }
 
-withDefaults(defineProps<IProps>(), {
+const props = withDefaults(defineProps<IProps>(), {
+  sellMan: undefined
 })
 const emits = defineEmits<IEmits>()
 
 const form = defineModel<IConfirmAppraisalPayload>({ required: true })
 const visible = defineModel<boolean>('visible', { default: false })
 const resolver = zodResolver(ConfirmAppraisalSchema)
+const authStore = useAuthStore()
+
+const canConfirm = computed((): boolean => {
+  return props.sellMan?.id === authStore.user.id
+    || authStore.user.role === EmployeeRoleEnum.SUPER_ADMIN
+    || authStore.user.role === EmployeeRoleEnum.ADMIN
+})
+
+function onActivatorClick (open: () => void): void {
+  if (!canConfirm.value) {
+    toast.warn('คุณไม่ใช่พนักงานประเมินของสัญญานี้ ไม่สามารถยืนยันราคาประเมินได้')
+    return
+  }
+  open()
+}
 
 async function onSubmit (event: FormSubmitEvent, close: () => void): Promise<void> {
   if (!event.valid) {

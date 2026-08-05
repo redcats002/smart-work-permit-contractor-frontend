@@ -8,10 +8,10 @@ import type { IPreContractById } from '@/models/response/pre-contract/PreContrac
 import type { TEvaluatorLevel } from '@/enums/modules/contract/EvaluatorLevel.enum'
 import PreContractProvider, { type IPreContractProvider } from '@/resources/provider/pre-contract/PreContract.provider'
 import { getAssetCategory, type TAssetCategory } from '../../create/schema/pre-contract.schema'
-import { readyForApartmentAppraisal } from '../schema/apartment.schema'
-import { readyForAppraisal as readyForLandAppraisal } from '../schema/land.schema'
 import type { MakeContractFormValues, PreAssetWarehouseFormValues } from '../schema/make-contract.schema'
-import { readyForAppraisal as readyForVehicleAppraisal } from '../schema/vehicle.schema'
+import { readyForApartmentAppraisal } from '../schema/pre-asset/apartment.schema'
+import { readyForAppraisal as readyForLandAppraisal } from '../schema/pre-asset/land.schema'
+import { readyForAppraisal as readyForVehicleAppraisal } from '../schema/pre-asset/vehicle.schema'
 
 export interface IUseInitDetail {
   contractId: ComputedRef<string | string[]>
@@ -25,6 +25,7 @@ export interface IUseInitDetail {
   existedGroup: ComputedRef<TEvaluatorLevel[]>
   onEdit(): void
   onCancel(): void
+  onPrint(): void
   onActiveAsset(index?: number): void
   openModal(asset: IPreAssetList): void
   useFetch(): Promise<void>
@@ -86,6 +87,10 @@ export function useInitDetail (): IUseInitDetail {
     router.push({ name: 'PreContractEditPage', params: { id: contractId.value } })
   }
 
+  function onPrint (): void {
+    router.push({ name: 'PreContractPrintPage', params: { id: contractId.value } })
+  }
+
 
   function onCancel (): void {
     handleLoading(useCancel)
@@ -133,6 +138,7 @@ export function useInitDetail (): IUseInitDetail {
     onActiveAsset,
     onCancel,
     onEdit,
+    onPrint,
     openModal
   }
 }

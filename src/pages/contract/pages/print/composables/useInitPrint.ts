@@ -5,7 +5,7 @@ import ContractProvider from '@/resources/provider/contract/Contract.provider'
 
 interface IUseInitPrint {
   contract: Ref<IContractById | null>
-  asset: Ref<IContractAssetList | null>
+  assets: Ref<IContractAssetList[]>
   fetch: () => Promise<void>
 }
 
@@ -13,7 +13,7 @@ const ContractService: IContractProvider = new ContractProvider()
 
 export function useInitPrint (id: number): IUseInitPrint {
   const contract = ref<IContractById | null>(null)
-  const asset = ref<IContractAssetList | null>(null)
+  const assets = ref<IContractAssetList[]>([])
 
   async function fetch (): Promise<void> {
     const [contractRes, assetRes] = await Promise.all([
@@ -21,8 +21,8 @@ export function useInitPrint (id: number): IUseInitPrint {
       ContractService.getContractAssets(id)
     ])
     contract.value = contractRes.data
-    asset.value = assetRes.data[0] ?? null
+    assets.value = assetRes.data
   }
 
-  return { contract, asset, fetch }
+  return { contract, assets, fetch }
 }

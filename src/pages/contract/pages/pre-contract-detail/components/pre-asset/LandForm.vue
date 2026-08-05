@@ -209,7 +209,7 @@ import { LandAssetTypeItems, type TAssetType } from '@/enums/modules/asset/Asset
 import AddressFieldInput, { type IAddressData } from '@/components/input/AddressFieldInput.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import SelectInput from '@/components/input/SelectInput.vue'
-import type { ModalLandFormValues } from '../../schema/land.schema'
+import type { ModalLandFormValues } from '../../schema/pre-asset/land.schema'
 
 interface IProps {
   form?: IFormState

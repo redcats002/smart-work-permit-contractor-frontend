@@ -116,7 +116,7 @@ import { type TAssetType, VehicleAssetTypeItems } from '@/enums/modules/asset/As
 import LabelField from '@/components/input/LabelField.vue'
 import SelectInput from '@/components/input/SelectInput.vue'
 import ProvinceSelection from '@/components/selection/modules/static/province/ProvinceSelection.vue'
-import type { ModalVehicleFormValues } from '../../schema/vehicle.schema'
+import type { ModalVehicleFormValues } from '../../schema/pre-asset/vehicle.schema'
 
 interface IProps {
   form?: IFormState
