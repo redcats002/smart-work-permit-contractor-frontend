@@ -18,6 +18,7 @@ export default function useDetail (): IUseDetail {
   const form = ref<IReceiptById>({
     id: 0,
     idNo: '',
+    totalOutstandingDebt: 0,
     createdAt: '',
     paidAt: '',
     paymentType: null,
@@ -25,11 +26,15 @@ export default function useDetail (): IUseDetail {
     createBy: {
       id: '',
       idNo: '',
+      firstName: '',
+      lastName: '',
       fullName: ''
     },
     receivedBy: {
       id: '',
       idNo: '',
+      firstName: '',
+      lastName: '',
       fullName: ''
     },
     customer: {

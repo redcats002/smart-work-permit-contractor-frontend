@@ -1,4 +1,4 @@
-import type { IEntity } from '@/models/Global.model'
+import type { IAuthor, IEntity } from '@/models/Global.model'
 import type { ICloseContractFile } from '@/models/request/close-contract/CloseContractReq.model'
 import type { TInstallmentStatus } from '@/enums/modules/contract/InstallmentStatus.enum'
 import type { TReceiptStatus } from '@/enums/modules/finance/receipt/ReceiptStatus.enum'
@@ -114,26 +114,15 @@ export interface IReceiptOtherExpense {
 }
 
 export interface IReceiptById extends IEntity {
-  id: number
-  idNo: string
-  createdAt: string
   paidAt: string
   paymentType: TReceiptPaymentMethod | null
-  createBy: {
-    id: string
-    idNo: string
-    fullName: string
-  }
-  receivedBy: {
-    id: string
-    idNo: string
-    fullName: string
-  }
+  receivedBy: IAuthor
   customer: IReceiptCustomer
   branch: {
     id: string
     name: string
   }
+  createBy: IAuthor
   receiptType?: TReceiptType | null
   contracts: IReceiptDetailContract[]
   summary: IReceiptSummary

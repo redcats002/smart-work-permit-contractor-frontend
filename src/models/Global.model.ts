@@ -1,7 +1,9 @@
 export interface IAuthor {
   id: number | string | null
+  idNo?: string | null
   firstName: string
   lastName: string
+  fullName?: string
 }
 
 export interface IEntity {
