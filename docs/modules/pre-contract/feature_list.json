@@ -40,6 +40,16 @@
       "dependencies": [],
       "status": "done",
       "evidence": "bunx eslint on all touched files — 0 errors. bunx vue-tsc --noEmit — no errors. bunx vitest run — 18 files, 234 tests passed."
+    },
+    {
+      "id": "PRE-005",
+      "type": "bug",
+      "name": "Require uploaded files for every make-contract asset",
+      "path": "issues/005-asset-warehouse-file-required-validation",
+      "description": "In AssetWarehouseForm.vue, block pre-make-contract submission when any preAssets[i].files is empty. Keep the current tabbed asset UX and wire the validation to the indexed field so the form can target the failing asset.",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "bunx vitest src/tests/schema/make-contract.schema.test.ts --run — 6 tests passed. bunx eslint on AssetWarehouseForm.vue, make-contract.schema.ts, make-contract.schema.test.ts — 0 errors. bunx vue-tsc --noEmit — no errors."
     }
   ]
 }
