@@ -94,3 +94,28 @@ Updated `manualValidateLocation()` to validate both `files` and `locationId`:
 ### Files modified
 
 - `src/pages/contract/pages/pre-contract-detail/components/make-contract/AssetWarehouseForm.vue` (manualValidateLocation function updated)
+
+## 2026-08-05 (scroll-to-error enhancement)
+
+**Status:** done
+
+### Enhancement added
+
+Added `scrollToFirstError(errors.value)` call in `manualValidateLocation()` when validation fails. This ensures the form scrolls to the first error field (either files or locationId) for better UX, so users see the failing field immediately instead of needing to scroll manually.
+
+### Change
+
+```ts
+if (errors.value.length) {
+  scrollToFirstError(errors.value)  // scroll to first error
+  errors.value.forEach((error: Record<string, any>): void => {
+    toast.error(error.message)
+  })
+  return false
+}
+```
+
+### Verification
+
+- `bunx vitest src/tests/schema/make-contract.schema.test.ts --run` — 6 tests pass
+- `bunx eslint` — 0 errors on AssetWarehouseForm.vue
