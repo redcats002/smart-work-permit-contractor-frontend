@@ -1,16 +1,44 @@
 # Module: pre-contract
 
-Scoped harness context for the pre-contract detail flow. Read this before touching
-`src/pages/contract/pages/pre-contract-detail/**`. Update it in the same commit as any
-change to routing, ownership rules, or the status state machine below — see
-`AGENTS.md`'s module-map maintenance rule at the repo root, which this file extends.
+Module-level invariants for the pre-contract detail flow. Read this before touching
+`src/pages/contract/pages/pre-contract-detail/**`.
+
+Facts that hold across all work items live here. Anything specific to one feature, bug, or
+chore lives in that work item's own folder — see [Harness layout](#harness-layout).
+
+Update this file in the same commit as any change to routing, the status state machine, or
+module-wide data flow — this extends the module-map maintenance rule in root `AGENTS.md`.
+
+## Harness layout
+
+```
+docs/modules/pre-contract/
+├── context.md            ← you are here (module invariants)
+├── feature_list.json     ← registry of every work item, all types
+└── <type>/<nnn-slug>/
+    ├── context.md        ← what this item is, the rule it encodes, its data flow
+    ├── progress.md       ← dated session log for this item only
+    └── tickets/          ← ticket write-ups (PRE-nnn.md)
+```
+
+`<type>` is one of `features/`, `issues/`, `chores/`. Only the types that have work are
+created — add `issues/` or `chores/` when the first such item lands, not before.
+
+**Startup path for an agent:**
+
+1. Read this file (module invariants).
+2. Read `feature_list.json` — find the item whose `status` is not `done`.
+3. Read only that item's `context.md` + `progress.md`. Do not load sibling items.
+
+`<nnn>` is a zero-padded sequence shared across all types, so IDs never collide.
+Ticket files use the `PRE-<nnn>` prefix.
 
 ## Location
 
 - Routes: nested under `src/router/modules/contract/index.ts` (`/contract/pre-contract/*`), no dedicated router module.
 - Pages: `src/pages/contract/pages/pre-contract-detail/`
   - `pages/PreContractDetailPage.vue` — entry page, owns `useInitDetail`/`useAppraisal`/`useMakeContract`/`useMortgage`/`usePreAsset` composables.
-  - `components/` — `PreContractAction.vue` (status-driven action buttons), `PreContractInformation.vue`, `appraisal/`, `make-contract/`, `mortgage/`, `pre-asset/`.
+  - `components/` — `PreContractAction.vue` (status-driven action buttons), `PreContractInformation.vue`, `PreContractDetailMenuAction.vue`, `appraisal/`, `make-contract/`, `mortgage/`, `pre-asset/`.
   - `schema/` — zod schemas for each modal form (e.g. `confirm-appraisal.schema.ts`).
 - Providers: `pre-contract`, `contract-asset`, `contract-document`, `contract-history`.
 - Models: `src/models/response/pre-contract/PreContractRes.model.ts` — `sellMan: IEmployeeList` is required (non-optional) on this response.
@@ -27,28 +55,12 @@ Each status maps to one action: request appraisal, confirm appraisal / re-apprai
 submit mortgage, confirm mortgage, create contract, confirm contract creation. `cancel`
 is available from any non-`CANCELLED` status.
 
-## Business rule — appraisal confirmation ownership
+## Module-wide conventions
 
-**Rule:** the "ยืนยันราคาประเมิน" (confirm appraisal) action in
-`components/appraisal/ModalConfirmAppraisal.vue` may only proceed if the current user is
-the contract's assigned appraiser (`sellMan`) or holds an elevated role.
-
-**Guard:**
-```ts
-props.sellMan?.id === authStore.user.id
-  || authStore.user.role === EmployeeRoleEnum.SUPER_ADMIN
-  || authStore.user.role === EmployeeRoleEnum.ADMIN
-```
-
-**Enforcement point:** the modal's `activator` click handler (`onActivatorClick`), before
-the modal opens — not inside `onSubmit`. This stops an unauthorized user before they
-invest time filling the form, and keeps the check colocated with the button that triggers it.
-
-**On failure:** `toast.warn('คุณไม่ใช่พนักงานประเมินของสัญญานี้ ไม่สามารถยืนยันราคาประเมินได้')`, modal does not open.
-
-**Data flow:** `contract.sellMan` (`PreContractDetailPage.vue`) → `PreContractAction`
-prop `sellMan` → `ModalConfirmAppraisal` prop `sellMan`. If a future refactor changes
-where `sellMan` lives on the response, this chain must be re-wired and this doc updated.
-
-**This is a client-side UX guard, not a security boundary.** The API must independently
-enforce the same ownership check server-side; do not treat the toast as the authoritative check.
+- **Client-side guards are UX, not security.** Any ownership or permission check in this
+  module exists to stop a user before they waste effort. The API must enforce the same rule
+  independently. Never treat a toast as the authoritative check.
+- **Roles come from `EmployeeRoleEnum`** (`src/enums/modules/employee/EmployeeRole.enum.ts`),
+  never string literals.
+- **Auth access** is `const authStore = useAuthStore()` at setup scope, then
+  `authStore.user.x` — do not destructure, it drops reactivity.

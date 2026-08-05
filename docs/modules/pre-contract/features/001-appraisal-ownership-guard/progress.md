@@ -1,8 +1,8 @@
-# pre-contract Module — Session Progress Log
+# PRE-001 — Progress Log
 
 ## 2026-08-05
 
-**Active feature:** pre-contract-001 — appraisal confirmation ownership guard
+**Status:** done · commit `fb0b293f`
 
 ### What's done
 
@@ -16,19 +16,28 @@
 - [x] Used `EmployeeRoleEnum.SUPER_ADMIN` / `.ADMIN` instead of string literals.
 - [x] Lint clean, no new type errors in the three touched files.
 
-### What's next
+### Decisions
 
-- No follow-up required for this feature. If another modal needs the same
-  ownership-check pattern, extract `canConfirm` into a composable at that point —
-  don't pre-extract for a single caller.
+- **Guard at the activator, not in `onSubmit`.** Blocking after the form is filled wastes
+  the user's effort; the button is also where the rule is most legible.
+- **No permissions composable extracted.** Single caller — extract when a second modal
+  needs the same check, not before.
 
-## Files modified this session
+### Verification
+
+| Check | Command | Result |
+|---|---|---|
+| Lint | `bunx eslint <3 touched files>` | 0 errors |
+| Types | `bunx vue-tsc --noEmit` | no errors in touched files |
+
+## Files modified
 
 - `src/pages/contract/pages/pre-contract-detail/components/appraisal/ModalConfirmAppraisal.vue`
 - `src/pages/contract/pages/pre-contract-detail/components/PreContractAction.vue`
 - `src/pages/contract/pages/pre-contract-detail/pages/PreContractDetailPage.vue`
 
-## Notes for next session
+## Next
 
-Guard is a UX-layer check only — confirm the API enforces the same ownership rule
-server-side. Not verified in this session (backend out of scope).
+Nothing outstanding for this item. Open question left for whoever owns the API:
+confirm the backend enforces the same ownership rule server-side (not verified here,
+backend was out of scope).

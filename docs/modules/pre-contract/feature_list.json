@@ -1,12 +1,15 @@
 {
-  "features": [
+  "module": "pre-contract",
+  "items": [
     {
-      "id": "pre-contract-001",
+      "id": "PRE-001",
+      "type": "feature",
       "name": "Restrict appraisal confirmation to assigned sellMan or admin roles",
+      "path": "features/001-appraisal-ownership-guard",
       "description": "ModalConfirmAppraisal.vue only allows ยืนยันราคาประเมิน when sellMan.id === authStore.user.id or role is SUPER_ADMIN/ADMIN; otherwise toast.warn blocks the modal from opening.",
       "dependencies": [],
       "status": "done",
-      "evidence": "bunx eslint on ModalConfirmAppraisal.vue, PreContractAction.vue, PreContractDetailPage.vue — 0 errors; bunx vue-tsc --noEmit — no errors in touched files."
+      "evidence": "bunx eslint on ModalConfirmAppraisal.vue, PreContractAction.vue, PreContractDetailPage.vue — 0 errors; bunx vue-tsc --noEmit — no errors in touched files. Committed as fb0b293f."
     }
   ]
 }
