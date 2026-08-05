@@ -238,6 +238,7 @@ function onInstallmentSelect (contractIdx: number, installmentId: number, isSele
 async function fetchInstallments (id: number): Promise<void> {
   const { data } = await ReceiptService.getInstallmentsByCustomerId(id)
   customer.value = useInitDetail({
+    ...data.customer,
     id: data.customer.id,
     idNo: data.customer.idNo,
     idCard: data.customer.idCard,
