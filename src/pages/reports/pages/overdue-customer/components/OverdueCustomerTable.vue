@@ -50,7 +50,7 @@ const columns = ref<IColumn<IOverdueCustomerList>[]>([
   { field: 'outstandingPrincipal', header: 'เงินต้นคงเหลือ', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IOverdueCustomerList): string => formatter.numberFormat2Decimal(e.outstandingPrincipal) },
   { field: 'lastPaidAt', header: 'วันที่ชำระล่าสุด', align: 'left', style: { width: '120px', minWidth: '120px' }, width: 130, value: (e: IOverdueCustomerList): string => dayjs.formatDate(e.lastPaidAt) },
   { field: 'overdueOutstandingAmount', header: 'ยอดค้างชำระ', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 120, value: (e: IOverdueCustomerList): string => formatter.numberFormat2Decimal(e.overdueOutstandingAmount) },
-  { field: 'overdueOutstandingCount', header: 'งวดค้าง', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 90, value: (e: IOverdueCustomerList): string => formatter.numberFormat2Decimal(e.overdueOutstandingCount) }
+  { field: 'overdueOutstandingCount', header: 'งวดค้าง', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 90, value: (e: IOverdueCustomerList): string => formatter.numberFormatNoDecimal(e.overdueOutstandingCount) }
 ])
 
 const itemsFooter = computed((): IFooter[] => {
@@ -61,7 +61,7 @@ const itemsFooter = computed((): IFooter[] => {
     amountPaid: { value: formatter.numberFormat2Decimal(props.summary?.amountPaid || 0), footerClass: 'text-right' },
     outstandingPrincipal: { value: formatter.numberFormat2Decimal(props.summary?.outstandingPrincipal || 0), footerClass: 'text-right' },
     overdueOutstandingAmount: { value: formatter.numberFormat2Decimal(props.summary?.overdueOutstandingAmount || 0), footerClass: 'text-right' },
-    overdueOutstandingCount: { value: formatter.numberFormat2Decimal(props.summary?.overdueOutstandingCount || 0), footerClass: 'text-right' }
+    overdueOutstandingCount: { value: formatter.numberFormatNoDecimal(props.summary?.overdueOutstandingCount || 0), footerClass: 'text-right' }
   }
   return generateTableFooter(columns.value, props.summary, footerConfig)
 })
