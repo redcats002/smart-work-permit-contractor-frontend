@@ -1,10 +1,7 @@
 <template>
   <BaseContainer>
     <template #topright>
-      <EmployeeDetailMenuAction
-        @delete="emits('delete')"
-        @edit="emits('edit')"
-        @reset-password="emits('resetPassword')" />
+      <slot name="menu-action" />
     </template>
     <div class="flex items-start gap-4">
       <BaseImage
@@ -30,6 +27,7 @@ import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import type { IBranchList } from '@/models/response/branch/BranchRes.model'
 import type { IEmployeeById } from '@/models/response/employee/EmployeeRes.model'
+import { formatTitle as formatEvaluatorLevelTitle } from '@/enums/modules/contract/EvaluatorLevel.enum.ts'
 import { formatTitle } from '@/enums/modules/employee/EmployeeRole.enum'
 import { formatTitle as formatManagementPositionTitle } from '@/enums/modules/management-structure/ManagementPosition.enum'
 import BaseContainer from '@/components/base/BaseContainer.vue'
@@ -37,19 +35,12 @@ import BaseImage from '@/components/base/BaseImage.vue'
 import CitizenId from '@/components/display/CitizenId.vue'
 import DisplayList, { type IDisplayList } from '@/components/display/DisplayList.vue'
 import ChipEmployeeStatus from '../../list/components/ChipEmployeeStatus.vue'
-import EmployeeDetailMenuAction from './EmployeeDetailMenuAction.vue'
 
 interface IProps {
   data: IEmployeeById
 }
-interface IEmits {
-  resetPassword: []
-  edit: []
-  delete: []
-}
 
 const props = defineProps<IProps>()
-const emits = defineEmits<IEmits>()
 
 const dayjs = useDayjs()
 
@@ -72,7 +63,8 @@ const items = computed((): IDisplayList[] => {
     { label: 'เบอร์โทร', key: 'phoneNumber', value: props.data.phoneNumber },
     { label: 'ตำแหน่ง', key: 'role', value: formatTitle(props.data.role) },
     ...isSupervisor ? supervisorLineItems : [],
-    { label: 'สาขา', key: 'branches', value: props.data.branches?.map((e: IBranchList): string => e?.name || '-').join(', ') }
+    { label: 'สาขา', key: 'branches', value: props.data.branches?.map((e: IBranchList): string => e?.name || '-').join(', ') },
+    { label: 'กลุ่มผู้ตีราคา', key: 'evaluatorLevel', value: formatEvaluatorLevelTitle(props.data?.evaluatorLevel) || '-' }
   ]
 })
 
