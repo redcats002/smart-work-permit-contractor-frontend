@@ -7,9 +7,11 @@
     </BaseTop>
     <BasePage>
       <div class="grid grid-cols-1 gap-2.5">
-        <InformationDetail
-          :data="employee"
-          @edit="onEdit()" />
+        <InformationDetail :data="employee">
+          <template #menu-action>
+            <ProfileDetailMenuAction @edit="onEdit()" />
+          </template>
+        </InformationDetail>
       </div>
     </BasePage>
   </section>
@@ -27,7 +29,8 @@ import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
-import InformationDetail from '../components/InformationDetail.vue'
+import InformationDetail from '@/pages/employee/pages/detail/components/InformationDetail.vue'
+import ProfileDetailMenuAction from '../components/ProfileDetailMenuAction.vue'
 import { useInitDetail } from '../composables/useInitDetail'
 
 const router = useRouter()

@@ -100,11 +100,16 @@
         </div>
         <div class="flex-1">
           <input
-            v-model.number="discountAmount"
             :disabled="!fineDiscount"
+            :value="discountAmountDisplay"
             class="w-full h-10 border border-[#bdbdbd] rounded-md px-3 text-base text-font-gray outline-none bg-white disabled:bg-[#f2f2f2]"
+            inputmode="decimal"
             placeholder="0"
-            type="number">
+            type="text"
+            @blur="discountAmountHandlers.onBlur($event)"
+            @focus="discountAmountHandlers.onFocus()"
+            @input="discountAmountHandlers.onInput($event)"
+            @keydown="discountAmountHandlers.onKeydown($event)">
         </div>
       </div>
     </template>
@@ -153,11 +158,11 @@
           class="w-full text-right text-base text-font-gray outline-none bg-transparent"
           inputmode="decimal"
           type="text"
-          @blur="onCustomAmountBlur($event)"
+          @blur="customAmountHandlers.onBlur($event)"
           @click="paymentType = 'custom'"
-          @focus="onCustomAmountFocus()"
-          @input="onCustomAmountInput($event)"
-          @keydown="onCustomAmountKeydown($event)">
+          @focus="customAmountHandlers.onFocus()"
+          @input="customAmountHandlers.onInput($event)"
+          @keydown="customAmountHandlers.onKeydown($event)">
       </div>
     </div>
 
@@ -246,8 +251,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, type Ref, watch } from 'vue'
 import { useDayjs } from '@/utils/Dayjs'
+import { formatTwoDecimalDisplay, isAllowedTwoDecimalKeydown, parseTwoDecimalInput, toTwoDecimalEditableValue } from '@/utils/TwoDecimalInput'
 import { formatter } from '@/utils/Formatter'
 import type { IReceiptInstallmentCreate } from '@/models/response/receipt/ReceiptRes.model'
 import { type TInstallmentStatus } from '@/enums/modules/contract/InstallmentStatus.enum'
@@ -292,7 +298,10 @@ const customAmountDisplay = ref<string>('')
 const isEditingCustomAmount = ref<boolean>(false)
 const fineDiscount = ref<boolean>(false)
 const discountAmount = ref<number>(0)
+const discountAmountDisplay = ref<string>('')
+const isEditingDiscountAmount = ref<boolean>(false)
 const isExpanded = ref<boolean>(false)
+const maxDiscountAmount = computed((): number => props.data.penaltyFee.outstanding)
 
 const isOverdue = computed((): boolean => props.data?.status === 'OVERDUE')
 
@@ -354,45 +363,60 @@ const currentDiscount = computed((): number => {
 
 watch(customAmount, (val: number): void => {
   if (!isEditingCustomAmount.value) {
-    customAmountDisplay.value = formatter.numberFormat2Decimal(val)
+    customAmountDisplay.value = formatTwoDecimalDisplay(val)
   }
 })
 
-function onCustomAmountFocus (): void {
-  isEditingCustomAmount.value = true
-  const val = customAmount.value
-  customAmountDisplay.value = val != null && !isNaN(val) ? String(val) : ''
-}
-
-function onCustomAmountKeydown (event: KeyboardEvent): void {
-  if (event.key === 'Enter') {
-    ;(event.target as HTMLInputElement).blur()
-    return
+watch(discountAmount, (val: number): void => {
+  if (!isEditingDiscountAmount.value) {
+    discountAmountDisplay.value = formatTwoDecimalDisplay(val)
   }
-  const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End']
-  if (allowed.includes(event.key)) return
-  if (event.key === '.') {
-    if ((event.target as HTMLInputElement).value.includes('.')) event.preventDefault()
-    return
+})
+
+interface ITwoDecimalHandlers {
+  onBlur: (event: Event) => void
+  onFocus: () => void
+  onInput: (event: Event) => void
+  onKeydown: (event: KeyboardEvent) => void
+}
+
+function createTwoDecimalHandlers (
+  value: Ref<number>,
+  display: Ref<string>,
+  isEditing: Ref<boolean>,
+  max?: Ref<number>
+): ITwoDecimalHandlers {
+  function onFocus (): void {
+    isEditing.value = true
+    display.value = toTwoDecimalEditableValue(value.value)
   }
-  if (!(/^[0-9]$/).test(event.key)) event.preventDefault()
+
+  function onInput (event: Event): void {
+    const { raw, value: parsedValue } = parseTwoDecimalInput((event.target as HTMLInputElement).value, max?.value)
+    display.value = raw
+    value.value = parsedValue
+  }
+
+  function onBlur (event: Event): void {
+    isEditing.value = false
+    const formatted = formatTwoDecimalDisplay(value.value)
+    display.value = formatted
+    ;(event.target as HTMLInputElement).value = formatted
+  }
+
+  function onKeydown (event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      ;(event.target as HTMLInputElement).blur()
+      return
+    }
+    if (!isAllowedTwoDecimalKeydown(event)) event.preventDefault()
+  }
+
+  return { onBlur, onFocus, onInput, onKeydown }
 }
 
-function onCustomAmountInput (event: Event): void {
-  const input = event.target as HTMLInputElement
-  let raw = input.value.replace(/[^0-9.]/g, '')
-  const parts = raw.split('.')
-  if (parts.length > 2) raw = parts[0] + '.' + parts.slice(1).join('')
-  customAmountDisplay.value = raw
-  customAmount.value = parseFloat(raw) || 0
-}
-
-function onCustomAmountBlur (event: Event): void {
-  isEditingCustomAmount.value = false
-  const formatted = formatter.numberFormat2Decimal(customAmount.value)
-  customAmountDisplay.value = formatted
-  ;(event.target as HTMLInputElement).value = formatted
-}
+const customAmountHandlers = createTwoDecimalHandlers(customAmount, customAmountDisplay, isEditingCustomAmount)
+const discountAmountHandlers = createTwoDecimalHandlers(discountAmount, discountAmountDisplay, isEditingDiscountAmount, maxDiscountAmount)
 
 watch((): number | undefined => props.selectAllTick, (): void => {
   if (props.selectAll !== undefined) selected.value = props.selectAll
@@ -414,6 +438,8 @@ watch(currentDiscount, (val: number): void => {
 onMounted((): void => {
   selected.value = props.initialSelected ?? false
   customAmount.value = props.data.total.outstanding
+  customAmountDisplay.value = formatTwoDecimalDisplay(customAmount.value)
+  discountAmountDisplay.value = formatTwoDecimalDisplay(discountAmount.value)
   emits('change', { amount: currentAmount.value, discountPenaltyFee: currentDiscount.value })
   if (props.initialSelected) emits('select', true)
 })

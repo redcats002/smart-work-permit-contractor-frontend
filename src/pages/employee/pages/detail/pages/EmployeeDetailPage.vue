@@ -7,11 +7,14 @@
     </BaseTop>
     <BasePage>
       <div class="grid grid-cols-1 gap-2.5">
-        <InformationDetail
-          :data="employee"
-          @delete="onDelete()"
-          @edit="onEdit()"
-          @reset-password="onResetPassword()" />
+        <InformationDetail :data="employee">
+          <template #menu-action>
+            <EmployeeDetailMenuAction
+              @delete="onDelete()"
+              @edit="onEdit()"
+              @reset-password="onResetPassword()" />
+          </template>
+        </InformationDetail>
       </div>
     </BasePage>
   </section>
@@ -32,6 +35,7 @@ import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import Spacer from '@/components/flex/Spacer.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
+import EmployeeDetailMenuAction from '../components/EmployeeDetailMenuAction.vue'
 import InformationDetail from '../components/InformationDetail.vue'
 import { useInitDetail } from '../composables/useInitDetail'
 

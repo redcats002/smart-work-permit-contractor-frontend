@@ -1,0 +1,15 @@
+{
+  "module": "employee",
+  "items": [
+    {
+      "id": "EMP-001",
+      "type": "chore",
+      "name": "Unify InformationDetail.vue between employee and profile",
+      "path": "features/001-shared-information-detail",
+      "description": "src/pages/setting/pages/profile/pages/detail/components/InformationDetail.vue duplicates src/pages/employee/pages/detail/components/InformationDetail.vue (same IEmployeeById detail list; profile's is a field subset with only the evaluatorLevel/managementPosition rows and reset-password/delete menu actions removed). Make the employee version canonical: extract its menu-action area to a slot, delete profile's copy, have ProfileDetailPage.vue consume the employee component with its own menu slot content.",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "bunx eslint on all 3 touched files — 0 errors. bunx vue-tsc --noEmit — clean. bunx vitest run — 20 files, 252 tests passed. grep confirms no remaining importer of deleted profile/InformationDetail.vue."
+    }
+  ]
+}

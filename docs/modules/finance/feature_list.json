@@ -20,6 +20,16 @@
       "dependencies": [],
       "status": "done",
       "evidence": "bunx eslint on touched files — 0 errors. bunx vue-tsc --noEmit — clean. bunx vitest run — 238 tests passed."
+    },
+    {
+      "id": "FIN-003",
+      "type": "feature",
+      "name": "Format discount amount input with numberFormat2Decimal",
+      "path": "features/003-discount-amount-formatting",
+      "description": "Change discountAmount input from type=number to type=text with formatted display (numberFormat2Decimal). Follow existing customAmount pattern in same component. Payload stays numeric.",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "bunx eslint on CardInstallment.vue, TwoDecimalInput.ts, TwoDecimalInput.test.ts — 0 errors. bunx vitest src/tests/utils/TwoDecimalInput.test.ts --run — 8 tests passed. bunx vue-tsc --noEmit — clean."
     }
   ]
 }

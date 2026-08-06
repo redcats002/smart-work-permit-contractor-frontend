@@ -17,7 +17,7 @@ export default {
     {
       path: 'list',
       name: 'PaymentsForAccountListClosurePage',
-      component: (): ComponentOptions => import('@/pages/reports/pages/payments-for-account-closure/page/PaymentsForAccountClosureListPage.vue'),
+      component: (): ComponentOptions => import('@/pages/reports/pages/payments-for-account-closure/pages/PaymentsForAccountClosureListPage.vue'),
       meta: {
         auth: true,
         title: 'รายงานการรับชำระเงินลูกหนี้ปิดบัญชี',
@@ -28,7 +28,7 @@ export default {
     {
       path: 'print',
       name: 'PaymentsForAccountClosurePrintPage',
-      component: (): ComponentOptions => import('@/pages/reports/pages/payments-for-account-closure/page/PaymentsForAccountClosurePrintPage.vue'),
+      component: (): ComponentOptions => import('@/pages/reports/pages/payments-for-account-closure/pages/PaymentsForAccountClosurePrintPage.vue'),
       meta: {
         auth: true,
         title: 'พิมพ์รายงานการรับชำระเงินลูกหนี้ปิดบัญชี',

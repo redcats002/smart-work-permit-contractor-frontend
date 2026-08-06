@@ -1,0 +1,25 @@
+{
+  "module": "contract",
+  "items": [
+    {
+      "id": "CON-001",
+      "type": "feature",
+      "name": "Print pages layout default",
+      "path": "features/001-print-pages-layout",
+      "description": "Change PreContractPrintPage and ContractPrintPage from blank layout to default layout with PageTitle/BackButton/PrintButton and @media print CSS, matching ReceiptPrintPage pattern. Remove auto-print on mount.",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "bunx eslint on 3 changed files — 0 errors. bunx vue-tsc --noEmit — clean."
+    },
+    {
+      "id": "CON-002",
+      "type": "feature",
+      "name": "Loan agreement document alignment and A4 preview",
+      "path": "features/002-loan-agreement-alignment",
+      "description": "Fix alignment issues in LoanAgreementDocument.vue — header meta, borrower info block, date fields — and add A4 preview boundary styling.",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "bunx eslint on changed file — 0 errors. bunx vue-tsc --noEmit — clean."
+    }
+  ]
+}

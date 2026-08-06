@@ -241,7 +241,7 @@
       </div>
 
       <div class="mt-5 text-sm font-medium">
-        ยอดหนี้คงเหลือ <span class="ml-2">: {{ formatter.numberFormat2Decimal(form.totalOutstandingDebt) }}</span>
+        ยอดหนี้ทั้งหมด <span class="ml-2">: {{ formatter.numberFormat2Decimal(form.totalOutstandingDebt) }}</span>
       </div>
 
       <!-- SIGNATURE -->
