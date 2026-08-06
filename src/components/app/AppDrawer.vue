@@ -69,7 +69,7 @@ import { computed } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '@/stores/Auth'
 import { useNotificationStore } from '@/stores/Notification.ts'
-import { type TPermissionModule } from '@/utils/Permission'
+import { type TPermissionAction, type TPermissionModule } from '@/utils/Permission'
 import useLogout from '@/pages/auth/composables/useLogout'
 import { useAppDrawer } from '@/composables/useAppDrawer'
 import { usePermission } from '@/composables/usePermission'
@@ -100,6 +100,7 @@ interface IRouteMeta {
   menu?: boolean
   disabled?: boolean
   permission?: TPermissionModule
+  permissionAction?: TPermissionAction
 }
 
 interface IMenuRouteItem {
@@ -124,6 +125,13 @@ const menuItems = computed<IMenuItem[]>((): IMenuItem[] => {
     }
 
     const fullPath = normalizePath('', route.path)
+
+    // นับ children ต้นฉบับที่มี menu: true (ก่อนกรอง permission)
+    const originalChildCount = (route.children ?? []).filter((child: RouteRecordRaw): boolean => {
+      const childMeta = getRouteMeta(child)
+      return !!childMeta.menu
+    }).length
+
     const childMenuItems = (route.children ?? []).flatMap((child: RouteRecordRaw): IMenuRouteItem[] => {
       const childPath = normalizePath(fullPath, child.path)
       return collectMenuRouteItems(child, childPath)
@@ -136,7 +144,8 @@ const menuItems = computed<IMenuItem[]>((): IMenuItem[] => {
     const icon = routeMeta.icon ?? childMenuItems[0]?.icon ?? ''
     const key = String(route.name ?? route.path)
 
-    if (childMenuItems.length === 1) {
+    // ถ้าต้นฉบับมีแค่ 1 → simple item, ถ้าต้นฉบับมีมากกว่า 1 → dropdown (แม้จะเหลือ 1)
+    if (originalChildCount <= 1) {
       return [
         {
           label: (routeMeta?.menuTitle || routeMeta?.title) ?? childMenuItems[0].label,
@@ -190,8 +199,14 @@ function collectMenuRouteItems (route: RouteRecordRaw, fullPath: string): IMenuR
   const meta = getRouteMeta(route)
 
   // Skip if no permission for this specific route/child
-  if (meta.permission && !hasPermission(meta.permission)) {
-    return []
+  if (meta.permission) {
+    if (meta.permissionAction) {
+      if (!hasPermission(meta.permission, meta.permissionAction)) {
+        return []
+      }
+    } else if (!hasPermission(meta.permission)) {
+      return []
+    }
   }
 
   const currentItems
@@ -215,5 +230,11 @@ function collectMenuRouteItems (route: RouteRecordRaw, fullPath: string): IMenuR
   return [...currentItems, ...childItems]
 }
 
-const bottomMenuItems: IMenuItem[] = [{ label: 'ตั้งค่า', icon: 'lsicon:setting-outline', key: 'setting', to: '/setting' }]
+const bottomMenuItems = computed<IMenuItem[]>((): IMenuItem[] => {
+  if (!hasPermission('settings')) {
+    return []
+  }
+
+  return [{ label: 'ตั้งค่า', icon: 'lsicon:setting-outline', key: 'setting', to: '/setting' }]
+})
 </script>

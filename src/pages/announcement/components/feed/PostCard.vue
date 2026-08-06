@@ -34,7 +34,9 @@
           </div>
         </div>
       </div>
-      <div class="pl-1 md:pl-2 h-full flex">
+      <div
+        v-if="hasActionMenu"
+        class="pl-1 md:pl-2 h-full flex">
         <BaseActionMenu
           :items="items"
           icon-class="text-font-gray!"
@@ -66,6 +68,7 @@ import { sanitizeRichTextConfig } from '@/plugins/sanitize.plugin'
 import { toast } from '@/plugins/toast'
 import { useDayjs } from '@/utils/Dayjs'
 import { handleLoading } from '@/utils/HandleLoading'
+import { usePermission } from '@/composables/usePermission'
 import type { IAttachments } from '@/models/response/announcement/AnnouncementRes.model'
 import { formatTitle, type TEmployeeRole } from '@/enums/modules/employee/EmployeeRole.enum'
 import type { IAnnouncementProvider } from '@/resources/provider/announcement/Announcement.provider'
@@ -101,15 +104,30 @@ const props = withDefaults(defineProps<IProps>(), {
 const emits = defineEmits<IEmits>()
 
 const dayjs = useDayjs()
+const { hasPermission } = usePermission()
 const AnnouncementService: IAnnouncementProvider = new AnnouncementProvider()
 
 const editVisible = ref<boolean>(false)
 
+const canEdit = computed((): boolean => hasPermission('news', 'update'))
+const canDelete = computed((): boolean => hasPermission('news', 'delete'))
+const hasActionMenu = computed((): boolean => canEdit.value || canDelete.value)
+
 const items = computed((): IMenuItemAction[] => {
-  const base: IMenuItemAction[] = [
-    { label: 'แก้ไข', key: 'edit', type: 'TEXT', action: (): void => { editVisible.value = true } },
-    { label: 'ลบ', key: 'delete', type: 'DELETE', action: onDelete }
-  ]
+  const base: IMenuItemAction[] = []
+  if (canEdit.value) {
+    base.push({
+      label: 'แก้ไข',
+      key: 'edit',
+      type: 'TEXT',
+      action: (): void => {
+        editVisible.value = true
+      }
+    })
+  }
+  if (canDelete.value) {
+    base.push({ label: 'ลบ', key: 'delete', type: 'DELETE', action: onDelete })
+  }
   return base
 })
 

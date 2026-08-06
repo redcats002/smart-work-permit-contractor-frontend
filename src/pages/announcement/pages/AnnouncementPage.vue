@@ -7,6 +7,7 @@
     <PageTitle />
     <BasePage>
       <PostComposer
+        v-if="canCreate"
         v-model="form"
         @created="onSubmit()" />
       <FeedList
@@ -19,10 +20,11 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { toast } from '@/plugins/toast'
 import { useNotificationStore } from '@/stores/Notification'
 import { handleLoading } from '@/utils/HandleLoading'
+import { usePermission } from '@/composables/usePermission'
 import type { IAnnouncementProvider } from '@/resources/provider/announcement/Announcement.provider'
 import AnnouncementProvider from '@/resources/provider/announcement/Announcement.provider'
 import BasePage from '@/components/base/BasePage.vue'
@@ -36,6 +38,8 @@ import type { AnnouncementCreateAnnouncement } from '../schemas/announcement.sch
 
 const list = useList()
 const notificationStore = useNotificationStore()
+const { hasPermission } = usePermission()
+const canCreate = computed((): boolean => hasPermission('news', 'create'))
 const form = ref<AnnouncementCreateAnnouncement>({
   content: '',
   attachments: []
