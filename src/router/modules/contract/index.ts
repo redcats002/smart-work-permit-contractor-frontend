@@ -68,7 +68,6 @@ export default {
       component: (): ComponentOptions => import('@/pages/contract/pages/print/pages/ContractPrintPage.vue'),
       meta: {
         auth: true,
-        layout: 'blank',
         title: 'พิมพ์สัญญา'
       }
     },
@@ -78,7 +77,6 @@ export default {
       component: (): ComponentOptions => import('@/pages/contract/pages/pre-contract-print/pages/PreContractPrintPage.vue'),
       meta: {
         auth: true,
-        layout: 'blank',
         title: 'พิมพ์สัญญา'
       }
     },

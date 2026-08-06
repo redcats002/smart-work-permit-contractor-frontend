@@ -1,23 +1,22 @@
 <template>
-  <div
-    class="mx-auto w-[210mm] px-[25mm] py-[20mm] text-[14px] leading-relaxed text-black font-['Angsana_New',serif]!">
+  <div class="a4-preview mx-auto w-[210mm] min-h-[297mm] px-[25mm] py-[20mm] text-[12px] leading-relaxed text-black font-['Angsana_New',serif]! relative">
     <!-- Title -->
     <h1 class="text-center text-[18px] font-semibold mb-6">
       หนังสือสัญญากู้ยืมเงิน
     </h1>
 
     <!-- Header meta -->
-    <div class="text-right mb-1">
-      เขียนที่
-      <span class="inline-block align-bottom border-b border-black w-70">&nbsp;</span>
+    <div class="flex justify-end mb-1">
+      <span>เขียนที่</span>
+      <span class="inline-block border-b border-black w-60 ml-2">&nbsp;</span>
     </div>
-    <div class="text-right mb-6 mr-40">
-      วันที่
-      <span class="d-underline">{{ thaiDay(doc.contractedAt) }}</span>
-      เดือน
-      <span class="d-underline">{{ thaiMonth(doc.contractedAt) }}</span>
-      พ.ศ.
-      <span class="d-underline">{{ thaiYear(doc.contractedAt) }}</span>
+    <div class="flex justify-end mb-6">
+      <span>วันที่</span>
+      <span class="border-b border-black px-2 ml-2">{{ thaiDay(doc.contractedAt) }}</span>
+      <span class="ml-2">เดือน</span>
+      <span class="border-b border-black px-2 ml-2">{{ thaiMonth(doc.contractedAt) }}</span>
+      <span class="ml-2">พ.ศ.</span>
+      <span class="border-b border-black px-2 ml-2">{{ thaiYear(doc.contractedAt) }}</span>
     </div>
 
     <!-- Intro paragraph -->
@@ -25,61 +24,47 @@
       สัญญากู้ยืมเงินฉบับนี้ทำขึ้นระหว่าง
       <span class="d-underline">{{ doc.branchName }}</span>
       ตั้งอยู่เลขที่
-      <span class="inline-block align-bottom border-b border-black w-20">&nbsp;</span>
+      <span class="inline-block border-b border-black w-15">&nbsp;</span>
       ถนน
-      <span class="inline-block align-bottom border-b border-black w-15">&nbsp;</span>
+      <span class="inline-block border-b border-black w-15">&nbsp;</span>
       ตำบล
-      <span class="inline-block align-bottom border-b border-black w-20">&nbsp;</span>
+      <span class="inline-block border-b border-black w-20">&nbsp;</span>
       อำเภอ
-      <span class="inline-block align-bottom border-b border-black w-20">&nbsp;</span>
+      <span class="inline-block border-b border-black w-20">&nbsp;</span>
       จังหวัด
-      <span class="inline-block align-bottom border-b border-black w-20">&nbsp;</span>
+      <span class="inline-block border-b border-black w-20">&nbsp;</span>
       ซึ่งต่อไปในสัญญาฉบับนี้จะเรียกว่า
-      <br>
       <strong>"ผู้ให้กู้"</strong>
       ฝ่ายหนึ่ง กับ
-      <template
-        v-for="(item, index) in doc.borrowers"
-        :key="item.id">
-        <span v-if="index === 0" />
-        <br v-else>
-        <span
-          :class="{
-            'ml-32': index !== 0,
-          }">
-          {{ index + 1 }}.
-          <span class="d-underline w-50">{{ item.fullName }}</span>
-          <span>
-            <label>อายุ</label>
-            <span class="border-b border-black px-2 w-10">{{ ageYear(item.birthDate) }}</span><span>ปี</span>
-          </span>
-          <span>
-            <label>อยู่บ้านเลขที่</label>
-            <span class="d-underline w-20">{{ item.mainAddress?.address || '' }}</span>
-          </span>
-          <span>
-            <label>หมู่</label>
-            <span class="d-underline w-5">{{ item.mainAddress?.villageNo || '-' }}</span>
-          </span>
-          <span>
-            <label>ตำบล</label>
-            <span class="border-b border-black px-2">{{ item.mainAddress?.subDistrict || '' }}</span>
-          </span>
-          <span>
-            <label>อำเภอ</label>
-            <span class="border-b border-black px-2">{{ item.mainAddress?.district || '' }}</span>
-          </span>
-          <span>
-            <label>จังหวัด</label>
-            <span class="border-b border-black px-2">{{ item.mainAddress?.province || '' }}</span>
-          </span>
-          <span>
-            <label>บัตรประชาชนเลขที่</label>
-            <span class="d-underline w-auto">{{ citizenId(item.idCard) }}</span>
-          </span>
-        </span>
-      </template>
+    </p>
+
+    <!-- Borrowers -->
+    <div
+      v-for="(item, index) in doc.borrowers"
+      :key="item.id"
+      class="mb-2 text-justify indent-10">
+      <span>{{ index + 1 }}.</span>
+      <span class="d-underline min-w-[180px]">{{ item.fullName }}</span>
+      <span>อายุ</span>
+      <span class="border-b border-black px-2 w-10 inline-block text-center">{{ ageYear(item.birthDate) }}</span>
+      <span>ปี</span>
+      <span>อยู่บ้านเลขที่</span>
+      <span class="d-underline min-w-[80px]">{{ item.mainAddress?.address || '' }}</span>
+      <span>หมู่</span>
+      <span class="d-underline min-w-[30px]">{{ item.mainAddress?.villageNo || '-' }}</span>
       <br>
+      <span class="ml-6">ตำบล</span>
+      <span class="border-b border-black px-2 min-w-[80px] inline-block">{{ item.mainAddress?.subDistrict || '' }}</span>
+      <span class="ml-2">อำเภอ</span>
+      <span class="border-b border-black px-2 min-w-[80px] inline-block">{{ item.mainAddress?.district || '' }}</span>
+      <span class="ml-2">จังหวัด</span>
+      <span class="border-b border-black px-2 min-w-[80px] inline-block">{{ item.mainAddress?.province || '' }}</span>
+      <br>
+      <span class="ml-6">บัตรประชาชนเลขที่</span>
+      <span class="d-underline min-w-[160px]">{{ citizenId(item.idCard) }}</span>
+    </div>
+
+    <p class="text-justify mb-4 indent-3">
       ซึ่งต่อไปในสัญญานี้จะเรียกว่า
       <strong>"ผู้กู้"</strong>
       อีกฝ่ายหนึ่ง ทั้งสองฝ่ายตกลงกันทำสัญญากู้ยืมเงินฉบับนี้มีข้อความดังนี้
@@ -120,14 +105,14 @@
       ผู้กู้ตกลงว่าจะนำเงินที่กู้ไปจำนวนดังกล่าว นำมาชำระคืนให้กับผู้ให้กู้ให้เสร็จสิ้น<br>
       ภายใน
       <template v-if="doc.finalInstallmentDate">
-        วันที่ <span class="border-b border-black px-2">{{ thaiDay(doc.finalInstallmentDate) }}</span>
-        เดือน <span class="border-b border-black px-2">{{ thaiMonth(doc.finalInstallmentDate) }}</span> พ.ศ.
-        <span class="border-b border-black px-2">{{ thaiYear(doc.finalInstallmentDate) }}</span>
+        วันที่ <span class="border-b border-black px-2 min-w-[40px] inline-block text-center">{{ thaiDay(doc.finalInstallmentDate) }}</span>
+        เดือน <span class="border-b border-black px-2 min-w-[60px] inline-block">{{ thaiMonth(doc.finalInstallmentDate) }}</span> พ.ศ.
+        <span class="border-b border-black px-2 min-w-[50px] inline-block text-center">{{ thaiYear(doc.finalInstallmentDate) }}</span>
       </template>
       <template v-else>
-        วันที่ <span class="inline-block align-bottom border-b border-black w-20">&nbsp;</span>
-        เดือน <span class="inline-block align-bottom border-b border-black w-20">&nbsp;</span> พ.ศ.
-        <span class="inline-block align-bottom border-b border-black w-20">&nbsp;</span>
+        วันที่ <span class="inline-block border-b border-black w-20">&nbsp;</span>
+        เดือน <span class="inline-block border-b border-black w-20">&nbsp;</span> พ.ศ.
+        <span class="inline-block border-b border-black w-20">&nbsp;</span>
       </template>
     </p>
 
@@ -135,17 +120,19 @@
     <p class="d-topic">
       <strong>ข้อ 4.</strong>
       ผู้กู้ตกลงยินยอมให้คิดดอกเบี้ยในอัตราร้อยละ
-      <span class="border-b border-black px-2">{{ doc.annualInterestRate }}</span>
+      <span class="border-b border-black px-2 min-w-[30px] inline-block text-center">{{ doc.annualInterestRate }}</span>
       ต่อปี โดยผู้กู้จะนำเงินดอกเบี้ยมาชำระให้แก่ผู้ให้กู้ไปรายเดือน โดยเริ่มชำระเงินมาภายใน
       <template v-if="doc.firstInstallmentDate">
-        วันที่ {{ thaiDay(doc.firstInstallmentDate) }} เดือน {{ thaiMonth(doc.firstInstallmentDate) }} พ.ศ.
-        {{ thaiYear(doc.firstInstallmentDate) }}<br> และงวดต่อๆ ไปภายในวันที่ {{ thaiDay(doc.firstInstallmentDate) }} ของเดือนถัดไป
+        วันที่ <span class="border-b border-black px-2 min-w-[40px] inline-block text-center">{{ thaiDay(doc.firstInstallmentDate) }}</span>
+        เดือน <span class="border-b border-black px-2 min-w-[60px] inline-block">{{ thaiMonth(doc.firstInstallmentDate) }}</span>
+        พ.ศ. <span class="border-b border-black px-2 min-w-[50px] inline-block text-center">{{ thaiYear(doc.firstInstallmentDate) }}</span><br>
+        และงวดต่อๆ ไปภายในวันที่ <span class="border-b border-black px-2 min-w-[40px] inline-block text-center">{{ thaiDay(doc.firstInstallmentDate) }}</span> ของเดือนถัดไป
       </template>
       <template v-else>
-        วันที่ <span class="inline-block align-bottom border-b border-black w-20">&nbsp;</span>
-        เดือน <span class="inline-block align-bottom border-b border-black w-20">&nbsp;</span> พ.ศ.
-        <span class="inline-block align-bottom border-b border-black w-20">&nbsp;</span><br>
-        และงวดต่อๆ ไปภายในวันที่ <span class="inline-block align-bottom border-b border-black w-20">&nbsp;</span> ของเดือนถัดไป
+        วันที่ <span class="inline-block border-b border-black w-20">&nbsp;</span>
+        เดือน <span class="inline-block border-b border-black w-20">&nbsp;</span> พ.ศ.
+        <span class="inline-block border-b border-black w-20">&nbsp;</span><br>
+        และงวดต่อๆ ไปภายในวันที่ <span class="inline-block border-b border-black w-20">&nbsp;</span> ของเดือนถัดไป
       </template>
       จนกว่าผู้กู้จะนำเงินต้นมาชำระให้แก่ผู้ให้กู้ครบถ้วน
     </p>
@@ -243,10 +230,29 @@ function citizenId (id?: string): string {
 	display: inline-block;
 	vertical-align: bottom;
 	border-bottom: 1px solid black;
+	min-width: 100px;
 }
 .d-topic {
 	margin-bottom: 0.75rem;
 	text-align: justify;
 	text-indent: 2.5rem;
+}
+
+/* A4 preview outline - only visible on screen */
+@media screen {
+  .a4-preview {
+    outline: 1px dashed #d1d5db;
+    outline-offset: 4px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    background: white;
+  }
+}
+
+/* Print styles */
+@media print {
+  .a4-preview {
+    outline: none;
+    box-shadow: none;
+  }
 }
 </style>
