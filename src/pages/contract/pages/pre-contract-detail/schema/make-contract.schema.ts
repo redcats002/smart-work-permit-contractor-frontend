@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import z from 'zod'
 import { schema } from '@/utils/Schema'
 import { InterestTypeEnum } from '@/enums/modules/contract/InterestType.enum'
 
