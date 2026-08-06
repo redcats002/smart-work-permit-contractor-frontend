@@ -10,14 +10,14 @@
     <template #[`item.receipt.idNo`]="{ item }">
       <a
         class="link"
-        href="javascript:void(0)">
+        @click="router.push(`/finance/receipt/detail/${item.receipt.id}`)">
         {{ item.receipt.idNo }}
       </a>
     </template>
     <template #[`item.contract.idNo`]="{ item }">
       <a
         class="link"
-        href="javascript:void(0)">
+        @click="router.push(`/contract/detail/${item.contract.id}`)">
         {{ item.contract.idNo }}
       </a>
     </template>
@@ -26,6 +26,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatter } from '@/utils/Formatter'
 import type { IAccountClosureList } from '@/models/response/report/account-closure/AccountClosureRes.model'
@@ -46,6 +47,8 @@ interface IEmits {
 }
 
 const emits = defineEmits<IEmits>()
+
+const router = useRouter()
 
 const dayjs = useDayjs()
 
