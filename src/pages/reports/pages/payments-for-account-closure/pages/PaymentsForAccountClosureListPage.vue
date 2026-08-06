@@ -34,7 +34,7 @@ import PrintButton from '@/components/button/PrintButton.vue'
 import PageTitle from '@/components/nav/PageTitle.vue'
 import PaymentsForAccountClosureFilter from '../components/PaymentsForAccountClosureFilter.vue'
 import PaymentsForAccountClosureTable from '../components/PaymentsForAccountClosureTable.vue'
-import useList from '../composables/useList'
+import useList from '../composables/useList.ts'
 
 const router = useRouter()
 const {

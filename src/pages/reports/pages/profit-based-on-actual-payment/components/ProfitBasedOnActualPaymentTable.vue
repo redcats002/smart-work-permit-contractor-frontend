@@ -67,17 +67,17 @@ const dayjs = useDayjs()
 
 const columns = ref<IColumn<IProfitBasedOnActualPaymentList>[]>([
   { field: 'index', header: 'ลำดับ', style: { width: '70px', minWidth: '70px' }, width: 60 },
-  { field: 'receiptNo', header: 'เลขที่ใบเสร็จ', sortable: true, style: { width: '150px', minWidth: '150px' }, width: 100, value: (e: IProfitBasedOnActualPaymentList): string => e.receipt?.idNo || '-' },
-  { field: 'date', header: 'วันที่', sortable: true, style: { width: '120px', minWidth: '120px' }, width: 100, value: (e: IProfitBasedOnActualPaymentList): string => dayjs.formatDate(e.date) || '-' },
-  { field: 'contractNo', header: 'เลขที่สัญญา', sortable: true, style: { width: '150px', minWidth: '150px' }, width: 100, value: (e: IProfitBasedOnActualPaymentList): string => e.contract?.idNo || '-' },
-  { field: 'contractYear', header: 'จำนวนปีสัญญา', style: { width: '140px', minWidth: '140px' }, width: 100, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormatNoDecimal(e.contractYear)}`, align: 'right' },
-  { field: 'customerName', header: 'ชื่อลูกค้า', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, width: 100, value: (e: IProfitBasedOnActualPaymentList): string => e.customerName || '-' },
-  { field: 'paidAtPattern', header: 'ชำระงวดที่', style: { width: '110px', minWidth: '110px' }, width: 100, value: (e: IProfitBasedOnActualPaymentList): string => `${e?.paidAtPattern || '-'}` },
-  { field: 'allPrincipal', header: 'เงินต้นทั้งหมด', style: { width: '150px', minWidth: '150px' }, width: 100, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.allPrincipal)}`, align: 'right' },
-  { field: 'allInterest', header: 'ดอกเบี้ยทั้งหมด', style: { width: '150px', minWidth: '150px' }, width: 100, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.allInterest)}`, align: 'right' },
-  { field: 'receiveInstallmentAmount', header: 'ค่างวดที่รับชำระ', style: { width: '150px', minWidth: '150px' }, width: 100, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.receiveInstallmentAmount)}`, align: 'right' },
-  { field: 'principal', header: 'เงินต้นงวดนี้', style: { width: '140px', minWidth: '140px' }, width: 100, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.principal)}`, align: 'right' },
-  { field: 'interest', header: 'ดอกเบี้ยงวดนี้', style: { width: '140px', minWidth: '140px' }, width: 100, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.interest)}`, align: 'right' }
+  { field: 'receiptNo', header: 'เลขที่ใบเสร็จ', sortable: true, style: { width: '150px', minWidth: '150px' }, value: (e: IProfitBasedOnActualPaymentList): string => e.receipt?.idNo || '-' },
+  { field: 'date', header: 'วันที่', sortable: true, style: { width: '120px', minWidth: '120px' }, value: (e: IProfitBasedOnActualPaymentList): string => dayjs.formatDate(e.date) || '-' },
+  { field: 'contractNo', header: 'เลขที่สัญญา', sortable: true, style: { width: '150px', minWidth: '150px' }, value: (e: IProfitBasedOnActualPaymentList): string => e.contract?.idNo || '-' },
+  { field: 'contractYear', header: 'จำนวนปีสัญญา', style: { width: '140px', minWidth: '140px' }, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormatNoDecimal(e.contractYear)}`, align: 'right' },
+  { field: 'customerName', header: 'ชื่อลูกค้า', style: { width: '180px', minWidth: '180px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IProfitBasedOnActualPaymentList): string => e.customerName || '-' },
+  { field: 'paidAtPattern', header: 'ชำระงวดที่', style: { minWidth: '320px', maxWidth: '400px' }, bodyStyle: { whiteSpace: 'normal', wordBreak: 'break-word' }, value: (e: IProfitBasedOnActualPaymentList): string => `${e?.paidAtPattern || '-'}` },
+  { field: 'allPrincipal', header: 'เงินต้นทั้งหมด', style: { width: '150px', minWidth: '150px' }, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.allPrincipal)}`, align: 'right' },
+  { field: 'allInterest', header: 'ดอกเบี้ยทั้งหมด', style: { width: '150px', minWidth: '150px' }, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.allInterest)}`, align: 'right' },
+  { field: 'receiveInstallmentAmount', header: 'ค่างวดที่รับชำระ', style: { width: '150px', minWidth: '150px' }, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.receiveInstallmentAmount)}`, align: 'right' },
+  { field: 'principal', header: 'เงินต้นงวดนี้', style: { width: '140px', minWidth: '140px' }, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.principal)}`, align: 'right' },
+  { field: 'interest', header: 'ดอกเบี้ยงวดนี้', style: { width: '140px', minWidth: '140px' }, value: (e: IProfitBasedOnActualPaymentList): string => `${formatter.numberFormat2Decimal(e.interest)}`, align: 'right' }
 ])
 
 const itemsFooter = computed((): IFooter[] => {
