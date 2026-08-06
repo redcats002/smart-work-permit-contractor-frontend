@@ -14,13 +14,13 @@ export default {
       path: 'asset-appraisal',
       name: 'AssetAppraisalPage',
       component: (): ComponentOptions => import('@/pages/work/pages/asset-appraisal/pages/AssetAppraisalPage.vue'),
-      meta: { auth: true, menu: true, title: 'ประเมินหลักทรัพย์', icon: 'iconoir:box-iso' }
+      meta: { auth: true, menu: true, title: 'ประเมินหลักทรัพย์', icon: 'iconoir:box-iso', permission: 'tasks', permissionAction: 'read_asset_valuation' }
     },
     {
       path: 'follow-up',
       name: 'FollowUpPage',
       component: (): ComponentOptions => import('@/pages/work/pages/follow-up/pages/FollowUpPage.vue'),
-      meta: { auth: true, menu: true, title: 'ติดตามทวงถาม', icon: 'iconoir:box-iso' }
+      meta: { auth: true, menu: true, title: 'ติดตามทวงถาม', icon: 'iconoir:box-iso', permission: 'tasks', permissionAction: 'read_collection' }
     }
   ]
 } as RouteRecordRaw
