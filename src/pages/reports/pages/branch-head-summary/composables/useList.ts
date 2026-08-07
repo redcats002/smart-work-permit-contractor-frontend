@@ -1,4 +1,6 @@
 import { computed, ref, type Ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useDayjs } from '@/utils/Dayjs'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IBranchHeadSummaryFilter } from '@/models/modules/report/branch-head-summary/Filter.model'
 import type { IGetBranchHeadSummaryList } from '@/models/request/report/branch-head-summary/BranchHeadSummaryReq.model'
@@ -13,9 +15,13 @@ interface IUseList extends IUsePagination {
   fetch(): void
   onSearch(): void
   onClearFilters(): void
+  onPrint(): void
 }
 
 export default function useList (): IUseList {
+  const router = useRouter()
+  const dayjs = useDayjs()
+
   const LeaderBranchReportService: ILeaderBranchReportProvider = new LeaderBranchReportProvider()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
@@ -31,7 +37,7 @@ export default function useList (): IUseList {
       limit: pagination.value.limit,
       sortBy: sortBy.value || undefined,
       sortOrder: sortOrder.value,
-      ...filters.value
+      ...normalizeFilters(filters.value)
     }
   })
 
@@ -40,7 +46,14 @@ export default function useList (): IUseList {
     items.value = response?.data || []
     summary.value = response?.summary || null
     pagination.value = extractPagination(response)
-    syncQuery({ ...filters.value })
+    syncQuery({ ...normalizeFilters(filters.value) })
+  }
+
+  function normalizeFilters (value: IBranchHeadSummaryFilter): Partial<IBranchHeadSummaryFilter> {
+    return {
+      ...value,
+      date: dayjs.formatDateRequest(value?.date)
+    }
   }
 
   function onSearch (): void {
@@ -54,6 +67,17 @@ export default function useList (): IUseList {
 
   function onClearFilters (): void {
     reset()
+  }
+
+  function onPrint (): void {
+    router.push({
+      name: 'BranchHeadSummaryPrintPage',
+      query: {
+        search: search.value || undefined,
+        period: filters.value.period || undefined,
+        ...normalizeFilters(filters.value)
+      }
+    })
   }
 
   return {
@@ -70,6 +94,7 @@ export default function useList (): IUseList {
     onClearFilters,
     extractPagination,
     syncQuery,
-    reset
+    reset,
+    onPrint
   }
 }

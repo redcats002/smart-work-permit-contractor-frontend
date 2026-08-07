@@ -8,7 +8,7 @@ type TUseDayjs = typeof dayjsType & {
   formatDate: (input?: string | Date) => string
   formatTime: (input?: string | Date) => string
   formatDateTime: (input?: string | Date) => string
-  formatDateRequest: (input?: string | Date) => string | null
+  formatDateRequest: (input?: string | Date) => string | undefined
   formatThaiAgeYear: (input: string | Date) => string
 }
 
@@ -40,8 +40,9 @@ export function useDayjs (): TUseDayjs {
     return `${years} ปี`
   }
 
-  const formatDateRequest = (input?: string | Date): string | null => {
-    return input ? dayjs(input).format('YYYY-MM-DD') : null
+  // for this project using ISO 8601 format for date request
+  const formatDateRequest = (input?: string | Date): string | undefined => {
+    return input ? dayjs(input)?.toISOString() : undefined
   }
 
   const formatAge = (input: string | Date): string => {

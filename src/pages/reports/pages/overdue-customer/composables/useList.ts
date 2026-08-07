@@ -1,4 +1,5 @@
 import { computed, ref, type Ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IOverdueCustomerFilter } from '@/models/modules/report/overdue-customer/Filter.model'
 import type { IGetOverdueCustomerList } from '@/models/request/report/overdue-customer/OverdueCustomerReq.model'
@@ -13,9 +14,12 @@ interface IUseList extends IUsePagination {
   fetch(): void
   onSearch(): void
   onClearFilters(): void
+  onPrint(): void
 }
 
 export default function useList (): IUseList {
+  const router = useRouter()
+
   const OverdueCustomerService: IOverdueCustomerProvider = new OverdueCustomerProvider()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
@@ -67,6 +71,15 @@ export default function useList (): IUseList {
     reset()
   }
 
+  function onPrint (): void {
+    router.push({
+      name: 'OverdueCustomerPrintPage',
+      query: {
+        branchId: filters.value.branchId || undefined
+      }
+    })
+  }
+
   return {
     filters,
     items,
@@ -81,6 +94,7 @@ export default function useList (): IUseList {
     extractPagination,
     syncQuery,
     reset,
-    resetPagination
+    resetPagination,
+    onPrint
   }
 }

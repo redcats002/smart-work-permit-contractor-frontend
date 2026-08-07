@@ -1,4 +1,6 @@
 import { computed, ref, type Ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useDayjs } from '@/utils/Dayjs'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IGetCurrentComparativeList } from '@/models/request/report/current-comparative-account/CurrentComparativeReq.model'
 import type {
@@ -18,8 +20,12 @@ interface IUseList extends IUsePagination {
   fetch(): void
   onSearch(): void
   onClearFilters(): void
+  onPrint(): void
 }
 export default function useList (): IUseList {
+  const router = useRouter()
+  const dayjs = useDayjs()
+
   const CurrentComparativeAccountService: ICurrentComparativeAccountProvider = new CurrentComparativeAccountProvider()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
@@ -68,7 +74,8 @@ export default function useList (): IUseList {
     value: ICurrentComparativeAccountFilter
   ): Partial<ICurrentComparativeAccountFilter> {
     return {
-      ...value
+      ...value,
+      date: dayjs.formatDateRequest(value?.date)
     }
   }
 
@@ -86,6 +93,16 @@ export default function useList (): IUseList {
     filters.value = {}
   }
 
+  function onPrint (): void {
+    router.push({
+      name: 'ComparativePrintPage',
+      query: {
+        search: search.value || undefined,
+        ...normalizeFilters(filters.value)
+      }
+    })
+  }
+
   return {
     filters,
     items,
@@ -100,6 +117,7 @@ export default function useList (): IUseList {
     onClearFilters,
     extractPagination,
     syncQuery,
-    reset
+    reset,
+    onPrint
   }
 }

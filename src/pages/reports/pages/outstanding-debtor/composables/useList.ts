@@ -1,4 +1,6 @@
 import { computed, ref, type Ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useDayjs } from '@/utils/Dayjs'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IOutstandingDebtorFilter } from '@/models/modules/report/outstanding-debtor/Filter.model'
 import type { IGetOutstandingDebtorList } from '@/models/request/report/outstanding-debtor/OutstandingDebtorReq.model'
@@ -14,10 +16,15 @@ interface IUseList extends IUsePagination {
   fetch(): void
   onSearch(): void
   onClearFilters(): void
+  onPrint(): void
 }
 
-export default function useList (fixedStatus?: TContractStatus): IUseList {
+export default function useList (fixedStatus?: TContractStatus, printRouteName?: string): IUseList {
+  const route = useRoute()
+  const router = useRouter()
+
   const OutstandingDebtorService: IOutstandingDebtorProvider = new OutstandingDebtorProvider()
+  const dayjs = useDayjs()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
@@ -65,7 +72,13 @@ export default function useList (fixedStatus?: TContractStatus): IUseList {
   function normalizeFilters (
     value: IOutstandingDebtorFilter
   ): Partial<IOutstandingDebtorFilter> {
-    const result: Partial<IOutstandingDebtorFilter> = { ...value }
+    const result: Partial<IOutstandingDebtorFilter> = {
+      ...value,
+      startDateOfCreatedAt: dayjs.formatDateRequest(value?.startDateOfCreatedAt),
+      endDateOfCreatedAt: dayjs.formatDateRequest(value?.endDateOfCreatedAt),
+      startDateOfFinalInstallmentDate: dayjs.formatDateRequest(value?.startDateOfFinalInstallmentDate),
+      endDateOfFinalInstallmentDate: dayjs.formatDateRequest(value?.endDateOfFinalInstallmentDate)
+    }
     delete result.status
     return result
   }
@@ -84,6 +97,11 @@ export default function useList (fixedStatus?: TContractStatus): IUseList {
     filters.value = {}
   }
 
+  function onPrint (): void {
+    if (!printRouteName) return
+    router.push({ name: printRouteName, query: route.query })
+  }
+
   return {
     filters,
     items,
@@ -98,20 +116,21 @@ export default function useList (fixedStatus?: TContractStatus): IUseList {
     onClearFilters,
     extractPagination,
     syncQuery,
-    reset
+    reset,
+    onPrint
   }
 }
 
 export function useOutstandingDebtorList (): ReturnType<typeof useList> {
-  return useList(ContractStatusEnum.PENDING)
+  return useList(ContractStatusEnum.PENDING, 'OutstandingDebtorPrintPage')
 }
 
 export function useSuccessDebtorList (): ReturnType<typeof useList> {
-  return useList(ContractStatusEnum.CLOSE_CONTRACT)
+  return useList(ContractStatusEnum.CLOSE_CONTRACT, 'SuccessDebtorPrintPage')
 }
 
 export function useAllDebtorList (): ReturnType<typeof useList> {
-  return useList()
+  return useList(undefined, 'AllDebtorPrintPage')
 }
 
 interface IUsePrintList {

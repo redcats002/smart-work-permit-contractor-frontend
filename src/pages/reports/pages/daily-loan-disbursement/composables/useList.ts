@@ -1,5 +1,6 @@
 import { computed, ref, type Ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { useDayjs } from '@/utils/Dayjs'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IDailyLoanDisbursementFilter } from '@/models/modules/report/daily-loan-disbursement/Filter.model'
 import type { IGetDailyLoanDisbursementList } from '@/models/request/report/daily-loan-disbursement/DailyLoanDisbursementReq.model'
@@ -14,12 +15,15 @@ interface IUseList extends IUsePagination {
   fetch(): void
   onSearch(): void
   onClearFilters(): void
+  onPrint(): void
 }
 
 export default function useList (): IUseList {
   const DailyLoanDisbursementService: IDailyLoanDisbursementProvider = new DailyLoanDisbursementProvider()
 
   const route = useRoute()
+  const router = useRouter()
+  const dayjs = useDayjs()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
@@ -68,7 +72,11 @@ export default function useList (): IUseList {
   }
 
   function normalizeFilters (value: IDailyLoanDisbursementFilter): Partial<IDailyLoanDisbursementFilter> {
-    return { ...value }
+    return {
+      ...value,
+      startDate: dayjs.formatDateRequest(value?.startDate),
+      endDate: dayjs.formatDateRequest(value?.endDate)
+    }
   }
 
   function onSearch (): void {
@@ -85,6 +93,16 @@ export default function useList (): IUseList {
     filters.value = {}
   }
 
+  function onPrint (): void {
+    router.push({
+      name: 'DailyLoanDisbursementPrintPage',
+      query: {
+        search: search.value || undefined,
+        ...normalizeFilters(filters.value)
+      }
+    })
+  }
+
   return {
     filters,
     items,
@@ -99,6 +117,7 @@ export default function useList (): IUseList {
     onClearFilters,
     extractPagination,
     syncQuery,
-    reset
+    reset,
+    onPrint
   }
 }

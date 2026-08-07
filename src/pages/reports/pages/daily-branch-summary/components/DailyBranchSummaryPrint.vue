@@ -124,29 +124,30 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { formatter } from '@/utils/Formatter'
-import type { IDailyBranchSummaryList } from '@/models/response/report/daily-branch-summary/DailyBranchSummaryRes.model'
+import type { IDailyBranchSummaryList, TGetDailyBranchSummaryListResponse } from '@/models/response/report/daily-branch-summary/DailyBranchSummaryRes.model'
 import BasePrintPage from '@/components/base/BasePrintPage.vue'
+
+type TSummary = TGetDailyBranchSummaryListResponse['summary']
 
 interface IProps {
   items: IDailyBranchSummaryList[]
+  summary?: TSummary
 }
 
 const props = defineProps<IProps>()
 const ROWS_PER_PAGE = 20
 
-type TSummary = Record<keyof Omit<IDailyBranchSummaryList, 'branchId' | 'branchName'>, number>
-
-const summary = computed((): TSummary => ({
-  financeReceive: props.items.reduce((acc: number, e: IDailyBranchSummaryList): number => acc + (e.financeReceive ?? 0), 0),
-  financeRelease: props.items.reduce((acc: number, e: IDailyBranchSummaryList): number => acc + (e.financeRelease ?? 0), 0),
-  processingFee: props.items.reduce((acc: number, e: IDailyBranchSummaryList): number => acc + (e.processingFee ?? 0), 0),
-  salePrice: props.items.reduce((acc: number, e: IDailyBranchSummaryList): number => acc + (e.salePrice ?? 0), 0),
-  depositFee: props.items.reduce((acc: number, e: IDailyBranchSummaryList): number => acc + (e.depositFee ?? 0), 0),
-  cancelContractFee: props.items.reduce((acc: number, e: IDailyBranchSummaryList): number => acc + (e.cancelContractFee ?? 0), 0),
-  lawyerFee: props.items.reduce((acc: number, e: IDailyBranchSummaryList): number => acc + (e.lawyerFee ?? 0), 0),
-  contractReplacementFee: props.items.reduce((acc: number, e: IDailyBranchSummaryList): number => acc + (e.contractReplacementFee ?? 0), 0),
-  outstanding: props.items.reduce((acc: number, e: IDailyBranchSummaryList): number => acc + (e.outstanding ?? 0), 0)
-}))
+const summary = computed((): TSummary => props.summary || {
+  financeReceive: 0,
+  financeRelease: 0,
+  processingFee: 0,
+  salePrice: 0,
+  depositFee: 0,
+  cancelContractFee: 0,
+  lawyerFee: 0,
+  contractReplacementFee: 0,
+  outstanding: 0
+})
 
 const totalPages = computed((): number => Math.ceil(props.items.length / ROWS_PER_PAGE))
 

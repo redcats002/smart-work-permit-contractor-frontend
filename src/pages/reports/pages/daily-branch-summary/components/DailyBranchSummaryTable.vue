@@ -19,13 +19,16 @@
 import { computed, ref } from 'vue'
 import { formatter } from '@/utils/Formatter'
 import { generateTableFooter, type IFooterColConfig } from '@/utils/TableFooter'
-import type { IDailyBranchSummaryList } from '@/models/response/report/daily-branch-summary/DailyBranchSummaryRes.model'
+import type { IDailyBranchSummaryList, TGetDailyBranchSummaryListResponse } from '@/models/response/report/daily-branch-summary/DailyBranchSummaryRes.model'
 import type { IColumn, IFooter } from '@/models/Table.model'
 import BaseTable from '@/components/table/BaseTable.vue'
 import type { IPagination } from '@/composables/usePagination'
 
+type TSummary = TGetDailyBranchSummaryListResponse['summary']
+
 interface IProps {
   items: IDailyBranchSummaryList[]
+  summary?: TSummary
 }
 
 interface IEmits {
@@ -53,19 +56,17 @@ const columns = ref<IColumn<IDailyBranchSummaryList>[]>([
   { field: 'outstanding', header: 'เงินคงเหลือ', align: 'right', style: { width: '140px', minWidth: '140px' }, width: 100, value: (e: IDailyBranchSummaryList): string => formatter.numberFormat2Decimal(e.outstanding) }
 ])
 
-type TSummary = Record<keyof Omit<IDailyBranchSummaryList, 'branchId' | 'branchName'>, number>
-
-const summary = computed((): TSummary => ({
-  financeReceive: props.items.reduce((acc: number, e: IDailyBranchSummaryList): number => acc + (e.financeReceive ?? 0), 0),
-  financeRelease: props.items.reduce((acc: number, e: IDailyBranchSummaryList): number => acc + (e.financeRelease ?? 0), 0),
-  processingFee: props.items.reduce((acc: number, e: IDailyBranchSummaryList): number => acc + (e.processingFee ?? 0), 0),
-  salePrice: props.items.reduce((acc: number, e: IDailyBranchSummaryList): number => acc + (e.salePrice ?? 0), 0),
-  depositFee: props.items.reduce((acc: number, e: IDailyBranchSummaryList): number => acc + (e.depositFee ?? 0), 0),
-  cancelContractFee: props.items.reduce((acc: number, e: IDailyBranchSummaryList): number => acc + (e.cancelContractFee ?? 0), 0),
-  lawyerFee: props.items.reduce((acc: number, e: IDailyBranchSummaryList): number => acc + (e.lawyerFee ?? 0), 0),
-  contractReplacementFee: props.items.reduce((acc: number, e: IDailyBranchSummaryList): number => acc + (e.contractReplacementFee ?? 0), 0),
-  outstanding: props.items.reduce((acc: number, e: IDailyBranchSummaryList): number => acc + (e.outstanding ?? 0), 0)
-}))
+const summary = computed((): TSummary => props.summary || {
+  financeReceive: 0,
+  financeRelease: 0,
+  processingFee: 0,
+  salePrice: 0,
+  depositFee: 0,
+  cancelContractFee: 0,
+  lawyerFee: 0,
+  contractReplacementFee: 0,
+  outstanding: 0
+})
 
 const itemsFooter = computed((): IFooter[] => {
   const config: Partial<Record<keyof IDailyBranchSummaryList, IFooterColConfig<TSummary>>> = {

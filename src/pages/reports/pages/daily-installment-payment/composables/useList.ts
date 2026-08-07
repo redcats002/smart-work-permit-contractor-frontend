@@ -1,9 +1,13 @@
 import { computed, ref, type Ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { useDayjs } from '@/utils/Dayjs'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IDailyInstallmentPaymentFilter } from '@/models/modules/report/daily-installment-payment/Filter.model'
-import type { IGetDailyInstallmentList } from '@/models/request/report/daliy-installment-payment/DailyInstallmentPayment.model'
-import type { IDailyInstallmentPaymentList, IDailyInstallmentPaymentSummary } from '@/models/response/report/daily-installment-payment/DailyInstallmentPaymentRes'
+import type { IGetDailyInstallmentList } from '@/models/request/report/daily-installment-payment/DailyInstallmentPayment.model'
+import type {
+  IDailyInstallmentPaymentList,
+  IDailyInstallmentPaymentSummary
+} from '@/models/response/report/daily-installment-payment/DailyInstallmentPaymentRes'
 import DailyInstallmentPaymentProvider, { type IDailyInstallmentPaymentProvider } from '@/resources/provider/report/DailyInstallmentPayment.provider'
 import usePagination, { type IUsePagination } from '@/composables/usePagination'
 
@@ -14,12 +18,15 @@ interface IUseList extends IUsePagination {
   fetch(): void
   onSearch(): void
   onClearFilters(): void
+  onPrint(): void
 }
 
 export default function useList (): IUseList {
   const DailyInstallmentPaymentService: IDailyInstallmentPaymentProvider = new DailyInstallmentPaymentProvider()
 
   const route = useRoute()
+  const router = useRouter()
+  const dayjs = useDayjs()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
@@ -68,7 +75,20 @@ export default function useList (): IUseList {
   }
 
   function normalizeFilters (value: IDailyInstallmentPaymentFilter): Partial<IDailyInstallmentPaymentFilter> {
-    return { ...value }
+    return {
+      ...value,
+      startDate: dayjs.formatDateRequest(value?.startDate),
+      endDate: dayjs.formatDateRequest(value?.endDate)
+    }
+  }
+
+  function onPrint (): void {
+    router.push({
+      name: 'DailyInstallmentPrintPage',
+      query: {
+        ...paginateQuery.value
+      }
+    })
   }
 
   function onSearch (): void {
@@ -99,6 +119,7 @@ export default function useList (): IUseList {
     onClearFilters,
     extractPagination,
     syncQuery,
-    reset
+    reset,
+    onPrint
   }
 }

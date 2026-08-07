@@ -1,4 +1,4 @@
-import type { IGetDailyInstallmentList } from '@/models/request/report/daliy-installment-payment/DailyInstallmentPayment.model'
+import type { IGetDailyInstallmentList } from '@/models/request/report/daily-installment-payment/DailyInstallmentPayment.model'
 import type { TGetDailyInstallmentPaymentListResponse } from '@/models/response/report/daily-installment-payment/DailyInstallmentPaymentRes'
 import HttpRequest from '@/resources/HttpRequest'
 

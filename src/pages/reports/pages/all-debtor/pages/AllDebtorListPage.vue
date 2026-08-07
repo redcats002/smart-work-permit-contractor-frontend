@@ -28,7 +28,6 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
@@ -37,9 +36,6 @@ import PageTitle from '@/components/nav/PageTitle.vue'
 import OutstandingDebtorFilter from '@/pages/reports/pages/outstanding-debtor/components/OutstandingDebtorFilter.vue'
 import OutstandingDebtorTable from '@/pages/reports/pages/outstanding-debtor/components/OutstandingDebtorTable.vue'
 import { useAllDebtorList } from '@/pages/reports/pages/outstanding-debtor/composables/useList'
-
-const route = useRoute()
-const router = useRouter()
 
 const {
   filters,
@@ -51,12 +47,9 @@ const {
   search,
   fetch,
   onClearFilters,
-  onSearch
+  onSearch,
+  onPrint
 } = useAllDebtorList()
-
-function onPrint (): void {
-  router.push({ name: 'AllDebtorPrintPage', query: route.query })
-}
 
 onMounted((): void => {
   fetch()

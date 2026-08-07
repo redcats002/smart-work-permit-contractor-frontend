@@ -1,4 +1,6 @@
 import { computed, ref, type Ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useDayjs } from '@/utils/Dayjs'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IContractSecurityDocumentReportFilter } from '@/models/modules/report/contract-security-document/Filter.model'
 import type { IGetContractSecurityDocumentReportList } from '@/models/request/report/contract-security-document/ContractSecurityDocumentReq.model'
@@ -16,10 +18,14 @@ interface IUseList extends IUsePagination {
   fetch(): void
   onSearch(): void
   onClearFilters(): void
+  onPrint(): void
 }
 
 export default function useList (): IUseList {
+  const router = useRouter()
+
   const ContractSecurityDocumentService: IContractSecurityDocumentProvider = new ContractSecurityDocumentProvider()
+  const dayjs = useDayjs()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
@@ -28,13 +34,14 @@ export default function useList (): IUseList {
   const summary = ref<IContractSecurityDocumentReportSummary>(initSummary())
 
   const paginateQuery = computed((): IGetContractSecurityDocumentReportList => {
+    const normalizedFilters = normalizeFilters(filters.value)
     return {
       page: pagination.value.page,
       limit: pagination.value.limit,
       sortBy: sortBy.value || undefined,
       sortOrder: sortOrder.value,
       search: search.value || undefined,
-      ...filters.value
+      ...normalizedFilters
     }
   })
 
@@ -43,7 +50,15 @@ export default function useList (): IUseList {
     items.value = response?.data || []
     pagination.value = extractPagination(response)
     summary.value = initSummary(response.summary)
-    syncQuery({ ...filters.value })
+    syncQuery({ ...normalizeFilters(filters.value) })
+  }
+
+  function normalizeFilters (value: IContractSecurityDocumentReportFilter): Partial<IContractSecurityDocumentReportFilter> {
+    return {
+      ...value,
+      startDate: dayjs.formatDateRequest(value?.startDate),
+      endDate: dayjs.formatDateRequest(value?.endDate)
+    }
   }
 
   function initSummary (data?: IContractSecurityDocumentReportSummary): IContractSecurityDocumentReportSummary {
@@ -73,6 +88,13 @@ export default function useList (): IUseList {
     reset()
   }
 
+  function onPrint (): void {
+    router.push({
+      name: 'ContractSecurityDocumentPrintPage',
+      query: { ...normalizeFilters(filters.value) }
+    })
+  }
+
   return {
     filters,
     items,
@@ -87,6 +109,7 @@ export default function useList (): IUseList {
     extractPagination,
     syncQuery,
     reset,
-    resetPagination
+    resetPagination,
+    onPrint
   }
 }

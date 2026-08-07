@@ -28,7 +28,6 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
@@ -37,8 +36,6 @@ import PageTitle from '@/components/nav/PageTitle.vue'
 import ComparativeFilter from '../components/ComparativeFilter.vue'
 import ComparativeTable from '../components/ComparativeTable.vue'
 import useList from '../composables/useList'
-
-const router = useRouter()
 
 const {
   filters,
@@ -50,19 +47,9 @@ const {
   search,
   fetch,
   onClearFilters,
-  onSearch
+  onSearch,
+  onPrint
 } = useList()
-
-function onPrint (): void {
-  router.push({
-    name: 'ComparativePrintPage',
-    query: {
-      search: search.value || undefined,
-      branchId: filters.value.branchId || undefined,
-      date: filters.value.date || undefined
-    }
-  })
-}
 
 onMounted((): void => {
   fetch()
