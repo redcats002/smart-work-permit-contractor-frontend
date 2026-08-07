@@ -1,4 +1,5 @@
 import { computed, ref, type Ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IBranchSummaryReportFilter } from '@/models/modules/report/branch-summary/Filter.model'
 import type { IGetBranchSummaryReportList } from '@/models/request/report/branch-summary/BranchSummaryReq.model'
@@ -12,8 +13,11 @@ interface IUseList extends IUsePagination {
   fetch(): void
   onSearch(): void
   onClearFilters(): void
+  onPrint(): void
 }
 export default function useList (): IUseList {
+  const router = useRouter()
+
   const ReportBranchesService: IReportBranchesProvider = new ReportBranchesProvider()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
@@ -72,6 +76,15 @@ export default function useList (): IUseList {
     reset()
   }
 
+  function onPrint (): void {
+    router.push({
+      name: 'BranchSummaryPrintPage',
+      query: {
+        search: search.value || undefined,
+        branchId: filters.value.branchId || undefined
+      }
+    })
+  }
 
   return {
     filters,
@@ -86,6 +99,7 @@ export default function useList (): IUseList {
     onClearFilters,
     extractPagination,
     syncQuery,
-    reset
+    reset,
+    onPrint
   }
 }

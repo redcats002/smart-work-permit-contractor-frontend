@@ -27,7 +27,6 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import BasePage from '@/components/base/BasePage.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import PrintButton from '@/components/button/PrintButton.vue'
@@ -36,7 +35,6 @@ import PaymentsForAccountClosureFilter from '../components/PaymentsForAccountClo
 import PaymentsForAccountClosureTable from '../components/PaymentsForAccountClosureTable.vue'
 import useList from '../composables/useList.ts'
 
-const router = useRouter()
 const {
   items,
   filters,
@@ -46,19 +44,9 @@ const {
   search,
   fetch,
   onClearFilters,
-  onSearch
+  onSearch,
+  onPrint
 } = useList()
-
-function onPrint (): void {
-  router.push({
-    name: 'PaymentsForAccountClosurePrintPage',
-    query: {
-      search: search.value || undefined,
-      receiptType: filters.value.receiptType || undefined,
-      assetType: filters.value.assetType || undefined
-    }
-  })
-}
 
 onMounted((): void => {
   fetch()

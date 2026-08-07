@@ -1,4 +1,5 @@
 import { computed, ref, type Ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IPercentInstallmentFilter } from '@/models/modules/report/percent-installment/Filter.model'
 import type { IGetPercentInstallmentList } from '@/models/request/report/percent-installment/PercentInstallmentReq.model'
@@ -18,8 +19,11 @@ interface IUseList extends IUsePagination {
   fetch(): void
   onSearch(): void
   onClearFilters(): void
+  onPrint(): void
 }
 export default function useList (): IUseList {
+  const router = useRouter()
+
   const PercentInstallmentPaymentService: IPercentInstallmentPaymentProvider = new PercentInstallmentPaymentProvider()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
@@ -86,6 +90,16 @@ export default function useList (): IUseList {
     filters.value = {}
   }
 
+  function onPrint (): void {
+    router.push({
+      name: 'PercentInstallmentPrintPage',
+      query: {
+        search: search.value || undefined,
+        branchId: filters.value.branchId || undefined
+      }
+    })
+  }
+
   return {
     filters,
     items,
@@ -100,6 +114,7 @@ export default function useList (): IUseList {
     onClearFilters,
     extractPagination,
     syncQuery,
-    reset
+    reset,
+    onPrint
   }
 }

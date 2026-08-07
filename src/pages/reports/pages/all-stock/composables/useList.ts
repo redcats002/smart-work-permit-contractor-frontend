@@ -1,4 +1,5 @@
 import { ref, type Ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IAllStockFilter } from '@/models/modules/report/all-stock/Filter.model'
 import type { ISummaryStockList } from '@/models/response/report/summary-stock/SummaryStockRes.model'
@@ -12,9 +13,12 @@ interface IUseList extends IUsePagination {
   fetch(): void
   onSearch(): void
   onClearFilters(): void
+  onPrint(): void
 }
 
 export default function useList (): IUseList {
+  const router = useRouter()
+
   const SummaryStockService: ISummaryStockProvider = new SummaryStockProvider()
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination, displayItems, updateItems }
     = useLocalPagination<ISummaryStockList>()
@@ -41,6 +45,10 @@ export default function useList (): IUseList {
     reset()
   }
 
+  function onPrint (): void {
+    router.push({ name: 'AllStockPrintPage' })
+  }
+
   return {
     filters,
     items: displayItems,
@@ -54,6 +62,7 @@ export default function useList (): IUseList {
     extractPagination,
     syncQuery,
     reset,
-    resetPagination
+    resetPagination,
+    onPrint
   }
 }

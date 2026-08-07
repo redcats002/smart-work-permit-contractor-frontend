@@ -1,4 +1,5 @@
 import { computed, ref, type Ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { dayjs } from '@/plugins/dayjs.plugin'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IRankLoanFilter } from '@/models/modules/report/rank-loan/Filter.model'
@@ -11,9 +12,12 @@ interface IUseList {
   fetch(): void
   onSearch(): void
   onClearFilters(): void
+  onPrint(): void
 }
 
 export default function useList (): IUseList {
+  const router = useRouter()
+
   const RankingLoanService: IRankingLoanProvider = new RankingLoanProvider()
 
   const filters = ref<IRankLoanFilter>({
@@ -51,11 +55,23 @@ export default function useList (): IUseList {
     fetch()
   }
 
+  function onPrint (): void {
+    router.push({
+      name: 'RankingLoanPrintPage',
+      query: {
+        startDate: filters.value.startDate || undefined,
+        endDate: filters.value.endDate || undefined,
+        type: filters.value.type || undefined
+      }
+    })
+  }
+
   return {
     filters,
     items,
     fetch,
     onSearch,
-    onClearFilters
+    onClearFilters,
+    onPrint
   }
 }

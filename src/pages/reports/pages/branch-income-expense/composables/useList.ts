@@ -1,4 +1,5 @@
 import { computed, ref, type Ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IBranchIncomeExpenseFilter } from '@/models/modules/report/branch-income-expense/Filter.model'
 import type { IGetBranchIncomeExpenseList } from '@/models/request/report/branch-income-expense/BranchIncomeExpenseReq.model'
@@ -15,9 +16,12 @@ interface IUseList extends IUsePagination {
   fetch(): void
   onSearch(): void
   onClearFilters(): void
+  onPrint(): void
 }
 
 export default function useList (): IUseList {
+  const router = useRouter()
+
   const BranchIncomeExpenseService = new BranchIncomeExpenseProvider()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
@@ -89,6 +93,17 @@ export default function useList (): IUseList {
     }
   }
 
+  function onPrint (): void {
+    router.push({
+      name: 'BranchIncomeExpensePrintPage',
+      query: {
+        filter: filters.value.filter || undefined,
+        financeCategory: filters.value.financeCategory || undefined,
+        branchId: filters.value.branchId || undefined
+      }
+    })
+  }
+
   return {
     filters,
     items,
@@ -104,6 +119,7 @@ export default function useList (): IUseList {
     onClearFilters,
     extractPagination,
     syncQuery,
-    reset
+    reset,
+    onPrint
   }
 }

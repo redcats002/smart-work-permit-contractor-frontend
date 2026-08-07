@@ -29,8 +29,6 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useDayjs } from '@/utils/Dayjs'
 import BasePage from '@/components/base/BasePage.vue'
 import BaseTop from '@/components/base/BaseTop.vue'
 import BackButton from '@/components/button/BackButton.vue'
@@ -40,9 +38,6 @@ import PageTitle from '@/components/nav/PageTitle.vue'
 import AnnualFinanceReceiptFilter from '../components/AnnualFinanceReceiptFilter.vue'
 import AnnualFinanceReceiptTable from '../components/AnnualFinanceReceiptTable.vue'
 import useList from '../composables/useList'
-
-const router = useRouter()
-const dayjs = useDayjs()
 
 const {
   filters,
@@ -54,18 +49,9 @@ const {
   search,
   fetch,
   onClearFilters,
-  onSearch
+  onSearch,
+  onPrint
 } = useList()
-
-function onPrint (): void {
-  router.push({
-    name: 'AnnualFinanceReceiptPrintPage',
-    query: {
-      branchId: filters.value.branchId || undefined,
-      year: filters.value.year ? dayjs(filters.value.year).format('YYYY') : undefined
-    }
-  })
-}
 
 onMounted((): void => {
   fetch()

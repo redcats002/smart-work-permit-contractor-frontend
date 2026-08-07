@@ -49,21 +49,12 @@ const {
   sortBy,
   sortOrder,
   fetch,
-  onSearch
+  onSearch,
+  onPrint
 } = useList()
 
 function onRowClick (event: { data: IDailySummaryListItem }): void {
   router.push({ name: 'DailySummaryDetailListPage', params: { id: event.data.id } })
-}
-
-function onPrint (): void {
-  router.push({
-    name: 'DailySummaryPrintPage',
-    query: {
-      startDate: filters.value.startDate || undefined,
-      endDate: filters.value.endDate || undefined
-    }
-  })
 }
 
 onMounted((): void => {

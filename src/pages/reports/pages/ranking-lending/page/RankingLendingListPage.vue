@@ -21,7 +21,6 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import BasePage from '@/components/base/BasePage.vue'
 import BackButton from '@/components/button/BackButton.vue'
 import PrintButton from '@/components/button/PrintButton.vue'
@@ -30,18 +29,7 @@ import RankingLendingFilter from '../components/RankingLendingFilter.vue'
 import RankingLendingTable from '../components/RankingLendingTable.vue'
 import useList from '../composables/useList'
 
-const router = useRouter()
-const { filters, items, fetch, onClearFilters, onSearch } = useList()
-
-function onPrint (): void {
-  router.push({
-    name: 'RankingLendingPrintPage',
-    query: {
-      startDate: filters.value.startDate || undefined,
-      endDate: filters.value.endDate || undefined
-    }
-  })
-}
+const { filters, items, fetch, onClearFilters, onSearch, onPrint } = useList()
 
 onMounted((): void => {
   fetch()

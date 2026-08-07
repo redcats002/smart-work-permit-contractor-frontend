@@ -1,4 +1,6 @@
 import { computed, ref, type Ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useDayjs } from '@/utils/Dayjs'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IProfitBasedOnActualPaymentFilter } from '@/models/modules/report/profit-based-on-actual-payment/Filter.model'
 import type { IGetProfitBasedOnActualPaymentList } from '@/models/request/report/profit-based-on-actual-payment/ProfitBasedOnActualPaymentReq.model'
@@ -16,10 +18,14 @@ interface IUseList extends IUsePagination {
   fetch(): void
   onSearch(): void
   onClearFilters(): void
+  onPrint(): void
 }
 
 export default function useList (): IUseList {
+  const router = useRouter()
+
   const ProfitBasedOnActualPaymentService: IProfitBasedOnActualPaymentProvider = new ProfitBasedOnActualPaymentProvider()
+  const dayjs = useDayjs()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
 
@@ -60,7 +66,11 @@ export default function useList (): IUseList {
   }
 
   function normalizeFilters (value: IProfitBasedOnActualPaymentFilter): Partial<IProfitBasedOnActualPaymentFilter> {
-    return { ...value }
+    return {
+      ...value,
+      startDate: dayjs.formatDateRequest(value?.startDate),
+      endDate: dayjs.formatDateRequest(value?.endDate)
+    }
   }
 
   function onSearch (): void {
@@ -77,6 +87,16 @@ export default function useList (): IUseList {
     filters.value = {}
   }
 
+  function onPrint (): void {
+    router.push({
+      name: 'ProfitBasedOnActualPaymentPrintPage',
+      query: {
+        search: search.value || undefined,
+        ...normalizeFilters(filters.value)
+      }
+    })
+  }
+
   return {
     filters,
     items,
@@ -91,6 +111,7 @@ export default function useList (): IUseList {
     onClearFilters,
     extractPagination,
     syncQuery,
-    reset
+    reset,
+    onPrint
   }
 }

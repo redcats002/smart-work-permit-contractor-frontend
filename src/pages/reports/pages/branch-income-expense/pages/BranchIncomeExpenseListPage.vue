@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { ReportTypeEnum, type TReportType } from '@/enums/modules/report/branch-income-expense/ReportType.enum'
 import BasePage from '@/components/base/BasePage.vue'
 import type { ITabItem } from '@/components/base/BaseTab.vue'
@@ -51,7 +51,6 @@ import BranchIncomeExpenseTable from '../components/BranchIncomeExpenseTable.vue
 import useList from '../composables/useList'
 
 const route = useRoute()
-const router = useRouter()
 
 const {
   filters,
@@ -62,7 +61,8 @@ const {
   search,
   fetch,
   onClearFilters,
-  onSearch
+  onSearch,
+  onPrint
 } = useList()
 
 const tabItems: ITabItem[] = [
@@ -85,17 +85,6 @@ function onTabChange (value: string): void {
   filters.value.filter = value as TReportType
   filters.value.financeCategory = 'OVERALL'
   onSearch()
-}
-
-function onPrint (): void {
-  router.push({
-    name: 'BranchIncomeExpensePrintPage',
-    query: {
-      filter: filters.value.filter || undefined,
-      financeCategory: filters.value.financeCategory || undefined,
-      branchId: filters.value.branchId || undefined
-    }
-  })
 }
 
 onMounted((): void => {

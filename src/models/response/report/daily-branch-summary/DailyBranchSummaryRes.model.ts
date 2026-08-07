@@ -14,5 +14,7 @@ export interface IDailyBranchSummaryList {
   outstanding: number
 }
 
-export type TGetDailyBranchSummaryListResponse = IBasePaginationResponse<IDailyBranchSummaryList>
+export interface TGetDailyBranchSummaryListResponse extends IBasePaginationResponse<IDailyBranchSummaryList> {
+  summary: Omit<IDailyBranchSummaryList, 'branchId' | 'branchName'>
+}
 export type TActionDailyBranchSummary = IBaseSuccessResponse<boolean>

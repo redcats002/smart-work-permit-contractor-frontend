@@ -1,3 +1,4 @@
+import { dayjs } from '@/plugins/dayjs.plugin'
 import { useDayjs } from '@/utils/Dayjs'
 import { describe, expect, it } from 'vitest'
 
@@ -46,16 +47,17 @@ describe('useDayjs', () => {
   })
 
   describe('formatDateRequest', () => {
-    it('returns null when input is undefined', () => {
-      expect(d.formatDateRequest(undefined)).toBeNull()
+    it('returns undefined when input is undefined', () => {
+      expect(d.formatDateRequest(undefined)).toBeUndefined()
     })
 
-    it('formats a date string to YYYY-MM-DD', () => {
-      expect(d.formatDateRequest('2024-06-15')).toBe('2024-06-15')
+    it('formats a date string to an ISO string', () => {
+      expect(d.formatDateRequest('2024-06-15')).toBe(dayjs('2024-06-15').toISOString())
     })
 
-    it('formats a Date object to YYYY-MM-DD', () => {
-      expect(d.formatDateRequest(new Date('2024-06-15T12:00:00'))).toBe('2024-06-15')
+    it('formats a Date object to an ISO string', () => {
+      const input = new Date('2024-06-15T12:00:00')
+      expect(d.formatDateRequest(input)).toBe(dayjs(input).toISOString())
     })
   })
 

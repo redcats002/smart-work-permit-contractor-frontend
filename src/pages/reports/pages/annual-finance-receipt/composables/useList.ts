@@ -1,4 +1,5 @@
 import { computed, ref, type Ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useDayjs } from '@/utils/Dayjs'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IAnnualFinanceReceiptFilter } from '@/models/modules/report/annual-finance-receipt/Filter.model'
@@ -18,11 +19,13 @@ interface IUseList extends IUsePagination {
   fetch(): void
   onSearch(): void
   onClearFilters(): void
+  onPrint(): void
 }
 
 export default function useList (): IUseList {
   const AnnualFinanceReceiptService: IAnnualFinanceReceiptProvider = new AnnualFinanceReceiptProvider()
 
+  const router = useRouter()
   const dayjs = useDayjs()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
@@ -97,6 +100,16 @@ export default function useList (): IUseList {
     reset()
   }
 
+  function onPrint (): void {
+    router.push({
+      name: 'AnnualFinanceReceiptPrintPage',
+      query: {
+        branchId: filters.value.branchId || undefined,
+        year: filters.value.year ? dayjs(filters.value.year).format('YYYY') : undefined
+      }
+    })
+  }
+
   return {
     filters,
     items,
@@ -111,6 +124,7 @@ export default function useList (): IUseList {
     extractPagination,
     syncQuery,
     reset,
-    resetPagination
+    resetPagination,
+    onPrint
   }
 }

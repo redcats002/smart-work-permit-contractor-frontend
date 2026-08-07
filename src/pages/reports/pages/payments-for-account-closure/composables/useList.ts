@@ -1,4 +1,5 @@
 import { computed, ref, type Ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IAccountClosureFilter } from '@/models/modules/report/account-closure/Filter.model'
 import type { IAccountClosureList } from '@/models/response/report/account-closure/AccountClosureRes.model'
@@ -14,9 +15,12 @@ interface IUseList extends IUsePagination {
   fetch(): void
   onSearch(): void
   onClearFilters(): void
+  onPrint(): void
 }
 
 export default function useDebtCollectionPaymentClosure (): IUseList {
+  const router = useRouter()
+
   const DebtCollectionPaymentClosureService: IDebtCollectionPaymentClosureProvider = new DebtCollectionPaymentClosureProvider()
 
   const { search, pagination, sortBy, sortOrder, extractPagination, syncQuery, reset, resetPagination } = usePagination()
@@ -57,6 +61,17 @@ export default function useDebtCollectionPaymentClosure (): IUseList {
     filters.value = {}
   }
 
+  function onPrint (): void {
+    router.push({
+      name: 'PaymentsForAccountClosurePrintPage',
+      query: {
+        search: search.value || undefined,
+        receiptType: filters.value.receiptType || undefined,
+        assetType: filters.value.assetType || undefined
+      }
+    })
+  }
+
   return {
     filters,
     items,
@@ -70,6 +85,7 @@ export default function useDebtCollectionPaymentClosure (): IUseList {
     onClearFilters,
     extractPagination,
     syncQuery,
-    reset
+    reset,
+    onPrint
   }
 }
