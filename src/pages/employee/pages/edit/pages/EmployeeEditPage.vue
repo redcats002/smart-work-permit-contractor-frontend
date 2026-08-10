@@ -34,6 +34,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
+import { useAuthStore } from '@/stores/Auth'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import type { IEmployeeById } from '@/models/response/employee/EmployeeRes.model'
@@ -59,6 +60,8 @@ import { usePayload } from '../composables/usePayload'
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
+
 
 const EmployeeService: IEmployeeProvider = new EmployeeProvider()
 
@@ -77,6 +80,16 @@ async function useFetch (): Promise<void> {
 async function useSubmit (): Promise<void> {
   const images = await getUploadImages()
   await EmployeeService.updateEmployee(employeeId.value, usePayload(form.value, images))
+  if (employeeId.value === authStore.user.id) {
+    authStore.updateUser({
+      title: form.value.title,
+      firstName: form.value.firstName,
+      lastName: form.value.lastName,
+      email: form.value.email,
+      image: images?.[0]?.path,
+      imageUrl: images?.[0]?.url
+    })
+  }
   toast.success('ดำเนินการสำเร็จ')
   router.push({ name: 'EmployeeDetailPage', params: { id: employeeId.value } })
 }
