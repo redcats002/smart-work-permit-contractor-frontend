@@ -186,7 +186,7 @@ function fullName (e: { titleName?: TTitleName, title?: TTitleName, firstName?: 
   if (!e?.firstName && !e?.lastName) return 'ไม่ระบุ'
   if (e?.firstName && !e.lastName) return e.firstName
   if (!e?.firstName && e?.lastName) return e.lastName
-  const isEng = (/[a-zA-Z]/).test(`${e.firstName} ${e.lastName}`)
+  const isEng = (/[a-zA-Z]/).test(e.firstName ?? '')
   const title = formatTitle(actualTitle, isEng)
   return `${title} ${e.firstName} ${e.lastName}`
 }

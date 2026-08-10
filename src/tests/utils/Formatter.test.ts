@@ -172,6 +172,11 @@ describe('formatter', () => {
       const result = formatter.fullName({ titleName: 'MR', firstName: 'John', lastName: 'Doe' })
       expect(result).toBe('Mr John Doe')
     })
+
+    it('determines language from firstName only, ignoring lastName script', () => {
+      const result = formatter.fullName({ titleName: 'MR', firstName: 'John', lastName: 'ใจดี' })
+      expect(result).toBe('Mr John ใจดี')
+    })
   })
 
   describe('fullPhoneNumber', () => {
