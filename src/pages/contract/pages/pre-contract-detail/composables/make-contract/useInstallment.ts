@@ -1,4 +1,4 @@
-import { InterestTypeEnum } from '@/enums/modules/contract/InterestType.enum'
+import { type InterestTypeEnum } from '@/enums/modules/contract/InterestType.enum'
 import dayjs from 'dayjs'
 
 export interface IInstallmentRow {
@@ -20,8 +20,8 @@ export interface IOperationInstallment {
   contractedAt: Date
 }
 
+
 export function useInstallment (operation: IOperationInstallment): IInstallmentRow[] {
-  const round = (n: number): number => Math.round(n * 100) / 100
   const installments: IInstallmentRow[] = []
   const { loanAmount, installmentCount, interestType, annualInterestRate, contractedAt } = operation
 
@@ -30,8 +30,8 @@ export function useInstallment (operation: IOperationInstallment): IInstallmentR
 
   let remainingPrincipal = loanAmount
 
-  if (interestType === InterestTypeEnum.FLAT_RATE) {
-    const totalInterest = loanAmount * (annualInterestRate / 100) * (installmentCount / 12)
+  if (interestType === 'FLAT_RATE') {
+    const totalInterest = Math.round(loanAmount * (annualInterestRate / 100) * (installmentCount / 12))
     const principalPerInstallment = loanAmount / installmentCount
     const interestPerInstallment = totalInterest / installmentCount
 
@@ -41,12 +41,12 @@ export function useInstallment (operation: IOperationInstallment): IInstallmentR
     for (let i = 0; i < installmentCount; i++) {
       const isLast = i === installmentCount - 1
 
-      const principal = isLast ? round(loanAmount - sumPrincipal) : round(principalPerInstallment)
-      const interest = isLast ? round(totalInterest - sumInterest) : round(interestPerInstallment)
+      const principal = isLast ? loanAmount - sumPrincipal : Math.round(principalPerInstallment)
+      const interest = isLast ? totalInterest - sumInterest : Math.round(interestPerInstallment)
 
       sumPrincipal += principal
       sumInterest += interest
-      remainingPrincipal = round(remainingPrincipal - principal)
+      remainingPrincipal = Math.round(remainingPrincipal - principal)
 
       installments.push({
         order: i + 1,
@@ -59,7 +59,7 @@ export function useInstallment (operation: IOperationInstallment): IInstallmentR
         remainingPrincipal
       })
     }
-  } else if (interestType === InterestTypeEnum.EFFECTIVE_RATE) {
+  } else if (interestType === 'EFFECTIVE_RATE') {
     throw new Error('กำลังปรับปรุงวิธีคำนวณ ลดต้นลดดอก')
   }
 
