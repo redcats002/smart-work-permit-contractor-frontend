@@ -4,7 +4,7 @@
       {{ title }}
     </h1>
     <img
-      alt="mittae-siam-logo"
+      alt="smart-work-permit-logo"
       class="object-contain w-36 sm:w-48"
       src="/assets/images/logo.png">
     <p

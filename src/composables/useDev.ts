@@ -17,19 +17,19 @@ export default function useDev (): IUseDev {
   const isAlpha = computed((): boolean => {
     const devEnvs = ['alpha']
     const isAlphaEnv = devEnvs.includes(import.meta.env.VITE_APP_ENV)
-    const isAlphaHost = window.location.hostname === 'mittae-siam-management-alpha.vercel.app'
+    const isAlphaHost = window.location.hostname === 'smart-work-permit-alpha.vercel.app'
     return isAlphaEnv || isAlphaHost
   })
   const isStaging = computed((): boolean => {
     const devEnvs = ['staging']
     const isStagingEnv = devEnvs.includes(import.meta.env.VITE_APP_ENV)
-    const isStagingHost = window.location.hostname === 'mittae-siam-management-staging.vercel.app'
+    const isStagingHost = window.location.hostname === 'smart-work-permit-staging.vercel.app'
     return isStagingEnv || isStagingHost
   })
   const isProd = computed((): boolean => {
     const prodEnvs = ['prod', 'production']
     const isProdEnv = prodEnvs.includes(import.meta.env.VITE_APP_ENV)
-    const isProdHost = window.location.hostname === 'mittae-siam-management.vercel.app'
+    const isProdHost = window.location.hostname === 'smart-work-permit.vercel.app'
     return isProdEnv || isProdHost
   })
 

@@ -12,7 +12,7 @@ export interface IUseUpload {
 }
 
 export default function useUpload (): IUseUpload {
-  const storageUrl = 'https://storage.googleapis.com/mittae-siam-bucket'
+  const storageUrl = 'https://storage.googleapis.com/smart-work-permit-bucket'
   const UploadService: IUploadProvider = new UploadProvider()
 
   const media = ref<IMedia[]>([])

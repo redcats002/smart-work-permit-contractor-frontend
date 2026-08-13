@@ -70,7 +70,7 @@ const router: Router = createRouter({
   routes
 })
 
-const DEFAULT_TITLE: string = 'Mittae Siam Management'
+const DEFAULT_TITLE: string = 'Smart Work Permit'
 
 export let previousRoutePath: string | null = null
 
