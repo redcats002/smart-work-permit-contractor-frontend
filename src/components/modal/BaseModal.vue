@@ -16,7 +16,7 @@
           class="px-8 pt-10 mb-5 relative">
           <label
             :class="headerAlign === 'center' ? 'text-center' : ''"
-            class="text-lg font-bold text-[#333333]">
+            class="text-lg font-bold text-(--color-text-strong)">
             {{ label }}
           </label>
           <div
@@ -26,7 +26,7 @@
             class="flex gap-2.5 items-center">
             <slot name="menu" />
             <Icon
-              class="cursor-pointer size-6 text-[#62748E] hover:text-black transition-all duration-200"
+              class="cursor-pointer size-6 text-(--color-text-secondary) hover:text-black transition-all duration-200"
               icon="mdi:close"
               @click="closeCallback()" />
           </div>

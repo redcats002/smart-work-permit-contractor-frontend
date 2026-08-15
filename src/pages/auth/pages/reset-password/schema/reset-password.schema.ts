@@ -1,4 +1,5 @@
 import { regex } from '@/utils/Regex'
+import i18n from '@/plugins/I18n.plugin'
 import type { IResetPasswordPayload } from '@/models/request/auth/public/AuthReq.public.model'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import z from 'zod'
@@ -6,15 +7,15 @@ import z from 'zod'
 export const ResetPasswordSchema = z.object({
   newPassword: z
     .string()
-    .min(8, { message: 'ต้องมีตัวอักษรภาษาอังกฤษ และตัวเลข รวมกันอย่างน้อย 8 ถึง 16 ตัว' })
-    .max(16, { message: 'ต้องมีตัวอักษรภาษาอังกฤษ และตัวเลข รวมกันอย่างน้อย 8 ถึง 16 ตัว' })
+    .min(8, { message: i18n.global.t('platform.auth.resetPassword.validation.passwordLength') })
+    .max(16, { message: i18n.global.t('platform.auth.resetPassword.validation.passwordLength') })
     .refine((value: string): boolean => regex.upperCaseOneCharRegex.test(value), {
-      message: 'ต้องมีอักษรภาษาอังกฤษพิมพ์ใหญ่อย่างน้อย 1 ตัว'
+      message: i18n.global.t('platform.auth.resetPassword.validation.passwordUpper')
     })
     .refine((value: string): boolean => regex.atLeastOneNumber.test(value), {
-      message: 'ต้องมี 0-9 อย่างน้อย 1 ตัว'
+      message: i18n.global.t('platform.auth.resetPassword.validation.passwordNumber')
     }),
-  confirmNewPassword: z.string().min(1, 'กรุณากรอกยืนยันรหัสผ่าน')
+  confirmNewPassword: z.string().min(1, i18n.global.t('platform.auth.resetPassword.validation.confirmRequired'))
 })
 
 export type ResetPasswordFormValues = z.infer<typeof ResetPasswordSchema>
@@ -29,7 +30,7 @@ export function useResetPasswordResolver () {
 
     if (values.confirmNewPassword && values.newPassword && values.newPassword !== values.confirmNewPassword) {
       errors.confirmNewPassword ??= []
-      errors.confirmNewPassword.push({ message: 'รหัสผ่านกับยืนยันรหัสผ่านไม่ตรงกัน' })
+      errors.confirmNewPassword.push({ message: i18n.global.t('platform.auth.resetPassword.validation.confirmMismatch') })
     }
 
     return { ...result, errors }

@@ -2,7 +2,7 @@
   <Button
     :as="to ? RouterLink : 'button'"
     :class="{
-      'bg-white! text-[#333333]! border-[#E2E8F0]! flex items-center hover:bg-gray-100!': theme === 'secondary',
+      'bg-white! text-(--color-text-strong)! border-(--color-border)! flex items-center hover:bg-gray-100!': theme === 'secondary',
     }"
     :to="to"
     class="w-full h-10.5 md:w-49.5

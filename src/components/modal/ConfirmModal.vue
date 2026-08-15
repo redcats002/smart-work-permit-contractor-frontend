@@ -13,7 +13,7 @@
         name="activator" />
     </template>
     <template #default="{close}">
-      <div class="flex flex-col items-center justify-center text-sm text-[#333333] mb-5">
+      <div class="flex flex-col items-center justify-center text-sm text-(--color-text-strong) mb-5">
         <p v-sanitize.basic="description" />
       </div>
       <div class="flex gap-2.5 w-full justify-center">

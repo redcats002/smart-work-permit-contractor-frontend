@@ -1,7 +1,7 @@
 <template>
-  <Button class="bg-white! text-[#333333]! border-[#E2E8F0]! flex items-center hover:bg-gray-100!">
+  <Button class="bg-white! text-(--color-text-strong)! border-(--color-border)! flex items-center hover:bg-gray-100!">
     <Icon
-      class="size-5 text-[#62748E]"
+      class="size-5 text-(--color-text-secondary)"
       icon="lucide:hard-drive-download" />
     <div class="text-sm font-medium">
       ดาวโหลด

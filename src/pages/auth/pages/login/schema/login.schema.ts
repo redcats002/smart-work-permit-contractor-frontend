@@ -1,16 +1,13 @@
 import { z } from 'zod'
+import i18n from '@/plugins/I18n.plugin'
 
 export const LoginSchema = z.object({
-  email: z.email('รูปแบบอีเมลไม่ถูกต้อง').min(1, 'กรุณากรอกอีเมล'),
+  email: z
+    .email(i18n.global.t('platform.auth.validation.emailInvalid'))
+    .min(1, i18n.global.t('platform.auth.validation.emailRequired')),
   password: z
     .string()
-    .min(1, 'กรุณากรอกรหัสผ่าน')
+    .min(1, i18n.global.t('platform.auth.validation.passwordRequired'))
 })
 
 export type LoginFormValues = z.infer<typeof LoginSchema>
-export function useFormInitialValues (): LoginFormValues {
-  return {
-    email: '',
-    password: ''
-  }
-}

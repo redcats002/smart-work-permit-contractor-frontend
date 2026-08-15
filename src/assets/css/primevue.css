@@ -5,20 +5,21 @@
    ───────────────────────────────────────── */
 
 /* ─────────────────────────────────────────
-   Primary Palette  — Brand Red (#BD0102)
+   Primary Palette  — SmartWorkPermit Red (#C81E2C)
+   Mirrors --color-primary-* in tailwind.css
    ───────────────────────────────────────── */
 :root {
-    --p-primary-50:  #fff1f1;
-    --p-primary-100: #ffdcdc;
-    --p-primary-200: #ffb8b8;
-    --p-primary-300: #ff7f7f;
-    --p-primary-400: #ef3434;
-    --p-primary-500: #bd0102;   /* ← brand primary */
-    --p-primary-600: #990101;
-    --p-primary-700: #780001;
-    --p-primary-800: #5a0001;
-    --p-primary-900: #3d0001;
-    --p-primary-950: #220000;
+    --p-primary-50:  #fdf4f5;
+    --p-primary-100: #fbe5e6;
+    --p-primary-200: #f6c5c9;
+    --p-primary-300: #ef9aa1;
+    --p-primary-400: #e35f69;
+    --p-primary-500: #c81e2c;   /* ← brand primary */
+    --p-primary-600: #aa1824;
+    --p-primary-700: #8b131d;
+    --p-primary-800: #6c0f16;
+    --p-primary-900: #500c12;
+    --p-primary-950: #30080c;
 }
 
 /* ─────────────────────────────────────────
@@ -42,25 +43,26 @@
 }
 
 /* ─────────────────────────────────────────
-   Brand Accent Tokens
+   Brand Accent Tokens — SmartWorkPermit
+   Mirrors the status/accent tokens in tailwind.css
    ───────────────────────────────────────── */
 :root {
-    /* Green  ── #219653 */
-    --p-green-light: #cfffe3;   /* badge / tag background */
-    --p-green:       #219653;   /* text / icon */
+    /* Green  ── success / active status #1E8E5A */
+    --p-green-light: #e4f4ec;   /* badge / tag background */
+    --p-green:       #1e8e5a;   /* text / icon */
 
-    /* Orange ── #F2994A */
-    --p-orange:      #ffecd6;   /* badge / tag background */
-    --p-orange-2:    #f2994a;   /* text / icon */
+    /* Orange ── accent / fire-monitor #F26B1D */
+    --p-orange:      #fff1e6;   /* badge / tag background */
+    --p-orange-2:    #f26b1d;   /* text / icon */
 
-    /* Red ── #BD0102 (alias for inline use) */
-    --p-red:         #bd0102;   /* danger / error */
-    --p-red-2:       #eb5757;   /* softer danger */
+    /* Red ── #C81E2C (alias for inline use) */
+    --p-red:         #c81e2c;   /* danger / error */
+    --p-red-2:       #e35f69;   /* softer danger */
 
     /* Gray */
-    --p-gray-5:      #e0e0e0;   /* border / divider */
-    --p-gray-4:      #BDBDBD;   /* border / action button */
-    --p-gray-2:      #4f4f4f;   /* secondary text */
+    --p-gray-5:      #e1e6eb;   /* border / divider */
+    --p-gray-4:      #cbd2d9;   /* border / action button */
+    --p-gray-2:      #5b656f;   /* secondary text */
 }
 
 /* ─────────────────────────────────────────

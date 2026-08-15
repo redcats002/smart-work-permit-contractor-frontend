@@ -1,43 +1,54 @@
 {
+  "project": "SmartWorkPermit — Contractor Web App",
+  "spec": "docs/main/dev-handoff/02-contractor-web-vue-tasks.md",
+  "sharedContext": "docs/main/dev-handoff/00-SHARED-CONTEXT.md",
+  "design": "docs/main/SmartWorkPermit-v3.dc.html",
+  "note": "Root-level registry: one entry per module. Item-level work lives in docs/modules/<module>/feature_list.json. A module is 'done' only when every item in its module registry is 'done'.",
   "features": [
     {
       "id": "feat-001",
-      "name": "Project Setup",
-      "description": "Confirm the project can install dependencies, run verification, and start from a clean checkout",
+      "module": "platform",
+      "harness": "docs/modules/platform/",
+      "name": "Platform foundation",
+      "description": "Repair the broken baseline left by the lending-app strip, swap the design system to the SafePermit palette/typography, build the app shell (dark sidebar + topbar, responsive drawer), wire i18n (en/th), contractor auth + route guard, the API client with backend error-code localization, and notification polling.",
       "dependencies": [],
-      "status": "not-started",
+      "status": "in-progress",
       "evidence": ""
     },
     {
       "id": "feat-002",
-      "name": "First User-Facing Feature",
-      "description": "Replace this placeholder with the first concrete behavior the agent should implement",
-      "dependencies": ["feat-001"],
-      "status": "not-started",
+      "module": "permit",
+      "harness": "docs/modules/permit/",
+      "name": "Permit core",
+      "description": "Permit models/enums/safety-range constants, the permit provider, My Permits list, the 6-step New Permit wizard, Permit Detail (status banners, QR, audit timeline), the closure checklist modal with its blocked states, and the Fire Watch countdown.",
+      "dependencies": [
+        "feat-001"
+      ],
+      "status": "in-progress",
       "evidence": ""
     },
     {
       "id": "feat-003",
-      "name": "Verification Coverage",
-      "description": "Add or confirm tests, type checks, linting, or manual verification for the active feature",
-      "dependencies": ["feat-002"],
-      "status": "not-started",
+      "module": "history",
+      "harness": "docs/modules/history/",
+      "name": "History",
+      "description": "Searchable, filterable, paginated permit history with CSV export and drill-in to permit detail. Reuses the permit provider from feat-002.",
+      "dependencies": [
+        "feat-002"
+      ],
+      "status": "done",
       "evidence": ""
     },
     {
       "id": "feat-004",
-      "name": "Documentation Update",
-      "description": "Update README, architecture notes, or product docs affected by the implemented feature",
-      "dependencies": ["feat-003"],
-      "status": "not-started",
-      "evidence": ""
-    },
-    {
-      "id": "feat-005",
-      "name": "Cleanup and Handoff",
-      "description": "Record verification evidence, update progress.md, and leave a clear next-session path",
-      "dependencies": ["feat-004"],
-      "status": "not-started",
+      "module": "certificate",
+      "harness": "docs/modules/certificate/",
+      "name": "Certificates",
+      "description": "Personnel certificate provider/models, certificate list with valid/expiring-soon/expired badges, add-certificate form, and the certificate gate that blocks permit submission for workers with a missing or expired cert.",
+      "dependencies": [
+        "feat-001"
+      ],
+      "status": "done",
       "evidence": ""
     }
   ]

@@ -1,0 +1,254 @@
+{
+  "module": "permit",
+  "rootFeature": "feat-002",
+  "context": "docs/modules/permit/context.md",
+  "items": [
+    {
+      "id": "PMT-001",
+      "type": "feature",
+      "name": "Permit domain — enums, models, safety-range constants",
+      "description": "The vocabulary every other item in this module imports: status enum, type enum, JSA phase enum, worker-role sets per permit type, the safety-range constant, and request/response models for the permit endpoints.",
+      "acceptance": [
+        "EPermitStatus: DRAFT | PENDING | REJECTED | ACTIVE | FIRE_MONITOR | CLOSED | EXPIRED",
+        "EPermitType: hot | confined | heights",
+        "EJsaPhase: pre | process | post",
+        "A single exported SAFETY_RANGES constant encoding LEL=0, O2 19.5-23.5, CO<=50 (confined), wind<=25 (heights), and which readings each type requires",
+        "A pure validateReadings(type, readings, outdoorWork) helper returning the list of failing readings — unit tested at the boundaries: 0, 19.4, 19.5, 23.5, 23.6, 50, 50.1, 25, 25.1",
+        "Worker-role option sets per type (confined: Entrant/Attendant/Gas Tester; hot: Fire Watcher/Operator/Helper; heights: per design)",
+        "Request/response models per model-conventions.md for create/patch/submit/list/detail/close/qr/audit",
+        "./init.sh green"
+      ],
+      "notes": "SAFETY_RANGES is imported by both the zod schema and the inline pass/fail UI. Never duplicate the numbers. Ranges are in docs/modules/permit/context.md and AGENTS.md. || DONE. validateReadings(type, readings, outdoorWork) returns IReadingFailure[] = {reading, reason: MISSING|OUT_OF_RANGE} — a list, not a boolean, so the UI can name the failing reading. SO2 and height are advisory: never in the failure list. wind is excluded from bypassableByOutdoor, so outdoorWork never skips it. BACKEND CONFIRMATION NEEDED: the fields project and workDescription come from the design wizard step 2, NOT from the permits table column list in 01-backend-elysia-tasks.md.",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "./init.sh — typecheck PASS, lint PASS, tests PASS (18 files, 248 tests). Verified by orchestrator 2026-08-15, independently of the agent report. 24 PermitSafety boundary tests."
+    },
+    {
+      "id": "PMT-002",
+      "type": "feature",
+      "name": "Permit provider + router module",
+      "description": "IPermitProvider over the permit endpoints, and src/router/modules/Permit.router.ts with prefix /permits and lazy-loaded list/create/detail routes.",
+      "acceptance": [
+        "src/resources/provider/permit/Permit.provider.ts extends HttpRequest, sets urlPrefix, exports default",
+        "Methods: create, update, submit, list, detail, markComplete, close, qr, audit",
+        "Router: const prefix = '/permits'; routes list (''), create ('/create'), detail ('/:id'); all lazy-loaded; meta.auth set; meta.title set",
+        "Router registered in src/router/index.ts and the Modules table in AGENTS.md still matches",
+        "./init.sh green"
+      ],
+      "notes": "If the backend is unreachable, stub responses inside the provider so swapping the base URL later is a one-line change (per 02-contractor-web-vue-tasks.md). || DONE. IPermitProvider: create/update/submit/list/detail/markComplete/close/qr/audit, urlPrefix /api/v1/permits. STUB IS ACTIVE: src/resources/provider/permit/Permit.mock.ts + a USE_STUB_DATA=true flag at Permit.provider.ts:34. TO GO LIVE: set USE_STUB_DATA=false (one line) and delete Permit.mock.ts. Router modules/Permit.router.ts created with PermitListPage / PermitCreatePage / PermitDetailPage, /create declared BEFORE /:id so it is not swallowed as an id. NOT YET REGISTERED in src/router/index.ts — orchestrator wires it after the wave. Create and detail pages are deliberate PLACEHOLDERS for PMT-004 and PMT-010.",
+      "dependencies": [
+        "PMT-001"
+      ],
+      "status": "done",
+      "evidence": "typecheck PASS, lint PASS on all permit files, Permit.provider tests pass (9). Verified by orchestrator after the agent died to a machine-sleep mid-verification; its work was complete."
+    },
+    {
+      "id": "PMT-003",
+      "type": "feature",
+      "name": "My Permits list",
+      "description": "Permit list page: header with New Permit CTA, All/Active/Pending/Closed filter chips, 2-column permit card grid, empty state.",
+      "acceptance": [
+        "Filter chips All / Active / Pending / Closed; active chip is visually distinct; filter drives the API query, not a client-side slice",
+        "Card: 5px left border in the permit-type color, mono permit ID, status pill, title, location, footer row (type chip, date, time)",
+        "Confined-space permits with entrants inside show a blinking red 'N inside' indicator",
+        "Empty state renders when the filtered list is empty (reuse src/components/display/Empty.vue)",
+        "Cards stack to 1 column below md; no horizontal body scroll at 375px",
+        "./init.sh green"
+      ],
+      "notes": "Design lines 109-143. || DONE. src/pages/permit/pages/list/ with PermitCard.vue + useMyPermits.ts composable. Filter chips drive the API query, not a client-side slice.",
+      "dependencies": [
+        "PMT-002"
+      ],
+      "status": "done",
+      "evidence": "typecheck PASS, lint PASS on all permit files, Permit.provider tests pass (9). Verified by orchestrator after the agent died to a machine-sleep mid-verification; its work was complete."
+    },
+    {
+      "id": "PMT-004",
+      "type": "feature",
+      "name": "Wizard shell — stepper, navigation, draft persistence",
+      "description": "The 6-step container: stepper header, per-step validation gate on Next, Back navigation, and draft persistence to the API. Step bodies land in PMT-005..009.",
+      "acceptance": [
+        "6-node stepper with done / current / upcoming states and connecting rules",
+        "Next is blocked while the current step's schema fails; the blocked reason is shown next to the button",
+        "Back never validates",
+        "Step 6 replaces Next with a green Submit button",
+        "Draft state persists via POST /permits then PATCH /permits/:id — not localStorage",
+        "Wizard state lives in a page-scoped composable (useWizard), not a Pinia store",
+        "Steps stack full-width below md",
+        "./init.sh green"
+      ],
+      "notes": "Design lines 146-165 (stepper) and 417-425 (footer). || DONE. Step registry WIZARD_STEPS: IWizardStepDef[] = {key, labelKey, component, schema} — StepperHeader, WizardFooter and useWizard all derive from it, so filling a step means editing only that step .vue + .schema.ts. useWizard(steps) takes an injectable array so tests can exercise gating (the real placeholder schemas always pass). CREATE-THEN-PATCH RACE solved with a single inflight promise chain: doPersist() reads draftId at execution time, not call time, so a second write queues behind the first and never fires a second create — covered by a deferred-promise test. Nothing POSTs until formData.type is set. goToStep re-validates EVERY prior step, not just an unlocked index — otherwise editing an earlier step back into an invalid state would let the stepper jump past it (invisible today, live from PMT-005). 375px: compact Step X of N + progress bar below sm, full 6-node stepper at sm+. Six step stubs each marked with their follow-up item.",
+      "dependencies": [
+        "PMT-002"
+      ],
+      "status": "done",
+      "evidence": "./init.sh — typecheck PASS, lint PASS, tests PASS. Live Playwright probe after router registration: route renders with shell chrome, no pageerror, no horizontal overflow at 375/768/1280. /permits/create renders 478 chars. 9 useWizard tests."
+    },
+    {
+      "id": "PMT-005",
+      "type": "feature",
+      "name": "Wizard step 1-2 — Permit Type + Basic Information",
+      "description": "Type selection cards and the shared header fields, including the map-pin placeholder.",
+      "acceptance": [
+        "Step 1: three selectable type cards (Hot Work, Confined Space, Working at Heights) with icon, EN name, Thai name, blurb, and the per-type color pairing from the design; selection drives which readings step 3 asks for",
+        "Step 2: Project*, Contractor (readonly, from auth store), Foreman*, Date*, Start*/End*, Work description*, Location*",
+        "End time must be after start time — validated in the schema",
+        "Map pin is a static placeholder panel — DO NOT add a mapping dependency (02-contractor-web-vue-tasks.md sanctions a placeholder)",
+        "Both steps stack to a single column below md",
+        "./init.sh green"
+      ],
+      "notes": "Design lines 168-215.",
+      "dependencies": [
+        "PMT-004"
+      ],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "PMT-006",
+      "type": "feature",
+      "name": "Wizard step 3 — Safety Checks",
+      "description": "Type-specific gas/wind readings with inline pass/fail against SAFETY_RANGES, the indoor/outdoor bypass toggle, the numbered Yes/No/N/A checklist, and a hard block on Next when a reading fails.",
+      "acceptance": [
+        "Readings rendered per type: hot → LEL, O2; confined → LEL, O2, CO, SO2; heights → wind, height-from-ground",
+        "Each reading card shows the TH/EN label, the range hint, a mono numeric input with its unit, and an instrument-photo slot",
+        "A failing reading turns its card border/background red and blocks Next with NO override; the specific failing reading is named",
+        "Blocked banner (#C81E2C) / safe banner (#E4F4EC) above the readings",
+        "Indoor/Outdoor toggle sets outdoorWork; outdoor hides the gas readings and shows the bypass info panel; wind for heights is NOT bypassable",
+        "Numbered Yes/No/N/A checklist below the readings",
+        "Pass/fail comes from the shared validateReadings() from PMT-001 — the numbers are not re-typed here",
+        "./init.sh green"
+      ],
+      "notes": "Design lines 218-312. Client validation is convenience only — PMT-009 must still surface a server GAS_OUT_OF_RANGE that disagrees.",
+      "dependencies": [
+        "PMT-005"
+      ],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "PMT-007",
+      "type": "feature",
+      "name": "Wizard step 4 — PPE, photo evidence & workers",
+      "description": "Required photo-evidence slots, worker registration with per-type roles, and the Confined Space pre-work health check (BP + alcohol) required by Thai ministerial regulation.",
+      "acceptance": [
+        "Photo-evidence slot grid; required slots vary by permit type (e.g. harness photo for heights, instrument photo for gas); upload goes through the existing Upload.provider / useUpload composable",
+        "Worker table: index, name, role chips (options vary by permit type), and — for Confined Space — BP and alcohol inputs with a pass/fail health badge",
+        "The Thai ministerial-regulation notice is rendered verbatim from the design (amber panel)",
+        "Alcohol > 0 mg% or abnormal BP marks that worker failed; a red banner appears and Next is blocked while any worker fails",
+        "Workers can be added and removed; removal uses DeleteModal, never an inline confirm",
+        "Table scrolls horizontally rather than truncating at 375px",
+        "./init.sh green"
+      ],
+      "notes": "Design lines 315-363. The regulation text is at design line 334 — copy it exactly, do not paraphrase a legal citation.",
+      "dependencies": [
+        "PMT-005"
+      ],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "PMT-008",
+      "type": "feature",
+      "name": "Wizard step 5 — Job Safety Analysis",
+      "description": "Phase-tabbed JSA rows: Pre / Process / Post, each row {step, hazard, control}, add and edit.",
+      "acceptance": [
+        "Phase tab pill group showing a live row count per phase",
+        "3-column table: Work Step / Hazard (amber chip) / Control",
+        "Add row appends to the active phase; rows are editable and removable; sort order is preserved",
+        "At least one row is required before Next (confirm this rule with the product owner if it is not in the backend contract — the backend doc does not state a minimum)",
+        "./init.sh green"
+      ],
+      "notes": "Design lines 366-388. Backend model is jsa_steps { permit_id, phase, step, hazard, control, sort_order }.",
+      "dependencies": [
+        "PMT-005"
+      ],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "PMT-009",
+      "type": "feature",
+      "name": "Wizard step 6 — Review & Submit",
+      "description": "Read-only summary of every prior step, the pre-flight green checks, the submit action, and faithful surfacing of server-side rejection.",
+      "acceptance": [
+        "Summary card: type chip, title, mono permit ID, then Project / Foreman / Date-Time / Location / Workers count / JSA step count",
+        "Green ✓ rows for: atmosphere within limits, all required photo evidence attached, worker certificates valid",
+        "Submit calls POST /permits/:id/submit and navigates to the detail page on success",
+        "A server error is rendered from its `code` via the PLT-006 localization map — including when the client thought the permit was valid; the server verdict wins",
+        "GAS_OUT_OF_RANGE returns the user to step 3 with the failing readings highlighted; CERT_EXPIRED returns them to step 4",
+        "./init.sh green"
+      ],
+      "notes": "Design lines 391-414. The cert check row depends on certificate data — coordinate with CRT-004.",
+      "dependencies": [
+        "PMT-006",
+        "PMT-007",
+        "PMT-008"
+      ],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "PMT-010",
+      "type": "feature",
+      "name": "Permit Detail — status banners, QR, audit timeline",
+      "description": "The detail screen: per-status banner, info card, audit timeline, and the QR panel (or its pending placeholder).",
+      "acceptance": [
+        "Banner variants implemented for DRAFT (edit CTA), REJECTED (reason + Duplicate & Edit), just-submitted success, ACTIVE, and CLOSED",
+        "QR panel renders only for ACTIVE / FIRE_MONITOR — use the installed `qrcode` package, no new dependency; otherwise the dashed 'QR pending approval' placeholder",
+        "QR panel states it is linked to LIVE permit status, not a snapshot",
+        "Audit timeline: left-rule list, per-entry dot, bold action, mono 'who · when'. Read-only — no edit or delete affordance anywhere",
+        "Layout collapses the 268px right rail below the main column at narrow widths",
+        "./init.sh green"
+      ],
+      "notes": "Design lines 430-505. `qrcode` and `@types/qrcode` are already in package.json.",
+      "dependencies": [
+        "PMT-002"
+      ],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "PMT-011",
+      "type": "feature",
+      "name": "Closure checklist modal",
+      "description": "The foreman-facing closure flow: checklist, e-signature, and honest rendering of both backend block conditions.",
+      "acceptance": [
+        "Checklist rows with ✓ / ✗ buttons; Confirm stays disabled until every row is answered",
+        "E-signature pad is revealed only once the checklist is complete; captured signature is stamped with a mono timestamp",
+        "ENTRANTS_STILL_INSIDE → red block banner showing entrant count and names, stating the backend returns 403 until they check out via the Inspector app",
+        "FIRE_WATCH_NOT_ELAPSED → closure is blocked with the remaining time",
+        "A 403 from POST /permits/:id/close is rendered from its `code`, never as a raw backend string, and never swallowed",
+        "Modal is built on src/components/modal/BaseModal.vue",
+        "./init.sh green"
+      ],
+      "notes": "Design lines 574-611. The client must not pre-empt the backend — always attempt the call and render its verdict; the client-side block is only a UX hint.",
+      "dependencies": [
+        "PMT-010"
+      ],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "PMT-012",
+      "type": "feature",
+      "name": "Mark-complete + Fire Watch countdown (hot work)",
+      "description": "The hot-work-only path: a confirm dialog explaining the 30-minute server-side countdown, then the orange Fire Monitor panel with a live timer that unlocks closure at zero.",
+      "acceptance": [
+        "ACTIVE hot-work permits show the orange 'Mark Work Complete' strip; confined/heights show the green closure strip instead",
+        "Confirm dialog states the countdown is server-side and cannot be bypassed",
+        "POST /permits/:id/mark-complete moves the permit to FIRE_MONITOR",
+        "Fire Monitor panel: 80px mono MM:SS countdown, progress bar, warning copy, disabled 'Close Permit — locked until MM:SS' button",
+        "The countdown is derived from the server's fireMonitorStartedAt, NOT from a client-start timestamp — a page reload must not reset it",
+        "At zero, closure unlocks and hands off to PMT-011",
+        "./init.sh green"
+      ],
+      "notes": "SCOPE QUESTION — design lines 549-570 add a GPS-tagged-photo verification step after the countdown (capture → verify GPS against the permit pin → pass/fail → close). Neither 00-SHARED-CONTEXT.md nor 01-backend-elysia-tasks.md models it and no endpoint exists. ASK THE PRODUCT OWNER before building it. Default without an answer: build the countdown and unlock closure at zero; leave the photo step out and note it in progress.md.",
+      "dependencies": [
+        "PMT-010"
+      ],
+      "status": "not-started",
+      "evidence": ""
+    }
+  ]
+}

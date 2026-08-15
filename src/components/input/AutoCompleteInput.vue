@@ -36,7 +36,7 @@
           </span>
           <Icon
             :stroke-width="2"
-            class="size-5 text-[#62748E] cursor-pointer hover:text-black transition-all duration-200"
+            class="size-5 text-(--color-text-secondary) cursor-pointer hover:text-black transition-all duration-200"
             icon="mdi:close"
             @click="removeCallback($event)" />
         </span>

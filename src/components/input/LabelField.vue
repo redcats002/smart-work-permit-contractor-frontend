@@ -88,7 +88,7 @@
     </slot>
     <p
       v-if="description"
-      class="text-[#62748E] text-sm mt-1">
+      class="text-(--color-text-secondary) text-sm mt-1">
       {{ description }}
     </p>
     <Transition
@@ -225,7 +225,7 @@ watch(
   position: absolute;
   top: 100%;
   left: 0;
-  color: #ef4444;
+  color: var(--color-primary);
   font-size: 12px;
   margin-top: 4px;
   z-index: 50;

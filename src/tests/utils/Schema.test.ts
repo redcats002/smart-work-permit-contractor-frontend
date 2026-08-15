@@ -1,5 +1,6 @@
+import i18n, { setLocale } from '@/plugins/I18n.plugin'
 import { schema } from '@/utils/Schema'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 
 enum StatusEnum {
   ACTIVE = 'ACTIVE',
@@ -104,6 +105,34 @@ describe('schema', () => {
     it('rejects undefined', () => {
       const result = dateSchema.safeParse(undefined)
       expect(result.success).toBe(false)
+    })
+  })
+
+  describe('schema.date locale-aware required message', () => {
+    afterEach(() => {
+      setLocale('th')
+    })
+
+    it('produces an English required-message when the active locale is en', () => {
+      setLocale('en')
+      const result = schema.date('Date').safeParse(undefined)
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        const messages = result.error.issues.map((i: { message: string }) => i.message).join(' ')
+        expect(messages).toBe(i18n.global.t('common.validation.required', { label: 'Date' }))
+        expect(messages).toContain('Please select Date')
+      }
+    })
+
+    it('produces a Thai required-message when the active locale is th', () => {
+      setLocale('th')
+      const result = schema.date('วันที่').safeParse(undefined)
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        const messages = result.error.issues.map((i: { message: string }) => i.message).join(' ')
+        expect(messages).toBe(i18n.global.t('common.validation.required', { label: 'วันที่' }))
+        expect(messages).toContain('กรุณาเลือกวันที่')
+      }
     })
   })
 })

@@ -1,0 +1,88 @@
+{
+  "module": "certificate",
+  "rootFeature": "feat-004",
+  "context": "docs/modules/certificate/context.md",
+  "items": [
+    {
+      "id": "CRT-001",
+      "type": "feature",
+      "name": "Certificate provider, models & validity helper",
+      "description": "ICertificateProvider over /certificates, the request/response models, and a pure helper that maps an expiry date to valid / expiring-soon / expired.",
+      "acceptance": [
+        "src/resources/provider/certificate/Certificate.provider.ts extends HttpRequest, sets urlPrefix, exports default; methods list, create, byWorker",
+        "Models under src/models/{request,response}/certificate/ per model-conventions.md",
+        "ECertificateStatus: VALID | EXPIRING_SOON | EXPIRED",
+        "certificateStatus(expiryDate, now) helper using the Dayjs util in Asia/Bangkok; the expiring-soon window is a single named constant",
+        "Unit tests at the boundaries: expiry yesterday, today, threshold-1 day, threshold day, threshold+1 day",
+        "./init.sh green"
+      ],
+      "notes": "DONE. certificateStatus(expiryDate, now) — both params required, no internal clock read. CERTIFICATE_EXPIRING_SOON_DAYS = 30, DEFAULTED not confirmed by a product owner — still needs a decision. TIMEZONE: expiryDate is a bare business date parsed with dayjs.tz(str, Asia/Bangkok); now is a real instant parsed with dayjs(now).tz(Asia/Bangkok). The agent proved with a probe run under TZ=America/Los_Angeles, UTC and Asia/Bangkok that a naive single-branch version breaks on a non-UTC host — the two-helper split is load-bearing, do not collapse it.",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "./init.sh — typecheck PASS, lint PASS, tests PASS (278 tests). Live Playwright probe: page renders with shell chrome, no pageerror, no horizontal overflow at 375/768/1280. 8 CertificateStatus boundary tests + 5 provider tests."
+    },
+    {
+      "id": "CRT-002",
+      "type": "feature",
+      "name": "Certificate list",
+      "description": "The /certificates page: card grid of personnel certificates with validity badges.",
+      "acceptance": [
+        "src/router/modules/Certificate.router.ts with prefix '/certificates', lazy-loaded, meta.auth set; registered in src/router/index.ts and reflected in the AGENTS.md Modules table",
+        "2-column card grid; card border tint, badge, and expiry-date color all derive from certificateStatus()",
+        "Card content: worker name, role, validity badge, and a grey panel with cert type / issued / expiry (dates in mono)",
+        "Dashed attachment row per card",
+        "Empty state when the contractor has no certificates",
+        "Single column below md",
+        "./init.sh green"
+      ],
+      "notes": "DONE. STUB ACTIVE: USE_STUB_DATA=true in Certificate.provider.ts; real HTTP already wired to /api/v1/certificates on every method. TO GO LIVE: flip that boolean and delete Certificate.mock.ts (nothing else imports it). Card border/badge/expiry-color/attachment-border all key off ONE STATUS_STYLE map — no new design token was needed, existing --color-status-active/pending/rejected-* matched the design exactly.",
+      "dependencies": [
+        "CRT-001"
+      ],
+      "status": "done",
+      "evidence": "./init.sh — typecheck PASS, lint PASS, tests PASS (278 tests). Live Playwright probe: page renders with shell chrome, no pageerror, no horizontal overflow at 375/768/1280. /certificates renders 929 chars of card content."
+    },
+    {
+      "id": "CRT-003",
+      "type": "feature",
+      "name": "Add certificate form",
+      "description": "Form to register a new personnel certificate.",
+      "acceptance": [
+        "@primevue/forms + zodResolver — never raw safeParse",
+        "Fields: worker name*, role*, cert type*, issued date*, expiry date*, optional file attachment",
+        "Expiry must be after issued date — enforced in the schema",
+        "Adding an already-expired certificate is allowed but immediately badges as Expired (the record is the truth; do not silently reject a real document)",
+        "File upload goes through the existing Upload.provider / useUpload composable",
+        "Success refreshes the list; the API error is surfaced via the PLT-006 code map",
+        "./init.sh green"
+      ],
+      "notes": "DONE. @primevue/forms + zodResolver, cross-field expiry-after-issued via .refine. Upload goes through useUpload()/Upload.provider. zod validates the file MIME type only — schema.media was unusable because it requires a non-empty url that a freshly-picked file does not have yet.",
+      "dependencies": [
+        "CRT-002"
+      ],
+      "status": "done",
+      "evidence": "./init.sh — typecheck PASS, lint PASS, tests PASS (278 tests). Live Playwright probe: page renders with shell chrome, no pageerror, no horizontal overflow at 375/768/1280."
+    },
+    {
+      "id": "CRT-004",
+      "type": "feature",
+      "name": "Certificate gate on permit submission",
+      "description": "Wire certificate validity into the permit wizard: workers with a missing or expired certificate block submission, and a server CERT_EXPIRED response routes the user back to fix it.",
+      "acceptance": [
+        "Wizard step 4 shows each registered worker's certificate state; a missing or expired cert marks that worker as blocking",
+        "Next from step 4 and Submit from step 6 are both blocked while any registered worker's certificate is missing or expired; the blocking worker is named",
+        "Step 6's 'Worker certificates valid & not expired' green row reflects the real check, not a hardcoded ✓",
+        "A CERT_EXPIRED response from POST /permits/:id/submit returns the user to step 4 with the offending worker highlighted — the server verdict wins over the client check",
+        "The Inspector-side CERT_BLOCKED field-entry denial is NOT built here — different repo",
+        "./init.sh green"
+      ],
+      "notes": "This item spans two modules. Update both docs/modules/certificate/ and docs/modules/permit/ progress notes when it lands.",
+      "dependencies": [
+        "CRT-002",
+        "PMT-007"
+      ],
+      "status": "not-started",
+      "evidence": ""
+    }
+  ]
+}

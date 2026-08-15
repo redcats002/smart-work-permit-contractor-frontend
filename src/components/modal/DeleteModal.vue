@@ -12,7 +12,7 @@
         :visible="visible"
         name="activator" />
     </template>
-    <div class="flex flex-col items-center justify-center text-sm text-[#333333] mb-5">
+    <div class="flex flex-col items-center justify-center text-sm text-(--color-text-strong) mb-5">
       <p>
         {{ description1 }}
       </p>

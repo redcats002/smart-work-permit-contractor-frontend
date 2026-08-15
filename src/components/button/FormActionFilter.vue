@@ -6,7 +6,7 @@
       <span class="text-sm font-medium">ยืนยัน</span>
     </Button>
     <Button
-      class="bg-white! text-[#333333]! border-font-gray! flex items-center justify-center hover:bg-gray-100! h-10.5 grow w-full"
+      class="bg-white! text-(--color-text-strong)! border-(--color-border)! flex items-center justify-center hover:bg-gray-100! h-10.5 grow w-full"
       @click="emits('clear')">
       <span class="text-sm font-medium">ล้างค่า</span>
     </Button>

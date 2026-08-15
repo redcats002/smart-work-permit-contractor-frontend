@@ -51,33 +51,58 @@
 }
 
 /* ─────────────────────────────────────────
-   Brand Color Palette
+   Brand Color Palette — SmartWorkPermit (SafePermit)
    ─────────────────────────────────────────
-   Primary Red   : #BD0102
-   Secondary Navy: #4160BE
-   Yellow        : #FFC000
-   Blue          : #2F80ED
-   Green         : #219653
-   Orange        : #F2994A
-   Text Gray      : #333D48
-    (also used for content text and primary text)
+   Source of truth: docs/main/SmartWorkPermit-v3.dc.html
+   Full token table: root AGENTS.md § "Design system"
+
+   Primary / danger   : #C81E2C  (brand primary, required-field *, blocked
+                                  banners, rejected status, hot-work type)
+   Accent orange       : #F26B1D  (topbar accent border, logo mark, map pin,
+                                  fire-monitor emphasis)
+   Success green       : #1E8E5A  (dark #176B45, bg #E4F4EC, border #B7E0CA)
+                                  — active status, safe-atmosphere banners
+   Warning amber        : #B8860B / #E8B007 (bg #FFF8E1 / #FFF3DC)
+                                  — pending status, working-at-heights type
+   Confined-space purple: #7C3AED  (bg #F1E9FE) — confined-space type
+   Shell dark            : #111418 (topbar) · #16191D (sidebar, headings)
+   Sidebar text          : #C2CAD2 · muted #6B7681
+   Body text             : #16191D primary · #5B656F secondary · #8B95A0 tertiary
+   Surfaces              : #F7F8FA main bg · #F4F6F8 · #EEF1F4 · #fff cards
+   Borders                : #E1E6EB · #D7DCE2 · #CBD2D9
+
+   This replaces the previous lending-app brand (primary red #BD0102,
+   secondary navy #4160BE, plus the yellow/blue/green/orange "-brand" accents
+   and font-gray scale). Those scales are removed, not kept alongside —
+   SmartWorkPermit has its own accent/status/type token groups below.
    ───────────────────────────────────────── */
 @theme {
 	/* ── Typography ── */
 	--font-sans: 'LINE_Seed_Sans_TH', sans-serif;
 
-	/* ── Brand Primary Red ── #BD0102 ─────────── */
-	--color-primary-50: #fff1f1;
-	--color-primary-100: #ffdcdc;
-	--color-primary-200: #ffb8b8;
-	--color-primary-300: #ff7f7f;
-	--color-primary-400: #ef3434;
-	--color-primary-500: #bd0102; /* ← brand primary */
-	--color-primary-600: #990101;
-	--color-primary-700: #780001;
-	--color-primary-800: #5a0001;
-	--color-primary-900: #3d0001;
-	--color-primary-950: #220000;
+	/* Monospace — permit IDs, timestamps, URLs, numeric readings, meta labels.
+	   Design spec calls for 'IBM Plex Mono', but no woff2 files for it exist
+	   yet under public/assets/fonts/ (only LINE Seed Sans TH is self-hosted).
+	   Self-hosting a new face is out of scope for PLT-002 (design-system
+	   tokens only) and this app must not depend on a font CDN inside the
+	   facility network, so we fall back to a websafe monospace stack.
+	   TODO(PLT-xxx): source + self-host IBM Plex Mono woff2 (regular/medium)
+	   under public/assets/fonts/ and swap this token to
+	   'IBM Plex Mono', ui-monospace, ... once approved. */
+	--font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+
+	/* ── Primary / Danger ── #C81E2C ─────────── */
+	--color-primary-50: #fdf4f5;
+	--color-primary-100: #fbe5e6;
+	--color-primary-200: #f6c5c9;
+	--color-primary-300: #ef9aa1;
+	--color-primary-400: #e35f69;
+	--color-primary-500: #c81e2c; /* ← brand primary */
+	--color-primary-600: #aa1824;
+	--color-primary-700: #8b131d;
+	--color-primary-800: #6c0f16;
+	--color-primary-900: #500c12;
+	--color-primary-950: #30080c;
 
 	/* Semantic aliases – Primary */
 	--color-primary: var(--color-primary-500);
@@ -85,49 +110,129 @@
 	--color-primary-emphasis: var(--color-primary-600);
 	--color-primary-emphasis-alt: var(--color-primary-700);
 
-	/* ── Secondary Navy Blue ── #4160BE ──────── */
-	--color-secondary-50: #eceff8;
-	--color-secondary-100: #d9dff2;
-	--color-secondary-200: #b3c0e5;
-	--color-secondary-300: #8da0d8;
-	--color-secondary-400: #6780cb;
-	--color-secondary-500: #4160be; /* ← brand secondary */
-	--color-secondary-600: #344d98;
-	--color-secondary-700: #273a72;
-	--color-secondary-800: #1a274c;
-	--color-secondary-900: #0d1326;
-	--color-secondary-950: #090d1b;
+	/* ── Accent Orange ── #F26B1D ─────────────
+	   Topbar accent border, logo mark, map pin, Fire Monitor panel bg. */
+	--color-accent-50: #fef6f1;
+	--color-accent-100: #fce6d9;
+	--color-accent-200: #f8cab0;
+	--color-accent-300: #f4a77b;
+	--color-accent-400: #f28140;
+	--color-accent-500: #f26b1d; /* ← brand accent */
+	--color-accent-600: #e8590c; /* ← fire-monitor emphasis */
+	--color-accent-700: #ae4609;
+	--color-accent-800: #84370b;
+	--color-accent-900: #5c280a;
+	--color-accent-950: #3a1a08;
 
-	/* Semantic aliases – Secondary */
-	--color-secondary: var(--color-secondary-500);
-	--color-secondary-contrast: var(--p-surface-0);
-	--color-secondary-emphasis: var(--color-secondary-600);
-	--color-secondary-emphasis-alt: var(--color-secondary-700);
+	/* Semantic aliases – Accent */
+	--color-accent: var(--color-accent-500);
+	--color-accent-contrast: var(--p-surface-0);
+	--color-accent-emphasis: var(--color-accent-600);
+	--color-accent-emphasis-alt: var(--color-accent-700);
 
-	/* ── Accent Yellow ── #FFC000 ─────────────── */
-	--color-yellow-brand-light: #fff7d6;
-	--color-yellow-brand: #ffc000; /* ← brand yellow */
-	--color-yellow-brand-dark: #cc9a00;
+	/* ── Status tokens ──────────────────────────
+	   One fg/bg (+ border where the design uses one) pair per permit
+	   status, so no screen hardcodes a status hex. */
+	--color-status-draft-fg: #5b656f;
+	--color-status-draft-bg: #eef1f4;
 
-	/* ── Accent Blue ── #2F80ED ──────────────── */
-	--color-blue-brand-light: #daeeff;
-	--color-blue-brand: #2f80ed; /* ← brand blue */
-	--color-blue-brand-dark: #1a66cc;
+	/* fg deviates from the AGENTS.md table's #B8860B: the design's canonical
+	   status source (smeta() + apStatusStyle() in SmartWorkPermit-v3.dc.html)
+	   renders PENDING as #B26A00 on #FFF3DC everywhere a *status* badge is
+	   shown (dashboard "Pending review" stat, All-Permits status pill,
+	   timeline dot). #B8860B/#FFF8E1 is a different amber reserved for the
+	   "Working at Heights" permit *type* — see --color-permit-type-heights-*
+	   below, which stays literal to the table. Flagging as a deviation. */
+	--color-status-pending-fg: #b26a00;
+	--color-status-pending-bg: #fff3dc;
+	--color-status-pending-border: #f5d6a0;
 
-	/* ── Accent Green ── #219653 ─────────────── */
-	--color-green-brand-light: #cfffe3;
-	--color-green-brand: #219653; /* ← brand green */
-	--color-green-brand-dark: #166c3c;
+	--color-status-active-fg: #1e8e5a;
+	--color-status-active-fg-emphasis: #176b45;
+	--color-status-active-bg: #e4f4ec;
+	--color-status-active-border: #b7e0ca;
 
-	/* ── Accent Orange ── #F2994A ─────────────── */
-	--color-orange-brand-light: #ffecd6;
-	--color-orange-brand: #f2994a; /* ← brand orange */
-	--color-orange-brand-dark: #c8720d;
+	--color-status-fire-monitor-fg: #f26b1d;
+	--color-status-fire-monitor-fg-emphasis: #e8590c;
+	--color-status-fire-monitor-bg: #fff1e6;
+	--color-status-fire-monitor-border: #f5cfa8;
 
-	/* ── Text Gray ── #333D48 ─────────────── */
-	--color-font-gray-light: #f0f0f0;
-	--color-font-gray: #333d48; /* ← brand font gray */
-	--color-font-gray-dark: #1a1a1a;
+	--color-status-closed-fg: #3c444c;
+	--color-status-closed-bg: #eef1f4;
+
+	--color-status-rejected-fg: #c81e2c;
+	--color-status-rejected-fg-emphasis: #9b3540;
+	--color-status-rejected-bg: #fce9eb;
+	--color-status-rejected-border: #f2c4ca;
+	--color-status-rejected-border-strong: #e2b4b9; /* outline-button border variant */
+
+	--color-status-expired-fg: #8b95a0;
+	--color-status-expired-bg: #f7f8fa;
+
+	/* ── Permit-type tokens ──────────────────────
+	   One fg/bg pair per permit type (chips, icons, card left-border,
+	   map pins). */
+	--color-permit-type-hot-fg: #c81e2c;
+	--color-permit-type-hot-bg: #fce9eb;
+
+	--color-permit-type-confined-fg: #7c3aed;
+	--color-permit-type-confined-bg: #f1e9fe;
+
+	--color-permit-type-heights-fg: #b8860b;
+	--color-permit-type-heights-bg: #fff8e1;
+	--color-permit-type-heights-accent: #e8b007; /* map pin / highlight variant */
+	--color-permit-type-heights-accent-fg: #3a2e00; /* text/icon on -accent bg */
+
+	/* ── Shell tokens ── App chrome ─────────────── */
+	--color-shell-topbar: #111418;
+	--color-shell-topbar-muted: #9aa4ae; /* inactive tab/locale text on dark chrome */
+	--color-shell-sidebar: #16191d;
+	--color-shell-sidebar-fg: #c2cad2;
+	--color-shell-sidebar-muted: #6b7681;
+	--color-shell-sidebar-divider: #262c33;
+	--color-shell-sidebar-hover: #1e232a; /* topbar pill / generic hover surface on dark chrome */
+	--color-shell-sidebar-active: #22272e; /* active sidebar nav item bg (navOn) */
+	--color-shell-avatar: #2b3138;
+
+	/* ── Text scale ── */
+	--color-text-primary: #16191d;
+	--color-text-strong: #3c444c;
+	--color-text-secondary: #5b656f;
+	--color-text-tertiary: #8b95a0;
+	--color-text-quaternary: #a4adb6;
+
+	/* ── Surface scale ── */
+	--color-surface-app: #f7f8fa;
+	--color-surface-subtle: #f4f6f8;
+	--color-surface-muted: #eef1f4;
+	--color-surface-dashed: #fafbfc;
+	--color-surface-card: #ffffff;
+
+	/* ── Border scale ── */
+	--color-border: #e1e6eb;
+	--color-border-strong: #d7dce2;
+	--color-border-input: #cbd2d9;
+
+	/* ── Disabled state ──
+	   Generic inert/disabled neutral (disabled buttons, scrollbar thumb,
+	   inactive step controls) — distinct from --color-border-strong. */
+	--color-disabled: #c8cfd6;
+
+	/* ── Facility map widget ──
+	   "My Permits" live map card: base + building footprints. */
+	--color-map-bg: #ebeef1;
+	--color-map-building-bg: #dee3e8;
+	--color-map-building-border: #c3cbd2;
+
+	/* ── Connectivity indicator ──
+	   Offline-mode banner + online/offline toggle button (QR scan flow). */
+	--color-connectivity-online-fg: #5fd79b;
+	--color-connectivity-online-bg: #16291f;
+	--color-connectivity-online-border: #2c4a38;
+	--color-connectivity-offline-fg: #ffb088;
+	--color-connectivity-offline-bg: #2a1c16;
+	--color-connectivity-offline-border: #5a3a2c;
+	--color-connectivity-offline-dot: #ff8a50;
 }
 
 /* ─────────────────────────────────────────
@@ -165,7 +270,7 @@
 
 @layer base {
 	html {
-		color: #333333;
+		color: #16191d;
 	}
 }
 

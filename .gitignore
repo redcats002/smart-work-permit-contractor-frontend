@@ -41,3 +41,7 @@ components.d.ts
 test-results
 playwright-report
 src/tests/automate/.auth
+
+# Throwaway agent debug/probe scripts (see eslint.config.js ignores)
+__*.mjs
+__*.js

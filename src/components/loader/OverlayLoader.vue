@@ -47,7 +47,7 @@ const isLoading = computed((): boolean => {
   aspect-ratio: 1;
   border-radius: 50%;
   padding: 1px;
-  background: conic-gradient(#0000 10%,#f03355) content-box;
+  background: conic-gradient(#0000 10%,var(--color-primary)) content-box;
   -webkit-mask:
     repeating-conic-gradient(#0000 0deg,#000 1deg 20deg,#0000 21deg 36deg),
     radial-gradient(farthest-side,#0000 calc(100% - var(--b) - 1px),#000 calc(100% - var(--b)));

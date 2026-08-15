@@ -1,44 +1,27 @@
 <template>
   <div
     id="app"
-    class="flex h-screen overflow-hidden">
-    <!-- ── Sidebar ─────────────────────────────────────────────── -->
-    <AppDrawer class="shrink-0" />
+    class="flex h-screen flex-col overflow-hidden">
+    <AppTopbar @toggle-menu="toggle()" />
 
-    <!-- ── Backdrop (mobile only) ──────────────────────────────── -->
-    <Transition name="drawer-backdrop">
-      <div
-        v-if="isOpen"
-        class="fixed inset-0 z-40 bg-black/40 md:hidden"
-        @click="close()" />
-    </Transition>
+    <div class="flex flex-1 overflow-hidden">
+      <!-- ── Sidebar ─────────────────────────────────────────────── -->
+      <AppDrawer />
 
-    <!-- ── Main content ────────────────────────────────────────── -->
-    <div
-      class="flex-1 flex flex-col overflow-hidden bg-[#F3F6F9]">
-      <!-- Top bar -->
-      <header class="md:hidden flex justify-between items-center h-14 px-4 bg-white border-b border-[--p-gray-5] shrink-0">
-        <div class="flex items-center gap-4">
-          <button
-            class="md:hidden flex items-center justify-center size-9 rounded hover:bg-surface-100 transition-colors"
-            @click="toggle()">
-            <Icon
-              class="size-6 text-font-gray"
-              icon="solar:hamburger-menu-linear" />
-          </button>
-          <!-- Desktop Top Left Content -->
-          <div class="hidden md:block">
-            <!-- Add breadcrumbs or other content here if needed -->
-          </div>
-        </div>
-        <ProfileCard class="md:hidden" />
-      </header>
+      <!-- ── Backdrop (mobile only) ──────────────────────────────── -->
+      <Transition name="drawer-backdrop">
+        <div
+          v-if="isOpen"
+          class="fixed inset-0 z-40 bg-black/40 min-[900px]:hidden"
+          @click="close()" />
+      </Transition>
 
-      <div
-        class="flex-1 overflow-y-auto py-4 px-5"
+      <!-- ── Main content ────────────────────────────────────────── -->
+      <main
+        class="flex-1 overflow-y-auto bg-(--color-surface-app) px-[30px] py-[26px]"
         data-app-scroll="true">
-        <RouteTransition />
-      </div>
+        <router-view />
+      </main>
     </div>
   </div>
 </template>
@@ -47,13 +30,9 @@
 import { onMounted } from 'vue'
 import { useNotificationStore } from '@/stores/Notification'
 import AppDrawer from '@/components/app/AppDrawer.vue'
-import ProfileCard from '@/components/nav/ProfileCard.vue'
-import RouteTransition from '@/components/transition/RouteTransition.vue'
+import AppTopbar from '@/components/app/AppTopbar.vue'
 import { useAppDrawer } from '@/composables/useAppDrawer'
-import { useSocket } from '@/composables/useSocket'
-import { Icon } from '@iconify/vue'
 
-useSocket({ initial: true })
 const notificationStore = useNotificationStore()
 const { isOpen, close, toggle } = useAppDrawer()
 

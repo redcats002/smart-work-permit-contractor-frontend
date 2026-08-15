@@ -13,7 +13,7 @@
       @update:model-value="debounceSearch()" />
     <!-- <div class="flex items-center justify-center border-y border-e h-9! border-surface-300 dark:border-surface-700 rounded-e-sm overflow-hidden">
       <SecondaryButton
-        pt:root="rounded-none bg-[#62748E]!"
+        pt:root="rounded-none bg-(--color-text-secondary)!"
         variant="text"
         @click="emitSearch()">
         <Icon

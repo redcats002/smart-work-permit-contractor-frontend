@@ -8,13 +8,13 @@
     <LabelField
       v-model="form.email"
       :form="$form"
-      label="อีเมล"
+      :label="t('platform.auth.email')"
       name="email"
       required />
     <LabelField
       v-slot="{ invalid }"
       :form="$form"
-      label="รหัสผ่าน"
+      :label="t('platform.auth.password')"
       name="password"
       required>
       <PasswordInput
@@ -24,14 +24,15 @@
     </LabelField>
     <ConfirmButton
       id="login-button"
-      class="w-full! mt-4"
-      label="ถัดไป" />
+      :label="t('platform.auth.submit')"
+      class="w-full! mt-4" />
   </Form>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
-import type { IActionLoginPayload } from '@/models/request/auth/public/AuthReq.public.model'
+import type { ILoginPayload } from '@/models/request/auth/public/AuthReq.public.model'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import PasswordInput from '@/components/input/PasswordInput.vue'
@@ -43,10 +44,11 @@ interface IEmits {
   submit: []
 }
 
-const form = defineModel<IActionLoginPayload>({ required: true })
+const form = defineModel<ILoginPayload>({ required: true })
 const resolver = zodResolver(LoginSchema)
 
 const emits = defineEmits<IEmits>()
+const { t } = useI18n()
 
 async function onSubmit (event: FormSubmitEvent): Promise<void> {
   event.originalEvent.preventDefault()

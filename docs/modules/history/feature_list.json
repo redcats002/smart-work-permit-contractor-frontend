@@ -1,0 +1,69 @@
+{
+  "module": "history",
+  "rootFeature": "feat-003",
+  "context": "docs/modules/history/context.md",
+  "items": [
+    {
+      "id": "HST-001",
+      "type": "feature",
+      "name": "History table — search, filters, pagination",
+      "description": "The archive list at /history: search + type/status/date-range filters, a paginated table of closed and expired permits, and an empty state.",
+      "acceptance": [
+        "src/router/modules/History.router.ts with prefix '/history', lazy-loaded, meta.auth set; registered in src/router/index.ts and reflected in the AGENTS.md Modules table",
+        "Reuses PermitProvider — no new provider dir",
+        "Toolbar: search (ID/title/location), type select, status select limited to Closed/Expired, from-date, to-date, Clear filters",
+        "Filters and search are sent to the API as query params, debounced via the existing Debounce util; not filtered client-side",
+        "Table columns: ID (mono) · TYPE badge · TITLE + LOCATION · CLOSED date + closed-by · DURATION · STATUS badge · chevron; each row has a 3px left border in the permit-type color",
+        "Pagination via the usePagination composable + src/components/table/Paginate.vue; result count shown above the table",
+        "Empty state with a Clear filters action",
+        "Table scrolls horizontally at 375px rather than truncating; no horizontal body scroll",
+        "./init.sh green"
+      ],
+      "notes": "Design lines 617-679. DONE. Route registered in src/router/index.ts. Filters+search drive the API query via buildQuery(); search debounced 400ms. Status filter is limited to CLOSED/EXPIRED by an ARCHIVE_STATUSES constant. || NOTE: the agent assigned this item died twice to infrastructure (machine sleep, then a 600s watchdog stall) with the module ~80% written. The orchestrator finished it: removed a dangling onSearchInput export left over from a superseded design, wrote HistoryListPage.vue, and fixed two lint errors (a typedef and a wrap-regex).",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "./init.sh — typecheck PASS, lint PASS, tests PASS. Live Playwright probe after router registration: route renders with shell chrome, no pageerror, no horizontal overflow at 375/768/1280. /history renders 1431 chars."
+    },
+    {
+      "id": "HST-002",
+      "type": "feature",
+      "name": "History detail drawer",
+      "description": "520px right-hand slide-over showing an archived permit read-only, opened by clicking a row.",
+      "acceptance": [
+        "Drawer opens on row click, closes on ✕ and on backdrop click; backdrop click inside the panel does not close it",
+        "Header: type badge, status badge, title, mono ID",
+        "A 'View Only · <status> — this record is archived and cannot be edited' bar is always visible",
+        "Read-only panels: location, foreman, date/time, duration, closed date, closed by; work description; a dashed placeholder row for the archived permit document",
+        "No edit, delete, or state-transition control exists anywhere in the drawer",
+        "Full-width on viewports narrower than 520px",
+        "./init.sh green"
+      ],
+      "notes": "Design lines 681-725. The archived-document row is explicitly a placeholder in the design ('placeholder' chip) — keep it a placeholder unless the backend exposes a document endpoint. DONE. HistoryDetailDrawer.vue — props {open, loading, detail}, emits close. Read-only throughout; the archived-document row is kept a deliberate placeholder (no document endpoint exists). || NOTE: the agent assigned this item died twice to infrastructure (machine sleep, then a 600s watchdog stall) with the module ~80% written. The orchestrator finished it: removed a dangling onSearchInput export left over from a superseded design, wrote HistoryListPage.vue, and fixed two lint errors (a typedef and a wrap-regex).",
+      "dependencies": [
+        "HST-001"
+      ],
+      "status": "done",
+      "evidence": "./init.sh — typecheck PASS, lint PASS, tests PASS. Live Playwright probe after router registration: route renders with shell chrome, no pageerror, no horizontal overflow at 375/768/1280. /history renders 1431 chars."
+    },
+    {
+      "id": "HST-003",
+      "type": "feature",
+      "name": "CSV export",
+      "description": "Export the current filtered result set as CSV.",
+      "acceptance": [
+        "Export respects the active search + filters, not just the current page",
+        "Columns match the table; dates formatted for Asia/Bangkok; permit IDs unquoted-safe",
+        "Thai text survives the round-trip — file is UTF-8 with a BOM so Excel does not mangle it",
+        "No new dependency — build the CSV with a small util and a Blob download",
+        "Unit test on the CSV serializer: a field containing a comma, a quote, and Thai characters",
+        "./init.sh green"
+      ],
+      "notes": "The UTF-8 BOM matters: without it Excel renders Thai as mojibake, which for a Thai facility is a real bug, not a nicety. DONE. src/utils/Csv.ts — csvEscapeField quotes only when a field has a comma/quote/newline, doubling embedded quotes per RFC 4180. UTF-8 BOM prepended so Excel does not render Thai as mojibake. Export refetches with limit 9999 so it covers the whole filtered set, not just the current page. 7 tests. || NOTE: the agent assigned this item died twice to infrastructure (machine sleep, then a 600s watchdog stall) with the module ~80% written. The orchestrator finished it: removed a dangling onSearchInput export left over from a superseded design, wrote HistoryListPage.vue, and fixed two lint errors (a typedef and a wrap-regex).",
+      "dependencies": [
+        "HST-001"
+      ],
+      "status": "done",
+      "evidence": "./init.sh — typecheck PASS, lint PASS, tests PASS. Live Playwright probe after router registration: route renders with shell chrome, no pageerror, no horizontal overflow at 375/768/1280. /history renders 1431 chars."
+    }
+  ]
+}

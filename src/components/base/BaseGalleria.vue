@@ -5,7 +5,7 @@
     :pt-options="{ mergeProps: ptViewMerge }"
     :responsive-options="responsiveOptions"
     :value="images"
-    container-style="width:100%; background-color: #E0E0E0; padding: 1.05rem; position: relative;"
+    container-style="width:100%; background-color: var(--color-surface-muted); padding: 1.05rem; position: relative;"
     circular
     unstyled
     @update:active-index="console.log($event)">

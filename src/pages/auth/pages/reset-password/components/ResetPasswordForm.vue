@@ -8,7 +8,7 @@
     <LabelField
       v-slot="{ invalid }"
       :form="$form"
-      label="รหัสผ่านใหม่"
+      :label="t('platform.auth.resetPassword.newPassword')"
       name="newPassword"
       required>
       <PasswordInput
@@ -23,7 +23,7 @@
     <LabelField
       v-slot="{ invalid }"
       :form="$form"
-      label="ยืนยันรหัสผ่านใหม่"
+      :label="t('platform.auth.resetPassword.confirmNewPassword')"
       name="confirmNewPassword"
       required>
       <PasswordInput
@@ -32,14 +32,15 @@
         name="confirmNewPassword" />
     </LabelField>
     <ConfirmButton
+      :label="t('platform.auth.resetPassword.submit')"
       class="w-full mt-4"
-      label="ยืนยัน"
       fluid />
   </Form>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import { regex } from '@/utils/Regex'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
@@ -57,6 +58,7 @@ interface IEmits {
 const form = defineModel<ResetPasswordFormValues>({ required: true })
 const resolver = useResetPasswordResolver()
 const emits = defineEmits<IEmits>()
+const { t } = useI18n()
 
 const progressItems = computed((): IProgress[] => {
   const isContainEng = regex.upperCaseOneCharRegex.test(form.value.newPassword)
@@ -64,9 +66,9 @@ const progressItems = computed((): IProgress[] => {
   const isContainNumber = regex.atLeastOneNumber.test(form.value.newPassword)
 
   return [
-    { label: 'ต้องมีตัวอักษรภาษาอังกฤษ และตัวเลข รวมกันอย่างน้อย 8 ถึง 16 ตัว', valid: isFullPassword },
-    { label: 'ต้องมีอักษรภาษาอังกฤษพิมพ์ใหญ่อย่างน้อย 1 ตัว', valid: isContainEng },
-    { label: 'ต้องมี 0-9 อย่างน้อย 1 ตัว', valid: isContainNumber }
+    { label: t('platform.auth.resetPassword.validation.passwordLength'), valid: isFullPassword },
+    { label: t('platform.auth.resetPassword.validation.passwordUpper'), valid: isContainEng },
+    { label: t('platform.auth.resetPassword.validation.passwordNumber'), valid: isContainNumber }
   ]
 })
 

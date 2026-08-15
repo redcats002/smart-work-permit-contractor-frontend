@@ -1,10 +1,9 @@
 import { computed, type ComputedRef, ref, type Ref } from 'vue'
-import { formatter } from '@/utils/Formatter'
 import { accessTokenStorage } from '@/utils/Storage'
-import type { IAuthBranchList } from '@/models/response/auth/private/AuthRes.private.model'
-import type { TEmployeeRole } from '@/enums/modules/employee/EmployeeRole.enum'
-import type { TTitleName } from '@/enums/TitleName.enum'
 import { defineStore } from 'pinia'
+
+/** This app has exactly one role — kept as a literal union (not an enum) so there is nothing to switch on. */
+export type TUserRole = 'contractor'
 
 export interface IUser {
   id: string | null
@@ -12,162 +11,96 @@ export interface IUser {
   firstName: string
   lastName: string
   email: string
-  title?: TTitleName
-  image?: string // imagePath
-  imageUrl?: string
-  role?: TEmployeeRole
+  /**
+   * Contractor company/organisation name, shown on the sidebar account card
+   * (design: "NNY Mechanical"). The backend `users` table
+   * (docs/main/dev-handoff/01-backend-elysia-tasks.md) only specifies
+   * `id, name, role, contact info` — no company field is named there, so
+   * this is optional. Named `company` to match the shape PLT-005's
+   * acceptance criteria spells out: `user: { id, name, role: 'contractor', company }`.
+   */
+  company?: string
+  role?: TUserRole
 }
-
-export interface IBranch extends IAuthBranchList {}
 
 export interface IToken {
   accessToken: string
   expireIn: number | null
 }
 
-
 interface IAuthStore {
   user: Ref<IUser>
   userToken: Ref<IToken>
-  branch: Ref<IBranch>
-  // branchToken: Ref<IToken>
-  isSeedAccount: ComputedRef<boolean>
   isAuthenticated: ComputedRef<boolean>
   userLogin(user: IUser, token: string): void
   updateUser(user: Partial<IUser>): void
-  branchLogin(branch: IBranch): void
-  setUserImage(image: string): void
   logout(): void
+}
+
+function emptyUser (): IUser {
+  return {
+    id: null,
+    name: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    company: undefined,
+    role: undefined
+  }
 }
 
 export const useAuthStore = defineStore(
   'Auth', (): IAuthStore => {
-    const user = ref<IUser>({
-      id: null,
-      name: '',
-      firstName: '',
-      lastName: '',
-      email: '',
-      image: undefined,
-      imageUrl: undefined,
-      role: undefined,
-      title: undefined
-    })
+    const user = ref<IUser>(emptyUser())
 
     const userToken = ref<IToken>({
       accessToken: '',
       expireIn: null
     })
 
-    const branch = ref<IBranch>({
-      id: '',
-      name: '',
-      logo: '',
-      role: undefined,
-      status: ''
-    })
-
-    // const branchToken = ref<IToken>({
-    //   accessToken: '',
-    //   expireIn: null
-    // })
-
-    const isSeedAccount = computed((): boolean => {
-      return user.value.email === 'systemuser@email.com'
-    })
     const isAuthenticated = computed((): boolean => {
-      return !!user.value.id
+      return !!userToken.value.accessToken
     })
 
     function userLogin (userValue: IUser, token: string): void {
-      user.value = {
-        ...userValue,
-        name: userValue?.name || formatter.fullName(userValue)
-      }
+      user.value = { ...userValue }
       userToken.value = {
         accessToken: token,
         expireIn: null
       }
     }
 
-    function setUserImage (imageUrl: string): void {
-      user.value.imageUrl = imageUrl
-    }
-
     function updateUser (userValue: Partial<IUser>): void {
       user.value = {
         ...user.value,
-        ...userValue,
-        name: userValue?.name || formatter.fullName({ ...user.value, ...userValue })
+        ...userValue
       }
     }
 
-    function branchLogin (branchValue: IBranch): void {
-      branch.value = branchValue
-      // branchToken.value = tokenValue
-    }
-
-
-    function clearBranch (): void {
-      branch.value = {
-        id: '',
-        name: '',
-        logo: '',
-        role: undefined,
-        status: ''
-      }
-      // branchToken.value = {
-      //   accessToken: '',
-      //   expireIn: null
-      // }
-    }
-    function clearUser (): void {
-      user.value = {
-        id: null,
-        name: '',
-        firstName: '',
-        lastName: '',
-        email: '',
-        title: undefined,
-        role: undefined
-      }
+    function logout (): void {
+      user.value = emptyUser()
       userToken.value = {
         accessToken: '',
         expireIn: null
       }
     }
 
-    function logout (): void {
-      clearBranch()
-      clearUser()
-    }
-
     return {
       user,
       userToken,
-      branch,
-      isSeedAccount,
       isAuthenticated,
-      setUserImage,
-      // branchToken,
       userLogin,
       updateUser,
-      logout,
-      branchLogin
+      logout
     }
   }, {
     persist: [
-      { key: 'auth', pick: ['branch', 'user'] },
+      { key: 'auth', pick: ['user'] },
       {
         pick: ['userToken'],
         key: 'userToken',
         storage: accessTokenStorage
       }
-      // {
-      //   pick: ['branch'],
-      //   key: 'auth_branch',
-      //   storage: branchAccessTokenStorage
-      // }
     ]
   }
 )

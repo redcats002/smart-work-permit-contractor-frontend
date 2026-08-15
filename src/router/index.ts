@@ -3,18 +3,10 @@ import type { NavigationFailure, RouteLocationNormalized, Router, RouteRecordRaw
 import { createRouter, createWebHistory, isNavigationFailure } from 'vue-router'
 import { useAuthStore } from '@/stores/Auth'
 import { updateFromRoute } from '@/utils/RouterHeader'
-import ActionLogRouter from './modules/action-log'
-import AnnouncementRouter from './modules/announcement'
-import AssetRouter from './modules/asset'
 import AuthRouter from './modules/Auth.router'
-import ContractRouter from './modules/contract'
-import CustomerRouter from './modules/customer'
-import DashboardRouter from './modules/dashboard'
-import FinanceRouter from './modules/finance'
-import ReportsRouter from './modules/reports'
-import SettingRouter from './modules/setting'
-import StockRouter from './modules/stock'
-import WorkRouter from './modules/work'
+import CertificateRouter from './modules/Certificate.router'
+import HistoryRouter from './modules/History.router'
+import PermitRouter from './modules/Permit.router'
 
 export interface IRouteRedirect {
   name: string
@@ -43,17 +35,9 @@ export const routes: RouteRecordRaw[] = [
     }
   },
   AuthRouter,
-  AnnouncementRouter,
-  WorkRouter,
-  DashboardRouter,
-  ReportsRouter,
-  ContractRouter,
-  CustomerRouter,
-  AssetRouter,
-  FinanceRouter,
-  StockRouter,
-  ActionLogRouter,
-  SettingRouter,
+  PermitRouter,
+  HistoryRouter,
+  CertificateRouter,
   {
     // Catch-all route for 404
     path: '/:pathMatch(.*)*', // Matches any path

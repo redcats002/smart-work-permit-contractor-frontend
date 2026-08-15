@@ -12,7 +12,17 @@ export default [
       'postcss.config.js',
       'tailwind.config.js',
       'dist/**/*',
-      'src/volt/**/*'
+      'src/volt/**/*',
+      'docs/**',
+      '.agents/**',
+      '.claude/**',
+      '.gemini/**',
+      'lint-staged.config.mjs',
+      // Throwaway debug/probe scripts dropped at the repo root. They are never
+      // committed, but an uncommitted one still fails `bun run lint` and makes the
+      // verification gate report a failure that has nothing to do with the code.
+      '__*.mjs',
+      '__*.js'
     ]
   },
   {

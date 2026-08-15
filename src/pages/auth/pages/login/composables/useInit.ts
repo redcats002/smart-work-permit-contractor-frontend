@@ -1,11 +1,11 @@
-import type { IActionLoginPayload } from '@/models/request/auth/public/AuthReq.public.model'
+import type { ILoginPayload } from '@/models/request/auth/public/AuthReq.public.model'
 import useDev from '@/composables/useDev'
 
-export function useInitForm (): IActionLoginPayload {
+/** Dev convenience — must match the stub credential in Auth.public.provider.ts. */
+export function useInitForm (): ILoginPayload {
   const { isDev } = useDev()
   return {
-    email: isDev.value ? 'systemuser@email.com' : '', // systemuser@email.com
-    password: isDev.value ? 'password123' : '', // password123
-    confirmPassword: ''
+    email: isDev.value ? 'contractor@smartworkpermit.dev' : '',
+    password: isDev.value ? 'password123' : ''
   }
 }

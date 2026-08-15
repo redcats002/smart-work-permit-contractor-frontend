@@ -71,7 +71,7 @@
             :value="col.value ? col.value(data) : data?.[col.field]" />
           <span
             v-else
-            class="text-[#333333] text-sm">
+            class="text-(--color-text-strong) text-sm">
             {{ getCellValue(col, data) }}
           </span>
         </template>
@@ -101,7 +101,7 @@
                 :value="footer.value" />
               <span
                 v-else
-                class="text-[#333333] text-sm">
+                class="text-(--color-text-strong) text-sm">
                 {{ displayValue(footer.value, 'footer') }}
               </span>
             </template>
@@ -317,7 +317,7 @@ const theme = ref<DataTablePassThroughOptions>({
 const checkboxColumnPt = ref({
   headerCell: `
     py-2.5 px-4 w-12 text-center
-    bg-[#FFF6E5] z-30 ${props.checkboxHeaderClass}
+    bg-(--color-accent-100) z-30 ${props.checkboxHeaderClass}
   `,
   bodyCell: `
     py-2.5 px-4 w-12 text-center

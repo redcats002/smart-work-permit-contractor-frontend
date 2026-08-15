@@ -8,7 +8,7 @@
       <a
         v-tooltip="decodeURIComponent(file.name)"
         :href="resolvedHref(file)"
-        class="border border-[#BDBDBD] rounded-lg overflow-hidden flex flex-col items-center justify-center max-w-40 w-40
+        class="border border-(--color-border) rounded-lg overflow-hidden flex flex-col items-center justify-center max-w-40 w-40
         transition-all hover:border-red-500 hover:scale-[1.02]"
         target="_blank">
         <img

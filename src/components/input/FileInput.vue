@@ -131,7 +131,7 @@ function removeFile (index: number): void {
   position: absolute;
   top: 100%;
   left: 0;
-  color: #ef4444;
+  color: var(--color-primary);
   font-size: 12px;
   margin-top: 4px;
   z-index: 50;

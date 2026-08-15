@@ -1,10 +1,10 @@
 <template>
   <Button
     v-bind="$attrs"
-    class="bg-[#FFF6E5]! border-none!"
+    class="bg-(--color-accent-100)! border-none!"
     @click="copy(props.value)">
     <Icon
-      color="#FFAE23"
+      color="var(--color-accent-600)"
       icon="lucide-copy" />
   </Button>
 </template>

@@ -1,4 +1,5 @@
 import type { IMedia } from '@/resources/provider/Upload.provider'
+import i18n from '@/plugins/I18n.plugin'
 import z from 'zod'
 import { useDayjs } from './Dayjs'
 import { formatter } from './Formatter'
@@ -43,14 +44,16 @@ const id = (label: string): z.ZodOptional<z.ZodType<number | string, any, any>> 
     if (typeof val === 'number' && val >= 1) return val
     return undefined
   }
-  const idUnion = z.union([z.number().min(1, `กรุณาเลือก${label}`), z.string().min(1, `กรุณาเลือก${label}`), z.undefined()])
+  const requiredMessage = i18n.global.t('common.validation.required', { label })
+  const idUnion = z.union([z.number().min(1, requiredMessage), z.string().min(1, requiredMessage), z.undefined()])
   return z
     .preprocess(idPreprocess, idUnion)
     .optional()
-    .refine((val: unknown): boolean => val !== undefined && val !== '', `กรุณาเลือก${label}`) as any
+    .refine((val: unknown): boolean => val !== undefined && val !== '', requiredMessage) as any
 }
-const enumSchema = (enumObj: object, label: string): z.ZodType<any, any, any> =>
-  z
+const enumSchema = (enumObj: object, label: string): z.ZodType<any, any, any> => {
+  const requiredMessage = i18n.global.t('common.validation.required', { label })
+  return z
     .preprocess((value: unknown): unknown => {
       if (typeof value === 'string') return value
       if (value && typeof value === 'object') {
@@ -58,8 +61,9 @@ const enumSchema = (enumObj: object, label: string): z.ZodType<any, any, any> =>
         if ('id' in value) return (value as { id?: unknown }).id ?? ''
       }
       return value
-    }, z.enum(enumObj as Readonly<Record<string, string | number>>, `กรุณาเลือก${label}`))
-    .refine((val: string | number | undefined): boolean => (val !== '' || val !== null || val !== undefined), `กรุณาเลือก${label}`)
+    }, z.enum(enumObj as Readonly<Record<string, string | number>>, requiredMessage))
+    .refine((val: string | number | undefined): boolean => (val !== '' || val !== null || val !== undefined), requiredMessage)
+}
 
 const date = (label: string): z.ZodType<string, any, any> =>
   z
@@ -69,7 +73,7 @@ const date = (label: string): z.ZodType<string, any, any> =>
         return isNaN(d.getTime()) ? val : d
       }
       return val
-    }, z.date({ message: `กรุณาเลือก${label}` }))
+    }, z.date({ message: i18n.global.t('common.validation.required', { label }) }))
     .transform((val: Date): string => {
       const dayjs = useDayjs()
       const parse = dayjs(val).toISOString()
@@ -81,13 +85,13 @@ const richText = (label: string): z.ZodType<string, any, any> =>
     (val: unknown): unknown => (val === undefined || val === null ? '' : val), z.string().refine((val: string): boolean => {
       const text = val.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim()
       return text.length > 0
-    }, { message: `กรุณาระบุ${label}` })
+    }, { message: i18n.global.t('common.validation.requiredField', { label }) })
   ) as z.ZodType<string, any, any>
 
 const media = z.object({
-  url: z.string().min(1, 'URL รูปภาพไม่ถูกต้อง'),
-  path: z.string().min(1, 'PATH รูปภาพไม่ถูกต้อง'),
-  name: z.string().min(1, 'ชื่อรูปภาพไม่ถูกต้อง'),
+  url: z.string().min(1, i18n.global.t('common.validation.invalidImageUrl')),
+  path: z.string().min(1, i18n.global.t('common.validation.invalidImagePath')),
+  name: z.string().min(1, i18n.global.t('common.validation.invalidImageName')),
   file: z
     .instanceof(File)
     .optional()
@@ -95,7 +99,7 @@ const media = z.object({
       if (!file) return true
       const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf']
       return validTypes.includes(file.type)
-    }, 'ไฟล์ต้องเป็นรูปภาพหรือ PDF'),
+    }, i18n.global.t('common.validation.invalidFileType')),
   isNew: z.boolean().optional()
 })
 

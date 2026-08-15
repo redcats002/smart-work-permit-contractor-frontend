@@ -1,240 +1,150 @@
 <template>
   <!-- Sidebar
-    Desktop : always visible, part of the normal flex flow (md:relative)
-    Mobile  : fixed overlay that slides in from the left via translate-x
+    Desktop (>=900px) : always visible, part of the normal flex flow (min-[900px]:static)
+    Mobile            : fixed full-height overlay that slides in from the left via translate-x
   -->
   <aside
-    :class="isOpen ? 'translate-x-0 z-100' : '-translate-x-full md:translate-x-0'"
-    class="fixed md:relative inset-y-0 left-0 z-10 w-64 h-screen bg-white border-r border-r-(--p-gray-5) flex flex-col p-4 transition-transform duration-300 ease-in-out">
-    <!-- Logo Section -->
-    <div class="border-b border-b-(--p-red)">
-      <!-- Mobile close button -->
-      <div class="flex md:hidden justify-end mb-1">
+    :class="isOpen ? 'translate-x-0' : '-translate-x-full min-[900px]:translate-x-0'"
+    class="fixed inset-y-0 left-0 z-50 flex h-full w-[212px] shrink-0 flex-col overflow-y-auto
+      bg-(--color-shell-sidebar) text-(--color-shell-sidebar-fg) transition-transform duration-300 ease-in-out
+      min-[900px]:static min-[900px]:z-auto min-[900px]:translate-x-0">
+    <!-- Mobile close button -->
+    <div class="flex justify-end px-3 pt-3 min-[900px]:hidden">
+      <button
+        :aria-label="t('common.close')"
+        class="flex size-8 items-center justify-center rounded text-(--color-shell-sidebar-fg)
+          transition-colors hover:bg-(--color-shell-sidebar-hover)"
+        type="button"
+        @click="close()">
         <Icon
-          class="size-6 text-font-gray cursor-pointer hover:text-black transition-all duration-200"
-          icon="mdi:close"
-          @click="close()" />
-      </div>
+          class="size-5"
+          icon="mdi:close" />
+      </button>
+    </div>
 
-      <div class="flex justify-center mb-2">
-        <img
-          class="h-12"
-          src="/logo.svg">
-      </div>
-      <p class="text-sm text-(--p-red) flex justify-center items-center gap-2 my-2">
-        สาขา :
-        <span>{{ authStore.branch?.name || 'BY_PASS' }}</span>
-        <Icon
-          class="text-font-gray cursor-pointer hover:text-black transition-all duration-200"
-          icon="iconamoon:exit"
-          @click="logout()" />
-      </p>
+    <div
+      class="px-[18px] pb-4 pt-1 text-[11px] font-semibold tracking-[0.5px] text-(--color-shell-sidebar-muted)
+      min-[900px]:pt-[18px]">
+      {{ t('platform.sidebarSection') }}
     </div>
 
     <nav
-      class="mt-4 flex flex-col flex-1 overflow-y-auto"
+      class="flex flex-col"
       @click="close()">
-      <!-- Top Menu -->
-      <div class="space-y-1">
-        <template
-          v-for="menu in menuItems"
-          :key="`top-${menu.label}`">
-          <AppDrawerMenu
-            :children="menu.children"
-            :disabled="menu.disabled"
-            :icon="menu.icon"
-            :label="menu.label"
-            :notify="menu.notify"
-            :to="menu.to" />
-        </template>
-      </div>
-
-      <!-- Bottom Menu -->
-      <div class="space-y-1 mt-auto">
-        <AppDrawerMenu
-          v-for="menu in bottomMenuItems"
-          :key="`bottom-${menu.label}`"
-          :disabled="menu.disabled"
-          :icon="menu.icon"
-          :label="menu.label"
-          :notify="menu.notify"
-          :to="menu.to!" />
-      </div>
+      <template
+        v-for="item in navItems"
+        :key="item.name">
+        <!--
+          The four route names below are registered by other agents landing router modules
+          in this same wave — resolving an unregistered name throws in vue-router 5 (not just
+          a dev warning), so isRegistered() gates real navigation until the route exists and
+          falls back to an inert row with identical styling in the meantime.
+        -->
+        <RouterLink
+          v-if="isRegistered(item.name)"
+          :class="isActive(item)
+            ? 'border-(--color-accent-500) bg-(--color-shell-sidebar-active) pl-[15px] text-white'
+            : 'border-transparent pl-[18px] text-(--color-shell-sidebar-fg) hover:bg-(--color-shell-sidebar-hover)'"
+          :to="{ name: item.name }"
+          class="flex items-center gap-[11px] border-l-[3px] py-[11px] pr-[18px] text-[13.5px] font-medium
+            transition-colors">
+          <span
+            aria-hidden="true"
+            class="text-[15px]">{{ item.glyph }}</span>
+          {{ t(item.labelKey) }}
+        </RouterLink>
+        <span
+          v-else
+          class="flex cursor-default items-center gap-[11px] border-l-[3px] border-transparent py-[11px] pl-[18px]
+            pr-[18px] text-[13.5px] font-medium text-(--color-shell-sidebar-fg)">
+          <span
+            aria-hidden="true"
+            class="text-[15px]">{{ item.glyph }}</span>
+          {{ t(item.labelKey) }}
+        </span>
+      </template>
     </nav>
+
+    <div class="mt-auto border-t border-(--color-shell-sidebar-divider) px-[18px] py-[14px]">
+      <div class="flex items-center gap-[9px]">
+        <div
+          class="flex size-8 shrink-0 items-center justify-center rounded-full bg-(--color-shell-avatar)
+            text-[13px] font-semibold text-white">
+          {{ initials }}
+        </div>
+        <div class="min-w-0 flex-1 leading-[1.2]">
+          <div class="truncate text-[12px] font-medium text-white">
+            {{ displayName }}
+          </div>
+          <div class="truncate text-[10px] text-(--color-shell-sidebar-muted)">
+            {{ t('platform.accountType') }}
+          </div>
+        </div>
+        <button
+          :aria-label="t('platform.logout')"
+          class="flex size-7 shrink-0 items-center justify-center rounded text-(--color-shell-sidebar-muted)
+            transition-colors hover:bg-(--color-shell-sidebar-hover) hover:text-white"
+          type="button"
+          @click="logout()">
+          <Icon
+            class="size-4"
+            icon="mdi:logout" />
+        </button>
+      </div>
+    </div>
   </aside>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { RouteRecordRaw } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/Auth'
-import { useNotificationStore } from '@/stores/Notification.ts'
-import { type TPermissionAction, type TPermissionModule } from '@/utils/Permission'
-import useLogout from '@/pages/auth/composables/useLogout'
 import { useAppDrawer } from '@/composables/useAppDrawer'
-import { usePermission } from '@/composables/usePermission'
-import { routes } from '@/router'
+import useLogout from '@/pages/auth/composables/useLogout'
 import { Icon } from '@iconify/vue'
-import AppDrawerMenu, { type ISubMenuItem } from './drawer/AppDrawerMenu.vue'
 
+interface INavItem {
+  name: string
+  labelKey: string
+  glyph: string
+  matchPrefix: string
+}
+
+const navItems: INavItem[] = [
+  { name: 'PermitListPage', labelKey: 'platform.nav.permits', glyph: '▦', matchPrefix: '/permits' },
+  { name: 'PermitCreatePage', labelKey: 'platform.nav.newPermit', glyph: '＋', matchPrefix: '/permits/create' },
+  { name: 'HistoryListPage', labelKey: 'platform.nav.history', glyph: '◷', matchPrefix: '/history' },
+  { name: 'CertificateListPage', labelKey: 'platform.nav.certificates', glyph: '◎', matchPrefix: '/certificates' }
+]
+
+const { t } = useI18n()
+const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
 const { isOpen, close } = useAppDrawer()
-const { hasPermission } = usePermission()
-const notificationStore = useNotificationStore()
-
 const { logout } = useLogout()
 
-interface IMenuItem {
-  label: string
-  icon: string
-  key: string
-  to?: string
-  notify?: boolean
-  disabled?: boolean
-  children?: ISubMenuItem[]
-}
-
-interface IRouteMeta {
-  title?: string
-  menuTitle?: string
-  icon?: string
-  menu?: boolean
-  disabled?: boolean
-  permission?: TPermissionModule
-  permissionAction?: TPermissionAction
-}
-
-interface IMenuRouteItem {
-  label: string
-  to: string
-  icon?: string
-  disabled?: boolean
-  permission?: TPermissionModule
-}
-
-const authStore = useAuthStore()
-
-const menuItems = computed<IMenuItem[]>((): IMenuItem[] => {
-  return routes.flatMap((route: RouteRecordRaw): IMenuItem[] => {
-    if (route.path === '/setting' || route.path.startsWith('/:pathMatch')) {
-      return []
-    }
-
-    const routeMeta = getRouteMeta(route)
-    if (routeMeta.permission && !hasPermission(routeMeta.permission)) {
-      return []
-    }
-
-    const fullPath = normalizePath('', route.path)
-
-    // นับ children ต้นฉบับที่มี menu: true (ก่อนกรอง permission)
-    const originalChildCount = (route.children ?? []).filter((child: RouteRecordRaw): boolean => {
-      const childMeta = getRouteMeta(child)
-      return !!childMeta.menu
-    }).length
-
-    const childMenuItems = (route.children ?? []).flatMap((child: RouteRecordRaw): IMenuRouteItem[] => {
-      const childPath = normalizePath(fullPath, child.path)
-      return collectMenuRouteItems(child, childPath)
-    })
-
-    if (childMenuItems.length === 0) {
-      return []
-    }
-
-    const icon = routeMeta.icon ?? childMenuItems[0]?.icon ?? ''
-    const key = String(route.name ?? route.path)
-
-    // ถ้าต้นฉบับมีแค่ 1 → simple item, ถ้าต้นฉบับมีมากกว่า 1 → dropdown (แม้จะเหลือ 1)
-    if (originalChildCount <= 1) {
-      return [
-        {
-          label: (routeMeta?.menuTitle || routeMeta?.title) ?? childMenuItems[0].label,
-          icon,
-          key,
-          notify: getNotifyFlag(route),
-          to: childMenuItems[0].to
-        }
-      ]
-    }
-
-    return [
-      {
-        label: (routeMeta?.menuTitle || routeMeta?.title) ?? childMenuItems[0].label,
-        icon,
-        key,
-        notify: getNotifyFlag(route),
-        children: childMenuItems.map((item: IMenuRouteItem): ISubMenuItem => ({
-          label: item.label,
-          to: item.to,
-          disabled: item?.disabled
-        }))
-      }
-    ]
-  })
-})
-
-function getNotifyFlag (route: RouteRecordRaw): boolean {
-  if (route.name === 'WorkPage') return notificationStore.isNewWork
-  if (route.name === 'AnnouncementPage') return notificationStore.isNewAnnouncement
-  return false
-}
-
-function normalizePath (parentPath: string, path: string): string {
-  if (path.startsWith('/')) {
-    return path
+// "My Permits" owns every /permits/* path except the create wizard, which has its own nav entry.
+function isActive (item: INavItem): boolean {
+  if (item.name === 'PermitListPage') {
+    return route.path.startsWith('/permits') && !route.path.startsWith('/permits/create')
   }
-
-  if (parentPath === '' || parentPath === '/') {
-    return `/${path}`.replace(/\/+/g, '/')
-  }
-
-  return `${parentPath.replace(/\/$/, '')}/${path}`.replace(/\/+/g, '/')
+  return route.path.startsWith(item.matchPrefix)
 }
 
-function getRouteMeta (route: RouteRecordRaw): IRouteMeta {
-  return (route.meta ?? {}) as IRouteMeta
+function isRegistered (name: string): boolean {
+  return router.hasRoute(name)
 }
 
-function collectMenuRouteItems (route: RouteRecordRaw, fullPath: string): IMenuRouteItem[] {
-  const meta = getRouteMeta(route)
+const displayName = computed((): string => authStore.user.name || authStore.user.email || '—')
 
-  // Skip if no permission for this specific route/child
-  if (meta.permission) {
-    if (meta.permissionAction) {
-      if (!hasPermission(meta.permission, meta.permissionAction)) {
-        return []
-      }
-    } else if (!hasPermission(meta.permission)) {
-      return []
-    }
-  }
+const initials = computed((): string => {
+  const source = authStore.user.name || authStore.user.email
+  if (!source) return '–'
 
-  const currentItems
-    = meta.menu && (meta?.menuTitle || meta?.title)
-      ? [
-        {
-          label: (meta?.menuTitle || meta?.title || ''),
-          to: fullPath,
-          icon: meta.icon,
-          disabled: meta.disabled,
-          permission: meta.permission
-        }
-      ]
-      : []
-
-  const childItems = (route.children ?? []).flatMap((child: RouteRecordRaw): IMenuRouteItem[] => {
-    const childPath = normalizePath(fullPath, child.path)
-    return collectMenuRouteItems(child, childPath)
-  })
-
-  return [...currentItems, ...childItems]
-}
-
-const bottomMenuItems = computed<IMenuItem[]>((): IMenuItem[] => {
-  if (!hasPermission('settings')) {
-    return []
-  }
-
-  return [{ label: 'ตั้งค่า', icon: 'lsicon:setting-outline', key: 'setting', to: '/setting' }]
+  const parts = source.trim().split(/\s+/).filter(Boolean)
+  const letters = parts.length >= 2 ? `${parts[0][0]}${parts[1][0]}` : source.slice(0, 2)
+  return letters.toUpperCase()
 })
 </script>

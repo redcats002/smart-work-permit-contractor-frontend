@@ -5,7 +5,7 @@
       :indeterminate="indeterminate"
       :pt="pt"
       binary />
-    <label class="text-sm font-medium text-[#314158]">
+    <label class="text-sm font-medium text-(--color-text-strong)">
       {{ label }}
     </label>
   </div>

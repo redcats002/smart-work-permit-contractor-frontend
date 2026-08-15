@@ -62,11 +62,11 @@ const theme = ref<EditorPassThroughOptions>({
 }
 .ql-editor::before {
   content: attr(data-placeholder);
-  color: #9ca3af;
+  color: var(--color-text-quaternary);
 }
 .ql-editor.ql-blank::before {
   font-style: normal;
   font-family: 'LINE_Seed_Sans_TH';
-  color: #9ca3af; /* optional ปรับสี */
+  color: var(--color-text-quaternary); /* optional ปรับสี */
 }
 </style>

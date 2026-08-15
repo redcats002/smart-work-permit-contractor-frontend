@@ -50,7 +50,7 @@ When starting work on a module:
 
 A feature is `done` only when:
 
-- `./init.sh` passes (lint + tests).
+- `./init.sh` passes (typecheck + lint + tests).
 - The passing output is recorded in the feature's `evidence` field in `feature_list.json`.
 - If the change touched module wiring (routing, permissions, providers), the module map
   in root `AGENTS.md` is updated in the same commit.
@@ -69,4 +69,20 @@ Before ending a session:
    state machines, and module-wide conventions.
 2. Create `docs/modules/<module>/feature_list.json` with the module name and an empty `items` array.
 3. Add the module to the table in root `AGENTS.md` under `## Modules`.
-4. If the module is part of the main contract lifecycle flow, update the flow diagram too.
+4. If the module is part of the main flow (the permit lifecycle), update the flow diagram too.
+
+## Modules with a harness today
+
+This repo is the **Contractor web app** only. The Safety Officer + Inspector app and the
+Elysia backend are separate repositories — never add a harness for them here.
+
+| Module | Root feature | Prefix | Harness |
+|---|---|---|---|
+| `platform` | `feat-001` | — (cross-cutting) | `docs/modules/platform/` |
+| `permit` | `feat-002` | `/permits` | `docs/modules/permit/` |
+| `history` | `feat-003` | `/history` | `docs/modules/history/` |
+| `certificate` | `feat-004` | `/certificates` | `docs/modules/certificate/` |
+
+Per-item `<type>/<nnn-slug>/` directories are created **when work on that item starts**, not up front.
+Until then the item's acceptance criteria live in its module `feature_list.json` entry, which is
+self-sufficient — an agent can pick up an item from the registry alone.

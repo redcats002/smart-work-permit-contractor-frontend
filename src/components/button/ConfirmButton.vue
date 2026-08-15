@@ -31,9 +31,9 @@ const props = withDefaults(defineProps<IProps>(), {
 const buttonClass = computed((): string => {
   switch (props.mode) {
     case 'delete':
-      return 'bg-[#FB2C36]! hover:bg-red-600'
+      return 'bg-(--color-primary)! hover:bg-(--color-primary-emphasis)'
     case 'submit':
-      return 'bg-[#00C16A]! hover:bg-[#00B35F] border border-[#00C16A]!'
+      return 'bg-(--color-status-active-fg)! hover:bg-(--color-status-active-fg-emphasis) border border-(--color-status-active-fg)!'
     default:
       return 'bg-primary'
   }

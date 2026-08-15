@@ -3,13 +3,13 @@
     v-bind="$attrs"
     :as="isBack ? RouterLink : 'button'"
     :to="isBack ? resolvedBack : {}"
-    class="bg-white! md:bg-transparent! text-[#333333]! px-4
+    class="bg-white! md:bg-transparent! text-(--color-text-strong)! px-4
     border! border-gray-200! md:border-none
     flex items-center hover:bg-gray-200!"
     text
     @click="validate()">
     <Icon
-      class="size-5 text-[#62748E]"
+      class="size-5 text-(--color-text-secondary)"
       icon="lets-icons:back-light" />
     <div class="text-sm font-bold hidden md:block">
       ย้อนกลับ

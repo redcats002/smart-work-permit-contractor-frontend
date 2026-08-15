@@ -1,5 +1,5 @@
 <template>
-  <div class="hidden lg:flex text-sm text-[#333333] items-center gap-2.5">
+  <div class="hidden lg:flex text-sm text-(--color-text-strong) items-center gap-2.5">
     <div>จำนวนรายการต่อหน้า</div>
     <div>
       <Select
@@ -18,7 +18,7 @@
       @click="goToPage(1)">
       <Icon
         :stroke-width="2"
-        class="size-4 text-[#62748E]"
+        class="size-4 text-(--color-text-secondary)"
         icon="mdi:chevron-double-left" />
     </button>
 
@@ -28,7 +28,7 @@
       @click="goToPage(currentPage - 1)">
       <Icon
         :stroke-width="2"
-        class="size-4 text-[#62748E]"
+        class="size-4 text-(--color-text-secondary)"
         icon="mdi:chevron-left" />
     </button>
 
@@ -39,7 +39,7 @@
         v-if="page === '...'"
         class="px-2 text-surface-400">
         <Icon
-          class="size-4 text-[#62748E]"
+          class="size-4 text-(--color-text-secondary)"
           icon="lucide:ellipsis" />
       </span>
       <button
@@ -59,7 +59,7 @@
       @click="goToPage(currentPage + 1)">
       <Icon
         :stroke-width="2"
-        class="size-4 text-[#62748E]"
+        class="size-4 text-(--color-text-secondary)"
         icon="mdi:chevron-right" />
     </button>
 
@@ -69,7 +69,7 @@
       @click="goToPage(totalPages)">
       <Icon
         :stroke-width="2"
-        class="size-4 text-[#62748E]"
+        class="size-4 text-(--color-text-secondary)"
         icon="mdi:chevron-double-right" />
     </button>
   </div>
@@ -81,7 +81,7 @@
       @click="goToPage(currentPage - 1)">
       <Icon
         :stroke-width="2"
-        class="size-4 text-[#62748E]"
+        class="size-4 text-(--color-text-secondary)"
         icon="mdi:chevron-left" />
     </button>
 
@@ -102,7 +102,7 @@
       @click="goToPage(currentPage + 1)">
       <Icon
         :stroke-width="2"
-        class="size-4 text-[#62748E]"
+        class="size-4 text-(--color-text-secondary)"
         icon="mdi:chevron-right" />
     </button>
   </div>
