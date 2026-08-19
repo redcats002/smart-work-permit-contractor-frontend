@@ -1,0 +1,163 @@
+{
+  "module": "e2e-manual",
+  "prefix": "E2E",
+  "rootFeature": "feat-006",
+  "description": "Manual E2E test pass for the Contractor app. Suites in docs/testing/suites/, dated results in docs/testing/runs/. EVERY item is blocked on E2E-000: no contractor account exists and this app's login refuses non-contractors, so the app cannot currently be logged into at all. Half the permit feature (PMT-006..012) is also unbuilt — those cases are written now as the acceptance script and recorded `not-built`, never `fail`.",
+  "verification": "A suite item is done when its suite file exists AND a dated run file records a result for every case. A suite with no run is not done — writing the script is half the item.",
+  "items": [
+    {
+      "id": "E2E-000",
+      "type": "test",
+      "name": "fixtures-and-accounts",
+      "description": "BLOCKER for every other item in this module, and it is a backend change (smart-work-permit-api), not a frontend one. Today the database holds ONE account (systemadmin@email.com, role safety_officer) and 2 DRAFT Hot Work permits. POST /auth/user/public/register accepts no `role`, so accounts for the other roles cannot be created through any UI. Produce an idempotent, re-runnable seed seeding fixtures F0-F6 from the master plan (one account per role; one permit per type; one permit in each status; valid + expired certificates; a Confined Space permit with an entrant checked in; a Hot Work permit mid Fire Watch; a stale gas reading), plus a one-command reset. Without the reset a manual pass cannot be repeated: approving and closing permits mutates the fixtures, so tester #2 sees different data from tester #1. File it as an item in the API repo's feature_list.json and link it here.",
+      "acceptance": [
+        "A documented credential table with one working account per role: contractor, safety_officer, inspector",
+        "Fixtures F0-F6 exist after `bun run seed`, verified by querying the API, not by reading the seed script",
+        "Running the seed twice leaves the same state as running it once (idempotent)",
+        "A single documented command resets to the fixture baseline",
+        "The corresponding item exists in ../smart-work-permit-api/feature_list.json and is referenced here"
+      ],
+      "dependencies": [],
+      "status": "done",
+      "evidence": "DONE 2026-08-19 by the API repo's feat-013 (prisma/seeds/e2e-fixtures.seed.ts, `bun run seed:e2e` / `bun run seed:e2e:reset`). Accounts: contractor@e2e.test / safety@e2e.test / inspector@e2e.test, all password123 (override with E2E_SEED_PASSWORD); systemadmin@email.com untouched. INDEPENDENTLY VERIFIED by the orchestrating session, not taken on the agent's word: all three logins return the right role; the contractor sees 10 permits covering all seven statuses and all three types; closing the ACTIVE confined permit answers 403 ENTRANTS_STILL_INSIDE and closing the running-countdown hot permit answers 403 FIRE_WATCH_NOT_ELAPSED. That verification deliberately CLOSED a fixture permit; `bun run seed:e2e:reset` restored the exact baseline and reported the audit chain verified intact across 16 rows — so the reset is proven, not assumed. Not seeded: PermitPhoto rows (need real MinIO objects; the bucket-init container has exited), so the Heights harness-photo evidence slot is empty."
+    },
+    {
+      "id": "E2E-SHELL",
+      "type": "test",
+      "name": "shell-nav-i18n-responsive",
+      "description": "XX-SHELL: app shell, navigation, EN/TH switch and persistence, responsive at 375 / 768 / 1280+ (tables must scroll, not truncate), 44px touch targets. Needs a contractor login, so it waits on E2E-000 like everything else here.",
+      "acceptance": [
+        "Suite file docs/testing/suites/E2E-SHELL.md exists with every case in the master plan's format",
+        "Each case is executable by someone who has never seen the app: preconditions name a fixture, steps are numbered, expectations are observable",
+        "Cases covering a documented backend gap carry a `Known gap` line so the tester does not re-file it",
+        "A dated run file records a result for every case — no blanks"
+      ],
+      "dependencies": [
+        "E2E-000"
+      ],
+      "status": "in-progress",
+      "evidence": "Suite file written 2026-08-19 and reviewed. NOT done: this module's own rule is that a suite is done when the script exists AND a dated run file records a result for every case. No run has happened. Fixtures now exist (E2E-000 done) including a contractor account, so this app can finally be logged into and these are executable."
+    },
+    {
+      "id": "E2E-CT-AUTH",
+      "type": "test",
+      "name": "contractor-auth-and-guards",
+      "description": "CT-AUTH: login as a contractor, the route guard, password reset, logout, and session expiry. CRITICAL CASE: a safety_officer or inspector account must be REFUSED by this app's login (API-003) — that is the rule that makes this app contractor-only, and it is currently the reason nobody can log in at all.",
+      "acceptance": [
+        "Suite file docs/testing/suites/E2E-CT-AUTH.md exists with every case in the master plan's format",
+        "Each case is executable by someone who has never seen the app: preconditions name a fixture, steps are numbered, expectations are observable",
+        "Cases covering a documented backend gap carry a `Known gap` line so the tester does not re-file it",
+        "A dated run file records a result for every case — no blanks"
+      ],
+      "dependencies": [
+        "E2E-000"
+      ],
+      "status": "in-progress",
+      "evidence": "Suite file written 2026-08-19 and reviewed. NOT done: this module's own rule is that a suite is done when the script exists AND a dated run file records a result for every case. No run has happened. Fixtures now exist (E2E-000 done) including a contractor account, so this app can finally be logged into and these are executable."
+    },
+    {
+      "id": "E2E-CT-PERMITS",
+      "type": "test",
+      "name": "my-permits-list",
+      "description": "CT-PERMITS: permit cards (id, type, title, location, date, status), status filter chips, and the empty state. Known gap: the API takes a single status value, so grouped chips narrow client-side and paginated totals count every status — a short page is expected (GAPS.md row B). Also GAPS.md row A: no entrant count is available for the card badge.",
+      "acceptance": [
+        "Suite file docs/testing/suites/E2E-CT-PERMITS.md exists with every case in the master plan's format",
+        "Each case is executable by someone who has never seen the app: preconditions name a fixture, steps are numbered, expectations are observable",
+        "Cases covering a documented backend gap carry a `Known gap` line so the tester does not re-file it",
+        "A dated run file records a result for every case — no blanks"
+      ],
+      "dependencies": [
+        "E2E-000"
+      ],
+      "status": "in-progress",
+      "evidence": "Suite file written 2026-08-19 and reviewed. NOT done: this module's own rule is that a suite is done when the script exists AND a dated run file records a result for every case. No run has happened. Fixtures now exist (E2E-000 done) including a contractor account, so this app can finally be logged into and these are executable."
+    },
+    {
+      "id": "E2E-CT-WIZARD",
+      "type": "test",
+      "name": "new-permit-wizard",
+      "description": "CT-WIZARD: the 6-step wizard. Steps 1-2 (type, basic information) and draft persistence across a reload are testable now; steps 3-6 are NOT BUILT (PMT-006..009) and their cases are written against the design prototype and the task doc so they double as the acceptance script when those items land. Record them as not-built, never fail. The client-side range checks are convenience only — the case passes when the SUBMIT RESPONSE is authoritative, not when the client blocked the click.",
+      "acceptance": [
+        "Suite file docs/testing/suites/E2E-CT-WIZARD.md exists with every case in the master plan's format",
+        "Each case is executable by someone who has never seen the app: preconditions name a fixture, steps are numbered, expectations are observable",
+        "Cases covering a documented backend gap carry a `Known gap` line so the tester does not re-file it",
+        "A dated run file records a result for every case — no blanks",
+        "Cases for PMT-006..009 are recorded `not-built` until those items ship — the run file must not show them as `fail`"
+      ],
+      "dependencies": [
+        "E2E-000"
+      ],
+      "status": "in-progress",
+      "evidence": "Suite file written 2026-08-19 and reviewed. NOT done: this module's own rule is that a suite is done when the script exists AND a dated run file records a result for every case. No run has happened. Fixtures now exist (E2E-000 done) including a contractor account, so this app can finally be logged into and these are executable."
+    },
+    {
+      "id": "E2E-CT-DETAIL",
+      "type": "test",
+      "name": "permit-detail-and-closure",
+      "description": "CT-DETAIL: status banner variants (draft / rejected-with-reason / active / fire-monitor with countdown / closed), QR display only when ACTIVE or FIRE_MONITOR, the closure checklist modal with its blocked states, and the audit timeline. ENTIRELY NOT BUILT (PMT-010..012) — written now as the acceptance script for those items. Includes the two closure guards from the contractor side: entrants still inside, and Fire Watch not elapsed.",
+      "acceptance": [
+        "Suite file docs/testing/suites/E2E-CT-DETAIL.md exists with every case in the master plan's format",
+        "Each case is executable by someone who has never seen the app: preconditions name a fixture, steps are numbered, expectations are observable",
+        "Cases covering a documented backend gap carry a `Known gap` line so the tester does not re-file it",
+        "A dated run file records a result for every case — no blanks",
+        "Every case is recorded `not-built` until PMT-010..012 ship"
+      ],
+      "dependencies": [
+        "E2E-000"
+      ],
+      "status": "in-progress",
+      "evidence": "Suite file written 2026-08-19 and reviewed. NOT done: this module's own rule is that a suite is done when the script exists AND a dated run file records a result for every case. No run has happened. Fixtures now exist (E2E-000 done) including a contractor account, so this app can finally be logged into and these are executable."
+    },
+    {
+      "id": "E2E-CT-HISTORY",
+      "type": "test",
+      "name": "history",
+      "description": "CT-HISTORY: search, type/status/date-range filters, CSV export (open the file and check it matches the filtered view), pagination, and drill-in.",
+      "acceptance": [
+        "Suite file docs/testing/suites/E2E-CT-HISTORY.md exists with every case in the master plan's format",
+        "Each case is executable by someone who has never seen the app: preconditions name a fixture, steps are numbered, expectations are observable",
+        "Cases covering a documented backend gap carry a `Known gap` line so the tester does not re-file it",
+        "A dated run file records a result for every case — no blanks"
+      ],
+      "dependencies": [
+        "E2E-000"
+      ],
+      "status": "in-progress",
+      "evidence": "Suite file written 2026-08-19 and reviewed. NOT done: this module's own rule is that a suite is done when the script exists AND a dated run file records a result for every case. No run has happened. Fixtures now exist (E2E-000 done) including a contractor account, so this app can finally be logged into and these are executable."
+    },
+    {
+      "id": "E2E-CT-CERTS",
+      "type": "test",
+      "name": "certificates",
+      "description": "CT-CERTS: certificate list with valid / expiring-soon / expired badges, and the add-certificate form. Boundary cases matter here: a certificate expiring today, and one that expired yesterday. Note CRT-004 (the cert gate on submission) is not built, so the blocking behaviour cannot be verified from this app yet.",
+      "acceptance": [
+        "Suite file docs/testing/suites/E2E-CT-CERTS.md exists with every case in the master plan's format",
+        "Each case is executable by someone who has never seen the app: preconditions name a fixture, steps are numbered, expectations are observable",
+        "Cases covering a documented backend gap carry a `Known gap` line so the tester does not re-file it",
+        "A dated run file records a result for every case — no blanks"
+      ],
+      "dependencies": [
+        "E2E-000"
+      ],
+      "status": "in-progress",
+      "evidence": "Suite file written 2026-08-19 and reviewed. NOT done: this module's own rule is that a suite is done when the script exists AND a dated run file records a result for every case. No run has happened. Fixtures now exist (E2E-000 done) including a contractor account, so this app can finally be logged into and these are executable."
+    },
+    {
+      "id": "E2E-J1",
+      "type": "test",
+      "name": "cross-app-lifecycle-journey",
+      "description": "J1 from the master plan, and the reason E2E testing exists: contractor drafts and submits -> Safety Officer sees it in the queue, reads the backend verdict, approves -> QR issues -> Inspector scans and sees live status -> entrant register runs -> Safety Officer closes -> the audit log shows every step, attributed and in order. Needs BOTH apps running and cannot start until the contractor wizard can submit (PMT-009). This item lives in both repos' registries; run it once, record it in both.",
+      "acceptance": [
+        "The journey is walked end to end in one session, by one tester, with screenshots at each handoff",
+        "Each handoff is verified in the OTHER app, not assumed from the first",
+        "The audit log at the end contains every state change with the right actor and order",
+        "Any step that cannot run is recorded with which item blocks it"
+      ],
+      "dependencies": [
+        "E2E-000"
+      ],
+      "status": "not-started",
+      "evidence": ""
+    }
+  ]
+}

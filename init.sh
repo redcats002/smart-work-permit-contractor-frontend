@@ -22,13 +22,15 @@ echo "=== Harness Initialization ==="
 run_check typecheck bun run typecheck
 run_check lint      bun run lint
 run_check tests     bunx vitest run
+# Live contract check. Skips (exit 0) when no API is reachable, so this stays runnable offline —
+# but vitest alone only proves the app agrees with its own types, never with the server.
+run_check smoke     node scripts/smoke-api.mjs
 
 echo ""
 echo "=== Verification Summary ==="
 if [ -n "$FAILED" ]; then
   echo "FAILED:$FAILED"
   echo ""
-  echo "A red baseline is expected until feat-001 / PLT-001 lands."
   echo "Compare against the recorded baseline in progress.md before assuming you caused it."
   exit 1
 fi

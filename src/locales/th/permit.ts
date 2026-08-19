@@ -59,16 +59,31 @@ const permit: typeof permitEn = {
   create: {
     title: 'สร้างใบอนุญาตใหม่',
     steps: {
-      // TODO: TH copy — these are internal build markers for the next agent (PMT-005..009),
-      // never shown as finished-feature copy, so they stay in English rather than inventing
-      // Thai for a placeholder that will be deleted once the real step body lands.
+      // Steps 3-6 are still internal build markers for the next agents (PMT-006..009), never
+      // shown as finished-feature copy, so they stay in English — see the block below.
       type: {
-        marker: 'Type picker lands here — PMT-005',
-        body: 'The 3-card permit-type picker (Hot Work / Confined Space / Working at Heights) is not built yet.'
+        prompt: 'เลือกประเภทของงานที่ใบอนุญาตนี้ครอบคลุม',
+        field: 'ประเภทใบอนุญาต',
+        blurb: {
+          hot: 'งานเชื่อม ตัด เจียร หรืองานที่ก่อให้เกิดประกายไฟ เปลวไฟ หรือความร้อน',
+          confined: 'ถัง ภาชนะ บ่อ หรือพื้นที่ปิดที่มีทางเข้า-ออกจำกัดและอากาศถ่ายเทน้อย',
+          heights: 'งานที่ทำเหนือระดับพื้นดินหรือแท่นถาวร'
+        }
       },
       basicInfo: {
-        marker: 'Basic info form lands here — PMT-005',
-        body: 'Project, foreman, date/time, work description and location fields are not built yet.'
+        field: {
+          title: 'โครงการ',
+          contractor: 'ผู้รับเหมา',
+          foreman: 'หัวหน้างาน',
+          workDate: 'วันที่',
+          workTimeStart: 'เวลาเริ่ม',
+          workTimeEnd: 'เวลาสิ้นสุด',
+          location: 'สถานที่'
+        },
+        mapPlaceholder: 'ตำแหน่งบนแผนที่ — เร็ว ๆ นี้',
+        validation: {
+          endAfterStart: 'เวลาสิ้นสุดต้องอยู่หลังเวลาเริ่ม'
+        }
       },
       safetyChecks: {
         marker: 'Safety reading fields land here — PMT-006',

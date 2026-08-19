@@ -53,12 +53,28 @@ const permit = {
     title: 'New Permit',
     steps: {
       type: {
-        marker: 'Type picker lands here — PMT-005',
-        body: 'The 3-card permit-type picker (Hot Work / Confined Space / Working at Heights) is not built yet.'
+        prompt: 'Choose the type of work this permit covers',
+        field: 'Permit Type',
+        blurb: {
+          hot: 'Welding, cutting, grinding, or any work producing sparks, flame, or heat.',
+          confined: 'Tanks, vessels, pits, or any enclosed space with restricted entry and limited airflow.',
+          heights: 'Work performed above ground level or a permanent platform.'
+        }
       },
       basicInfo: {
-        marker: 'Basic info form lands here — PMT-005',
-        body: 'Project, foreman, date/time, work description and location fields are not built yet.'
+        field: {
+          title: 'Project',
+          contractor: 'Contractor',
+          foreman: 'Foreman',
+          workDate: 'Date',
+          workTimeStart: 'Start Time',
+          workTimeEnd: 'End Time',
+          location: 'Location'
+        },
+        mapPlaceholder: 'Map pin — coming soon',
+        validation: {
+          endAfterStart: 'End time must be after start time'
+        }
       },
       safetyChecks: {
         marker: 'Safety reading fields land here — PMT-006',

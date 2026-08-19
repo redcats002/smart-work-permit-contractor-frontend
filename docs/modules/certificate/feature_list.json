@@ -79,7 +79,10 @@
       "notes": "This item spans two modules. Update both docs/modules/certificate/ and docs/modules/permit/ progress notes when it lands.",
       "dependencies": [
         "CRT-002",
-        "PMT-007"
+        "PMT-007",
+        "API-005",
+        "API-006",
+        "API-007"
       ],
       "status": "not-started",
       "evidence": ""

@@ -22,7 +22,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import { useApiError } from '@/composables/useApiError'
-import { useAuthStore } from '@/stores/Auth'
+import { CONTRACTOR_ROLE, useAuthStore } from '@/stores/Auth'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { ILoginPayload } from '@/models/request/auth/public/AuthReq.public.model'
 import type { IAuthPublicProvider } from '@/resources/provider/auth/public/Auth.public.provider'
@@ -42,8 +42,20 @@ const { mapError } = useApiError()
 const form = ref<ILoginPayload>(useInitForm())
 
 async function useLogin (): Promise<void> {
+  // Login is the one endpoint that answers { success, data } rather than the { message, data }
+  // envelope — see docs/main/dev-handoff/04-api-contract.md §2.
   const response = await AuthPublicService.login(form.value)
-  authStore.userLogin(response.data.user, response.data.token)
+  const { user, token } = response.data
+
+  // A safety officer or inspector can authenticate here, but every screen in this app calls
+  // contractor-gated endpoints that would answer 403 FORBIDDEN_ROLE. Refuse the session outright
+  // rather than signing them into an app that half-works.
+  if (user.role !== CONTRACTOR_ROLE) {
+    toast.error(t('error.FORBIDDEN_ROLE'))
+    return
+  }
+
+  authStore.userLogin(user, token)
   toast.success(t('platform.auth.loginSuccess'))
   router.push({ name: 'PermitListPage' })
 }

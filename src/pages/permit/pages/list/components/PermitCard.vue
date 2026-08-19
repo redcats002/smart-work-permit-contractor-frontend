@@ -29,12 +29,6 @@
       </span>
       <span class="text-xs text-text-secondary">📅 {{ formattedDate }}</span>
       <span class="text-xs text-text-secondary">🕗 {{ permit.workTimeStart }}–{{ permit.workTimeEnd }}</span>
-      <span
-        v-if="showEntrants"
-        class="ml-auto flex items-center gap-1.5 text-xs font-semibold text-status-rejected-fg">
-        <span class="size-[7px] shrink-0 animate-pulse rounded-full bg-status-rejected-fg" />
-        {{ t('permit.list.card.inside', { count: permit.entrantsInside ?? 0 }) }}
-      </span>
     </div>
   </router-link>
 </template>
@@ -82,12 +76,9 @@ const statusClass: ComputedRef<{ bg: string, fg: string }> = computed((): { bg: 
 
 const formattedDate: ComputedRef<string> = computed((): string => d(new Date(props.permit.workDate), 'short'))
 
-/** Confined-space permits, ACTIVE, with entrants still checked in — see context.md § My Permits. */
-const showEntrants: ComputedRef<boolean> = computed((): boolean => (
-  props.permit.type === 'confined'
-  && props.permit.status === 'ACTIVE'
-  && (props.permit.entrantsInside ?? 0) > 0
-))
+// The "N inside" badge is gone (API-006): GET /permits carries no entrant count. Only the public
+// GET /permits/qr/:token reports one, and that needs an issued QR token this screen does not have.
+// Restoring it is a backend change — see docs/api/GAPS.md.
 </script>
 
 <style scoped>

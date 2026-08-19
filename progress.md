@@ -2,12 +2,12 @@
 
 ## Current State
 
-**Last Updated:** 2026-08-15
+**Last Updated:** 2026-08-17
 **Project:** SmartWorkPermit — Contractor Web App
-**Active Feature:** none in flight. Next up: `PMT-005`–`PMT-009` (the wizard step bodies).
+**Active Feature:** none in flight. Next up: `PMT-006` (wizard step 3 — Safety Checks).
 
-**Baseline: GREEN** — `./init.sh` → typecheck PASS, lint PASS, **303 tests PASS**.
-Progress: **19 of 30 items done**, 11 open, 0 blocked.
+**Baseline: GREEN** — `./init.sh` → typecheck PASS, lint PASS, **323 tests PASS**, live smoke 16/16 PASS.
+Progress: **30 of 40 items done** (root registry, module counts), 0 blocked.
 `feat-003` (history) and `feat-004` (certificates) are **complete**.
 
 **The app is reachable by a human end to end.** Orchestrator-verified live:
@@ -245,3 +245,45 @@ Product verification (`./init.sh`) is red by design — see the recorded baselin
 - `PLT-001` is intentionally large but purely subtractive — delete dangling files, widen eslint `ignores`. Do not "fix" a dangling lending model by rewriting it; delete it.
 - Reusable infrastructure that survives the strip and should be kept: `src/components/{base,button,input,modal,table,display,nav,paper,loader,transition}`, `src/volt/`, `src/utils/`, `src/composables/`, `src/resources/HttpRequest.ts` + `Interceptors.ts`, `src/stores/{Auth,Loading}.ts`, and the 217 passing util tests.
 - `src/components/selection/modules/api/*` (16 dirs) and most of `static/*` (25 files) are lending-specific dropdowns — they account for ~28 of the typecheck errors and are deletion candidates in `PLT-001`.
+
+## 2026-08-17 — feat-005 Real API integration (done)
+
+The backend is built and running; this app was written against an assumed contract that disagreed
+with it on the path prefix, the casing, the error body, the auth mechanism, the role model, and
+most permit field names. All 10 `API-*` items in `docs/modules/api-integration/` are done.
+
+Landed: transport (humps deleted in both directions, error envelope, no logout on a failed
+sign-in), auth against the real `/auth/user/**` paths with a contractor-only login gate, the
+21-code error map keyed off `errorCode` (it had been reading `code`, so every coded failure
+rendered `error.unknown`), permit + certificate models rewritten to the wire shape, all four
+providers off their stubs with both `*.mock.ts` files deleted, notifications pointed at endpoints
+that exist, and `scripts/smoke-api.mjs` wired into `./init.sh`.
+
+The pre-existing red baseline (a drifting stub fixture, recorded in `API-001`) is green again.
+
+`./init.sh`: typecheck PASS, lint PASS, vitest 26 files / 309 tests PASS, live smoke 16/16 PASS.
+
+## 2026-08-17 — PMT-005 Wizard step 1-2 (Permit Type + Basic Information) (done)
+
+Filled the first two real wizard step bodies on top of the PMT-004 shell: `Step1Type.vue` (3
+selectable type cards, reusing `--color-permit-type-*` tokens the same way `PermitCard.vue` does)
+and `Step2BasicInfo.vue` (title/foreman/location/date/start/end + readonly contractor + a static
+map-pin placeholder — no `project` or `workDescription` field, neither exists on the API).
+
+`Step1TypeSchema` and `Step2BasicInfoSchema` (wire-shaped, string fields, `.refine` for
+end-after-start) replace the two `z.object({})` placeholders and are the single source of truth
+`useWizard` uses to gate Next — deliberately kept as strict as `hasCreatableDraft()`, which is
+covered by two new schema test files. Only the free-text fields (title/foreman/location) run
+through `@primevue/forms` + `zodResolver`, per the project's mandatory form pattern; the three
+date/time pickers are plain `v-model` computed proxies onto the wizard's shared `formData` because
+a `DatePicker`'s `Date` value can't share one resolver schema with the wire-string shape
+`useWizard.formData` needs without real complexity for only 3 fields.
+
+Verified against the live backend beyond the generic `smoke-api.mjs`: a throwaway probe script
+logged in as the seeded contractor and POSTed the exact payload these two steps emit, got a real
+`WP-HOT-…` id back, then PATCHed it successfully — the first live run of this create-then-PATCH
+path. Not verified: an actual interactive click-through of the rendered UI — the Claude-in-Chrome
+browser tool was unavailable in this sandbox, so the components are unseen-but-code-reviewed,
+typechecked, and linted, not screenshot-checked. See this item's own `progress.md` for detail.
+
+`./init.sh`: typecheck PASS, lint PASS, vitest 28 files / 323 tests PASS, live smoke 16/16 PASS.

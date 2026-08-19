@@ -1,4 +1,15 @@
-import type { IBaseSuccessResponse } from '../../Response.model'
+export interface TActionLogoutResponse {
+  success: boolean
+}
 
-export type TActionLogoutResponse = IBaseSuccessResponse<boolean>
-export type TActionCheckBearerTokenResponse = IBaseSuccessResponse<boolean>
+export interface ISessionUser {
+  userId: string
+  email: string
+  firstName: string | null
+  lastName: string | null
+}
+
+export interface TActionCheckSessionResponse {
+  success: boolean
+  user: ISessionUser
+}

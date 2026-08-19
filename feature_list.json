@@ -1,5 +1,5 @@
 {
-  "project": "SmartWorkPermit — Contractor Web App",
+  "project": "SmartWorkPermit \u2014 Contractor Web App",
   "spec": "docs/main/dev-handoff/02-contractor-web-vue-tasks.md",
   "sharedContext": "docs/main/dev-handoff/00-SHARED-CONTEXT.md",
   "design": "docs/main/SmartWorkPermit-v3.dc.html",
@@ -50,6 +50,26 @@
       ],
       "status": "done",
       "evidence": ""
+    },
+    {
+      "id": "feat-005",
+      "module": "api-integration",
+      "harness": "docs/modules/api-integration/",
+      "name": "Real API integration",
+      "description": "Re-align the API layer to the real Elysia backend BEFORE the wizard is built on it: /api/v1 prefix, camelCase both ways (humps deleted), cookie-session auth, the { code, message, errorCode } error body and its 21-code vocabulary, permit/certificate shapes off the stubs, and a live smoke check. Ground truth is docs/api/openapi.json with docs/main/dev-handoff/04-api-contract.md as its prose. Harness: docs/modules/api-integration/",
+      "dependencies": [
+        "feat-001"
+      ],
+      "status": "done",
+      "evidence": "2026-08-17: all 10 API-* items done. ./init.sh green \u2014 typecheck PASS, lint PASS, vitest 26 files / 309 tests PASS, live smoke 16/16 PASS against a running backend. The baseline was RED before this module (a drifting stub fixture, documented in API-001) and is now green. Both *.mock.ts files and every USE_STUB_DATA flag are gone; the app talks to the real API. See docs/modules/api-integration/ and docs/api/GAPS.md."
+    },
+    {
+      "id": "feat-006",
+      "name": "Manual E2E Test Pass",
+      "description": "Human-executed end-to-end testing of every contractor screen against a real backend. Suites in docs/testing/suites/, dated results in docs/testing/runs/, master plan in ../../docs/e2e/E2E-TEST-PLAN.md. Blocked in full on E2E-000 \u2014 no contractor account exists, so the app cannot currently be logged into. Harness: docs/modules/e2e-manual/",
+      "dependencies": [],
+      "status": "not-started",
+      "evidence": "Plan and harness written 2026-08-19, awaiting review. Nothing executed."
     }
   ]
 }

@@ -47,17 +47,14 @@ const { t } = useI18n()
 const tokenValid = ref<boolean>(false)
 const form = ref<ResetPasswordFormValues>(useResetPasswordInitialValues())
 
+// The backend has no token-probe endpoint (API-003): a reset token is only ever validated by
+// POST /auth/user/public/user-reset-password itself, which answers 400 for an expired or forged
+// one. So the form renders whenever a token is present and the failure surfaces on submit.
 async function useCheckToken (): Promise<void> {
   const token = route.query.token as string
 
-  const response = await AuthPublicService.checkTokenResetPassword({ token })
-  if (!response.data.valid) {
-    toast.error(t('platform.auth.resetPassword.tokenInvalidToast'))
-    tokenValid.value = false
-    return
-  }
-
-  tokenValid.value = true
+  tokenValid.value = Boolean(token)
+  if (!tokenValid.value) toast.error(t('platform.auth.resetPassword.tokenInvalidToast'))
 }
 
 // Contractors only ever reset their own password via this emailed-link flow — there is no

@@ -82,7 +82,7 @@
         "PMT-002"
       ],
       "status": "done",
-      "evidence": "./init.sh — typecheck PASS, lint PASS, tests PASS. Live Playwright probe after router registration: route renders with shell chrome, no pageerror, no horizontal overflow at 375/768/1280. /permits/create renders 478 chars. 9 useWizard tests."
+      "evidence": "./init.sh — typecheck PASS, lint PASS, tests PASS. Live Playwright probe after router registration: route renders with shell chrome, no pageerror, no horizontal overflow at 375/768/1280. /permits/create renders 478 chars. 9 useWizard tests. || AMENDED 2026-08-17 (feat-005/API-005): draft persistence no longer fires on 'first meaningful input' (type chosen). POST /permits requires type, title, location, foreman, workDate, workTimeStart and workTimeEnd together, all non-empty, so a create from step 1 alone was a guaranteed 400 against the real backend — it only ever worked against the stub. updateFormData now gates the first create on hasCreatableDraft(); once the draft exists every later edit PATCHes as before. The race-protection behaviour is unchanged and still tested. PMT-005 owns making step 2 satisfy the gate."
     },
     {
       "id": "PMT-005",
@@ -91,18 +91,23 @@
       "description": "Type selection cards and the shared header fields, including the map-pin placeholder.",
       "acceptance": [
         "Step 1: three selectable type cards (Hot Work, Confined Space, Working at Heights) with icon, EN name, Thai name, blurb, and the per-type color pairing from the design; selection drives which readings step 3 asks for",
-        "Step 2: Project*, Contractor (readonly, from auth store), Foreman*, Date*, Start*/End*, Work description*, Location*",
+        "Step 2 fields, named for the WIRE not the design label: Title* (the design calls this 'Project' — the API field is `title`), Foreman*, Date* (YYYY-MM-DD), Start*/End* (submitted as full ISO datetimes, not 'HH:mm'), Location*",
+        "Contractor is readonly and shows the signed-in user's name from the auth store. It is NOT a company: the API has no organisation concept and never populates IUser.company (docs/api/GAPS.md §C)",
+        "There is NO work-description field on the permit API. Either omit it or render it read-only/unpersisted with a comment — do not add it to the payload, it will be silently dropped (docs/api/GAPS.md §F)",
         "End time must be after start time — validated in the schema",
+        "Step 2's schema must satisfy useWizard.hasCreatableDraft(): type, title, location, foreman, workDate, workTimeStart and workTimeEnd all non-empty. Until it does, NO draft is ever persisted — POST /permits requires all seven and 400s otherwise",
         "Map pin is a static placeholder panel — DO NOT add a mapping dependency (02-contractor-web-vue-tasks.md sanctions a placeholder)",
         "Both steps stack to a single column below md",
-        "./init.sh green"
+        "./init.sh green (typecheck + lint + vitest + live smoke)"
       ],
-      "notes": "Design lines 168-215.",
+      "notes": "Design lines 168-215. || ACCEPTANCE REWRITTEN 2026-08-17 (feat-005): the original list named `Project` and `Work description*`, neither of which exists on the real API — see docs/main/dev-handoff/04-api-contract.md §4. Launch brief with the full data flow: docs/modules/permit/features/005-permit-type-basic-info/context.md",
       "dependencies": [
-        "PMT-004"
+        "PMT-004",
+        "API-005",
+        "API-006"
       ],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "./init.sh (2026-08-17) — typecheck PASS, lint PASS, vitest 323 tests PASS (28 files, +2 new: Step1Type.schema.test.ts, Step2BasicInfo.schema.test.ts), live smoke 16/16 PASS. Live-API verification beyond the generic smoke: a throwaway probe (scratchpad, not committed) logged in as the seeded contractor and called POST /permits with exactly the payload Step1Type+Step2BasicInfo emit ({type:'hot', title, location, foreman, workDate:'2026-08-20', workTimeStart/End as full ISO}) — got 200 with a real id (WP-HOT-20260817-002), then PATCH /permits/:id (foreman edit) — got 200. Confirms the wire shape end to end, not just via a stub. Dev server smoke-checked with typecheck+lint clean; interactive browser click-through was not possible in this sandbox (Chrome extension unavailable), so no screenshot evidence of the rendered cards/pickers — flagged as an open item below. Step1Type.vue: 3 selectable cards (Hot/Confined/Heights) using the existing --color-permit-type-* tokens (same pattern as PermitCard.vue), click sets formData.type via Step1TypeSchema (schema.enum(EPermitType)). Step2BasicInfo.vue: title/foreman/location as real @primevue/forms + zodResolver fields (Step2BasicInfoFieldsSchema.pick) with LabelField; workDate/workTimeStart/workTimeEnd handled as plain v-model computed proxies (not inside the Form) because DatePicker's `Date` v-model can't share one resolver schema with the wire-string shape useWizard.formData needs — Step2BasicInfoSchema (wire-shaped, string fields, refine end>start) stays the single source of truth for Next-gating in WizardSteps.ts, matching hasCreatableDraft exactly (tested). Contractor field reads authStore.user.name (readonly, no company). Work description and Project(as label)/project(as field) are intentionally absent — see docs/api/GAPS.md §F. Map pin is a static 📍 placeholder box, no mapping dependency."
     },
     {
       "id": "PMT-006",
@@ -121,7 +126,9 @@
       ],
       "notes": "Design lines 218-312. Client validation is convenience only — PMT-009 must still surface a server GAS_OUT_OF_RANGE that disagrees.",
       "dependencies": [
-        "PMT-005"
+        "PMT-005",
+        "API-005",
+        "API-006"
       ],
       "status": "not-started",
       "evidence": ""
@@ -142,7 +149,10 @@
       ],
       "notes": "Design lines 315-363. The regulation text is at design line 334 — copy it exactly, do not paraphrase a legal citation.",
       "dependencies": [
-        "PMT-005"
+        "PMT-005",
+        "API-005",
+        "API-006",
+        "API-008"
       ],
       "status": "not-started",
       "evidence": ""
@@ -161,7 +171,9 @@
       ],
       "notes": "Design lines 366-388. Backend model is jsa_steps { permit_id, phase, step, hazard, control, sort_order }.",
       "dependencies": [
-        "PMT-005"
+        "PMT-005",
+        "API-005",
+        "API-006"
       ],
       "status": "not-started",
       "evidence": ""
@@ -183,7 +195,10 @@
       "dependencies": [
         "PMT-006",
         "PMT-007",
-        "PMT-008"
+        "PMT-008",
+        "API-005",
+        "API-006",
+        "API-004"
       ],
       "status": "not-started",
       "evidence": ""
@@ -203,7 +218,9 @@
       ],
       "notes": "Design lines 430-505. `qrcode` and `@types/qrcode` are already in package.json.",
       "dependencies": [
-        "PMT-002"
+        "PMT-002",
+        "API-005",
+        "API-006"
       ],
       "status": "not-started",
       "evidence": ""
@@ -224,7 +241,9 @@
       ],
       "notes": "Design lines 574-611. The client must not pre-empt the backend — always attempt the call and render its verdict; the client-side block is only a UX hint.",
       "dependencies": [
-        "PMT-010"
+        "PMT-010",
+        "API-005",
+        "API-006"
       ],
       "status": "not-started",
       "evidence": ""
@@ -245,7 +264,9 @@
       ],
       "notes": "SCOPE QUESTION — design lines 549-570 add a GPS-tagged-photo verification step after the countdown (capture → verify GPS against the permit pin → pass/fail → close). Neither 00-SHARED-CONTEXT.md nor 01-backend-elysia-tasks.md models it and no endpoint exists. ASK THE PRODUCT OWNER before building it. Default without an answer: build the countdown and unlock closure at zero; leave the photo step out and note it in progress.md.",
       "dependencies": [
-        "PMT-010"
+        "PMT-010",
+        "API-005",
+        "API-006"
       ],
       "status": "not-started",
       "evidence": ""

@@ -9,12 +9,13 @@ export interface IUploadResponse {
 }
 type TUploadResponse = IBaseSuccessResponse<IUploadResponse>
 
-export interface IFileUrlResponse {
-  message: string
+// GET /api/v1/file now answers the standard envelope: { message, data: { url } }. The provider
+// returns that envelope whole, like every other method here.
+export interface IFileUrl {
   url: string
 }
 
-type TFileUrlResponse = IFileUrlResponse
+type TFileUrlResponse = IBaseSuccessResponse<IFileUrl>
 
 export interface IMedia {
   file?: File
@@ -44,8 +45,9 @@ class UploadProvider extends HttpRequest implements IUploadProvider {
     return response
   }
 
+  // filePath is a storage key containing slashes and often spaces — it must be encoded.
   public async getFileUrl (filePath: string): Promise<TFileUrlResponse> {
-    return this.get(`/api/v1/file?filePath=${filePath}`)
+    return this.get(`/api/v1/file?filePath=${encodeURIComponent(filePath)}`)
   }
 }
 

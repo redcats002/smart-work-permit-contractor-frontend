@@ -19,7 +19,7 @@ export default function useFileUrl (filePath: Ref<string | null | undefined>): I
     loading.value = true
     try {
       const res = await UploadService.getFileUrl(path)
-      url.value = res?.url
+      url.value = res?.data?.url
     } catch (error: unknown) {
       console.error('Failed to resolve file URL:', error)
       url.value = null

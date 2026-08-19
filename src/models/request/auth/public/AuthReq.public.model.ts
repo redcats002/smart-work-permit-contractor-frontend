@@ -10,6 +10,3 @@ export interface IResetPasswordPayload {
   newPassword: string
   confirmNewPassword: string
 }
-export interface ICheckTokenResetPasswordPayload {
-  token: string
-}

@@ -30,24 +30,31 @@ export interface IUseWizard {
 }
 
 /**
- * POST /permits needs the full draft shape, but the wizard only has `type` at
- * the moment "meaningful input" first fires (step 1 sets it before anything
- * else on the draft exists). Assumption pending PMT-005 confirmation: the
- * backend accepts a sparse draft — every other required field is sent blank
- * and gets filled in by the PATCHes later steps trigger.
+ * POST /permits requires type, title, location, foreman, workDate, workTimeStart and
+ * workTimeEnd — all of them, with `minLength: 1` on the strings (docs/api/openapi.json). The
+ * wizard only has `type` when "meaningful input" first fires, so a draft cannot be created that
+ * early: `title`, `location` and `foreman` come from step 2, and the create call must wait for
+ * them. `hasCreatableDraft` below is that gate, and PMT-005 owns making step 2 satisfy it.
+ *
+ * There is no `project` and no `workDescription` on this API — those were assumptions.
  */
 function buildCreatePayload (data: IUpdatePermitDraftPayload): ICreatePermitDraftPayload {
   return {
     type: data.type as TPermitType,
-    project: data.project ?? '',
+    title: data.title ?? '',
+    location: data.location ?? '',
     foreman: data.foreman ?? '',
     workDate: data.workDate ?? '',
     workTimeStart: data.workTimeStart ?? '',
     workTimeEnd: data.workTimeEnd ?? '',
-    workDescription: data.workDescription ?? '',
-    location: data.location ?? '',
     outdoorWork: data.outdoorWork ?? false
   }
+}
+
+/** Every field POST /permits rejects as empty must be present before the first create fires. */
+export function hasCreatableDraft (data: IUpdatePermitDraftPayload): boolean {
+  return Boolean(data.type && data.title && data.location && data.foreman
+    && data.workDate && data.workTimeStart && data.workTimeEnd)
 }
 
 /**
@@ -125,9 +132,11 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
 
   function updateFormData (patch: Partial<IUpdatePermitDraftPayload>): void {
     formData.value = { ...formData.value, ...patch }
-    // "First meaningful input" = the permit type is chosen (step 1). Nothing
-    // is worth drafting server-side before that.
-    if (formData.value.type === undefined) return
+    // A draft cannot be created from step 1 alone: POST /permits requires type, title, location,
+    // foreman, workDate, workTimeStart and workTimeEnd together, all non-empty (API-005). Before
+    // that the create would 400, so nothing is persisted; once the draft exists, every later edit
+    // PATCHes as usual.
+    if (!draftId.value && !hasCreatableDraft(formData.value)) return
     debouncedPersist()
   }
 

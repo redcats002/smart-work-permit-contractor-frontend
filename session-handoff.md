@@ -3,134 +3,88 @@
 > Fill this in before ending every session. The next agent reads this file, `progress.md`,
 > and the active module's `feature_list.json` — nothing else is guaranteed to be in context.
 
-**Date:** 2026-08-15
-**Session did:** Rebuilt the harness, then ran three parallel implementation waves (11 agents).
-Baseline went from red (72 typecheck errors, ~3140 lint errors) to **green**: typecheck + lint +
-**303 tests**. **19 of 30 items done.** `feat-003` (history) and `feat-004` (certificates) complete.
+**Date:** 2026-08-17
+**Session did:** `PMT-005` — Wizard step 1-2 (Permit Type + Basic Information). Filled the two
+real step bodies on top of the `PMT-004` shell.
+**30 of 40 items done** (root registry, module counts).
 
-**The app is reachable by a human end to end** — orchestrator-verified live, not assumed:
-unauthenticated `/permits` → `/auth/login` → real form submit → lands on `/permits`, token cookie
-set, revisiting login bounces back, all four screens render, zero page errors.
-
-**Log in with:** `contractor@smartworkpermit.dev` / `password123` (stub credential).
+**Status:** `./init.sh` passes clean — typecheck PASS, lint PASS, vitest 28 files / **323 tests**
+PASS, live API smoke **16/16** PASS.
+**Nothing is committed.** Review the working tree first.
 
 ---
 
-## Manual steps the agent cannot perform
+## What PMT-005 built
 
-**1. `.env.example` — delete the dead line.** `useSocket.ts` was removed in `PLT-001` and
-nothing references `VITE_APP_WEBSOCKET` any more. A global `Read(**/.env*)` permission rule
-blocks Read/Write/Bash on that path for both subagents and the orchestrator; bypassing it was
-declined as a deliberate security boundary.
+- `src/pages/permit/pages/create/schema/Step1Type.schema.ts` — `type` must be one of
+  `EPermitType` (`schema.enum`).
+- `src/pages/permit/pages/create/schema/Step2BasicInfo.schema.ts` — exports
+  `Step2BasicInfoFieldsSchema` (the 6 required wire-string fields) and `Step2BasicInfoSchema`
+  (adds `.refine` for end-after-start). Both replace `z.object({})` placeholders and are what
+  `useWizard` uses to gate the Next button — kept exactly as strict as `hasCreatableDraft()`
+  (`useWizard.ts`), covered by two new test files under
+  `src/tests/pages/permit/create/schema/`.
+- `src/pages/permit/pages/create/components/steps/Step1Type.vue` — 3 selectable type cards
+  (Hot/Confined/Heights), reusing the `--color-permit-type-*` tokens the same way
+  `PermitCard.vue` does. Click sets `formData.type`.
+- `src/pages/permit/pages/create/components/steps/Step2BasicInfo.vue` — title/foreman/location
+  go through `@primevue/forms` + `zodResolver` (`Step2BasicInfoFieldsSchema.pick(...)`), per the
+  project's mandatory form pattern. workDate/workTimeStart/workTimeEnd are plain `v-model`
+  computed proxies straight onto `props.formData` (not inside the `<Form>`) — a `DatePicker`'s
+  `Date` value can't share one resolver schema with the wire-string shape `useWizard.formData`
+  needs, and a dual Date/string schema pair wasn't worth it for 3 fields. Times are composed as
+  `workDate` + picked time-of-day → full ISO (`combined.setHours(...); .toISOString()`), never a
+  bare `'HH:mm'`. Contractor field reads `authStore.user.name`, readonly. No `project` or
+  `workDescription` key is ever emitted — neither exists on the API (`docs/api/GAPS.md` §F). Map
+  pin is a static 📍 box.
+- Locale keys added under `permit.create.steps.type.*` / `permit.create.steps.basicInfo.*` in
+  both `src/locales/en/permit.ts` and `src/locales/th/permit.ts` (placeholder `marker`/`body`
+  keys removed for steps 1-2 only; steps 3-6 keep theirs, untouched).
 
-```diff
- VITE_APP_API_URL=
--VITE_APP_WEBSOCKET=
-```
+**Untouched, on purpose:** the wizard shell (`useWizard.ts`, `WizardSteps.ts`,
+`StepperHeader.vue`, `WizardFooter.vue`, `PermitCreatePage.vue`), the permit provider, and steps
+3-6 (still `z.object({})` placeholders — `PMT-006`..`009`).
 
-**2. There is no `.env`, only `.env.example`.** `src/utils/EnvChecker.ts` throws on boot without
-`VITE_APP_API_URL`, so `bun run dev` renders a blank page until you create one. Workaround used
-for verification this session:
+## Verification detail — read before trusting this UI
 
-```bash
-VITE_APP_API_URL=http://localhost:9/api bun run dev
-```
+`./init.sh`'s smoke step (`scripts/smoke-api.mjs`) is generic and does not exercise the wizard.
+Per this item's brief, a throwaway probe script (session scratchpad, **not committed**) logged in
+as the seeded contractor and called `POST /permits` with exactly the payload Step1Type +
+Step2BasicInfo would emit (`{type:'hot', title, location, foreman, workDate:'2026-08-20',
+workTimeStart/End as full ISO}`) — got `200` back with a real id (`WP-HOT-20260817-002`), then
+`PATCH /permits/:id` (a foreman edit) — got `200`. This confirms the wire shape end to end against
+the live backend, the first time this create-then-PATCH path has run against a real server.
 
----
+**What was NOT verified:** an actual interactive click-through of the rendered wizard (card
+selection, DatePicker popups, inline field errors, responsive stacking at 375px). The
+Claude-in-Chrome browser extension was not connected in this sandbox
+(`tabs_context_mcp` → "Browser extension is not connected"), so the components are
+code-reviewed + typechecked + linted, not screenshot-verified. `bun run dev` was started and
+confirmed to boot without a build error, then left running in the background (not killed — see
+AGENTS.md's "never run `pkill -f vite`" rule; only kill your own PID, which this sandbox's
+permission classifier blocked even for `lsof`/`pkill` scoped to one port). **Recommend the next
+session — or a human — click through `/permits/create` once** before treating this UI as fully
+trusted, especially: does clicking a type card visually select it, do the two time pickers show
+sensible values, does the inline "end must be after start" note actually appear/disappear.
 
-## Current state
+## Read this before touching src/resources or src/models
 
-`./init.sh` → typecheck PASS, lint PASS, **303 tests PASS**.
+`docs/api/openapi.json` is the contract, generated from a live boot of the backend and never
+hand-edited. `docs/main/dev-handoff/04-api-contract.md` is its readable form. `01-backend-elysia-tasks.md`
+is the older *plan*; where they disagree, the contract wins.
 
-**Everything is stubbed.** `USE_STUB_DATA = true` in four providers — `Permit`, `Certificate`,
-`Auth.public`, `Auth.private` — with real HTTP already wired underneath. **Going live:** flip those
-four booleans, delete `Permit.mock.ts` + `Certificate.mock.ts`, point `VITE_APP_API_URL` at the backend.
+## Next work
 
-> ⚠ The auth stub **bypasses `Interceptors.ts` entirely**, so the `401 → logout` path has been read
-> and confirmed correct but **never exercised live**. Test it the moment a real backend exists.
+`PMT-006` (Wizard step 3 — Safety Checks) is next: type-specific gas/wind readings validated
+against `SAFETY_RANGES` (one exported constant, consumed by both the schema and the inline
+pass/fail display — do not duplicate the numbers), the indoor/outdoor bypass toggle, the numbered
+Yes/No/N/A checklist, and a hard block on Next with no override when a reading fails. `type` was
+set by Step1Type.vue and is already sitting in `formData.type` — step 3 reads it to decide which
+readings to demand (hot → LEL+O₂, confined → LEL+O₂+CO+SO₂, heights → wind). Do not touch Step1/2
+or the wizard shell while doing this.
 
-### Done (19)
+## Known gaps needing a backend change
 
-`PLT-001` baseline repair · `PLT-002` design tokens · `PLT-003` app shell · `PLT-004` i18n ·
-`PLT-005` auth · `PLT-006` API error codes · `PLT-008` orphan sweep · `PLT-009` Schema i18n ·
-`PLT-010` retokenize · `PMT-001` domain · `PMT-002` provider+router · `PMT-003` My Permits ·
-`PMT-004` wizard shell · `HST-001`/`002`/`003` history · `CRT-001`/`002`/`003` certificates.
-
-### Open (11), in dependency order
-
-- **`PMT-005`–`PMT-009` — the 6 wizard step bodies. The biggest remaining chunk.**
-- `PMT-010`–`PMT-012` permit detail, closure modal, Fire Watch countdown
-- `CRT-004` certificate gate on submission (needs `PMT-007`)
-- `PLT-007` notification polling
-- `PLT-011` design system has no blue/info family (blocks a clean `PMT-006`)
-
----
-
-## Traps discovered this session — do not rediscover these
-
-**vue-router is 5.x, not 4.x.** An unregistered route name fails hard, but the two call sites fail
-*differently* — both observed empirically:
-
-- `<RouterLink :to="{ name }">` resolves at render/setup → **throws and blanks the entire page**.
-- `router.push({ name })` rejects at runtime → **uncaught page error, page keeps rendering**, control is dead.
-
-`AppDrawer.vue` guards nav with `isRegistered()` via `router.hasRoute()`. That guard is **not
-reactive** (read once at render), so registering a route needs a **full reload**, not Vite HMR.
-**All four nav routes now exist, so the guard has nothing left to guard — it can be deleted.**
-Also: declare `/create` before `/:id` or `create` is captured as an id. Written up in `AGENTS.md`.
-
-**Thai timezone is load-bearing, not cosmetic.** `src/utils/CertificateStatus.ts` deliberately
-splits `bangkokCalendarDay` (bare business dates like `expiryDate`) from `bangkokInstantDay`
-(real instants like `now`). A naive single-branch version was **proven** to break under a non-UTC
-host timezone. Do not collapse the two helpers.
-
-**Locales are split per namespace** — `src/locales/{en,th}/<module>.ts`. This exists so parallel
-agents do not collide in one message file. `th/<ns>.ts` is typed as `typeof <ns>En`, so a key
-added in English and missing in Thai is a **type error**, not a silent runtime fallback.
-
-**`src/router/index.ts` is a contention point.** When running agents in parallel, keep it out of
-every agent's hands and register route modules yourself afterwards. Same for shared utils. All four
-route modules are now registered — see the "Running several agents in parallel" section in `AGENTS.md`
-for the full set of rules this session paid for.
-
-**Do not fan the wizard steps out in parallel.** `PMT-005`–`009` all write
-`src/pages/permit/pages/create/**` *and* `src/locales/{en,th}/permit.ts`. The per-namespace locale
-split solves cross-module collisions, not intra-module ones. Run them serially, or split the step
-schemas and locale sub-files first.
-
-**Pinia plugins in tests:** `pinia.use(plugin)` only *queues* a plugin until `app.use(pinia)` installs
-it. A bare `setActivePinia(pinia)` with no Vue app silently no-ops every plugin, `persistedstate`
-included — your persistence assertions will pass against nothing. See `src/tests/stores/Auth.test.ts`.
-
-**A commented-out route still matches a grep.** `ForgotPasswordPage` looked registered and is not.
-Read the router file.
-
----
-
-## Product decisions still defaulted, not confirmed
-
-1. **`vue-i18n` was installed** without explicit approval — the task doc sanctions it and all four modules assume `t()`. Reversible.
-2. **Fonts:** kept self-hosted `LINE_Seed_Sans_TH`; `--font-mono` is a websafe stack. The design specifies IBM Plex Mono but its woff2 files are not in the repo, and **no CDN import is allowed** (industrial facility). Self-host to close the gap.
-3. **`CERTIFICATE_EXPIRING_SOON_DAYS = 30`** — no spec states this window.
-4. **`PMT-012` Fire Watch GPS-photo flow** — the design shows capture → verify GPS against the permit pin → pass/fail, but neither `00-SHARED-CONTEXT.md` nor the backend doc models it and **no endpoint exists**. Default recorded: build the countdown, skip the photo step. Confirm before building it.
-5. **JSA minimum rows** — the backend doc states no minimum; `PMT-008` assumes ≥1.
-6. **`IUser.company` was added as *optional*.** The backend `users` spec is `id, name, role, contact info` — no company field is promised. The design's account card shows one. Confirm with the backend team.
-7. **Auth stub credential** `contractor@smartworkpermit.dev` / `password123` is dev-only and must not survive contact with a real backend.
-8. **No blue/info color token exists** (`PLT-011`). The design does use a blue — `#2F80ED`, and the outdoor-work panel `#E8F5FF`/`#B3D8F5`/`#1060A8`. Decide before `PMT-006` needs it.
-
----
-
-## Recommended next step
-
-**`PMT-005` (wizard steps 1-2)**, then `006`, `007`, `008`, `009` — **serially, not in parallel**
-(see the traps section). The shell is done and the structure is stable: `WIZARD_STEPS` in
-`src/pages/permit/pages/create/wizard/WizardSteps.ts` is a registry of
-`{ key, labelKey, component, schema }`, and each step has a stub component plus a placeholder
-schema. Filling a step means editing only that step's `.vue` and `.schema.ts`.
-
-Everything a step needs already exists: `SAFETY_RANGES` + `validateReadings()` in
-`src/utils/PermitSafety.ts` (returns the *list of failing readings*, so the UI can name which one),
-`useApiError()`, the permit provider, and the design tokens.
-
-Read `docs/modules/permit/context.md` first — it carries the full per-step screen anatomy with
-design line numbers, so the 2400-line prototype never needs reading whole.
+`docs/api/GAPS.md` §Open. The one with UI consequences today: `GET /permits` returns no entrant
+count, so the My Permits card's "N inside" badge was removed — only the public
+`GET /permits/qr/:token` reports one.

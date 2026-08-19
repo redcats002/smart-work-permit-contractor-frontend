@@ -1,52 +1,57 @@
 import type {
-  IClosureChecklistAnswer, IJsaStep, IPermitPhoto, IPermitSafetyReading, IPermitWorker
+  IJsaStep, IPermitPhoto, IPermitSafetyReading, IPermitWorker
 } from '@/models/modules/permit/Permit.model'
 import type { TPermitStatus } from '@/enums/modules/permit/PermitStatus.enum'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import type { IBasePaginationRequest } from '../Request.model'
 
-/** POST /permits */
+/** POST /permits — every field here is required by the backend. */
 export interface ICreatePermitDraftPayload {
   type: TPermitType
-  project: string
+  title: string
+  location: string
   foreman: string
+  /** `YYYY-MM-DD` */
   workDate: string
+  /** Full ISO datetime */
   workTimeStart: string
   workTimeEnd: string
-  workDescription: string
-  location: string
-  outdoorWork: boolean
+  outdoorWork?: boolean
 }
 
-/** PATCH /permits/:id — only while status is DRAFT */
+/**
+ * PATCH /permits/:id — DRAFT only (403 `PERMIT_NOT_EDITABLE` otherwise).
+ *
+ * ⚠ Collection semantics differ per field, and getting this wrong destroys user data:
+ * - `jsaSteps` and `workers` are **REPLACED WHOLESALE**. Send the complete list every time —
+ *   a partial list silently deletes the rest.
+ * - `safetyReading` (singular) **APPENDS** a new reading row.
+ * - `photos` **UPSERT per `slotKey`**.
+ */
 export interface IUpdatePermitDraftPayload extends Partial<ICreatePermitDraftPayload> {
-  safetyReadings?: IPermitSafetyReading
+  safetyReading?: IPermitSafetyReading
   jsaSteps?: IJsaStep[]
   workers?: IPermitWorker[]
   photos?: IPermitPhoto[]
 }
 
-/** POST /permits/:id/submit — no body beyond the permit id in the URL */
+/** POST /permits/:id/submit — no body. Answers 400 with the first failing validation code. */
 export interface ISubmitPermitPayload {}
 
-/** POST /permits/:id/mark-complete — Hot Work only, no body beyond the permit id */
+/** POST /permits/:id/mark-complete — Hot Work only, no body. */
 export interface IMarkPermitCompletePayload {}
 
-/** POST /permits/:id/close */
-export interface IClosePermitPayload {
-  checklistAnswers: IClosureChecklistAnswer[]
-  signature: string
-  signedAt: string
-}
-
-/** GET /permits */
+/**
+ * GET /permits. A contractor is scoped to their own permits automatically — `contractorId` is
+ * ignored for contractor accounts, so it is not modelled here.
+ *
+ * `status` takes ONE value. The "Active" filter chip covers ACTIVE + FIRE_MONITOR, which the
+ * backend cannot express in one call — see useMyPermits for how that is narrowed client-side.
+ */
 export interface IGetPermitListQuery extends IBasePaginationRequest {
-  /**
-   * A single status or a set of statuses (e.g. the "Active" filter chip covers
-   * both ACTIVE and FIRE_MONITOR — see docs/modules/permit/context.md § My Permits).
-   */
-  status?: TPermitStatus | TPermitStatus[]
+  status?: TPermitStatus
   type?: TPermitType
+  /** `YYYY-MM-DD`, filtered server-side on `workDate`. */
   dateFrom?: string
   dateTo?: string
 }

@@ -18,6 +18,8 @@ export default [
       '.claude/**',
       '.gemini/**',
       'lint-staged.config.mjs',
+      // Plain Node scripts, not app code — no Vue/TS rules apply (API-009).
+      'scripts/**',
       // Throwaway debug/probe scripts dropped at the repo root. They are never
       // committed, but an uncommitted one still fails `bun run lint` and makes the
       // verification gate report a failure that has nothing to do with the code.

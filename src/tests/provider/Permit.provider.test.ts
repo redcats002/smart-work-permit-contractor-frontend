@@ -1,100 +1,94 @@
-import { describe, expect, it } from 'vitest'
-import type { IPermitListItem } from '@/models/response/permit/PermitRes.model'
-import PermitProvider, { type IPermitProvider } from '@/resources/provider/permit/Permit.provider'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { IPermitProvider } from '@/resources/provider/permit/Permit.provider'
+import PermitProvider from '@/resources/provider/permit/Permit.provider'
 
 /**
- * Exercises the stub branch of Permit.provider.ts (USE_STUB_DATA = true — see the file
- * header). Once the real backend is wired up and the flag flips to false, these tests
- * document the contract the live endpoint must keep satisfying: filter-chip status
- * grouping, and every method resolving the response shape the models declare.
+ * The stub this provider used to resolve from is gone (API-006) — it described a shape the
+ * backend never sends. What is worth pinning now is the wire contract: the exact path and verb of
+ * every call, and the payload semantics that destroy data when they drift.
  */
-describe('PermitProvider (stub mode)', () => {
-  const PermitService: IPermitProvider = new PermitProvider()
+interface IAxiosSpies {
+  get: ReturnType<typeof vi.fn>
+  post: ReturnType<typeof vi.fn>
+  patch: ReturnType<typeof vi.fn>
+}
 
-  it('list() with no status returns every stub permit (the "All" filter chip)', async () => {
-    const response = await PermitService.list({ page: 1, limit: 50 })
-    expect(response.data.length).toBeGreaterThan(0)
-    expect(response.count).toBe(response.data.length)
+type TAxiosMethod = (...args: unknown[]) => Promise<unknown>
+
+function spyOnTransport (service: IPermitProvider): IAxiosSpies {
+  const instance = (service as unknown as { axiosInstance: Record<string, TAxiosMethod> }).axiosInstance
+  const envelope = { message: 'success', data: {} }
+  const spy = (method: string): IAxiosSpies['get'] =>
+    vi.spyOn(instance, method).mockResolvedValue(envelope) as unknown as IAxiosSpies['get']
+
+  return { get: spy('get'), post: spy('post'), patch: spy('patch') }
+}
+
+describe('PermitProvider — wire contract (API-006)', () => {
+  let service: IPermitProvider
+  let spies: IAxiosSpies
+
+  beforeEach(() => {
+    vi.restoreAllMocks()
+    service = new PermitProvider()
+    spies = spyOnTransport(service)
   })
 
-  it('list() with status ["ACTIVE", "FIRE_MONITOR"] matches the "Active" filter chip', async () => {
-    const response = await PermitService.list({ page: 1, limit: 50, status: ['ACTIVE', 'FIRE_MONITOR'] })
-    expect(response.data.length).toBeGreaterThan(0)
-    expect(response.data.every((p: IPermitListItem): boolean => p.status === 'ACTIVE' || p.status === 'FIRE_MONITOR')).toBe(true)
-  })
-
-  it('list() with status ["CLOSED", "REJECTED"] matches the "Closed" filter chip', async () => {
-    const response = await PermitService.list({ page: 1, limit: 50, status: ['CLOSED', 'REJECTED'] })
-    expect(response.data.length).toBeGreaterThan(0)
-    expect(response.data.every((p: IPermitListItem): boolean => p.status === 'CLOSED' || p.status === 'REJECTED')).toBe(true)
-  })
-
-  it('list() with status "PENDING" matches the "Pending" filter chip', async () => {
-    const response = await PermitService.list({ page: 1, limit: 50, status: 'PENDING' })
-    expect(response.data.length).toBeGreaterThan(0)
-    expect(response.data.every((p: IPermitListItem): boolean => p.status === 'PENDING')).toBe(true)
-  })
-
-  it('list() excludes DRAFT/EXPIRED permits from every named filter, only "All" includes them', async () => {
-    const all = await PermitService.list({ page: 1, limit: 50 })
-    const active = await PermitService.list({ page: 1, limit: 50, status: ['ACTIVE', 'FIRE_MONITOR'] })
-    const pending = await PermitService.list({ page: 1, limit: 50, status: 'PENDING' })
-    const closed = await PermitService.list({ page: 1, limit: 50, status: ['CLOSED', 'REJECTED'] })
-
-    expect(all.data.some((p: IPermitListItem): boolean => p.status === 'DRAFT' || p.status === 'EXPIRED')).toBe(true)
-    for (const bucket of [active, pending, closed]) {
-      expect(bucket.data.some((p: IPermitListItem): boolean => p.status === 'DRAFT' || p.status === 'EXPIRED')).toBe(false)
-    }
-  })
-
-  it('confined-space ACTIVE stub permits carry entrantsInside for the "N inside" indicator', async () => {
-    const response = await PermitService.list({ page: 1, limit: 50, status: 'ACTIVE' })
-    const confined = response.data.filter((p: IPermitListItem): boolean => p.type === 'confined')
-    expect(confined.some((p: IPermitListItem): boolean => (p.entrantsInside ?? 0) > 0)).toBe(true)
-  })
-
-  it('detail() resolves a permit by id with the extra detail-only fields present', async () => {
-    const list = await PermitService.list({ page: 1, limit: 1 })
-    const id = list.data[0].id
-    const response = await PermitService.detail(id)
-    expect(response.data.id).toBe(id)
-    expect(response.data.jsaSteps).toEqual([])
-    expect(response.data.workers).toEqual([])
-  })
-
-  it('create()/submit()/markComplete()/close() resolve the requested status transition', async () => {
-    const created = await PermitService.create({
+  it('create posts to /api/v1/permits', async () => {
+    await service.create({
       type: 'hot',
-      project: 'Test',
-      foreman: 'Test',
-      workDate: '2026-01-01',
-      workTimeStart: '08:00',
-      workTimeEnd: '12:00',
-      workDescription: 'Test',
-      location: 'Test',
-      outdoorWork: false
+      title: 'Weld repair',
+      location: 'Zone 3',
+      foreman: 'Somchai',
+      workDate: '2026-08-18',
+      workTimeStart: '2026-08-18T01:00:00.000Z',
+      workTimeEnd: '2026-08-18T09:00:00.000Z'
     })
-    expect(created.data.status).toBe('DRAFT')
 
-    const submitted = await PermitService.submit(created.data.id)
-    expect(submitted.data.status).toBe('PENDING')
-
-    const completed = await PermitService.markComplete(created.data.id)
-    expect(completed.data.status).toBe('FIRE_MONITOR')
-
-    const closed = await PermitService.close(created.data.id, {
-      checklistAnswers: [],
-      signature: 'test',
-      signedAt: '2026-01-01T00:00:00Z'
-    })
-    expect(closed.data.status).toBe('CLOSED')
+    expect(spies.post).toHaveBeenCalledWith('/api/v1/permits', expect.objectContaining({ title: 'Weld repair' }), undefined)
   })
 
-  it('qr() and audit() resolve without throwing', async () => {
-    const qr = await PermitService.qr('WP-STUB-1')
-    expect(qr.data.permitId).toBe('WP-STUB-1')
+  it('update PATCHes the permit and sends safetyReading in the singular — it appends a row', async () => {
+    await service.update('WP-HOT-20260818-001', { safetyReading: { lel: 0, o2: 20.9 } })
 
-    const audit = await PermitService.audit('WP-STUB-1')
-    expect(audit.data).toEqual([])
+    expect(spies.patch).toHaveBeenCalledWith(
+      '/api/v1/permits/WP-HOT-20260818-001', { safetyReading: { lel: 0, o2: 20.9 } }, undefined
+    )
+  })
+
+  it('submit posts to the submit route', async () => {
+    await service.submit('WP-HOT-20260818-001')
+
+    expect(spies.post).toHaveBeenCalledWith('/api/v1/permits/WP-HOT-20260818-001/submit', undefined, undefined)
+  })
+
+  it('list sends one status, never an array — the endpoint takes a single value', async () => {
+    await service.list({ page: 1, limit: 10, status: 'ACTIVE' })
+
+    expect(spies.get).toHaveBeenCalledWith('/api/v1/permits', { params: { page: 1, limit: 10, status: 'ACTIVE' } })
+  })
+
+  it('detail, qr and audit are all path-scoped GETs', async () => {
+    await service.detail('WP-1')
+    await service.qr('WP-1')
+    await service.audit('WP-1')
+
+    expect(spies.get).toHaveBeenCalledWith('/api/v1/permits/WP-1', { params: undefined })
+    expect(spies.get).toHaveBeenCalledWith('/api/v1/permits/WP-1/qr', { params: undefined })
+    expect(spies.get).toHaveBeenCalledWith('/api/v1/permits/WP-1/audit', { params: undefined })
+  })
+
+  it('markComplete posts to the hot-work route', async () => {
+    await service.markComplete('WP-1')
+
+    expect(spies.post).toHaveBeenCalledWith('/api/v1/permits/WP-1/mark-complete', undefined, undefined)
+  })
+
+  it('exposes no approve/reject/close — those are safety_officer actions that 403 for a contractor', () => {
+    const surface = service as unknown as Record<string, unknown>
+
+    expect(surface.approve).toBeUndefined()
+    expect(surface.reject).toBeUndefined()
+    expect(surface.close).toBeUndefined()
   })
 })

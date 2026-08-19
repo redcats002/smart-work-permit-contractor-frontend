@@ -102,7 +102,9 @@ export function useHistory (): IUseHistory {
       limit: pagination.value.limit,
       search: search.value.trim() || undefined,
       type: typeFilter.value === 'all' ? undefined : typeFilter.value,
-      status: statusFilter.value === 'all' ? ARCHIVE_STATUSES : [statusFilter.value],
+      // One status per request — see the note in useMyPermits. "All" fetches unfiltered and the
+      // archive set is applied client-side below.
+      status: statusFilter.value === 'all' ? undefined : statusFilter.value,
       dateFrom: dateFrom.value ? dayjs(dateFrom.value).format('YYYY-MM-DD') : undefined,
       dateTo: dateTo.value ? dayjs(dateTo.value).format('YYYY-MM-DD') : undefined,
       ...overrides
@@ -111,7 +113,9 @@ export function useHistory (): IUseHistory {
 
   async function useFetchHistory (): Promise<void> {
     const response = await PermitService.list(buildQuery())
-    items.value = response.data
+    items.value = statusFilter.value === 'all'
+      ? response.data.filter((permit: IPermitListItem): boolean => ARCHIVE_STATUSES.includes(permit.status))
+      : response.data
     pagination.value.count = response.count
     pagination.value.totalPage = response.totalPage
   }

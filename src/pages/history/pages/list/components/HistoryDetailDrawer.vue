@@ -109,7 +109,7 @@
             {{ t('history.drawer.sectionWorkDescription') }}
           </p>
           <p class="text-[13.5px] leading-relaxed text-text-strong">
-            {{ detail.workDescription }}
+            {{ detail.title }}
           </p>
         </div>
 
@@ -133,6 +133,7 @@ import { useI18n } from 'vue-i18n'
 import type { IPermitDetail } from '@/models/response/permit/PermitRes.model'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatDuration, STATUS_CHIP_CLASS, TYPE_CHIP_CLASS, type THistoryStatus } from '../composables/useHistory'
+import { permitAuthorName } from '@/models/modules/permit/Permit.model'
 
 interface IProps {
   open: boolean
@@ -153,7 +154,7 @@ const $dayjs = useDayjs()
 const closedByName: ComputedRef<string> = computed((): string => {
   const closedBy = props.detail?.closedBy
   if (!closedBy) return '-'
-  return closedBy.fullName ?? `${closedBy.firstName} ${closedBy.lastName}`.trim()
+  return permitAuthorName(closedBy)
 })
 </script>
 

@@ -50,7 +50,11 @@ When starting work on a module:
 
 A feature is `done` only when:
 
-- `./init.sh` passes (typecheck + lint + tests).
+- `./init.sh` passes — typecheck, lint, vitest, **and** `scripts/smoke-api.mjs`, which asserts real
+  response shapes against a running API. The smoke step skips (exit 0) when no API is reachable, so
+  the gate works offline; but a change to any provider, model or interceptor is not verified until it
+  has run against `../smart-work-permit-api`. A green vitest only proves the app agrees with its own
+  types — that is exactly how `feat-005` came to be needed.
 - The passing output is recorded in the feature's `evidence` field in `feature_list.json`.
 - If the change touched module wiring (routing, permissions, providers), the module map
   in root `AGENTS.md` is updated in the same commit.
@@ -82,6 +86,7 @@ Elysia backend are separate repositories — never add a harness for them here.
 | `permit` | `feat-002` | `/permits` | `docs/modules/permit/` |
 | `history` | `feat-003` | `/history` | `docs/modules/history/` |
 | `certificate` | `feat-004` | `/certificates` | `docs/modules/certificate/` |
+| `api-integration` | `feat-005` | — (cross-cutting) | `docs/modules/api-integration/` |
 
 Per-item `<type>/<nnn-slug>/` directories are created **when work on that item starts**, not up front.
 Until then the item's acceptance criteria live in its module `feature_list.json` entry, which is

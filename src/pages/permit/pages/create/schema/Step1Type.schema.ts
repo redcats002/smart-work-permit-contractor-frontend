@@ -1,9 +1,13 @@
 import { z } from 'zod'
+import i18n from '@/plugins/I18n.plugin'
+import { schema } from '@/utils/Schema'
+import { EPermitType } from '@/enums/modules/permit/PermitType.enum'
 
 /**
- * PLACEHOLDER — PMT-005 replaces this with a real check (`type` must be one of
- * EPermitType). `z.object({})` ignores every key it isn't told about, including
- * `type`, so it always passes against the wizard's current empty formData and
- * unblocks Next end to end while the type-picker itself doesn't exist yet.
+ * Gates step 1: `type` must be one of hot/confined/heights before Next unlocks. Runs against the
+ * whole accumulated wizard formData (see useWizard.next()), so this only asserts the `type` key —
+ * title/foreman/etc belong to Step2BasicInfoSchema.
  */
-export const Step1TypeSchema = z.object({})
+export const Step1TypeSchema = z.object({
+  type: schema.enum(EPermitType, i18n.global.t('permit.create.steps.type.field'))
+})

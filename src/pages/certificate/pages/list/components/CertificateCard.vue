@@ -41,7 +41,7 @@
       :class="style.fileBorder"
       class="mt-2.5 flex h-[34px] items-center justify-center gap-1 rounded-[7px] border-[1.5px] border-dashed text-[11.5px] text-text-tertiary">
       <span aria-hidden="true">📎</span>
-      <span class="truncate">{{ certificate.fileRef ?? t('certificate.card.noFile') }}</span>
+      <span class="truncate">{{ t('certificate.card.noFile') }}</span>
     </div>
   </div>
 </template>
@@ -97,7 +97,9 @@ const STATUS_STYLE: Record<ECertificateStatus, {
 }
 
 const status: ComputedRef<ECertificateStatus> = computed((): ECertificateStatus => (
-  certificateStatus(props.certificate.expiryDate, new Date())
+  // The backend's computed `expired` decides expiry; this call only adds the "expiring soon"
+  // window on top of it (API-007).
+  certificateStatus(props.certificate.expiryDate, new Date(), props.certificate.expired)
 ))
 
 const style = computed((): typeof STATUS_STYLE[ECertificateStatus] => STATUS_STYLE[status.value])
