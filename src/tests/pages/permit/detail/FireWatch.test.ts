@@ -112,6 +112,11 @@ async function mountPage (): Promise<VueWrapper> {
  */
 describe('Fire Watch (PMT-012)', () => {
   beforeEach(() => {
+    // useFireWatch anchors `deadline` at mount but recomputes `now` on a real 1s setInterval, so a
+    // mount-to-assert gap that crosses a second boundary renders 29:59 where 30:00 is expected.
+    // Passing under full-suite load is otherwise a matter of machine speed. Freeze the clock:
+    // only Date and the interval, so promises and flushPromises still work normally.
+    vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] })
     setActivePinia(createPinia())
     setLocale('en')
     vi.spyOn(PermitProvider.prototype, 'audit').mockResolvedValue(auditResponse())
@@ -119,6 +124,7 @@ describe('Fire Watch (PMT-012)', () => {
   })
 
   afterEach(() => {
+    vi.useRealTimers()
     setLocale('th')
     localStorage.clear()
     vi.restoreAllMocks()
