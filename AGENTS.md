@@ -1,3 +1,13 @@
+## Read this FIRST — the prompt & decision log
+
+`../PROMPT-LOG.md` is **required reading before you implement anything in this repo.** It is the
+base knowledge for this project: the product owner's instructions in their own words, and every
+ruling they gave when an agent hit an ambiguity — including the option that was *rejected*, which is
+what you would otherwise "fix" back. Code and `progress.md` say what was built; `PROMPT-LOG.md` says
+why, and what you are not allowed to re-decide.
+
+If your change contradicts a ruling in that file, stop and raise it — do not implement over it.
+
 ## Read this first — Project skill
 
 Before doing any non-trivial work in this repo, read the project skill index at `{.agents, .claude}/skills/project-conventions/SKILL.md` and then load the relevant topic file under `{.agents, .claude}/skills/project-conventions/reference/`. The skill is the canonical convention set for this codebase (one H2 topic per reference file): coding style, naming, architecture, forms, providers, stores, composables, styling, testing, etc. Pull from it rather than inventing a parallel pattern.
@@ -29,8 +39,12 @@ Two sibling apps exist in **other repos** and are **out of scope here**: the Saf
 > **State of the codebase (2026-08-19):** this repo started as a lending-app template; the lending domain has been fully removed and `./init.sh` is **green** (typecheck + lint + 336 tests + a live API contract check).
 >
 > Built: the app shell, i18n (en/th, default th), the design system, the API error-code layer, the permit domain + provider + My Permits list, the **`history` module** (`feat-003` — route registered, filters, CSV export, drill-in drawer), and the certificates module.
-> Partly built: `PermitCreatePage` — the 6-step wizard **shell exists and walks all six steps**. Steps 1–2 (`Step1Type`, `Step2BasicInfo`) are real, with real zod schemas that gate Next. **Steps 3–6 are unbuilt stubs (`PMT-006`–`PMT-009`) whose schemas are `z.object({})` and therefore always validate**, so nothing blocks Next past step 2 and Submit only writes a `console.info`. That is expected, not a defect — do not "fix" it by inventing validation; build the step, or leave it alone.
-> Placeholder on purpose: `PermitDetailPage` (`PMT-010`–`PMT-012`) — it renders the route id and a "coming soon" panel and fetches nothing.
+> Built: `PermitCreatePage` — the 6-step wizard is **complete** (`PMT-004`–`PMT-009`). Every step has a real zod schema that gates Next; there are no `z.object({})` placeholders left. Submit really calls `POST /permits/:id/submit` and navigates to `/permits/:id?submitted=1` (that query param is what triggers the detail page's one-shot "submitted" banner — nothing else sets it). On a 400 the wizard drives off the backend's `failures[]` / `certificateFailures[]` arrays and highlights **every** failing reading on step 3 and every refused worker on step 4, localized off `errorCode` — the server's verdict wins over any client-side gate. Two step-3 shapes have no wire field and are deliberately not persisted: the Yes/No/N-A checklist (`GAPS.md` row J) and `so2` (row K).
+> Built 2026-08-22: `PermitDetailPage` (`PMT-010`–`PMT-012`) — per-status banners, info card, read-only audit
+> timeline, QR panel (`ACTIVE`/`FIRE_MONITOR` only), the closure checklist modal and the Hot Work Fire Watch
+> countdown. Two known holes, both dependencies rather than omissions: the DRAFT/REJECTED edit CTAs render
+> **disabled** because no edit-or-duplicate route exists, and `POST /permits/:id/close` is `safety_officer`-only,
+> so a contractor closure always 403s (`docs/api/GAPS.md` rows H and I).
 >
 > **The providers are live against the real backend** (`feat-005`, 2026-08-17). Every `USE_STUB_DATA` flag and both `*.mock.ts` files are gone; `VITE_APP_API_URL` points at the API and auth is a **better-auth session cookie**, not a bearer token.
 >
@@ -76,7 +90,7 @@ Each module owns parallel trees: routes (`src/router/modules/<Mod>.router.ts` or
 | Module | Prefix | Pages (`src/pages/<mod>/pages/`) | Providers | Harness | Built? |
 |---|---|---|---|---|---|
 | `platform` | `/auth` | `auth/login` ✅, `auth/reset-password` ✅, layout shell, i18n, API errors | `auth/public`, `auth/private`, `notification` | `docs/modules/platform/` | shell + i18n + errors + contractor auth/route guard (`PLT-005`) ✅ · notification polling `PLT-007` ⬜ |
-| `permit` | `/permits` | `list` ✅, `create` (6-step wizard) 🟡, `detail` ⬜ | `permit` | `docs/modules/permit/` | provider + list ✅ · wizard shell + steps 1–2 built, steps 3–6 are `z.object({})` stubs (`PMT-006`–`009`) · detail is a placeholder page (`PMT-010`) |
+| `permit` | `/permits` | `list` ✅, `create` (6-step wizard) ✅, `detail` ✅ | `permit` | `docs/modules/permit/` | provider + list ✅ · wizard complete, all six steps real (`PMT-004`–`PMT-009`) · detail built (`PMT-010`–`PMT-012`: banners, QR, audit timeline, closure modal, Fire Watch countdown) |
 | `history` | `/history` | `list` ✅ | `permit` (reused — no own provider dir) | `docs/modules/history/` | ✅ |
 | `certificate` | `/certificates` | `list` ✅ | `certificate` | `docs/modules/certificate/` | ✅ |
 | `api-integration` | — (cross-cutting) | — | every provider + the transport | `docs/modules/api-integration/` | ✅ transport, auth, errors, permit/certificate/notification/upload |
