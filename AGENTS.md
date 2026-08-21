@@ -26,11 +26,11 @@ Specs live in `docs/main/`:
 
 Two sibling apps exist in **other repos** and are **out of scope here**: the Safety Officer + Inspector app (`03-safety-inspector-web-vue-tasks.md`) and the Elysia backend. Never build safety-officer or inspector screens in this repo.
 
-> **State of the codebase (2026-08-17):** this repo started as a lending-app template; the lending domain has been fully removed and `./init.sh` is **green** (typecheck + lint + 309 tests + a live API contract check).
+> **State of the codebase (2026-08-19):** this repo started as a lending-app template; the lending domain has been fully removed and `./init.sh` is **green** (typecheck + lint + 336 tests + a live API contract check).
 >
-> Built: the app shell, i18n (en/th, default th), the design system, the API error-code layer, the permit domain + provider + My Permits list, and the certificates module.
-> Placeholders on purpose: `PermitCreatePage` (the wizard, `PMT-004`–`PMT-009`) and `PermitDetailPage` (`PMT-010`–`PMT-012`).
-> Not built: the `history` module (`feat-003`) — its route is not registered, and `AppDrawer` renders that nav item inert until it is.
+> Built: the app shell, i18n (en/th, default th), the design system, the API error-code layer, the permit domain + provider + My Permits list, the **`history` module** (`feat-003` — route registered, filters, CSV export, drill-in drawer), and the certificates module.
+> Partly built: `PermitCreatePage` — the 6-step wizard **shell exists and walks all six steps**. Steps 1–2 (`Step1Type`, `Step2BasicInfo`) are real, with real zod schemas that gate Next. **Steps 3–6 are unbuilt stubs (`PMT-006`–`PMT-009`) whose schemas are `z.object({})` and therefore always validate**, so nothing blocks Next past step 2 and Submit only writes a `console.info`. That is expected, not a defect — do not "fix" it by inventing validation; build the step, or leave it alone.
+> Placeholder on purpose: `PermitDetailPage` (`PMT-010`–`PMT-012`) — it renders the route id and a "coming soon" panel and fetches nothing.
 >
 > **The providers are live against the real backend** (`feat-005`, 2026-08-17). Every `USE_STUB_DATA` flag and both `*.mock.ts` files are gone; `VITE_APP_API_URL` points at the API and auth is a **better-auth session cookie**, not a bearer token.
 >
@@ -75,13 +75,13 @@ Each module owns parallel trees: routes (`src/router/modules/<Mod>.router.ts` or
 
 | Module | Prefix | Pages (`src/pages/<mod>/pages/`) | Providers | Harness | Built? |
 |---|---|---|---|---|---|
-| `platform` | — (cross-cutting) | `auth/login`, layout shell, i18n, API errors | `auth/public`, `auth/private`, `notification` | `docs/modules/platform/` | shell + i18n + errors ✅ · auth `PLT-005` ⬜ · notifications `PLT-007` ⬜ |
-| `permit` | `/permits` | `list` ✅, `create` (6-step wizard) ⬜, `detail` ⬜ | `permit` | `docs/modules/permit/` | provider + list ✅ · wizard/detail are placeholder pages |
+| `platform` | `/auth` | `auth/login` ✅, `auth/reset-password` ✅, layout shell, i18n, API errors | `auth/public`, `auth/private`, `notification` | `docs/modules/platform/` | shell + i18n + errors + contractor auth/route guard (`PLT-005`) ✅ · notification polling `PLT-007` ⬜ |
+| `permit` | `/permits` | `list` ✅, `create` (6-step wizard) 🟡, `detail` ⬜ | `permit` | `docs/modules/permit/` | provider + list ✅ · wizard shell + steps 1–2 built, steps 3–6 are `z.object({})` stubs (`PMT-006`–`009`) · detail is a placeholder page (`PMT-010`) |
 | `history` | `/history` | `list` ✅ | `permit` (reused — no own provider dir) | `docs/modules/history/` | ✅ |
 | `certificate` | `/certificates` | `list` ✅ | `certificate` | `docs/modules/certificate/` | ✅ |
 | `api-integration` | — (cross-cutting) | — | every provider + the transport | `docs/modules/api-integration/` | ✅ transport, auth, errors, permit/certificate/notification/upload |
 
-Registered in `src/router/index.ts`: `AuthRouter`, `PermitRouter`, `HistoryRouter`, `CertificateRouter` — all four nav destinations now exist, so `AppDrawer`'s `isRegistered()` guard has nothing left to guard and can be removed.
+Registered in `src/router/index.ts`: `AuthRouter`, `PermitRouter`, `HistoryRouter`, `CertificateRouter` — all four nav destinations now exist. `AppDrawer`'s `isRegistered()` guard is **still in the file** (`AppDrawer.vue:44`, `:136`) and now guards nothing; removing it is safe but nobody has, so do not describe it as gone.
 
 **Modules without a top-level router entry:**
 
@@ -137,7 +137,7 @@ These are duplicated from `00-SHARED-CONTEXT.md` because they gate code, not pro
 - SO₂ is carried through as a field (Confined Space gas log) but has no hard block modeled.
 - **Closure is blocked** (backend returns `403`) when: any Confined Space entrant is still checked in (`ENTRANTS_STILL_INSIDE`), or Hot Work Fire Watch has not elapsed 30 min (`FIRE_WATCH_NOT_ELAPSED`).
 - **Certificates gate submission.** Any registered worker with a missing or expired certificate blocks submit (`CERT_EXPIRED`).
-- Backend error responses are `{ code: <http status>, message, errorCode? }`. The machine-readable discriminator is **`errorCode`** — `code` is the numeric HTTP status. There are **21** codes (`src/enums/modules/error/ApiErrorCode.enum.ts`), and 404s / ownership 403s / validation 400s carry **none**, which is normal. **Localize off `errorCode`** — never render the backend's `message`.
+- Backend error responses are `{ code: <http status>, message, errorCode? }`. The machine-readable discriminator is **`errorCode`** — `code` is the numeric HTTP status. There are **25** codes (`src/enums/modules/error/ApiErrorCode.enum.ts`) — the last four (`FILE_TYPE_NOT_ALLOWED`, `FILE_TOO_LARGE`, `UPLOAD_FOLDER_NOT_ALLOWED`, `STORAGE_UNAVAILABLE`) were added by the backend's 2026-08-19 upload-hardening pass — and 404s / ownership 403s / validation 400s carry **none**, which is normal. **Localize off `errorCode`** — never render the backend's `message`.
 - `POST /permits/:id/submit` answers **400** with the *first* failing code and a `message` that joins every failure with `; `. Render mapped codes, never that string.
 - **`PATCH /permits/:id` collection semantics** (this destroys data when it drifts): `jsaSteps` and `workers` are **replaced wholesale** — always send the complete list; `safetyReading` (singular) **appends** a reading; `photos` **upsert by `slotKey`**.
 - `workDate` is sent as `YYYY-MM-DD` and returned as a full ISO timestamp. Format for display; never round-trip the response value into a date input.
@@ -199,8 +199,8 @@ Per-domain routes belong in `src/router/modules/<Domain>.router.ts` and merge in
 >
 > Consequences:
 > - Never reference a route name that is not yet in `src/router/index.ts`. Build the route and the link in the same change, or guard the link.
-> - **Check the router file, don't grep for the name** — a commented-out route still matches a naive grep. `ForgotPasswordPage` is commented out in `Auth.router.ts` and does **not** exist; grepping made it look registered.
-> - `AppDrawer.vue` guards its nav with `isRegistered(name)` (backed by `router.hasRoute()`), rendering an inert `<span>` for routes that do not exist yet. This exists because `HistoryListPage` is not built until `feat-003`. **Delete the guard once all four nav routes are registered** — it is not free: `router.hasRoute()` is read once at render and is **not reactive**, so registering a route needs a **full page reload**, not a Vite HMR update, before the drawer picks it up.
+> - **Check the router file, don't grep for the name** — a commented-out route still matches a naive grep. `ForgotPasswordPage` is still commented out in `Auth.router.ts` (verified 2026-08-19) and does **not** exist; grepping made it look registered. `LoginPage` and `ResetPasswordPage` are the only two auth routes.
+> - `AppDrawer.vue` guards its nav with `isRegistered(name)` (backed by `router.hasRoute()`), rendering an inert `<span>` for routes that do not exist yet. It was added because `HistoryListPage` did not exist until `feat-003`; **all four nav routes are registered now, so the guard is dead code** — it is safe to delete and still present. Note it is not free: `router.hasRoute()` is read once at render and is **not reactive**, so registering a route needs a **full page reload**, not a Vite HMR update, before the drawer picks it up.
 > - Declare static segments before dynamic ones: `/create` must come before `/:id` or `create` is captured as an id.
 
 ### Layout switching
@@ -209,7 +209,7 @@ Per-domain routes belong in `src/router/modules/<Domain>.router.ts` and merge in
 
 ### HTTP layer
 
-All API access goes through `src/resources/HttpRequest.ts` (axios wrapper) + `src/resources/Interceptors.ts`. Base URL comes from `import.meta.env.VITE_APP_API_URL`. Interceptors handle camelCase conversion (humps) and 401 → logout + redirect to `/auth/login`.
+All API access goes through `src/resources/HttpRequest.ts` (axios wrapper) + `src/resources/Interceptors.ts`. Base URL comes from `import.meta.env.VITE_APP_API_URL`. Interceptors handle 401 → logout + redirect to `/auth/login`. There is **no** case conversion: the API is camelCase end to end and `humps` was deleted in `API-002` because camelizing rewrites the user's own keys inside `closureChecklist`. Do not reintroduce it.
 
 New API surfaces extend `HttpRequest`, implement a typed `I<Name>Provider` interface, set a `urlPrefix`, and export as default. Provider files live under `src/resources/provider/<feature>/<Name>.provider.ts`. Request/response types live in `src/models/request/` and `src/models/response/` (plus `src/models/modules/`).
 
@@ -242,9 +242,30 @@ ESLint config (`eslint.config.js`) enforces beyond defaults:
 - **No `console.log`** — use `console.error` / `console.info` (project convention).
 - **Single quotes, no semicolons, 2-space indent, no trailing commas** (`@stylistic/*`).
 - **Vue:** block order = `template, script, style`; `defineProps`/`defineEmits` must be type-based; `vue/max-len` = 150; `v-bind` shorthand required; `v-on` handlers inline (`@click="fn($event)"`, not `@click="fn"`).
-- `src/volt/**`, `vite.config.ts`, `index.html`, `dist/**` are ignored. **`docs/**`, `.agents/**`, `.claude/**` are not yet ignored and account for ~3140 of the current lint errors — fix in `PLT-001`.**
+- `src/volt/**`, `vite.config.ts`, `index.html`, `dist/**`, `docs/**`, `.agents/**`, `.claude/**`, `.gemini/**`, `scripts/**` and root-level `__*` probe scripts are all ignored (`eslint.config.js`). `bun run lint` is clean — the "~3140 lint errors from unignored docs" note that used to sit here was fixed in `PLT-001` and is gone.
 
 Satisfy these up front when writing code — Vite will fail loudly via `vite-plugin-eslint2`.
+
+## Tests
+
+Tests live in **`src/tests/`**, mirroring the source tree (`src/tests/pages/<module>/<page>/…`,
+`src/tests/utils/…`, `src/tests/composables/…`). `vitest.config.ts` **excludes `src/pages/**/tests/**`**,
+so a test written next to the page it covers silently never runs — put it under `src/tests/`.
+
+Page-level tests mount the real page with `@vue/test-utils` and spy on the provider prototype
+(`vi.spyOn(PermitProvider.prototype, 'list')`); there is no mock gateway in this repo (deleted in
+`feat-005`). Three worked examples to copy: `src/tests/pages/auth/login/LoginPage.test.ts`,
+`src/tests/pages/history/list/HistoryListPage.test.ts`, `src/tests/pages/permit/detail/PermitDetailPage.test.ts`.
+Three things bite every time:
+
+- **Mount `@/plugins/I18n.plugin` itself and call `setLocale('en')`** — not a fresh `createI18n`.
+  `useApiError()` localizes through that singleton, so a separate instance leaves `mapError()`
+  answering in Thai (the app default) while the page renders English.
+- **Register every route name the page can navigate to** in the test's `createRouter`. On
+  vue-router 5 an unknown name throws and blanks the mount.
+- **`vi.mock('@/plugins/toast', …)`** — `toast` wraps PrimeVue's ToastService, which a bare mount
+  does not register. Mocking it is also how you assert the invariant that the backend's `message`
+  never reaches the user.
 
 ## Naming (file conventions)
 
@@ -281,7 +302,7 @@ Use the skill rather than inventing a parallel pattern.
 
 Before writing code:
 
-1. Run `./init.sh` (typecheck + lint + tests) to see the current baseline. **It is red today** — see the recorded baseline in `progress.md`; do not mistake pre-existing failures for your own.
+1. Run `./init.sh` (typecheck + lint + tests + live API smoke) to see the current baseline. **It is green today** (2026-08-19: typecheck PASS, lint PASS, vitest 31 files / 336 tests PASS, smoke skips with no API reachable). Anything red is yours — compare against the latest entry in `progress.md` before assuming otherwise.
 2. Read root `feature_list.json` — pick the module-level feature whose `dependencies` are all `done`.
 3. Read that module's `docs/modules/<module>/context.md` and `feature_list.json`.
 4. Pick ONE item from that module whose `dependencies` are all `done`. Read only that item's `context.md` + `progress.md` if they exist. Do not load sibling items.

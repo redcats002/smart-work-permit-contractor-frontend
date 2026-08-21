@@ -35,6 +35,12 @@ const error = {
   FORBIDDEN_ROLE: 'Your account does not have permission to do this.',
   USER_ALREADY_EXISTS: 'An account with that email already exists.',
 
+  // File upload
+  FILE_TYPE_NOT_ALLOWED: 'That file type is not accepted. Attach a JPEG, PNG, WEBP, HEIC image or a PDF.',
+  FILE_TOO_LARGE: 'That file is too large. The limit is 10 MB per file.',
+  UPLOAD_FOLDER_NOT_ALLOWED: 'This file cannot be stored in that location. Please report this to your administrator.',
+  STORAGE_UNAVAILABLE: 'File storage is unavailable right now. Your file was not saved — please try again shortly.',
+
   unknown: 'Something went wrong. Please try again.'
 }
 

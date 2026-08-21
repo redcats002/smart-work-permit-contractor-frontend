@@ -18,8 +18,15 @@ Root feature: `feat-004`. Depends on `platform` (`feat-001`). `CRT-004` also tou
 ## Data model
 
 ```
-{ id, workerName, role, certType, issuedDate, expiryDate, fileRef? }
+response: { id, workerName, role, certType, issuedDate, expiryDate, expired }
+request (POST): { workerName, role, certType, issuedDate, expiryDate, filePath? }
 ```
+
+`expired` is computed **server-side** and is authoritative (`API-007`); the response carries no
+attachment reference at all. `filePath` on the create payload is the storage path from
+`POST /upload` — never the presigned `fileUrl`, which expires in 60 seconds. **The API does not
+accept `filePath` yet** and Elysia strips unknown keys, so attachments are not persisted: see
+`docs/api/GAPS.md` row **G**. The Add Certificate form warns the user rather than implying success.
 
 Endpoints (`01-backend-elysia-tasks.md`):
 

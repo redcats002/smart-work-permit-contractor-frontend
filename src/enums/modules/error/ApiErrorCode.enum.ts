@@ -44,7 +44,15 @@ export enum EApiErrorCode {
   // Auth / provisioning
   UNAUTHENTICATED = 'UNAUTHENTICATED',
   FORBIDDEN_ROLE = 'FORBIDDEN_ROLE',
-  USER_ALREADY_EXISTS = 'USER_ALREADY_EXISTS'
+  USER_ALREADY_EXISTS = 'USER_ALREADY_EXISTS',
+
+  // File upload (contractor) — POST /files. Added by the backend's 2026-08-19 upload-hardening
+  // pass (GAPS.md V3/V4). Enforcement is server-side, so a violation comes back as a coded 400
+  // rather than a schema-validation error, and the certificate/photo pickers must surface it.
+  FILE_TYPE_NOT_ALLOWED = 'FILE_TYPE_NOT_ALLOWED',
+  FILE_TOO_LARGE = 'FILE_TOO_LARGE',
+  UPLOAD_FOLDER_NOT_ALLOWED = 'UPLOAD_FOLDER_NOT_ALLOWED',
+  STORAGE_UNAVAILABLE = 'STORAGE_UNAVAILABLE'
 }
 
 export type TApiErrorCode = `${EApiErrorCode}`

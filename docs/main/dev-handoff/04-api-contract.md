@@ -197,7 +197,13 @@ CERT_EXPIRED  CERT_MISSING  ENTRANTS_STILL_INSIDE  FIRE_WATCH_NOT_ELAPSED
 PERMIT_NOT_ACTIVE  PERMIT_NOT_PENDING  PERMIT_NOT_EDITABLE  PERMIT_NOT_SUBMITTABLE
 PERMIT_NOT_CLOSABLE  NOT_HOT_WORK  INVALID_QR_TOKEN  RATE_LIMITED  USER_ALREADY_EXISTS
 UNAUTHENTICATED  FORBIDDEN_ROLE
+FILE_TYPE_NOT_ALLOWED  FILE_TOO_LARGE  UPLOAD_FOLDER_NOT_ALLOWED  STORAGE_UNAVAILABLE
 ```
+
+25 codes. The last four were added by the backend's 2026-08-19 upload-hardening pass
+(`docs/api/GAPS.md` rows V3/V4). `RATE_LIMITED` is unchanged but is now emitted by the public auth
+routes (`login`, `register`, `user-request-password-reset`, `user-reset-password`) as well as the
+QR scan route — of those, only `login` and `user-reset-password` are called from this app.
 
 404s, ownership 403s and request-validation 400s carry **no** `errorCode` — its absence is normal.
 Map what you get to localized EN/TH copy and fall back to a generic string; the backend's `message` is

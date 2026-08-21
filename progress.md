@@ -287,3 +287,58 @@ browser tool was unavailable in this sandbox, so the components are unseen-but-c
 typechecked, and linted, not screenshot-checked. See this item's own `progress.md` for detail.
 
 `./init.sh`: typecheck PASS, lint PASS, vitest 28 files / 323 tests PASS, live smoke 16/16 PASS.
+
+## 2026-08-19 — Cross-repo fix pass (C1–C6, no feature item; six defects + doc drift)
+
+Not a feature item — a fix pass against `../docs/e2e/PRE-RUN-FINDINGS.md` (findings 5, 6) and
+`../docs/REVIEW-2026-08-19.md` (Q2), plus the four `errorCode`s the backend added the same day.
+No item status was changed; evidence was **appended** to `PLT-006`, `HST-003`, `CRT-003`.
+
+**C1 — root contract check was red, now green.** Added `FILE_TYPE_NOT_ALLOWED`, `FILE_TOO_LARGE`,
+`UPLOAD_FOLDER_NOT_ALLOWED`, `STORAGE_UNAVAILABLE` to `EApiErrorCode` (25 codes) with distinct
+EN + TH copy, and updated `04-api-contract.md` §5. `RATE_LIMITED` needed no work — `LoginPage`
+already passes `mapError` and the code already had copy; only `login` and `user-reset-password`
+of the four newly rate-limited public auth routes exist in this app (there is no register screen
+and `ForgotPasswordPage` is still commented out).
+
+**C2 — certificate attachment. Confirmed, half-fixable here.** `AddCertificateModal` sent the
+presigned `fileUrl` (60-second TTL) instead of `filePath`; that half is fixed and the payload field
+renamed. But `POST /certificates` declares **no** attachment field and Elysia strips unknown keys,
+so nothing is persisted either way — filed as `docs/api/GAPS.md` row **G** (`api-adds`). The form
+no longer implies otherwise: a hint under the picker and a warning toast after save say the
+attachment was not stored. **The feature stays broken end to end until the backend adds the column.**
+
+**C3 — CSV export bypassed the table's filter** (finding 5 / `CT-HISTORY-009` step 5). The
+`ARCHIVE_STATUSES` narrowing is now a single `narrowToArchive()` helper used by both
+`useFetchHistory` and `exportCsv`.
+
+**C4 — backend English on screen** (finding 6). Root cause was not the three call sites but
+`handleLoading`'s *default* error callback, which toasted `error.response.data.message` and fell
+back to a hardcoded Thai string. It now goes through `useApiError().mapError()`, so an
+un-customized call site is safe by default; the three sites (`useLogout`, `ResetPasswordPage`'s
+`useResetPassword` / `useCheckToken`) also pass `mapError` explicitly. A full sweep of every
+`handleLoading` call found no others missing a callback.
+
+**C5 — `CLAUDE.md` corrected.** `./init.sh` is green, not red; `history` is built and registered;
+25 error codes not 21; `PermitCreatePage` is partly built (steps 1–2 real, 3–6 `z.object({})`
+stubs — stated explicitly so nobody "fixes" them); `PermitDetailPage` is the only placeholder;
+the `AppDrawer.isRegistered()` guard is dead code that is still present (it was described both as
+removable and as still needed); `humps` is gone from the interceptors; `docs/**`/`.agents/**`/
+`.claude/**` **are** eslint-ignored; `PLT-005` is done; a new **Tests** section records that
+`vitest.config.ts` excludes `src/pages/**/tests/**` so tests must live under `src/tests/`.
+
+**C6 — first page-level tests in this repo** (Q2). Bounded to three pages, per instruction:
+`src/tests/pages/auth/login/LoginPage.test.ts` (5 cases — including a rate-limited login proving
+the localized string renders and the backend `message` does not),
+`src/tests/pages/history/list/HistoryListPage.test.ts` (5 cases — the CSV-matches-table case was
+verified to fail against the pre-C3 line), and
+`src/tests/pages/permit/detail/PermitDetailPage.test.ts` (3 cases pinning the placeholder
+contract, incl. "fetches nothing", the tripwire for whoever builds `PMT-010`). Pattern copied from
+the sibling Safety/Inspector app. 28 → 31 test files, 323 → 336 tests.
+
+**Next:** `PMT-006` (wizard step 3) is the next unblocked item. Backend follow-up owed:
+`GAPS.md` row G. Not touched, deliberately: findings 7 and 13 (wizard stubs / draft resume).
+
+`./init.sh`: typecheck PASS, lint PASS, vitest 31 files / 336 tests PASS, live smoke 16/16 PASS.
+`node ../scripts/check-contract-sync.mjs`: `contract-sync: OK — openapi in sync, 25 backend error
+codes all declared, /api/v1 prefix present.`

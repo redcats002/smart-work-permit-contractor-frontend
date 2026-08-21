@@ -1,5 +1,6 @@
 import type { Ref } from 'vue'
 import { toast } from '@/plugins/toast'
+import { useApiError } from '@/composables/useApiError'
 import { useLoadingStore } from '@/stores/Loading'
 import type { TErrorResponse } from '@/models/response/Response.model'
 import { handleSubmit } from './HandleSubmit'
@@ -38,16 +39,17 @@ function removeLoading (loadingUnit?: Ref<boolean>): void {
   setIsLoading(false, loadingUnit)
 }
 
-function getErrorMessage (e: any): string {
-  const d = e?.response?.data ?? e
-
-  if (typeof d === 'string') return d
-  if (typeof d?.message === 'string') return d.message
-
-  const m = d?.message
-  if (m) return m.summary || m.message || m.errors?.[0]?.summary || m.errors?.[0]?.message
-
-  return 'เกิดข้อผิดพลาด'
+/**
+ * Default failure surface for any caller that does not pass its own `errorCallBack`.
+ *
+ * This used to render `error.response.data.message` — the backend's own English developer text —
+ * and fall back to a hardcoded Thai sentence, which broke the cross-repo invariant that clients
+ * localize off `errorCode` and NEVER render the backend's `message` (../CONTEXT.md §2).
+ * It now goes through the same `useApiError().mapError()` every screen uses, so an un-customized
+ * call site is safe by default rather than one review away from leaking backend English.
+ */
+function toastMappedError (error: unknown): void {
+  toast.error(useApiError().mapError(error).message)
 }
 
 /**
@@ -76,8 +78,8 @@ export async function handleLoading<T> (
     formRef
   }: handleLoadingOptions = {},
   errorCallBack: (error?: TErrorResponse) => TErrorResponse = (error?: TErrorResponse): void => {
-    toast.error(getErrorMessage(error))
-    console.error(error)
+    // mapError() already console.error()s anything it cannot localize.
+    toastMappedError(error)
   }
 ): Promise<Awaited<T> | undefined> {
   try {

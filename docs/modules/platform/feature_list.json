@@ -131,7 +131,7 @@
         "PLT-004"
       ],
       "status": "done",
-      "evidence": "./init.sh — typecheck PASS, lint PASS, tests PASS (256 tests, up from 248; 8 new useApiError tests). Verified by orchestrator."
+      "evidence": "./init.sh — typecheck PASS, lint PASS, tests PASS (256 tests, up from 248; 8 new useApiError tests). Verified by orchestrator.\n\n2026-08-19 fix pass (C1 + C4). Added the four upload errorCodes the backend started emitting on 2026-08-19 - FILE_TYPE_NOT_ALLOWED, FILE_TOO_LARGE, UPLOAD_FOLDER_NOT_ALLOWED, STORAGE_UNAVAILABLE - to EApiErrorCode (25 codes now) with distinct EN + TH copy, which the existing useApiError 'resolves every code in the vocabulary to distinct EN and TH copy' test drives off the enum. Also closed PRE-RUN-FINDINGS.md finding 6: handleLoading's DEFAULT error callback used to toast the backend's own `message` (and a hardcoded Thai fallback), breaking ../CONTEXT.md §2. It now routes through useApiError().mapError(), and the three call sites that relied on the default (useLogout, ResetPasswordPage's useResetPassword and useCheckToken) pass mapError explicitly. A rate-limited login is covered by a new page test asserting the localized string renders and the backend message does not. ./init.sh 2026-08-19: typecheck PASS, lint PASS, vitest 31 files / 336 tests PASS, live smoke 16/16 PASS against a running backend. node ../scripts/check-contract-sync.mjs -> 'contract-sync: OK - openapi in sync, 25 backend error codes all declared, /api/v1 prefix present.'"
     },
     {
       "id": "PLT-007",

@@ -61,7 +61,7 @@
         "CRT-002"
       ],
       "status": "done",
-      "evidence": "./init.sh — typecheck PASS, lint PASS, tests PASS (278 tests). Live Playwright probe: page renders with shell chrome, no pageerror, no horizontal overflow at 375/768/1280."
+      "evidence": "./init.sh — typecheck PASS, lint PASS, tests PASS (278 tests). Live Playwright probe: page renders with shell chrome, no pageerror, no horizontal overflow at 375/768/1280.\n\n2026-08-19 fix pass (C2). CONFIRMED BUG, client half fixed, feature still broken end to end. AddCertificateModal assigned the upload's presigned `fileUrl` (60-second TTL, REVIEW-2026-08-19 S4) as `fileRef` while `path` sat unused. It now sends the storage `filePath`, drops an empty path (useUpload fabricates a placeholder on a failed upload), and the payload field is renamed fileRef -> filePath. The file-type allowlist in AddCertificate.schema.ts was realigned to the backend's server-side list (GAPS.md V3): image/gif removed, image/webp + image/heic added. NOT FIXED and not fixable here: POST /certificates declares no attachment field at all and Elysia strips unknown keys, so nothing is persisted - filed as docs/api/GAPS.md row G (api-adds). Until the backend lands it, the form no longer implies success: a hint under the file picker and a warning toast after save both state the attachment was not stored. ./init.sh 2026-08-19: typecheck PASS, lint PASS, vitest 31 files / 336 tests PASS, live smoke 16/16 PASS against a running backend. node ../scripts/check-contract-sync.mjs -> 'contract-sync: OK - openapi in sync, 25 backend error codes all declared, /api/v1 prefix present.'"
     },
     {
       "id": "CRT-004",
