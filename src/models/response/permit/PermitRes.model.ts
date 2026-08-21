@@ -1,12 +1,13 @@
 import type {
-  IJsaStep, IPermitAuditEntry, IPermitAuthor, IPermitBase, IPermitPhoto, IPermitQr, IPermitSafetyReading, IPermitWorker
+  IJsaStep, IPermitAuditEntry, IPermitAuthor, IPermitBase, IPermitFireWatch, IPermitPhoto, IPermitQr, IPermitSafetyReading,
+  IPermitValidationSummary, IPermitWorker
 } from '@/models/modules/permit/Permit.model'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 
 /**
  * Row shape for GET /permits (My Permits list + History). The list returns the permit ENTITY —
- * the same fields as the detail minus its collections. It carries no entrant count and no
- * fire-watch remainder: only GET /permits/qr/:token reports those (docs/api/GAPS.md).
+ * the same fields as the detail minus its collections. Since the backend's 2026-08-21 pass it also
+ * carries `entrantCount` and `fireWatch` (docs/api/GAPS.md row A) — no QR token needed.
  */
 export interface IPermitListItem extends IPermitBase {
   createdById: string
@@ -25,6 +26,10 @@ export interface IPermitListItem extends IPermitBase {
   /** Hot Work only — set when mark-complete starts the 30-min Fire Watch countdown. */
   fireMonitorStartedAt: string | null
   qrIssuedAt: string | null
+  /** Confined Space entrants currently checked in. `0` for every other type. */
+  entrantCount: number
+  /** Server-computed remainder — render it, never recompute a verdict from it. `null` unless FIRE_MONITOR. */
+  fireWatch: IPermitFireWatch | null
 }
 
 /** GET /permits/:id — the entity plus its collections. */
@@ -35,6 +40,8 @@ export interface IPermitDetail extends IPermitListItem {
   /** Singular: the most recent reading only. PATCH appends; this reads back the latest. */
   latestSafetyReading: IPermitSafetyReading | null
   closureChecklist?: Record<string, unknown> | null
+  /** Server-computed verdict for the safety readings only — rendered as-is, never recomputed. */
+  validationSummary?: IPermitValidationSummary | null
 }
 
 export type TGetPermitListResponse = IBasePaginationResponse<IPermitListItem>
@@ -43,6 +50,9 @@ export type TCreatePermitDraftResponse = IBaseSuccessResponse<IPermitDetail>
 export type TUpdatePermitDraftResponse = IBaseSuccessResponse<IPermitDetail>
 export type TSubmitPermitResponse = IBaseSuccessResponse<IPermitDetail>
 export type TMarkPermitCompleteResponse = IBaseSuccessResponse<IPermitDetail>
+
+/** POST /permits/:id/close — 403 ENTRANTS_STILL_INSIDE / FIRE_WATCH_NOT_ELAPSED / PERMIT_NOT_CLOSABLE. */
+export type TClosePermitResponse = IBaseSuccessResponse<IPermitDetail>
 
 /** GET /permits/:id/qr — ACTIVE / FIRE_MONITOR only, else 403 PERMIT_NOT_ACTIVE */
 export type TGetPermitQrResponse = IBaseSuccessResponse<IPermitQr>

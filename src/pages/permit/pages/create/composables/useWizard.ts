@@ -3,9 +3,14 @@ import { computed, onUnmounted, ref } from 'vue'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { useDebounce } from '@/utils/Debounce'
-import { useApiError } from '@/composables/useApiError'
+import { useApiError, type IApiErrorResult } from '@/composables/useApiError'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import type { ICreatePermitDraftPayload, IUpdatePermitDraftPayload } from '@/models/request/permit/PermitReq.model'
+import type { IPermitSafetyReading } from '@/models/modules/permit/Permit.model'
+import type { TChecklistAnswer } from '../constants/SafetyChecklist'
+import {
+  EMPTY_SUBMIT_FAILURES, extractSubmitFailures, stepIndexForSubmitFailure, type ISubmitFailures
+} from '../constants/SubmitErrorRouting'
 import PermitProvider, { type IPermitProvider } from '@/resources/provider/permit/Permit.provider'
 import { WIZARD_STEPS, type IWizardStepDef } from '../wizard/WizardSteps'
 
@@ -17,8 +22,18 @@ export interface IUseWizard {
   currentStep: ComputedRef<IWizardStepDef>
   maxUnlockedStepIndex: Ref<number>
   formData: Ref<IUpdatePermitDraftPayload>
+  checklistAnswers: Ref<Record<string, TChecklistAnswer>>
   draftId: Ref<string | undefined>
   saving: Ref<boolean>
+  submitting: Ref<boolean>
+  /** Localized verdict of the last rejected submit — the server's answer, never its `message`. */
+  submitError: Ref<IApiErrorResult | undefined>
+  /**
+   * Every per-item failure the last rejected submit reported (`failures[]` /
+   * `certificateFailures[]`), so steps 3 and 4 can highlight ALL of them at once rather than the
+   * one code that happened to land in the envelope.
+   */
+  submitFailures: Ref<ISubmitFailures>
   isFirstStep: ComputedRef<boolean>
   isLastStep: ComputedRef<boolean>
   isNextBlocked: ComputedRef<boolean>
@@ -27,6 +42,8 @@ export interface IUseWizard {
   back (): void
   goToStep (index: number): void
   updateFormData (patch: Partial<IUpdatePermitDraftPayload>): void
+  updateChecklistAnswers (patch: Record<string, TChecklistAnswer>): void
+  submitDraft (): Promise<string | undefined>
 }
 
 /**
@@ -38,6 +55,23 @@ export interface IUseWizard {
  *
  * There is no `project` and no `workDescription` on this API — those were assumptions.
  */
+/**
+ * The reading fields PATCH /permits/:id actually declares. **SO2 is absent from the wire** — the
+ * `safetyReading` body schema in docs/api/openapi.json is `{ lel, o2, co, wind, height }` only,
+ * and Elysia strips unknown keys, so an so2 value is silently discarded (docs/api/GAPS.md row K).
+ * It is collected and displayed because the design asks for it, and it is advisory-only
+ * (`SAFETY_RANGES.ranges.so2.blocking === false`), so dropping it cannot change a verdict.
+ */
+function toWireReading (reading: IPermitSafetyReading): IPermitSafetyReading {
+  return {
+    lel: reading.lel,
+    o2: reading.o2,
+    co: reading.co,
+    wind: reading.wind,
+    height: reading.height
+  }
+}
+
 function buildCreatePayload (data: IUpdatePermitDraftPayload): ICreatePermitDraftPayload {
   return {
     type: data.type as TPermitType,
@@ -73,8 +107,12 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
   const currentStepIndex = ref(0)
   const maxUnlockedStepIndex = ref(0)
   const formData = ref<IUpdatePermitDraftPayload>({})
+  const checklistAnswers = ref<Record<string, TChecklistAnswer>>({})
   const draftId = ref<string | undefined>(undefined)
   const saving = ref(false)
+  const submitting = ref(false)
+  const submitError = ref<IApiErrorResult | undefined>(undefined)
+  const submitFailures = ref<ISubmitFailures>(EMPTY_SUBMIT_FAILURES)
 
   const currentStep: ComputedRef<IWizardStepDef> = computed((): IWizardStepDef => steps[currentStepIndex.value])
   const isFirstStep: ComputedRef<boolean> = computed((): boolean => currentStepIndex.value === 0)
@@ -83,7 +121,8 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
     (): boolean => !currentStep.value.schema.safeParse(formData.value).success
   )
   const canSubmit: ComputedRef<boolean> = computed(
-    (): boolean => isLastStep.value && !isNextBlocked.value && draftId.value !== undefined && !saving.value
+    (): boolean => isLastStep.value && !isNextBlocked.value && draftId.value !== undefined
+      && !saving.value && !submitting.value
   )
 
   /**
@@ -91,6 +130,16 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
    * on every call after. Reads draftId.value fresh at execution time, not at
    * call time — see the `inflight` chain below for why that matters.
    */
+  /**
+   * The last safety reading actually accepted by the server, serialized. `safetyReading` APPENDS
+   * a row on every PATCH (it is a log, not a field), so sending the unchanged reading along with
+   * an unrelated edit — a title fix, a JSA row, a worker's BP — would append a duplicate every
+   * time. Snapshotted only AFTER the PATCH resolves, so a failed request does not lose the
+   * reading, and compared against what is actually SENT (so2 stripped) rather than what is held
+   * in `formData`.
+   */
+  let lastPersistedReading: string | undefined
+
   async function doPersist (): Promise<void> {
     if (formData.value.type === undefined) return
 
@@ -99,7 +148,16 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
       draftId.value = response.data.id
       return
     }
-    await PermitService.update(draftId.value, formData.value)
+
+    const { safetyReading, ...rest } = formData.value
+    const payload: IUpdatePermitDraftPayload = { ...rest }
+    const wireReading = safetyReading === undefined ? undefined : toWireReading(safetyReading)
+    const serialized = wireReading === undefined ? undefined : JSON.stringify(wireReading)
+    const shouldAppendReading = serialized !== undefined && serialized !== lastPersistedReading
+    if (shouldAppendReading) payload.safetyReading = wireReading
+
+    await PermitService.update(draftId.value, payload)
+    if (shouldAppendReading) lastPersistedReading = serialized
   }
 
   /**
@@ -132,12 +190,27 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
 
   function updateFormData (patch: Partial<IUpdatePermitDraftPayload>): void {
     formData.value = { ...formData.value, ...patch }
+    // Any edit makes the last server verdict stale, so drop it: otherwise a reading the server
+    // rejected stays red — and its banner stays up — even after the user has corrected the value,
+    // until they press Submit again. Cleared on ANY field edit rather than only the rejected one:
+    // the user is actively editing the draft the server refused, and Submit re-runs the check, so
+    // clearing a beat early is strictly better than a stuck red card.
+    submitError.value = undefined
+    submitFailures.value = EMPTY_SUBMIT_FAILURES
     // A draft cannot be created from step 1 alone: POST /permits requires type, title, location,
     // foreman, workDate, workTimeStart and workTimeEnd together, all non-empty (API-005). Before
     // that the create would 400, so nothing is persisted; once the draft exists, every later edit
     // PATCHes as usual.
     if (!draftId.value && !hasCreatableDraft(formData.value)) return
     debouncedPersist()
+  }
+
+  /**
+   * Step 3's checklist. Never persisted and never gates Next — see
+   * ../constants/SafetyChecklist.ts and docs/api/GAPS.md row J.
+   */
+  function updateChecklistAnswers (patch: Record<string, TChecklistAnswer>): void {
+    checklistAnswers.value = { ...checklistAnswers.value, ...patch }
   }
 
   function next (): void {
@@ -171,14 +244,63 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
     currentStepIndex.value = index
   }
 
+  /**
+   * PMT-009. Flushes any pending autosave, then POSTs /permits/:id/submit.
+   *
+   * The SERVER'S VERDICT WINS: the client-side gate above is convenience only, so a 400 here is
+   * expected even from a wizard that looks green. On failure the error is localized off
+   * `errorCode` — never the backend `message`, which joins every failure with '; ' in
+   * backend-authored English — and the user is returned to the step that can actually fix it.
+   *
+   * Resolves with the permit id on success, `undefined` on failure.
+   */
+  async function submitDraft (): Promise<string | undefined> {
+    if (draftId.value === undefined) return undefined
+    submitError.value = undefined
+    submitFailures.value = EMPTY_SUBMIT_FAILURES
+
+    // Land any debounced edit before submitting, so the server validates what the user sees.
+    debouncedPersist.flush()
+    await inflight
+
+    const id = draftId.value
+    if (id === undefined) return undefined
+
+    const response = await handleLoading(
+      async (): Promise<string> => {
+        const result = await PermitService.submit(id)
+        return result.data.id
+      }, { loadingUnit: submitting }, (error: unknown): void => {
+        const mapped = mapError(error)
+        submitError.value = mapped
+        submitFailures.value = extractSubmitFailures(error)
+        toast.error(mapped.message)
+        // Assigned directly rather than via goToStep(): goToStep refuses the jump when any
+        // EARLIER step fails its own schema, and the whole point of this branch is that the
+        // server disagreed with a client-side gate that passed. The user must always land on
+        // the step that can fix it, never be stranded on Review with an error they cannot act on.
+        const stepIndex = stepIndexForSubmitFailure(mapped.code, submitFailures.value)
+        if (stepIndex !== undefined && stepIndex <= maxUnlockedStepIndex.value) {
+          currentStepIndex.value = stepIndex
+        }
+      }
+    )
+
+    return response
+  }
+
   return {
     steps,
     currentStepIndex,
     currentStep,
     maxUnlockedStepIndex,
     formData,
+    checklistAnswers,
     draftId,
     saving,
+    submitting,
+    submitError,
+    submitFailures,
     isFirstStep,
     isLastStep,
     isNextBlocked,
@@ -186,7 +308,9 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
     next,
     back,
     goToStep,
-    updateFormData
+    updateFormData,
+    updateChecklistAnswers,
+    submitDraft
   }
 }
 

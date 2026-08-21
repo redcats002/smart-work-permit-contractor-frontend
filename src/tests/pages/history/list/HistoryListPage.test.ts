@@ -68,7 +68,11 @@ function buildPermit (id: string, status: TPermitStatus): IPermitListItem {
     closedBy: null,
     closedAt: status === 'CLOSED' ? '2026-08-10T10:00:00.000Z' : null,
     fireMonitorStartedAt: null,
-    qrIssuedAt: null
+    qrIssuedAt: null,
+    // Added to IPermitListItem when PMT-010 picked up the backend's 2026-08-21 fields
+    // (docs/api/GAPS.md row A). This screen does not read them yet.
+    entrantCount: 0,
+    fireWatch: null
   }
 }
 

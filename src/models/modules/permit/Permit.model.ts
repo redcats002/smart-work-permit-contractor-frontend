@@ -57,6 +57,28 @@ export interface IPermitSafetyReading {
   recordedById?: string
 }
 
+/**
+ * One failing reading inside `validationSummary`. `message` is backend-authored English and is
+ * NEVER rendered — the UI localizes off `errorCode` (`LEL_MISSING`, `GAS_OUT_OF_RANGE`, …).
+ * `so2` is absent from `field` on purpose: it is advisory and is not on the wire at all.
+ */
+export interface IPermitValidationFailure {
+  field: 'lel' | 'o2' | 'co' | 'wind'
+  errorCode: string
+  message: string
+}
+
+/**
+ * The server's own verdict on the safety readings, returned on every permit detail/command
+ * response. Its `scope` is readings only — certificate gating happens at submit and is not in
+ * here, so this must never be labelled "all checks passed". Render it; never recompute it.
+ */
+export interface IPermitValidationSummary {
+  scope: 'safety_readings'
+  passed: boolean
+  failures: IPermitValidationFailure[]
+}
+
 export interface IJsaStep {
   id?: number
   phase: TJsaPhase
@@ -90,6 +112,21 @@ export interface IPermitPhoto {
 export interface IClosureChecklistAnswer {
   itemKey: string
   answer: 'yes' | 'no' | 'na'
+}
+
+/**
+ * Server-computed Fire Watch state, present on every permit list row and detail payload since the
+ * backend's 2026-08-21 pass (docs/api/GAPS.md row A). `null` unless `status === 'FIRE_MONITOR'`.
+ *
+ * `remainingSeconds` is clamped at 0 and is the authoritative remainder — it is immune to client
+ * clock skew, unlike deriving from `startedAt` alone. `elapsed: false` is exactly the state in
+ * which `POST /permits/:id/close` answers 403 `FIRE_WATCH_NOT_ELAPSED`.
+ */
+export interface IPermitFireWatch {
+  startedAt: string
+  elapsedSeconds: number
+  remainingSeconds: number
+  elapsed: boolean
 }
 
 /** GET /permits/:id/qr answers `{ token }` — nothing else. */

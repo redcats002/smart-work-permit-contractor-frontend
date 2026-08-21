@@ -38,13 +38,42 @@ change this repo cannot make. The sibling Safety/Inspector app made the same mig
 
 | # | Gap | Impact here |
 |---|---|---|
-| A | `GET /permits` returns no entrant count and no fire-watch remainder. Only the public `GET /permits/qr/:token` reports `entrantCount` / `fireWatch` | The My Permits card's "N inside" badge was removed — it cannot be populated. `PMT-010`'s detail screen can only show fire-watch state once a QR token exists |
-| B | `status` takes a single value | The grouped filter chips ("Active" = ACTIVE + FIRE_MONITOR, "Closed" = CLOSED + REJECTED, History's archive set) fetch unfiltered and narrow client-side, so their pagination totals count every status and a page can render short |
 | C | No organisation/company concept | `IUser.company` — shown on the sidebar account card — will never be populated |
 | D | `GET /notifications` has no pagination, `limit` only | Fine today; a busy account will outgrow it. `PLT-007` should not build paging against it |
 | F | The permit has no free-text description field. The design's "Work description" has nowhere to go | `PMT-005` must not add it to the payload — it would be silently dropped |
-| E | Submit-time validation returns only the *first* failing code | The wizard cannot list every problem at once; it surfaces one, the user fixes it, and resubmits |
 | G | **`POST /certificates` accepts no attachment field at all.** The request body declares only `workerName, role, certType, issuedDate, expiryDate`; there is no `filePath`/`fileRef` property, no such column on the `Certificate` model, and Elysia strips unknown keys — so the field is discarded silently, with a 200. Row 18 closed the *response* side of this under `API-007` and missed the request side. | **Certificate attachment is non-functional end to end.** The client now uploads the file and sends the correct `filePath` (never the 60-second presigned `fileUrl` — REVIEW-2026-08-19 S4), but nothing is persisted: the file sits in object storage unreferenced and `CertificateCard` renders "No file attached" forever. Until the backend adds the column and the body field, the Add Certificate form warns the user that the attachment was not stored (`certificate.form.attachmentNotStored`). Needed: `filePath?: string` on `CertificateCreateModel.body`, a nullable column on `Certificate`, and the path echoed back on the certificate read shape. |
+| J | **The permit has no field for step 3's Yes/No/N-A safety checklist.** `PATCH /permits/:id` declares only `title, location, foreman, workDate, workTimeStart, workTimeEnd, outdoorWork, jsaSteps, workers, safetyReading, photos`, and Elysia strips unknown keys. There is no `checklist` column on the permit model either (the only checklist on the wire is `closureChecklist`, written at close). | `PMT-006` renders the 17/13/14-row checklist the design specifies (design lines 300-311) but **cannot save it**: the answers live in `useWizard`'s own state and are lost on reload, and the Safety Officer never sees them. Deliberately kept out of `formData` so nothing type-lies about the payload. The step says so on screen (`permit.create.steps.safetyChecks.checklistNotStored`) rather than implying it was stored. Needed: a `checklist`/`preWorkChecklist` array of `{ itemKey, answer }` on the PATCH body and a column to hold it — same shape as `closureChecklist`. |
+| K | **`safetyReading` has no `so2` field.** The PATCH body declares `{ lel, o2, co, wind, height }` only, while `IPermitSafetyReading` (and `SAFETY_RANGES.requiredByType.confined`) carry SO2, and the design shows an SO2 card on every Confined Space permit (design line ~273). Unknown keys are stripped, so an SO2 value 200s and vanishes. | `PMT-006` renders and validates the SO2 input but `useWizard.toWireReading()` strips it before the PATCH, so the app never claims to have stored it. Harmless to the verdict — SO2 is `blocking: false` (advisory guidance only, per `docs/modules/permit/context.md`), so it can never change a pass/fail. Needed: `so2` on the `safetyReading` PATCH body and on the `SafetyReading` model, echoed back in `latestSafetyReading`. |
+| I | **Entrant NAMES are not readable by the permit owner.** (The count is served — row A closed it as `entrantCount`.) `403 ENTRANTS_STILL_INSIDE` carries them only inside the backend-authored English `message`, which clients must never render. `GET /permits/:id/entrants` exists but is inspector-facing, and the public `GET /permits/qr/:token` needs an issued token. | `PMT-011`'s blocked banner can say *that* entrants are still inside and what to do about it, and how many (from the payload's `entrantCount`), but **not** the names the design shows (design line 590). Needed: entrant names on the contractor-readable detail payload, or structured `details` on the 403 body. |
+
+## Closed by the API on 2026-08-22 (feat-020 / feat-021)
+
+Regenerated `openapi.json` in all three repos; `node scripts/check-contract-sync.mjs` green. No new
+`errorCode` was added — the vocabulary is still the same 25 codes.
+
+| # | Was | Now served | What this repo can do |
+|---|---|---|---|
+| H | `POST /permits/:id/close` was guarded `auth: ['safety_officer']`, so a contractor session answered `403 FORBIDDEN_ROLE` before any closure rule was evaluated — `PMT-011`'s built-and-wired modal could never succeed | **`contractor` is admitted on the route, scoped to their own permit** (product-owner ruling, `../../../PROMPT-LOG.md` 2026-08-22). A contractor closing a permit they did **not** create is refused with a `403` carrying **no** `errorCode` — the standard ownership refusal, checked before any status/fire-watch/entrant rule. `safety_officer` keeps access to every permit; `inspector` is still `403 FORBIDDEN_ROLE`. Nothing else about closure is relaxed: `403 ENTRANTS_STILL_INSIDE` and `403 FIRE_WATCH_NOT_ELAPSED` fire identically for a contractor actor, with no override, and the `PERMIT_CLOSED` audit row is still written | `PMT-011`'s closure modal now works end to end for the Foreman. Keep rendering the server's verdict — the ownership refusal has no `errorCode`, so it falls back like a 404 or a validation 400 |
+
+> Also landed in the same pass (no row here — it is a Safety/Inspector-app concern, mirrored as row
+> V5 in `../../../smart-work-permit-frontend/docs/api/GAPS.md`): **`POST /permits/:id/reject` now
+> *requires* `signature`.** The body is `{ reason, signature }`, both `minLength: 1`; a reject
+> without a signature is a `400` with no `errorCode`. The contractor app does not call this route.
+
+
+## Closed by the API on 2026-08-21 (feat-008 / feat-009 / feat-010)
+
+Regenerated `openapi.json` in all three repos; `node scripts/check-contract-sync.mjs` green. These
+rows are **already served** — no backend work is pending on them.
+
+| # | Was | Now served | What this repo can do |
+|---|---|---|---|
+| A | `GET /permits` returned no entrant count and no fire-watch remainder; only `GET /permits/qr/:token` reported them | `entrantCount: number` and `fireWatch: null \| { startedAt, elapsedSeconds, remainingSeconds, elapsed }` are on **every** list row **and** every permit-detail payload — no QR token needed. Same shapes as the public QR projection. `fireWatch` is `null` unless `status === 'FIRE_MONITOR'`; `remainingSeconds` is clamped at 0; `elapsed: false` is exactly the state in which close answers `403 FIRE_WATCH_NOT_ELAPSED` | Restore the My Permits card's "N inside" badge, and bind `PMT-010`'s countdown to `fireWatch` instead of waiting on a QR token. Render, never recompute |
+| B | `status` took exactly one value, so grouped chips fetched unfiltered and narrowed client-side — pagination totals counted every status and pages rendered short | `status` accepts one value (`?status=ACTIVE`), a repeated param (`?status=ACTIVE&status=FIRE_MONITOR`) **or** a comma-joined list (`?status=ACTIVE,FIRE_MONITOR`). All three verified live | Send the whole group and drop the client-side narrowing. `count` / `totalPage` now describe the group |
+| E | Submit-time validation returned only the *first* failing code | The 400 body carries `failures: Array<{ field, errorCode, message }>` (safety readings, same item shape as `validationSummary.failures`) and `certificateFailures: Array<{ workerName, errorCode, message }>`. `code` and `errorCode` are unchanged — `errorCode` is still the first failing code — so this is additive | The wizard can list every problem at once. Reuse the `validationSummary` failure component for `failures[]` |
+
+> No new `errorCode` was added by this pass; the vocabulary is still the same 25 codes.
+
 
 ## Closed by the API on 2026-08-19 (backend security/contract fix pass)
 

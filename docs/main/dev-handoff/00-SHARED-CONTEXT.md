@@ -18,8 +18,8 @@ SmartWorkPermit is a work-permit management system for a Thai industrial facilit
 
 | Role | App | Key powers |
 |---|---|---|
-| `contractor` | Contractor app | Create/edit/submit permits, view own history & certificates |
-| `safety_officer` | Safety/Inspector app | Approve/reject permits, close permits, view audit log, site-wide dashboard |
+| `contractor` | Contractor app | Create/edit/submit permits, close **their own** permits (the Foreman's closure), view own history & certificates |
+| `safety_officer` | Safety/Inspector app | Approve/reject permits, close **any** permit, view audit log, site-wide dashboard |
 | `inspector` | Safety/Inspector app | Scan permit QR for live status, run entrant register, log gas readings, works offline |
 
 A single user account has exactly one role. The Safety/Inspector app shows nav/routes based on the logged-in user's role (not a toggle the user picks themselves).
@@ -47,7 +47,9 @@ DRAFT → PENDING → REJECTED
 - `CLOSED`: closure checklist completed + e-signature; terminal.
 - `EXPIRED`: work window end time passed while still open; terminal unless reopened by policy (out of scope unless the user asks).
 
-**Closure block rule:** a Confined Space permit cannot be closed while any entrant is still checked in (register must show all workers "out"). The API must return `403` for a close attempt while entrants remain inside.
+**Who may close:** closure is the **Foreman's** action, run from the contractor app — `POST /permits/:id/close` admits a `contractor` **scoped to a permit they created**, and a `safety_officer` on any permit. A contractor closing someone else's permit is refused with a `403` carrying no `errorCode` (the standard ownership refusal). An `inspector` is refused with `403 FORBIDDEN_ROLE`.
+
+**Closure block rule:** a Confined Space permit cannot be closed while any entrant is still checked in (register must show all workers "out"). The API must return `403` for a close attempt while entrants remain inside. Admitting the contractor relaxes **nothing** here: `403 ENTRANTS_STILL_INSIDE` and `403 FIRE_WATCH_NOT_ELAPSED` fire identically whoever the actor is, and there is no override.
 
 ## Safety-check validation (server-authoritative)
 

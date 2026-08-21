@@ -1,4 +1,5 @@
 import type {
+  IClosePermitPayload,
   ICreatePermitDraftPayload,
   IGetPermitListQuery,
   IMarkPermitCompletePayload,
@@ -6,6 +7,7 @@ import type {
   IUpdatePermitDraftPayload
 } from '@/models/request/permit/PermitReq.model'
 import type {
+  TClosePermitResponse,
   TCreatePermitDraftResponse,
   TGetPermitAuditResponse,
   TGetPermitDetailResponse,
@@ -21,10 +23,15 @@ import HttpRequest from '@/resources/HttpRequest'
  * Live against the real backend (API-006). The stub fixtures this provider used to resolve from
  * are gone — they described a shape the server never sends.
  *
- * Deliberately absent: approve, reject and close. All three are `safety_officer`-only and answer
- * 403 `FORBIDDEN_ROLE` for a contractor account, so exposing them here would only invite a caller
- * to build a button that cannot work. Closure is the officer's action; a contractor watches for
- * the resulting status change.
+ * Deliberately absent: approve and reject. Both are `safety_officer`-only and answer 403
+ * `FORBIDDEN_ROLE` for a contractor account, so exposing them here would only invite a caller to
+ * build a button that cannot work.
+ *
+ * `close` IS exposed, and that is a deliberate exception, not an oversight. The backend guards
+ * `POST /permits/:id/close` with `auth: ['safety_officer']` too, so a contractor request answers
+ * 403 `FORBIDDEN_ROLE` today — but the contractor closure flow (`PMT-011`, design lines 574-611)
+ * must not pre-empt the server: it attempts the call and renders whatever verdict comes back,
+ * localized off `errorCode`. See `docs/api/GAPS.md` row **H** for the backend change that closes it.
  */
 export interface IPermitProvider {
   create (payload: ICreatePermitDraftPayload): Promise<TCreatePermitDraftResponse>
@@ -35,6 +42,7 @@ export interface IPermitProvider {
   markComplete (id: string, payload?: IMarkPermitCompletePayload): Promise<TMarkPermitCompleteResponse>
   qr (id: string): Promise<TGetPermitQrResponse>
   audit (id: string): Promise<TGetPermitAuditResponse>
+  close (id: string, payload: IClosePermitPayload): Promise<TClosePermitResponse>
 }
 
 class PermitProvider extends HttpRequest implements IPermitProvider {
@@ -81,6 +89,16 @@ class PermitProvider extends HttpRequest implements IPermitProvider {
 
   public async audit (id: string): Promise<TGetPermitAuditResponse> {
     const response = await this.get(`${this.urlPrefix}/${id}/audit`)
+    return response
+  }
+
+  /**
+   * Closure checklist + e-signature. Answers 403 `ENTRANTS_STILL_INSIDE` while a Confined Space
+   * entrant is checked in, 403 `FIRE_WATCH_NOT_ELAPSED` while Hot Work's countdown runs, and — for
+   * a contractor account today — 403 `FORBIDDEN_ROLE` (GAPS.md row H). Never swallow the failure.
+   */
+  public async close (id: string, payload: IClosePermitPayload): Promise<TClosePermitResponse> {
+    const response = await this.post(`${this.urlPrefix}/${id}/close`, payload)
     return response
   }
 }

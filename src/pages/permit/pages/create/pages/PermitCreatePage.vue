@@ -20,10 +20,22 @@
     <div class="w-full min-h-90 rounded-xl border border-border bg-surface-card p-5 md:p-7">
       <component
         :is="currentStep.component"
+        :checklist-answers="checklistAnswers"
+        :draft-id="draftId"
         :form-data="formData"
+        :submit-failures="submitFailures"
         :title="t(currentStep.labelKey)"
+        @update:checklist-answers="updateChecklistAnswers($event)"
         @update:form-data="updateFormData($event)" />
     </div>
+
+    <p
+      v-if="submitError"
+      class="mt-3 rounded-lg border border-status-rejected-border bg-status-rejected-bg px-4 py-3
+        text-[13px] font-semibold text-status-rejected-fg-emphasis"
+      role="alert">
+      <span aria-hidden="true">⛔</span> {{ submitError.message }}
+    </p>
 
     <WizardFooter
       :can-back="!isFirstStep"
@@ -52,7 +64,10 @@ const {
   currentStep,
   maxUnlockedStepIndex,
   formData,
+  checklistAnswers,
   draftId,
+  submitError,
+  submitFailures,
   isFirstStep,
   isLastStep,
   isNextBlocked,
@@ -60,18 +75,24 @@ const {
   next,
   back,
   goToStep,
-  updateFormData
+  updateFormData,
+  updateChecklistAnswers,
+  submitDraft
 } = useWizard()
 
 /**
- * TODO(PMT-009): call PermitService.submit(draftId.value) here (or from
- * Step6Review.vue once it exists) and route to /permits/:id on success,
- * mapping failures through useApiError() same as useWizard's autosave does.
- * PMT-004 only wires the button + its disabled state (see WizardFooter's
- * `canSubmit`) — the button is inert until PMT-009 lands.
+ * PMT-009. `submitDraft()` owns the call, the localization and the bounce back to the step that
+ * can fix a rejection; this page only owns the navigation on success. On failure it resolves
+ * `undefined` and `submitError` (rendered above the footer) carries the localized verdict — the
+ * backend's own `message` is never shown.
  */
-function onSubmitClick (): void {
-  console.info('[PermitCreatePage] Submit is wired for PMT-009 — no API call yet.', draftId.value)
+async function onSubmitClick (): Promise<void> {
+  const permitId = await submitDraft()
+  if (!permitId) return
+  // `?submitted=1` is what makes the detail page show its one-shot "submitted" success banner
+  // (PermitStatusBanner.vue, PMT-010). Nothing else sets it — a plain visit to an already-PENDING
+  // permit must NOT look like it was just submitted.
+  await router.push({ name: 'PermitDetailPage', params: { id: permitId }, query: { submitted: '1' } })
 }
 </script>
 

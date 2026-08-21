@@ -96,15 +96,15 @@ Role column below: **✅** allowed for `contractor`, **⛔** 403 `FORBIDDEN_ROLE
 
 | Method | Path | Contractor | Notes |
 |---|---|---|---|
-| GET | `/` | \* | Paginated. **Scoped to your own permits automatically** — the `contractorId` filter is ignored for contractor accounts. Filters: `status`, `type`, `dateFrom`, `dateTo`; `search` matches id/title/location/foreman |
+| GET | `/` | \* | Paginated. **Scoped to your own permits automatically** — the `contractorId` filter is ignored for contractor accounts. Filters: `status` (**multi-value**, see §4), `type`, `dateFrom`, `dateTo`; `search` matches id/title/location/foreman. Every row carries the live `entrantCount` / `fireWatch` fields |
 | POST | `/` | ✅ | `{type, title, location, foreman, workDate, workTimeStart, workTimeEnd, outdoorWork?}` → `DRAFT`, id `WP-{HOT\|CONF\|HT}-{YYYYMMDD}-{NNN}` |
-| GET | `/:id` | \* | Full detail. 403 on someone else's permit |
+| GET | `/:id` | \* | Full detail, including live `entrantCount` / `fireWatch`. 403 on someone else's permit |
 | PATCH | `/:id` | ✅ | The wizard's save. All fields optional — see §4 |
 | POST | `/:id/submit` | ✅ | → `PENDING`. This is where server-side validation bites — see §5 |
 | POST | `/:id/mark-complete` | ✅ | **Hot work only** → `FIRE_MONITOR`, starts the 30-minute fire watch. 403 `NOT_HOT_WORK`, 403 `PERMIT_NOT_ACTIVE` |
 | POST | `/:id/approve` | ⛔ | safety_officer |
-| POST | `/:id/reject` | ⛔ | safety_officer |
-| POST | `/:id/close` | ⛔ | safety_officer — the closure checklist is submitted by the officer, not the contractor |
+| POST | `/:id/reject` | ⛔ | safety_officer — body is `{reason, signature}`; **both required** since 2026-08-22 (`signature` was optional, now matches approve). The typed e-signature lands on the `PERMIT_REJECTED` audit row |
+| POST | `/:id/close` | ✅ | **Foreman closure — admitted for `contractor` since 2026-08-22**, scoped to a permit you created (someone else's answers 403 with **no** `errorCode`; safety_officer may close any). Body `{checklist, signature}` → `CLOSED`. Nothing else relaxed: 403 `PERMIT_NOT_CLOSABLE`, 403 `FIRE_WATCH_NOT_ELAPSED` until the 30-minute countdown finishes, 403 `ENTRANTS_STILL_INSIDE` while a Confined Space entrant is checked in. No override |
 | GET | `/:id/qr` | \* | `{ token }`. 403 `PERMIT_NOT_ACTIVE` until approved |
 | GET | `/qr/:token` | public | Live status projection: `{id,type,title,location,status,entrantCount,fireWatch,latestSafetyReading}`. Rate-limited 30 req/60 s → 429 `RATE_LIMITED` |
 | GET | `/:id/entrants` | \* | `[{workerName, checkedInAt}]` — who is currently inside |
@@ -176,6 +176,9 @@ The permit detail response shape (what you render):
   "closedById": null, "closedBy": null, "closedAt": null, "closureChecklist": {…},
   "fireMonitorStartedAt": null, "qrIssuedAt": null,
 
+  "entrantCount": 0,            // live: workers whose latest entrant event is IN
+  "fireWatch": null,            // live: null unless status === 'FIRE_MONITOR' — see below
+
   "jsaSteps": [ … ],            // FLAT, each with a `phase` — group client-side
   "workers":  [ … ],            // `workerName`, not `name`
   "photos":   [ … ],
@@ -184,6 +187,33 @@ The permit detail response shape (what you render):
 ```
 
 Author fields (`createdBy`, `approvedBy`, `closedBy`) are **objects or null**, never name strings.
+
+### Live fields — `entrantCount` and `fireWatch`
+
+On the **list** and on **every permit-detail payload**, no QR token required. The public
+`GET /permits/qr/:token` reports the same two fields in the same shapes.
+
+```jsonc
+"entrantCount": 3,            // workers whose most recent entrant event is IN
+"fireWatch": {                // null unless status === 'FIRE_MONITOR'
+  "startedAt": "2026-08-21T04:00:00.000Z",   // ISO-8601 UTC
+  "elapsedSeconds": 600,
+  "remainingSeconds": 1200,   // clamped at 0, never negative
+  "elapsed": false            // false === close answers 403 FIRE_WATCH_NOT_ELAPSED
+}
+```
+
+Both are server-computed. Render them; never recompute the verdict — `fireWatch.elapsed` is the
+closure guard's own answer. This is what the My Permits card's "N inside" badge and the detail
+screen's countdown bind to.
+
+### Multi-value `status` filter on `GET /permits`
+
+Three accepted forms, all equivalent: `?status=ACTIVE`,
+`?status=ACTIVE&status=FIRE_MONITOR`, `?status=ACTIVE,FIRE_MONITOR`. Grouped chips
+("Active" = `ACTIVE` + `FIRE_MONITOR`, "Closed" = `CLOSED` + `REJECTED`, History's archive set)
+must filter **server-side** — `count` / `totalPage` then describe the group rather than every
+status, so pages stop rendering short. An unrecognised value is a plain `400` with no `errorCode`.
 
 ---
 
@@ -213,7 +243,7 @@ The codes the contractor app will actually hit, and where:
 
 | Flow | Codes |
 |---|---|
-| `POST /:id/submit` | `LEL_MISSING` `O2_MISSING` `CO_MISSING` `WIND_MISSING` `GAS_OUT_OF_RANGE` `WIND_OUT_OF_RANGE` `CERT_MISSING` `CERT_EXPIRED` (HTTP **400**, message joins every failure with `; `), `PERMIT_NOT_SUBMITTABLE` (403) |
+| `POST /:id/submit` | `LEL_MISSING` `O2_MISSING` `CO_MISSING` `WIND_MISSING` `GAS_OUT_OF_RANGE` `WIND_OUT_OF_RANGE` `CERT_MISSING` `CERT_EXPIRED` (HTTP **400** — the body now lists **every** failure, see below), `PERMIT_NOT_SUBMITTABLE` (403) |
 | `PATCH /:id` | `PERMIT_NOT_EDITABLE` |
 | `POST /:id/mark-complete` | `NOT_HOT_WORK`, `PERMIT_NOT_ACTIVE` |
 | `GET /:id/qr` | `PERMIT_NOT_ACTIVE` |
@@ -223,6 +253,30 @@ Which readings are **required** depends on the permit type (server-enforced at s
 hot/confined when `outdoorWork` is false, `o2` for hot/confined, `co` for confined, `wind` for heights.
 Thresholds are LEL `0%`, O₂ `19.5–23.5%`, CO `≤50 ppm`, wind `≤25 km/h`; fire watch 30 min; gas
 re-test 30 min; cert warning 30 days.
+
+### Submit failure body — every failure, not just the first
+
+`POST /permits/:id/submit` answers 400 with the standard envelope plus two arrays, so the wizard can
+list all problems in one pass instead of one-fix-one-resubmit:
+
+```jsonc
+{ "code": 400,
+  "message": "…",                 // every failure message joined with '; ' — never rendered
+  "errorCode": "LEL_MISSING",     // the FIRST failing code, unchanged — still the discriminator
+  "failures": [                   // safety readings
+    { "field": "lel", "errorCode": "LEL_MISSING", "message": "…" },
+    { "field": "o2",  "errorCode": "O2_MISSING",  "message": "…" }
+  ],
+  "certificateFailures": [        // blocking worker certificates, keyed by worker
+    { "workerName": "Krit Boonmee", "errorCode": "CERT_MISSING", "message": "…" }
+  ] }
+```
+
+`failures[]` items are the **same shape** as `validationSummary.failures` on the detail payload, so
+one component renders both. Certificate failures are keyed by worker rather than by reading field,
+which is why they are a separate array and not part of that closed `field` union. Both arrays are
+always present on a submit 400 (possibly empty); `code` and `errorCode` are unchanged, so an older
+client that only reads `errorCode` keeps working.
 
 **Validation is server-authoritative.** Show the server's verdict. Client-side range hints are fine as
 UI affordance, but the submit result is the truth.
@@ -280,9 +334,6 @@ cleanly when no API is reachable. Copying it is cheaper than discovering a shape
 
 ## 7. Known gaps
 
-- The permit **list** row carries no entrant count and no fire-watch remainder — only
-  `GET /permits/qr/:token` reports `entrantCount` and `fireWatch`. If a list screen needs those, it
-  needs a backend change, not a client workaround.
 - `GET /notifications` has no pagination — `limit` only.
 - Notification ids are numeric; permit ids are strings (`WP-…`); certificate ids are numeric.
 - The audit log is hash-chained (`hash`, `prevHash`) and append-only; there is no mutation endpoint.

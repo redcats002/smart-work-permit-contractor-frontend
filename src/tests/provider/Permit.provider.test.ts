@@ -84,11 +84,21 @@ describe('PermitProvider — wire contract (API-006)', () => {
     expect(spies.post).toHaveBeenCalledWith('/api/v1/permits/WP-1/mark-complete', undefined, undefined)
   })
 
-  it('exposes no approve/reject/close — those are safety_officer actions that 403 for a contractor', () => {
+  it('close posts the checklist and signature verbatim — the keys inside checklist are user data', async () => {
+    await service.close('WP-1', { checklist: { entrantsExited: 'yes', worksiteRestored: 'no' }, signature: 'Somchai P.' })
+
+    const body = { checklist: { entrantsExited: 'yes', worksiteRestored: 'no' }, signature: 'Somchai P.' }
+    expect(spies.post).toHaveBeenCalledWith('/api/v1/permits/WP-1/close', body, undefined)
+  })
+
+  it('exposes no approve/reject — those are safety_officer actions with no contractor-facing flow', () => {
     const surface = service as unknown as Record<string, unknown>
 
     expect(surface.approve).toBeUndefined()
     expect(surface.reject).toBeUndefined()
-    expect(surface.close).toBeUndefined()
+    // `close` IS present on purpose: the closure flow must attempt the call and render the
+    // server's verdict rather than pre-empt it, even though the route is officer-guarded today
+    // (docs/api/GAPS.md row H).
+    expect(typeof surface.close).toBe('function')
   })
 })

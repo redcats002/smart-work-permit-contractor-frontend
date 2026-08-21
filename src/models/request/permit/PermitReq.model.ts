@@ -42,6 +42,18 @@ export interface ISubmitPermitPayload {}
 export interface IMarkPermitCompletePayload {}
 
 /**
+ * POST /permits/:id/close — both fields are REQUIRED by the backend.
+ *
+ * `checklist` is free-form (`patternProperties: { '^(.*)$': {} }` in openapi.json) and is stored
+ * verbatim as `closureChecklist`. That is exactly why the transport does no case conversion
+ * (`API-002`): camelizing would rewrite the caller's own item keys.
+ */
+export interface IClosePermitPayload {
+  checklist: Record<string, 'yes' | 'no'>
+  signature: string
+}
+
+/**
  * GET /permits. A contractor is scoped to their own permits automatically — `contractorId` is
  * ignored for contractor accounts, so it is not modelled here.
  *

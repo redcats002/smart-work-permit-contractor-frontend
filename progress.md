@@ -342,3 +342,476 @@ the sibling Safety/Inspector app. 28 → 31 test files, 323 → 336 tests.
 `./init.sh`: typecheck PASS, lint PASS, vitest 31 files / 336 tests PASS, live smoke 16/16 PASS.
 `node ../scripts/check-contract-sync.mjs`: `contract-sync: OK — openapi in sync, 25 backend error
 codes all declared, /api/v1 prefix present.`
+
+## 2026-08-22 — `PMT-010` + `PMT-011` + `PMT-012` (Permit Detail, closure, Fire Watch)
+
+Replaced the 33-line `PermitDetailPage` placeholder with the real screen and both of its action
+flows. Ran concurrently with another agent working `PMT-006`–`009` in `src/pages/permit/pages/create/**`;
+file ownership held — the only shared files touched were `src/locales/{en,th}/permit.ts` (targeted
+edits inside `permit.detail.*` only, deleting `placeholderBadge`/`comingSoon`),
+`src/models/{request,response}/permit/`, `src/resources/provider/permit/Permit.provider.ts`,
+`docs/api/GAPS.md` and this file.
+
+**`PMT-010` — Permit Detail.** `usePermitDetail` fetches the permit, then its audit trail and (only
+for `ACTIVE`/`FIRE_MONITOR`) its QR token — asking for a token on a DRAFT is a guaranteed
+403 `PERMIT_NOT_ACTIVE`, so it is not asked. Four components under `detail/components/`:
+`PermitStatusBanner` (DRAFT / REJECTED / just-submitted / ACTIVE / ACTIVE-hot / CLOSED),
+`PermitInfoCard`, `PermitAuditTimeline` and `PermitQrPanel`. The 268px rail is `lg:w-67` beside the
+main column and stacks **below** it under `lg`. The QR is rendered from `QRCode.create()`'s module
+matrix as plain `<rect>` elements — `toDataURL` needs a canvas jsdom does not implement, and
+`toString({type:'svg'})` would have to be injected as raw markup. No new dependency.
+
+Two acceptance sub-clauses are **not** fully satisfied, both for missing dependencies, not effort:
+
+- DRAFT's `Edit Permit →` and REJECTED's `Duplicate & Edit` render **disabled** with a localized
+  hint. There is no edit or duplicate route (`Permit.router.ts` is list / create / detail) and no
+  draft resume, and on vue-router 5 a `RouterLink` to an unregistered name throws at render and
+  blanks the whole page. The banner variants themselves are built; only the targets are missing.
+- The just-submitted success banner is driven by `?submitted=1`. Nothing sets that query today —
+  `PMT-009`'s Submit is still a `console.info` — so the variant is reachable only by URL.
+
+**`PMT-011` — Closure checklist modal.** `ClosureChecklistModal` on `BaseModal`: per-type checklist
+(5 rows confined / 4 heights / 4 hot), Confirm disabled until every row is answered **and** the
+e-signature pad — revealed only once the checklist is complete — has been tapped. The wire takes
+`signature` as a plain string, so the pad records an attested Foreman name plus the tap timestamp
+rather than pretending to capture strokes.
+
+The invariant that matters: **the client never pre-empts the backend.** Every confirm POSTs to
+`/permits/:id/close` and renders whatever comes back, localized off `errorCode` via
+`useApiError().mapError()`. The backend's `message` never reaches the DOM — there is a test per
+branch proving it. Entrant **count** now comes from the payload's server-computed `entrantCount`
+(see below); entrant **names** do not exist on any contractor-readable surface.
+
+**`PMT-012` — Mark-complete + Fire Watch.** `MarkCompleteConfirmModal` (hot work only, ACTIVE) and
+`FireMonitorPanel` (FIRE_MONITOR): 80px mono `MM:SS`, progress bar, the server-side warning, and a
+disabled `Close Permit — locked until MM:SS` that becomes a live Close at zero and hands off to
+`PMT-011`'s modal. Confined/heights keep the green closure strip; hot work gets the orange one,
+because the backend refuses a direct `ACTIVE → CLOSED` for hot work (`PERMIT_NOT_CLOSABLE`).
+
+`useFireWatch` anchors the countdown on the **server**: `fireWatch.remainingSeconds` first (immune
+to device clock skew), falling back to `fireWatch.startedAt` (identical to `fireMonitorStartedAt`)
+plus the 30 minutes. Every refetch re-anchors, so a page reload cannot reset or extend the watch —
+there is a test mounting the same permit twice with different server remainders to prove it.
+`FIRE_WATCH_DURATION_MINUTES` is declared once and shared with the closure modal's blocked banner.
+
+> **`PMT-012` scope question — answered by the item's own stated default, not by asking.** The
+> design (lines 549-570) walks a GPS-tagged-photo verification between "timer ends" and "Close
+> Permit". No endpoint models it in `00-SHARED-CONTEXT.md`, `01-backend-elysia-tasks.md` or
+> `openapi.json`. Per `PMT-012`'s `notes`, the countdown is built, closure unlocks at zero, and the
+> photo step is **left out** — including from the confirm dialog's copy, which deliberately does not
+> promise a photo check the app cannot perform. If the product owner wants it, it is a backend item
+> first (upload + GPS comparison + a `FIRE_MONITOR_PHOTO` audit action), not a client change.
+
+**Contract work.** The backend's 2026-08-21 pass (`GAPS.md` row A) landed mid-session: `entrantCount`
+and `fireWatch { startedAt, elapsedSeconds, remainingSeconds, elapsed }` are now on every permit
+list row and detail payload. Both are modelled (`IPermitFireWatch`, `IPermitListItem`) and consumed
+here. `PermitCard`'s "N inside" badge is **not** restored — that is the list's scope, not this
+item's, and `entrantCount` is now available for whoever picks it up.
+
+Two new **open** rows filed in `docs/api/GAPS.md`:
+
+- **H — `POST /permits/:id/close` is `auth: ['safety_officer']`.** Verified in the backend source,
+  still true today. A contractor gets `403 FORBIDDEN_ROLE` before any closure rule is evaluated, so
+  `PMT-011` cannot succeed end to end even though the design, `00-SHARED-CONTEXT.md` and the item
+  all model closure as the Foreman's action. Deliberately not worked around client-side. Needed:
+  admit `contractor` on that route, or move closure out of the contractor scope in the shared spec.
+- **I — entrant NAMES are unreadable by the permit owner.** The count is served; the names live only
+  in the backend's English `message` and on the inspector-facing entrants endpoint.
+
+`PermitProvider` gained `close()`. Its doc comment used to say close was *deliberately absent*
+because it is officer-only — that is now explained rather than silently contradicted, and the
+provider test's "exposes no approve/reject/close" case was inverted to match with a comment saying
+why.
+
+**Verification.** `./init.sh` is **green**: typecheck PASS, lint PASS, vitest **39 files /
+409 tests PASS** — 21 of those cases are this item's (8 `PermitDetailPage`, 6 `ClosureChecklistModal`,
+6 `FireWatch`, 1 net-new provider case; 3 of the 8 replaced the placeholder tripwire rather than
+adding to the count) — plus a live smoke of **16/16 PASS** against the running backend on :3000.
+`node ../scripts/check-contract-sync.mjs`: `OK — openapi in sync, 25 backend error codes all
+declared, /api/v1 prefix present.` (Mid-session the gate was briefly red on typecheck and lint from
+the concurrent agent's in-flight `permit.create.*` work — `Step4PpeWorkers.schema.ts` and
+`quote-props` in the `ppeWorkers` locale block. Both were theirs and both are now fixed; nothing in
+this item was ever the cause.)
+
+**Browser verification — what was and was not seen.** The Claude-in-Chrome extension was not
+connected in this sandbox, so a headless Chromium click-through was driven with the repo's own
+Playwright instead: real login as the smoke contractor on the running dev server (:8081), then
+`/permits/WP-HOT-20260817-001`. Confirmed **in a rendered browser**, in Thai (the default locale):
+the DRAFT banner with its disabled `แก้ไขใบอนุญาต →` CTA and hint, the mono permit id, the info
+card, the empty-audit + read-only copy, and the dashed "QR pending approval" placeholder. **Zero
+console errors.** The right rail measured **exactly 268px** beside the main column at 1440px
+(aside x=1112, level with the title) and **below** it at 375px (aside y=872 vs title y=429), full
+width, with **no horizontal page scroll** — so the collapse is measured, not merely asserted by a
+class list.
+
+**Not seen in a browser:** every `ACTIVE` / `FIRE_MONITOR` / `REJECTED` / `CLOSED` state, and
+therefore the live QR, the Fire Watch panel, the mark-complete dialog and the closure modal. The
+seeded contractor account owns only two DRAFT permits, and moving one past DRAFT needs a Safety
+Officer approval from a different app and a different role — out of scope for this session and not
+something to fake by mutating shared data. Those paths are covered by unit tests against mounted
+components only.
+
+`AGENTS.md` was updated in the same pass, as the Definition of Done requires for a lifecycle change:
+three fragments called `PermitDetailPage` a placeholder that "fetches nothing" (state-of-codebase
+block, and the `permit` row's Pages and Built? cells). Targeted edits to those three fragments only —
+the wizard clauses in the same table row belong to the concurrent agent and were left untouched.
+
+**Next:** `PMT-007`–`009` (wizard steps 4-6) are the remaining permit items. Backend follow-ups owed:
+`GAPS.md` rows G, H, I, J, K.
+
+## 2026-08-22 — PMT-006 · PMT-007 · PMT-008 · PMT-009 — the wizard's last four steps (done)
+
+The six-step create wizard is complete. Steps 3–6 were `z.object({})` placeholder schemas behind
+~31-line stub components; all four are now real, and the Submit button is no longer a
+`console.info`.
+
+**PMT-006 — Safety Checks.** Type-specific reading cards, a blocked/safe banner that names each
+failing reading, the Indoor/Outdoor bypass, instrument-photo slots, and the numbered
+Yes/No/N-A checklist. Every bound, unit and required-reading list is *derived* from the single
+`SAFETY_RANGES` / `validateReadings()` export (PMT-001) — including the range hints, which are
+locale **templates** (`'{min} – {max}{unit}'`) with the numbers interpolated at render time, so no
+number is re-typed in the component, the schema, or either locale file. The Indoor/Outdoor toggle
+renders only for types that actually have a bypassable reading, which is why Working at Heights
+never gets one: wind is deliberately excluded from `bypassableByOutdoor`, and offering a toggle
+would imply an override that does not exist.
+
+**PMT-007 — PPE, photo evidence & workers.** Per-type evidence slot grid on a shared
+`PhotoSlot.vue`, the Thai ministerial-regulation notice verbatim in both locales, and a worker
+table that scrolls horizontally rather than truncating at 375px. Removal goes through
+`DeleteModal`, never an inline confirm.
+
+**PMT-008 — Job Safety Analysis.** Phase tab pills with live per-phase counts, an editable
+3-column table, and `sortOrder` recomputed per phase on every mutation so display order equals
+stored order and stays stable when a middle row is deleted.
+
+**PMT-009 — Review & Submit.** Read-only summary, three honest pre-flight rows, and a real
+`POST /permits/:id/submit`. On success it navigates to `/permits/:id?submitted=1` — that query
+param is what triggers PMT-010's one-shot "submitted" banner, and nothing set it before. On a 400
+the wizard drives off the backend's feat-010 failure arrays: `failures[]` highlights **every**
+failing reading on step 3 rather than the single code in the envelope, and `certificateFailures[]`
+names and tints every refused worker on step 4.
+
+### Decisions worth knowing
+
+- **`safetyReading` append guard (`useWizard.doPersist`).** `safetyReading` *appends* a row on
+  PATCH — it is a log, not a field — and `doPersist` sends the whole accumulated `formData`.
+  Without a guard, every later edit (a title fix, a JSA row, a worker's BP) would append a
+  duplicate reading forever. The reading is now sent only when it actually changed, the snapshot
+  is taken **after** the PATCH resolves (so a failed request does not lose it), and the comparison
+  is against what is *sent*, not what is held.
+- **Two new `GAPS.md` rows, both `api-adds`.** Row **J**: the permit has no field for step 3's
+  Yes/No/N-A checklist, so the answers live in `useWizard`'s own state, never in `formData`, and
+  the step says on screen that they are not saved. Row **K**: `safetyReading` has no `so2` on the
+  wire, so `toWireReading()` strips it before the PATCH rather than letting Elysia discard it
+  silently. SO2 is `blocking: false`, so neither gap can change a pass/fail verdict.
+  (Filed as J/K, not H/I — the concurrent PMT-010 agent claimed H and I while this ran.)
+- **`PhotoSlot.vue` does not use `useUpload()`.** That composable swallows every failure, toasts a
+  hardcoded Thai sentence about Google Cloud Storage billing, and returns a *fake success* with
+  `filePath: ''` — which would both leak an un-localized string and put an empty `fileRef` on the
+  wire, where PATCH declares `minLength: 1`. It goes through `Upload.provider` directly with
+  `mapError()`, so `FILE_TOO_LARGE` / `FILE_TYPE_NOT_ALLOWED` / `STORAGE_UNAVAILABLE` surface
+  localized and nothing is emitted unless the upload really succeeded.
+- **Photo slots offer "replace", not "remove".** `photos` upserts per `slotKey` with no delete
+  verb, so a remove affordance would look like it deleted something server-side and would not have.
+- **Checklist rows start UNANSWERED.** The design prefills every row to `yes` (hot #13 to `na`).
+  Since nothing persists them and they do not gate Next, a prefilled all-yes checklist would be
+  rubber-stamp UI that proves nothing about the worksite.
+- **Checklist copy is one key per row, EN in `en/` and TH in `th/`** — the repo's convention. The
+  design renders both languages simultaneously on the same row; that deviation is deliberate.
+  Two checklist lines quote numbers verbatim from the design ("Wind speed checked < 25 km/h",
+  "Guardrails installed at 90–110 cm"). They are procedural checklist copy, not range hints, and
+  are not read by any validation — paraphrasing a spec line was judged worse than repeating it.
+- **The outdoor-bypass info panel uses `surface-subtle` / `border-strong`, not the design's blue
+  (`#E8F5FF`).** No blue token exists in `tailwind.css`, and that file is shared across concurrent
+  agents — adding one was not worth the collision risk. Add `--color-info-*` and swap it in if the
+  blue matters.
+- **Worker health thresholds live in `create/constants/WorkerHealth.ts`, not
+  `src/utils/PermitSafety.ts`.** `SAFETY_RANGES` is the atmosphere/wind contract the backend also
+  validates against; blood pressure is neither — the backend stores `bloodPressure` /
+  `alcoholReading` as free-text and does not validate them at all.
+- **The health check mirrors the design's asymmetry on purpose.** A blank blood pressure is
+  "unrecorded", not "abnormal", and does not fail on its own; a blank or unparseable alcohol
+  reading **does** fail. Net effect: a freshly added Confined Space worker reads ✗ until their
+  breath test is entered, which is the correct default for a permit-to-work.
+- **BP/alcohol are Confined Space only.** The design's `bpCol` hints at BP for Working at Heights
+  too, but PMT-007's acceptance scopes the health check to Confined Space; acceptance won.
+- **A server verdict is dropped as soon as the user edits anything.** `updateFormData` clears
+  `submitError` / `submitFailures`. Without it, a reading the server rejected stayed red — banner
+  and all — even after the user corrected the value, until they pressed Submit again. Cleared on
+  *any* field edit rather than only the rejected one: the user is actively editing the draft the
+  server refused, and Submit re-runs the check, so clearing a beat early beats a stuck red card.
+- **Submit routes back by assigning `currentStepIndex`, not via `goToStep()`.** `goToStep` refuses
+  a jump when any *earlier* step fails its own schema — and the entire point of that branch is
+  that the server disagreed with a client gate that passed. The user must always land on the step
+  that can fix it, never be stranded on Review with an error they cannot act on.
+
+### Open question for the product owner (PMT-008)
+
+**"At least one JSA row before Next" is not in the backend contract.** `PATCH /permits/:id`
+accepts an empty `jsaSteps` array and `POST /permits/:id/submit` does not check the JSA at all.
+It comes from PMT-008's acceptance list only. It is implemented as a client-side minimum in the
+**weaker** reading — one row per *permit*, not one per phase — so it cannot block a submission the
+server would accept. Confirm the intended rule; if it is meant to be per-phase, or enforced at
+all, the backend should own it. The per-field `step`/`hazard`/`control` `minLength: 1` checks are
+*not* invented — those are on the wire.
+
+### Verification
+
+`./init.sh`: typecheck PASS, lint PASS, vitest **41 files / 424 tests** PASS, live API smoke
+16/16 PASS. `node ../scripts/check-contract-sync.mjs`: `contract-sync: OK — openapi in sync, 25
+backend error codes all declared, /api/v1 prefix present.` The suite was run four times to rule
+out a flake (one earlier red run coincided with the concurrent PMT-010 agent writing files
+mid-run; it has not reproduced).
+
+**NOT verified — no browser click-through.** The Claude-in-Chrome extension reported zero
+connected browsers for the whole session, so nothing was clicked or screenshotted. What *was*
+confirmed beyond the unit suite: all five new/changed SFCs compile and lint through the running
+vite dev server on :8081 (200 + transformed JS; `vite-plugin-eslint2` runs in that pipeline), and
+`PermitCreatePage.submit.test.ts` mounts the **real** page and drives the **real** wizard from
+step 1 to a successful submit and to three distinct server rejections. Still unseen by a human:
+the rendered reading cards and their red state, the 44-row checklist at 375px, the worker table's
+horizontal scroll, the photo picker, and the JSA phase tabs. **Recommend one manual pass over
+`/permits/create` before treating this UI as visually trusted.**
+
+**Next:** every `PMT-*` item is `done`. Remaining open work in this repo is `PLT-007`
+(notification polling) and the backend follow-ups in `docs/api/GAPS.md` (rows G, H, I, J, K).
+
+---
+
+## 2026-08-22 — PMT-013: the six permit-detail sections (items 1 / 1.1)
+
+Implemented `docs/main/dev-handoff/05-permit-detail-sections.md` §2 on the Contractor detail page.
+`PMT-010` shipped a **lite** page (banner, info card, audit timeline, QR); four of the payload's
+richest keys — `workers`, `photos`, `jsaSteps`, `latestSafetyReading` — were never rendered, so a
+foreman could not see the JSA or roster they had just entered. They render now.
+
+### Layout decision: stacked, not tabbed
+
+Six stacked cards in the main column, in contract order, each wrapped by a new
+`PermitDetailSection.vue` that owns the title and the **empty state**. Tabs were rejected: this app
+is desktop-first, a stacked page prints and scrolls in one pass, every section stays reachable
+without a second interaction, and the whole thing collapses to one column at 375px for free. The
+right rail (QR) and the `FIRE_MONITOR` panel are unchanged — they are not numbered sections.
+
+The empty state lives in the wrapper on purpose: the contract says an empty section is **never**
+hidden, so "no JSA rows" and "JSA not loaded" cannot look identical. §2 and §3 are the two
+exceptions that own their own inner empty states, because §2 must still show the outdoor-work
+bypass note and the server verdict on a permit with no reading yet (exactly the DRAFT case), and
+§3 has two independent collections (roster, photos) that empty separately.
+
+### Files
+
+| File | What |
+|---|---|
+| `detail/components/PermitDetailSection.vue` | new — section chrome + explicit empty state |
+| `detail/components/PermitSafetySection.vue` | new — §2 |
+| `detail/components/PermitWorkersSection.vue` | new — §3 |
+| `detail/components/PermitJsaSection.vue` | new — §4 |
+| `detail/components/PermitClosureSection.vue` | new — §5 |
+| `detail/components/PermitInfoCard.vue` | grown — `outdoorWork` + the lifecycle timestamps |
+| `detail/components/PermitAuditTimeline.vue` | heading moved to the §6 wrapper; list untouched |
+| `detail/pages/PermitDetailPage.vue` | the six sections wired in contract order |
+| `models/modules/permit/Permit.model.ts` | `IPermitValidationSummary` / `IPermitValidationFailure` |
+| `models/response/permit/PermitRes.model.ts` | `validationSummary` on `IPermitDetail` |
+| `locales/{en,th}/permit.ts` | `permit.detail.sections.*` only |
+| `src/tests/pages/permit/detail/PermitDetailSections.test.ts` | new — 9 tests |
+
+### §1 key checklist — every key, where it renders
+
+`type` `title` `id` `status` §1 heading strip · `location` `foreman` `workDate` `workTimeStart`
+`workTimeEnd` `outdoorWork` §1 info card · `createdBy` `createdAt` `updatedAt` `submittedAt`
+`approvedBy` `approvedAt` `rejectedReason` `rejectedAt` §1 status-history block (plus the status
+banner) · `latestSafetyReading` `validationSummary` §2 · `workers` `photos` §3 · `jsaSteps` §4 ·
+`closureChecklist` `entrantCount` `fireWatch` `fireMonitorStartedAt` `closedBy` `closedAt` §5 ·
+`qrIssuedAt` the QR side panel · audit trail §6.
+
+**Deliberately not rendered as their own UI element (3 keys):** `createdById`, `approvedById`,
+`closedById` — the resolved author *object* is shown instead; a bare user id is not information a
+foreman can use. **`so2` is not rendered at all** and that is the point: the wizard collects it but
+it is **not on the wire** (`docs/api/GAPS.md` row K — confirmed again against the regenerated
+`openapi.json`, whose `latestSafetyReading` carries `lel/o2/co/wind/height` and no `so2`).
+Displaying it would be showing a value the server never stored. `PermitSafetySection` filters it
+out of `SAFETY_RANGES.requiredByType` explicitly, and a test pins that.
+
+### The rules that were easy to get wrong
+
+- **`validationSummary` was missing from the model** even though it is in the openapi `required`
+  list for `GET /permits/:id`. Added as an *optional* field so existing fixtures still typecheck.
+- **The verdict is rendered, never recomputed.** Failures localize off `errorCode` by feeding the
+  bare code to `useApiError().mapError()` — one localization path, not a second lookup table. The
+  backend's `message` is never rendered, and a test asserts the raw string is absent from the DOM.
+  The summary's scope is readings only, so the copy says so instead of "all checks passed".
+- **Photos.** `fileRef` is a storage path, not a URL. It resolves through
+  `UploadProvider.getFileUrl()` (`GET /api/v1/file`) **on click**, not on load — N eager requests
+  for thumbnails on every page view is not worth it, and nothing else in the app renders these
+  images either. A slot the permit type requires but never received renders as explicitly missing;
+  instrument photos (`instrument-lel`, …) fall outside the evidence grid and are listed after it
+  rather than dropped.
+- **JSA** groups by `phase` in `JSA_PHASE_ORDER`, sorts by `sortOrder` inside a phase (rows with
+  no `sortOrder` keep payload order, last), and shows the per-phase count. An empty phase keeps its
+  heading.
+- **§5 does not start a second countdown.** It renders the data and reuses the page's single
+  `useFireWatch` value, which is anchored to the server's `fireWatch.remainingSeconds`. `PMT-012`'s
+  panel and `PMT-011`'s modal are untouched.
+- **The audit trail still has no edit or delete affordance** — `PMT-010`'s test still asserts it.
+
+### Cross-tree imports (flagged deliberately)
+
+`PermitSafetySection` / `PermitWorkersSection` import three **create**-side constants —
+`SafetyReadingView.ts`, `PhotoEvidence.ts`, `WorkerHealth.ts` — and read three `permit.create.*`
+locale namespaces (`safetyChecks.reading.*`, `ppeWorkers.slot.*`, `ppeWorkers.role.*`). Nothing
+under `create/**` was **edited**. This is intentional: re-deriving the health thresholds, the slot
+keys or the reading list on the detail side would let the two screens disagree about the same
+permit. If those constants ever move, they should move to a shared `permit/constants/` dir rather
+than being duplicated.
+
+### Verification
+
+`./init.sh`: **exit 0 — ALL GREEN.** typecheck PASS, lint PASS, vitest **42 files / 433 tests**
+PASS, live API smoke **16/16** PASS against `localhost:3000`.
+`node ../scripts/check-contract-sync.mjs`: `OK — openapi in sync, 25 backend error codes all
+declared, /api/v1 prefix present.` (One earlier `lint` red was a concurrent agent's `repro.tmp.mjs`
+vanishing mid-run — `ENOENT` inside eslint's file walk, not a rule violation; it did not reproduce.)
+
+**Browser pass — done this time.** Headless Chromium (this repo's Playwright) against the running
+dev server, driven as the seeded contractor. This app is the one on **:8081**; :8080 is the sibling
+Safety/Inspector app — neither server was restarted.
+
+Seen with my own eyes, at 1440px and at 375px:
+
+- All six sections render, in contract order, in **Thai** (the default locale), no console errors.
+- A bare DRAFT: `validationSummary` shows the red *failed* verdict with `LEL_MISSING` / `O2_MISSING`
+  localized, and the empty states for readings / workers / JSA / closure all render.
+- A populated Confined Space draft (created through the API for this purpose,
+  **`WP-CONF-20260821-005` — a probe row left in the dev DB**): green *passed* verdict, LEL/O₂/CO
+  cards **and no SO₂ card**, the two-worker roster with a ✓ Pass and a ✗ Fail plus the
+  blood-pressure reason, three required photo slots marked missing beside the attached
+  `worksite.jpg`, and the JSA grouped Pre (2, correctly reordered by `sortOrder`) / Process (0,
+  empty state) / Post (1).
+- 375px: `scrollWidth === clientWidth` — no horizontal page overflow; the worker and JSA tables
+  scroll inside their own containers.
+
+**Not seen, and not claimed:** `ACTIVE`, `FIRE_MONITOR` and `CLOSED` renderings, the QR code image,
+the closure modal's success path and the Fire Watch countdown in a browser. The seeded contractor
+owns **DRAFT** permits only, and a contractor cannot approve their own permit. Those paths are
+covered by unit tests (`PermitDetailPage.test.ts`, `ClosureChecklistModal.test.ts`,
+`FireWatch.test.ts`) and by the §5 fixture in the new test file, not by a click-through.
+
+**Next:** `PLT-007` (notification polling) is the last open item in this repo. If the Safety app
+diverges from these six sections, `05-permit-detail-sections.md` is the contract to fix it against.
+
+---
+
+## 2026-08-22 — Create wizard: the "cannot be continued" bug, the JSA minimum, and the step-2 map
+
+Three tasks, in priority order. Scope: `src/pages/permit/pages/create/**` + `src/tests/pages/permit/create/**`.
+
+### 1. ROOT CAUSE — permit creation could not be continued (`PMT-008`)
+
+**Diagnosed by reproduction, not by reading.** Driven in headless Chromium against the live backend
+(seeded `contractor@e2e.test` on this app's vite port `:8081`, API on `:3000`), watching console and
+network on every step:
+
+| Step | Next | Network |
+|---|---|---|
+| 1 Type | enabled | — |
+| 2 Basic info | enabled | `POST /permits` → **200** `WP-HOT-20260821-005` |
+| 3 Safety checks | enabled | `PATCH /permits/:id` → **200** (`safetyReading {lel:0, o2:21}`) |
+| 4 PPE & workers | enabled | — |
+| 5 **JSA** | **DISABLED — permanently** | — |
+
+Step 5 arrives with `formData.jsaSteps` **undefined**, and nothing seeds a row. `Step5JsaSchema`
+carried a `rows.length === 0` issue, so `currentStep.schema.safeParse(formData)` failed on arrival,
+`isNextBlocked` was `true` before the user touched anything, and there was no way forward except an
+"＋ add step" button that the footer never mentioned. Worse, the footer's blocked note renders
+`permit.wizard.blockedNote` = *"Resolve the blocked reading to continue"* — which points the user
+back at **step 3's readings**, a step that was already green. That is the dead end the product owner
+reported. Adding one JSA row let the identical walk finish and submit
+(`POST /permits/:id/submit` → 200, status `PENDING`), which isolates the cause to that one rule.
+
+The rule was a client-side invention: `PATCH /permits/:id` accepts an empty `jsaSteps` and
+`POST /permits/:id/submit` never inspects the JSA (`docs/api/openapi.json`). It therefore also
+violated the standing ruling *"no client-side rule that blocks what the server would accept"* — and
+the product owner had independently ruled it out in `../PROMPT-LOG.md` session 2. One fix, both
+tasks.
+
+**Fixed:**
+- `schema/Step5Jsa.schema.ts` — minimum removed; header comment rewritten to record *why* it must
+  not come back. The per-row `minLength: 1` checks on `step`/`hazard`/`control` **stay** — those are
+  on the wire and a half-filled row would 400.
+- `components/steps/Step5Jsa.vue` — dropped the matching `⛔` blocking banner.
+- `src/locales/{en,th}/permit.ts` — removed the now-dead
+  `permit.create.steps.jsa.validation.atLeastOne` key (targeted edits, `permit.create.*` only).
+
+**Regression left behind, confirmed RED against the pre-fix schema:**
+- `src/tests/pages/permit/create/PermitCreatePage.walk.test.ts` — mounts the **real** page and walks
+  all six steps with a draft that has **no `jsaSteps` at all**, asserting `nextBlocked === false` at
+  every step and `canSubmit === true` on Review. Against the old schema it fails with
+  `step 5 blocked Next: expected true to be false`.
+- `schema/Step5Jsa.schema.test.ts` — the case that pinned the old rule is inverted and re-commented.
+
+**Re-verified live:** the same browser walk with **zero** JSA rows now reaches Review and submits
+(`WP-HOT-20260821-006` → `PENDING`).
+
+Ruled out along the way, with evidence rather than assertion: step 2's date/time proxies compose
+correct ISO datetimes and `POST /permits` fires exactly once; the debounced `persist()` chain sets
+`draftId` on the first create and PATCHes thereafter; steps 3 and 4 both unlock with the values on
+screen; `checklistAnswers` staying out of `formData` blocks nothing.
+
+### 2. `ตำแหน่งบนแผนที่` — the step-2 map pin (`PMT-005`)
+
+Per `../PROMPT-LOG.md` session 2 ("map scope"): **no** map dependency, **no** geo field, **no**
+fabricated floor-plan asset. What shipped is a zone picker over the *same vocabulary the Safety
+app's risk map already plots*, so a permit lands on the same spot in both apps.
+
+- New `create/constants/LocationZones.ts` — a deliberate **mirror** of
+  `../smart-work-permit-frontend/src/pages/safety-officer/pages/risk-map/utils/LocationPosition.ts`:
+  identical 8 zone keys, identical percentages, identical prefix match, identical hash fallback.
+  The two repos share no package, so the copy is guarded by a test rather than by hope.
+- `Step2BasicInfo.vue` — a zone chip row that writes **canonical English** (`Zone 3`, `Tank Farm`)
+  into the **existing free-text `location` field**. Canonical English matters: the Safety app matches
+  on `location.trim().toLowerCase().startsWith(key)`, so a Thai label would never resolve and the two
+  apps would plot the same permit in two places. Chips show the Thai/EN label; the value on the wire
+  stays matchable. Below it, the risk map's own placeholder-plan treatment (`aspect-[4/3]`, dashed
+  border, placeholder note) with the pin absolutely positioned at the resolved percentages.
+- **Free text outside the vocabulary is still fully allowed** and still falls back to the
+  deterministic hash — typing by hand was never taken away.
+- `mapPlaceholder` ("— เร็ว ๆ นี้") replaced by `permit.create.steps.basicInfo.map.*` in EN + TH.
+
+**Verified in a browser** (headless Chromium, live backend, Thai UI):
+
+| Input | Pin |
+|---|---|
+| chip `โซน 3` → `location` = `Zone 3` | `left: 68%; top: 32%` — the Safety app's exact `zone 3` |
+| free text `Effluent plant — sump pit` | `left: 22.8%; top: 65.2%` (hash fallback, accepted) |
+| free text `Zone 3 / Pipe Rack B` | back to `left: 68%; top: 32%` (prefix match) |
+
+`src/tests/pages/permit/create/constants/LocationZones.test.ts` pins all eight mirrored positions,
+the prefix narrowing, and the hash fallback's determinism and bounds.
+
+### 3. JSA minimum-row rule — dropped
+
+Same change as §1. See above.
+
+### Verification
+
+- `./init.sh` — **ALL GREEN** (typecheck PASS, lint PASS, vitest **44 files / 440 tests PASS**,
+  live API smoke PASS).
+- `node ../scripts/check-contract-sync.mjs` — **OK** (openapi in sync — re-read at md5
+  `d7b6c5648fb99dae75d039619cffdc7e` after the backend regen — 25 error codes declared,
+  `/api/v1` prefix present).
+- `bunx eslint` / `bunx vue-tsc --noEmit` on every touched file — clean. `vue-tsc` covers the
+  concurrent agent's new `pages/detail/**` sections, which import three of this tree's constants
+  (`SafetyReadingView`, `PhotoEvidence`, `WorkerHealth`) — none of the three was changed.
+
+### Raised, not fixed (outside this task's locale fence)
+
+`permit.wizard.blockedNote` is the **English** string *"Resolve the blocked reading to continue"* in
+**both** `src/locales/en/permit.ts` and `src/locales/th/permit.ts`, so a Thai-default UI renders
+English. It is also wrong in substance — it names a *reading* regardless of which step is blocked,
+which is precisely what misdirected the user in §1. It sits under `permit.wizard.*`, outside the
+`permit.create.*` keys this session was scoped to edit in those shared files. Whoever owns
+`permit.wizard.*` next should translate it and make it step-agnostic.
+
+Left in the dev DB by the reproduction: draft/pending probe permits `WP-HOT-20260821-002`
+through `-006`.
