@@ -1,35 +1,47 @@
-import type { IAuthor } from '@/models/Global.model'
 import type {
-  IJsaStep, IPermitAuditEntry, IPermitBase, IPermitPhoto, IPermitQr, IPermitSafetyReading, IPermitWorker
+  IJsaStep, IPermitAuditEntry, IPermitAuthor, IPermitBase, IPermitFireWatch, IPermitPhoto, IPermitQr, IPermitSafetyReading,
+  IPermitValidationSummary, IPermitWorker
 } from '@/models/modules/permit/Permit.model'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 
-/** Row shape for GET /permits (My Permits list + History). */
+/**
+ * Row shape for GET /permits (My Permits list + History). The list returns the permit ENTITY —
+ * the same fields as the detail minus its collections. Since the backend's 2026-08-21 pass it also
+ * carries `entrantCount` and `fireWatch` (docs/api/GAPS.md row A) — no QR token needed.
+ */
 export interface IPermitListItem extends IPermitBase {
-  /** Confined Space, ACTIVE only — count of entrants currently checked in. */
-  entrantsInside?: number
-  /** CLOSED / EXPIRED only — closure timestamp + closer, surfaced by the history archive table. */
-  closedAt?: string
-  closedBy?: IAuthor
+  createdById: string
+  createdBy: IPermitAuthor | null
+  createdAt: string
+  updatedAt: string
+  submittedAt: string | null
+  approvedById: string | null
+  approvedBy: IPermitAuthor | null
+  approvedAt: string | null
+  rejectedReason: string | null
+  rejectedAt: string | null
+  closedById: string | null
+  closedBy: IPermitAuthor | null
+  closedAt: string | null
+  /** Hot Work only — set when mark-complete starts the 30-min Fire Watch countdown. */
+  fireMonitorStartedAt: string | null
+  qrIssuedAt: string | null
+  /** Confined Space entrants currently checked in. `0` for every other type. */
+  entrantCount: number
+  /** Server-computed remainder — render it, never recompute a verdict from it. `null` unless FIRE_MONITOR. */
+  fireWatch: IPermitFireWatch | null
 }
 
-/** GET /permits/:id */
-export interface IPermitDetail extends IPermitBase {
-  workDescription: string
-  createdBy?: IAuthor
-  createdAt?: string
-  submittedAt?: string
-  approvedAt?: string
-  approvedBy?: IAuthor
-  rejectedReason?: string
-  closedAt?: string
-  closedBy?: IAuthor
-  /** Hot Work only — set when mark-complete starts the 30-min Fire Watch countdown. */
-  fireMonitorStartedAt?: string
-  safetyReadings?: IPermitSafetyReading
+/** GET /permits/:id — the entity plus its collections. */
+export interface IPermitDetail extends IPermitListItem {
   jsaSteps: IJsaStep[]
   workers: IPermitWorker[]
   photos: IPermitPhoto[]
+  /** Singular: the most recent reading only. PATCH appends; this reads back the latest. */
+  latestSafetyReading: IPermitSafetyReading | null
+  closureChecklist?: Record<string, unknown> | null
+  /** Server-computed verdict for the safety readings only — rendered as-is, never recomputed. */
+  validationSummary?: IPermitValidationSummary | null
 }
 
 export type TGetPermitListResponse = IBasePaginationResponse<IPermitListItem>
@@ -38,9 +50,11 @@ export type TCreatePermitDraftResponse = IBaseSuccessResponse<IPermitDetail>
 export type TUpdatePermitDraftResponse = IBaseSuccessResponse<IPermitDetail>
 export type TSubmitPermitResponse = IBaseSuccessResponse<IPermitDetail>
 export type TMarkPermitCompleteResponse = IBaseSuccessResponse<IPermitDetail>
+
+/** POST /permits/:id/close — 403 ENTRANTS_STILL_INSIDE / FIRE_WATCH_NOT_ELAPSED / PERMIT_NOT_CLOSABLE. */
 export type TClosePermitResponse = IBaseSuccessResponse<IPermitDetail>
 
-/** GET /permits/:id/qr — ACTIVE / FIRE_MONITOR only */
+/** GET /permits/:id/qr — ACTIVE / FIRE_MONITOR only, else 403 PERMIT_NOT_ACTIVE */
 export type TGetPermitQrResponse = IBaseSuccessResponse<IPermitQr>
 
 /** GET /permits/:id/audit */

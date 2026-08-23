@@ -1,10 +1,12 @@
+import { createApp, nextTick } from 'vue'
+
+import type { IUser } from '@/stores/Auth'
+import { useAuthStore } from '@/stores/Auth'
+
+import Cookies from 'js-cookie'
 import { createPinia, setActivePinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-import { createApp, nextTick } from 'vue'
-import Cookies from 'js-cookie'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { useAuthStore } from '@/stores/Auth'
-import type { IUser } from '@/stores/Auth'
 
 /**
  * Exercises PLT-005's store contract:
@@ -27,7 +29,7 @@ const STUB_USER: IUser = {
   name: 'Somchai Contractor',
   firstName: 'Somchai',
   lastName: 'Contractor',
-  email: 'contractor@smartworkpermit.dev',
+  email: 'smoke.contractor@example.com',
   company: 'NNY Mechanical',
   role: 'contractor'
 }

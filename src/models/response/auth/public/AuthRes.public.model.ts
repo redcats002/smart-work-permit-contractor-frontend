@@ -1,16 +1,20 @@
 import type { IUser } from '@/stores/Auth'
-import type { IBaseSuccessResponse } from '../../Response.model'
 
 export interface ILoginResponse {
   user: IUser
   token: string
 }
 
-export type TActionLoginResponse = IBaseSuccessResponse<ILoginResponse>
-export type TActionRequestResetPasswordResponse = IBaseSuccessResponse<boolean>
-export type TActionResetPasswordResponse = IBaseSuccessResponse<boolean>
-export interface ICheckTokenResetPasswordResponse {
-  valid: boolean
+// Login does NOT use the { message, data } envelope — it answers { success, data }.
+export interface TActionLoginResponse {
+  success: boolean
+  data: ILoginResponse
 }
 
-export type TActionCheckTokenResetPasswordResponse = IBaseSuccessResponse<ICheckTokenResetPasswordResponse>
+// The password-reset endpoints answer { message: 'success' } with no data key at all.
+export interface TActionMessageOnlyResponse {
+  message: string
+}
+
+export type TActionRequestResetPasswordResponse = TActionMessageOnlyResponse
+export type TActionResetPasswordResponse = TActionMessageOnlyResponse

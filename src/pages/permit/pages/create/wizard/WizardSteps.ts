@@ -1,6 +1,9 @@
 import type { Component } from 'vue'
 import type { z } from 'zod'
 import type { IUpdatePermitDraftPayload } from '@/models/request/permit/PermitReq.model'
+import type { TChecklistAnswer } from '../constants/SafetyChecklist'
+import type { ISubmitFailures } from '../constants/SubmitErrorRouting'
+import type { ICertificateProblem, TCertificatePreflightState } from '../composables/useCertificatePreflight'
 import { Step1TypeSchema } from '../schema/Step1Type.schema'
 import { Step2BasicInfoSchema } from '../schema/Step2BasicInfo.schema'
 import { Step3SafetyChecksSchema } from '../schema/Step3SafetyChecks.schema'
@@ -24,10 +27,37 @@ import Step6Review from '../components/steps/Step6Review.vue'
 export interface IWizardStepProps {
   title: string
   formData: IUpdatePermitDraftPayload
+  /**
+   * Step 3's Yes/No/N-A checklist answers, keyed `<type>-<number>`. Held OUTSIDE `formData`
+   * because the permit wire contract has no field for them (docs/api/GAPS.md row J) — putting
+   * them in `formData` would type-lie about the payload and ride along on every PATCH only to be
+   * stripped server-side. Steps other than 3 ignore it.
+   */
+  checklistAnswers: Record<string, TChecklistAnswer>
+  /**
+   * The draft's server-assigned permit id (`WP-HOT-20260625-001`), once the first
+   * POST /permits has resolved. Only step 6 renders it; it is undefined until step 2 satisfies
+   * `hasCreatableDraft()`.
+   */
+  draftId?: string
+  /**
+   * Per-item failures from the last rejected submit. Steps 3 and 4 highlight the exact readings
+   * and workers the SERVER named — which may disagree with the client-side gate, and when it
+   * does, the server is right.
+   */
+  submitFailures: ISubmitFailures
+  /**
+   * CRT-004. The wizard's single shared certificate pre-flight verdict (`useWizard`, backed by
+   * `useCertificatePreflight`). Step 4 uses it to mark blocking workers; step 6 uses it for the
+   * review row. Never authoritative — the server's answer on submit always wins.
+   */
+  certificateState: TCertificatePreflightState
+  certificateProblems: ICertificateProblem[]
 }
 
 export interface IWizardStepEmits {
   'update:formData': [patch: Partial<IUpdatePermitDraftPayload>]
+  'update:checklistAnswers': [patch: Record<string, TChecklistAnswer>]
 }
 
 export interface IWizardStepDef {
@@ -37,9 +67,10 @@ export interface IWizardStepDef {
   labelKey: string
   component: Component
   /**
-   * Validates the relevant slice of `formData` for this step. Every step here
-   * ships a placeholder (`z.object({})`, always passes) — see the schema files
-   * under ../schema/ for the follow-up item that replaces each one.
+   * Validates the relevant slice of `formData` for this step. Steps 1-3 are real
+   * (PMT-005/PMT-006); the rest still ship a placeholder (`z.object({})`, always
+   * passes) — see the schema files under ../schema/ for the follow-up item that
+   * replaces each one.
    */
   schema: z.ZodTypeAny
 }

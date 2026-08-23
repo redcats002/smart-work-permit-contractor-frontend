@@ -2,8 +2,15 @@ import { computed, type ComputedRef, ref, type Ref } from 'vue'
 import { accessTokenStorage } from '@/utils/Storage'
 import { defineStore } from 'pinia'
 
-/** This app has exactly one role — kept as a literal union (not an enum) so there is nothing to switch on. */
-export type TUserRole = 'contractor'
+/**
+ * The backend's UserRole enum, verbatim (docs/api/openapi.json). This app is for `contractor`
+ * only, but login returns whichever role the account holds — a safety officer or inspector CAN
+ * sign in here, and the login flow rejects them explicitly rather than half-rendering the app
+ * against endpoints that will 403 (API-003).
+ */
+export type TUserRole = 'contractor' | 'safety_officer' | 'inspector'
+
+export const CONTRACTOR_ROLE: TUserRole = 'contractor'
 
 export interface IUser {
   id: string | null
@@ -12,12 +19,11 @@ export interface IUser {
   lastName: string
   email: string
   /**
-   * Contractor company/organisation name, shown on the sidebar account card
-   * (design: "NNY Mechanical"). The backend `users` table
-   * (docs/main/dev-handoff/01-backend-elysia-tasks.md) only specifies
-   * `id, name, role, contact info` — no company field is named there, so
-   * this is optional. Named `company` to match the shape PLT-005's
-   * acceptance criteria spells out: `user: { id, name, role: 'contractor', company }`.
+   * Contractor company/organisation name, shown on the sidebar account card.
+   * NOT sent by the backend: the login response is
+   * { id, name, firstName, lastName, email, image, role } (docs/api/openapi.json).
+   * Kept optional so the card can degrade, but nothing will ever populate it until the API adds
+   * an organisation concept — see docs/api/GAPS.md.
    */
   company?: string
   role?: TUserRole

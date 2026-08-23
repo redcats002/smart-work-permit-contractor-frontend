@@ -63,7 +63,7 @@
         "HST-001"
       ],
       "status": "done",
-      "evidence": "./init.sh — typecheck PASS, lint PASS, tests PASS. Live Playwright probe after router registration: route renders with shell chrome, no pageerror, no horizontal overflow at 375/768/1280. /history renders 1431 chars."
+      "evidence": "./init.sh — typecheck PASS, lint PASS, tests PASS. Live Playwright probe after router registration: route renders with shell chrome, no pageerror, no horizontal overflow at 375/768/1280. /history renders 1431 chars.\n\n2026-08-19 fix pass (C3, PRE-RUN-FINDINGS.md finding 5 / CT-HISTORY-009 step 5). exportCsv mapped response.data directly and skipped the ARCHIVE_STATUSES narrowing useFetchHistory applies, so with status 'all' the CSV carried DRAFT/PENDING/ACTIVE rows the table hid. The narrowing is now one narrowToArchive() helper used by both the fetch and the export. New page test src/tests/pages/history/list/HistoryListPage.test.ts asserts the CSV body contains exactly the two archive rows and nothing else; verified it FAILS against the pre-fix line and passes after. ./init.sh 2026-08-19: typecheck PASS, lint PASS, vitest 31 files / 336 tests PASS, live smoke 16/16 PASS against a running backend. node ../scripts/check-contract-sync.mjs -> 'contract-sync: OK - openapi in sync, 25 backend error codes all declared, /api/v1 prefix present.'"
     }
   ]
 }

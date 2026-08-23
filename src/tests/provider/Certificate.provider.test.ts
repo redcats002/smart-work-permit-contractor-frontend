@@ -1,60 +1,74 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ECertificateStatus } from '@/enums/modules/certificate/CertificateStatus.enum'
-import type { ICertificate } from '@/models/modules/certificate/Certificate.model'
+import type { ICertificateProvider } from '@/resources/provider/certificate/Certificate.provider'
+import CertificateProvider from '@/resources/provider/certificate/Certificate.provider'
 import { certificateStatus } from '@/utils/CertificateStatus'
-import CertificateProvider, { type ICertificateProvider } from '@/resources/provider/certificate/Certificate.provider'
 
 /**
- * Exercises the stub branch of Certificate.provider.ts (USE_STUB_DATA = true — see the
- * file header). Once the real backend is wired up and the flag flips to false, these
- * tests document the contract the live endpoint must keep satisfying.
+ * The stub fixtures are gone (API-007). They also caused a red baseline: the fixture dates drifted
+ * out of the 30-day window and the "covers all three validity states" assertion started failing on
+ * a date, with nothing having changed in the code.
  */
-describe('CertificateProvider (stub mode)', () => {
-  const CertificateService: ICertificateProvider = new CertificateProvider()
+type TAxiosMethod = (...args: unknown[]) => Promise<unknown>
 
-  it('list() returns the stub fixtures with pagination metadata', async () => {
-    const response = await CertificateService.list({ page: 1, limit: 50 })
-    expect(response.data.length).toBeGreaterThan(0)
-    expect(response.count).toBe(response.data.length)
-    expect(response.page).toBe(1)
+function transport (service: ICertificateProvider): Record<string, TAxiosMethod> {
+  return (service as unknown as { axiosInstance: Record<string, TAxiosMethod> }).axiosInstance
+}
+
+describe('CertificateProvider — wire contract (API-007)', () => {
+  let service: ICertificateProvider
+
+  beforeEach(() => {
+    vi.restoreAllMocks()
+    service = new CertificateProvider()
   })
 
-  it('the stub fixtures cover all three validity states, so the list page is reviewable offline', async () => {
-    const response = await CertificateService.list({ page: 1, limit: 50 })
-    const now = new Date()
-    const statuses = new Set(response.data.map((cert: ICertificate): ECertificateStatus => certificateStatus(cert.expiryDate, now)))
-    expect(statuses.has(ECertificateStatus.VALID)).toBe(true)
-    expect(statuses.has(ECertificateStatus.EXPIRING_SOON)).toBe(true)
-    expect(statuses.has(ECertificateStatus.EXPIRED)).toBe(true)
+  it('list GETs /api/v1/certificates with the query as params', async () => {
+    const get = vi.spyOn(transport(service), 'get').mockResolvedValue({ message: 'success', data: [], count: 0 })
+
+    await service.list({ page: 1, limit: 50 })
+
+    expect(get).toHaveBeenCalledWith('/api/v1/certificates', { params: { page: 1, limit: 50 } })
   })
 
-  it('create() appends the new certificate so a subsequent list() includes it', async () => {
-    const before = await CertificateService.list({ page: 1, limit: 50 })
-    const created = await CertificateService.create({
-      workerName: 'Test Worker',
-      role: 'Test Role',
-      certType: 'Test Cert',
-      issuedDate: '2026-01-01',
-      expiryDate: '2027-01-01'
-    })
-    expect(created.data.workerName).toBe('Test Worker')
+  it('create POSTs the certificate payload', async () => {
+    const post = vi.spyOn(transport(service), 'post').mockResolvedValue({ message: 'success', data: {} })
+    const payload = {
+      workerName: 'Somchai Boonmee',
+      role: 'Operator',
+      certType: 'Hot Work Safety',
+      issuedDate: '2026-01-10',
+      expiryDate: '2027-01-10'
+    }
 
-    const after = await CertificateService.list({ page: 1, limit: 50 })
-    expect(after.data.length).toBe(before.data.length + 1)
-    expect(after.data.some((cert: ICertificate): boolean => cert.id === created.data.id)).toBe(true)
+    await service.create(payload)
+
+    expect(post).toHaveBeenCalledWith('/api/v1/certificates', payload, undefined)
   })
 
-  it('byWorker() matches on workerName, case-insensitively', async () => {
-    const list = await CertificateService.list({ page: 1, limit: 1 })
-    const workerName = list.data[0].workerName
+  it('byWorker URL-encodes the name and reads one certificate or null', async () => {
+    const get = vi.spyOn(transport(service), 'get').mockResolvedValue({ message: 'success', data: null })
 
-    const response = await CertificateService.byWorker(workerName.toUpperCase())
-    expect(response.data.length).toBeGreaterThan(0)
-    expect(response.data.every((cert: ICertificate): boolean => cert.workerName === workerName)).toBe(true)
+    const response = await service.byWorker('Somchai Boonmee')
+
+    expect(get).toHaveBeenCalledWith('/api/v1/certificates/worker/Somchai%20Boonmee', { params: undefined })
+    expect(response.data).toBeNull()
+  })
+})
+
+describe('certificateStatus — the server owns expiry (API-007)', () => {
+  const now = '2026-08-17T03:00:00.000Z'
+
+  it('honours the backend expired flag even when the date reads otherwise', () => {
+    expect(certificateStatus('2027-01-10', now, true)).toBe(ECertificateStatus.EXPIRED)
   })
 
-  it('byWorker() returns an empty array for an unknown worker', async () => {
-    const response = await CertificateService.byWorker('Nobody Registered Here')
-    expect(response.data).toEqual([])
+  it('only decides the advisory expiring-soon window when the server says not expired', () => {
+    expect(certificateStatus('2026-08-30', now, false)).toBe(ECertificateStatus.EXPIRING_SOON)
+    expect(certificateStatus('2027-08-30', now, false)).toBe(ECertificateStatus.VALID)
+  })
+
+  it('still classifies from the date alone when no flag is supplied', () => {
+    expect(certificateStatus('2026-08-01', now)).toBe(ECertificateStatus.EXPIRED)
   })
 })

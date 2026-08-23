@@ -24,7 +24,7 @@ function makeSteps (): IWizardStepDef[] {
       key: 'second',
       labelKey: 'permit.wizard.step.2',
       component: StubComponent,
-      schema: z.object({ project: z.string().min(1) })
+      schema: z.object({ title: z.string().min(1) })
     },
     { key: 'last', labelKey: 'permit.wizard.step.3', component: StubComponent, schema: z.object({}) }
   ]
@@ -47,7 +47,7 @@ describe('useWizard — navigation', () => {
     wizard.next() // blocked -> no-op
     expect(wizard.currentStepIndex.value).toBe(1)
 
-    wizard.updateFormData({ project: 'Warehouse repaint' })
+    wizard.updateFormData({ title: 'Warehouse repaint' })
     expect(wizard.isNextBlocked.value).toBe(false)
 
     wizard.next()
@@ -74,7 +74,7 @@ describe('useWizard — navigation', () => {
     const wizard = useWizard(makeSteps())
     expect(wizard.isLastStep.value).toBe(false)
 
-    wizard.updateFormData({ project: 'Warehouse repaint' })
+    wizard.updateFormData({ title: 'Warehouse repaint' })
     wizard.next() // -> step 2
     wizard.next() // -> step 3 (last)
 
@@ -91,7 +91,7 @@ describe('useWizard — navigation', () => {
     wizard.goToStep(2) // nothing unlocked yet beyond step 1
     expect(wizard.currentStepIndex.value).toBe(0)
 
-    wizard.updateFormData({ project: 'Warehouse repaint' })
+    wizard.updateFormData({ title: 'Warehouse repaint' })
     wizard.next() // unlocks + moves to index 1
     expect(wizard.maxUnlockedStepIndex.value).toBe(1)
 
@@ -105,7 +105,7 @@ describe('useWizard — navigation', () => {
   it('goToStep also refuses the jump if an earlier unlocked step has since become invalid', () => {
     const wizard = useWizard(makeSteps())
 
-    wizard.updateFormData({ project: 'Warehouse repaint' })
+    wizard.updateFormData({ title: 'Warehouse repaint' })
     wizard.next() // step 2 now unlocked+current (index 1)
     wizard.next() // step 3 now unlocked+current (index 2)
     expect(wizard.maxUnlockedStepIndex.value).toBe(2)
@@ -113,19 +113,19 @@ describe('useWizard — navigation', () => {
     wizard.goToStep(0) // revisit step 1 to edit it
     // Clearing `project` makes step 2 (index 1) invalid again, even though it was
     // already unlocked — maxUnlockedStepIndex alone would still allow jumping to 2.
-    wizard.updateFormData({ project: '' })
+    wizard.updateFormData({ title: '' })
 
     wizard.goToStep(2)
     expect(wizard.currentStepIndex.value).toBe(0) // refused — step 2 no longer validates
 
-    wizard.updateFormData({ project: 'Warehouse repaint (fixed)' })
+    wizard.updateFormData({ title: 'Warehouse repaint (fixed)' })
     wizard.goToStep(2)
     expect(wizard.currentStepIndex.value).toBe(2) // allowed again once step 2 re-validates
   })
 
   it('is page-scoped, not shared state — a fresh call starts clean regardless of a prior instance', () => {
     const first = useWizard(makeSteps())
-    first.updateFormData({ project: 'first visit' })
+    first.updateFormData({ title: 'first visit' })
     first.next()
     expect(first.currentStepIndex.value).toBe(1)
 
@@ -147,13 +147,33 @@ describe('useWizard — draft persistence', () => {
     vi.restoreAllMocks()
   })
 
-  it('creates no draft before a permit type is chosen ("first meaningful input")', async () => {
+  // POST /permits requires type, title, location, foreman, workDate, workTimeStart and
+  // workTimeEnd together, all non-empty (API-005). Firing a create before that is a guaranteed
+  // 400 — the reason `hasCreatableDraft` gates persistence.
+  /** The minimum payload the backend will accept for a draft. */
+  function creatableDraft (): Record<string, unknown> {
+    return {
+      type: 'hot',
+      title: 'Warehouse repaint',
+      location: 'Zone 3',
+      foreman: 'Somchai',
+      workDate: '2026-08-20',
+      workTimeStart: '2026-08-20T01:00:00.000Z',
+      workTimeEnd: '2026-08-20T09:00:00.000Z'
+    }
+  }
+
+  it('creates no draft until every field POST /permits requires is present', async () => {
     const createSpy = vi.spyOn(PermitProvider.prototype, 'create')
     const wizard = useWizard(makeSteps())
 
-    wizard.updateFormData({ project: 'no type chosen yet' })
+    wizard.updateFormData({ title: 'no type chosen yet' })
     await vi.advanceTimersByTimeAsync(2000)
+    expect(createSpy).not.toHaveBeenCalled()
 
+    // Type alone is still not enough — the old "first meaningful input" rule would have posted here.
+    wizard.updateFormData({ type: 'hot' })
+    await vi.advanceTimersByTimeAsync(2000)
     expect(createSpy).not.toHaveBeenCalled()
     expect(wizard.draftId.value).toBeUndefined()
   })
@@ -169,13 +189,13 @@ describe('useWizard — draft persistence', () => {
 
     const wizard = useWizard(makeSteps())
 
-    wizard.updateFormData({ type: 'hot' })
+    wizard.updateFormData(creatableDraft())
     await vi.advanceTimersByTimeAsync(1500) // first debounce fires -> create() called, still pending
 
     expect(createSpy).toHaveBeenCalledTimes(1)
     expect(wizard.draftId.value).toBeUndefined()
 
-    wizard.updateFormData({ project: 'Warehouse repaint' })
+    wizard.updateFormData({ title: 'Warehouse repaint' })
     await vi.advanceTimersByTimeAsync(1500) // second debounce fires while the first POST is still unresolved
 
     // The second write is chained behind the first in-flight one, not fired
@@ -188,6 +208,6 @@ describe('useWizard — draft persistence', () => {
 
     expect(wizard.draftId.value).toBe('WP-TEST-1')
     expect(updateSpy).toHaveBeenCalledTimes(1)
-    expect(updateSpy).toHaveBeenCalledWith('WP-TEST-1', expect.objectContaining({ type: 'hot', project: 'Warehouse repaint' }))
+    expect(updateSpy).toHaveBeenCalledWith('WP-TEST-1', expect.objectContaining({ type: 'hot', title: 'Warehouse repaint' }))
   })
 })

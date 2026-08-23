@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { EApiErrorCode } from '@/enums/modules/error/ApiErrorCode.enum'
 import i18n from '@/plugins/I18n.plugin'
-import type { IApiErrorResponse, TApiErrorDetail } from '@/models/modules/error/ApiError.model'
+import type { IApiErrorResponse } from '@/models/modules/error/ApiError.model'
 
 const KNOWN_CODES: string[] = Object.values(EApiErrorCode)
 
@@ -15,22 +15,27 @@ const KNOWN_CODES: string[] = Object.values(EApiErrorCode)
  * the localized string.
  */
 export interface IApiErrorResult {
-  /** The backend's machine-readable code, or `'unknown'` when none could be read from the error. */
+  /** The backend's machine-readable code, or `'unknown'` when the response carried none. */
   code: string
   /** Localized message — safe to render directly. */
   message: string
   /** True when `code` is a member of `EApiErrorCode`. */
   isKnown: boolean
-  /** Loosely-typed detail payload, if the backend sent one. */
-  details?: TApiErrorDetail
+  /** HTTP status, when the error came from a response at all (absent on a network failure). */
+  status?: number
 }
 
 interface IUseApiError {
   mapError: (error: unknown) => IApiErrorResult
 }
 
+// The discriminator is `errorCode`; `code` is the numeric HTTP status. Duck-typing on either one
+// being present is deliberate — a 404 or a validation 400 is a real backend body with no errorCode,
+// and it must still be recognized as structured rather than logged as an unknown transport failure.
 function isApiErrorResponse (value: unknown): value is IApiErrorResponse {
-  return typeof value === 'object' && value !== null && typeof (value as { code?: unknown }).code === 'string'
+  if (typeof value !== 'object' || value === null) return false
+  const candidate = value as { code?: unknown, errorCode?: unknown }
+  return typeof candidate.code === 'number' || typeof candidate.errorCode === 'string'
 }
 
 /**
@@ -55,26 +60,28 @@ function extractErrorPayload (error: unknown): IApiErrorResponse | undefined {
 export function useApiError (): IUseApiError {
   function mapError (error: unknown): IApiErrorResult {
     const payload = extractErrorPayload(error)
-    const isKnown = payload !== undefined && KNOWN_CODES.includes(payload.code)
+    const errorCode = payload?.errorCode
+    const isKnown = errorCode !== undefined && KNOWN_CODES.includes(errorCode)
 
-    if (payload !== undefined && isKnown) {
+    if (isKnown) {
       return {
-        code: payload.code,
-        message: i18n.global.t(`error.${payload.code}`),
+        code: errorCode as string,
+        message: i18n.global.t(`error.${errorCode}`),
         isKnown: true,
-        details: payload.details
+        status: payload?.code
       }
     }
 
-    // Unknown code, or a non-structured error (network failure, 500 HTML page,
-    // timeout) — never silently swallow; log the real error for diagnosis.
+    // No code at all (404, ownership 403, validation 400), an unrecognized code, or a
+    // non-structured failure (network, timeout, 500 HTML page). Never silently swallow — and
+    // never render payload.message, which is backend-authored English.
     console.error('[useApiError] Unhandled API error', error)
 
     return {
-      code: payload?.code ?? 'unknown',
+      code: errorCode ?? 'unknown',
       message: i18n.global.t('error.unknown'),
       isKnown: false,
-      details: payload?.details
+      status: payload?.code
     }
   }
 

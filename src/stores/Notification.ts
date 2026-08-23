@@ -1,53 +1,65 @@
-import { ref, type Ref } from 'vue'
+import { computed, type ComputedRef, ref, type Ref } from 'vue'
 import { defineStore } from 'pinia'
+import type { INotification } from '@/models/response/notification/NotificationRes.model'
 import NotificationProvider, { type INotificationProvider } from '@/resources/provider/notification/Notification.provider'
 import { useAuthStore } from './Auth'
 
 interface IUseNotification {
-  isNewAnnouncement: Ref<boolean>
-  isNewWork: Ref<boolean>
-  readAnnouncement(): Promise<void>
-  readWork(): Promise<void>
+  notifications: Ref<INotification[]>
+  unreadCount: ComputedRef<number>
+  fetch(): Promise<void>
+  dismiss(id: number): Promise<void>
   initialize(): Promise<void>
   destroy(): void
 }
 
+/**
+ * Notification state (API-008). The previous shape — `isNewAnnouncement` / `isNewWork`, fed by a
+ * `/notifications/check` endpoint that does not exist — was lending-era: this product has one
+ * notification feed, scoped server-side to the signed-in account's role.
+ *
+ * Polling is deliberately NOT here: `PLT-007` owns the interval and its lifecycle.
+ */
 export const useNotificationStore = defineStore(
   'Notification', (): IUseNotification => {
     const NotificationService: INotificationProvider = new NotificationProvider()
 
-    const authStore = useAuthStore()
+    const notifications = ref<INotification[]>([])
 
-    const isNewAnnouncement = ref<boolean>(false)
-    const isNewWork = ref<boolean>(false)
+    const unreadCount: ComputedRef<number> = computed(
+      (): number => notifications.value.filter((notification: INotification): boolean => !notification.read).length
+    )
 
-    async function readAnnouncement (): Promise<void> {
-      const response = await NotificationService.checkNotification({ type: 'ANNOUNCEMENT' })
-      isNewAnnouncement.value = response.hasUnread
+    async function fetch (): Promise<void> {
+      const response = await NotificationService.list({ limit: 50 })
+      notifications.value = response.data ?? []
     }
 
-    async function readWork (): Promise<void> {
-      const response = await NotificationService.checkNotification({ type: 'WORK' })
-      isNewWork.value = response.hasUnread
+    // The endpoint answers { message: 'success' } with no body, so the local copy is marked read
+    // here rather than replaced with a server row.
+    async function dismiss (id: number): Promise<void> {
+      await NotificationService.dismiss(id)
+      const index = notifications.value.findIndex((notification: INotification): boolean => notification.id === id)
+      if (index === -1) return
+      notifications.value.splice(index, 1, { ...notifications.value[index], read: true })
     }
 
+    // Swallows its own failure on purpose: DefaultLayout awaits this on mount, and a 401 or a
+    // down API must not take the whole layout with it. A caller that needs the error calls fetch().
     async function initialize (): Promise<void> {
+      const authStore = useAuthStore()
       if (!authStore.isAuthenticated) return
-      await Promise.allSettled([readAnnouncement(), readWork()])
+      try {
+        await fetch()
+      } catch (error) {
+        console.error('[Notification] initial fetch failed', error)
+      }
     }
 
     function destroy (): void {
-      isNewAnnouncement.value = false
-      isNewWork.value = false
+      notifications.value = []
     }
 
-    return {
-      isNewAnnouncement,
-      isNewWork,
-      readAnnouncement,
-      readWork,
-      initialize,
-      destroy
-    }
+    return { notifications, unreadCount, fetch, dismiss, initialize, destroy }
   }, { persist: false }
 )

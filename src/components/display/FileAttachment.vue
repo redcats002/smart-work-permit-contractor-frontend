@@ -78,7 +78,7 @@ async function resolveUrls (files: IMedia[]): Promise<void> {
     }
     try {
       const res = await UploadService.getFileUrl(key)
-      result[key] = res?.url
+      result[key] = res?.data?.url
     } catch (error: unknown) {
       console.error('Failed to resolve file URL:', error)
       result[key] = key

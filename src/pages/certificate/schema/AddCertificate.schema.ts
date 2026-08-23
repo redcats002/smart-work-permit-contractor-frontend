@@ -22,7 +22,10 @@ const BaseCertificateSchema = z.object({
     .optional()
     .refine((file: File | undefined): boolean => {
       if (!file) return true
-      return ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'].includes(file.type)
+      // Mirrors the backend's server-side allowlist (docs/api/GAPS.md row V3) so the user is told
+      // locally instead of collecting a 400 FILE_TYPE_NOT_ALLOWED. `image/gif` used to be listed
+      // here and is NOT accepted by the API; webp/heic are.
+      return ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'application/pdf'].includes(file.type)
     }, i18n.global.t('certificate.form.validation.fileType'))
 })
 

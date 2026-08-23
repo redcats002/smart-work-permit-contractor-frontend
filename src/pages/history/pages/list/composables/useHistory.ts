@@ -102,16 +102,31 @@ export function useHistory (): IUseHistory {
       limit: pagination.value.limit,
       search: search.value.trim() || undefined,
       type: typeFilter.value === 'all' ? undefined : typeFilter.value,
-      status: statusFilter.value === 'all' ? ARCHIVE_STATUSES : [statusFilter.value],
+      // One status per request — see the note in useMyPermits. "All" fetches unfiltered and the
+      // archive set is applied client-side below.
+      status: statusFilter.value === 'all' ? undefined : statusFilter.value,
       dateFrom: dateFrom.value ? dayjs(dateFrom.value).format('YYYY-MM-DD') : undefined,
       dateTo: dateTo.value ? dayjs(dateTo.value).format('YYYY-MM-DD') : undefined,
       ...overrides
     }
   }
 
+  /**
+   * The archive narrowing the table applies, in one place.
+   *
+   * `GET /permits` takes a single `status` (GAPS.md row B), so "All" fetches unfiltered and the
+   * two archive statuses are selected client-side. Every consumer of a history query MUST run its
+   * rows through this — the CSV export used to skip it, which shipped the user rows the table had
+   * deliberately hidden (PRE-RUN-FINDINGS.md finding 5 / CT-HISTORY-009 step 5).
+   */
+  function narrowToArchive (rows: IPermitListItem[]): IPermitListItem[] {
+    if (statusFilter.value !== 'all') return rows
+    return rows.filter((permit: IPermitListItem): boolean => ARCHIVE_STATUSES.includes(permit.status))
+  }
+
   async function useFetchHistory (): Promise<void> {
     const response = await PermitService.list(buildQuery())
-    items.value = response.data
+    items.value = narrowToArchive(response.data)
     pagination.value.count = response.count
     pagination.value.totalPage = response.totalPage
   }
@@ -174,7 +189,11 @@ export function useHistory (): IUseHistory {
     selectedDetail.value = null
   }
 
-  /** Exports every row matching the active search + filters, not just the current page. */
+  /**
+   * Exports every row matching the active search + filters, not just the current page — and
+   * narrowed to the same archive set the table shows, so the file can never contain a row the
+   * user could not see.
+   */
   async function exportCsv (): Promise<void> {
     exporting.value = true
     try {
@@ -187,7 +206,7 @@ export function useHistory (): IUseHistory {
         t('history.table.columns.duration'),
         t('history.table.columns.status')
       ]
-      const rows = response.data.map((permit: IPermitListItem): string[] => [
+      const rows = narrowToArchive(response.data).map((permit: IPermitListItem): string[] => [
         permit.id,
         t(`history.type.${permit.type}`),
         `${permit.title} · ${permit.location}`,

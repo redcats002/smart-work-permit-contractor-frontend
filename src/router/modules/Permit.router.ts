@@ -35,6 +35,28 @@ export default {
       }
     },
     {
+      // PMT-014 resume route — a different entry point from 'create': it hydrates useWizard from
+      // an existing permit instead of starting clean. Declared before ':id' for the same reason
+      // 'create' is: a static-ish segment ahead of the bare dynamic leaf, even though the two
+      // don't actually collide (this path always has a trailing segment).
+      path: ':id/edit',
+      name: 'PermitEditPage',
+      component: (): ComponentOptions => import('@/pages/permit/pages/create/pages/PermitEditPage.vue'),
+      meta: {
+        title: 'แก้ไขใบอนุญาต'
+      }
+    },
+    {
+      // PMT-014 "Duplicate & Edit" — orchestrates POST /permits + PATCH client-side (no clone
+      // endpoint on the wire), then hands off to PermitEditPage for the NEW draft id.
+      path: ':id/duplicate',
+      name: 'PermitDuplicatePage',
+      component: (): ComponentOptions => import('@/pages/permit/pages/create/pages/PermitDuplicatePage.vue'),
+      meta: {
+        title: 'ทำสำเนาและแก้ไข'
+      }
+    },
+    {
       path: ':id',
       name: 'PermitDetailPage',
       component: (): ComponentOptions => import('@/pages/permit/pages/detail/pages/PermitDetailPage.vue'),

@@ -39,14 +39,16 @@ const certificate: typeof certificateEn = {
       issuedDate: 'วันที่ออก',
       expiryDate: 'วันหมดอายุ',
       file: 'ไฟล์แนบ',
-      filePlaceholder: 'แนบไฟล์ (ไม่บังคับ)'
+      filePlaceholder: 'แนบไฟล์ (ไม่บังคับ)',
+      fileNotStoredHint: 'ระบบยังไม่จัดเก็บไฟล์แนบ ข้อมูลใบรับรองจะถูกบันทึกโดยไม่มีไฟล์'
     },
     submit: 'บันทึกใบรับรอง',
+    attachmentNotStored: 'บันทึกใบรับรองแล้ว แต่ไฟล์แนบยังไม่ถูกจัดเก็บ เนื่องจากระบบยังไม่รองรับไฟล์แนบ',
     validation: {
       workerNameRequired: 'กรุณากรอกชื่อพนักงาน',
       roleRequired: 'กรุณากรอกตำแหน่ง',
       certTypeRequired: 'กรุณากรอกชนิดบัตร',
-      fileType: 'ไฟล์ต้องเป็นรูปภาพหรือ PDF',
+      fileType: 'ไฟล์ต้องเป็นภาพ JPEG, PNG, WEBP, HEIC หรือไฟล์ PDF',
       expiryAfterIssued: 'วันหมดอายุต้องอยู่หลังวันที่ออก'
     }
   }

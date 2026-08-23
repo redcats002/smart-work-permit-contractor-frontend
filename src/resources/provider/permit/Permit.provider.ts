@@ -11,28 +11,28 @@ import type {
   TCreatePermitDraftResponse,
   TGetPermitAuditResponse,
   TGetPermitDetailResponse,
-  TGetPermitQrResponse,
   TGetPermitListResponse,
+  TGetPermitQrResponse,
   TMarkPermitCompleteResponse,
   TSubmitPermitResponse,
   TUpdatePermitDraftResponse
 } from '@/models/response/permit/PermitRes.model'
 import HttpRequest from '@/resources/HttpRequest'
-import { buildMockDraft, findMockPermitDetail, queryMockPermits } from './Permit.mock'
 
 /**
- * ⚠ STUB MODE — the backend `/permits` endpoints (docs/modules/permit/context.md) are
- * not deployed/reachable yet. While `USE_STUB_DATA` is true, every method below resolves
- * from the in-memory fixtures in `./Permit.mock.ts` instead of hitting the network, so the
- * My Permits list (PMT-003) is reviewable offline with realistic data.
+ * Live against the real backend (API-006). The stub fixtures this provider used to resolve from
+ * are gone — they described a shape the server never sends.
  *
- * To go live once the backend is up: set `USE_STUB_DATA = false` (one line). The real HTTP
- * calls are already wired below on every method — nothing else needs to change, and the
- * base URL already comes from `VITE_APP_API_URL` via HttpRequest. `Permit.mock.ts` can be
- * deleted at that point; nothing else imports from it.
+ * Deliberately absent: approve and reject. Both are `safety_officer`-only and answer 403
+ * `FORBIDDEN_ROLE` for a contractor account, so exposing them here would only invite a caller to
+ * build a button that cannot work.
+ *
+ * `close` IS exposed, and that is a deliberate exception, not an oversight. The backend guards
+ * `POST /permits/:id/close` with `auth: ['safety_officer']` too, so a contractor request answers
+ * 403 `FORBIDDEN_ROLE` today — but the contractor closure flow (`PMT-011`, design lines 574-611)
+ * must not pre-empt the server: it attempts the call and renders whatever verdict comes back,
+ * localized off `errorCode`. See `docs/api/GAPS.md` row **H** for the backend change that closes it.
  */
-const USE_STUB_DATA = true
-
 export interface IPermitProvider {
   create (payload: ICreatePermitDraftPayload): Promise<TCreatePermitDraftResponse>
   update (id: string, payload: IUpdatePermitDraftPayload): Promise<TUpdatePermitDraftResponse>
@@ -40,93 +40,65 @@ export interface IPermitProvider {
   list (query: IGetPermitListQuery): Promise<TGetPermitListResponse>
   detail (id: string): Promise<TGetPermitDetailResponse>
   markComplete (id: string, payload?: IMarkPermitCompletePayload): Promise<TMarkPermitCompleteResponse>
-  close (id: string, payload: IClosePermitPayload): Promise<TClosePermitResponse>
   qr (id: string): Promise<TGetPermitQrResponse>
   audit (id: string): Promise<TGetPermitAuditResponse>
+  close (id: string, payload: IClosePermitPayload): Promise<TClosePermitResponse>
 }
 
 class PermitProvider extends HttpRequest implements IPermitProvider {
   private urlPrefix: string = '/api/v1/permits'
 
   public async create (payload: ICreatePermitDraftPayload): Promise<TCreatePermitDraftResponse> {
-    if (USE_STUB_DATA) {
-      return { message: 'stub: draft created', data: buildMockDraft(payload) }
-    }
     const response = await this.post(this.urlPrefix, payload)
     return response
   }
 
+  /** DRAFT only — 403 PERMIT_NOT_EDITABLE afterwards. See the payload type for collection semantics. */
   public async update (id: string, payload: IUpdatePermitDraftPayload): Promise<TUpdatePermitDraftResponse> {
-    if (USE_STUB_DATA) {
-      return { message: 'stub: draft updated', data: buildMockDraft({ id, ...payload }) }
-    }
     const response = await this.patch(`${this.urlPrefix}/${id}`, payload)
     return response
   }
 
+  /** Answers 400 with the first failing validation code (LEL_MISSING, GAS_OUT_OF_RANGE, CERT_EXPIRED, …). */
   public async submit (id: string, payload?: ISubmitPermitPayload): Promise<TSubmitPermitResponse> {
-    if (USE_STUB_DATA) {
-      return { message: 'stub: permit submitted', data: buildMockDraft({ id, status: 'PENDING' }) }
-    }
     const response = await this.post(`${this.urlPrefix}/${id}/submit`, payload)
     return response
   }
 
+  /** Paginated. A contractor account is scoped to its own permits server-side. */
   public async list (query: IGetPermitListQuery): Promise<TGetPermitListResponse> {
-    if (USE_STUB_DATA) {
-      const { items, count } = queryMockPermits(query)
-      const limit = query.limit ?? 10
-      return {
-        message: 'stub: permit list',
-        data: items,
-        page: query.page ?? 1,
-        limit,
-        count,
-        totalPage: Math.max(1, Math.ceil(count / Number(limit)))
-      }
-    }
     const response = await this.get(this.urlPrefix, query)
     return response
   }
 
   public async detail (id: string): Promise<TGetPermitDetailResponse> {
-    if (USE_STUB_DATA) {
-      const data = findMockPermitDetail(id) ?? buildMockDraft({ id })
-      return { message: 'stub: permit detail', data }
-    }
     const response = await this.get(`${this.urlPrefix}/${id}`)
     return response
   }
 
+  /** Hot Work only — 403 NOT_HOT_WORK / PERMIT_NOT_ACTIVE otherwise. Starts the 30-min Fire Watch. */
   public async markComplete (id: string, payload?: IMarkPermitCompletePayload): Promise<TMarkPermitCompleteResponse> {
-    if (USE_STUB_DATA) {
-      return { message: 'stub: marked complete', data: buildMockDraft({ id, status: 'FIRE_MONITOR' }) }
-    }
     const response = await this.post(`${this.urlPrefix}/${id}/mark-complete`, payload)
     return response
   }
 
-  public async close (id: string, payload: IClosePermitPayload): Promise<TClosePermitResponse> {
-    if (USE_STUB_DATA) {
-      return { message: 'stub: permit closed', data: buildMockDraft({ id, status: 'CLOSED' }) }
-    }
-    const response = await this.post(`${this.urlPrefix}/${id}/close`, payload)
-    return response
-  }
-
   public async qr (id: string): Promise<TGetPermitQrResponse> {
-    if (USE_STUB_DATA) {
-      return { message: 'stub: qr payload', data: { token: `stub-token-${id}`, permitId: id, status: 'ACTIVE' } }
-    }
     const response = await this.get(`${this.urlPrefix}/${id}/qr`)
     return response
   }
 
   public async audit (id: string): Promise<TGetPermitAuditResponse> {
-    if (USE_STUB_DATA) {
-      return { message: 'stub: audit trail', data: [] }
-    }
     const response = await this.get(`${this.urlPrefix}/${id}/audit`)
+    return response
+  }
+
+  /**
+   * Closure checklist + e-signature. Answers 403 `ENTRANTS_STILL_INSIDE` while a Confined Space
+   * entrant is checked in, 403 `FIRE_WATCH_NOT_ELAPSED` while Hot Work's countdown runs, and — for
+   * a contractor account today — 403 `FORBIDDEN_ROLE` (GAPS.md row H). Never swallow the failure.
+   */
+  public async close (id: string, payload: IClosePermitPayload): Promise<TClosePermitResponse> {
+    const response = await this.post(`${this.urlPrefix}/${id}/close`, payload)
     return response
   }
 }

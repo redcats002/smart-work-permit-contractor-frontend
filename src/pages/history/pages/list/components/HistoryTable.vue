@@ -66,6 +66,7 @@ import { useI18n } from 'vue-i18n'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import type { IPermitListItem } from '@/models/response/permit/PermitRes.model'
 import { useDayjs } from '@/utils/Dayjs'
+import { permitAuthorName } from '@/models/modules/permit/Permit.model'
 import {
   formatDuration, STATUS_CHIP_CLASS, TYPE_BORDER_CLASS, TYPE_CHIP_CLASS, type THistoryStatus
 } from '../composables/useHistory'
@@ -103,7 +104,7 @@ function formatClosedDate (permit: IPermitListItem): string {
 function closedByName (permit: IPermitListItem): string {
   const closedBy = permit.closedBy
   if (!closedBy) return ''
-  return closedBy.fullName ?? `${closedBy.firstName} ${closedBy.lastName}`.trim()
+  return permitAuthorName(closedBy)
 }
 </script>
 

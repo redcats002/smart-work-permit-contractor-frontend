@@ -40,12 +40,21 @@ function bangkokInstantDay (value: string | Date): dayjs.Dayjs {
  * required parameter (never read from the system clock internally) so this
  * stays pure and deterministic for tests.
  */
-export function certificateStatus (expiryDate: string | Date, now: string | Date): ECertificateStatus {
+export function certificateStatus (
+  expiryDate: string | Date,
+  now: string | Date,
+  expired?: boolean
+): ECertificateStatus {
+  // The backend computes `expired` on every certificate row and enforces it server-side with no
+  // override, so when it is supplied it wins outright (API-007). This function then answers only
+  // the question the API does not: "expiring soon?".
+  if (expired === true) return ECertificateStatus.EXPIRED
+
   const today = bangkokInstantDay(now)
   const expiry = bangkokCalendarDay(expiryDate)
   const daysUntilExpiry = expiry.diff(today, 'day')
 
-  if (daysUntilExpiry < 0) return ECertificateStatus.EXPIRED
+  if (expired === undefined && daysUntilExpiry < 0) return ECertificateStatus.EXPIRED
   if (daysUntilExpiry <= CERTIFICATE_EXPIRING_SOON_DAYS) return ECertificateStatus.EXPIRING_SOON
   return ECertificateStatus.VALID
 }

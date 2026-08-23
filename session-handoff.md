@@ -3,134 +3,135 @@
 > Fill this in before ending every session. The next agent reads this file, `progress.md`,
 > and the active module's `feature_list.json` — nothing else is guaranteed to be in context.
 
-**Date:** 2026-08-15
-**Session did:** Rebuilt the harness, then ran three parallel implementation waves (11 agents).
-Baseline went from red (72 typecheck errors, ~3140 lint errors) to **green**: typecheck + lint +
-**303 tests**. **19 of 30 items done.** `feat-003` (history) and `feat-004` (certificates) complete.
+**Date:** 2026-08-23
+**Session did:** `PMT-014` — draft resume, edit and Duplicate & Edit. Ran concurrently with a
+second agent (`CRT-004`, certificate pre-flight) that also touched `useWizard.ts`/`WizardSteps.ts`
+in this repo; both landed cleanly, re-verified after the other finished.
 
-**The app is reachable by a human end to end** — orchestrator-verified live, not assumed:
-unauthenticated `/permits` → `/auth/login` → real form submit → lands on `/permits`, token cookie
-set, revisiting login bounces back, all four screens render, zero page errors.
+**Every `PMT-*` item in `docs/modules/permit/feature_list.json` is now `done`.** The `permit`
+module is complete: list, the full 6-step wizard, resume/edit, duplicate, detail, closure, Fire
+Watch, certificate pre-flight.
 
-**Log in with:** `contractor@smartworkpermit.dev` / `password123` (stub credential).
-
----
-
-## Manual steps the agent cannot perform
-
-**1. `.env.example` — delete the dead line.** `useSocket.ts` was removed in `PLT-001` and
-nothing references `VITE_APP_WEBSOCKET` any more. A global `Read(**/.env*)` permission rule
-blocks Read/Write/Bash on that path for both subagents and the orchestrator; bypassing it was
-declined as a deliberate security boundary.
-
-```diff
- VITE_APP_API_URL=
--VITE_APP_WEBSOCKET=
-```
-
-**2. There is no `.env`, only `.env.example`.** `src/utils/EnvChecker.ts` throws on boot without
-`VITE_APP_API_URL`, so `bun run dev` renders a blank page until you create one. Workaround used
-for verification this session:
-
-```bash
-VITE_APP_API_URL=http://localhost:9/api bun run dev
-```
+**Status:** `./init.sh` passes clean — typecheck PASS, lint PASS, vitest **48 files / 451 tests**
+PASS, live API smoke 15/15 PASS. `node ../scripts/check-contract-sync.mjs`: OK (openapi in sync,
+25 backend error codes all declared, `/api/v1` prefix present).
+**Nothing is committed.** Review the working tree first.
 
 ---
 
-## Current state
+## What this session built
 
-`./init.sh` → typecheck PASS, lint PASS, **303 tests PASS**.
+| Piece | File(s) |
+|---|---|
+| Resume ("Edit Permit") | `src/pages/permit/pages/create/pages/PermitEditPage.vue` (new), `composables/useResumePermit.ts` (new), `useWizard.hydrate()` (new) |
+| Duplicate ("Duplicate & Edit") | `src/pages/permit/pages/create/pages/PermitDuplicatePage.vue` (new), `composables/useDuplicatePermit.ts` (new) |
+| Routes | `src/router/modules/Permit.router.ts` — `PermitEditPage` at `:id/edit`, `PermitDuplicatePage` at `:id/duplicate` |
+| CTA wiring | `src/pages/permit/pages/detail/components/PermitStatusBanner.vue` — DRAFT/REJECTED buttons enabled, real navigation |
+| Locale | `permit.create.editTitle/duplicateTitle/resuming/duplicating/notEditable.*` in both `en`/`th` — targeted key insertions only |
 
-**Everything is stubbed.** `USE_STUB_DATA = true` in four providers — `Permit`, `Certificate`,
-`Auth.public`, `Auth.private` — with real HTTP already wired underneath. **Going live:** flip those
-four booleans, delete `Permit.mock.ts` + `Certificate.mock.ts`, point `VITE_APP_API_URL` at the backend.
+Full decision log, including the two real bugs found and fixed **live against the real backend**
+(worker `bloodPressure`/`alcoholReading` `null` vs. `string` on the wire; `PermitEditPage.vue`
+missing the `certificateState`/`certificateProblems` props `CRT-004` added mid-session), is in
+`progress.md` under **2026-08-23 — `PMT-014`**. Read it before touching `useWizard.hydrate`,
+`useDuplicatePermit`, or either new page — several choices there are load-bearing for reasons not
+obvious from the diff alone (e.g. why the resume route confirms editability with a real empty-body
+`PATCH` instead of checking `permit.status === 'DRAFT'` client-side).
 
-> ⚠ The auth stub **bypasses `Interceptors.ts` entirely**, so the `401 → logout` path has been read
-> and confirmed correct but **never exercised live**. Test it the moment a real backend exists.
+## Read this before trusting anything about the wizard beyond what's below
 
-### Done (19)
+**A full interactive browser walk WAS done this session** (headless Chromium via Playwright,
+against the live dev server on `:8081` and the real backend on `:3000`), covering exactly the
+acceptance list's manual-verification steps: create → leave → resume → correct landing step →
+edit-only-PATCHes → duplicate → new draft with the excluded fields actually excluded → the reading
+copied exactly once. Every claim above item 1–5 in `progress.md`'s Verification section was
+observed directly (request/response bodies inspected, not inferred), not just unit-tested.
 
-`PLT-001` baseline repair · `PLT-002` design tokens · `PLT-003` app shell · `PLT-004` i18n ·
-`PLT-005` auth · `PLT-006` API error codes · `PLT-008` orphan sweep · `PLT-009` Schema i18n ·
-`PLT-010` retokenize · `PMT-001` domain · `PMT-002` provider+router · `PMT-003` My Permits ·
-`PMT-004` wizard shell · `HST-001`/`002`/`003` history · `CRT-001`/`002`/`003` certificates.
+**Not done:** a literal "close the tab, come back" re-entry of an in-progress resumed draft — the
+"no additional drafts on re-entry" acceptance bullet is true by construction (see `progress.md`'s
+Deviations) but wasn't re-walked as a second live pass. If that's ever in doubt, it's a five-minute
+check, not a redesign.
 
-### Open (11), in dependency order
+**Login rate limiting on the shared dev backend is real and stateful across sessions.** The auth
+route allows only 10 attempts per 15 minutes per identifier (`../smart-work-permit-api/src/
+modules/auth/lib/auth-rate-limit.util.ts`). Repeated Playwright debugging runs against
+`smoke.contractor@example.com` tripped it mid-session; switching to the separately-seeded
+`contractor@e2e.test` / `password123` (from `../smart-work-permit-api/prisma/seeds/
+e2e-fixtures.seed.ts` — also the only account with a ready-made **REJECTED** permit,
+`WP-HOT-E2E-005`, useful for testing Duplicate & Edit without seeding one yourself) unblocked it.
+Don't hammer either account's login in a tight loop.
 
-- **`PMT-005`–`PMT-009` — the 6 wizard step bodies. The biggest remaining chunk.**
-- `PMT-010`–`PMT-012` permit detail, closure modal, Fire Watch countdown
-- `CRT-004` certificate gate on submission (needs `PMT-007`)
-- `PLT-007` notification polling
-- `PLT-011` design system has no blue/info family (blocks a clean `PMT-006`)
+> The contractor app is on **:8081**, not :8080 — confirmed by content (this repo's `index.html`
+> has no Google-Fonts preconnect; whatever's on :8080 does). **Never `pkill -f vite`** — kill your
+> own PID only.
 
----
+## Open items owed to someone else
 
-## Traps discovered this session — do not rediscover these
+Unchanged from the prior handoff below — `docs/api/GAPS.md` rows G–K are still open, all
+backend-side or product-owner decisions, none touched by this session.
 
-**vue-router is 5.x, not 4.x.** An unregistered route name fails hard, but the two call sites fail
-*differently* — both observed empirically:
+## Next work
 
-- `<RouterLink :to="{ name }">` resolves at render/setup → **throws and blanks the entire page**.
-- `router.push({ name })` rejects at runtime → **uncaught page error, page keeps rendering**, control is dead.
-
-`AppDrawer.vue` guards nav with `isRegistered()` via `router.hasRoute()`. That guard is **not
-reactive** (read once at render), so registering a route needs a **full reload**, not Vite HMR.
-**All four nav routes now exist, so the guard has nothing left to guard — it can be deleted.**
-Also: declare `/create` before `/:id` or `create` is captured as an id. Written up in `AGENTS.md`.
-
-**Thai timezone is load-bearing, not cosmetic.** `src/utils/CertificateStatus.ts` deliberately
-splits `bangkokCalendarDay` (bare business dates like `expiryDate`) from `bangkokInstantDay`
-(real instants like `now`). A naive single-branch version was **proven** to break under a non-UTC
-host timezone. Do not collapse the two helpers.
-
-**Locales are split per namespace** — `src/locales/{en,th}/<module>.ts`. This exists so parallel
-agents do not collide in one message file. `th/<ns>.ts` is typed as `typeof <ns>En`, so a key
-added in English and missing in Thai is a **type error**, not a silent runtime fallback.
-
-**`src/router/index.ts` is a contention point.** When running agents in parallel, keep it out of
-every agent's hands and register route modules yourself afterwards. Same for shared utils. All four
-route modules are now registered — see the "Running several agents in parallel" section in `AGENTS.md`
-for the full set of rules this session paid for.
-
-**Do not fan the wizard steps out in parallel.** `PMT-005`–`009` all write
-`src/pages/permit/pages/create/**` *and* `src/locales/{en,th}/permit.ts`. The per-namespace locale
-split solves cross-module collisions, not intra-module ones. Run them serially, or split the step
-schemas and locale sub-files first.
-
-**Pinia plugins in tests:** `pinia.use(plugin)` only *queues* a plugin until `app.use(pinia)` installs
-it. A bare `setActivePinia(pinia)` with no Vue app silently no-ops every plugin, `persistedstate`
-included — your persistence assertions will pass against nothing. See `src/tests/stores/Auth.test.ts`.
-
-**A commented-out route still matches a grep.** `ForgotPasswordPage` looked registered and is not.
-Read the router file.
+`PLT-007` (notification polling) is the only remaining unbuilt item in this repo. Cross-repo, item
+1.2 is open: the Safety/Inspector detail page must align with the contractor detail page's six
+sections. Probe data left in the dev DB by this session: drafts `WP-HT-20260823-001` through
+`-009`, and one or more duplicate drafts created off `WP-HOT-E2E-005` — none are fixtures anything
+depends on, delete whenever convenient.
 
 ---
 
-## Product decisions still defaulted, not confirmed
+# Addendum — 2026-08-22, PMT-006–009 (create wizard steps 3-6)
 
-1. **`vue-i18n` was installed** without explicit approval — the task doc sanctions it and all four modules assume `t()`. Reversible.
-2. **Fonts:** kept self-hosted `LINE_Seed_Sans_TH`; `--font-mono` is a websafe stack. The design specifies IBM Plex Mono but its woff2 files are not in the repo, and **no CDN import is allowed** (industrial facility). Self-host to close the gap.
-3. **`CERTIFICATE_EXPIRING_SOON_DAYS = 30`** — no spec states this window.
-4. **`PMT-012` Fire Watch GPS-photo flow** — the design shows capture → verify GPS against the permit pin → pass/fail, but neither `00-SHARED-CONTEXT.md` nor the backend doc models it and **no endpoint exists**. Default recorded: build the countdown, skip the photo step. Confirm before building it.
-5. **JSA minimum rows** — the backend doc states no minimum; `PMT-008` assumes ≥1.
-6. **`IUser.company` was added as *optional*.** The backend `users` spec is `id, name, role, contact info` — no company field is promised. The design's account card shows one. Confirm with the backend team.
-7. **Auth stub credential** `contractor@smartworkpermit.dev` / `password123` is dev-only and must not survive contact with a real backend.
-8. **No blue/info color token exists** (`PLT-011`). The design does use a blue — `#2F80ED`, and the outdoor-work panel `#E8F5FF`/`#B3D8F5`/`#1060A8`. Decide before `PMT-006` needs it.
+**Session did:** `PMT-006`, `PMT-007`, `PMT-008`, `PMT-009` — the create wizard's last four steps
+(Safety Checks, PPE & Workers, JSA, Review & Submit). Ran concurrently with a second agent that
+finished `PMT-010`–`PMT-012` (the detail page) in the same repo.
+
+**Status at the time:** `./init.sh` passed clean — typecheck PASS, lint PASS, vitest 41 files /
+424 tests PASS, live API smoke 16/16 PASS.
+
+## What this session built
+
+| Item | Landed |
+|---|---|
+| `PMT-006` | `Step3SafetyChecks.{vue,schema.ts}`, `constants/{SafetyChecklist,SafetyReadingView,PhotoEvidence}.ts`, `components/PhotoSlot.vue`, the `safetyReading` append guard + `checklistAnswers` state in `useWizard` |
+| `PMT-007` | `Step4PpeWorkers.{vue,schema.ts}`, `constants/WorkerHealth.ts`, `EVIDENCE_SLOTS` |
+| `PMT-008` | `Step5Jsa.{vue,schema.ts}` |
+| `PMT-009` | `Step6Review.{vue,schema.ts}`, `composables/useCertificatePreflight.ts`, `constants/SubmitErrorRouting.ts`, `useWizard.submitDraft()`, the real Submit wiring in `PermitCreatePage.vue` |
+
+The full decision log — the append guard, why `PhotoSlot` avoids `useUpload()`, the checklist
+defaults, the health-check asymmetry, why Submit assigns `currentStepIndex` instead of calling
+`goToStep()` — is in `progress.md` under **2026-08-22**.
+
+## Open items owed to someone else (as of that session)
+
+- **`docs/api/GAPS.md` rows J and K** (both `api-adds`, filed this session):
+  **J** — the permit has no field for step 3's Yes/No/N-A checklist, so the answers are held in
+  `useWizard` state, never persisted, and the step says so on screen.
+  **K** — `safetyReading` has no `so2` on the wire; `toWireReading()` strips it rather than letting
+  Elysia discard it silently. Neither can change a pass/fail verdict (SO2 is `blocking: false`).
+  Rows **G**, **H**, **I** are still open from earlier sessions.
+- **Product-owner question (`PMT-008`):** "at least one JSA row before Next" is **not** in the
+  backend contract — PATCH accepts an empty `jsaSteps` and submit does not check the JSA at all.
+  This was later dropped entirely per a product-owner ruling — see `docs/main/PROMPT-LOG.md`.
 
 ---
 
-## Recommended next step
+# Addendum — 2026-08-22, PMT-013 (permit detail: the six sections)
 
-**`PMT-005` (wizard steps 1-2)**, then `006`, `007`, `008`, `009` — **serially, not in parallel**
-(see the traps section). The shell is done and the structure is stable: `WIZARD_STEPS` in
-`src/pages/permit/pages/create/wizard/WizardSteps.ts` is a registry of
-`{ key, labelKey, component, schema }`, and each step has a stub component plus a placeholder
-schema. Filling a step means editing only that step's `.vue` and `.schema.ts`.
+Written by the detail-page agent, running concurrently with the create-wizard agent that wrote the
+first addendum above.
 
-Everything a step needs already exists: `SAFETY_RANGES` + `validateReadings()` in
-`src/utils/PermitSafety.ts` (returns the *list of failing readings*, so the UI can name which one),
-`useApiError()`, the permit provider, and the design tokens.
+**Session did:** `PMT-013` — implemented `docs/main/dev-handoff/05-permit-detail-sections.md` §2
+on `PermitDetailPage`. All six contract sections now render, stacked, in order, each with an
+explicit empty state.
 
-Read `docs/modules/permit/context.md` first — it carries the full per-step screen anatomy with
-design line numbers, so the 2400-line prototype never needs reading whole.
+**Status at the time:** `./init.sh` **exit 0 — ALL GREEN**: typecheck PASS, lint PASS, vitest 42
+files / 433 tests PASS, live smoke 16/16 PASS.
+
+## Things the next agent should know
+
+- **The detail sections read three `create/**` constants** (`SafetyReadingView`, `PhotoEvidence`,
+  `WorkerHealth`) and three `permit.create.*` locale namespaces. Renaming those constants or locale
+  keys will break the detail page — grep before you move them.
+- **`so2` must stay unrendered** (`GAPS.md` row K): it is not on the wire. A test pins this.
+- **Contractor closure now really works** — the backend admits `contractor` on
+  `POST /permits/:id/close` scoped to their own permit.

@@ -28,6 +28,7 @@ import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
+import { useApiError } from '@/composables/useApiError'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { IAuthPublicProvider } from '@/resources/provider/auth/public/Auth.public.provider'
 import AuthPublicProvider from '@/resources/provider/auth/public/Auth.public.provider'
@@ -43,21 +44,19 @@ const AuthPublicService: IAuthPublicProvider = new AuthPublicProvider()
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
+const { mapError } = useApiError()
 
 const tokenValid = ref<boolean>(false)
 const form = ref<ResetPasswordFormValues>(useResetPasswordInitialValues())
 
+// The backend has no token-probe endpoint (API-003): a reset token is only ever validated by
+// POST /auth/user/public/user-reset-password itself, which answers 400 for an expired or forged
+// one. So the form renders whenever a token is present and the failure surfaces on submit.
 async function useCheckToken (): Promise<void> {
   const token = route.query.token as string
 
-  const response = await AuthPublicService.checkTokenResetPassword({ token })
-  if (!response.data.valid) {
-    toast.error(t('platform.auth.resetPassword.tokenInvalidToast'))
-    tokenValid.value = false
-    return
-  }
-
-  tokenValid.value = true
+  tokenValid.value = Boolean(token)
+  if (!tokenValid.value) toast.error(t('platform.auth.resetPassword.tokenInvalidToast'))
 }
 
 // Contractors only ever reset their own password via this emailed-link flow — there is no
@@ -77,12 +76,16 @@ async function useResetPassword (): Promise<void> {
 }
 
 function onResetPassword (): void {
-  handleLoading(useResetPassword)
+  handleLoading(useResetPassword, {}, (error: unknown): void => {
+    toast.error(mapError(error).message)
+  })
 }
 
 onMounted(async (): Promise<void> => {
   await router.isReady()
-  handleLoading(useCheckToken)
+  handleLoading(useCheckToken, {}, (error: unknown): void => {
+    toast.error(mapError(error).message)
+  })
 })
 </script>
 

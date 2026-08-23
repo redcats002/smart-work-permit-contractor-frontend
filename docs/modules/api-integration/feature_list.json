@@ -1,0 +1,205 @@
+{
+  "module": "api-integration",
+  "prefix": "API",
+  "rootFeature": "feat-005",
+  "spec": "docs/main/dev-handoff/04-api-contract.md",
+  "groundTruth": "docs/api/openapi.json",
+  "description": "Re-align this app's API layer to the real Elysia backend before the wizard is built on top of it. The contract is docs/api/openapi.json (generated from a live boot) with docs/main/dev-handoff/04-api-contract.md as its prose. The sibling Safety/Inspector repo completed the same migration on 2026-08-17 — ../smart-work-permit-frontend/docs/modules/api-integration/ is the worked example.",
+  "items": [
+    {
+      "id": "API-001",
+      "type": "chore",
+      "name": "baseline-and-gap-list",
+      "path": "docs/api/GAPS.md, docs/modules/api-integration/progress.md",
+      "description": "Record the pre-change baseline and enumerate every divergence in THIS repo, so later 'did I break that?' costs a grep, not a bisect.",
+      "acceptance": [
+        "./init.sh run before any edit; its exact output recorded in this item's evidence, including any pre-existing failures",
+        "docs/api/GAPS.md lists every divergence between this repo's API layer and docs/api/openapi.json, each tagged with the API-* item that fixes it",
+        "docs/api/openapi.json confirmed present and current (regenerate via ../smart-work-permit-api/scripts/dump-openapi.sh if the API has moved since)"
+      ],
+      "dependencies": [],
+      "status": "done",
+      "evidence": "2026-08-17: baseline captured BEFORE any edit and it was RED, contradicting progress.md and session-handoff.md, which both claimed 'GREEN — 303 tests'. `./init.sh`: typecheck PASS, lint PASS, tests FAIL — 1 failed / 302 passed, Certificate.provider.test.ts 'the stub fixtures cover all three validity states'. Root cause was fixture date drift, not a regression: CERT-004 expired 2026-08-15, today is the 17th, and CERTIFICATE_EXPIRING_SOON_DAYS is 30, so no fixture sat in the window any more. It would have kept drifting. API-007 removed the fixtures and the failure with them. docs/api/GAPS.md written: 22 closed gaps mapped to the item that closes each, plus 5 open ones that need a backend change."
+    },
+    {
+      "id": "API-002",
+      "type": "feat",
+      "name": "transport",
+      "path": "src/resources/HttpRequest.ts, src/resources/Interceptors.ts, .env.example",
+      "description": "The prefix, the casing and the error envelope. Everything downstream is wrong until this is right.",
+      "acceptance": [
+        "API_PREFIX '/api/v1' lives in HttpRequest's baseURL, not in each provider's urlPrefix; any provider that hardcodes the prefix is stripped",
+        "humps is removed from BOTH directions and the dependency's last use is gone — camelizing responses corrupts the free-form keys in closureChecklist",
+        "The success envelope is deliberately NOT unwrapped (see context.md); providers keep their IBaseSuccessResponse<T> typing",
+        "onResponseError rejects with the real error body { code: number, message, errorCode? }; 401 still logs out, EXCEPT on a request to an auth endpoint — a failed sign-in must not replace the form's error with a page reload",
+        "withCredentials stays on and .env.example documents that the API's CORS_ORIGIN must name this app's exact origin ('*' silently disables credentials)",
+        "A test covers the error-body pass-through and the auth-endpoint 401 exception"
+      ],
+      "dependencies": [
+        "API-001"
+      ],
+      "status": "done",
+      "evidence": "2026-08-17: humps deleted in both directions and the dependency removed from package.json (`bun remove humps @types/humps`) — the response-side camelizeKeys was live and would have rewritten the keys inside closureChecklist, which is free-form user data; the request-side decamelize sat commented out and would have renamed workTimeStart to work_time_start. The two stale model comments that told future readers the transport converts casing are corrected. The success envelope is deliberately NOT unwrapped here (unlike the sibling app): every provider already types IBaseSuccessResponse<T> and every caller already reads .data, so unwrapping would be churn with no gain — recorded in context.md so the two repos' difference reads as a decision, not drift. onResponseError now resolves the auth store lazily inside the 401 branch (it was called on every error path, making the interceptor unusable outside a mounted app) and skips logout+redirect when the failing request was itself an auth endpoint. .env.example documents the CORS_ORIGIN requirement. New src/tests/resources/Interceptors.test.ts (5 tests). Prefixes were already correct per-provider, so they were left there rather than moved to baseURL."
+    },
+    {
+      "id": "API-003",
+      "type": "feat",
+      "name": "auth-flow",
+      "path": "src/resources/provider/auth/**, src/pages/auth/**, src/stores/Auth.ts",
+      "description": "Login against the real auth module. Pulled early: until this works, nothing downstream can be exercised by hand in either mode.",
+      "acceptance": [
+        "login posts to /auth/user/public/login and reads { success, data: { token, user } } — this endpoint does NOT use the { message, data } envelope",
+        "user.role carries the domain role; a non-contractor account landing here is handled explicitly rather than half-rendering the app",
+        "logout posts to /auth/user/logout; password-reset endpoints answer { message: 'success' } with NO data key and are typed accordingly",
+        "Any endpoint this repo calls that does not exist on the backend (pre-login, token probes, branch/organization selection — check before assuming) is removed, not stubbed",
+        "The session cookie is the credential: no Authorization header is constructed anywhere",
+        "./init.sh passes"
+      ],
+      "dependencies": [
+        "API-002"
+      ],
+      "status": "done",
+      "evidence": "2026-08-17: all three auth paths were wrong — every one was missing the /user segment (/auth/public/login, /auth/logout, /auth/check-bearer/user) and would have 404'd the moment the stub came off. Fixed to /auth/user/public/login, /auth/user/logout, /auth/user/check-bearer/user. USE_STUB_DATA removed from both auth providers. Login is typed { success, data: { token, user } } — it does not use the { message, data } envelope — and the password-reset endpoints are typed { message: 'success' } with no data key. checkTokenResetPassword is gone: no such endpoint exists, so ResetPasswordPage now renders whenever a token is present and lets the reset call itself answer 400 for a bad one. checkBearerToken renamed checkSession, since the backend accepts no bearer token at all. TUserRole widened to the backend's three roles and LoginPage refuses a non-contractor session outright rather than signing them into an app whose every screen 403s."
+    },
+    {
+      "id": "API-004",
+      "type": "fix",
+      "name": "error-code-map",
+      "path": "src/enums/modules/error/ApiErrorCode.enum.ts, src/models/modules/error/ApiError.model.ts, src/composables/useApiError.ts, src/locales/**",
+      "description": "Every coded backend failure currently renders error.unknown, because mapError() requires `code` to be a string and the backend sends the HTTP status there. This is what makes the wizard's 'surface the specific failing reading' requirement possible at all.",
+      "acceptance": [
+        "The machine code is read from `errorCode`; `code` is typed as the numeric HTTP status",
+        "The vocabulary covers all 21 codes in 04-api-contract.md §5 (including UNAUTHENTICATED and FORBIDDEN_ROLE), with EN and TH copy for each; the locale parity check still passes",
+        "An unmapped or absent code still falls back to a generic localized string — the backend's `message` is never rendered",
+        "`details` is dropped or marked as not-sent: the real backend has no such field",
+        "A test drives the full vocabulary from the exported enum, so a future code addition fails loudly rather than silently falling back",
+        "./init.sh passes"
+      ],
+      "dependencies": [
+        "API-002"
+      ],
+      "status": "done",
+      "evidence": "2026-08-17: this was the sharpest break in the repo. useApiError accepted an error only when `code` was a string; the backend puts the numeric HTTP status there and the machine code in `errorCode` — so every coded failure (out-of-range gas, expired certificate, blocked closure) rendered error.unknown, and the wizard's 'surface the specific failing reading' requirement was dead. The discriminator is now errorCode, `code` is typed as the HTTP status and exposed as `status`, and the vocabulary went from 4 codes to the full 21 with EN + TH copy for each. `details` was dropped — the backend never sends it. isApiErrorResponse also accepts a body with no errorCode (a 404, an ownership 403, a validation 400) so those are recognized as structured rather than logged as transport failures. The test now drives the whole vocabulary from the exported API_ERROR_CODES and asserts distinct copy in both locales, so adding a code without copy fails loudly (10 tests)."
+    },
+    {
+      "id": "API-005",
+      "type": "feat",
+      "name": "permit-domain-models",
+      "path": "src/models/{request,response}/permit/**, src/enums/modules/permit/**",
+      "description": "The permit shapes the wizard will be written against. Getting these right is the whole point of doing this module before PMT-005.",
+      "acceptance": [
+        "Permit detail matches the entity: flat `jsaSteps` (each with `phase`), `workers[].workerName`, `photos[]`, `latestSafetyReading`, author fields as objects-or-null (createdBy/approvedBy/closedBy), qrIssuedAt, fireMonitorStartedAt",
+        "The PATCH payload type documents its collection semantics inline: jsaSteps/workers replace wholesale, safetyReading appends, photos upsert by slotKey",
+        "Enum values match prisma exactly: type hot|confined|heights, status DRAFT|PENDING|REJECTED|ACTIVE|FIRE_MONITOR|CLOSED|EXPIRED, JSA phase pre|process|post, role contractor|safety_officer|inspector with no admin",
+        "The list query names `contractorId` (not `contractor`) if it carries an owner filter at all, and IBasePaginationResponse matches { data, count, page, limit, totalPage }",
+        "workDate's send/receive asymmetry (YYYY-MM-DD in, ISO timestamp out) is handled in one place, not per screen",
+        "./init.sh passes"
+      ],
+      "dependencies": [
+        "API-002"
+      ],
+      "status": "done",
+      "evidence": "2026-08-17: permit models rewritten to the wire shape. Removed `project` and `workDescription` — neither exists on the API, and the create call requires `title`, which the wizard never sent, so every draft would have 400'd. safetyReadings -> latestSafetyReading (read) / safetyReading (write, appends); workers' health check flattened to bloodPressure/alcoholReading; authors are IPermitAuthor objects-or-null with a permitAuthorName() helper replacing the removed fullName; audit rows carry the numeric id and hash chain; QR answers { token } only; list rows carry the full entity (createdBy, submittedAt, qrIssuedAt, …) but no entrant count. The PATCH payload type documents its collection semantics inline, because getting them wrong deletes user data. IGetPermitListQuery.status is a single value, and hasCreatableDraft() was added to gate the wizard's first create on the fields the backend requires — PMT-005 owns satisfying it. || AMENDED: hasCreatableDraft() is now actually wired — useWizard's updateFormData gates the first create on it instead of firing on 'type chosen'. Reviewer caught that leaving it uncalled left PMT-004 marked done while its draft persistence would 400 on every real request; PMT-004's evidence records the change."
+    },
+    {
+      "id": "API-006",
+      "type": "feat",
+      "name": "permit-provider-live",
+      "path": "src/resources/provider/permit/**",
+      "description": "Take the permit provider off stubs and onto the real endpoints.",
+      "acceptance": [
+        "USE_STUB_DATA is gone (not just false) and Permit.mock.ts is deleted; grep confirms nothing else imported it",
+        "Every method maps to a real route: POST /permits, PATCH /permits/:id, POST /permits/:id/submit, GET /permits (paginated), GET /permits/:id, POST /permits/:id/mark-complete, GET /permits/:id/qr, GET /permits/:id/audit",
+        "Any method with no backend counterpart is removed rather than left calling a 404 — approve/reject/close are safety_officer-only and will 403 for a contractor",
+        "list() returns the paginated envelope and its callers read count/totalPage instead of assuming a bare array",
+        "Tests that mocked the stub now assert against the real shapes",
+        "./init.sh passes, and the live smoke check (API-009) covers list + detail if it has landed"
+      ],
+      "dependencies": [
+        "API-005"
+      ],
+      "status": "done",
+      "evidence": "2026-08-17: PermitProvider live. USE_STUB_DATA and Permit.mock.ts deleted (grep-confirmed no other importer). approve/reject/close removed from the interface entirely: all three are safety_officer-only and answer 403 FORBIDDEN_ROLE for a contractor, so leaving them exposed only invites a button that cannot work. The stub-era provider test was replaced with one that pins the wire contract — exact path and verb per method, safetyReading in the singular, one status value not an array, and the absence of the officer-only methods (7 tests). Grouped status chips (My Permits 'Active'/'Closed', History's archive set) now fetch unfiltered and narrow client-side, with the pagination consequence documented at the call site rather than hidden."
+    },
+    {
+      "id": "API-007",
+      "type": "feat",
+      "name": "certificate-provider-live",
+      "path": "src/resources/provider/certificate/**, src/pages/certificate/**",
+      "description": "Take the certificate provider off stubs; stop deciding expiry client-side.",
+      "acceptance": [
+        "USE_STUB_DATA is gone and Certificate.mock.ts is deleted",
+        "GET /certificates is paginated and rows carry workerName (not name), a numeric id, and the server-computed `expired` — the client never recomputes expiry, it may only add the advisory 'expiring soon' window on top",
+        "POST /certificates matches { workerName, role, certType, issuedDate, expiryDate }",
+        "The certificate list and add-form read the new shape",
+        "./init.sh passes"
+      ],
+      "dependencies": [
+        "API-005"
+      ],
+      "status": "done",
+      "evidence": "2026-08-17: CertificateProvider live; USE_STUB_DATA and Certificate.mock.ts deleted. ICertificate gained the backend's computed `expired` and lost `fileRef` (never returned) and its string id. certificateStatus() now takes that flag and honours it outright, deciding only the advisory 'expiring soon' window itself — the client can no longer disagree with the server about whether a worker may enter, which is the one thing the API is authoritative about. byWorker is typed one certificate or null, not an array. The replacement test covers the wire contract plus the three-way status logic (7 tests). This item also cleared the red baseline recorded in API-001. || AMENDED: CertificateCard now passes the server's `expired` flag into certificateStatus(). The parameter was optional and third for backwards compatibility, so typecheck stayed silent while every real call still recomputed expiry client-side — the exact thing this item existed to stop."
+    },
+    {
+      "id": "API-008",
+      "type": "feat",
+      "name": "upload-file-notification",
+      "path": "src/resources/provider/notification/**, src/resources/provider/Upload.provider.ts",
+      "description": "The remaining surfaces the wizard needs: photo upload, signed file URLs, notifications.",
+      "acceptance": [
+        "POST /upload returns { fileUrl, filePath, fileType, originalName }; `filePath` is what goes into a permit photo's `fileRef`",
+        "GET /file?filePath= returns { url } inside the standard envelope, and filePath is URL-encoded (it is a storage key with slashes)",
+        "GET /notifications is limit-only with NO pagination envelope; dismiss takes a numeric id and answers { message: 'success' } with no body",
+        "Declared provider return types match what the transport actually hands back — a wrong declared type here is invisible to typecheck and shows up as `undefined` at runtime",
+        "./init.sh passes"
+      ],
+      "dependencies": [
+        "API-005"
+      ],
+      "status": "done",
+      "evidence": "2026-08-17: the app's only live network call was GET /notifications/check?type=WORK|ANNOUNCEMENT — an endpoint that does not exist, 404ing on every page load while nothing read the result. Replaced with the real GET /notifications (limit-only, no pagination envelope) and POST /:id/dismiss ({ message: 'success' }, no body), and the store's lending-era isNewAnnouncement/isNewWork flags with notifications + unreadCount; polling is left to PLT-007 to own. Upload's getFileUrl now reads the post-fix { message, data: { url } } envelope and URL-encodes filePath, which is a storage key containing slashes. Its declared return type had been a lie that typecheck could not catch. || AMENDED: Notification.initialize() swallows its own failure again (it was Promise.allSettled before this session's rewrite). DefaultLayout awaits it on mount, so a 401 or a down API would otherwise reject the layout's mount over a background nicety."
+    },
+    {
+      "id": "API-009",
+      "type": "chore",
+      "name": "live-smoke-check",
+      "path": "scripts/smoke-api.mjs, init.sh",
+      "description": "A green vitest against stubs proved nothing. One runnable check against a live API proves the shapes.",
+      "acceptance": [
+        "scripts/smoke-api.mjs logs in, then asserts: login's non-standard { success, data } shape, the session cookie, the 401 body { code, message, errorCode }, a 404 body with no errorCode, the paginated permit envelope, permit detail's key set, and the certificate `expired` flag",
+        "It exits non-zero on a shape mismatch and prints the offending body; it exits 0 with a clear SKIP when no API is reachable",
+        "init.sh runs it as its last step and AGENTS.md documents how to point it at a local API",
+        "Run against a live backend with a provisioned contractor account; the passing output is recorded in evidence"
+      ],
+      "dependencies": [
+        "API-006",
+        "API-007",
+        "API-008",
+        "API-003",
+        "API-004"
+      ],
+      "status": "done",
+      "evidence": "2026-08-17: scripts/smoke-api.mjs added and wired into init.sh as its fourth check. Asserts login's non-standard { success, data } shape, that the account is actually a contractor, the session cookie, the 401 body, a 404 body with NO errorCode, a 403 FORBIDDEN_ROLE on a safety-officer-only route, the paginated permit envelope, the absence of `project`/`workDescription` on a row, permit detail's key set, the path-scoped audit route, the certificate `expired` flag and workerName, and that notifications are not paginated. Run against a live API with a provisioned contractor account: 16/16 pass. Skips with a SKIP line and exit 0 when no API is reachable. eslint now ignores scripts/** — plain Node, not app code."
+    },
+    {
+      "id": "API-010",
+      "type": "docs",
+      "name": "docs-sweep",
+      "path": "AGENTS.md, docs/modules/permit/feature_list.json, docs/modules/certificate/feature_list.json",
+      "description": "Leave no instruction file asserting the old contract. A harness that documents a false contract is worse than one that documents none.",
+      "acceptance": [
+        "AGENTS.md's 'Business rules that must not drift' says the machine code arrives in `errorCode`, not `code`, and names 04-api-contract.md as the contract",
+        "AGENTS.md's stub paragraph ('both providers are running on stubs … flip both booleans') is replaced with the post-migration reality",
+        "The Modules table gains an api-integration row; the definition of done mentions the smoke check",
+        "PMT-005..PMT-012 and CRT-004 depend on API-005/API-006 (and API-007 for the cert gate) in their module registries, so an agent cannot pick a wizard item before the contract lands",
+        "The three contractor-only rules from context.md (PATCH collection semantics, workDate asymmetry, owner scoping) are stated where the wizard items will be read, not only here"
+      ],
+      "dependencies": [
+        "API-006",
+        "API-007"
+      ],
+      "status": "done",
+      "evidence": "2026-08-17: AGENTS.md swept — the stub paragraph replaced with the live reality, the error rule corrected to errorCode (with the 21-code count and the note that its absence on 404s/403s/400s is normal), and four contractor-only rules added to 'Business rules that must not drift': the submit 400 semantics, the PATCH collection semantics, the workDate asymmetry, and server-side owner scoping. Modules table gained an api-integration row; the Definition of Done now names the smoke check and states plainly that a green vitest only proves the app agrees with its own types. Dependency graph wired so the contract cannot be skipped: PMT-005..012 now depend on API-005/API-006 (PMT-007 on API-008, PMT-009 on API-004) and CRT-004 on API-005/006/007. || AMENDED: docs/GUIDE.md swept too — it is the stale twin of AGENTS.md and still described a three-check init.sh and four modules."
+    }
+  ]
+}

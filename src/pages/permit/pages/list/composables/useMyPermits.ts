@@ -52,12 +52,21 @@ export function useMyPermits (): IUseMyPermits {
   const isEmpty: ComputedRef<boolean> = computed((): boolean => !loading.value && items.value.length === 0)
 
   async function useFetchPermits (): Promise<void> {
+    // GET /permits takes ONE status (docs/api/openapi.json). The grouped chips ("Active" =
+    // ACTIVE + FIRE_MONITOR, "Closed" = CLOSED + REJECTED) cannot be expressed server-side, so a
+    // single-status chip filters on the server and a grouped one fetches unfiltered and narrows
+    // here. Consequence, deliberate: for a grouped chip the pagination totals count every status,
+    // so the last page can render short. Server-side multi-status is a backend change
+    // (docs/api/GAPS.md), not something to fake with N requests.
+    const wanted = FILTER_STATUS_MAP[filter.value]
     const response = await PermitService.list({
       page: pagination.value.page,
       limit: pagination.value.limit,
-      status: FILTER_STATUS_MAP[filter.value]
+      status: wanted?.length === 1 ? wanted[0] : undefined
     })
-    items.value = response.data
+    items.value = wanted && wanted.length > 1
+      ? response.data.filter((permit: IPermitListItem): boolean => wanted.includes(permit.status))
+      : response.data
     pagination.value.count = response.count
     pagination.value.totalPage = response.totalPage
   }

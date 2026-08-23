@@ -68,12 +68,15 @@
             <span aria-hidden="true">📎</span>
             <span class="truncate">{{ formData.file?.name ?? t('certificate.form.field.filePlaceholder') }}</span>
             <input
-              accept="image/png,image/jpeg,image/gif,application/pdf"
+              accept="image/png,image/jpeg,image/webp,image/heic,application/pdf"
               class="hidden"
               name="file"
               type="file"
               @change="onFileChange($event)">
           </label>
+          <p class="mt-1 text-xs text-text-tertiary">
+            {{ t('certificate.form.field.fileNotStoredHint') }}
+          </p>
         </LabelField>
         <ConfirmButton
           id="add-certificate-button"
@@ -137,9 +140,23 @@ function onFileChange (event: Event): void {
  * composable, then creates the certificate. An already-expired expiryDate is
  * intentionally NOT rejected here — the record is the truth; CertificateCard
  * badges it as Expired via certificateStatus() once the list refreshes.
+ *
+ * The attachment is sent as the storage **path**, not the `fileUrl`: that URL is a presigned
+ * handle that expires 60 seconds after upload (REVIEW-2026-08-19 S4), so storing it stores a
+ * dead link. `useUpload` no longer fabricates a success on a failed upload — it now rethrows,
+ * which propagates out of this function before `CertificateService.create` is ever called, so
+ * `onSubmit`'s `handleLoading` error callback surfaces the real (localized) failure and no
+ * certificate is saved. A second, narrower guard below covers the case where `getUploadImages`
+ * resolves without throwing but still has no usable path (e.g. an upload response missing
+ * `originalName`, which `useUpload` skips splicing) — that must abort too, not save silently
+ * without the attachment the user asked for.
+ *
+ * Returns whether an attachment was picked, so the caller can tell the user the truth: the API
+ * does not persist this field yet (docs/api/GAPS.md row G).
  */
-async function useCreate (values: TAddCertificateFormValues): Promise<void> {
-  let fileRef: string | undefined
+async function useCreate (values: TAddCertificateFormValues): Promise<boolean> {
+  let filePath: string | undefined
+  const hasAttachment = Boolean(formData.value.file)
 
   if (formData.value.file) {
     const file = formData.value.file
@@ -150,7 +167,8 @@ async function useCreate (values: TAddCertificateFormValues): Promise<void> {
       url: '',
       path: ''
     }])
-    fileRef = uploaded?.url
+    filePath = uploaded?.path || undefined
+    if (!filePath) throw new Error('Certificate attachment upload did not return a storage path')
   }
 
   await CertificateService.create({
@@ -159,8 +177,10 @@ async function useCreate (values: TAddCertificateFormValues): Promise<void> {
     certType: values.certType,
     issuedDate: values.issuedDate,
     expiryDate: values.expiryDate,
-    fileRef
+    filePath
   })
+
+  return hasAttachment
 }
 
 function onSubmit (event: FormSubmitEvent, close: () => void): void {
@@ -169,10 +189,13 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
     return
   }
   handleLoading(async (): Promise<void> => {
-    await useCreate(event.values as TAddCertificateFormValues)
+    const hadAttachment = await useCreate(event.values as TAddCertificateFormValues)
     emits('created')
     resetForm()
     close()
+    // Do not let the closing modal imply the file was kept: the API drops `filePath` today
+    // (docs/api/GAPS.md row G), so the certificate saves and the attachment does not.
+    if (hadAttachment) toast.warn(t('certificate.form.attachmentNotStored'))
   }, {}, (error: unknown): void => {
     toast.error(mapError(error).message)
   })

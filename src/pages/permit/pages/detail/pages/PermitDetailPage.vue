@@ -1,31 +1,266 @@
 <template>
-  <div class="flex min-h-80 flex-col items-center justify-center gap-2 px-4 py-16 text-center">
-    <p class="text-xs font-semibold tracking-wide text-text-tertiary uppercase">
-      {{ t('permit.detail.placeholderBadge') }}
-    </p>
-    <h1 class="text-2xl font-bold text-text-primary">
-      {{ t('permit.detail.title') }}
-    </h1>
-    <p class="max-w-md text-sm text-text-secondary">
-      {{ t('permit.detail.comingSoon') }}
-    </p>
-    <p class="font-mono text-xs text-text-tertiary">
-      {{ route.params.id }}
-    </p>
+  <div class="px-4 py-5 md:px-7.5 md:py-6">
+    <button
+      class="mb-3 cursor-pointer border-none bg-transparent p-0 text-[13px] text-text-secondary hover:text-text-primary"
+      type="button"
+      @click="router.push({ name: 'PermitListPage' })">
+      ← {{ t('permit.detail.back') }}
+    </button>
+
+    <div
+      v-if="loading"
+      class="flex flex-col gap-4">
+      <Skeleton
+        class="rounded-xl!"
+        height="4.5rem" />
+      <Skeleton
+        class="rounded-xl!"
+        height="18rem" />
+    </div>
+
+    <div
+      v-else-if="!permit"
+      class="rounded-xl border border-border bg-surface-card px-5 py-10 text-center"
+      data-test="detail-error">
+      <p class="text-sm font-semibold text-text-primary">
+        {{ t('permit.detail.notFound') }}
+      </p>
+      <p class="mt-1 text-[13px] text-text-secondary">
+        {{ loadError }}
+      </p>
+    </div>
+
+    <template v-else>
+      <PermitStatusBanner
+        :just-submitted="justSubmitted"
+        :permit="permit"
+        :rejected-by="rejectedBy">
+        <template
+          v-if="canRunClosure || canMarkComplete"
+          #action>
+          <button
+            v-if="canMarkComplete"
+            class="inline-flex h-11 cursor-pointer items-center justify-center rounded-[9px] bg-accent-emphasis px-5 text-[13.5px]
+              font-bold whitespace-nowrap text-white hover:bg-accent-emphasis-alt"
+            data-test="start-mark-complete"
+            type="button"
+            @click="showMarkComplete = true">
+            {{ t('permit.detail.closure.start') }}
+          </button>
+          <button
+            v-else
+            class="inline-flex h-11 cursor-pointer items-center justify-center rounded-[9px] bg-status-active-fg px-5 text-[13.5px]
+              font-bold whitespace-nowrap text-white hover:bg-status-active-fg-emphasis"
+            data-test="start-closure"
+            type="button"
+            @click="showClosure = true">
+            {{ t('permit.detail.closure.start') }}
+          </button>
+        </template>
+      </PermitStatusBanner>
+
+      <!--
+        268px right rail. `lg:flex-row` puts the rail beside the main column on wide screens and
+        stacks it BELOW the main column at narrow widths (flex-col + the rail declared second).
+      -->
+      <div class="flex flex-col gap-5.5 lg:flex-row">
+        <div class="min-w-0 flex-1">
+          <div class="mb-1.5 flex flex-wrap items-center gap-2.75">
+            <span
+              :class="[typeChipClass.bg, typeChipClass.fg]"
+              class="rounded-md px-2.5 py-1 text-[11.5px] font-semibold">
+              {{ t(`permit.type.${permit.type}`) }}
+            </span>
+            <span
+              :class="[statusClass.bg, statusClass.fg]"
+              class="rounded-full px-2.75 py-1 text-[11px] font-semibold">
+              {{ t(`permit.status.${permit.status}`) }}
+            </span>
+          </div>
+
+          <h1 class="text-[23px] font-bold tracking-tight text-text-primary break-words">
+            {{ permit.title }}
+          </h1>
+          <p class="mb-4.5 font-mono text-[12.5px] text-text-tertiary break-words">
+            {{ permit.id }}
+          </p>
+
+          <!--
+            The six sections of docs/main/dev-handoff/05-permit-detail-sections.md §2, stacked in
+            contract order. Stacked rather than tabbed on purpose: every section stays reachable and
+            printable in one pass, and an empty section still renders its own empty state.
+          -->
+          <PermitDetailSection
+            :title="t('permit.detail.sections.overview.title')"
+            name="overview">
+            <PermitInfoCard :permit="permit" />
+          </PermitDetailSection>
+
+          <!--
+            §2 owns its own empty state rather than delegating to the wrapper: the outdoor-work
+            bypass explanation and the server verdict must still render on a permit that has no
+            reading recorded yet, which is exactly the DRAFT case.
+          -->
+          <PermitDetailSection
+            :title="t('permit.detail.sections.safety.title')"
+            name="safety">
+            <PermitSafetySection :permit="permit" />
+          </PermitDetailSection>
+
+          <PermitDetailSection
+            :title="t('permit.detail.sections.workers.title')"
+            name="workers">
+            <PermitWorkersSection :permit="permit" />
+          </PermitDetailSection>
+
+          <PermitDetailSection
+            :empty="permit.jsaSteps.length === 0"
+            :empty-text="t('permit.detail.sections.jsa.empty')"
+            :title="t('permit.detail.sections.jsa.title')"
+            name="jsa">
+            <PermitJsaSection :steps="permit.jsaSteps" />
+          </PermitDetailSection>
+
+          <PermitDetailSection
+            :title="t('permit.detail.sections.closure.title')"
+            name="closure">
+            <PermitClosureSection
+              :fire-watch-remaining="fireWatchRemaining"
+              :permit="permit" />
+          </PermitDetailSection>
+
+          <PermitDetailSection
+            :title="t('permit.detail.sections.audit.title')"
+            name="audit">
+            <PermitAuditTimeline :entries="audit" />
+          </PermitDetailSection>
+        </div>
+
+        <aside class="w-full shrink-0 lg:w-67">
+          <PermitQrPanel :token="qrToken" />
+        </aside>
+      </div>
+
+      <FireMonitorPanel
+        v-if="permit.status === 'FIRE_MONITOR'"
+        :fire-watch="permit.fireWatch"
+        @close="showClosure = true" />
+    </template>
+
+    <MarkCompleteConfirmModal
+      v-if="permit"
+      v-model="showMarkComplete"
+      :permit-id="permit.id"
+      @completed="onPermitUpdated($event)" />
+
+    <ClosureChecklistModal
+      v-if="permit"
+      v-model="showClosure"
+      :fire-watch-remaining="fireWatchRemaining"
+      :permit="permit"
+      @closed="onPermitUpdated($event)" />
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted, ref, type ComputedRef, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { permitAuthorName } from '@/models/modules/permit/Permit.model'
+import type { TPermitStatus } from '@/enums/modules/permit/PermitStatus.enum'
+import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
+import type { IPermitAuditEntry, IPermitFireWatch } from '@/models/modules/permit/Permit.model'
+import type { IPermitDetail } from '@/models/response/permit/PermitRes.model'
+import ClosureChecklistModal from '@/pages/permit/pages/detail/components/ClosureChecklistModal.vue'
+import FireMonitorPanel from '@/pages/permit/pages/detail/components/FireMonitorPanel.vue'
+import MarkCompleteConfirmModal from '@/pages/permit/pages/detail/components/MarkCompleteConfirmModal.vue'
+import PermitAuditTimeline from '@/pages/permit/pages/detail/components/PermitAuditTimeline.vue'
+import PermitClosureSection from '@/pages/permit/pages/detail/components/PermitClosureSection.vue'
+import PermitDetailSection from '@/pages/permit/pages/detail/components/PermitDetailSection.vue'
+import PermitInfoCard from '@/pages/permit/pages/detail/components/PermitInfoCard.vue'
+import PermitJsaSection from '@/pages/permit/pages/detail/components/PermitJsaSection.vue'
+import PermitQrPanel from '@/pages/permit/pages/detail/components/PermitQrPanel.vue'
+import PermitSafetySection from '@/pages/permit/pages/detail/components/PermitSafetySection.vue'
+import PermitStatusBanner from '@/pages/permit/pages/detail/components/PermitStatusBanner.vue'
+import PermitWorkersSection from '@/pages/permit/pages/detail/components/PermitWorkersSection.vue'
+import useFireWatch from '@/pages/permit/pages/detail/composables/useFireWatch'
+import usePermitDetail from '@/pages/permit/pages/detail/composables/usePermitDetail'
 
 /**
- * PLACEHOLDER — the status-banner / QR / audit-timeline detail screen is built in
- * PMT-010+. This page exists only so the PermitDetailPage route resolves and permit
- * cards have a click target. Do not build the detail screen here.
+ * PMT-010 — Permit Detail. Design lines 430-505.
+ *
+ * Read-only by construction: this screen renders the permit, its append-only audit trail and its
+ * QR token. It offers no path to edit or delete an audit entry, and the backend serves none.
  */
 const { t } = useI18n()
 const route = useRoute()
+const router = useRouter()
+
+const permitId: string = String(route.params.id ?? '')
+
+const { permit, audit, qrToken, loading, loadError, fetchDetail, applyPermit } = usePermitDetail(permitId)
+
+const showClosure: Ref<boolean> = ref(false)
+const showMarkComplete: Ref<boolean> = ref(false)
+
+const fireWatch: ComputedRef<IPermitFireWatch | null> = computed((): IPermitFireWatch | null => permit.value?.fireWatch ?? null)
+const { remaining: fireWatchRemaining } = useFireWatch(fireWatch)
+
+const TYPE_CHIP_CLASS: Record<TPermitType, { bg: string, fg: string }> = {
+  hot: { bg: 'bg-permit-type-hot-bg', fg: 'text-permit-type-hot-fg' },
+  confined: { bg: 'bg-permit-type-confined-bg', fg: 'text-permit-type-confined-fg' },
+  heights: { bg: 'bg-permit-type-heights-bg', fg: 'text-permit-type-heights-fg' }
+}
+
+const STATUS_CLASS: Record<TPermitStatus, { bg: string, fg: string }> = {
+  DRAFT: { bg: 'bg-status-draft-bg', fg: 'text-status-draft-fg' },
+  PENDING: { bg: 'bg-status-pending-bg', fg: 'text-status-pending-fg' },
+  ACTIVE: { bg: 'bg-status-active-bg', fg: 'text-status-active-fg' },
+  FIRE_MONITOR: { bg: 'bg-status-fire-monitor-bg', fg: 'text-status-fire-monitor-fg' },
+  REJECTED: { bg: 'bg-status-rejected-bg', fg: 'text-status-rejected-fg' },
+  CLOSED: { bg: 'bg-status-closed-bg', fg: 'text-status-closed-fg' },
+  EXPIRED: { bg: 'bg-status-expired-bg', fg: 'text-status-expired-fg' }
+}
+
+const typeChipClass: ComputedRef<{ bg: string, fg: string }> = computed(
+  (): { bg: string, fg: string } => TYPE_CHIP_CLASS[permit.value?.type ?? 'hot'])
+
+const statusClass: ComputedRef<{ bg: string, fg: string }> = computed(
+  (): { bg: string, fg: string } => STATUS_CLASS[permit.value?.status ?? 'DRAFT'])
+
+/**
+ * `?submitted=1` — set by whoever navigates here straight after a successful submit. It is a
+ * client-side hint, never a wire field; the banner falls back to no banner without it.
+ */
+const justSubmitted: ComputedRef<boolean> = computed((): boolean => route.query.submitted === '1')
+
+/** The rejecting officer exists only in the audit trail — the permit payload has no `rejectedBy`. */
+const rejectedBy: ComputedRef<string> = computed((): string => {
+  const entry = audit.value.find((row: IPermitAuditEntry): boolean => row.action === 'PERMIT_REJECTED')
+  return permitAuthorName(entry?.actor)
+})
+
+/**
+ * Confined Space and Working at Heights close straight from ACTIVE. Hot Work cannot: the backend
+ * requires it to pass through FIRE_MONITOR first (403 `PERMIT_NOT_CLOSABLE` otherwise), which is
+ * the mark-complete path in `PMT-012`.
+ */
+const canRunClosure: ComputedRef<boolean> = computed((): boolean =>
+  permit.value?.status === 'ACTIVE' && permit.value.type !== 'hot')
+
+/** Hot Work only — ACTIVE → FIRE_MONITOR starts the mandatory server-side Fire Watch. */
+const canMarkComplete: ComputedRef<boolean> = computed((): boolean =>
+  permit.value?.status === 'ACTIVE' && permit.value.type === 'hot')
+
+async function onPermitUpdated (updated: IPermitDetail): Promise<void> {
+  showClosure.value = false
+  showMarkComplete.value = false
+  await applyPermit(updated)
+}
+
+onMounted((): void => {
+  void fetchDetail()
+})
 </script>
 
 <style scoped>

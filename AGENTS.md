@@ -1,6 +1,25 @@
+## Read this FIRST — the prompt & decision log
+
+`docs/main/PROMPT-LOG.md` is **required reading before you implement anything in this repo.** It is the
+base knowledge for this project: the product owner's instructions in their own words, and every
+ruling they gave when an agent hit an ambiguity — including the option that was *rejected*, which is
+what you would otherwise "fix" back. Code and `progress.md` say what was built; `PROMPT-LOG.md` says
+why, and what you are not allowed to re-decide.
+
+If your change contradicts a ruling in that file, stop and raise it — do not implement over it.
+
 ## Read this first — Project skill
 
 Before doing any non-trivial work in this repo, read the project skill index at `{.agents, .claude}/skills/project-conventions/SKILL.md` and then load the relevant topic file under `{.agents, .claude}/skills/project-conventions/reference/`. The skill is the canonical convention set for this codebase (one H2 topic per reference file): coding style, naming, architecture, forms, providers, stores, composables, styling, testing, etc. Pull from it rather than inventing a parallel pattern.
+
+## Working across repos
+
+This app is one of three repos in the SmartWorkPermit workspace (`../`): this one, the Safety Officer
++ Inspector app (`../smart-work-permit-frontend`), and the single backend (`../smart-work-permit-api`).
+**If your change touches a route, payload, `errorCode`, role or the permit status machine, read
+`docs/main/CONTEXT.md` first** — it owns the cross-repo contract rules, the openapi propagation procedure,
+and the `node scripts/check-contract-sync.mjs` glue check. Everything inside this repo stays governed
+by this file and `feature_list.json`.
 
 ## What this repo is
 
@@ -17,13 +36,31 @@ Specs live in `docs/main/`:
 
 Two sibling apps exist in **other repos** and are **out of scope here**: the Safety Officer + Inspector app (`03-safety-inspector-web-vue-tasks.md`) and the Elysia backend. Never build safety-officer or inspector screens in this repo.
 
-> **State of the codebase (2026-08-15):** this repo started as a lending-app template; the lending domain has been fully removed and `./init.sh` is **green** (typecheck + lint + 278 tests).
+> **State of the codebase (2026-08-19):** this repo started as a lending-app template; the lending domain has been fully removed and `./init.sh` is **green** (typecheck + lint + 336 tests + a live API contract check).
 >
-> Built: the app shell, i18n (en/th, default th), the design system, the API error-code layer, the permit domain + provider + My Permits list, and the certificates module.
-> Placeholders on purpose: `PermitCreatePage` (the wizard, `PMT-004`–`PMT-009`) and `PermitDetailPage` (`PMT-010`–`PMT-012`).
-> Not built: the `history` module (`feat-003`) — its route is not registered, and `AppDrawer` renders that nav item inert until it is.
+> Built: the app shell, i18n (en/th, default th), the design system, the API error-code layer, the permit domain + provider + My Permits list, the **`history` module** (`feat-003` — route registered, filters, CSV export, drill-in drawer), and the certificates module.
+> Built: `PermitCreatePage` — the 6-step wizard is **complete** (`PMT-004`–`PMT-009`). Every step has a real zod schema that gates Next; there are no `z.object({})` placeholders left. Submit really calls `POST /permits/:id/submit` and navigates to `/permits/:id?submitted=1` (that query param is what triggers the detail page's one-shot "submitted" banner — nothing else sets it). On a 400 the wizard drives off the backend's `failures[]` / `certificateFailures[]` arrays and highlights **every** failing reading on step 3 and every refused worker on step 4, localized off `errorCode` — the server's verdict wins over any client-side gate. Two step-3 shapes have no wire field and are deliberately not persisted: the Yes/No/N-A checklist (`GAPS.md` row J) and `so2` (row K).
+> Built 2026-08-22: `PermitDetailPage` (`PMT-010`–`PMT-013`) — per-status banners, info card, read-only audit
+> timeline, QR panel (`ACTIVE`/`FIRE_MONITOR` only), the closure checklist modal and the Hot Work Fire Watch
+> countdown, plus all six sections of `docs/main/dev-handoff/05-permit-detail-sections.md`. The step-2 location
+> zone picker mirrors the Safety app's zone vocabulary and writes **canonical English** into the free-text
+> `location` — a Thai value splits the pin across the two apps.
 >
-> **Both providers are running on stubs.** `Permit.provider.ts` and `Certificate.provider.ts` each have a `USE_STUB_DATA = true` flag at the top with real HTTP already wired underneath. Going live is: flip both booleans, delete `Permit.mock.ts` and `Certificate.mock.ts`, point `VITE_APP_API_URL` at the backend.
+> Built 2026-08-23 (`PMT-014`, `CRT-004`): a DRAFT is resumable — `/permits/:id/edit` and
+> `/permits/:id/duplicate` exist and `PMT-010`'s two banner CTAs are live, no longer disabled. Editability is
+> settled by a real empty-body `PATCH` and deferred to the server, because **`REJECTED` is editable too** (a
+> client-side "DRAFT only" check is wrong). There is **no clone route on the wire**, so Duplicate is client-side
+> `POST` + `PATCH`; `safetyReading` **appends** a row per PATCH, so hydration seeds `lastPersistedReading` or a
+> resumed edit logs a duplicate reading.
+>
+> Two earlier holes are **closed**, do not re-report them: `GAPS.md` row **H** — `POST /permits/:id/close` now
+> admits `contractor` scoped to their own permit (`feat-020`), so `PMT-011`'s modal works end to end. Still
+> open: row **I** (entrant *names* are not readable by the permit owner — the count is), and rows **G**, **J**,
+> **K**, all of which need a backend field before any frontend work is possible.
+>
+> **The providers are live against the real backend** (`feat-005`, 2026-08-17). Every `USE_STUB_DATA` flag and both `*.mock.ts` files are gone; `VITE_APP_API_URL` points at the API and auth is a **better-auth session cookie**, not a bearer token.
+>
+> Before changing anything under `src/resources/` or `src/models/`, read `docs/main/dev-handoff/04-api-contract.md` — and treat `docs/api/openapi.json` (generated from a live boot, never hand-edited) as the authority over it. `01-backend-elysia-tasks.md` is the older *plan*; where the two disagree, the contract wins.
 
 ## Commands
 
@@ -31,7 +68,9 @@ Package manager is **bun** — do not invoke `npm`/`yarn`/`pnpm`.
 
 ```bash
 bun install            # install deps
-./init.sh              # FULL verification gate: typecheck + lint + tests (run before claiming done)
+./init.sh              # FULL verification gate: typecheck + lint + tests + live API smoke (run before claiming done)
+node scripts/smoke-api.mjs                 # contract check against a running API; skips (exit 0) if none
+API_URL=… SMOKE_EMAIL=… node scripts/smoke-api.mjs   # point it elsewhere / use another contractor account
 
 bun run dev            # vite dev server on 0.0.0.0:8080
 bun run build          # typecheck + production build
@@ -62,12 +101,13 @@ Each module owns parallel trees: routes (`src/router/modules/<Mod>.router.ts` or
 
 | Module | Prefix | Pages (`src/pages/<mod>/pages/`) | Providers | Harness | Built? |
 |---|---|---|---|---|---|
-| `platform` | — (cross-cutting) | `auth/login`, layout shell, i18n, API errors | `auth/public`, `auth/private`, `notification` | `docs/modules/platform/` | shell + i18n + errors ✅ · auth `PLT-005` ⬜ · notifications `PLT-007` ⬜ |
-| `permit` | `/permits` | `list` ✅, `create` (6-step wizard) ⬜, `detail` ⬜ | `permit` | `docs/modules/permit/` | provider + list ✅ · wizard/detail are placeholder pages |
+| `platform` | `/auth` | `auth/login` ✅, `auth/reset-password` ✅, layout shell, i18n, API errors | `auth/public`, `auth/private`, `notification` | `docs/modules/platform/` | shell + i18n + errors + contractor auth/route guard (`PLT-005`) ✅ · notification polling `PLT-007` ⬜ |
+| `permit` | `/permits` | `list` ✅, `create` (6-step wizard) ✅, `detail` ✅ | `permit` | `docs/modules/permit/` | provider + list ✅ · wizard complete, all six steps real (`PMT-004`–`PMT-009`) · detail built (`PMT-010`–`PMT-012`: banners, QR, audit timeline, closure modal, Fire Watch countdown) |
 | `history` | `/history` | `list` ✅ | `permit` (reused — no own provider dir) | `docs/modules/history/` | ✅ |
 | `certificate` | `/certificates` | `list` ✅ | `certificate` | `docs/modules/certificate/` | ✅ |
+| `api-integration` | — (cross-cutting) | — | every provider + the transport | `docs/modules/api-integration/` | ✅ transport, auth, errors, permit/certificate/notification/upload |
 
-Registered in `src/router/index.ts`: `AuthRouter`, `PermitRouter`, `HistoryRouter`, `CertificateRouter` — all four nav destinations now exist, so `AppDrawer`'s `isRegistered()` guard has nothing left to guard and can be removed.
+Registered in `src/router/index.ts`: `AuthRouter`, `PermitRouter`, `HistoryRouter`, `CertificateRouter` — all four nav destinations now exist. `AppDrawer`'s `isRegistered()` guard is **still in the file** (`AppDrawer.vue:44`, `:136`) and now guards nothing; removing it is safe but nobody has, so do not describe it as gone.
 
 **Modules without a top-level router entry:**
 
@@ -123,7 +163,11 @@ These are duplicated from `00-SHARED-CONTEXT.md` because they gate code, not pro
 - SO₂ is carried through as a field (Confined Space gas log) but has no hard block modeled.
 - **Closure is blocked** (backend returns `403`) when: any Confined Space entrant is still checked in (`ENTRANTS_STILL_INSIDE`), or Hot Work Fire Watch has not elapsed 30 min (`FIRE_WATCH_NOT_ELAPSED`).
 - **Certificates gate submission.** Any registered worker with a missing or expired certificate blocks submit (`CERT_EXPIRED`).
-- Backend error responses carry a machine-readable `code` (`GAS_OUT_OF_RANGE`, `ENTRANTS_STILL_INSIDE`, `CERT_EXPIRED`, `FIRE_WATCH_NOT_ELAPSED`, …). **Localize client-side** — never render a backend string directly.
+- Backend error responses are `{ code: <http status>, message, errorCode? }`. The machine-readable discriminator is **`errorCode`** — `code` is the numeric HTTP status. There are **25** codes (`src/enums/modules/error/ApiErrorCode.enum.ts`) — the last four (`FILE_TYPE_NOT_ALLOWED`, `FILE_TOO_LARGE`, `UPLOAD_FOLDER_NOT_ALLOWED`, `STORAGE_UNAVAILABLE`) were added by the backend's 2026-08-19 upload-hardening pass — and 404s / ownership 403s / validation 400s carry **none**, which is normal. **Localize off `errorCode`** — never render the backend's `message`.
+- `POST /permits/:id/submit` answers **400** with the *first* failing code and a `message` that joins every failure with `; `. Render mapped codes, never that string.
+- **`PATCH /permits/:id` collection semantics** (this destroys data when it drifts): `jsaSteps` and `workers` are **replaced wholesale** — always send the complete list; `safetyReading` (singular) **appends** a reading; `photos` **upsert by `slotKey`**.
+- `workDate` is sent as `YYYY-MM-DD` and returned as a full ISO timestamp. Format for display; never round-trip the response value into a date input.
+- A contractor is scoped to their own permits server-side; reading someone else's is a 403. Do not filter by owner client-side, and do not rely on being able to.
 - Timestamps are UTC server-side; display in `Asia/Bangkok`.
 
 ## Design system
@@ -181,8 +225,8 @@ Per-domain routes belong in `src/router/modules/<Domain>.router.ts` and merge in
 >
 > Consequences:
 > - Never reference a route name that is not yet in `src/router/index.ts`. Build the route and the link in the same change, or guard the link.
-> - **Check the router file, don't grep for the name** — a commented-out route still matches a naive grep. `ForgotPasswordPage` is commented out in `Auth.router.ts` and does **not** exist; grepping made it look registered.
-> - `AppDrawer.vue` guards its nav with `isRegistered(name)` (backed by `router.hasRoute()`), rendering an inert `<span>` for routes that do not exist yet. This exists because `HistoryListPage` is not built until `feat-003`. **Delete the guard once all four nav routes are registered** — it is not free: `router.hasRoute()` is read once at render and is **not reactive**, so registering a route needs a **full page reload**, not a Vite HMR update, before the drawer picks it up.
+> - **Check the router file, don't grep for the name** — a commented-out route still matches a naive grep. `ForgotPasswordPage` is still commented out in `Auth.router.ts` (verified 2026-08-19) and does **not** exist; grepping made it look registered. `LoginPage` and `ResetPasswordPage` are the only two auth routes.
+> - `AppDrawer.vue` guards its nav with `isRegistered(name)` (backed by `router.hasRoute()`), rendering an inert `<span>` for routes that do not exist yet. It was added because `HistoryListPage` did not exist until `feat-003`; **all four nav routes are registered now, so the guard is dead code** — it is safe to delete and still present. Note it is not free: `router.hasRoute()` is read once at render and is **not reactive**, so registering a route needs a **full page reload**, not a Vite HMR update, before the drawer picks it up.
 > - Declare static segments before dynamic ones: `/create` must come before `/:id` or `create` is captured as an id.
 
 ### Layout switching
@@ -191,7 +235,7 @@ Per-domain routes belong in `src/router/modules/<Domain>.router.ts` and merge in
 
 ### HTTP layer
 
-All API access goes through `src/resources/HttpRequest.ts` (axios wrapper) + `src/resources/Interceptors.ts`. Base URL comes from `import.meta.env.VITE_APP_API_URL`. Interceptors handle camelCase conversion (humps) and 401 → logout + redirect to `/auth/login`.
+All API access goes through `src/resources/HttpRequest.ts` (axios wrapper) + `src/resources/Interceptors.ts`. Base URL comes from `import.meta.env.VITE_APP_API_URL`. Interceptors handle 401 → logout + redirect to `/auth/login`. There is **no** case conversion: the API is camelCase end to end and `humps` was deleted in `API-002` because camelizing rewrites the user's own keys inside `closureChecklist`. Do not reintroduce it.
 
 New API surfaces extend `HttpRequest`, implement a typed `I<Name>Provider` interface, set a `urlPrefix`, and export as default. Provider files live under `src/resources/provider/<feature>/<Name>.provider.ts`. Request/response types live in `src/models/request/` and `src/models/response/` (plus `src/models/modules/`).
 
@@ -224,9 +268,30 @@ ESLint config (`eslint.config.js`) enforces beyond defaults:
 - **No `console.log`** — use `console.error` / `console.info` (project convention).
 - **Single quotes, no semicolons, 2-space indent, no trailing commas** (`@stylistic/*`).
 - **Vue:** block order = `template, script, style`; `defineProps`/`defineEmits` must be type-based; `vue/max-len` = 150; `v-bind` shorthand required; `v-on` handlers inline (`@click="fn($event)"`, not `@click="fn"`).
-- `src/volt/**`, `vite.config.ts`, `index.html`, `dist/**` are ignored. **`docs/**`, `.agents/**`, `.claude/**` are not yet ignored and account for ~3140 of the current lint errors — fix in `PLT-001`.**
+- `src/volt/**`, `vite.config.ts`, `index.html`, `dist/**`, `docs/**`, `.agents/**`, `.claude/**`, `.gemini/**`, `scripts/**` and root-level `__*` probe scripts are all ignored (`eslint.config.js`). `bun run lint` is clean — the "~3140 lint errors from unignored docs" note that used to sit here was fixed in `PLT-001` and is gone.
 
 Satisfy these up front when writing code — Vite will fail loudly via `vite-plugin-eslint2`.
+
+## Tests
+
+Tests live in **`src/tests/`**, mirroring the source tree (`src/tests/pages/<module>/<page>/…`,
+`src/tests/utils/…`, `src/tests/composables/…`). `vitest.config.ts` **excludes `src/pages/**/tests/**`**,
+so a test written next to the page it covers silently never runs — put it under `src/tests/`.
+
+Page-level tests mount the real page with `@vue/test-utils` and spy on the provider prototype
+(`vi.spyOn(PermitProvider.prototype, 'list')`); there is no mock gateway in this repo (deleted in
+`feat-005`). Three worked examples to copy: `src/tests/pages/auth/login/LoginPage.test.ts`,
+`src/tests/pages/history/list/HistoryListPage.test.ts`, `src/tests/pages/permit/detail/PermitDetailPage.test.ts`.
+Three things bite every time:
+
+- **Mount `@/plugins/I18n.plugin` itself and call `setLocale('en')`** — not a fresh `createI18n`.
+  `useApiError()` localizes through that singleton, so a separate instance leaves `mapError()`
+  answering in Thai (the app default) while the page renders English.
+- **Register every route name the page can navigate to** in the test's `createRouter`. On
+  vue-router 5 an unknown name throws and blanks the mount.
+- **`vi.mock('@/plugins/toast', …)`** — `toast` wraps PrimeVue's ToastService, which a bare mount
+  does not register. Mocking it is also how you assert the invariant that the backend's `message`
+  never reaches the user.
 
 ## Naming (file conventions)
 
@@ -263,7 +328,7 @@ Use the skill rather than inventing a parallel pattern.
 
 Before writing code:
 
-1. Run `./init.sh` (typecheck + lint + tests) to see the current baseline. **It is red today** — see the recorded baseline in `progress.md`; do not mistake pre-existing failures for your own.
+1. Run `./init.sh` (typecheck + lint + tests + live API smoke) to see the current baseline. **It is green today** (2026-08-19: typecheck PASS, lint PASS, vitest 31 files / 336 tests PASS, smoke skips with no API reachable). Anything red is yours — compare against the latest entry in `progress.md` before assuming otherwise.
 2. Read root `feature_list.json` — pick the module-level feature whose `dependencies` are all `done`.
 3. Read that module's `docs/modules/<module>/context.md` and `feature_list.json`.
 4. Pick ONE item from that module whose `dependencies` are all `done`. Read only that item's `context.md` + `progress.md` if they exist. Do not load sibling items.
@@ -278,7 +343,8 @@ Before writing code:
 
 ### Definition of Done
 
-- The item is `done` only when `./init.sh` passes with **no new failures** versus the baseline recorded in `progress.md` — and once `PLT-001` lands, `./init.sh` must pass **clean**.
+- The item is `done` only when `./init.sh` passes **clean** — typecheck, lint, vitest, and the live API contract check (`scripts/smoke-api.mjs`).
+- The smoke step skips (exit 0) when no API is reachable, so the gate works offline. But any change to a provider, model or interceptor is **not verified** until it has run against a live backend: `cd ../smart-work-permit-api && bun run dev`. A green vitest alone only proves the app agrees with its own types.
 - Record the passing command output in the item's `evidence` field in its module `feature_list.json`.
 - If the change touched module wiring (new/renamed/removed module, changed route prefix, new provider dir) or the permit lifecycle, the [Modules](#modules) table and main-flow diagram must match reality before the item is `done`.
 

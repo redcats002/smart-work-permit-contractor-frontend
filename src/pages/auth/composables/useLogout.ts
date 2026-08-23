@@ -1,4 +1,6 @@
 import { useRouter } from 'vue-router'
+import { toast } from '@/plugins/toast'
+import { useApiError } from '@/composables/useApiError'
 import { useAuthStore } from '@/stores/Auth'
 import { handleLoading } from '@/utils/HandleLoading'
 import AuthPrivateProvider, { type IAuthPrivateProvider } from '@/resources/provider/auth/private/Auth.private.provider'
@@ -11,6 +13,7 @@ export default function useLogout (): IUseLogout {
 
   const router = useRouter()
   const authStore = useAuthStore()
+  const { mapError } = useApiError()
 
   async function useLogout (): Promise<void> {
     await AuthPrivateService.logout()
@@ -19,7 +22,9 @@ export default function useLogout (): IUseLogout {
   }
 
   function logout (): void {
-    handleLoading(useLogout)
+    handleLoading(useLogout, {}, (error: unknown): void => {
+      toast.error(mapError(error).message)
+    })
   }
 
   return {
