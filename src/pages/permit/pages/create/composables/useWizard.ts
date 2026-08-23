@@ -1,16 +1,21 @@
 import type { ComputedRef, Ref } from 'vue'
-import { computed, onUnmounted, ref } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
+import { dayjs } from '@/plugins/dayjs.plugin'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { useDebounce } from '@/utils/Debounce'
 import { useApiError, type IApiErrorResult } from '@/composables/useApiError'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import type { ICreatePermitDraftPayload, IUpdatePermitDraftPayload } from '@/models/request/permit/PermitReq.model'
-import type { IPermitSafetyReading } from '@/models/modules/permit/Permit.model'
+import type { IPermitSafetyReading, IPermitWorker } from '@/models/modules/permit/Permit.model'
+import type { IPermitDetail } from '@/models/response/permit/PermitRes.model'
 import type { TChecklistAnswer } from '../constants/SafetyChecklist'
 import {
   EMPTY_SUBMIT_FAILURES, extractSubmitFailures, stepIndexForSubmitFailure, type ISubmitFailures
 } from '../constants/SubmitErrorRouting'
+import {
+  useCertificatePreflight, type ICertificateProblem, type TCertificatePreflightState
+} from './useCertificatePreflight'
 import PermitProvider, { type IPermitProvider } from '@/resources/provider/permit/Permit.provider'
 import { WIZARD_STEPS, type IWizardStepDef } from '../wizard/WizardSteps'
 
@@ -34,6 +39,16 @@ export interface IUseWizard {
    * one code that happened to land in the envelope.
    */
   submitFailures: Ref<ISubmitFailures>
+  /**
+   * CRT-004. Client-side worker-certificate pre-flight, shared by step 4 (gates Next, names the
+   * blocking worker) and step 6's review row — ONE instance so the two never disagree about which
+   * workers are blocking. `'fail'` is the only state that gates anything: `'loading'`/`'unknown'`
+   * never block, because an unconfirmed answer must never be stricter than the server's real
+   * verdict at submit (../../../../../PROMPT-LOG.md "no client-side rule that blocks what the
+   * server would accept").
+   */
+  certificateState: Ref<TCertificatePreflightState>
+  certificateProblems: Ref<ICertificateProblem[]>
   isFirstStep: ComputedRef<boolean>
   isLastStep: ComputedRef<boolean>
   isNextBlocked: ComputedRef<boolean>
@@ -44,6 +59,15 @@ export interface IUseWizard {
   updateFormData (patch: Partial<IUpdatePermitDraftPayload>): void
   updateChecklistAnswers (patch: Record<string, TChecklistAnswer>): void
   submitDraft (): Promise<string | undefined>
+  /**
+   * PMT-014. Seeds the wizard from an already-confirmed-editable permit (the resume/duplicate
+   * routes own confirming editability — this function only seeds state, it never calls the API).
+   * Sets `draftId` so the next edit PATCHes rather than creating a second draft, primes
+   * `lastPersistedReading` from `latestSafetyReading` so a copied/unchanged reading is never
+   * replayed as a new row, and lands on the first step whose schema does not validate (every
+   * earlier step is therefore unlocked already).
+   */
+  hydrate (permit: IPermitDetail): void
 }
 
 /**
@@ -114,15 +138,44 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
   const submitError = ref<IApiErrorResult | undefined>(undefined)
   const submitFailures = ref<ISubmitFailures>(EMPTY_SUBMIT_FAILURES)
 
+  // CRT-004. ONE preflight instance for the whole wizard — step 4 (gates Next) and step 6 (review
+  // row) read the same `certificateState`/`certificateProblems`, so they can never show a passing
+  // row next to a disabled Submit (or vice versa) for the same underlying answer. A local
+  // `certificateChecking` loading flag is used instead of the global loading store, since a
+  // lookup can be triggered on every worker-list edit.
+  const certificateChecking = ref(false)
+  const {
+    state: certificateState,
+    problems: certificateProblems,
+    check: checkCertificates
+  } = useCertificatePreflight(certificateChecking)
+
   const currentStep: ComputedRef<IWizardStepDef> = computed((): IWizardStepDef => steps[currentStepIndex.value])
   const isFirstStep: ComputedRef<boolean> = computed((): boolean => currentStepIndex.value === 0)
   const isLastStep: ComputedRef<boolean> = computed((): boolean => currentStepIndex.value === steps.length - 1)
-  const isNextBlocked: ComputedRef<boolean> = computed(
-    (): boolean => !currentStep.value.schema.safeParse(formData.value).success
-  )
+  const isNextBlocked: ComputedRef<boolean> = computed((): boolean => {
+    if (!currentStep.value.schema.safeParse(formData.value).success) return true
+    // Only the PPE & Workers step gates on certificates, and only on a CONFIRMED 'fail' — never
+    // on 'loading'/'unknown', which would make an unresolved lookup stricter than the server.
+    if (currentStep.value.key === 'ppeWorkers' && certificateState.value === 'fail') return true
+    return false
+  })
   const canSubmit: ComputedRef<boolean> = computed(
     (): boolean => isLastStep.value && !isNextBlocked.value && draftId.value !== undefined
-      && !saving.value && !submitting.value
+      && !saving.value && !submitting.value && certificateState.value !== 'fail'
+  )
+
+  // Debounced so typing a worker's name doesn't fire a lookup per keystroke; triggered only when
+  // the `workers` ARRAY REFERENCE changes (whole-list replace on every real edit — see
+  // Step4PpeWorkers.vue), not on every unrelated formData patch.
+  const debouncedCertificateCheck = useDebounce((workers: IPermitWorker[]): void => {
+    void checkCertificates(workers)
+  }, 500)
+
+  watch(
+    (): IPermitWorker[] | undefined => formData.value.workers, (next: IPermitWorker[] | undefined): void => {
+      debouncedCertificateCheck(next ?? [])
+    }, { immediate: true }
   )
 
   /**
@@ -187,6 +240,69 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
     // happens once `type` is set (see updateFormData below).
     debouncedPersist.flush()
   })
+
+  /**
+   * `permit.workDate` is a full ISO timestamp on the wire (see IPermitBase); formData must hold
+   * `YYYY-MM-DD`, the shape everything downstream (Step2BasicInfo's picker, buildCreatePayload,
+   * the PATCH body) actually sends. Converts through Bangkok wall-clock time, not browser-local —
+   * a plain `dayjs(...).format()` ignores `dayjs.tz.setDefault` (see AGENTS.md's dayjs latent-bug
+   * note); `.tz('Asia/Bangkok')` is required.
+   */
+  function toFormWorkDate (workDate: string): string {
+    return dayjs(workDate).tz('Asia/Bangkok').format('YYYY-MM-DD')
+  }
+
+  /** First step whose schema rejects the given data, or the last step when every step passes. */
+  function firstInvalidStepIndex (data: IUpdatePermitDraftPayload): number {
+    const blockedIndex = steps.findIndex((step: IWizardStepDef): boolean => !step.schema.safeParse(data).success)
+    return blockedIndex === -1 ? steps.length - 1 : blockedIndex
+  }
+
+  /**
+   * `bloodPressure`/`alcoholReading` are `string` on the wire — NOT nullable
+   * (docs/api/openapi.json: `{ type: 'string' }`) — but GET returns `null` for any worker that
+   * never had a health check (every non-Confined-Space permit, always). Hydrating that `null`
+   * straight into `formData` and later sending it back via `doPersist`'s wholesale `workers`
+   * replace 400s (`Expected property 'workers.N.bloodPressure' to be string but found: null`), so
+   * it must be dropped here, once, at the point data enters the wizard — never round-tripped.
+   */
+  function toFormWorkers (workers: IPermitWorker[]): IPermitWorker[] {
+    return workers.map((worker: IPermitWorker): IPermitWorker => ({
+      workerName: worker.workerName,
+      roleOnPermit: worker.roleOnPermit,
+      bloodPressure: worker.bloodPressure ?? undefined,
+      alcoholReading: worker.alcoholReading ?? undefined
+    }))
+  }
+
+  function hydrate (permit: IPermitDetail): void {
+    const hydrated: IUpdatePermitDraftPayload = {
+      type: permit.type,
+      title: permit.title,
+      location: permit.location,
+      foreman: permit.foreman,
+      workDate: toFormWorkDate(permit.workDate),
+      workTimeStart: permit.workTimeStart,
+      workTimeEnd: permit.workTimeEnd,
+      outdoorWork: permit.outdoorWork,
+      safetyReading: permit.latestSafetyReading ?? undefined,
+      jsaSteps: permit.jsaSteps,
+      workers: toFormWorkers(permit.workers),
+      photos: permit.photos
+    }
+
+    formData.value = hydrated
+    draftId.value = permit.id
+    submitError.value = undefined
+    submitFailures.value = EMPTY_SUBMIT_FAILURES
+
+    const wireReading = hydrated.safetyReading === undefined ? undefined : toWireReading(hydrated.safetyReading)
+    lastPersistedReading = wireReading === undefined ? undefined : JSON.stringify(wireReading)
+
+    const landingIndex = firstInvalidStepIndex(hydrated)
+    maxUnlockedStepIndex.value = landingIndex
+    currentStepIndex.value = landingIndex
+  }
 
   function updateFormData (patch: Partial<IUpdatePermitDraftPayload>): void {
     formData.value = { ...formData.value, ...patch }
@@ -301,6 +417,8 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
     submitting,
     submitError,
     submitFailures,
+    certificateState,
+    certificateProblems,
     isFirstStep,
     isLastStep,
     isNextBlocked,
@@ -310,7 +428,8 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
     goToStep,
     updateFormData,
     updateChecklistAnswers,
-    submitDraft
+    submitDraft,
+    hydrate
   }
 }
 

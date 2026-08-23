@@ -3,6 +3,7 @@ import type { z } from 'zod'
 import type { IUpdatePermitDraftPayload } from '@/models/request/permit/PermitReq.model'
 import type { TChecklistAnswer } from '../constants/SafetyChecklist'
 import type { ISubmitFailures } from '../constants/SubmitErrorRouting'
+import type { ICertificateProblem, TCertificatePreflightState } from '../composables/useCertificatePreflight'
 import { Step1TypeSchema } from '../schema/Step1Type.schema'
 import { Step2BasicInfoSchema } from '../schema/Step2BasicInfo.schema'
 import { Step3SafetyChecksSchema } from '../schema/Step3SafetyChecks.schema'
@@ -45,6 +46,13 @@ export interface IWizardStepProps {
    * does, the server is right.
    */
   submitFailures: ISubmitFailures
+  /**
+   * CRT-004. The wizard's single shared certificate pre-flight verdict (`useWizard`, backed by
+   * `useCertificatePreflight`). Step 4 uses it to mark blocking workers; step 6 uses it for the
+   * review row. Never authoritative — the server's answer on submit always wins.
+   */
+  certificateState: TCertificatePreflightState
+  certificateProblems: ICertificateProblem[]
 }
 
 export interface IWizardStepEmits {

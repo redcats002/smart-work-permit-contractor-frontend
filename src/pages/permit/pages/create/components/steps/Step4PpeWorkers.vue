@@ -75,6 +75,9 @@
               <th class="px-3 py-2.5 font-semibold">
                 {{ t('permit.create.steps.ppeWorkers.column.role') }}
               </th>
+              <th class="w-24 px-3 py-2.5 font-semibold">
+                {{ t('permit.create.steps.ppeWorkers.column.certificate') }}
+              </th>
               <template v-if="healthRequired">
                 <th class="w-28 px-3 py-2.5 font-semibold">
                   {{ t('permit.create.steps.ppeWorkers.column.bloodPressure') }}
@@ -93,7 +96,7 @@
             <tr
               v-for="row in workerRows"
               :key="row.index"
-              :class="row.certificateRejected ? 'bg-status-rejected-bg' : ''"
+              :class="row.certificateRejected || row.certificateProblem ? 'bg-status-rejected-bg' : ''"
               class="border-t border-surface-muted align-top">
               <td class="px-3 py-3 font-mono text-[11px] text-text-quaternary">
                 {{ row.index + 1 }}
@@ -119,6 +122,17 @@
                     {{ t(`permit.create.steps.ppeWorkers.role.${workerRoleSlug(role)}`) }}
                   </button>
                 </div>
+              </td>
+              <td class="px-3 py-3">
+                <span
+                  v-if="certificateBadge(row) !== 'none'"
+                  :class="CERTIFICATE_BADGE_CLASS[certificateBadge(row)]"
+                  class="inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold whitespace-nowrap">
+                  {{ t(`permit.create.steps.ppeWorkers.certificate.${certificateBadge(row)}`) }}
+                </span>
+                <span
+                  v-else
+                  class="text-[11px] text-text-tertiary">—</span>
               </td>
               <template v-if="healthRequired">
                 <td class="px-3 py-3">
@@ -179,6 +193,22 @@
         </ul>
       </div>
 
+      <div
+        v-if="certificateProblems.length"
+        class="rounded-lg border border-status-rejected-border bg-status-rejected-bg px-3.5 py-2.5
+          text-[12.5px] text-status-rejected-fg-emphasis">
+        <p class="font-bold">
+          <span aria-hidden="true">⛔</span> {{ t('permit.create.steps.ppeWorkers.certificatePreflight.title') }}
+        </p>
+        <ul class="mt-1 flex list-none flex-col gap-0.5 p-0">
+          <li
+            v-for="problem in certificateProblems"
+            :key="problem.workerName">
+            {{ problem.workerName }} · {{ t(`permit.create.steps.ppeWorkers.certificate.${problem.reason === 'MISSING' ? 'missing' : 'expired'}`) }}
+          </li>
+        </ul>
+      </div>
+
       <p
         v-if="anyHealthFailure"
         class="rounded-lg border border-status-rejected-border bg-status-rejected-bg px-3.5 py-2.5
@@ -215,11 +245,12 @@ import { EVIDENCE_SLOTS, findPhoto, upsertPhoto, type IEvidenceSlot } from '../.
 import {
   requiresHealthCheck, workerHealthIssues, workerRoleSlug, workerRowComplete
 } from '../../constants/WorkerHealth'
+import type { ICertificateProblem } from '../../composables/useCertificatePreflight'
 import type { ISubmitCertificateFailure } from '../../constants/SubmitErrorRouting'
 import type { IWizardStepEmits, IWizardStepProps } from '../../wizard/WizardSteps'
 
 /**
- * PMT-007 — step 4, PPE / photo evidence / workers.
+ * PMT-007 / CRT-004 — step 4, PPE / photo evidence / workers.
  *
  * `workers` is REPLACED WHOLESALE by PATCH /permits/:id, so every mutation here emits the complete
  * list — never a partial one, which would silently delete the rest. `photos` upsert per `slotKey`.
@@ -232,6 +263,23 @@ interface IWorkerRow {
   alcoholFailed: boolean
   /** The SERVER refused this worker's certificate on the last submit — not a client-side check. */
   certificateRejected: boolean
+  /**
+   * `useWizard`'s shared client-side pre-flight verdict (`certificateProblems` prop) for this
+   * named worker — undefined when the worker has no name yet, or the lookup found nothing wrong.
+   */
+  certificateProblem: ICertificateProblem['reason'] | undefined
+}
+
+/** Client-side certificate badge shown per worker row. Never authoritative — see the module doc. */
+type TCertificateBadge = 'none' | 'checking' | 'pass' | 'missing' | 'expired' | 'unknown'
+
+const CERTIFICATE_BADGE_CLASS: Record<TCertificateBadge, string> = {
+  none: '',
+  checking: 'bg-surface-muted text-text-tertiary',
+  pass: 'bg-status-active-bg text-status-active-fg-emphasis',
+  missing: 'bg-status-rejected-bg text-status-rejected-fg',
+  expired: 'bg-status-rejected-bg text-status-rejected-fg',
+  unknown: 'bg-status-pending-bg text-status-pending-fg'
 }
 
 const props = defineProps<IWizardStepProps>()
@@ -264,6 +312,33 @@ const serverRejectedCertificates: ComputedRef<ISubmitCertificateFailure[]> = com
   (): ISubmitCertificateFailure[] => props.submitFailures?.certificates ?? []
 )
 
+/**
+ * CRT-004. `useWizard`'s shared client-side pre-flight verdict for THIS step's workers — the
+ * same instance step 6 reads, kept in sync via a debounced watch on `formData.workers`.
+ */
+const certificateProblems: ComputedRef<ICertificateProblem[]> = computed(
+  (): ICertificateProblem[] => props.certificateProblems
+)
+
+function certificateProblemFor (workerName: string): ICertificateProblem['reason'] | undefined {
+  return certificateProblems.value.find(
+    (problem: ICertificateProblem): boolean => problem.workerName === workerName
+  )?.reason
+}
+
+/**
+ * Never claims 'pass' while the shared check is still 'loading'/'idle', and never claims 'pass'
+ * on 'unknown' (a failed lookup) — an unresolved or failed answer must not look like a pass.
+ */
+function certificateBadge (row: IWorkerRow): TCertificateBadge {
+  if (!row.worker.workerName?.trim()) return 'none'
+  if (row.certificateProblem === 'MISSING') return 'missing'
+  if (row.certificateProblem === 'EXPIRED') return 'expired'
+  if (props.certificateState === 'loading' || props.certificateState === 'idle') return 'checking'
+  if (props.certificateState === 'pass' || props.certificateState === 'fail') return 'pass'
+  return 'unknown'
+}
+
 const workerRows: ComputedRef<IWorkerRow[]> = computed((): IWorkerRow[] =>
   workers.value.map((worker: IPermitWorker, index: number): IWorkerRow => {
     const issues = workerHealthIssues(worker)
@@ -275,7 +350,8 @@ const workerRows: ComputedRef<IWorkerRow[]> = computed((): IWorkerRow[] =>
       alcoholFailed: issues.includes('ALCOHOL'),
       certificateRejected: serverRejectedCertificates.value.some(
         (failure: ISubmitCertificateFailure): boolean => failure.workerName === worker.workerName
-      )
+      ),
+      certificateProblem: certificateProblemFor(worker.workerName)
     }
   })
 )

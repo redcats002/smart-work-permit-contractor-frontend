@@ -20,6 +20,8 @@
     <div class="w-full min-h-90 rounded-xl border border-border bg-surface-card p-5 md:p-7">
       <component
         :is="currentStep.component"
+        :certificate-problems="certificateProblems"
+        :certificate-state="certificateState"
         :checklist-answers="checklistAnswers"
         :draft-id="draftId"
         :form-data="formData"
@@ -68,6 +70,8 @@ const {
   draftId,
   submitError,
   submitFailures,
+  certificateState,
+  certificateProblems,
   isFirstStep,
   isLastStep,
   isNextBlocked,

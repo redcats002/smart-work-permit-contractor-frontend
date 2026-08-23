@@ -58,6 +58,14 @@ const permit: typeof permitEn = {
   },
   create: {
     title: 'สร้างใบอนุญาตใหม่',
+    editTitle: 'แก้ไขใบอนุญาต',
+    duplicateTitle: 'ทำสำเนาและแก้ไข',
+    resuming: 'กำลังโหลดใบร่างของคุณ…',
+    duplicating: 'กำลังทำสำเนาใบอนุญาตนี้…',
+    notEditable: {
+      title: 'ใบอนุญาตนี้ไม่สามารถแก้ไขได้อีกต่อไป',
+      back: 'กลับไปที่ใบอนุญาต'
+    },
     steps: {
       type: {
         prompt: 'เลือกประเภทของงานที่ใบอนุญาตนี้ครอบคลุม',
@@ -231,6 +239,7 @@ const permit: typeof permitEn = {
         column: {
           worker: 'รายชื่อ',
           role: 'หน้าที่ในใบอนุญาต',
+          certificate: 'ใบรับรอง',
           bloodPressure: 'ความดันโลหิต',
           alcohol: 'แอลกอฮอล์',
           result: 'ผลตรวจ'
@@ -255,6 +264,16 @@ const permit: typeof permitEn = {
         health: {
           pass: '✓ ผ่าน',
           fail: '✗ ไม่ผ่าน'
+        },
+        certificate: {
+          checking: '… กำลังตรวจสอบ',
+          pass: '✓ ถูกต้อง',
+          missing: '✗ ไม่มีใบรับรอง',
+          expired: '✗ หมดอายุ',
+          unknown: '? ยังไม่ได้ตรวจสอบ'
+        },
+        certificatePreflight: {
+          title: 'ผู้ปฏิบัติงานเหล่านี้ต้องมีใบรับรองที่ถูกต้องก่อนจึงจะดำเนินการต่อได้'
         },
         serverRejected: {
           title: 'เซิร์ฟเวอร์ปฏิเสธผู้ปฏิบัติงานเหล่านี้ตอนส่งใบอนุญาต'

@@ -6,13 +6,14 @@ import type { IPermitWorker } from '@/models/modules/permit/Permit.model'
 import CertificateProvider, { type ICertificateProvider } from '@/resources/provider/certificate/Certificate.provider'
 
 /**
- * PMT-009 — the "worker certificates valid" pre-flight row on the review step.
+ * PMT-009 / CRT-004 — the "worker certificates valid" pre-flight check, shared by the review
+ * step's row (step 6) and the PPE & Workers step's per-worker gate (step 4, `useWizard`).
  *
  * `GET /certificates/worker/:name` answers ONE certificate or null, and every row carries a
  * backend-computed `expired` flag. That flag is the verdict: expiry is NEVER recomputed here
  * (see src/utils/CertificateStatus.ts and the note on ICertificate.expired). The same rule is
- * enforced server-side at submit, which answers `CERT_MISSING` / `CERT_EXPIRED` — this row is a
- * heads-up, not the gate.
+ * enforced server-side at submit, which answers `CERT_MISSING` / `CERT_EXPIRED` — this is a
+ * heads-up / convenience gate, never a promise: the server's verdict on submit always wins.
  */
 export type TCertificatePreflightState = 'idle' | 'loading' | 'pass' | 'fail' | 'unknown'
 
@@ -27,23 +28,38 @@ export interface IUseCertificatePreflight {
   check (workers: IPermitWorker[]): Promise<void>
 }
 
-export function useCertificatePreflight (): IUseCertificatePreflight {
+/**
+ * @param loadingUnit Optional local loading flag passed through to `handleLoading`. Without one,
+ * `handleLoading` drives the GLOBAL loading store — and `check()` is called on every worker-list
+ * edit (`useWizard`'s debounced watcher), which would otherwise flash a full-page spinner per
+ * edit instead of a local "checking" state (already exposed via `state === 'loading'`).
+ */
+export function useCertificatePreflight (loadingUnit?: Ref<boolean>): IUseCertificatePreflight {
   const { mapError } = useApiError()
   const CertificateService: ICertificateProvider = new CertificateProvider()
 
   const state = ref<TCertificatePreflightState>('idle')
   const problems = ref<ICertificateProblem[]>([])
 
+  // Bumped on every call and captured as `token`; a write is discarded once a later call has
+  // started, so an in-flight lookup that resolves AFTER a newer one can never overwrite it with a
+  // stale verdict. Without this, gating Next/Submit on `state` risks the exact class of bug
+  // PROMPT-LOG warns about: a client rule stuck blocking a draft the server would accept.
+  let sequence = 0
+
   async function check (workers: IPermitWorker[]): Promise<void> {
+    const token = ++sequence
     const named = workers.filter((worker: IPermitWorker): boolean => Boolean(worker.workerName?.trim()))
-    problems.value = []
 
     if (named.length === 0) {
+      if (token !== sequence) return
+      problems.value = []
       state.value = 'unknown'
       return
     }
 
     state.value = 'loading'
+    problems.value = []
     const found: ICertificateProblem[] = []
 
     const completed = await handleLoading(
@@ -55,11 +71,13 @@ export function useCertificatePreflight (): IUseCertificatePreflight {
           else if (certificate.expired) found.push({ workerName: worker.workerName, reason: 'EXPIRED' })
         }
         return true
-      }, {}, (error: unknown): void => {
+      }, { loadingUnit }, (error: unknown): void => {
         // Never claim "valid" on a failed lookup — an unknown answer is not a pass.
         mapError(error)
       }
     )
+
+    if (token !== sequence) return
 
     problems.value = found
     if (completed !== true) state.value = 'unknown'

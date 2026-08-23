@@ -815,3 +815,211 @@ which is precisely what misdirected the user in §1. It sits under `permit.wizar
 
 Left in the dev DB by the reproduction: draft/pending probe permits `WP-HOT-20260821-002`
 through `-006`.
+
+## 2026-08-23 — `useUpload` fake-success fix, and `CRT-004` (Certificate gate on permit submission)
+
+Two tasks. Ran alongside a concurrent agent doing `PMT-014` (draft resume/edit/duplicate) in
+`create/**` — every `create/**` file was re-read immediately before editing to pick up its
+in-flight changes (`useWizard.ts` already had `hydrate()` on disk when this session started
+editing it).
+
+### 1. `useUpload()` no longer fabricates a success
+
+`src/composables/useUpload.ts`'s `upload()` caught every failure, toasted a hardcoded Thai string
+about **Google Cloud Storage** billing (wrong app — this stack is MinIO — and unlocalized), and
+returned a fake `{ fileUrl: '/assets/images/logo.png', filePath: '', ... }`. Both deleted; the
+function now lets the real error propagate. The one real caller,
+`AddCertificateModal.vue`'s `useCreate()`, already ran inside `handleLoading`, whose default
+error callback already routes through `useApiError().mapError()` — so a thrown upload error is
+now localized off `errorCode` (reusing the existing `FILE_TYPE_NOT_ALLOWED` /
+`FILE_TOO_LARGE` / `UPLOAD_FOLDER_NOT_ALLOWED` / `STORAGE_UNAVAILABLE` copy) with **no new code
+needed to wire that up**. Because `getUploadImages` now throws before `CertificateService.create`
+is reached, a failed upload no longer silently saves a certificate with no attachment. Added one
+more guard on top: if `getUploadImages` resolves without throwing but still has no usable
+`path` (e.g. an upload response missing `originalName`, which `useUpload`'s splice skips), `useCreate`
+now throws explicitly instead of quietly sending `filePath: undefined`.
+
+**PhotoSlot.vue decision:** left alone, per the task's default posture. It already avoids
+`useUpload` for its own reasons (empty `fileRef` on the wire, `minLength: 1`) and is a different
+page tree being touched by the concurrent PMT-014 agent this run. Its doc comment ("swallows every
+failure... returns a FAKE success") is now stale given this fix, but editing a comment-only line in
+a file the other agent may be mid-edit on isn't worth the collision risk — flagged here as a
+follow-up for whoever owns that file next, not fixed.
+
+### 2. `CRT-004` — certificate gate on permit submission
+
+Read the acceptance list before writing anything. Bullets 3 and 4 were **already satisfied** by
+`PMT-009`'s work, unchanged here — see the certificate module's `CRT-004` evidence for the exact
+wiring (`useCertificatePreflight` driving Step6Review's row, `submitDraft()`/`SubmitErrorRouting.ts`
+extracting `certificateFailures[]` off a rejected submit and naming the worker on step 4). Bullets 1
+and 2 — a live client-side gate on step 4/6, before the user ever hits submit — were not built and
+are what this session added:
+
+- `useCertificatePreflight.ts` gained a sequence-token staleness guard (a superseded `check()` call
+  can no longer overwrite a newer one's verdict) and an optional `loadingUnit` param, so a shared
+  instance triggered on every worker-list edit doesn't drive the global loading spinner.
+- `useWizard.ts` hoists ONE shared `useCertificatePreflight()` instance — debounced (500ms) off the
+  `workers` array reference, `immediate: true` so it also covers a hydrated/resumed draft — and
+  exposes `certificateState`/`certificateProblems`. `isNextBlocked` now also gates on the PPE &
+  Workers step when `certificateState === 'fail'`, and `canSubmit` gates the same way — both
+  **only** on a CONFIRMED `'fail'`, never `'loading'`/`'unknown'`, so an unresolved lookup can never
+  be stricter than the server (the exact class of bug PROMPT-LOG's JSA entry warns against).
+- `WizardSteps.ts`'s `IWizardStepProps` gained `certificateState`/`certificateProblems`, threaded
+  through `PermitCreatePage.vue` to whichever step is mounted.
+- `Step4PpeWorkers.vue`: a per-worker certificate badge column (checking/valid/missing/expired/
+  unknown, never claiming "valid" while unresolved) and a named blocking-worker list, mirroring the
+  existing server-rejected list's shape.
+- `Step6Review.vue`: converted from owning its own `useCertificatePreflight()` instance to reading
+  the two values as props — same displayed behavior, but now guaranteed to agree with step 4's gate
+  since both read the one instance in `useWizard`.
+- New locale keys (`permit.create.steps.ppeWorkers.column.certificate`, `.certificate.*`,
+  `.certificatePreflight.title`) in EN + TH, added as targeted key insertions, not whole-file writes.
+- Bullet 5 (Inspector-side `CERT_BLOCKED` denial) is a negative acceptance — different repo,
+  correctly not built.
+
+New test: `src/tests/pages/permit/create/composables/useWizard.certificatePreflight.test.ts` (4
+cases) — blocks Next and names the worker on a missing cert, unblocks on a valid one, never blocks
+on an unresolved lookup, and proves the staleness guard directly (a stale 'missing' resolving after
+a newer 'pass' cannot flip Next back to blocked).
+
+### Verification
+
+- `bunx eslint` on every touched file — clean.
+- `bunx vue-tsc --noEmit` — clean.
+- `bunx vitest run` — **48 files / 450 tests PASS** (baseline before this session: 44 files / 440
+  tests, all from the concurrent PMT-014 agent's own work plus this session's one new test file).
+- `./init.sh` — **ALL GREEN**: typecheck PASS, lint PASS, vitest 48/450 PASS, live smoke 16/16 PASS
+  against `localhost:3000`.
+- `node ../scripts/check-contract-sync.mjs` — **OK**, openapi in sync, 25 backend error codes all
+  declared, `/api/v1` prefix present.
+
+### Deviations / open questions
+
+- The acceptance list's wording ("Wizard step 4 shows each registered worker's certificate state")
+  is satisfied as a per-row badge rather than a dedicated summary banner — matches the existing
+  health-check column's presentation, no separate UI pattern invented.
+- No conflicts hit with the concurrent PMT-014 agent — its `hydrate()` addition to `useWizard.ts`
+  and its three new page/composable files were re-read fresh immediately before this session's own
+  edits to the shared files (`useWizard.ts`, `WizardSteps.ts`) landed on top, cleanly.
+
+## 2026-08-23 — `PMT-014`: draft resume, edit and Duplicate & Edit
+
+Read the acceptance list and the resume/duplicate trap (safetyReading APPENDS, must not replay)
+before writing anything. A concurrent `CRT-004` (certificate pre-flight) session landed on top of
+this one's own `useWizard.ts`/`WizardSteps.ts` edits mid-session — re-read both fresh before
+finishing, wired `certificateState`/`certificateProblems` through the new `PermitEditPage.vue` the
+same way `PermitCreatePage.vue` does, and re-verified. No other conflicts.
+
+### 1. Resume route (`/permits/:id/edit`, `PermitEditPage.vue`)
+
+- `useWizard.hydrate(permit: IPermitDetail)` — new function, seeds `formData` from the base fields
+  plus `safetyReading`/`workers`/`jsaSteps`/`photos`, sets `draftId = permit.id` (so the very next
+  edit PATCHes instead of POSTing a second draft), primes the private `lastPersistedReading` from
+  `latestSafetyReading` (so an unrelated edit never re-appends the copied/unchanged reading as a
+  new row), and lands on the first step whose own schema fails `safeParse` — every step before that
+  one is therefore unlocked (`maxUnlockedStepIndex` set to the same index). Never calls the API
+  itself — a pure state-seed, called once by the page after it has confirmed the permit is
+  editable. Does NOT touch AGENTS.md's "wizard state lives in a composable, not a store" rule:
+  `/permits/create` still boots a fresh `useWizard()` with nothing hydrated.
+- `useResumePermit.ts` (new) — confirms editability with the REAL operation rather than guessing
+  off `status` client-side: `PATCH /permits/:id` with an **empty body** is a genuine no-op edit, so
+  DRAFT succeeds and returns the current permit, while a non-DRAFT id answers the backend's own
+  403 `PERMIT_NOT_EDITABLE`, mapped through `useApiError().mapError()` and rendered instead of the
+  wizard. This is also the confirm PATCH the live walk below shows landing before hydration.
+- `PermitEditPage.vue` (new) — loading skeleton → error card (`PERMIT_NOT_EDITABLE` or any other
+  mapped verdict, never the backend `message`) → the real wizard shell (StepperHeader + step
+  component + WizardFooter, same contract as `PermitCreatePage.vue`, including the
+  `certificateState`/`certificateProblems` props `CRT-004` added). `onMounted` calls
+  `fetchEditablePermit(id)` then `hydrate(permit)` on success.
+
+### 2. Duplicate route (`/permits/:id/duplicate`, `PermitDuplicatePage.vue`)
+
+No clone endpoint exists (`docs/api/openapi.json` has no such path) — client-side `GET` the source,
+`POST /permits` with only the fields `ICreatePermitDraftPayload` declares (so `id`/`status`/
+`submittedAt`/`rejectedReason`/`rejectedAt`/every approval/closure field are excluded **by
+construction**, not by a blocklist), then one `PATCH` copying `jsaSteps`/`workers`/`photos`/the
+latest `safetyReading` onto the NEW draft — sent exactly once, since this is the very first PATCH
+that draft has ever seen. `useDuplicatePermit.ts` (new) owns all of it; `PermitDuplicatePage.vue` is
+pure orchestration (call it, `router.replace` to `PermitEditPage` for the new id on success). The
+resume route then owns confirming editability and hydrating — no logic duplicated between the two
+pages.
+
+### 3. Two real bugs found and fixed during the live walk (see Verification)
+
+- **`workers[].bloodPressure`/`alcoholReading` are `string` on the wire, never nullable**
+  (`docs/api/openapi.json`), but `GET`/PATCH-response rows return `null` for any worker that never
+  had a health check — i.e. every non-Confined-Space permit, always. Hydrating that `null` straight
+  into `formData` and later round-tripping it via `doPersist`'s wholesale `workers` replace, or
+  copying it straight through on duplicate, both 400 (`Expected property 'workers.N.bloodPressure'
+  to be string but found: null`). Fixed in both `useWizard.hydrate` (a new `toFormWorkers` sanitizer)
+  and `useDuplicatePermit.toWireWorkers` — `null` is converted to `undefined` (omitted), a real
+  string is passed through unchanged. Caught live against the real backend, not by a unit test —
+  both composables' tests were updated afterward to pin the fix.
+- **`PermitEditPage.vue` didn't pass `certificate-state`/`certificate-problems`** to the mounted
+  step component — it was written before the concurrent `CRT-004` session added those two required
+  props to `IWizardStepProps`. Landed on a duplicated draft's Review-adjacent step and threw
+  `Cannot read properties of undefined (reading 'map')` inside `Step6Review.vue`. Fixed by wiring
+  the same two props `PermitCreatePage.vue` already passes.
+
+### 4. `PermitStatusBanner.vue` (CTA wiring only, per scope)
+
+Replaced the disabled placeholder button + "not available yet" caption with a real button: DRAFT →
+`router.push({ name: 'PermitEditPage', params: { id: permit.id } })`, REJECTED → `PermitDuplicatePage`
+the same way. No other change to this file. `PermitDetailPage.test.ts` (owned by a different item,
+but its two banner assertions pinned the OLD disabled state and would otherwise fail) updated in
+place: still one assertion each, now asserting the button is enabled and correctly labelled, plus
+the two new route names registered in that test's router so mount doesn't throw (vue-router 5).
+
+### Verification
+
+- `bunx eslint` on every touched file — clean.
+- `bunx vue-tsc --noEmit` — clean.
+- `bunx vitest run` — **48 files / 451 tests PASS**. New: `useWizard.hydrate.test.ts` (4 cases —
+  seeds formData/draftId, lands on the correct first-invalid step, lands on Review when everything
+  already validates, and pins the health-field null→omitted fix), `PermitEditPage.test.ts` (2 cases
+  — hydrates and lands correctly; renders the server's `PERMIT_NOT_EDITABLE` verdict instead of a
+  broken wizard, and never renders the backend `message`), `PermitDuplicatePage.test.ts` (1 case —
+  the new-draft payload excludes every forbidden field, the collections and reading copy over
+  correctly, and it lands on `PermitEditPage` for the NEW id).
+- `./init.sh` — **ALL GREEN**: typecheck PASS, lint PASS, vitest 48/451 PASS, live smoke 15/15 PASS
+  against `localhost:3000`.
+- `node ../scripts/check-contract-sync.mjs` — **OK**, openapi in sync, 25 backend error codes all
+  declared, `/api/v1` prefix present.
+- **Live browser walk** (headless Chromium via Playwright, against the running dev server on
+  `:8081` — confirmed by content, `:8080` serves a different repo — and the real backend on
+  `:3000`; login as `contractor@e2e.test`, a separate seeded account from `scripts/smoke-api.mjs`'s
+  own, kept separate specifically to dodge the login rate limiter (`10/15min` per identifier) that
+  this session's own repeated debugging attempts against the `smoke.contractor@` account tripped):
+  - (a) created a DRAFT (`type: heights`, no reading/workers/jsaSteps) through the app's own
+    authenticated session — the same call the wizard's autosave makes — and left it there.
+  - (b) the DRAFT's detail page `Edit Permit` button is visible and enabled, and navigates to
+    `/permits/:id/edit`.
+  - (c) landed on **Safety Checks (step 3)** — the first step that actually fails (no wind reading
+    recorded) — not step 1, with steps 1–2 shown `✓` done/unlocked in the stepper.
+  - (d) jumped back to step 2 via the stepper (proving it really is unlocked, not just displayed
+    done), edited the title, waited past the 1500ms autosave debounce: exactly **one PATCH to the
+    same id**, confirmed by intercepting the request — no second `POST /permits`.
+  - (e) `Duplicate & Edit` on the seeded REJECTED permit `WP-HOT-E2E-005`: `GET` (source) → `POST
+    /permits` (new draft — request body inspected directly, carries none of `id`/`status`/
+    `submittedAt`/`rejectedReason`/`rejectedAt`/any approval or closure field) → `PATCH` (request
+    body inspected directly: copies `jsaSteps`/`workers`/`photos`/`safetyReading` exactly once) →
+    redirected to `/permits/<newId>/edit`, whose own confirm-editability PATCH request body was
+    verified to be a literal empty `{}` — the reading is never replayed. Zero console errors on the
+    final run (after the two fixes above).
+
+### Deviations / open questions
+
+- None on the acceptance list — every bullet was satisfied and verified live, including the two
+  that were explicit traps (safetyReading replay, and not pre-empting the server's editability
+  check with a client-side status guess).
+- "Leaving and re-entering an unfinished resumed draft does not create additional drafts" was not
+  re-walked as a literal navigate-away-and-back in the browser (budget), but is true by
+  construction, not just by observation: the resume route only ever operates on the id already in
+  its URL — nothing in `PermitEditPage.vue`, `useResumePermit.ts` or `useWizard.hydrate` calls
+  `create()`/`POST /permits`, so re-entering the same URL re-runs the identical confirm-PATCH +
+  hydrate sequence against the identical id every time.
+- Probe drafts `WP-HT-20260823-001` through `-009` and duplicate drafts off `WP-HOT-E2E-005` are
+  left in the dev DB from the live walk (same posture as prior sessions' probe permits).
+- The stale doc comment on `Permit.router.ts` ("NOT yet registered in src/router/index.ts... during
+  this wave") predates this repo's four-router registration and was already wrong before this
+  session; left as found — out of this item's scope to correct.

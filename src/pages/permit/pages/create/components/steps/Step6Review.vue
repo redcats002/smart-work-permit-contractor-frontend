@@ -57,14 +57,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, watch, type ComputedRef } from 'vue'
+import { computed, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { dayjs } from '@/plugins/dayjs.plugin'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import type { IJsaStep, IPermitWorker } from '@/models/modules/permit/Permit.model'
 import { validateReadings, type IReadingFailure } from '@/utils/PermitSafety'
 import { allEvidenceAttached } from '../../constants/PhotoEvidence'
-import { useCertificatePreflight, type ICertificateProblem } from '../../composables/useCertificatePreflight'
+import type { ICertificateProblem } from '../../composables/useCertificatePreflight'
 import type { IWizardStepEmits, IWizardStepProps } from '../../wizard/WizardSteps'
 
 /**
@@ -74,6 +74,10 @@ import type { IWizardStepEmits, IWizardStepProps } from '../../wizard/WizardStep
  * `useWizard.submitDraft()`, which localizes any rejection off `errorCode` and returns the user
  * to the step that can fix it. The green rows below are a heads-up, never a promise: the server
  * re-validates everything and its verdict wins.
+ *
+ * CRT-004 — `certificateState`/`certificateProblems` are now props, not a locally-owned
+ * `useCertificatePreflight()` instance: `useWizard` runs ONE shared check (also gating step 4's
+ * Next), so this row and that gate can never disagree about which worker is blocking.
  */
 type TPreflightState = 'pass' | 'fail' | 'unknown' | 'loading'
 
@@ -120,7 +124,6 @@ const props = defineProps<IWizardStepProps>()
 defineEmits<IWizardStepEmits>()
 
 const { t } = useI18n()
-const { state: certificateState, problems: certificateProblems, check: checkCertificates } = useCertificatePreflight()
 
 const permitType: ComputedRef<TPermitType | undefined> = computed(
   (): TPermitType | undefined => props.formData.type
@@ -187,23 +190,15 @@ const preflightRows: ComputedRef<IPreflightRow[]> = computed((): IPreflightRow[]
     },
     {
       key: 'certificates',
-      state: certificateState.value === 'idle' ? 'loading' : certificateState.value,
-      labelKey: `permit.create.steps.review.check.certificate.${certificateState.value === 'idle' ? 'loading' : certificateState.value}`,
+      state: props.certificateState === 'idle' ? 'loading' : props.certificateState,
+      labelKey: `permit.create.steps.review.check.certificate.${props.certificateState === 'idle' ? 'loading' : props.certificateState}`,
       params: {
-        workers: certificateProblems.value
+        workers: props.certificateProblems
           .map((problem: ICertificateProblem): string => problem.workerName)
           .join(', ')
       }
     }
   ]
-})
-
-onMounted((): void => {
-  void checkCertificates(workers.value)
-})
-
-watch(workers, (next: IPermitWorker[]): void => {
-  void checkCertificates(next)
 })
 </script>
 

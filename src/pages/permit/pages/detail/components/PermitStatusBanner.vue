@@ -32,18 +32,13 @@
     <div class="flex shrink-0 flex-col items-start gap-1 sm:items-end">
       <slot name="action">
         <button
-          v-if="inertAction"
-          class="inline-flex h-10.5 cursor-not-allowed items-center justify-center rounded-lg bg-disabled px-4.5 text-[13px]
-            font-semibold whitespace-nowrap text-white"
+          v-if="editRouteName"
+          class="inline-flex h-10.5 cursor-pointer items-center justify-center rounded-lg bg-primary px-4.5 text-[13px]
+            font-semibold whitespace-nowrap text-white hover:bg-primary-emphasis"
           type="button"
-          disabled>
+          @click="router.push({ name: editRouteName, params: { id: permit.id } })">
           {{ t(`permit.detail.banner.${variant}.action`) }}
         </button>
-        <p
-          v-if="inertAction"
-          class="max-w-60 text-[11px] leading-snug text-text-tertiary">
-          {{ t('permit.detail.banner.actionUnavailable') }}
-        </p>
       </slot>
     </div>
   </div>
@@ -52,6 +47,7 @@
 <script setup lang="ts">
 import { computed, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import type { IPermitDetail } from '@/models/response/permit/PermitRes.model'
 
 /**
@@ -85,6 +81,7 @@ interface IBannerStyle {
 const props = withDefaults(defineProps<IProps>(), { justSubmitted: false, rejectedBy: '' })
 
 const { t, d } = useI18n()
+const router = useRouter()
 
 const STYLE: Record<TPermitBannerVariant, IBannerStyle> = {
   draft: {
@@ -155,12 +152,19 @@ const description: ComputedRef<string> = computed((): string => {
 const rejectedByLabel: ComputedRef<string> = computed((): string => props.rejectedBy || t('permit.detail.audit.unknownActor'))
 
 /**
- * DRAFT's "Edit Permit" and REJECTED's "Duplicate & Edit" both need a wizard route that can load
- * an existing permit. No such route exists (`Permit.router.ts` has list / create / detail only) and
- * draft resume is unbuilt, so the affordance renders disabled with a hint rather than linking to a
- * route name — on vue-router 5 an unregistered name throws at render and blanks the page.
+ * DRAFT's "Edit Permit" opens the resume route against THIS permit's own id; REJECTED's
+ * "Duplicate & Edit" opens the duplicate route, which clones it into a new draft before opening
+ * that (PMT-014). Both routes are registered in `Permit.router.ts` in the same change as this one
+ * — on vue-router 5 an unregistered name throws at render and blanks the page, so this must never
+ * ship ahead of the route.
  */
-const inertAction: ComputedRef<boolean> = computed((): boolean => variant.value === 'draft' || variant.value === 'rejected')
+const editRouteName: ComputedRef<'PermitEditPage' | 'PermitDuplicatePage' | undefined> = computed(
+  (): 'PermitEditPage' | 'PermitDuplicatePage' | undefined => {
+    if (variant.value === 'draft') return 'PermitEditPage'
+    if (variant.value === 'rejected') return 'PermitDuplicatePage'
+    return undefined
+  }
+)
 </script>
 
 <style scoped>

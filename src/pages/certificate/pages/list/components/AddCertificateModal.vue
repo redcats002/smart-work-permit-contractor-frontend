@@ -143,8 +143,13 @@ function onFileChange (event: Event): void {
  *
  * The attachment is sent as the storage **path**, not the `fileUrl`: that URL is a presigned
  * handle that expires 60 seconds after upload (REVIEW-2026-08-19 S4), so storing it stores a
- * dead link. An empty path means the upload did not actually succeed (useUpload swallows a
- * failed upload and returns a placeholder), so it is dropped rather than sent as `''`.
+ * dead link. `useUpload` no longer fabricates a success on a failed upload — it now rethrows,
+ * which propagates out of this function before `CertificateService.create` is ever called, so
+ * `onSubmit`'s `handleLoading` error callback surfaces the real (localized) failure and no
+ * certificate is saved. A second, narrower guard below covers the case where `getUploadImages`
+ * resolves without throwing but still has no usable path (e.g. an upload response missing
+ * `originalName`, which `useUpload` skips splicing) — that must abort too, not save silently
+ * without the attachment the user asked for.
  *
  * Returns whether an attachment was picked, so the caller can tell the user the truth: the API
  * does not persist this field yet (docs/api/GAPS.md row G).
@@ -163,6 +168,7 @@ async function useCreate (values: TAddCertificateFormValues): Promise<boolean> {
       path: ''
     }])
     filePath = uploaded?.path || undefined
+    if (!filePath) throw new Error('Certificate attachment upload did not return a storage path')
   }
 
   await CertificateService.create({

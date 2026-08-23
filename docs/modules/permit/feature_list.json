@@ -301,6 +301,29 @@
       ],
       "status": "done",
       "evidence": "2026-08-22 — ./init.sh: ALL GREEN (exit 0) — typecheck PASS, lint PASS, vitest 42 files / 433 tests PASS, live smoke 16/16 PASS against localhost:3000. node ../scripts/check-contract-sync.mjs: OK — openapi in sync, 25 backend error codes all declared. New tests: src/tests/pages/permit/detail/PermitDetailSections.test.ts (9 tests) pin the section order, the empty states, the server verdict, the so2 exclusion, the JSA phase/sortOrder grouping, the Confined Space health badge, the missing photo slot and the closure record. Browser pass (headless Chromium against the running dev server on :8081, seeded contractor): six sections render in order in Thai, no console errors, and at 375px scrollWidth === clientWidth (tables scroll inside their own container). ACTIVE / FIRE_MONITOR / CLOSED states were NOT reachable — the seeded contractor owns DRAFT permits only."
+    },
+    {
+      "id": "PMT-014",
+      "type": "feature",
+      "name": "Draft resume, edit and Duplicate & Edit",
+      "description": "A DRAFT permit cannot currently be reopened and a REJECTED one cannot be re-used: Permit.router.ts is list/create/detail only, so PMT-010's 'Edit Permit' and 'Duplicate & Edit' banner CTAs ship disabled. Add the route(s), hydrate the wizard from an existing permit, and wire both CTAs.",
+      "acceptance": [
+        "A route exists that opens the wizard against an existing permit id; PMT-010's DRAFT 'Edit Permit' CTA is enabled and navigates to it",
+        "useWizard hydrates formData from the fetched permit (including safetyReading, workers, jsaSteps, photos) and sets draftId, so the first edit PATCHes instead of creating a second draft",
+        "Resume lands the user on the first step that does not validate, not always step 1; every earlier step is left unlocked",
+        "Only an editable permit can be opened this way — a non-DRAFT id renders the server's PERMIT_NOT_EDITABLE verdict rather than a broken wizard, and the client does not pre-empt that check",
+        "REJECTED 'Duplicate & Edit' copies the rejected permit into a NEW draft and opens it. There is no duplicate/clone route on the wire (openapi.json has no such path) — it is a client-side POST /permits followed by PATCH, and the copy must NOT carry over id, status, submittedAt, rejectedReason/rejectedAt or any approval/closure field",
+        "The safetyReading log is not replayed on duplicate — safetyReading APPENDS a row per PATCH (see useWizard's lastPersistedReading), so a copied reading must be sent at most once",
+        "Leaving and re-entering an unfinished resumed draft does not create additional drafts",
+        "./init.sh green"
+      ],
+      "notes": "AGENTS.md records a deliberate decision that wizard state lives in a composable, not a Pinia store, so navigating to /permits/create always starts clean. That rule is about the CREATE route and must stay true; hydration belongs to the resume route, which is a different entry point. Do not convert useWizard to a store. Unblocks the two acceptance sub-clauses PMT-010 shipped disabled.",
+      "dependencies": [
+        "PMT-009",
+        "PMT-010"
+      ],
+      "status": "done",
+      "evidence": "2026-08-23 — bunx eslint on every touched file: clean. bunx vue-tsc --noEmit: clean. bunx vitest run: 48 files / 451 tests PASS. ./init.sh: ALL GREEN (typecheck PASS, lint PASS, vitest 48/451 PASS, live smoke 15/15 PASS against localhost:3000). node ../scripts/check-contract-sync.mjs: OK — openapi in sync, 25 backend error codes declared, /api/v1 prefix present. Live browser walk (headless Chromium via Playwright against the running dev server on :8081, real backend on :3000, seeded e2e contractor account): (a) created a DRAFT via the app's own API under the authenticated session, left it unfinished; (b) 'Edit Permit' CTA on the DRAFT detail page navigates to /permits/:id/edit; (c) landed on step 3 'Safety Checks' — the first step that does not validate (a heights permit with no wind reading), not step 1, with steps 1-2 shown unlocked/done; (d) editing the resumed draft (jumping back to step 2 via the stepper, editing the title) fired exactly one PATCH to the SAME id, no second POST /permits; (e) 'Duplicate & Edit' on the seeded REJECTED permit WP-HOT-E2E-005 issued GET (source) -> POST /permits (new draft, verified request body carries none of id/status/submittedAt/rejectedReason/rejectedAt/approval/closure fields) -> PATCH (copies jsaSteps/workers/photos/safetyReading once, request body inspected directly) -> redirected to /permits/<newId>/edit, which then issued its own confirm-editability PATCH with an EMPTY body (verified via request interception) — the reading is never replayed. Zero console errors on the final run. Two real bugs were found and fixed during this same walk (see progress.md)."
     }
   ]
 }

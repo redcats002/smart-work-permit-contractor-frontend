@@ -90,6 +90,8 @@ function buildRouter (): Router {
     routes: [
       { path: '/permits', name: 'PermitListPage', component: { template: '<div />' } },
       { path: '/permits/create', name: 'PermitCreatePage', component: { template: '<div />' } },
+      { path: '/permits/:id/edit', name: 'PermitEditPage', component: { template: '<div />' } },
+      { path: '/permits/:id/duplicate', name: 'PermitDuplicatePage', component: { template: '<div />' } },
       { path: '/permits/:id', name: 'PermitDetailPage', component: PermitDetailPage }
     ]
   })
@@ -141,7 +143,7 @@ describe('PermitDetailPage (PMT-010)', () => {
     expect(wrapper.text()).toContain('Somchai P.')
   })
 
-  it('renders the DRAFT banner with an inert edit affordance — no edit route exists yet', async () => {
+  it('renders the DRAFT banner with a working "Edit Permit" CTA to the resume route (PMT-014)', async () => {
     vi.spyOn(PermitProvider.prototype, 'detail').mockResolvedValue(detailResponse(buildPermit({ status: 'DRAFT' })))
     vi.spyOn(PermitProvider.prototype, 'audit').mockResolvedValue(auditResponse([]))
 
@@ -150,7 +152,9 @@ describe('PermitDetailPage (PMT-010)', () => {
     const banner = wrapper.find('[data-test="banner-draft"]')
     expect(banner.exists()).toBe(true)
     expect(banner.text()).toContain('Draft Permit')
-    expect(banner.find('button[disabled]').exists()).toBe(true)
+    const action = banner.find('button')
+    expect(action.attributes('disabled')).toBeUndefined()
+    expect(action.text()).toContain('Edit Permit')
   })
 
   it('renders the REJECTED banner with the reason and the rejecting officer from the audit trail', async () => {
@@ -168,6 +172,9 @@ describe('PermitDetailPage (PMT-010)', () => {
     expect(banner.text()).toContain('Gas reading missing for the confined area')
     expect(banner.text()).toContain('Pornchai S.')
     expect(banner.text()).toContain('Immutable')
+    const action = banner.find('button')
+    expect(action.attributes('disabled')).toBeUndefined()
+    expect(action.text()).toContain('Duplicate & Edit')
   })
 
   it('shows the just-submitted success banner only when the ?submitted=1 hint is present', async () => {

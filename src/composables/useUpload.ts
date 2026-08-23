@@ -1,5 +1,4 @@
 import { ref, type Ref } from 'vue'
-import { toast } from '@/plugins/toast'
 import UploadProvider, {
   type IMedia,
   type IUploadProvider,
@@ -38,14 +37,8 @@ export default function useUpload (): IUseUpload {
   }
 
   async function upload (file: File): Promise<IUploadResponse> {
-    try {
-      const { data } = await UploadService.uploadFile(file)
-      return data
-    } catch (error: unknown) {
-      toast.warn('ตรวจสอบ billing ของ Google Cloud Storage ด้วยครับ')
-      console.error('Error uploading file:', error)
-      return { fileUrl: '/assets/images/logo.png', filePath: '', fileType: 'image/jpeg', originalName: file?.name || 'unknown' }
-    }
+    const { data } = await UploadService.uploadFile(file)
+    return data
   }
 
   return {

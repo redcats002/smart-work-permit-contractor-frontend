@@ -51,6 +51,14 @@ const permit = {
   },
   create: {
     title: 'New Permit',
+    editTitle: 'Edit Permit',
+    duplicateTitle: 'Duplicate & Edit',
+    resuming: 'Loading your draft…',
+    duplicating: 'Duplicating this permit…',
+    notEditable: {
+      title: 'This permit can no longer be edited',
+      back: 'Back to permit'
+    },
     steps: {
       type: {
         prompt: 'Choose the type of work this permit covers',
@@ -224,6 +232,7 @@ const permit = {
         column: {
           worker: 'Worker',
           role: 'Role on permit',
+          certificate: 'Certificate',
           bloodPressure: 'Blood pressure',
           alcohol: 'Alcohol',
           result: 'Result'
@@ -248,6 +257,18 @@ const permit = {
         health: {
           pass: '✓ Pass',
           fail: '✗ Fail'
+        },
+        // CRT-004 — client-side worker-certificate pre-flight badge (step 4). 'checking'/'unknown'
+        // never gate Next; only a confirmed 'missing'/'expired' does (see useWizard.isNextBlocked).
+        certificate: {
+          checking: '… Checking',
+          pass: '✓ Valid',
+          missing: '✗ Missing',
+          expired: '✗ Expired',
+          unknown: '? Unchecked'
+        },
+        certificatePreflight: {
+          title: 'These workers need a valid certificate before you can continue'
         },
         serverRejected: {
           title: 'The server refused these workers when you submitted'
