@@ -355,8 +355,14 @@ passed and was left alone; manufacturing symmetry would have been churn).
 
 ### What changed
 
-- Safety app, 36 files outside `src/volt/`: `text-surface-{500,600}` → `text-surface-800`,
-  `text-surface-400` → `text-surface-700`.
+- Safety app, 36 files outside `src/volt/`: `text-surface-{500,600}` → `text-surface-800`.
+  `text-surface-400` first went to `700` as a blanket pass, which was wrong — that tier held far
+  more real content than affordances (`BaseTable`'s `bodyRow`, i.e. **every table body row in the
+  app**, the permit-overview and status-banner `<dl>`s, the dashboard KPI labels, the gas-log cells,
+  the time-picker's hour/minute values). 34 of those sites were promoted again to `800`. What is
+  left at `700` is 17 sites: icon glyphs (`size-5`/`size-8`/absolutely-positioned adornments), the
+  pager chevron buttons, and one `disabled:` state. **`surface-700` is not a text colour** — if a
+  human reads it as content, it is `800`.
 - Contractor app, 6 files: `text-surface-400` → `text-surface-500` for adornment icons and pager
   chevrons. The three `text-6xl` ghost numerals on the 404 / not-permitted / not-available pages
   keep `surface-400` deliberately — they are decoration, not content.
