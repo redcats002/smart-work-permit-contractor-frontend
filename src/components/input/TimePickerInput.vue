@@ -3,7 +3,7 @@
     <button
       :class="[
         'h-9 w-full rounded-sm border border-surface-300 bg-surface-0 px-3 text-sm flex items-center gap-2',
-        'disabled:cursor-not-allowed disabled:bg-surface-100 disabled:text-surface-400',
+        'disabled:cursor-not-allowed disabled:bg-surface-100 disabled:text-surface-500',
         'hover:border-surface-400 focus:border-primary'
       ]"
       :disabled="disabled"

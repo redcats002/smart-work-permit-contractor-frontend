@@ -60,7 +60,7 @@
               ]"
               :disabled="!!attrs.disabled"
               :icon="prependIcon"
-              class="absolute top-1/2 -mt-2 text-surface-400 leading-none inset-s-3 z-2" />
+              class="absolute top-1/2 -mt-2 text-surface-500 leading-none inset-s-3 z-2" />
           </slot>
           <InputText
             v-model="inputModel"
@@ -81,7 +81,7 @@
               ]"
               :disabled="!!attrs.disabled"
               :icon="appendIcon"
-              class="absolute top-1/2 -mt-2 text-surface-400 leading-none inset-e-3 z-2" />
+              class="absolute top-1/2 -mt-2 text-surface-500 leading-none inset-e-3 z-2" />
           </slot>
         </div>
       </template>

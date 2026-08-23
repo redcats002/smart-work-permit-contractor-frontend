@@ -14,7 +14,7 @@
   <div class="hidden lg:flex items-center gap-1">
     <button
       :disabled="currentPage === 1"
-      class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-surface-200 text-surface-400 hover:bg-surface-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+      class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-surface-200 text-surface-500 hover:bg-surface-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
       @click="goToPage(1)">
       <Icon
         :stroke-width="2"
@@ -24,7 +24,7 @@
 
     <button
       :disabled="currentPage === 1"
-      class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-surface-200 text-surface-400 hover:bg-surface-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+      class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-surface-200 text-surface-500 hover:bg-surface-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
       @click="goToPage(currentPage - 1)">
       <Icon
         :stroke-width="2"
@@ -37,7 +37,7 @@
       :key="page">
       <span
         v-if="page === '...'"
-        class="px-2 text-surface-400">
+        class="px-2 text-surface-500">
         <Icon
           class="size-4 text-(--color-text-secondary)"
           icon="lucide:ellipsis" />
@@ -55,7 +55,7 @@
 
     <button
       :disabled="currentPage >= totalPages"
-      class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-surface-200 text-surface-400 hover:bg-surface-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+      class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-surface-200 text-surface-500 hover:bg-surface-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
       @click="goToPage(currentPage + 1)">
       <Icon
         :stroke-width="2"
@@ -65,7 +65,7 @@
 
     <button
       :disabled="currentPage >= totalPages"
-      class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-surface-200 text-surface-400 hover:bg-surface-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+      class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-surface-200 text-surface-500 hover:bg-surface-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
       @click="goToPage(totalPages)">
       <Icon
         :stroke-width="2"
@@ -77,7 +77,7 @@
   <div class="flex lg:hidden items-center gap-1">
     <button
       :disabled="currentPage === 1"
-      class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-surface-200 text-surface-400 hover:bg-surface-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+      class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-surface-200 text-surface-500 hover:bg-surface-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
       @click="goToPage(currentPage - 1)">
       <Icon
         :stroke-width="2"
@@ -98,7 +98,7 @@
 
     <button
       :disabled="currentPage >= totalPages"
-      class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-surface-200 text-surface-400 hover:bg-surface-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+      class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-surface-200 text-surface-500 hover:bg-surface-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
       @click="goToPage(currentPage + 1)">
       <Icon
         :stroke-width="2"

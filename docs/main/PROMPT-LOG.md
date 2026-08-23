@@ -324,6 +324,57 @@ provisioning row at all in a system whose whole point is an append-only provisio
 
 ---
 
+## 2026-08-23 — Session 6: text contrast across both frontends
+
+Reported from a screenshot of the Safety app's contractor list: column headers, the page subtitle
+and the email/firm cells were barely distinguishable from the background.
+
+**Root cause, and why it will recur if only the screen is patched.** The Safety app's surface scale
+(`smart-work-permit-frontend/src/assets/css/primevue.css`) is not the conventional Tailwind/Zinc
+direction. On it, `surface-500` is `#CBD2D9` — a *border* grey, 1.6:1 on white. `text-surface-500`
+therefore reads like a perfectly ordinary secondary-text class and renders as nearly nothing. The
+Contractor app uses stock Zinc, where the same class is `#71717A` at 4.8:1 and is correct. One class
+name, two opposite outcomes, and 111 call sites had taken the wrong one.
+
+### Ruling — the documented "muted" text colours fail AA and are no longer text colours
+
+**Now:** readable text is `surface-800` (`#5B656F`, 5.9:1 on white / 5.6:1 on the `surface-50` header
+row). `surface-700` (`#8B95A0`, 3.1:1) is reserved for placeholders and decorative or adornment
+icons, where 3:1 is the correct WCAG threshold. Nothing lighter carries text.
+
+**Was:** `tailwind.css` documented "Text: primary #16191D, secondary #5B656F, muted
+#8B95A0/#A4ADB6", and `primevue.css` documented the whole 600-950 range as "text". Both are now
+annotated. The rejected option was to keep following the documented palette: `#8B95A0` is 3.1:1 and
+`#A4ADB6` is 2.5:1, so the design palette and WCAG AA cannot both be satisfied and AA wins. The
+other rejected option was renumbering the surface scale to the conventional direction — that would
+have flipped every `bg-surface-*` and `border-surface-*` in the app, a far larger blast radius than
+the text classes actually at fault.
+
+**Applies to:** safety (the sweep), contractor (affordance tier only — its readable text already
+passed and was left alone; manufacturing symmetry would have been churn).
+
+### What changed
+
+- Safety app, 36 files outside `src/volt/`: `text-surface-{500,600}` → `text-surface-800`,
+  `text-surface-400` → `text-surface-700`.
+- Contractor app, 6 files: `text-surface-400` → `text-surface-500` for adornment icons and pager
+  chevrons. The three `text-6xl` ghost numerals on the 404 / not-permitted / not-available pages
+  keep `surface-400` deliberately — they are decoration, not content.
+- Safety contractor list: the inactive status pill was `bg-surface-200 text-surface-600` at 1.7:1
+  (the grey-on-grey in the screenshot) and wrapped mid-word in Thai. Now a bordered pill with
+  `whitespace-nowrap`, and the active pill uses the existing `--color-success-*` triple instead of
+  Tailwind's default `green-100/800` — this page was the only one in the app not using the triple.
+- `src/volt/**` was deliberately NOT swept: it is scaffolded by `volt add <Component>` and
+  ESLint-ignored, so edits there are lost on regeneration. Volt's
+  `placeholder:text-surface-500` renders an invisible placeholder on this app's scale, so the
+  correction lives as one rule in `src/assets/css/main.css` instead, where regeneration cannot
+  reach it.
+- `scripts/check-contract-sync.mjs` gained check 5, which fails on any new
+  `text-surface-{300,400,500,600}` in the Safety app outside `src/volt/`. Without it this regresses
+  the next time someone writes the class that reads correct and renders invisible.
+
+---
+
 ## Standing rulings — do not re-decide these
 
 - **Never render the backend's `message` field.** Clients localize off `errorCode` (EN + TH). This
@@ -339,6 +390,10 @@ provisioning row at all in a system whose whole point is an append-only provisio
   `PATCH /users/:id`.
 - **Accounts are deactivated, never deleted**, and a deployment may never reach zero active safety
   officers (`409 LAST_SAFETY_OFFICER`).
+- **Readable text is `surface-800` or darker, in both frontends.** The Safety app's surface scale
+  runs light-to-dark in the non-standard direction, so `text-surface-500` there is a border grey at
+  1.6:1 while the identical class in the Contractor app is a correct 4.8:1. `surface-700` is for
+  placeholders and decorative icons only. `check-contract-sync.mjs` check 5 enforces it.
 - **Blocked items are product decisions**, not work: backend `feat-011`, `SHL-006` (self-hosting
   fonts for the offline Inspector role). Do not implement them speculatively.
 
