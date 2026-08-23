@@ -125,7 +125,7 @@ Role column below: **✅** allowed for `contractor`, **⛔** 403 `FORBIDDEN_ROLE
 
 | Method | Path | Contractor | Notes |
 |---|---|---|---|
-| GET | `/api/v1/notifications` | \* | `limit` only (default 50), **no pagination envelope**, unread first |
+| GET | `/api/v1/notifications` | \* | paginated (feat-011c) — `page`/`limit`/`sortBy`/`sortOrder`/`search`, same envelope as `/certificates`; unread first within the page |
 | POST | `/api/v1/notifications/:id/dismiss` | \* | id is **numeric** |
 | POST | `/api/v1/upload` | \* | multipart `file`, optional `subFolder` → `{fileUrl, filePath, fileType, originalName}` |
 | GET/DELETE | `/api/v1/file?filePath=` | \* | signed URL / delete |
@@ -334,6 +334,6 @@ cleanly when no API is reachable. Copying it is cheaper than discovering a shape
 
 ## 7. Known gaps
 
-- `GET /notifications` has no pagination — `limit` only.
+- ~~`GET /notifications` has no pagination — `limit` only.~~ Fixed 2026-08-23 (feat-011c): real `page`/`limit` pagination, same `CommonPaginationModel`/`CommonPaginationResponseModel` envelope as `/certificates`.
 - Notification ids are numeric; permit ids are strings (`WP-…`); certificate ids are numeric.
 - The audit log is hash-chained (`hash`, `prevHash`) and append-only; there is no mutation endpoint.

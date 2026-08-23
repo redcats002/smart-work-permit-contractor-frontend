@@ -11,10 +11,10 @@
         class="flex items-center line-clamp-3"
         no-gutters>
         <Icon
-          :color="getColor(item.valid)"
+          :color="getIconColor(item.valid)"
           :icon="getIcon(item.valid)"
           class="mr-1" />
-        <span :class="[`text-${getColor(item.valid)}`]">
+        <span :class="[getTextClass(item.valid)]">
           {{ item?.label || '-' }}
         </span>
       </div>
@@ -45,8 +45,11 @@ const props = withDefaults(defineProps<IProps>(), {
 function getIcon (value: boolean): string {
   return value ? 'mdi-check-circle' : 'mdi-close-circle'
 }
-function getColor (value: boolean): string {
-  return value ? 'green' : 'red'
+function getIconColor (value: boolean): string {
+  return value ? 'var(--color-status-active-fg-emphasis)' : 'var(--color-status-rejected-fg-emphasis)'
+}
+function getTextClass (value: boolean): string {
+  return value ? 'text-status-active-fg-emphasis' : 'text-status-rejected-fg-emphasis'
 }
 </script>
 

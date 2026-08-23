@@ -18,7 +18,7 @@ const STUB_USER = {
 }
 
 function emptyList (): TGetNotificationListResponse {
-  return { message: 'success', data: [] }
+  return { message: 'success', data: [], count: 0, page: 1, limit: 50, totalPage: 0 }
 }
 
 // Mounts the composable inside a real component instance — onUnmounted requires an active

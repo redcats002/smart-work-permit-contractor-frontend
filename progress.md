@@ -1049,3 +1049,33 @@ the contracting firm and is descriptive — nothing may be scoped by it.
 Note for whoever writes the next error-path test here: `useApiError` localizes through the app's own
 i18n plugin instance, not the one a test installs, and the app's default locale is Thai. Assert the
 Thai string.
+
+## 2026-08-23 — backend feat-011c: GET /notifications is now paginated (cross-repo, backend-owned session)
+
+Not this repo's own feature-list item — a backend session (`feat-011`) touched this app's
+notification code because both frontends' own contract checks previously asserted `GET
+/notifications` is NOT paginated, so a backend-only change would have broken this repo silently.
+
+`GET /notifications` now takes the same `CommonPaginationModel` query params
+(`page`/`limit`/`sortBy`/`sortOrder`/`search`) and answers the same
+`CommonPaginationResponseModel` envelope `GET /certificates` does — `count`/`page`/`limit`/
+`totalPage` alongside `data` — instead of the old `limit`-only, non-paginated response.
+
+Changed: `NotificationRes.model.ts` (`TGetNotificationListResponse` is now
+`IBasePaginationResponse<INotification>`), `Notification.provider.ts` (`IGetNotificationListQuery`
+gains `page`), `stores/Notification.ts` (`fetch()` now sends `{ page: 1, limit: 50 }` explicitly —
+this store's own shape, a flat `notifications` array with no paging UI, is unchanged; it just reads
+`response.data` off the envelope now instead of the whole thing), `scripts/smoke-api.mjs` (asserts
+the paginated shape instead of its absence), `useNotificationPolling.test.ts` (`emptyList()` fixture
+gained the pagination fields the type now requires). This app was already safe by construction — the
+axios interceptor passes the whole envelope through and callers read `.data` — so the change here is
+entirely typing/comments plus the store's explicit `page`/`limit`, not a transport fix.
+
+`docs/api/GAPS.md` row D closed. Row F (permit `description`, feat-011a) updated: the backend now
+serves a nullable `description` on create/update/every permit response, but **no frontend
+consumption was wired in this session** — that is a separate item, still open here.
+
+`./init.sh` green: typecheck PASS, lint PASS (2 pre-existing `vue/one-component-per-file` warnings,
+unrelated), vitest 460 pass / 50 files, smoke 15/15 checks pass against a live backend
+(`contractor@e2e.test`) including "notifications are paginated (feat-011c) — same envelope shape as
+certificates".

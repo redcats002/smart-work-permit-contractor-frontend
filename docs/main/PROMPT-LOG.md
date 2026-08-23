@@ -381,6 +381,54 @@ passed and was left alone; manufacturing symmetry would have been churn).
 
 ---
 
+## 2026-08-23 — Session 7: owner unblocks SHL-006 and feat-011
+
+Both items had sat `blocked` on a product call, not on work. The owner made both calls today.
+
+### Ruling — the offline shell is in this milestone; self-host the fonts (`SHL-006`)
+
+**Now:** the Safety/Inspector app self-hosts IBM Plex Sans, IBM Plex Sans Thai and IBM Plex Mono at
+400/500/600/700. No CDN font request anywhere.
+
+**Was:** `SHL-001` loaded all three from the Google Fonts CDN, matching the prototype, and `SHL-006`
+recorded the open question "is offline-shell support in this milestone?". The item's own evidence
+had already worked out the answer and been ignored for four days: the sibling repo's `CLAUDE.md`
+states "No CDN or Google Fonts import — this app runs inside an industrial facility" as a settled
+constraint, and the Inspector role in THIS app has a *stronger* offline requirement than the
+contractor app does. So the CDN link contradicted a documented project constraint rather than merely
+risking one. The rejected option was to keep the CDN and rely on the system fallback face — on a
+plant floor with no signal that silently degrades, and Thai coverage degrades worst.
+
+**Applies to:** safety.
+
+Verified, not assumed: `fonts.googleapis.com` and `fonts.gstatic.com` blocked at the network layer,
+zero requests fired, `document.fonts` reporting all three families loaded locally at all four
+weights, and a Thai screen rendering real Plex Sans Thai glyphs rather than tofu. 16 woff2 files,
+274,512 bytes, `unicode-range`-subset. Separately confirmed against a **production build**, not just
+the dev server: `index.html`'s `/src/assets/css/fonts.css` link is rewritten by Vite into the hashed
+CSS bundle, all 16 files ship to `dist`, and no Google reference survives.
+
+Stale premise found and corrected: the contractor repo does **not** already self-host IBM Plex — it
+self-hosts LINE Seed Sans TH only. The files were fetched fresh, not copied.
+
+### Ruling — `feat-011` split three ways
+
+`feat-011` bundled three unrelated product decisions, which is why it sat blocked as a unit.
+
+**(a) free-text work description — build it.** The design has a "Work description" field with
+nowhere to go; `Permit` gains a nullable free-text `description`.
+
+**(b) organisation / company concept — closed, will not exist.** Already ruled in session 5: the
+deployment IS the company. Recorded as closed rather than pending so it stops reading as backlog.
+
+**(c) `GET /notifications` pagination — build it.** It had `limit` and no `page`. Note this is
+inherently cross-repo: **both** frontends carry a contract check asserting notifications are *not*
+paginated, so a backend-only change breaks two repos silently.
+
+**Applies to:** api, contractor, safety.
+
+---
+
 ## Standing rulings — do not re-decide these
 
 - **Never render the backend's `message` field.** Clients localize off `errorCode` (EN + TH). This

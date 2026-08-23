@@ -123,8 +123,10 @@ async function main () {
     certificates.body?.data?.[0])
 
   const notifications = await call('GET', '/notifications')
-  check('notifications are enveloped, limit-only, and NOT paginated',
-    isEnvelope(notifications.body) && Array.isArray(notifications.body.data) && !('totalPage' in notifications.body),
+  check('notifications are paginated (feat-011c) — same envelope shape as certificates',
+    isEnvelope(notifications.body) && Array.isArray(notifications.body.data)
+    && typeof notifications.body.totalPage === 'number' && typeof notifications.body.page === 'number'
+    && typeof notifications.body.limit === 'number' && typeof notifications.body.count === 'number',
     notifications.body)
 
   console.info('')

@@ -9,9 +9,12 @@ import HttpRequest from '@/resources/HttpRequest'
  * `GET /notifications/check?type=WORK|ANNOUNCEMENT` — does not exist on the backend; it was the
  * app's only live network call, so it 404'd on every page load while nothing read the result.
  *
- * This endpoint takes `limit` only: no page/offset, and no pagination envelope in the response.
+ * (feat-011c) The list endpoint now takes real `page`/`limit` pagination — same
+ * `CommonPaginationModel` shape as `GET /certificates` — and answers a paginated envelope
+ * (`count`/`page`/`limit`/`totalPage` alongside `data`), not the old limit-only, non-paginated one.
  */
 export interface IGetNotificationListQuery {
+  page?: number
   limit?: number
 }
 
