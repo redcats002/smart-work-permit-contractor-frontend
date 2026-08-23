@@ -1,0 +1,40 @@
+name: Deploy Contractor Web
+
+# `dev` is the live branch — origin/main is stale (workspace commit 58b3b01).
+on:
+  push: { branches: [dev] }
+  pull_request:
+
+concurrency:
+  group: swp-contractor-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    permissions: { contents: read, deployments: write }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with: { bun-version: 1.3.13 }
+      - run: bun install --frozen-lockfile
+
+      - run: bun run lint
+      - run: bun run test:run
+      # No check-contract-sync step: that script lives in the workspace root, which
+      # is a separate repo that gitignores this one. It stays a local pre-push check.
+
+      # `bun run build` runs vue-tsc first. VITE_* is inlined at build time, so this
+      # value is baked into the bundle — changing it needs a rebuild, not a restart.
+      # Set it as a repo variable: Settings → Secrets and variables → Actions → Variables.
+      - run: bun run build
+        env:
+          VITE_APP_API_URL: ${{ vars.VITE_APP_API_URL }}
+
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          command: >-
+            pages deploy dist --project-name=swp-contractor
+            --branch=${{ github.head_ref || github.ref_name }}

@@ -19,6 +19,7 @@ const error = {
   PERMIT_NOT_SUBMITTABLE: 'This permit cannot be submitted in its current state.',
   PERMIT_NOT_ACTIVE: 'This action is only available while the permit is active.',
   NOT_HOT_WORK: 'Fire Watch applies to Hot Work permits only.',
+  PERMIT_POSITION_REQUIRED: 'Set a position on the facility plan before submitting this permit.',
 
   // Closure guards
   ENTRANTS_STILL_INSIDE: 'Closure blocked — one or more entrants are still checked in.',

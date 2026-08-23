@@ -29,6 +29,9 @@ export enum EApiErrorCode {
   PERMIT_NOT_SUBMITTABLE = 'PERMIT_NOT_SUBMITTABLE',
   PERMIT_NOT_ACTIVE = 'PERMIT_NOT_ACTIVE',
   NOT_HOT_WORK = 'NOT_HOT_WORK',
+  // feat-023 — position on the facility plan. Submit refuses with this once an active plan
+  // exists and the permit has no planId/planX/planY set.
+  PERMIT_POSITION_REQUIRED = 'PERMIT_POSITION_REQUIRED',
 
   // Closure guards — safety-officer actions, surfaced here because a contractor watching a permit
   // needs to understand why it has not closed.

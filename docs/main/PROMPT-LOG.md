@@ -429,6 +429,74 @@ paginated, so a backend-only change breaks two repos silently.
 
 ---
 
+## 2026-08-24 — Session 8: facility plan, real permit positions, clickable permit rows
+
+Three requests: blank placeholders on every dropdown, clickable rows in the permit register, and a
+real floor plan behind the risk map with properly marked positions. Planned by interview before any
+code. The third is the one with a domain model.
+
+### Why the risk map needed more than a background image
+
+`LocationPosition.ts` derived pin positions by **hashing the free-text `location` string** — its own
+comment called the result "meaningless but stable". That is fine behind a blank dashed rectangle,
+where it reads as a placeholder. Behind a real floor plan the same pin reads as a claim about where
+hot work is physically happening, and an officer could dispatch to the wrong part of the plant. The
+governing rule for this feature: **never draw a pin in a position the system cannot vouch for.**
+
+### Rulings — facility plan and permit position
+
+**Vocabulary.** *Facility plan* = the uploaded, cropped image. *Plan version* = an immutable record.
+*Position* = `planId` + `planX` + `planY`. *Unplaced* = no position. *Stale-plan* = a live permit
+whose `planId` is not the active version. Use these words; do not invent synonyms.
+
+1. **The contractor sets the position**, not the officer, and never derived from text.
+2. **Frozen at submit.** From PENDING onward the position is read-only for everyone, safety officers
+   included. A wrong pin is handled by **reject-with-reason**. Rejected: letting the officer drag the
+   pin during review — the reviewer must never edit the artefact they then approve, and "who placed
+   this pin" must have exactly one answer.
+   **Refinement, 2026-08-24:** the editable window is `DRAFT || REJECTED`, not DRAFT alone. `reject`
+   sets status to `REJECTED` (it does not return the permit to DRAFT), and that is already the window
+   every other field uses. A DRAFT-only position would have been the one field a contractor could not
+   fix after a rejection, making this very ruling's remedy inert. Do not "tighten" it back.
+3. **One active plan, but the permit stores `planId`.** That column is what makes a stale pin *known*
+   stale rather than silently wrong. Rejected: global coordinates with no plan reference — the day a
+   second building or a mezzanine appears, every stored coordinate is ambiguous with no way to tell
+   which plan it meant.
+4. **Plans are immutable versions, retained, never overwritten or deleted.** A live permit frozen
+   against v1 must resolve v1 forever, so `GET /facility-plans/:id` is any-role, not officer-only.
+5. **Cropping happens only before activation.** A crop changes the coordinate frame; a post-activation
+   crop would silently move every existing pin.
+6. **Position is required to submit only once an active plan exists** (`PERMIT_POSITION_REQUIRED`,
+   the 28th code). Before any plan is uploaded, submit behaves as before; permits predating the plan
+   are grandfathered as unplaced. Rejected: always-required, which takes the whole system hostage on
+   day one, and always-optional, which lets the map be a permanently partial view of live hazards.
+7. **A running permit is frozen** — the owner's rule, and it is what forced 3 and 4. Replacing the
+   plan must not alter a live permit, so the risk map gets a **plan-version switcher** rather than
+   re-placing or re-projecting existing pins.
+
+### Security — the facility plan is not an ordinary upload
+
+`POST /upload` is guarded `auth: true`, so any authenticated role including a contractor can use it.
+That is fine for permit photos. It is not fine for the facility plan: a contractor who can replace it
+can silently relocate every hazard on the officer's map. `UPLOAD_ALLOWED_SUBFOLDERS` (storage policy)
+is now split from `UPLOAD_CLIENT_SUBFOLDERS` (client-selectable), and `facility-plans` is in the
+first only. **The schema narrowing alone was verified insufficient** — Elysia's validation on the
+multipart path let a stubbed officer session through to MinIO anyway — so `UploadService.execute()`
+re-checks at runtime. Do not "simplify" that re-check away as redundant with the schema.
+
+### `meta.root` was documented and dead
+
+Four routes declared `meta.root` as the back-button mechanism and **nothing in the repo read it**, so
+`SafetyReviewDetailPage` always returned to the pending queue. The new `permits/:id` route would have
+shipped a breadcrumb saying "← Review Queue" from the All Permits register — the exact bounce this
+ruling existed to prevent. Now wired, with the label taken from the root route's own `meta.titleKey`
+(`documentTitle.*` is already a page name in both locales), so it needs no per-page back string and
+any future route declaring `meta.root` gets a correct back link for free.
+
+**Applies to:** api, safety, contractor.
+
+---
+
 ## Standing rulings — do not re-decide these
 
 - **Never render the backend's `message` field.** Clients localize off `errorCode` (EN + TH). This
@@ -448,6 +516,13 @@ paginated, so a backend-only change breaks two repos silently.
   runs light-to-dark in the non-standard direction, so `text-surface-500` there is a border grey at
   1.6:1 while the identical class in the Contractor app is a correct 4.8:1. `surface-700` is for
   placeholders and decorative icons only. `check-contract-sync.mjs` check 5 enforces it.
+- **Never draw a risk-map pin in a position the system cannot vouch for.** Positions are set by the
+  contractor while DRAFT/REJECTED and frozen at submit; plans are immutable versions; a permit whose
+  `planId` is not the rendered plan is shown via the version switcher, never re-projected. The old
+  hash-of-location mapping is gone and must not return, even as a fallback.
+- **`facility-plans` is a server-owned upload prefix.** It is in `UPLOAD_ALLOWED_SUBFOLDERS` and NOT
+  in `UPLOAD_CLIENT_SUBFOLDERS`, and `UploadService` re-checks it at runtime because the schema alone
+  does not hold. Never widen the generic upload route to reach it.
 - **Blocked items are product decisions**, not work: backend `feat-011`, `SHL-006` (self-hosting
   fonts for the offline Inspector role). Do not implement them speculatively.
 
