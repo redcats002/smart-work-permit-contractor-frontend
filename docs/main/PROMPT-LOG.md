@@ -299,7 +299,14 @@ real API as well as the mock. The paginated envelope keeps its sibling keys; a s
 does not. Note the two apps differ here **on purpose**: the contractor app passes the envelope
 through whole and its callers read `.data`.
 
-**Left in the dev DB:** a deactivated probe account `probe-con-1@test.local`.
+**Hardened on review:** `POST /users/` originally wrote the role, the profile row and the audit row
+as three separate calls. `userAuth.api.createUser` cannot join a Prisma transaction, but the other
+three now do — so a mid-write failure leaves an account with **no `permitRole`**, which is inert
+(every guarded route answers `403 FORBIDDEN_ROLE`), rather than a fully-roled account with no
+provisioning row at all in a system whose whole point is an append-only provisioning trail.
+
+**Left in the dev DB:** probe accounts `probe-con-1@test.local` (deactivated) and
+`probe-con-2@test.local`.
 
 **Standing constraints this feature adds:**
 
