@@ -109,7 +109,7 @@ Each module owns parallel trees: routes (`src/router/modules/<Mod>.router.ts` or
 
 | Module | Prefix | Pages (`src/pages/<mod>/pages/`) | Providers | Harness | Built? |
 |---|---|---|---|---|---|
-| `platform` | `/auth` | `auth/login` ✅, `auth/reset-password` ✅, layout shell, i18n, API errors | `auth/public`, `auth/private`, `notification` | `docs/modules/platform/` | shell + i18n + errors + contractor auth/route guard (`PLT-005`) ✅ · notification polling `PLT-007` ⬜ |
+| `platform` | `/auth` | `auth/login` ✅, `auth/reset-password` ✅, layout shell, i18n, API errors | `auth/public`, `auth/private`, `notification` | `docs/modules/platform/` | shell + i18n + errors + contractor auth/route guard (`PLT-005`) ✅ · notification polling `PLT-007` ✅ |
 | `permit` | `/permits` | `list` ✅, `create` (6-step wizard) ✅, `detail` ✅ | `permit` | `docs/modules/permit/` | provider + list ✅ · wizard complete, all six steps real (`PMT-004`–`PMT-009`) · detail built (`PMT-010`–`PMT-012`: banners, QR, audit timeline, closure modal, Fire Watch countdown) |
 | `history` | `/history` | `list` ✅ | `permit` (reused — no own provider dir) | `docs/modules/history/` | ✅ |
 | `certificate` | `/certificates` | `list` ✅ | `certificate` | `docs/modules/certificate/` | ✅ |

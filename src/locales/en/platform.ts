@@ -15,6 +15,11 @@ const platform = {
   },
   menu: 'Menu',
   logout: 'Log out',
+  notifications: {
+    title: 'Notifications',
+    empty: 'No notifications yet',
+    dismiss: 'Dismiss'
+  },
   auth: {
     title: 'Log in',
     subtitle: 'Enter your email and password to log in.',

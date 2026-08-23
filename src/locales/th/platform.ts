@@ -17,6 +17,11 @@ const platform: typeof platformEn = {
   },
   menu: 'เมนู',
   logout: 'ออกจากระบบ',
+  notifications: {
+    title: 'การแจ้งเตือน',
+    empty: 'ยังไม่มีการแจ้งเตือน',
+    dismiss: 'ปิด'
+  },
   auth: {
     title: 'เข้าสู่ระบบ',
     subtitle: 'กรอกอีเมลและรหัสผ่านของคุณเพื่อเข้าสู่ระบบ',

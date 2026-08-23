@@ -30,7 +30,7 @@
       <template #chip="{ value, removeCallback }">
         <span
           v-if="value"
-          class="flex items-center gap-1 rounded-md px-2 py-0.5 text-sm text-[#027CE9] bg-[#E7F4FF]">
+          class="flex items-center gap-1 rounded-md px-2 py-0.5 text-sm text-(--color-info-fg) bg-(--color-info-bg)">
           <span>
             {{ value?.name || value }}
           </span>

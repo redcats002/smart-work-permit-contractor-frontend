@@ -32,9 +32,14 @@ import { useNotificationStore } from '@/stores/Notification'
 import AppDrawer from '@/components/app/AppDrawer.vue'
 import AppTopbar from '@/components/app/AppTopbar.vue'
 import { useAppDrawer } from '@/composables/useAppDrawer'
+import { useNotificationPolling } from '@/composables/useNotificationPolling'
 
 const notificationStore = useNotificationStore()
 const { isOpen, close, toggle } = useAppDrawer()
+
+// PLT-007: the initial fetch below primes the badge immediately on mount; useNotificationPolling
+// owns the recurring interval and stops it the moment the contractor is unauthenticated.
+useNotificationPolling()
 
 onMounted(async (): Promise<void> => {
   await notificationStore.initialize()

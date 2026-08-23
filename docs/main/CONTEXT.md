@@ -101,22 +101,18 @@ files a row in its own `GAPS.md` under `api-adds` / `open` — it does not inven
 > added 2026-08-23 with contractor management (`feat-022`): accounts are deactivated, never deleted,
 > so a switched-off account must not read as "wrong password" at sign-in or as "wrong role" on a
 > request. All are declared with EN/TH strings in both apps — `check-contract-sync.mjs` reports
-> **27 backend error codes all declared**. `RATE_LIMITED` is unchanged but is now emitted by
-> the four public auth routes as well as the QR scan route.
->
-> **Known hole in the check:** check #2 below validates the **contractor** app's `EApiErrorCode`
-> only. The Safety/Inspector app's coverage is **not** machine-checked, so a green contract-sync is
-> not evidence that repo can localize these codes. Verify that one by hand until the check covers
-> both.
+> **27 backend error codes all declared in both frontends**. `RATE_LIMITED` is unchanged but is now
+> emitted by the four public auth routes as well as the QR scan route.
 
 `CERT_BLOCKED` is an **audit action**, not an error code — an entry-denial answers `403 CERT_EXPIRED`
 or `403 CERT_MISSING` and *writes* a `CERT_BLOCKED` audit row.
 
 Adding a code is a three-repo change: emit it in the backend → add it to the contractor's
 `EApiErrorCode` enum → add EN + TH strings in both frontends' locale files. `check-contract-sync.mjs`
-fails if the contractor enum and the backend drift. The Safety/Inspector app has no equivalent enum
-(it localizes via `src/utils/ApiError.ts` + its locale files), so **its** coverage of a new code is
-not machine-checked — add the strings there by hand and confirm with its own tests.
+fails if the contractor enum and the backend drift **and** if the Safety/Inspector app's
+`src/utils/ApiError.ts` (its `API_ERROR_CODES` array and `ErrorCodeToI18nKey` map — it has no
+equivalent enum) drifts, so a green contract-sync is evidence both apps can localize the full
+vocabulary.
 
 ---
 
@@ -192,6 +188,7 @@ node scripts/check-contract-sync.mjs   # just the glue check
 
 1. all three `openapi.json` copies are byte-identical;
 2. every `errorCode` the backend emits is declared in the contractor app's `EApiErrorCode` enum
+   **and** in the Safety/Inspector app's `API_ERROR_CODES` array + `ErrorCodeToI18nKey` map
    (one-way: a declared-but-unemitted code is legal, an emitted-but-undeclared one is not);
 3. each frontend applies the `/api/v1` prefix exactly once — in the client or in the providers,
    never both;
