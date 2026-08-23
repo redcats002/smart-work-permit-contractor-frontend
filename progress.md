@@ -1023,3 +1023,29 @@ the two new route names registered in that test's router so mount doesn't throw 
 - The stale doc comment on `Permit.router.ts` ("NOT yet registered in src/router/index.ts... during
   this wave") predates this repo's four-router registration and was already wrong before this
   session; left as found — out of this item's scope to correct.
+
+## 2026-08-23 — PLT-012 self-service profile
+
+`/profile` — a contractor's own account. Before this the app had no account screen at all: a
+contractor could not see or correct anything about themselves. Backend half is
+`smart-work-permit-api` `feat-022`; the officer-side account register lives in the **Safety** app.
+
+Reached from the drawer's account card, which is now a button — this app has no header menu, so
+that card is the only route in.
+
+Two things a later session should not undo:
+
+- **There is no role or activation control on the page, and a test enforces it.** `PATCH /users/me`
+  does not declare `permitRole` or `active`; the allow-list is the privilege boundary, not a
+  convenience. A control there would promise an edit the server correctly refuses.
+- **An empty phone field is omitted from the payload, not sent as `''`.** The API validates
+  `phoneNumber` as exactly 10 characters, so `''` would 400. Omitted means unchanged, which is what
+  someone who never filled it in expects.
+
+`GAPS.md` row C (no company concept) is **closed as "will not exist"**, not left open: the
+single-tenant ruling means there is no `Company` entity to model. `contractorProfile.firmName` is
+the contracting firm and is descriptive — nothing may be scoped by it.
+
+Note for whoever writes the next error-path test here: `useApiError` localizes through the app's own
+i18n plugin instance, not the one a test installs, and the app's default locale is Thai. Assert the
+Thai string.

@@ -45,6 +45,11 @@ export enum EApiErrorCode {
   UNAUTHENTICATED = 'UNAUTHENTICATED',
   FORBIDDEN_ROLE = 'FORBIDDEN_ROLE',
   USER_ALREADY_EXISTS = 'USER_ALREADY_EXISTS',
+  // Account lifecycle (feat-022, 2026-08-23). Accounts are deactivated, never deleted, so a
+  // refused sign-in or a refused request can mean "this account was switched off" rather than
+  // "wrong credentials" or "wrong role" — the two must not read the same to the user.
+  ACCOUNT_DEACTIVATED = 'ACCOUNT_DEACTIVATED',
+  LAST_SAFETY_OFFICER = 'LAST_SAFETY_OFFICER',
 
   // File upload (contractor) — POST /files. Added by the backend's 2026-08-19 upload-hardening
   // pass (GAPS.md V3/V4). Enforcement is server-side, so a violation comes back as a coded 400

@@ -239,6 +239,50 @@ the two glue files but is **not** covered by a sync check — keep it in the sam
 
 ---
 
+## 2026-08-23 — Session 5: contractor management + profiles
+
+**Asked:** a contractor module in the Safety Officer app — create/register, read, update, delete a
+contractor — plus a self-service profile for both the contractor and the safety-officer side. Stated
+hierarchy: one company has many safety officers and many contractors; one contractor has one company;
+**one domain is one company**. Plan first, review before implementing.
+
+**Established before asking:** none of this exists on the wire. `POST /api/v1/users/` (provision,
+`safety_officer`-only) is the *only* user route — no list, no read, no update, no `me` endpoint of any
+kind. There is **no company/organisation concept anywhere** in the backend: no table, no column, no
+field (`GAPS.md` row C already recorded that `IUser.company` will never be populated). And the Safety
+app's `ProfileCard.vue:57` pushes to `{ name: 'ProfileDetailPage' }`, **a route that does not exist**
+— the Profile menu item is dead today, so building the profile page fixes a live bug rather than only
+adding a feature.
+
+**Rulings given:**
+
+| Question | Ruling | Rejected |
+|---|---|---|
+| How "company" exists | **Single-tenant — the deployment *is* the company.** No `Company` table, no `companyId` on `User`; company identity is deployment config | A real `Company` table with `companyId`, which would force a re-scope of **every** existing role-scoped query (permits, certificates, dashboard, notifications, audit, sync) where one miss is a cross-company data leak |
+| Deleting a contractor | **Deactivate (soft)** — a flag, never a row removal | Hard delete. `permit.createdById` is a plain indexed scalar (deliberately not an FK) and the audit log denormalizes the actor as JSON, so removing the row leaves both pointing at a vanished id and frees the email for reuse — a new account would inherit an old one's identity in historical records |
+| What the officer edits | **Account fields + contractor business fields** (`firmName`, `taxId`, `address`, `contactPerson`, `contractStart`, `contractEnd`) | Account fields only |
+
+**Consequence of the single-tenant ruling, written down so it is not re-opened:** "one company has
+many safety officers / many contractors" is satisfied by the deployment boundary itself. `firmName` on
+a contractor is the **contracting firm that person works for** — a descriptive field, *not* a tenant
+key. **Nothing may be scoped by it.** `GAPS.md` row C closes as *will not exist*, not as pending work.
+
+**Standing constraints this feature adds:**
+
+- **`PATCH /users/me` is an allow-list**, and the allow-list is the security boundary: `firstName`,
+  `lastName`, `phoneNumberPrefix`, `phoneNumber`, `phoneNumberExtend`. Never `permitRole`, never
+  `active`, never `email`. Accepting `permitRole` there lets any contractor promote themselves to
+  `safety_officer` and gain approve/reject/close over the whole facility.
+- **Deactivation is `PATCH /users/:id { active: false }`, and there is no `DELETE /users/:id`.** The
+  UI button reads *Deactivate*. A `DELETE` verb that does not delete is the same class of lie this
+  project has already been bitten by three times.
+- **A deployment must never reach zero active safety officers.** Provisioning is the only way back in
+  — public signup is closed — so the server refuses the last one with `409 LAST_SAFETY_OFFICER`.
+- **An officer may not set another user's password.** A silent overwrite is an account takeover with
+  no audit trail; the existing `request-password-reset` flow is the path.
+
+---
+
 ## Standing rulings — do not re-decide these
 
 - **Never render the backend's `message` field.** Clients localize off `errorCode` (EN + TH). This
@@ -248,6 +292,12 @@ the two glue files but is **not** covered by a sync check — keep it in the sam
   The client may mirror a rule for instant feedback, never to gate beyond it.
 - **Never fabricate a facility floor-plan asset** (`SFO-007` acceptance).
 - **The audit log is append-only.** Never add an edit or delete affordance, in any app.
+- **`PATCH /users/me` never accepts `permitRole`, `active` or `email`.** Self-service profile edits
+  are an allow-list, and that allow-list is a privilege boundary — widening it is privilege
+  escalation, not a convenience. Role and activation change only through the `safety_officer`-gated
+  `PATCH /users/:id`.
+- **Accounts are deactivated, never deleted**, and a deployment may never reach zero active safety
+  officers (`409 LAST_SAFETY_OFFICER`).
 - **Blocked items are product decisions**, not work: backend `feat-011`, `SHL-006` (self-hosting
   fonts for the offline Inspector role). Do not implement them speculatively.
 

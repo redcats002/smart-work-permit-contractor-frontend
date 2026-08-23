@@ -5,6 +5,7 @@ import error from '@/locales/th/error'
 import history from '@/locales/th/history'
 import permit from '@/locales/th/permit'
 import platform from '@/locales/th/platform'
+import profile from '@/locales/th/profile'
 
 /**
  * Thai locale — the app default.
@@ -19,7 +20,8 @@ const th: typeof en = {
   history,
   certificate,
   common,
-  error
+  error,
+  profile
 }
 
 export default th

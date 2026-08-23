@@ -93,11 +93,15 @@ files a row in its own `GAPS.md` under `api-adds` / `open` — it does not inven
 `PERMIT_NOT_ACTIVE`, `PERMIT_NOT_PENDING`, `PERMIT_NOT_CLOSABLE`, `NOT_HOT_WORK`,
 `ENTRANTS_STILL_INSIDE`, `FIRE_WATCH_NOT_ELAPSED`, `INVALID_QR_TOKEN`, `RATE_LIMITED`,
 `UNAUTHENTICATED`, `FORBIDDEN_ROLE`, `USER_ALREADY_EXISTS`,
-`FILE_TYPE_NOT_ALLOWED`, `FILE_TOO_LARGE`, `UPLOAD_FOLDER_NOT_ALLOWED`, `STORAGE_UNAVAILABLE`.
+`FILE_TYPE_NOT_ALLOWED`, `FILE_TOO_LARGE`, `UPLOAD_FOLDER_NOT_ALLOWED`, `STORAGE_UNAVAILABLE`,
+`ACCOUNT_DEACTIVATED`, `LAST_SAFETY_OFFICER`.
 
-> The last four were added by the backend on 2026-08-19 (upload hardening, `REVIEW-2026-08-19.md`
-> S1–S3/C1) and are now declared with EN/TH strings in the contractor app — `check-contract-sync.mjs`
-> reports **25 backend error codes all declared**. `RATE_LIMITED` is unchanged but is now emitted by
+> `FILE_*` / `UPLOAD_*` / `STORAGE_UNAVAILABLE` were added by the backend on 2026-08-19 (upload
+> hardening, `REVIEW-2026-08-19.md` S1–S3/C1). `ACCOUNT_DEACTIVATED` and `LAST_SAFETY_OFFICER` were
+> added 2026-08-23 with contractor management (`feat-022`): accounts are deactivated, never deleted,
+> so a switched-off account must not read as "wrong password" at sign-in or as "wrong role" on a
+> request. All are declared with EN/TH strings in both apps — `check-contract-sync.mjs` reports
+> **27 backend error codes all declared**. `RATE_LIMITED` is unchanged but is now emitted by
 > the four public auth routes as well as the QR scan route.
 >
 > **Known hole in the check:** check #2 below validates the **contractor** app's `EApiErrorCode`

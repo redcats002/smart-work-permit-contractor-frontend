@@ -46,6 +46,14 @@ Two sibling apps exist in **other repos** and are **out of scope here**: the Saf
 > zone picker mirrors the Safety app's zone vocabulary and writes **canonical English** into the free-text
 > `location` — a Thai value splits the pin across the two apps.
 >
+> Built 2026-08-23 (`PLT-012`): `/profile` — the contractor's own account, reached from the drawer's
+> account card. Name and phone are editable via `PATCH /users/me`; email, role and the company record
+> are read-only. **There is no role or activation control on that page and a test enforces it** —
+> `PATCH /users/me` does not declare `permitRole` or `active`, and that allow-list is the privilege
+> boundary. `GAPS.md` row C (no company concept) is closed as **will not exist**: the system is
+> single-tenant, so `contractorProfile.firmName` is the contracting firm and is descriptive only —
+> nothing may be scoped by it.
+>
 > Built 2026-08-23 (`PMT-014`, `CRT-004`): a DRAFT is resumable — `/permits/:id/edit` and
 > `/permits/:id/duplicate` exist and `PMT-010`'s two banner CTAs are live, no longer disabled. Editability is
 > settled by a real empty-body `PATCH` and deferred to the server, because **`REJECTED` is editable too** (a

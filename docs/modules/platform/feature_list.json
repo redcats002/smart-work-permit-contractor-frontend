@@ -224,6 +224,26 @@
       ],
       "status": "not-started",
       "evidence": ""
+    },
+    {
+      "id": "PLT-012",
+      "type": "feature",
+      "name": "Self-service profile page",
+      "path": "src/pages/profile/pages/ProfileDetailPage.vue, src/router/modules/Profile.router.ts, src/resources/provider/user/User.provider.ts, src/components/app/AppDrawer.vue",
+      "description": "A contractor's own account at /profile: name and phone editable via PATCH /users/me, with email, role and the company record read-only. Before this the app had no account screen at all — a contractor could not see or correct anything about themselves. Backend half is smart-work-permit-api feat-022; the officer-side register lives in the Safety app (its feat-008).",
+      "acceptance": [
+        "Reached from the drawer's account card — this app has no header menu, so that card is the only route in",
+        "NO role or activation control exists on the page, and a test enforces it. PATCH /users/me does not declare permitRole or active: the allow-list IS the privilege boundary, and a control here would promise an edit the server correctly refuses",
+        "An empty phone field is OMITTED from the payload, not sent as '' — the API validates phoneNumber as exactly 10 characters, so '' would 400. Omitted means unchanged",
+        "The company record (firmName, taxId, address, contactPerson, contract dates) renders read-only with a line saying the safety officer owns it",
+        "Errors render localized off errorCode; the backend's `message` is never rendered",
+        "Saving updates the drawer's account card without a reload"
+      ],
+      "dependencies": [
+        "PLT-005"
+      ],
+      "status": "done",
+      "evidence": "2026-08-23: ./init.sh green — eslint 0 errors, vue-tsc 0 errors, vitest 49 files / 456 tests, live API contract smoke passed. src/tests/pages/profile/ProfileDetailPage.test.ts, 5 tests: renders /users/me, company record read-only, no role/activation control at all, payload carries only allow-listed fields with an empty phone omitted, and the error path renders the localized string while asserting the raw backend message is NOT rendered."
     }
   ]
 }
