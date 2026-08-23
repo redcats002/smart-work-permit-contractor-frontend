@@ -229,8 +229,13 @@ a change*, and ends with an `## Owner updates` section. Owner entries go there, 
 session history, and each one states **what it replaces** — the replaced option is what a later agent
 restores if it is not written down.
 
-**Published:** all three app repos pushed to `origin/dev` from `wip/pre-agent-20260821`. The
-workspace root repo has no remote and was not pushed.
+**Published:** all three app repos pushed to `origin/dev`, and each repo's local branch is now `dev`
+tracking it. **`origin/dev` is the live branch — `origin/main` is stale** on all three and is behind
+by the whole session-1-to-4 stack. `wip/pre-agent-20260821` is kept as a pointer to the same commit,
+not as the working branch. The workspace root repo has no remote and was not pushed.
+
+`docs/main/dev-handoff/05-permit-detail-sections.md` is copied into both frontends the same way as
+the two glue files but is **not** covered by a sync check — keep it in the same `cp` when you touch it.
 
 ---
 
