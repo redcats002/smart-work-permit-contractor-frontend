@@ -1,0 +1,255 @@
+# Prompt & Decision Log — SmartWorkPermit
+
+**Read this before implementing anything.** It is the base knowledge for this workspace: what the
+product owner actually asked for, in their words, and every ruling they gave when an agent hit an
+ambiguity. Code and `progress.md` tell you *what was built*. This file tells you *why it was built
+that way* and *what you are not allowed to re-decide*.
+
+## For the product owner — where to record a change
+
+**This file is yours to append to.** When something changes in a *logical* or *business* way — a
+rule, a role, a status transition, a scope call, a "we do it this way, not that way" — write it here.
+Every agent is required to read this file before implementing anything, so a ruling recorded here is
+one they cannot silently undo. A ruling that lives only in chat is one a later agent will "fix" back,
+and that is exactly how the same broken solution gets reinvented.
+
+Append to `## Owner updates` at the bottom. That section is **not** session history — it is a running
+list, newest last, never rewritten. Entries do not need polish; they need the rejected option:
+
+~~~
+### YYYY-MM-DD — one-line title
+**Now:** what is true.
+**Was:** what it replaces — write this even if it is "nothing". The replaced option is what an
+agent will otherwise restore.
+**Applies to:** api / contractor / safety (or all three).
+~~~
+
+If a change makes an earlier ruling wrong, add a **new** entry that says so and links back. Never
+edit an old one.
+
+Where it does *not* go: a feature's build status (that is the repo's `feature_list.json` +
+`progress.md`) and wire shapes (that is `openapi.json` — `CONTEXT.md` §2 owns the propagation).
+Cross-repo *technical* invariants live in `CONTEXT.md`; *decisions* live here.
+
+This file is copied into each repo at `docs/main/PROMPT-LOG.md`. **Edit the workspace-root copy**,
+then run the copy one-liner in `CONTEXT.md` §1 — `check-contract-sync.mjs` fails if they drift.
+
+## What belongs here
+
+- The product owner's own instructions, condensed but not reinterpreted.
+- Every **ruling** on a question an agent escalated — with the option that was rejected, because the
+  rejected option is what a later agent will otherwise "fix".
+- Cross-cutting constraints that no single repo's `feature_list.json` can own.
+
+## What does NOT belong here
+
+- A feature registry. Three live registries already exist (`feature_list.json` per repo, plus
+  `docs/modules/<module>/feature_list.json`). `CONTEXT.md` §6 forbids a fourth. Link, don't copy.
+- Per-item build notes. Those go in that repo's `progress.md`.
+- Verification output. That goes in the item's `evidence` field.
+
+Append newest-last. Never rewrite a past entry — if a ruling is reversed, add a new entry that says
+so and links back.
+
+---
+
+## 2026-08-21 — Session 1: audit three repos, then implement in parallel
+
+**Asked:** ensure all tasks are done in each project per the main documents and design; the contract
+[permit] detail page was not implemented, and permit creation was "not properly in some function";
+then spawn agents in each project to implement.
+
+**Established by audit (not by asking):** the harness itself was already sound — `CONTEXT.md`,
+per-repo `AGENTS.md` + `feature_list.json` + `progress.md` + `init.sh`, and a cross-repo
+`check-contract-sync.mjs`. The gap was unbuilt features, not missing scaffolding. Both complaints
+were confirmed in code: `PermitDetailPage.vue` was a 33-line placeholder (`PMT-010`), and wizard
+steps 3–6 were `z.object({})` stubs (`PMT-006`..`009`).
+
+**Rulings given:**
+
+| Question | Ruling | Rejected |
+|---|---|---|
+| Uncommitted work in all three repos before agents edit on top | Snapshot each repo on branch `wip/pre-agent-20260821` first | Leaving the trees dirty |
+| Which repos get agents | All three, in parallel | Contractor only |
+
+**Landed:** backend `feat-008/009/010/012/019`; contractor `PMT-006`..`PMT-012`; Safety/Inspector
+`SHL-005/007/008`. Workspace `./init.sh`: **ALL GREEN — 3 repos + contract sync.**
+
+**Operational lesson worth keeping:** the host slept three times mid-run and killed agents. Agents
+told to "save incrementally — finish and write one item before starting the next" lost nothing; the
+one still holding work in context lost the whole stretch. On resume, always diff the agent's
+in-context belief against `git status`: once it was *ahead* of disk (claimed work that never
+landed), once *behind* (about to redo an item already recorded `done`). Trust disk.
+
+---
+
+## 2026-08-22 — Session 2: detail pages, map, create-permit bug
+
+**Asked:**
+0. Track the prompts in a `.md` file and point `AGENTS.md` at it as required reading — base
+   knowledge plus project progress. *(This file.)*
+1. Both frontends' permit **detail** pages show a "lite" version. They must show **all** the
+   information the user entered, correctly grouped into sections/tabs. The Safety Officer needs a
+   **full** review, not a summary.
+   - 1.1 implement the contractor permit detail page properly;
+   - 1.2 make the Safety/Inspector detail page align with it — same data, same sections.
+2. Complete the `ตำแหน่งบนแผนที่ — เร็ว ๆ นี้` (location-on-map) feature properly, plus any other
+   unfinished features.
+3. Permit creation cannot be continued in the contractor app — find the issue and fix it.
+
+**Established before asking:** the map cannot be built "properly" today. Verified — there are
+**zero** geo fields on the wire (no `latitude`/`longitude`/`lat`/`lng`/`coordinates` anywhere in
+`openapi.json`), **no** map library in either `package.json`, and `SafetyRiskMapPage.vue` carries a
+comment recording that `SFO-007`'s acceptance *forbids* sourcing or fabricating a floor-plan asset,
+with a product-owner note that a real GIS/floor-plan is a later decision. Today's risk-map pin
+positions come from a deterministic hash of the free-text `location` string
+(`risk-map/utils/LocationPosition.ts`).
+
+**Rulings given:**
+
+| Question | Ruling | Rejected |
+|---|---|---|
+| `.claude/agents/vue-feature-implementer.md` is bound to a different project (`kitpiboon-import-management-frontend`, Vuetify 3 + SCSS) and routes to a skill it self-declares STALE | **Fix the agent definitions first**, bind them to these repos, then use them | Using them as-is; falling back to `general-purpose` |
+| Map scope | **Ship the zone-picker version**: share `LocationPosition.ts`'s zone vocabulary so the contractor's step-2 pin resolves to the *same* position the Safety risk map plots. No new dependency, no wire change | Full GIS now; leaving the map alone |
+| Foreman closure is impossible — `close.http.controller.ts:15` is `auth: ['safety_officer']`, but the design, `00-SHARED-CONTEXT.md` and `PMT-011` all model closure as the Foreman's action | **Admit `contractor` on that route, scoped to their own permit.** Backend change + openapi regen + three-repo propagation. Closes `GAPS` row **H** | Declaring closure officer-only; deferring |
+| `reject.signature` optional vs required | **Make it required**, matching approve | Leaving it optional |
+| `PMT-008`'s "at least one JSA row" client rule | **Drop it.** It was never in the backend contract — `PATCH` accepts an empty `jsaSteps` and submit never checks the JSA. A client-only rule must not block a submission the server would accept | Keeping the weaker per-permit reading |
+
+**Standing constraint from these rulings:** full GIS (real lat/lng on the payload, a map dependency,
+a real facility floor-plan image) remains an **open product decision**. Do not implement it
+speculatively, and do not fabricate a floor-plan asset — that prohibition is explicit.
+
+**Outcome (all four rulings landed, workspace `./init.sh` ALL GREEN — 3 repos + contract sync):**
+
+- **The create-permit bug WAS the JSA minimum rule.** Reproduced in headless Chromium against the
+  live backend: steps 1–4 unlocked Next and both writes answered 200, then step 5 arrived with Next
+  **permanently disabled** — `jsaSteps` is `undefined` on arrival, nothing seeds a row, so the
+  schema failed before the user touched anything. Dropping the rule (ruling above) *is* the fix.
+  Regression: `PermitCreatePage.walk.test.ts`, confirmed red against the pre-fix schema.
+  The rule had been implemented carefully — weaker reading, flagged as unconfirmed, noted for the
+  product owner — and every safeguard fired except walking the six steps. This is why the standing
+  "no client rule that blocks what the server would accept" rule exists.
+- Contractor detail (`PMT-013`) and Safety review detail (`SFO-012`) both implement all six sections
+  of `docs/main/dev-handoff/05-permit-detail-sections.md`. Both chose **stacked over tabs** — tabs
+  fight the "expanded by default" requirement, and the contract makes that a presentation choice.
+- Map shipped as ruled: `create/constants/LocationZones.ts` mirrors the Safety app's
+  `LocationPosition.ts` (same 8 keys, same percentages, same hash fallback). Step 2 writes
+  **canonical English** into the existing free-text `location` — a Thai *value* would fail the
+  Safety app's `startsWith` match and split the pin across the two apps.
+- Backend shipped `feat-020` (contractor closure, ownership-scoped) and `feat-021` (reject signature
+  required). `00-SHARED-CONTEXT.md` is now byte-identical in all four copies and states who may close.
+
+**Two latent bugs found on the way past, both fixed:**
+
+- **Every timestamp in the Safety app rendered browser-local.** `dayjs.tz.setDefault('Asia/Bangkok')`
+  was set but `.format()` never consulted it — it only looked correct because the dev host is in
+  Bangkok. Would have shipped wrong times to any user outside `Asia/Bangkok`.
+- `permit.wizard.blockedNote` was the English string *"Resolve the blocked reading to continue"* in
+  **both** locale files, and named a *reading* whatever step was blocked — it is what sent the user
+  back to an already-green step 3 while step 5 was the dead end. Now generic and really translated.
+
+**Follow-ups filed, not done:** the Safety app's photo grid was never seen in a browser (no seeded
+fixture attaches a photo); `InspectorScanPage.vue` still passes `fireWatch.startedAt` instead of the
+server-anchored `remainingSeconds` — same latent reload bug, different screen; probe permits
+`WP-HOT-20260821-002`…`-006` and `WP-CONF-20260821-005` are left in the dev DB.
+
+---
+
+## 2026-08-23 — Session 3: finish the leftovers
+
+**Asked:** continue the tasks left over from the agents.
+
+No new rulings were needed. Three leftovers were confirmed in code first, then built:
+
+- **`PMT-014` — draft resume + Duplicate & Edit.** A DRAFT permit could not be reopened at all:
+  `Permit.router.ts` was list/create/detail only, so a contractor who started a permit and left lost
+  it, and `PMT-010`'s two banner CTAs shipped disabled. This was written up as a registry item
+  *before* being handed to an agent — it is a feature, not a follow-up bullet.
+  Two traps were established up front so no agent had to discover them: **there is no clone route on
+  the wire** (all 13 permit paths checked), so Duplicate is client-side `POST` + `PATCH`; and
+  `safetyReading` **appends** a row per PATCH, so hydration must seed `lastPersistedReading` or every
+  resumed edit logs a duplicate reading.
+  The implementation settles editability with a real empty-body `PATCH` and defers to the server.
+  That is worth keeping: **`REJECTED` is editable too** (`update.service.ts` allows DRAFT *and*
+  REJECTED so a contractor can revise and resubmit), which a client-side "DRAFT only" check would
+  have got wrong. `PATCH` writes no audit row, so the probe costs only an `updatedAt` bump.
+- **`CRT-004`** — bullets 3 and 4 were **already satisfied** by `PMT-009` and were recorded with
+  evidence rather than rebuilt. Only the step-4 per-worker badges and named-worker blocking were
+  new. The gate blocks solely on a confirmed `'fail'`, never stricter than the server's
+  `certificateFailures[]`.
+- **Inspector Fire Watch** anchored on the server's `remainingSeconds`, matching the review screen.
+  `fireMonitorStartedAt` was **kept** — it is the documented fallback, not vestigial.
+
+**One more silent-failure bug found and fixed:** `useUpload()` caught every error, toasted a
+hardcoded Thai string naming **Google Cloud Storage** in a **MinIO** app, and returned a fabricated
+success with `filePath: ''`. Callers could not distinguish a failed upload from a good one, and the
+empty `fileRef` surfaced as a 400 at PATCH time, far from the cause. Third instance this project of
+the same shape: *a client pretending to know an answer that belongs to the server.*
+
+**The workspace root is now a git repo.** `CONTEXT.md`, `docs/main/`, `check-contract-sync.mjs`,
+`init.sh`, this file and the `.claude/agents` definitions were versioned nowhere. The three app repos
+are **gitignored, not vendored as submodules** — how they are cloned and committed is unchanged.
+
+Workspace `./init.sh`: **ALL GREEN — 3 repos + contract sync.** All four trees clean and committed.
+
+---
+
+## 2026-08-23 — Session 4: make the glue knowledge survive a clone, and publish `dev`
+
+**Asked:** confirm whether cross-repo *and* per-repo knowledge already exists; if not, create it —
+and make it the file the product owner updates for every logical/business change, so agents read it
+before implementing and stop reinventing solutions that did not work. Then push every repo to `dev`.
+
+**Established, not built:** the knowledge already existed and no fourth document was created.
+`CONTEXT.md` owns cross-repo technical invariants, this file owns decisions, and each repo's
+`AGENTS.md` + `feature_list.json` + `progress.md` + `session-handoff.md` own that repo. Adding a
+fifth registry is forbidden by `CONTEXT.md` §6 for the same reason it was forbidden before.
+
+What was actually missing was **distribution and freshness**, which is what the complaint was about:
+
+- **The pointers dangled.** All three `AGENTS.md` said `../PROMPT-LOG.md` was required reading, but
+  the workspace root has **no remote** — clone any repo from GitHub and the required base knowledge
+  does not exist. Both glue files are now **copied** into each repo at `docs/main/`, the same pattern
+  `docs/main/` and `05-permit-detail-sections.md` already use, and every reference in every repo was
+  repointed at the in-repo copy. The root stays the **edit origin**; edit it there and re-run the
+  copy one-liner in `CONTEXT.md` §1.
+- **`check-contract-sync.mjs` gained check 1b**: the glue docs must be byte-identical across the root
+  and all three repos. A stale copy is how a settled ruling gets re-litigated, so it is now a red row
+  rather than a thing someone notices later.
+- **Read-first docs that lied were corrected** — the real cause of duplicate work:
+  `CONTEXT.md` §1 still said the workspace root was not a git repo and that nothing here was
+  committed anywhere (false since `0078e7d`). The contractor's `AGENTS.md` still told every agent
+  that the DRAFT/REJECTED edit CTAs render **disabled** because no edit-or-duplicate route exists
+  (`PMT-014` shipped it) and that closure is `safety_officer`-only so a contractor always 403s
+  (`feat-020` shipped it) — and it cited "`GAPS.md` rows H and I" as one unit when **H is closed and
+  I is not**. An agent reading that would have rebuilt work that already existed.
+
+**Ruling recorded for the owner:** this file now opens with *For the product owner — where to record
+a change*, and ends with an `## Owner updates` section. Owner entries go there, not interleaved with
+session history, and each one states **what it replaces** — the replaced option is what a later agent
+restores if it is not written down.
+
+**Published:** all three app repos pushed to `origin/dev` from `wip/pre-agent-20260821`. The
+workspace root repo has no remote and was not pushed.
+
+---
+
+## Standing rulings — do not re-decide these
+
+- **Never render the backend's `message` field.** Clients localize off `errorCode` (EN + TH). This
+  has been re-broken twice; `handleLoading`'s default error callback now routes through `mapError()`
+  so an un-customized call site is safe by default.
+- **No client-side rule that blocks what the server would accept.** The server's verdict wins, always.
+  The client may mirror a rule for instant feedback, never to gate beyond it.
+- **Never fabricate a facility floor-plan asset** (`SFO-007` acceptance).
+- **The audit log is append-only.** Never add an edit or delete affordance, in any app.
+- **Blocked items are product decisions**, not work: backend `feat-011`, `SHL-006` (self-hosting
+  fonts for the offline Inspector role). Do not implement them speculatively.
+
+---
+
+## Owner updates
+
+Product-owner entries only. Format above. Newest last.
+
+_(none yet)_

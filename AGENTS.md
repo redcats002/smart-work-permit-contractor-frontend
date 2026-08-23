@@ -1,6 +1,6 @@
 ## Read this FIRST — the prompt & decision log
 
-`../PROMPT-LOG.md` is **required reading before you implement anything in this repo.** It is the
+`docs/main/PROMPT-LOG.md` is **required reading before you implement anything in this repo.** It is the
 base knowledge for this project: the product owner's instructions in their own words, and every
 ruling they gave when an agent hit an ambiguity — including the option that was *rejected*, which is
 what you would otherwise "fix" back. Code and `progress.md` say what was built; `PROMPT-LOG.md` says
@@ -17,7 +17,7 @@ Before doing any non-trivial work in this repo, read the project skill index at 
 This app is one of three repos in the SmartWorkPermit workspace (`../`): this one, the Safety Officer
 + Inspector app (`../smart-work-permit-frontend`), and the single backend (`../smart-work-permit-api`).
 **If your change touches a route, payload, `errorCode`, role or the permit status machine, read
-`../CONTEXT.md` first** — it owns the cross-repo contract rules, the openapi propagation procedure,
+`docs/main/CONTEXT.md` first** — it owns the cross-repo contract rules, the openapi propagation procedure,
 and the `node scripts/check-contract-sync.mjs` glue check. Everything inside this repo stays governed
 by this file and `feature_list.json`.
 
@@ -40,11 +40,23 @@ Two sibling apps exist in **other repos** and are **out of scope here**: the Saf
 >
 > Built: the app shell, i18n (en/th, default th), the design system, the API error-code layer, the permit domain + provider + My Permits list, the **`history` module** (`feat-003` — route registered, filters, CSV export, drill-in drawer), and the certificates module.
 > Built: `PermitCreatePage` — the 6-step wizard is **complete** (`PMT-004`–`PMT-009`). Every step has a real zod schema that gates Next; there are no `z.object({})` placeholders left. Submit really calls `POST /permits/:id/submit` and navigates to `/permits/:id?submitted=1` (that query param is what triggers the detail page's one-shot "submitted" banner — nothing else sets it). On a 400 the wizard drives off the backend's `failures[]` / `certificateFailures[]` arrays and highlights **every** failing reading on step 3 and every refused worker on step 4, localized off `errorCode` — the server's verdict wins over any client-side gate. Two step-3 shapes have no wire field and are deliberately not persisted: the Yes/No/N-A checklist (`GAPS.md` row J) and `so2` (row K).
-> Built 2026-08-22: `PermitDetailPage` (`PMT-010`–`PMT-012`) — per-status banners, info card, read-only audit
+> Built 2026-08-22: `PermitDetailPage` (`PMT-010`–`PMT-013`) — per-status banners, info card, read-only audit
 > timeline, QR panel (`ACTIVE`/`FIRE_MONITOR` only), the closure checklist modal and the Hot Work Fire Watch
-> countdown. Two known holes, both dependencies rather than omissions: the DRAFT/REJECTED edit CTAs render
-> **disabled** because no edit-or-duplicate route exists, and `POST /permits/:id/close` is `safety_officer`-only,
-> so a contractor closure always 403s (`docs/api/GAPS.md` rows H and I).
+> countdown, plus all six sections of `docs/main/dev-handoff/05-permit-detail-sections.md`. The step-2 location
+> zone picker mirrors the Safety app's zone vocabulary and writes **canonical English** into the free-text
+> `location` — a Thai value splits the pin across the two apps.
+>
+> Built 2026-08-23 (`PMT-014`, `CRT-004`): a DRAFT is resumable — `/permits/:id/edit` and
+> `/permits/:id/duplicate` exist and `PMT-010`'s two banner CTAs are live, no longer disabled. Editability is
+> settled by a real empty-body `PATCH` and deferred to the server, because **`REJECTED` is editable too** (a
+> client-side "DRAFT only" check is wrong). There is **no clone route on the wire**, so Duplicate is client-side
+> `POST` + `PATCH`; `safetyReading` **appends** a row per PATCH, so hydration seeds `lastPersistedReading` or a
+> resumed edit logs a duplicate reading.
+>
+> Two earlier holes are **closed**, do not re-report them: `GAPS.md` row **H** — `POST /permits/:id/close` now
+> admits `contractor` scoped to their own permit (`feat-020`), so `PMT-011`'s modal works end to end. Still
+> open: row **I** (entrant *names* are not readable by the permit owner — the count is), and rows **G**, **J**,
+> **K**, all of which need a backend field before any frontend work is possible.
 >
 > **The providers are live against the real backend** (`feat-005`, 2026-08-17). Every `USE_STUB_DATA` flag and both `*.mock.ts` files are gone; `VITE_APP_API_URL` points at the API and auth is a **better-auth session cookie**, not a bearer token.
 >

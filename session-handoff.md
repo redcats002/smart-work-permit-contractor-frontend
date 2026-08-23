@@ -111,7 +111,7 @@ defaults, the health-check asymmetry, why Submit assigns `currentStepIndex` inst
   Rows **G**, **H**, **I** are still open from earlier sessions.
 - **Product-owner question (`PMT-008`):** "at least one JSA row before Next" is **not** in the
   backend contract — PATCH accepts an empty `jsaSteps` and submit does not check the JSA at all.
-  This was later dropped entirely per a product-owner ruling — see `../PROMPT-LOG.md`.
+  This was later dropped entirely per a product-owner ruling — see `docs/main/PROMPT-LOG.md`.
 
 ---
 

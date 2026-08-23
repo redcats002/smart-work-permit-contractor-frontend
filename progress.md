@@ -732,7 +732,7 @@ reported. Adding one JSA row let the identical walk finish and submit
 The rule was a client-side invention: `PATCH /permits/:id` accepts an empty `jsaSteps` and
 `POST /permits/:id/submit` never inspects the JSA (`docs/api/openapi.json`). It therefore also
 violated the standing ruling *"no client-side rule that blocks what the server would accept"* — and
-the product owner had independently ruled it out in `../PROMPT-LOG.md` session 2. One fix, both
+the product owner had independently ruled it out in `docs/main/PROMPT-LOG.md` session 2. One fix, both
 tasks.
 
 **Fixed:**
@@ -760,7 +760,7 @@ screen; `checklistAnswers` staying out of `formData` blocks nothing.
 
 ### 2. `ตำแหน่งบนแผนที่` — the step-2 map pin (`PMT-005`)
 
-Per `../PROMPT-LOG.md` session 2 ("map scope"): **no** map dependency, **no** geo field, **no**
+Per `docs/main/PROMPT-LOG.md` session 2 ("map scope"): **no** map dependency, **no** geo field, **no**
 fabricated floor-plan asset. What shipped is a zone picker over the *same vocabulary the Safety
 app's risk map already plots*, so a permit lands on the same spot in both apps.
 

@@ -1,7 +1,7 @@
 # 05 — Permit Detail: the shared section contract
 
 **Status:** normative. Both frontends implement the same sections, in the same order, with the same
-field grouping. Ruled 2026-08-22 (`../../PROMPT-LOG.md`, session 2, items 1.1 / 1.2): the detail
+field grouping. Ruled 2026-08-22 (the prompt & decision log (`PROMPT-LOG.md`), session 2, items 1.1 / 1.2): the detail
 page must show **everything the user entered**, not a summary, and the two apps must not diverge.
 
 This file is the contract that keeps them aligned. It is **copied** into each repo at the same

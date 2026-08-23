@@ -48,7 +48,7 @@ Executable once `E2E-000` provides a contractor account: `CT-PERMITS`, `CT-HISTO
   submit and its answer wins. A case that passes only because the client blocked it has proved nothing —
   check the submit response.
 - **Backend error codes are localized client-side.** If a backend-authored English sentence ever reaches
-  the screen, that is a defect regardless of how sensible it reads (`../CONTEXT.md` § 2).
+  the screen, that is a defect regardless of how sensible it reads (`../../main/CONTEXT.md` § 2).
 - **Draft persistence.** A half-filled wizard must survive a reload — this is the single most annoying
   thing to get wrong for a real contractor on a tablet in a site office.
 - **Responsive**: desktop/tablet first, but must not break at 375px. Tables scroll rather than truncate.
