@@ -267,6 +267,40 @@ many safety officers / many contractors" is satisfied by the deployment boundary
 a contractor is the **contracting firm that person works for** — a descriptive field, *not* a tenant
 key. **Nothing may be scoped by it.** `GAPS.md` row C closes as *will not exist*, not as pending work.
 
+**Outcome — all three rulings landed, workspace `./init.sh` ALL GREEN (3 repos + contract sync):**
+
+- Backend `feat-022`: `GET /users/`, `GET /users/{id}`, `PATCH /users/{id}`, `GET /users/me`,
+  `PATCH /users/me`; `POST /users/` gained an optional `contractorProfile`. **`DELETE
+  /api/v1/auth/user/delete/{userAuthId}` was removed** — it really hard-deleted and any safety
+  officer could reach it, so it bypassed the deactivate ruling outright. Neither frontend called it
+  (checked by grep first). Two new `errorCode`s bring the vocabulary to **27**.
+- Safety app `feat-008` (`CON-001`..`004`): `/safety/contractors` register plus `/profile`.
+  Contractor app `PLT-012`: `/profile`.
+- **`GAPS.md` row C closed as *will not exist*, not as pending work** — with the single-tenant
+  ruling there is no `Company` entity to model, and leaving the row open would read as outstanding
+  backend work forever.
+
+**Verified live against a booted backend, not mocks** (the parts that are security, not preference):
+
+| Probe | Result |
+|---|---|
+| contractor `PATCH /users/me { permitRole: 'safety_officer', active: false }` | `firstName` changed, **`permitRole` still `contractor`, `active` still true** |
+| contractor calls `PATCH /users/{id}` | `403 FORBIDDEN_ROLE` |
+| deactivated account signs in | `403 ACCOUNT_DEACTIVATED` |
+| deactivated account's **existing session** | `403 ACCOUNT_DEACTIVATED` — the cookie dies too, not just login |
+| last active officer deactivates self | `409 LAST_SAFETY_OFFICER`, unchanged |
+| last active officer demotes self | `409 LAST_SAFETY_OFFICER`, unchanged |
+| audit chain | `USER_CREATED` / `USER_DEACTIVATED` / `USER_REACTIVATED` rows, `permitId: null` |
+
+**One real bug found by the new tests, not by review:** the Safety app's `User.provider` read
+`response.data` on every single-item call, but that app's response interceptor already unwraps a
+`{ message: 'success', data }` envelope down to `data`. Every one returned `undefined` — against the
+real API as well as the mock. The paginated envelope keeps its sibling keys; a single-item envelope
+does not. Note the two apps differ here **on purpose**: the contractor app passes the envelope
+through whole and its callers read `.data`.
+
+**Left in the dev DB:** a deactivated probe account `probe-con-1@test.local`.
+
 **Standing constraints this feature adds:**
 
 - **`PATCH /users/me` is an allow-list**, and the allow-list is the security boundary: `firstName`,
