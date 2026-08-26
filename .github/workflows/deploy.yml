@@ -6,7 +6,7 @@ on:
   pull_request:
 
 concurrency:
-  group: swp-contractor-${{ github.ref }}
+  group: esw-contractor-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -36,5 +36,5 @@ jobs:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           command: >-
-            pages deploy dist --project-name=swp-contractor
+            pages deploy dist --project-name=esw-contractor
             --branch=${{ github.head_ref || github.ref_name }}
