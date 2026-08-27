@@ -72,14 +72,20 @@
             text-[13px] font-semibold text-white">
           {{ initials }}
         </div>
-        <div class="min-w-0 flex-1 leading-[1.2]">
+        <!-- The account card is the only route into the profile: this app has no header menu.
+             A button rather than a RouterLink so it inherits the drawer's own close behaviour
+             on mobile, the same way the nav items do. -->
+        <button
+          class="min-w-0 flex-1 cursor-pointer text-left leading-[1.2]"
+          type="button"
+          @click="goToProfile()">
           <div class="truncate text-[12px] font-medium text-white">
             {{ displayName }}
           </div>
           <div class="truncate text-[10px] text-(--color-shell-sidebar-muted)">
             {{ t('platform.accountType') }}
           </div>
-        </div>
+        </button>
         <button
           :aria-label="t('platform.logout')"
           class="flex size-7 shrink-0 items-center justify-center rounded text-(--color-shell-sidebar-muted)
@@ -135,6 +141,11 @@ function isActive (item: INavItem): boolean {
 
 function isRegistered (name: string): boolean {
   return router.hasRoute(name)
+}
+
+function goToProfile (): void {
+  close()
+  void router.push({ name: 'ProfileDetailPage' })
 }
 
 const displayName = computed((): string => authStore.user.name || authStore.user.email || '—')

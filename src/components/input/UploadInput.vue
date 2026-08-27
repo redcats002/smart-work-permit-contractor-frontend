@@ -61,7 +61,7 @@
         {{ label }}
       </p>
     </slot>
-    <p class="text-xs text-surface-400 text-center">
+    <p class="text-xs text-surface-500 text-center">
       {{ detail }}
     </p>
     <Button

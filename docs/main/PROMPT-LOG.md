@@ -239,6 +239,264 @@ the two glue files but is **not** covered by a sync check — keep it in the sam
 
 ---
 
+## 2026-08-23 — Session 5: contractor management + profiles
+
+**Asked:** a contractor module in the Safety Officer app — create/register, read, update, delete a
+contractor — plus a self-service profile for both the contractor and the safety-officer side. Stated
+hierarchy: one company has many safety officers and many contractors; one contractor has one company;
+**one domain is one company**. Plan first, review before implementing.
+
+**Established before asking:** none of this exists on the wire. `POST /api/v1/users/` (provision,
+`safety_officer`-only) is the *only* user route — no list, no read, no update, no `me` endpoint of any
+kind. There is **no company/organisation concept anywhere** in the backend: no table, no column, no
+field (`GAPS.md` row C already recorded that `IUser.company` will never be populated). And the Safety
+app's `ProfileCard.vue:57` pushes to `{ name: 'ProfileDetailPage' }`, **a route that does not exist**
+— the Profile menu item is dead today, so building the profile page fixes a live bug rather than only
+adding a feature.
+
+**Rulings given:**
+
+| Question | Ruling | Rejected |
+|---|---|---|
+| How "company" exists | **Single-tenant — the deployment *is* the company.** No `Company` table, no `companyId` on `User`; company identity is deployment config | A real `Company` table with `companyId`, which would force a re-scope of **every** existing role-scoped query (permits, certificates, dashboard, notifications, audit, sync) where one miss is a cross-company data leak |
+| Deleting a contractor | **Deactivate (soft)** — a flag, never a row removal | Hard delete. `permit.createdById` is a plain indexed scalar (deliberately not an FK) and the audit log denormalizes the actor as JSON, so removing the row leaves both pointing at a vanished id and frees the email for reuse — a new account would inherit an old one's identity in historical records |
+| What the officer edits | **Account fields + contractor business fields** (`firmName`, `taxId`, `address`, `contactPerson`, `contractStart`, `contractEnd`) | Account fields only |
+
+**Consequence of the single-tenant ruling, written down so it is not re-opened:** "one company has
+many safety officers / many contractors" is satisfied by the deployment boundary itself. `firmName` on
+a contractor is the **contracting firm that person works for** — a descriptive field, *not* a tenant
+key. **Nothing may be scoped by it.** `GAPS.md` row C closes as *will not exist*, not as pending work.
+
+**Outcome — all three rulings landed, workspace `./init.sh` ALL GREEN (3 repos + contract sync):**
+
+- Backend `feat-022`: `GET /users/`, `GET /users/{id}`, `PATCH /users/{id}`, `GET /users/me`,
+  `PATCH /users/me`; `POST /users/` gained an optional `contractorProfile`. **`DELETE
+  /api/v1/auth/user/delete/{userAuthId}` was removed** — it really hard-deleted and any safety
+  officer could reach it, so it bypassed the deactivate ruling outright. Neither frontend called it
+  (checked by grep first). Two new `errorCode`s bring the vocabulary to **27**.
+- Safety app `feat-008` (`CON-001`..`004`): `/safety/contractors` register plus `/profile`.
+  Contractor app `PLT-012`: `/profile`.
+- **`GAPS.md` row C closed as *will not exist*, not as pending work** — with the single-tenant
+  ruling there is no `Company` entity to model, and leaving the row open would read as outstanding
+  backend work forever.
+
+**Verified live against a booted backend, not mocks** (the parts that are security, not preference):
+
+| Probe | Result |
+|---|---|
+| contractor `PATCH /users/me { permitRole: 'safety_officer', active: false }` | `firstName` changed, **`permitRole` still `contractor`, `active` still true** |
+| contractor calls `PATCH /users/{id}` | `403 FORBIDDEN_ROLE` |
+| deactivated account signs in | `403 ACCOUNT_DEACTIVATED` |
+| deactivated account's **existing session** | `403 ACCOUNT_DEACTIVATED` — the cookie dies too, not just login |
+| last active officer deactivates self | `409 LAST_SAFETY_OFFICER`, unchanged |
+| last active officer demotes self | `409 LAST_SAFETY_OFFICER`, unchanged |
+| audit chain | `USER_CREATED` / `USER_DEACTIVATED` / `USER_REACTIVATED` rows, `permitId: null` |
+
+**One real bug found by the new tests, not by review:** the Safety app's `User.provider` read
+`response.data` on every single-item call, but that app's response interceptor already unwraps a
+`{ message: 'success', data }` envelope down to `data`. Every one returned `undefined` — against the
+real API as well as the mock. The paginated envelope keeps its sibling keys; a single-item envelope
+does not. Note the two apps differ here **on purpose**: the contractor app passes the envelope
+through whole and its callers read `.data`.
+
+**Hardened on review:** `POST /users/` originally wrote the role, the profile row and the audit row
+as three separate calls. `userAuth.api.createUser` cannot join a Prisma transaction, but the other
+three now do — so a mid-write failure leaves an account with **no `permitRole`**, which is inert
+(every guarded route answers `403 FORBIDDEN_ROLE`), rather than a fully-roled account with no
+provisioning row at all in a system whose whole point is an append-only provisioning trail.
+
+**Left in the dev DB:** probe accounts `probe-con-1@test.local` (deactivated) and
+`probe-con-2@test.local`.
+
+**Standing constraints this feature adds:**
+
+- **`PATCH /users/me` is an allow-list**, and the allow-list is the security boundary: `firstName`,
+  `lastName`, `phoneNumberPrefix`, `phoneNumber`, `phoneNumberExtend`. Never `permitRole`, never
+  `active`, never `email`. Accepting `permitRole` there lets any contractor promote themselves to
+  `safety_officer` and gain approve/reject/close over the whole facility.
+- **Deactivation is `PATCH /users/:id { active: false }`, and there is no `DELETE /users/:id`.** The
+  UI button reads *Deactivate*. A `DELETE` verb that does not delete is the same class of lie this
+  project has already been bitten by three times.
+- **A deployment must never reach zero active safety officers.** Provisioning is the only way back in
+  — public signup is closed — so the server refuses the last one with `409 LAST_SAFETY_OFFICER`.
+- **An officer may not set another user's password.** A silent overwrite is an account takeover with
+  no audit trail; the existing `request-password-reset` flow is the path.
+
+---
+
+## 2026-08-23 — Session 6: text contrast across both frontends
+
+Reported from a screenshot of the Safety app's contractor list: column headers, the page subtitle
+and the email/firm cells were barely distinguishable from the background.
+
+**Root cause, and why it will recur if only the screen is patched.** The Safety app's surface scale
+(`smart-work-permit-frontend/src/assets/css/primevue.css`) is not the conventional Tailwind/Zinc
+direction. On it, `surface-500` is `#CBD2D9` — a *border* grey, 1.6:1 on white. `text-surface-500`
+therefore reads like a perfectly ordinary secondary-text class and renders as nearly nothing. The
+Contractor app uses stock Zinc, where the same class is `#71717A` at 4.8:1 and is correct. One class
+name, two opposite outcomes, and 111 call sites had taken the wrong one.
+
+### Ruling — the documented "muted" text colours fail AA and are no longer text colours
+
+**Now:** readable text is `surface-800` (`#5B656F`, 5.9:1 on white / 5.6:1 on the `surface-50` header
+row). `surface-700` (`#8B95A0`, 3.1:1) is reserved for placeholders and decorative or adornment
+icons, where 3:1 is the correct WCAG threshold. Nothing lighter carries text.
+
+**Was:** `tailwind.css` documented "Text: primary #16191D, secondary #5B656F, muted
+#8B95A0/#A4ADB6", and `primevue.css` documented the whole 600-950 range as "text". Both are now
+annotated. The rejected option was to keep following the documented palette: `#8B95A0` is 3.1:1 and
+`#A4ADB6` is 2.5:1, so the design palette and WCAG AA cannot both be satisfied and AA wins. The
+other rejected option was renumbering the surface scale to the conventional direction — that would
+have flipped every `bg-surface-*` and `border-surface-*` in the app, a far larger blast radius than
+the text classes actually at fault.
+
+**Applies to:** safety (the sweep), contractor (affordance tier only — its readable text already
+passed and was left alone; manufacturing symmetry would have been churn).
+
+### What changed
+
+- Safety app, 36 files outside `src/volt/`: `text-surface-{500,600}` → `text-surface-800`.
+  `text-surface-400` first went to `700` as a blanket pass, which was wrong — that tier held far
+  more real content than affordances (`BaseTable`'s `bodyRow`, i.e. **every table body row in the
+  app**, the permit-overview and status-banner `<dl>`s, the dashboard KPI labels, the gas-log cells,
+  the time-picker's hour/minute values). 34 of those sites were promoted again to `800`. What is
+  left at `700` is 17 sites: icon glyphs (`size-5`/`size-8`/absolutely-positioned adornments), the
+  pager chevron buttons, and one `disabled:` state. **`surface-700` is not a text colour** — if a
+  human reads it as content, it is `800`.
+- Contractor app, 6 files: `text-surface-400` → `text-surface-500` for adornment icons and pager
+  chevrons. The three `text-6xl` ghost numerals on the 404 / not-permitted / not-available pages
+  keep `surface-400` deliberately — they are decoration, not content.
+- Safety contractor list: the inactive status pill was `bg-surface-200 text-surface-600` at 1.7:1
+  (the grey-on-grey in the screenshot) and wrapped mid-word in Thai. Now a bordered pill with
+  `whitespace-nowrap`, and the active pill uses the existing `--color-success-*` triple instead of
+  Tailwind's default `green-100/800` — this page was the only one in the app not using the triple.
+- `src/volt/**` was deliberately NOT swept: it is scaffolded by `volt add <Component>` and
+  ESLint-ignored, so edits there are lost on regeneration. Volt's
+  `placeholder:text-surface-500` renders an invisible placeholder on this app's scale, so the
+  correction lives as one rule in `src/assets/css/main.css` instead, where regeneration cannot
+  reach it.
+- `scripts/check-contract-sync.mjs` gained check 5, which fails on any new
+  `text-surface-{300,400,500,600}` in the Safety app outside `src/volt/`. Without it this regresses
+  the next time someone writes the class that reads correct and renders invisible.
+
+---
+
+## 2026-08-23 — Session 7: owner unblocks SHL-006 and feat-011
+
+Both items had sat `blocked` on a product call, not on work. The owner made both calls today.
+
+### Ruling — the offline shell is in this milestone; self-host the fonts (`SHL-006`)
+
+**Now:** the Safety/Inspector app self-hosts IBM Plex Sans, IBM Plex Sans Thai and IBM Plex Mono at
+400/500/600/700. No CDN font request anywhere.
+
+**Was:** `SHL-001` loaded all three from the Google Fonts CDN, matching the prototype, and `SHL-006`
+recorded the open question "is offline-shell support in this milestone?". The item's own evidence
+had already worked out the answer and been ignored for four days: the sibling repo's `CLAUDE.md`
+states "No CDN or Google Fonts import — this app runs inside an industrial facility" as a settled
+constraint, and the Inspector role in THIS app has a *stronger* offline requirement than the
+contractor app does. So the CDN link contradicted a documented project constraint rather than merely
+risking one. The rejected option was to keep the CDN and rely on the system fallback face — on a
+plant floor with no signal that silently degrades, and Thai coverage degrades worst.
+
+**Applies to:** safety.
+
+Verified, not assumed: `fonts.googleapis.com` and `fonts.gstatic.com` blocked at the network layer,
+zero requests fired, `document.fonts` reporting all three families loaded locally at all four
+weights, and a Thai screen rendering real Plex Sans Thai glyphs rather than tofu. 16 woff2 files,
+274,512 bytes, `unicode-range`-subset. Separately confirmed against a **production build**, not just
+the dev server: `index.html`'s `/src/assets/css/fonts.css` link is rewritten by Vite into the hashed
+CSS bundle, all 16 files ship to `dist`, and no Google reference survives.
+
+Stale premise found and corrected: the contractor repo does **not** already self-host IBM Plex — it
+self-hosts LINE Seed Sans TH only. The files were fetched fresh, not copied.
+
+### Ruling — `feat-011` split three ways
+
+`feat-011` bundled three unrelated product decisions, which is why it sat blocked as a unit.
+
+**(a) free-text work description — build it.** The design has a "Work description" field with
+nowhere to go; `Permit` gains a nullable free-text `description`.
+
+**(b) organisation / company concept — closed, will not exist.** Already ruled in session 5: the
+deployment IS the company. Recorded as closed rather than pending so it stops reading as backlog.
+
+**(c) `GET /notifications` pagination — build it.** It had `limit` and no `page`. Note this is
+inherently cross-repo: **both** frontends carry a contract check asserting notifications are *not*
+paginated, so a backend-only change breaks two repos silently.
+
+**Applies to:** api, contractor, safety.
+
+---
+
+## 2026-08-24 — Session 8: facility plan, real permit positions, clickable permit rows
+
+Three requests: blank placeholders on every dropdown, clickable rows in the permit register, and a
+real floor plan behind the risk map with properly marked positions. Planned by interview before any
+code. The third is the one with a domain model.
+
+### Why the risk map needed more than a background image
+
+`LocationPosition.ts` derived pin positions by **hashing the free-text `location` string** — its own
+comment called the result "meaningless but stable". That is fine behind a blank dashed rectangle,
+where it reads as a placeholder. Behind a real floor plan the same pin reads as a claim about where
+hot work is physically happening, and an officer could dispatch to the wrong part of the plant. The
+governing rule for this feature: **never draw a pin in a position the system cannot vouch for.**
+
+### Rulings — facility plan and permit position
+
+**Vocabulary.** *Facility plan* = the uploaded, cropped image. *Plan version* = an immutable record.
+*Position* = `planId` + `planX` + `planY`. *Unplaced* = no position. *Stale-plan* = a live permit
+whose `planId` is not the active version. Use these words; do not invent synonyms.
+
+1. **The contractor sets the position**, not the officer, and never derived from text.
+2. **Frozen at submit.** From PENDING onward the position is read-only for everyone, safety officers
+   included. A wrong pin is handled by **reject-with-reason**. Rejected: letting the officer drag the
+   pin during review — the reviewer must never edit the artefact they then approve, and "who placed
+   this pin" must have exactly one answer.
+   **Refinement, 2026-08-24:** the editable window is `DRAFT || REJECTED`, not DRAFT alone. `reject`
+   sets status to `REJECTED` (it does not return the permit to DRAFT), and that is already the window
+   every other field uses. A DRAFT-only position would have been the one field a contractor could not
+   fix after a rejection, making this very ruling's remedy inert. Do not "tighten" it back.
+3. **One active plan, but the permit stores `planId`.** That column is what makes a stale pin *known*
+   stale rather than silently wrong. Rejected: global coordinates with no plan reference — the day a
+   second building or a mezzanine appears, every stored coordinate is ambiguous with no way to tell
+   which plan it meant.
+4. **Plans are immutable versions, retained, never overwritten or deleted.** A live permit frozen
+   against v1 must resolve v1 forever, so `GET /facility-plans/:id` is any-role, not officer-only.
+5. **Cropping happens only before activation.** A crop changes the coordinate frame; a post-activation
+   crop would silently move every existing pin.
+6. **Position is required to submit only once an active plan exists** (`PERMIT_POSITION_REQUIRED`,
+   the 28th code). Before any plan is uploaded, submit behaves as before; permits predating the plan
+   are grandfathered as unplaced. Rejected: always-required, which takes the whole system hostage on
+   day one, and always-optional, which lets the map be a permanently partial view of live hazards.
+7. **A running permit is frozen** — the owner's rule, and it is what forced 3 and 4. Replacing the
+   plan must not alter a live permit, so the risk map gets a **plan-version switcher** rather than
+   re-placing or re-projecting existing pins.
+
+### Security — the facility plan is not an ordinary upload
+
+`POST /upload` is guarded `auth: true`, so any authenticated role including a contractor can use it.
+That is fine for permit photos. It is not fine for the facility plan: a contractor who can replace it
+can silently relocate every hazard on the officer's map. `UPLOAD_ALLOWED_SUBFOLDERS` (storage policy)
+is now split from `UPLOAD_CLIENT_SUBFOLDERS` (client-selectable), and `facility-plans` is in the
+first only. **The schema narrowing alone was verified insufficient** — Elysia's validation on the
+multipart path let a stubbed officer session through to MinIO anyway — so `UploadService.execute()`
+re-checks at runtime. Do not "simplify" that re-check away as redundant with the schema.
+
+### `meta.root` was documented and dead
+
+Four routes declared `meta.root` as the back-button mechanism and **nothing in the repo read it**, so
+`SafetyReviewDetailPage` always returned to the pending queue. The new `permits/:id` route would have
+shipped a breadcrumb saying "← Review Queue" from the All Permits register — the exact bounce this
+ruling existed to prevent. Now wired, with the label taken from the root route's own `meta.titleKey`
+(`documentTitle.*` is already a page name in both locales), so it needs no per-page back string and
+any future route declaring `meta.root` gets a correct back link for free.
+
+**Applies to:** api, safety, contractor.
+
+---
+
 ## Standing rulings — do not re-decide these
 
 - **Never render the backend's `message` field.** Clients localize off `errorCode` (EN + TH). This
@@ -248,6 +506,23 @@ the two glue files but is **not** covered by a sync check — keep it in the sam
   The client may mirror a rule for instant feedback, never to gate beyond it.
 - **Never fabricate a facility floor-plan asset** (`SFO-007` acceptance).
 - **The audit log is append-only.** Never add an edit or delete affordance, in any app.
+- **`PATCH /users/me` never accepts `permitRole`, `active` or `email`.** Self-service profile edits
+  are an allow-list, and that allow-list is a privilege boundary — widening it is privilege
+  escalation, not a convenience. Role and activation change only through the `safety_officer`-gated
+  `PATCH /users/:id`.
+- **Accounts are deactivated, never deleted**, and a deployment may never reach zero active safety
+  officers (`409 LAST_SAFETY_OFFICER`).
+- **Readable text is `surface-800` or darker, in both frontends.** The Safety app's surface scale
+  runs light-to-dark in the non-standard direction, so `text-surface-500` there is a border grey at
+  1.6:1 while the identical class in the Contractor app is a correct 4.8:1. `surface-700` is for
+  placeholders and decorative icons only. `check-contract-sync.mjs` check 5 enforces it.
+- **Never draw a risk-map pin in a position the system cannot vouch for.** Positions are set by the
+  contractor while DRAFT/REJECTED and frozen at submit; plans are immutable versions; a permit whose
+  `planId` is not the rendered plan is shown via the version switcher, never re-projected. The old
+  hash-of-location mapping is gone and must not return, even as a fallback.
+- **`facility-plans` is a server-owned upload prefix.** It is in `UPLOAD_ALLOWED_SUBFOLDERS` and NOT
+  in `UPLOAD_CLIENT_SUBFOLDERS`, and `UploadService` re-checks it at runtime because the schema alone
+  does not hold. Never widen the generic upload route to reach it.
 - **Blocked items are product decisions**, not work: backend `feat-011`, `SHL-006` (self-hosting
   fonts for the offline Inspector role). Do not implement them speculatively.
 

@@ -46,6 +46,14 @@ Two sibling apps exist in **other repos** and are **out of scope here**: the Saf
 > zone picker mirrors the Safety app's zone vocabulary and writes **canonical English** into the free-text
 > `location` — a Thai value splits the pin across the two apps.
 >
+> Built 2026-08-23 (`PLT-012`): `/profile` — the contractor's own account, reached from the drawer's
+> account card. Name and phone are editable via `PATCH /users/me`; email, role and the company record
+> are read-only. **There is no role or activation control on that page and a test enforces it** —
+> `PATCH /users/me` does not declare `permitRole` or `active`, and that allow-list is the privilege
+> boundary. `GAPS.md` row C (no company concept) is closed as **will not exist**: the system is
+> single-tenant, so `contractorProfile.firmName` is the contracting firm and is descriptive only —
+> nothing may be scoped by it.
+>
 > Built 2026-08-23 (`PMT-014`, `CRT-004`): a DRAFT is resumable — `/permits/:id/edit` and
 > `/permits/:id/duplicate` exist and `PMT-010`'s two banner CTAs are live, no longer disabled. Editability is
 > settled by a real empty-body `PATCH` and deferred to the server, because **`REJECTED` is editable too** (a
@@ -101,7 +109,7 @@ Each module owns parallel trees: routes (`src/router/modules/<Mod>.router.ts` or
 
 | Module | Prefix | Pages (`src/pages/<mod>/pages/`) | Providers | Harness | Built? |
 |---|---|---|---|---|---|
-| `platform` | `/auth` | `auth/login` ✅, `auth/reset-password` ✅, layout shell, i18n, API errors | `auth/public`, `auth/private`, `notification` | `docs/modules/platform/` | shell + i18n + errors + contractor auth/route guard (`PLT-005`) ✅ · notification polling `PLT-007` ⬜ |
+| `platform` | `/auth` | `auth/login` ✅, `auth/reset-password` ✅, layout shell, i18n, API errors | `auth/public`, `auth/private`, `notification` | `docs/modules/platform/` | shell + i18n + errors + contractor auth/route guard (`PLT-005`) ✅ · notification polling `PLT-007` ✅ |
 | `permit` | `/permits` | `list` ✅, `create` (6-step wizard) ✅, `detail` ✅ | `permit` | `docs/modules/permit/` | provider + list ✅ · wizard complete, all six steps real (`PMT-004`–`PMT-009`) · detail built (`PMT-010`–`PMT-012`: banners, QR, audit timeline, closure modal, Fire Watch countdown) |
 | `history` | `/history` | `list` ✅ | `permit` (reused — no own provider dir) | `docs/modules/history/` | ✅ |
 | `certificate` | `/certificates` | `list` ✅ | `certificate` | `docs/modules/certificate/` | ✅ |

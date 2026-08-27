@@ -130,6 +130,23 @@
 	--color-accent-emphasis: var(--color-accent-600);
 	--color-accent-emphasis-alt: var(--color-accent-700);
 
+	/* ── Info / blue ── PLT-011 ──────────────────
+	   The palette had primary (red), accent (orange), status and neutrals, but no blue — flagged
+	   when AutoCompleteInput.vue's selected-value chip turned up hardcoding #027CE9 on #E7F4FF
+	   with nothing to retokenize onto. There is no blue anywhere else in this app's OWN screens
+	   (the sibling Safety/Inspector app's notification blue, #E7F4FD / #3C7FA8, is a different
+	   app's token and out of scope here), so this is derived from the one blue the design
+	   prototype (SmartWorkPermit-v3.dc.html) actually uses on a contractor screen: the step-3
+	   "Atmosphere check bypassed — outdoor work" info panel (lines ~243-248) — bg #E8F5FF, border
+	   #B3D8F5, text #1060A8, and its "Switch to Indoor" button's #93C5FD border. Following the
+	   status-token shape (fg/bg/border, no numbered ramp) rather than the brand-color shape
+	   (accent/primary's 50-950 ramp): info is a semantic panel/chip color like the status tokens,
+	   not a second brand color. Same family will be reused by PMT-006 for that outdoor-work panel. */
+	--color-info-fg: #1060a8;
+	--color-info-bg: #e8f5ff;
+	--color-info-border: #b3d8f5;
+	--color-info-border-strong: #93c5fd; /* outline-button border variant, e.g. the panel's own CTA */
+
 	/* ── Status tokens ──────────────────────────
 	   One fg/bg (+ border where the design uses one) pair per permit
 	   status, so no screen hardcodes a status hex. */

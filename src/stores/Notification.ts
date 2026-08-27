@@ -30,8 +30,12 @@ export const useNotificationStore = defineStore(
       (): number => notifications.value.filter((notification: INotification): boolean => !notification.read).length
     )
 
+    // (feat-011c) GET /notifications is now really paginated (page/limit, same envelope shape as
+    // certificates) — `response.data` is still the row array, so this store's own shape is
+    // unaffected. Page 1 at a generous limit keeps today's "one feed, no client paging UI" behavior;
+    // building an actual paged notification list is a separate, not-yet-scheduled item.
     async function fetch (): Promise<void> {
-      const response = await NotificationService.list({ limit: 50 })
+      const response = await NotificationService.list({ page: 1, limit: 50 })
       notifications.value = response.data ?? []
     }
 

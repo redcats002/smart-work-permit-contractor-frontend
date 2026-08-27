@@ -16,6 +16,28 @@ token cookie set, revisiting login bounces back, all four screens render, zero p
 
 ---
 
+## 2026-08-27 — Pages deploy unblocked
+
+`cloudflare/wrangler-action@v3` failed twice on the first real deploy, for two different reasons:
+
+1. It installs wrangler itself using the package manager it detects. It found bun and ran
+   `bun install wrangler` against this repo's frozen lockfile, which dies with a bare
+   `exit code 1`. Forced `packageManager: npm`.
+2. With that fixed it installed 3.90.0 (the action's default) and failed `pages deploy` with no
+   message whatsoever. Pinned `wranglerVersion: 4.127.0` — and it failed identically.
+
+Three distinct faults, one indistinguishable error string, because the action wraps the CLI and
+reports only its exit code. **The action is now gone**: the step runs
+`bunx wrangler@4.127.0 pages deploy dist` directly, with `CLOUDFLARE_API_TOKEN` and
+`CLOUDFLARE_ACCOUNT_ID` in `env`. wrangler's own stderr now reaches the log, which is what any
+further diagnosis depends on.
+
+Remaining prerequisite, not a code change: the Pages project must exist as a **direct upload**
+project before the first run — `wrangler pages deploy` does not create one in CI. Create with
+`wrangler pages project create esw-contractor --production-branch=dev`. Do **not** connect the
+project to Git: the workflow deploys it, and a Git-connected project would build in parallel
+without `VITE_APP_API_URL`.
+
 ## 2026-08-15 (wave 3) — wizard shell, auth, history, cleanup
 
 Four more agents. `PMT-004` ran **alone** rather than fanning the wizard steps out — `PMT-005`–`008`
@@ -1023,3 +1045,59 @@ the two new route names registered in that test's router so mount doesn't throw 
 - The stale doc comment on `Permit.router.ts` ("NOT yet registered in src/router/index.ts... during
   this wave") predates this repo's four-router registration and was already wrong before this
   session; left as found — out of this item's scope to correct.
+
+## 2026-08-23 — PLT-012 self-service profile
+
+`/profile` — a contractor's own account. Before this the app had no account screen at all: a
+contractor could not see or correct anything about themselves. Backend half is
+`smart-work-permit-api` `feat-022`; the officer-side account register lives in the **Safety** app.
+
+Reached from the drawer's account card, which is now a button — this app has no header menu, so
+that card is the only route in.
+
+Two things a later session should not undo:
+
+- **There is no role or activation control on the page, and a test enforces it.** `PATCH /users/me`
+  does not declare `permitRole` or `active`; the allow-list is the privilege boundary, not a
+  convenience. A control there would promise an edit the server correctly refuses.
+- **An empty phone field is omitted from the payload, not sent as `''`.** The API validates
+  `phoneNumber` as exactly 10 characters, so `''` would 400. Omitted means unchanged, which is what
+  someone who never filled it in expects.
+
+`GAPS.md` row C (no company concept) is **closed as "will not exist"**, not left open: the
+single-tenant ruling means there is no `Company` entity to model. `contractorProfile.firmName` is
+the contracting firm and is descriptive — nothing may be scoped by it.
+
+Note for whoever writes the next error-path test here: `useApiError` localizes through the app's own
+i18n plugin instance, not the one a test installs, and the app's default locale is Thai. Assert the
+Thai string.
+
+## 2026-08-23 — backend feat-011c: GET /notifications is now paginated (cross-repo, backend-owned session)
+
+Not this repo's own feature-list item — a backend session (`feat-011`) touched this app's
+notification code because both frontends' own contract checks previously asserted `GET
+/notifications` is NOT paginated, so a backend-only change would have broken this repo silently.
+
+`GET /notifications` now takes the same `CommonPaginationModel` query params
+(`page`/`limit`/`sortBy`/`sortOrder`/`search`) and answers the same
+`CommonPaginationResponseModel` envelope `GET /certificates` does — `count`/`page`/`limit`/
+`totalPage` alongside `data` — instead of the old `limit`-only, non-paginated response.
+
+Changed: `NotificationRes.model.ts` (`TGetNotificationListResponse` is now
+`IBasePaginationResponse<INotification>`), `Notification.provider.ts` (`IGetNotificationListQuery`
+gains `page`), `stores/Notification.ts` (`fetch()` now sends `{ page: 1, limit: 50 }` explicitly —
+this store's own shape, a flat `notifications` array with no paging UI, is unchanged; it just reads
+`response.data` off the envelope now instead of the whole thing), `scripts/smoke-api.mjs` (asserts
+the paginated shape instead of its absence), `useNotificationPolling.test.ts` (`emptyList()` fixture
+gained the pagination fields the type now requires). This app was already safe by construction — the
+axios interceptor passes the whole envelope through and callers read `.data` — so the change here is
+entirely typing/comments plus the store's explicit `page`/`limit`, not a transport fix.
+
+`docs/api/GAPS.md` row D closed. Row F (permit `description`, feat-011a) updated: the backend now
+serves a nullable `description` on create/update/every permit response, but **no frontend
+consumption was wired in this session** — that is a separate item, still open here.
+
+`./init.sh` green: typecheck PASS, lint PASS (2 pre-existing `vue/one-component-per-file` warnings,
+unrelated), vitest 460 pass / 50 files, smoke 15/15 checks pass against a live backend
+(`contractor@e2e.test`) including "notifications are paginated (feat-011c) — same envelope shape as
+certificates".

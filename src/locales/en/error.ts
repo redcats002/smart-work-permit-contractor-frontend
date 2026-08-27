@@ -19,6 +19,7 @@ const error = {
   PERMIT_NOT_SUBMITTABLE: 'This permit cannot be submitted in its current state.',
   PERMIT_NOT_ACTIVE: 'This action is only available while the permit is active.',
   NOT_HOT_WORK: 'Fire Watch applies to Hot Work permits only.',
+  PERMIT_POSITION_REQUIRED: 'Set a position on the facility plan before submitting this permit.',
 
   // Closure guards
   ENTRANTS_STILL_INSIDE: 'Closure blocked — one or more entrants are still checked in.',
@@ -40,6 +41,8 @@ const error = {
   FILE_TOO_LARGE: 'That file is too large. The limit is 10 MB per file.',
   UPLOAD_FOLDER_NOT_ALLOWED: 'This file cannot be stored in that location. Please report this to your administrator.',
   STORAGE_UNAVAILABLE: 'File storage is unavailable right now. Your file was not saved — please try again shortly.',
+  ACCOUNT_DEACTIVATED: 'This account has been deactivated. Contact your safety officer to have it reactivated.',
+  LAST_SAFETY_OFFICER: 'This is the last active safety officer. Add or reactivate another one before changing this account.',
 
   unknown: 'Something went wrong. Please try again.'
 }

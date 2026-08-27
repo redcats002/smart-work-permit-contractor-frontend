@@ -146,12 +146,12 @@
         "Push is explicitly out of scope — polling only, per 02-contractor-web-vue-tasks.md",
         "./init.sh green"
       ],
-      "notes": "src/composables/useSocket.ts is lending-era realtime plumbing. Decide in PLT-001 whether it is deleted; if kept, do not wire notifications through it without checking the backend actually exposes a socket.",
+      "notes": "src/composables/useSocket.ts is lending-era realtime plumbing. Decide in PLT-001 whether it is deleted; if kept, do not wire notifications through it without checking the backend actually exposes a socket. || TWO OF SIX ACCEPTANCE ITEMS WERE ALREADY DONE when this item was picked up: src/resources/provider/notification/Notification.provider.ts (real GET /notifications with limit-only query, POST /:id/dismiss) and src/stores/Notification.ts (rebuilt on that provider, notifications/unreadCount/fetch/dismiss/initialize/destroy) both already existed with a doc comment reading 'Polling is deliberately NOT here: PLT-007 owns the interval and its lifecycle' — so the real gap was exactly the interval + the topbar UI, confirmed by reading both files before writing anything new. Built: src/composables/useNotificationPolling.ts — exports the named constant NOTIFICATION_POLL_INTERVAL_MS (30000) and a composable that setIntervals notificationStore.initialize() while useAuthStore().isAuthenticated, and clears the interval + calls notificationStore.destroy() the instant a `watch(isAuthenticated)` flips false (covers the SPA useLogout() path, where DefaultLayout keeps its component instance since router.push doesn't reload) as well as onUnmounted (covers the 401-interceptor path, where DefaultLayout unmounts because meta.layout switches to 'blank' for /auth/login). Wired into src/layouts/DefaultLayout.vue alongside the existing onMounted initial fetch. Topbar: src/components/app/AppTopbar.vue now renders a bell button with an unread-count badge (storeToRefs(notificationStore) for unreadCount/notifications) and a click-toggled dropdown panel listing notifications (title + useDayjs().formatDateTime(createdAt)) with a per-row Dismiss button that calls notificationStore.dismiss(id) and routes any failure through useApiError().mapError() into toast.error — never the backend's raw message. EN/TH copy added under platform.notifications.{title,empty,dismiss} in both locale files.",
       "dependencies": [
         "PLT-006"
       ],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "./init.sh 2026-08-23: typecheck PASS, lint PASS (2 pre-existing-pattern vue/one-component-per-file warnings on the new test file, matching src/tests/composables/useWizard.test.ts's own StubComponent pattern — 0 errors), vitest 50 files / 460 tests PASS (up from 456; 4 new tests in src/tests/composables/useNotificationPolling.test.ts covering: no poll while unauthenticated, polls on the named interval once authenticated, stops + clears store state on logout, clears the interval on unmount — all via vi.useFakeTimers() and vi.spyOn(NotificationProvider.prototype, 'list')), live smoke PASS including 'notifications are enveloped, limit-only, and NOT paginated'."
     },
     {
       "id": "PLT-008",
@@ -218,12 +218,32 @@
         "Retokenize AutoCompleteInput.vue once the decision is made",
         "./init.sh green"
       ],
-      "notes": "Raised by the PLT-010 agent, which correctly refused to guess a token rather than silently mapping a blue onto an unrelated family. The wizard step 3 outdoor-work bypass panel (design lines 242-251) needs this same blue, so it will come up again in PMT-006.",
+      "notes": "Raised by the PLT-010 agent, which correctly refused to guess a token rather than silently mapping a blue onto an unrelated family. The wizard step 3 outdoor-work bypass panel (design lines 242-251) needs this same blue, so it will come up again in PMT-006. || DONE. Decided --color-info-* (not --color-accent-* reuse): accent is already spoken for as the brand orange (topbar border, logo, Fire Monitor panel) and mixing a blue into it would make that token ambiguous. Searched docs/main/SmartWorkPermit-v3.dc.html for every hex before picking values — #2F80ED named in this item's own acceptance text does not literally occur anywhere in that file (grepped, confirmed absent), so it was NOT used. What IS literally in the prototype, on a screen this app actually owns (step-3 outdoor-work bypass panel, contractor wizard, lines ~243-248): bg #E8F5FF, border #B3D8F5, text #1060A8, and the panel's own 'Switch to Indoor' button border #93C5FD. The other blue in the file (#E7F4FD/#3C7FA8) is the Safety-Officer app's notification panel — a different repo, correctly not used. Added to tailwind.css as --color-info-{fg,bg,border,border-strong}, following the STATUS-token shape (fg/bg/border, no 50-950 ramp) rather than the brand-color shape, because info reads as a semantic panel color like the status tokens, not a second brand hue. Retokenized AutoCompleteInput.vue's selected-value chip from its literal text-[#027CE9] bg-[#E7F4FF] to text-(--color-info-fg) bg-(--color-info-bg) — the component's own hardcoded pair was close to but not identical to the prototype's canonical blue, so the prototype value won per the acceptance list, not the component's pre-existing literal. grep -rlE hex over src/components (excluding volt) now returns only charts/ChartJsDonut.vue and loader/OverlayLoader.vue — both already flagged with reasons by PLT-010, neither touched here.",
       "dependencies": [
         "PLT-002"
       ],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "./init.sh 2026-08-23: typecheck PASS, lint PASS (0 errors on AutoCompleteInput.vue; tailwind.css is not eslint-scoped, expected), vitest 50 files / 460 tests PASS (no new tests — pure CSS retokenization, no new logic), live smoke PASS."
+    },
+    {
+      "id": "PLT-012",
+      "type": "feature",
+      "name": "Self-service profile page",
+      "path": "src/pages/profile/pages/ProfileDetailPage.vue, src/router/modules/Profile.router.ts, src/resources/provider/user/User.provider.ts, src/components/app/AppDrawer.vue",
+      "description": "A contractor's own account at /profile: name and phone editable via PATCH /users/me, with email, role and the company record read-only. Before this the app had no account screen at all — a contractor could not see or correct anything about themselves. Backend half is smart-work-permit-api feat-022; the officer-side register lives in the Safety app (its feat-008).",
+      "acceptance": [
+        "Reached from the drawer's account card — this app has no header menu, so that card is the only route in",
+        "NO role or activation control exists on the page, and a test enforces it. PATCH /users/me does not declare permitRole or active: the allow-list IS the privilege boundary, and a control here would promise an edit the server correctly refuses",
+        "An empty phone field is OMITTED from the payload, not sent as '' — the API validates phoneNumber as exactly 10 characters, so '' would 400. Omitted means unchanged",
+        "The company record (firmName, taxId, address, contactPerson, contract dates) renders read-only with a line saying the safety officer owns it",
+        "Errors render localized off errorCode; the backend's `message` is never rendered",
+        "Saving updates the drawer's account card without a reload"
+      ],
+      "dependencies": [
+        "PLT-005"
+      ],
+      "status": "done",
+      "evidence": "2026-08-23: ./init.sh green — eslint 0 errors, vue-tsc 0 errors, vitest 49 files / 456 tests, live API contract smoke passed. src/tests/pages/profile/ProfileDetailPage.test.ts, 5 tests: renders /users/me, company record read-only, no role/activation control at all, payload carries only allow-listed fields with an empty phone omitted, and the error path renders the localized string while asserting the raw backend message is NOT rendered."
     }
   ]
 }

@@ -7,6 +7,7 @@ import AuthRouter from './modules/Auth.router'
 import CertificateRouter from './modules/Certificate.router'
 import HistoryRouter from './modules/History.router'
 import PermitRouter from './modules/Permit.router'
+import ProfileRouter from './modules/Profile.router'
 
 export interface IRouteRedirect {
   name: string
@@ -38,6 +39,7 @@ export const routes: RouteRecordRaw[] = [
   PermitRouter,
   HistoryRouter,
   CertificateRouter,
+  ProfileRouter,
   {
     // Catch-all route for 404
     path: '/:pathMatch(.*)*', // Matches any path
