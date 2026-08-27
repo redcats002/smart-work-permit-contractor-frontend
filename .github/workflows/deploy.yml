@@ -2,7 +2,7 @@ name: Deploy Contractor Web
 
 # `dev` is the live branch — origin/main is stale (workspace commit 58b3b01).
 on:
-  push: { branches: [dev] }
+  push: { branches: [main] }
   pull_request:
 
 concurrency:
