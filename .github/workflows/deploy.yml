@@ -41,6 +41,10 @@ jobs:
           # tool that never ships in the bundle, so which manager fetches it is
           # irrelevant — npm is simply the path the action supports reliably.
           packageManager: npm
+          # Pinned: the action's default is wrangler 3.90.0, which is old enough that a failed
+          # `pages deploy` exits 1 with no message at all. 4.x reports the actual cause —
+          # missing project, bad token scope — instead of a bare exit code.
+          wranglerVersion: '4.127.0'
           command: >-
             pages deploy dist --project-name=esw-contractor
             --branch=${{ github.head_ref || github.ref_name }}

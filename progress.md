@@ -16,6 +16,23 @@ token cookie set, revisiting login bounces back, all four screens render, zero p
 
 ---
 
+## 2026-08-27 — Pages deploy unblocked
+
+`cloudflare/wrangler-action@v3` failed twice on the first real deploy, for two different reasons:
+
+1. It installs wrangler itself using the package manager it detects. It found bun and ran
+   `bun install wrangler` against this repo's frozen lockfile, which dies with a bare
+   `exit code 1`. Forced `packageManager: npm` — wrangler is a CI-only tool that never reaches
+   the bundle, so which manager fetches it is irrelevant.
+2. With that fixed it installed 3.90.0 (the action's default) and then failed `pages deploy`
+   with no message whatsoever. Pinned `wranglerVersion: 4.127.0`, which reports the real cause.
+
+Remaining prerequisite, not a code change: the Pages project must exist as a **direct upload**
+project before the first run — `wrangler pages deploy` does not create one in CI. Create with
+`wrangler pages project create esw-contractor --production-branch=dev`. Do **not** connect the
+project to Git: the workflow deploys it, and a Git-connected project would build in parallel
+without `VITE_APP_API_URL`.
+
 ## 2026-08-15 (wave 3) — wizard shell, auth, history, cleanup
 
 Four more agents. `PMT-004` ran **alone** rather than fanning the wizard steps out — `PMT-005`–`008`
