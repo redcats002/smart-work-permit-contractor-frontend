@@ -35,6 +35,12 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          # npm, not the repo's bun: the action installs wrangler itself, and its
+          # bun path runs `bun install wrangler` against this repo's frozen
+          # lockfile, which fails with a bare "exit code 1". wrangler is a CI-only
+          # tool that never ships in the bundle, so which manager fetches it is
+          # irrelevant — npm is simply the path the action supports reliably.
+          packageManager: npm
           command: >-
             pages deploy dist --project-name=esw-contractor
             --branch=${{ github.head_ref || github.ref_name }}
