@@ -22,10 +22,15 @@ token cookie set, revisiting login bounces back, all four screens render, zero p
 
 1. It installs wrangler itself using the package manager it detects. It found bun and ran
    `bun install wrangler` against this repo's frozen lockfile, which dies with a bare
-   `exit code 1`. Forced `packageManager: npm` — wrangler is a CI-only tool that never reaches
-   the bundle, so which manager fetches it is irrelevant.
-2. With that fixed it installed 3.90.0 (the action's default) and then failed `pages deploy`
-   with no message whatsoever. Pinned `wranglerVersion: 4.127.0`, which reports the real cause.
+   `exit code 1`. Forced `packageManager: npm`.
+2. With that fixed it installed 3.90.0 (the action's default) and failed `pages deploy` with no
+   message whatsoever. Pinned `wranglerVersion: 4.127.0` — and it failed identically.
+
+Three distinct faults, one indistinguishable error string, because the action wraps the CLI and
+reports only its exit code. **The action is now gone**: the step runs
+`bunx wrangler@4.127.0 pages deploy dist` directly, with `CLOUDFLARE_API_TOKEN` and
+`CLOUDFLARE_ACCOUNT_ID` in `env`. wrangler's own stderr now reaches the log, which is what any
+further diagnosis depends on.
 
 Remaining prerequisite, not a code change: the Pages project must exist as a **direct upload**
 project before the first run — `wrangler pages deploy` does not create one in CI. Create with

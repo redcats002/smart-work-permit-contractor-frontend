@@ -1,6 +1,7 @@
 name: Deploy Contractor Web
 
-# `dev` is the live branch — origin/main is stale (workspace commit 58b3b01).
+# `main` is the deploy branch: merging into it ships to production. `dev` is where
+# work lands first, and reaches main through a PR whose checks must pass.
 on:
   push: { branches: [main] }
   pull_request:
@@ -31,20 +32,21 @@ jobs:
         env:
           VITE_APP_API_URL: ${{ vars.VITE_APP_API_URL }}
 
-      - uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CF_API_TOKEN }}
-          accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          # npm, not the repo's bun: the action installs wrangler itself, and its
-          # bun path runs `bun install wrangler` against this repo's frozen
-          # lockfile, which fails with a bare "exit code 1". wrangler is a CI-only
-          # tool that never ships in the bundle, so which manager fetches it is
-          # irrelevant — npm is simply the path the action supports reliably.
-          packageManager: npm
-          # Pinned: the action's default is wrangler 3.90.0, which is old enough that a failed
-          # `pages deploy` exits 1 with no message at all. 4.x reports the actual cause —
-          # missing project, bad token scope — instead of a bare exit code.
-          wranglerVersion: '4.127.0'
-          command: >-
-            pages deploy dist --project-name=esw-contractor
-            --branch=${{ github.head_ref || github.ref_name }}
+      # wrangler invoked directly rather than through cloudflare/wrangler-action.
+      # The action wraps the CLI and reports only "The process failed with exit code 1",
+      # swallowing wrangler's own stderr — it hid two different failures in a row here
+      # (a bun-install break, then the deploy itself). Calling the CLI puts the real
+      # message in the log. It also drops a dependency for one line, which is the trade
+      # the action was never earning.
+      #
+      # Requires the Pages project to already exist as a DIRECT UPLOAD project:
+      #   wrangler pages project create esw-contractor --production-branch=main
+      # `pages deploy` does not create one non-interactively.
+      - name: Deploy to Cloudflare Pages
+        run: |
+          bunx wrangler@4.127.0 pages deploy dist \
+            --project-name=esw-contractor \
+            --branch="${{ github.head_ref || github.ref_name }}"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
