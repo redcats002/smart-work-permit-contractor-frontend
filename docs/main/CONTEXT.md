@@ -28,6 +28,12 @@ Each repo is its own git repository. The workspace root holding them (this direc
 The three app repos are **gitignored there, not vendored as submodules**: how they are cloned,
 branched and pushed is unchanged.
 
+There is a fourth repo, `smart-work-permit-landing/` — the marketing page. It is gitignored
+here on the same terms, and it is deliberately **not** part of anything in this document: no
+openapi copy, no error-code vocabulary, no `/api/v1` prefix, and `check-contract-sync.mjs`
+stays a three-repo check. It links to the two app subdomains and nothing else. Its own
+`AGENTS.md` is authoritative for work inside it.
+
 The root has **no remote**. It is the *edit origin* for the two glue files, not their distribution
 channel — so both are **copied into each repo** (`docs/main/CONTEXT.md`, `docs/main/PROMPT-LOG.md`)
 and each repo's `AGENTS.md` points at its own copy. **Edit the root copy, never a repo copy**, then
