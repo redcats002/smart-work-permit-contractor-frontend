@@ -1747,3 +1747,70 @@ $ rm -rf dist && bun run build && grep -rn "smoke.contractor@example.com\|passwo
 ```
 
 Files changed: `src/pages/auth/pages/login/composables/useInit.ts`.
+
+## 2026-09-01 — Trial button moved to server-issued demo login (wayfinder 023)
+
+`docs/wayfinder/tickets/023-server-issued-demo-login.md`. The API half shipped first
+(`smart-work-permit-api`, 2026-09-01): `POST /api/v1/auth/demo-login` takes `{ role }`, signs the
+caller into a server-provisioned demo account, and returns a session through the exact same shape
+as `POST /api/v1/auth/user/public/login` — no password ever reaches the client. This session wired
+the contractor app's one button (`role: 'contractor'`) to it and removed the old
+`VITE_TRIAL_LOGIN_PASSWORD` path entirely, per the ticket's explicit "not a second way in" line.
+
+Changed:
+- `src/models/request/auth/public/AuthReq.public.model.ts` — new `IDemoLoginPayload { role: TUserRole }`.
+- `src/resources/provider/auth/public/Auth.public.provider.ts` — new `demoLogin()`, posting to
+  `/api/v1/auth/demo-login` directly (a sibling of `urlPrefix`, not a child of it — the route lives
+  outside `/auth/user/public`). Reuses `TActionLoginResponse`, same shape as `login()`.
+- `src/pages/auth/pages/login/pages/LoginPage.vue` — extracted `applySession()` (role gate + store
+  write + redirect) shared by `performLogin` and the new `performDemoLogin`; `onTrialLogin` now
+  calls `demoLogin({ role: CONTRACTOR_ROLE })`. `TRIAL_LOGIN_EMAIL` and the password read are gone.
+  `showTrialLogin` drops the password condition (`VITE_TRIAL_LOGIN === 'true'` only) and gains a
+  `demoLoginUnavailable` ref.
+- `.env.example` — `VITE_TRIAL_LOGIN_PASSWORD` removed; `VITE_TRIAL_LOGIN` comment rewritten to
+  describe the server-issued flow and that there is no client-side secret to configure.
+- `src/locales/{en,th}/platform.ts` — `platform.auth.trial.unavailable`, EN + TH.
+- `src/tests/pages/auth/login/LoginPage.trial.test.ts` — rewritten: asserts `demoLogin` is called
+  with `{ role: 'contractor' }` and no `password` key, that `login()` is never called from the
+  trial path, that a successful demo sign-in reaches `PermitListPage`, and that a 404 renders the
+  localized "not available" message (EN + TH) and hides the button.
+
+**404 handling decision.** Demo login is off by default (`DEMO_LOGIN_ENABLED` unset), so a build
+with `VITE_TRIAL_LOGIN=true` pointed at a deployment that never set the server flag 404s on every
+click — with no `errorCode`, per `CONTEXT.md`'s existing rule for that status. `useApiError().mapError()`
+would otherwise fold that into the generic `error.unknown` toast, which is technically not silent
+but doesn't say what's actually true. `onTrialLogin`'s catch branches on `status === 404` and shows
+`platform.auth.trial.unavailable` instead, and also flips `demoLoginUnavailable` to hide the button:
+the endpoint's disabled/enabled state doesn't change within a page session, so a 404 means every
+future click on this button will 404 too — better to say so once than let the visitor keep hitting
+a dead affordance.
+
+**Nothing in the brief turned out to be wrong.** The endpoint, payload, and response shape matched
+`docs/api/openapi.json` exactly; no cross-repo doc here needed correcting (nothing else in this
+repo asserted the old password-based mechanism).
+
+```
+$ bunx eslint <files touched above>
+(clean — no errors, no warnings)
+
+$ bun run typecheck
+$ vue-tsc --noEmit -p tsconfig.app.json
+(clean — no output)
+
+$ bun run test:run
+ Test Files  57 passed (57)
+      Tests  510 passed (510)
+
+$ bun run lint
+$ eslint .
+(2 pre-existing warnings in useNotificationPolling.test.ts, unrelated, unchanged — 0 errors)
+
+$ rm -rf dist && bun run build && grep -rn "TRIAL_LOGIN_PASSWORD\|@e2e.test" dist/ ; echo "exit=$?"
+(no grep output — exit=1, confirming neither string survives into the production bundle)
+```
+
+Files changed: `src/models/request/auth/public/AuthReq.public.model.ts`,
+`src/resources/provider/auth/public/Auth.public.provider.ts`,
+`src/pages/auth/pages/login/pages/LoginPage.vue`, `.env.example`,
+`src/locales/en/platform.ts`, `src/locales/th/platform.ts`,
+`src/tests/pages/auth/login/LoginPage.trial.test.ts`.

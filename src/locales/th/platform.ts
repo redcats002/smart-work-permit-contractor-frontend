@@ -31,7 +31,8 @@ const platform: typeof platformEn = {
     loginSuccess: 'ยินดีต้อนรับเข้าสู่ระบบ',
     trial: {
       label: 'บัญชีทดลองใช้งาน',
-      contractor: 'ผู้รับเหมา'
+      contractor: 'ผู้รับเหมา',
+      unavailable: 'ไม่สามารถใช้งานการเข้าสู่ระบบทดลองในสภาพแวดล้อมนี้ได้'
     },
     validation: {
       emailRequired: 'กรุณากรอกอีเมล',

@@ -32,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, type ComputedRef } from 'vue'
+import { computed, onMounted, ref, type ComputedRef, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
@@ -40,6 +40,7 @@ import { useApiError } from '@/composables/useApiError'
 import { CONTRACTOR_ROLE, useAuthStore } from '@/stores/Auth'
 import { handleLoading } from '@/utils/HandleLoading'
 import type { ILoginPayload } from '@/models/request/auth/public/AuthReq.public.model'
+import type { TActionLoginResponse } from '@/models/response/auth/public/AuthRes.public.model'
 import type { IAuthPublicProvider } from '@/resources/provider/auth/public/Auth.public.provider'
 import AuthPublicProvider from '@/resources/provider/auth/public/Auth.public.provider'
 import BaseContainer from '@/components/base/BaseContainer.vue'
@@ -58,26 +59,23 @@ const form = ref<ILoginPayload>(useInitForm())
 
 /**
  * Demo affordance for showing the app without typing credentials — never a real auth bypass, see
- * `performLogin` below. Default OFF: hidden unless `VITE_TRIAL_LOGIN` is exactly `'true'` AND a
- * password is set. The password never has a client-side default — a missing env var hides the
- * button rather than guessing, so this can never fall back to sending an empty/placeholder
- * password to the real login endpoint.
+ * `applySession` below. Default OFF: hidden unless `VITE_TRIAL_LOGIN` is exactly `'true'`. The
+ * server holds the password now (`POST /api/v1/auth/demo-login`, wayfinder 023) — this client
+ * never sees or sends one. `demoLoginUnavailable` self-hides the button after a 404, which means
+ * the deployment never set `DEMO_LOGIN_ENABLED=TRUE`: the endpoint will 404 on every subsequent
+ * click too, so leaving the button up just invites repeat failures instead of surfacing the state
+ * once.
  */
-const TRIAL_LOGIN_EMAIL = 'contractor@e2e.test'
-const trialLoginPassword: string | undefined = import.meta.env.VITE_TRIAL_LOGIN_PASSWORD
+const demoLoginUnavailable: Ref<boolean> = ref(false)
 const showTrialLogin: ComputedRef<boolean> = computed(
-  (): boolean => import.meta.env.VITE_TRIAL_LOGIN === 'true' && Boolean(trialLoginPassword)
+  (): boolean => import.meta.env.VITE_TRIAL_LOGIN === 'true' && !demoLoginUnavailable.value
 )
 
 /**
- * Shared by the real form submit and the trial button — same provider call, same role gate, same
- * error handling either way. The trial button is a shortcut to this exact flow, never a
- * side-door around it: no token is minted client-side and no store is written to directly.
+ * Shared by the real form submit and the trial button once each has a session response — same
+ * role gate, same store write, same redirect either way. Neither path mints a token client-side.
  */
-async function performLogin (payload: ILoginPayload): Promise<void> {
-  // Login is the one endpoint that answers { success, data } rather than the { message, data }
-  // envelope — see docs/main/dev-handoff/04-api-contract.md §2.
-  const response = await AuthPublicService.login(payload)
+async function applySession (response: TActionLoginResponse): Promise<void> {
   const { user, token } = response.data
 
   // A safety officer or inspector can authenticate here, but every screen in this app calls
@@ -93,6 +91,18 @@ async function performLogin (payload: ILoginPayload): Promise<void> {
   router.push({ name: 'PermitListPage' })
 }
 
+async function performLogin (payload: ILoginPayload): Promise<void> {
+  // Login is the one endpoint that answers { success, data } rather than the { message, data }
+  // envelope — see docs/main/dev-handoff/04-api-contract.md §2.
+  const response = await AuthPublicService.login(payload)
+  await applySession(response)
+}
+
+async function performDemoLogin (): Promise<void> {
+  const response = await AuthPublicService.demoLogin({ role: CONTRACTOR_ROLE })
+  await applySession(response)
+}
+
 function onLogin (): void {
   handleLoading(async (): Promise<void> => performLogin(form.value), {}, (error: unknown): void => {
     toast.error(mapError(error).message)
@@ -100,12 +110,21 @@ function onLogin (): void {
 }
 
 function onTrialLogin (): void {
-  if (!showTrialLogin.value || !trialLoginPassword) return
-  handleLoading(
-    async (): Promise<void> => performLogin({ email: TRIAL_LOGIN_EMAIL, password: trialLoginPassword as string }), {}, (error: unknown): void => {
-      toast.error(mapError(error).message)
+  if (!showTrialLogin.value) return
+  handleLoading(async (): Promise<void> => performDemoLogin(), {}, (error: unknown): void => {
+    const { status } = mapError(error)
+    // Demo login is off by default (docs/wayfinder/tickets/023-server-issued-demo-login.md): a
+    // build with the button visible pointed at a deployment that never set
+    // `DEMO_LOGIN_ENABLED=TRUE` gets a plain 404 with no errorCode, which `mapError` would
+    // otherwise fold into the generic "something went wrong" message. Name the actual state
+    // instead, and stop offering a button that can only ever 404 again.
+    if (status === 404) {
+      demoLoginUnavailable.value = true
+      toast.error(t('platform.auth.trial.unavailable'))
+      return
     }
-  )
+    toast.error(mapError(error).message)
+  })
 }
 
 // Already-logged-in users hitting /auth/login directly (bookmark, browser back) go

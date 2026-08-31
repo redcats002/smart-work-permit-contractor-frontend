@@ -29,7 +29,8 @@ const platform = {
     loginSuccess: 'Welcome back',
     trial: {
       label: 'Trial account',
-      contractor: 'Contractor'
+      contractor: 'Contractor',
+      unavailable: 'Trial login is not available in this environment.'
     },
     validation: {
       emailRequired: 'Please enter your email',
