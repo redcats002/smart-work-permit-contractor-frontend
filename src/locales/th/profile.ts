@@ -17,6 +17,11 @@ export default {
   fieldContractStart: 'เริ่มสัญญา',
   fieldContractEnd: 'สิ้นสุดสัญญา',
   savedToast: 'อัปเดตโปรไฟล์แล้ว',
+  validation: {
+    firstNameRequired: 'กรุณากรอกชื่อ',
+    lastNameRequired: 'กรุณากรอกนามสกุล',
+    phoneLength: 'เบอร์โทรศัพท์ต้องมี 10 หลัก'
+  },
   role: {
     contractor: 'ผู้รับเหมา',
     safety_officer: 'เจ้าหน้าที่ความปลอดภัย',
