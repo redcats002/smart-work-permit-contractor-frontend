@@ -92,6 +92,22 @@ files a row in its own `GAPS.md` under `api-adds` / `open` — it does not inven
   403s and request-validation 400s; clients fall back for those.
 - **Auth**: Better Auth session cookie, not a bearer header.
 
+### Cross-repo consistency
+
+Five repos describe one system: the workspace root, three app repos, and the landing page.
+`CONTEXT.md`, `PROMPT-LOG.md` and `openapi.json` are byte-identical across the root and the three
+app repos, enforced by `scripts/check-contract-sync.mjs`.
+
+**The obligation is wider than the checker.** Any change that makes a statement in another repo
+false must be corrected there in the same session — a status machine, a safety threshold, a role
+list, an error-code list, a lifecycle description, or landing-page copy describing a feature. The
+checker verifies four files; every other claim across the five repos is the author's
+responsibility. A document describing behaviour the code no longer has is worse than no document,
+because it is trusted.
+
+Landing-page copy counts. It states shipped server-side thresholds and the real status machine
+deliberately, not marketing approximations, so a rule change in the API is a landing-page change.
+
 ### Error-code vocabulary (closed set, emitted by the backend)
 
 `LEL_MISSING`, `O2_MISSING`, `CO_MISSING`, `WIND_MISSING`, `GAS_OUT_OF_RANGE`, `WIND_OUT_OF_RANGE`,

@@ -782,7 +782,25 @@ locks every contractor out of submitting.** The two halves ship together or not 
   skipped guards, no auth-store bypass.
 - **There is no `admin` role.** `UserRole` is exactly `contractor | safety_officer | inspector`. A
   request naming an admin is a request for a role that does not exist; say so rather than inventing
-  one.
+  one. (2026-08-31: the owner considered adding one and then ruled it out
+  of scope — wayfinder 024/025. The bypass login ships for the three roles that exist.)
+- **Demo login is for UAT, on data whose loss costs nothing.** The owner's ruling when asked what
+  the demo accounts point at. That is what makes an open endpoint acceptable — not the flag, not
+  the rate limit, both of which are still required. If demo login is ever pointed at real permit
+  data this ruling no longer holds and the endpoint must be disabled.
+- **No credential string may survive into a production bundle, mock ones included.** A frontend
+  cannot keep a secret: Vite env vars are build-time substitutions, and a runtime check like
+  `hostname === 'localhost'` leaves both branches in the shipped JavaScript. Gate on
+  `import.meta.env.DEV`, which the bundler can prove false and eliminate. Verify by building and
+  grepping `dist/` — never by reading the source and assuming.
+- **Every repo's data must agree with every other repo's.** `CONTEXT.md`, `PROMPT-LOG.md` and
+  `openapi.json` are byte-identical across the workspace root and all three app repos, and
+  `check-contract-sync.mjs` enforces it. But the rule is broader than the checker: a change in one
+  repo that makes a statement in another repo false — a status machine, a threshold, a role list,
+  a lifecycle diagram, landing-page copy describing a feature — **must be corrected in that other
+  repo in the same session**. A doc that describes behaviour the code no longer has is worse than
+  no doc, because it is trusted. The checker catches divergence in four files; everything else is
+  the author's responsibility.
 
 ---
 
