@@ -27,6 +27,7 @@
         :form-data="formData"
         :submit-failures="submitFailures"
         :title="t(currentStep.labelKey)"
+        @recheck-certificates="recheckCertificates()"
         @update:checklist-answers="updateChecklistAnswers($event)"
         @update:form-data="updateFormData($event)" />
     </div>
@@ -72,6 +73,7 @@ const {
   submitFailures,
   certificateState,
   certificateProblems,
+  recheckCertificates,
   isFirstStep,
   isLastStep,
   isNextBlocked,

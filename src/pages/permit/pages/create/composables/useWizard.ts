@@ -50,6 +50,13 @@ export interface IUseWizard {
    */
   certificateState: Ref<TCertificatePreflightState>
   certificateProblems: Ref<ICertificateProblem[]>
+  /**
+   * wayfinder ticket 004. Re-runs the shared pre-flight against the CURRENT worker list on
+   * demand — used after a certificate is created from step 4 without leaving the wizard, since
+   * that action doesn't itself change `formData.workers`'s array reference (the debounced watch
+   * below only fires on a real worker-list edit).
+   */
+  recheckCertificates (): void
   isFirstStep: ComputedRef<boolean>
   isLastStep: ComputedRef<boolean>
   isNextBlocked: ComputedRef<boolean>
@@ -178,6 +185,11 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
       debouncedCertificateCheck(next ?? [])
     }, { immediate: true }
   )
+
+  /** Bypasses the debounce — see the `recheckCertificates` doc on `IUseWizard`. */
+  function recheckCertificates (): void {
+    void checkCertificates(formData.value.workers ?? [])
+  }
 
   /**
    * Creates the draft on the first call (draftId still undefined), PATCHes it
@@ -435,6 +447,7 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
     submitFailures,
     certificateState,
     certificateProblems,
+    recheckCertificates,
     isFirstStep,
     isLastStep,
     isNextBlocked,

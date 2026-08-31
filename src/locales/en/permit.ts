@@ -227,8 +227,16 @@ const permit = {
         },
         workersTitle: 'Workers ({count})',
         addWorker: 'Add Worker',
+        addCertificate: 'New Certificate',
         removeWorker: 'Remove worker',
         noWorkers: 'No workers registered yet. Add everyone who will be on this permit.',
+        // wayfinder ticket 004 — worker-name AutoComplete suggestion item copy. A name matching
+        // no suggestion stays legal free text; "empty" tells the contractor that, not that they
+        // are blocked.
+        suggestion: {
+          expired: 'Expired',
+          empty: 'No certificate matches — you can still type this worker\'s name.'
+        },
         column: {
           worker: 'Worker',
           role: 'Role on permit',

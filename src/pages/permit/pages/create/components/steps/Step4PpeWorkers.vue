@@ -46,12 +46,20 @@
         <h3 class="text-[13px] font-semibold text-text-primary">
           {{ t('permit.create.steps.ppeWorkers.workersTitle', { count: workers.length }) }}
         </h3>
-        <button
-          class="rounded-md border border-border-strong bg-surface-muted px-3 py-1.5 text-xs font-semibold text-text-primary"
-          type="button"
-          @click="addWorker()">
-          <span aria-hidden="true">＋</span> {{ t('permit.create.steps.ppeWorkers.addWorker') }}
-        </button>
+        <div class="flex flex-wrap gap-2">
+          <button
+            class="rounded-md border border-border-strong bg-surface-muted px-3 py-1.5 text-xs font-semibold text-text-primary"
+            type="button"
+            @click="createCertificateOpen = true">
+            <span aria-hidden="true">📎</span> {{ t('permit.create.steps.ppeWorkers.addCertificate') }}
+          </button>
+          <button
+            class="rounded-md border border-border-strong bg-surface-muted px-3 py-1.5 text-xs font-semibold text-text-primary"
+            type="button"
+            @click="addWorker()">
+            <span aria-hidden="true">＋</span> {{ t('permit.create.steps.ppeWorkers.addWorker') }}
+          </button>
+        </div>
       </div>
 
       <p
@@ -102,11 +110,22 @@
                 {{ row.index + 1 }}
               </td>
               <td class="px-3 py-3">
-                <InputText
+                <AutoComplete
+                  :force-selection="false"
                   :model-value="row.worker.workerName"
                   :placeholder="t('permit.create.steps.ppeWorkers.placeholder.worker')"
+                  :suggestions="workerSuggestions"
                   class="h-9 w-full"
-                  @update:model-value="patchWorker(row.index, { workerName: $event ?? '' })" />
+                  option-label="workerName"
+                  @complete="onWorkerNameComplete($event.query)"
+                  @update:model-value="onWorkerNameUpdate(row.index, $event)">
+                  <template #option="{ option }">
+                    <WorkerCertificateSuggestionOption :certificate="option" />
+                  </template>
+                  <template #empty>
+                    {{ t('permit.create.steps.ppeWorkers.suggestion.empty') }}
+                  </template>
+                </AutoComplete>
               </td>
               <td class="px-3 py-3">
                 <div class="flex flex-wrap gap-1.5">
@@ -230,22 +249,31 @@
       :description2="pendingWorkerName"
       :title="t('permit.create.steps.ppeWorkers.remove.title')"
       @confirm="confirmRemove()" />
+
+    <CreateCertificateModal
+      v-model="createCertificateOpen"
+      @created="onCertificateCreated($event)" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, type ComputedRef, type Ref } from 'vue'
+import { computed, onMounted, ref, type ComputedRef, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DeleteModal from '@/components/modal/DeleteModal.vue'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import { WORKER_ROLES_BY_TYPE, type EWorkerRole, type TWorkerRole } from '@/enums/modules/permit/WorkerRole.enum'
+import type { ICertificate } from '@/models/modules/certificate/Certificate.model'
 import type { IPermitPhoto, IPermitWorker } from '@/models/modules/permit/Permit.model'
+import AutoComplete from '@/volt/AutoComplete.vue'
 import PhotoSlot from '../PhotoSlot.vue'
+import CreateCertificateModal from '../CreateCertificateModal.vue'
+import WorkerCertificateSuggestionOption from '../WorkerCertificateSuggestionOption.vue'
 import { EVIDENCE_SLOTS, findPhoto, upsertPhoto, type IEvidenceSlot } from '../../constants/PhotoEvidence'
 import {
   requiresHealthCheck, workerHealthIssues, workerRoleSlug, workerRowComplete
 } from '../../constants/WorkerHealth'
 import type { ICertificateProblem } from '../../composables/useCertificatePreflight'
+import { useWorkerCertificateSuggestions } from '../../composables/useWorkerCertificateSuggestions'
 import type { ISubmitCertificateFailure } from '../../constants/SubmitErrorRouting'
 import type { IWizardStepEmits, IWizardStepProps } from '../../wizard/WizardSteps'
 
@@ -289,6 +317,49 @@ const { t } = useI18n()
 
 const removalOpen: Ref<boolean> = ref(false)
 const pendingIndex: Ref<number | undefined> = ref(undefined)
+const createCertificateOpen: Ref<boolean> = ref(false)
+
+/**
+ * wayfinder ticket 004 — worker-name AutoComplete suggestion source. Fetched once on mount and
+ * filtered client-side (`GET /api/v1/certificates/` has no server-side search param, ticket 003).
+ * `workerSuggestions` holds whatever the last `@complete` query matched; free text that matches
+ * nothing stays a legal `workerName` regardless — `force-selection="false"` on the AutoComplete
+ * below is what keeps that true.
+ */
+const {
+  filter: filterCertificates,
+  add: addSuggestedCertificate,
+  fetch: fetchCertificateSuggestions
+} = useWorkerCertificateSuggestions()
+const workerSuggestions: Ref<ICertificate[]> = ref([])
+
+onMounted((): void => {
+  void fetchCertificateSuggestions()
+})
+
+function onWorkerNameComplete (query: string): void {
+  workerSuggestions.value = filterCertificates(query)
+}
+
+/**
+ * Fires on every keystroke (a plain string) AND on selecting a suggestion — PrimeVue's
+ * AutoComplete emits the whole selected option object in that case, not its label, so this is
+ * the one place that normalizes either shape back down to the plain `workerName` string
+ * `IPermitWorker` actually wants.
+ */
+function onWorkerNameUpdate (index: number, value: string | ICertificate | null): void {
+  if (value === null) {
+    patchWorker(index, { workerName: '' })
+    return
+  }
+  patchWorker(index, { workerName: typeof value === 'string' ? value : value.workerName })
+}
+
+/** wayfinder ticket 004 — a certificate created in-wizard suggests immediately, no refetch. */
+function onCertificateCreated (certificate: ICertificate): void {
+  addSuggestedCertificate(certificate)
+  emit('recheck-certificates')
+}
 
 const permitType: ComputedRef<TPermitType | undefined> = computed(
   (): TPermitType | undefined => props.formData.type

@@ -1227,3 +1227,94 @@ $ bun run test:run
  Test Files  51 passed (51)
       Tests  474 passed (474)
 ```
+
+---
+
+## 2026-08-31 — wayfinder ticket 004: worker autocomplete + inline certificate create
+
+Implemented the settled model from wayfinder ticket 003 (owner ruling, session 2026-08-31): a
+worker stays a name string, no `worker` entity. Step 4 (PPE & Workers)'s worker-name field is now
+a Volt `AutoComplete` sourced from the certificate list, and **free text remains legal** — a name
+matching no certificate still patches the worker row unchanged.
+
+**Suggestion source** (`useWorkerCertificateSuggestions.ts`, new): `GET /api/v1/certificates/`
+has no server-side search parameter (ticket 003), so the full list is fetched once (`limit: 9999`,
+matching `useHistory.ts`'s CSV-export precedent) and filtered client-side on every `@complete`. A
+failed fetch degrades to no suggestions, never a toast — the field stays usable regardless.
+
+**Suggestion rendering**: a new presentational component, `WorkerCertificateSuggestionOption.vue`,
+shows `certType` + formatted `expiryDate`, marking an expired certificate with
+`text-status-rejected-fg` — the exact class `CertificateCard.vue:93-94` already uses for the same
+verdict. Split out specifically so the expired-mark rendering is unit-testable without going
+through PrimeVue AutoComplete's Portal/overlay machinery.
+
+**Inline certificate creation**: `CreateCertificateModal.vue` (new, scoped to `pages/permit/pages/
+create/components/` — not a cross-module import of the certificate page's own modal, per the
+module-boundary convention) reuses `AddCertificate.schema.ts` verbatim and the same upload flow as
+`AddCertificateModal.vue` (storage `filePath`, never the 60s-lived presigned `fileUrl`). It
+deliberately diverges from that sibling on ONE point: upload/create failures — including the four
+upload-refusal codes (`FILE_TYPE_NOT_ALLOWED`, `FILE_TOO_LARGE`, `UPLOAD_FOLDER_NOT_ALLOWED`,
+`STORAGE_UNAVAILABLE`) — render **inline** beside the form, never a toast, per this ticket's
+explicit constraint and the "validation failures stay inline" ruling (`../PROMPT-LOG.md` session
+11). The one sanctioned toast is success (`.success` on create, `.warn` for the pre-existing
+"attachment not stored yet" caveat — API-007/GAPS.md row G, still open).
+
+**Wiring**: the modal emits the created `ICertificate` row; `Step4PpeWorkers.vue` splices it
+straight into the suggestion cache (no refetch) and emits a new `recheck-certificates` wizard
+event so `useWizard`'s shared CRT-004 pre-flight re-runs immediately — otherwise the worker the
+certificate was just created for would sit "missing" until the next unrelated worker-list edit.
+`useWizard.recheckCertificates()` (new) bypasses the normal 500ms debounce for this one deliberate
+action. Wired in both `PermitCreatePage.vue` (create) and `PermitEditPage.vue` (update/resume) —
+`PermitDuplicatePage.vue` never renders the wizard itself, so it needed no change.
+
+**Left exactly as-is, flagged for whoever reads this next:** `useWizard.isNextBlocked` already
+blocks Next on step 4 when the shared pre-flight lands on a confirmed `'fail'` (CRT-004, pinned by
+four existing tests in `useWizard.certificatePreflight.test.ts`). That is mid-wizard blocking for
+a worker with no certificate at all — which sits in tension with this ticket's "certificate gating
+happens at submit, not mid-wizard" framing. It predates this ticket, is covered by its own tests,
+and touching it was out of scope here — raising it rather than silently leaving it unmentioned.
+
+**Deviation from the launch brief**: `src/components/input/AutoCompleteInput.vue` was NOT reused,
+contrary to the initial brief. It forwards no `#option` slot (so the required certType/expiry
+rendering could not pass through it) and its `defineModel<TBaseModel | TBaseModel[] | null>` type
+cannot hold `ICertificate` (`TBaseModel` requires a `name` field; `ICertificate` has none) or a
+plain free-text `string`. Widening a shared component's public model type to fit one caller would
+have been improving the pattern in passing, which is out of scope — used `@/volt/AutoComplete.vue`
+directly instead, following the sibling-file precedent that `Step4PpeWorkers.vue` already used a
+plain `InputText`, not a wrapper, for this exact field.
+
+Files changed:
+- `src/pages/permit/pages/create/composables/useWorkerCertificateSuggestions.ts` (new)
+- `src/pages/permit/pages/create/components/WorkerCertificateSuggestionOption.vue` (new)
+- `src/pages/permit/pages/create/components/CreateCertificateModal.vue` (new)
+- `src/pages/permit/pages/create/components/steps/Step4PpeWorkers.vue` (AutoComplete swap, "New
+  Certificate" action, modal mount)
+- `src/pages/permit/pages/create/composables/useWizard.ts` (`recheckCertificates`)
+- `src/pages/permit/pages/create/wizard/WizardSteps.ts` (`recheck-certificates` emit)
+- `src/pages/permit/pages/create/pages/PermitCreatePage.vue`, `PermitEditPage.vue` (wired the new
+  emit)
+- `src/locales/en/permit.ts`, `src/locales/th/permit.ts` (`addCertificate`, `suggestion.*` keys —
+  the four upload `errorCode`s and `certificate.form.*` already existed and needed no change)
+
+Tests (new): `useWorkerCertificateSuggestions.test.ts` (fetch/filter/add, silent on a failed
+fetch), `WorkerCertificateSuggestionOption.test.ts` (expired mark present/absent), `Step4PpeWorkers
+.workerAutocomplete.test.ts` (suggestions populate from `@complete`, selecting a suggestion patches
+`workerName`, free text with no match still patches unchanged, a wizard-created certificate lands
+in the suggestion cache and fires `recheck-certificates`).
+
+```
+$ bun run typecheck
+$ vue-tsc --noEmit -p tsconfig.app.json
+(clean — no output)
+
+$ bun run lint
+$ eslint .
+/…/src/tests/composables/useNotificationPolling.test.ts
+  27:41  warning  There is more than one component in this file  vue/one-component-per-file
+  39:15  warning  There is more than one component in this file  vue/one-component-per-file
+✖ 2 problems (0 errors, 2 warnings)   ← pre-existing, unrelated to this change
+
+$ bun run test:run
+ Test Files  54 passed (54)
+      Tests  484 passed (484)
+```

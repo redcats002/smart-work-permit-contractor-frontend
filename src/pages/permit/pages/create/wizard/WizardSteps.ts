@@ -58,6 +58,13 @@ export interface IWizardStepProps {
 export interface IWizardStepEmits {
   'update:formData': [patch: Partial<IUpdatePermitDraftPayload>]
   'update:checklistAnswers': [patch: Record<string, TChecklistAnswer>]
+  /**
+   * wayfinder ticket 004. A certificate was created without leaving step 4 — the worker list
+   * itself did not change, so `useWizard`'s watch on `formData.workers`'s array reference never
+   * fires on its own. This tells `useWizard` to re-run the shared pre-flight immediately, so the
+   * worker the certificate was just created for doesn't sit red for another edit cycle.
+   */
+  'recheck-certificates': []
 }
 
 export interface IWizardStepDef {
