@@ -48,7 +48,7 @@ Plus `eslint.config.js` `ignores` does not cover `docs/**`, `.agents/**`, `.clau
 project's source.
 
 **Rule for `PLT-001`: delete, do not repair.** A dangling lending model is not a
-SmartWorkPermit model in disguise.
+e-safework model in disguise.
 
 ## What survives the strip and must be kept
 

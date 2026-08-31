@@ -14,6 +14,9 @@ export default function useDev (): IUseDev {
     // return import.meta.env.DEV || devEnvs.includes(import.meta.env.VITE_APP_ENV) || isLocalhost
     return isLocalhost
   })
+  // The two vercel.app hostnames below kept the old brand on purpose. They are external
+  // addresses, not labels — renaming the string here would not rename the deployment, it would
+  // just stop matching. They are legacy besides: this app deploys to Cloudflare Pages now.
   const isAlpha = computed((): boolean => {
     const devEnvs = ['alpha']
     const isAlphaEnv = devEnvs.includes(import.meta.env.VITE_APP_ENV)

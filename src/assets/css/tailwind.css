@@ -51,7 +51,7 @@
 }
 
 /* ─────────────────────────────────────────
-   Brand Color Palette — SmartWorkPermit (SafePermit)
+   Brand Color Palette — e-safework (SafePermit)
    ─────────────────────────────────────────
    Source of truth: docs/main/SmartWorkPermit-v3.dc.html
    Full token table: root AGENTS.md § "Design system"
@@ -74,7 +74,7 @@
    This replaces the previous lending-app brand (primary red #BD0102,
    secondary navy #4160BE, plus the yellow/blue/green/orange "-brand" accents
    and font-gray scale). Those scales are removed, not kept alongside —
-   SmartWorkPermit has its own accent/status/type token groups below.
+   e-safework has its own accent/status/type token groups below.
    ───────────────────────────────────────── */
 @theme {
 	/* ── Typography ── */

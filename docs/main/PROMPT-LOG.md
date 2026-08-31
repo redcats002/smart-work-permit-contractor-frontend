@@ -1,4 +1,4 @@
-# Prompt & Decision Log — SmartWorkPermit
+# Prompt & Decision Log — e-safework
 
 **Read this before implementing anything.** It is the base knowledge for this workspace: what the
 product owner actually asked for, in their words, and every ruling they gave when an agent hit an
@@ -497,6 +497,143 @@ any future route declaring `meta.root` gets a correct back link for free.
 
 ---
 
+## 2026-08-31 — Session 9: the docs site, and a fourth repo for the landing page
+
+Two pieces of work that sit outside all three app repos, plus one accessibility finding that
+belongs inside two of them.
+
+### The docs site is VitePress over the existing `docs/` tree, and the numbered files keep their names
+
+**Now:** `bun run docs:dev` / `docs:build` / `docs:check` at the workspace root serve
+`docs/` as a VitePress site: a Guide section (architecture, data model, permit lifecycle,
+CI/CD, current state, doc drift, and the three applications) alongside the existing
+deployment runbooks.
+
+**Was:** loose Markdown with no index. The rejected option was renaming
+`10-DEPLOYMENT-OVERVIEW.md` and friends to pretty slugs — `10` declares itself normative and
+is mirrored into all three app repos, which cross-reference `11`/`12`/`13` **by filename**.
+Ugly URLs, working mirrors. `srcExclude` keeps `docs/deployment/env/**` (real `.env` files,
+gitignored) out of `dist/`, because VitePress does not read `.gitignore`.
+
+Two traps worth not re-learning. VitePress interpolates `${{ … }}` in **inline** code spans as
+a Vue expression — a GitHub Actions `${{ github.sha }}` in backticks fails the build with
+`Cannot read properties of undefined (reading 'sha')`; fenced blocks are unaffected, and the
+fix is `<code v-pre>`. And **`vitepress build` cannot catch a broken mermaid diagram**: the
+plugin renders client-side, so a syntax error ships as a blank box rather than failing the
+build. `scripts/check-mermaid.mjs` parses every fence in jsdom and is wired into `docs:check`;
+it caught an invalid `PK_FK` ER key on the day it was written. Diagrams are click-to-zoom via
+one delegated listener (`docs/.vitepress/theme/mermaid-zoom.ts`), covered by
+`scripts/check-mermaid-zoom.mjs`.
+
+**Applies to:** workspace root only.
+
+### Ruling — the landing page is a fourth repo, and it resolves the two apps' primary-colour split
+
+**Now:** `smart-work-permit-landing/` is a Vue 3 + Vite + Tailwind v4 + PrimeVue/Volt static
+page, built from the same tokens as the apps, with **red `#C81E2C` as primary and orange
+`#F26B1D` as accent**.
+
+**Was:** nothing — the repo was empty. The two apps disagree on primary (contractor red,
+safety orange) and on body font (LINE Seed Sans TH, IBM Plex Sans), so "match both" had to
+pick. Red-primary/orange-accent is not a new invention: the contractor app's own
+`tailwind.css` already ships both scales, and its `--color-accent-500/600` are byte-identical
+to the safety app's `--p-primary-500/600`. Neutrals, the dark base shell scale, the status
+triples and IBM Plex come from the safety app, which is the accessibility-audited set and the
+one with a metrically-matched Thai face. The rejected option was inventing a neutral third
+palette, which would have made the landing look like a different product.
+
+The landing is **not** a contract-sync participant — it has no openapi copy, no error codes,
+no `/api/v1` prefix. `check-contract-sync.mjs` stays a three-repo check. It does carry its
+own gate, `scripts/check-landing.mjs`, which fails the build on any third-party origin in the
+bundle and on any enumerated text pair below WCAG AA. First-party is not a preference here:
+the landing serves from the apex, where `COOKIE_DOMAIN=.e-safework.com` means every request
+on that origin carries the better-auth session cookie. No CDN fonts, no analytics snippet, no
+icon API.
+
+**Human action, not yet done:** the landing needs a fifth destination. §5 of `CONTEXT.md`
+fixes four subdomains (`api.` `storage.` `app.` `safety.`); this page needs the apex or
+`www.`. Serving it from `www.` with a 301 from the apex keeps the session cookie off the
+marketing origin entirely and is worth preferring.
+
+**Applies to:** landing (new), and §5 of `CONTEXT.md`.
+
+### Finding — `--color-warning-text: #B26A00` is sub-AA in both frontends
+
+**Now:** the landing uses `#9A5C00` — 4.89:1 on `--color-warning-surface` (`#FFF3DC`) and
+5.38:1 on white.
+
+**Was, and still is in both app repos:** `#B26A00`, which measures **3.86:1 on its own status
+surface and 4.24:1 on white**. Both are below the 4.5:1 AA floor for body-size text. This is
+the same class of defect Session 6 fixed and `check-contract-sync.mjs` check 5 enforces —
+that check reads Tailwind *classes* against the surface scale, so a hex written directly into
+a `@theme` token is outside what it can see. The contractor app carries the same value as
+`--color-status-pending-fg`.
+
+Not fixed in the app repos here: it is a two-repo visual change and belongs in its own pass
+with a screenshot check, not folded into a landing-page session. Recorded so it is not
+rediscovered a third time.
+
+**Applies to:** safety, contractor.
+
+---
+
+## 2026-08-31 — Session 10: the product is called e-safework
+
+**Now:** the official product name is **`e-safework`**, lowercase, matching the domain
+(`e-safework.com`) and the `esw` deploy prefix that were already in place. Owner's call.
+
+**Was:** `SmartWorkPermit` (159 occurrences) and `Smart Work Permit` (42), plus one
+`smartworkpermit` directory. All swept across all five repos — prose, UI strings, browser tab
+titles, the `DEFAULT_TITLE` in both routers, the landing wordmark, the design-system artifacts,
+and the Thai proposal document. Historical entries in `progress.md`, `feature_list.json` and
+this log were swept too: a product name is not a fact about what happened, and leaving the old
+name in past-tense entries only would produce a codebase where nobody can tell whether an
+inconsistency is deliberate. This entry is what makes the old name findable.
+
+### The rule — and it is greppable on purpose
+
+**Only the brand forms changed.** Every lowercase-hyphen `smart-work-permit-*` token was left
+exactly as it was, because that form is never the brand — it is a repo directory, a git remote,
+a package name matching its directory, an IndexedDB database, a storage bucket, or a legacy
+deploy hostname.
+
+So, after this sweep: a remaining `smart-work-permit-` is **correct**, and a remaining
+`SmartWorkPermit` is a **miss**. One grep tells you which.
+
+### What must never be renamed, and why the comments matter more than this entry
+
+Four identifiers kept the old brand, each with a comment at its own call site explaining why —
+because the next agent doing a rename sweep will read the code, not this log:
+
+- **`smart-work-permit-offline-queue`** (`smart-work-permit-frontend/src/utils/OfflineQueue.ts`)
+  is the Inspector's IndexedDB **database name**. A database name is an address, not a label.
+  Renaming it does not migrate the store, it **orphans** it: a device holding unsynced
+  check-ins or gas readings would open a new empty database while the old one became
+  unreachable from app code. That is silent loss of field safety data. Renaming it safely means
+  writing a migration that opens the old database, copies every entry, and only then drops it.
+- **`smart-work-permit-bucket`** — object storage does not follow a renamed bucket. Legacy
+  besides: production storage is MinIO behind `storage.e-safework.com`, not GCS.
+- **`smart-work-permit-alpha` / `-staging`.vercel.app** — external addresses. Renaming the
+  string does not rename the deployment, it just stops matching. Also legacy: both frontends
+  deploy to Cloudflare Pages now.
+- **Repo directory names and git remotes.** Renaming those is a GitHub operation plus every CI
+  secret and every doc path, not a text substitution. Out of scope until someone asks for it.
+
+### Two filenames were left alone
+
+`SmartWorkPermit-v3.dc.html` and `SmartWorkPermit Proposal.dc.html` keep their names; their
+**contents** were swept. They are referenced by path from `CONTEXT.md`, both apps' `AGENTS.md`
+and `feature_list.json` evidence, and renaming them means four copies of two files plus every
+reference, with `check-contract-sync.mjs` check 4 failing mid-flight if the root copy moves
+before the repo copies. A stale filename on a historical proposal document is not drift.
+
+`docs/openapi.json` contained no brand string at all, so all three copies stayed byte-identical
+and no regeneration was needed.
+
+**Applies to:** api, safety, contractor, landing, root.
+
+---
+
 ## Standing rulings — do not re-decide these
 
 - **Never render the backend's `message` field.** Clients localize off `errorCode` (EN + TH). This
@@ -523,6 +660,15 @@ any future route declaring `meta.root` gets a correct back link for free.
 - **`facility-plans` is a server-owned upload prefix.** It is in `UPLOAD_ALLOWED_SUBFOLDERS` and NOT
   in `UPLOAD_CLIENT_SUBFOLDERS`, and `UploadService` re-checks it at runtime because the schema alone
   does not hold. Never widen the generic upload route to reach it.
+- **The product is `e-safework`, lowercase.** Only the brand forms were renamed; every
+  lowercase-hyphen `smart-work-permit-*` token is a repo, a remote, a database, a bucket or a
+  hostname and stays as it is. A remaining `smart-work-permit-` is correct; a remaining
+  `SmartWorkPermit` is a miss. **Never rename the IndexedDB database
+  `smart-work-permit-offline-queue`** without a migration — it orphans unsynced field data.
+- **The landing page is first-party only.** It serves from an origin covered by
+  `COOKIE_DOMAIN=.e-safework.com`, so every request it makes on that origin carries the
+  session cookie. No CDN fonts, no analytics snippet, no runtime icon API — ever.
+  `smart-work-permit-landing/scripts/check-landing.mjs` fails the build on any other host.
 - **Blocked items are product decisions**, not work: backend `feat-011`, `SHL-006` (self-hosting
   fonts for the offline Inspector role). Do not implement them speculatively.
 

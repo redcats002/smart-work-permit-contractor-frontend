@@ -1,4 +1,4 @@
-# SmartWorkPermit — Cross-Repo Context
+# e-safework — Cross-Repo Context
 
 **Read this first if you are working in more than one of the three repos, or if you are about to
 change anything that crosses a repo boundary (API shape, error code, role, status machine).**
@@ -201,22 +201,27 @@ against the real API. Real-API evidence means a live smoke run against a booted 
 
 Full runbooks live per repo at `deploy/RUNBOOK.md`. Only what crosses a repo boundary is here.
 
-- **Topology.** API + Postgres + Redis + MinIO + nginx + cloudflared on one VM (Oracle
-  `E2.1.Micro`, x86_64, **1 OCPU / 1 GB, unresizable**); both SPAs on Cloudflare Pages. Nothing
-  on the VM listens publicly — `cloudflared` dials out, inbound is SSH only.
+- **Topology.** API + Postgres + Redis + MinIO + nginx + cloudflared on one VM (a DigitalOcean
+  droplet, x86_64, Ubuntu 24.04); both SPAs on Cloudflare Pages. Nothing on the VM listens
+  publicly — the compose file binds **no** host ports, `cloudflared` dials out, inbound is SSH
+  only. Deploy user is `esw` (non-root), read by CI from the `VM_USER` secret so the box can
+  move between providers without a workflow change.
 - **One apex domain, four subdomains:** `api.` `storage.` `app.` `safety.`. This is a hard
   requirement — the session cookie is issued on the apex, so `*.pages.dev` frontends would make
   it cross-site and Safari ITP would drop it.
-- **`COOKIE_DOMAIN=.<domain>` is what makes that work**, and it was *not* implemented until
+- **`COOKIE_DOMAIN=.e-safework.com` is what makes that work**, and it was *not* implemented until
   2026-08-23: `user-auth.plugin.ts` now enables better-auth `crossSubDomainCookies` when the var
   is set, and drops back to `SameSite=Lax` because apex subdomains are same-site.
   `smart-work-permit-api/scripts/check-cookie-domain.sh` asserts the issued cookie.
-- **`MINIO_ENDPOINT` is the PUBLIC host** (`storage.<domain>:443`, SSL on), never the compose
+- **`MINIO_ENDPOINT` is the PUBLIC host** (`storage.e-safework.com:443`, SSL on), never the compose
   service name. `uploadOne` hands its presigned URL straight to the browser and the host is part
   of the SigV4 signature. Cost: server-side puts hairpin out through the tunnel. Bucket CORS is
   **not** needed as things stand — those URLs are only ever bound to `<img :src>`, which is not
   CORS-gated. It becomes needed the day anything fetches the storage origin with `fetch`/XHR.
-- **`dev` is the deploy branch** in all three repos. `origin/main` is stale.
+- **`main` is the deploy branch** in all three repos — merging into it ships to
+  production. `dev` is the working branch and reaches `main` through a PR whose
+  `check` job must pass. Cloudflare Pages' production branch must be `main` too,
+  or the SPAs keep deploying from `dev` while the API deploys from `main`.
 - **`check-contract-sync.mjs` is not in frontend CI.** It lives in this workspace root, which is a
   separate repo that gitignores the three app repos, so their pipelines cannot run it. It stays a
   local pre-push check — run it yourself before pushing a contract change.

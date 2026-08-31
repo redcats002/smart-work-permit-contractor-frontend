@@ -56,7 +56,7 @@ const router: Router = createRouter({
   routes
 })
 
-const DEFAULT_TITLE: string = 'Smart Work Permit'
+const DEFAULT_TITLE: string = 'e-safework'
 
 export let previousRoutePath: string | null = null
 

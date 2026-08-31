@@ -14,7 +14,7 @@ Before doing any non-trivial work in this repo, read the project skill index at 
 
 ## Working across repos
 
-This app is one of three repos in the SmartWorkPermit workspace (`../`): this one, the Safety Officer
+This app is one of three repos in the e-safework workspace (`../`): this one, the Safety Officer
 + Inspector app (`../smart-work-permit-frontend`), and the single backend (`../smart-work-permit-api`).
 **If your change touches a route, payload, `errorCode`, role or the permit status machine, read
 `docs/main/CONTEXT.md` first** — it owns the cross-repo contract rules, the openapi propagation procedure,
@@ -23,7 +23,7 @@ by this file and `feature_list.json`.
 
 ## What this repo is
 
-**SmartWorkPermit — Contractor web app.** Responsive web app (desktop/tablet first, must not break at 375px) where contractors draft, submit, and track their own work permits for a Thai industrial facility.
+**e-safework — Contractor web app.** Responsive web app (desktop/tablet first, must not break at 375px) where contractors draft, submit, and track their own work permits for a Thai industrial facility.
 
 Specs live in `docs/main/`:
 

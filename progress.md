@@ -3,7 +3,7 @@
 ## Current State
 
 **Last Updated:** 2026-08-17
-**Project:** SmartWorkPermit — Contractor Web App
+**Project:** e-safework — Contractor Web App
 **Active Feature:** none in flight. Next up: `PMT-006` (wizard step 3 — Safety Checks).
 
 **Baseline: GREEN** — `./init.sh` → typecheck PASS, lint PASS, **323 tests PASS**, live smoke 16/16 PASS.
@@ -183,7 +183,7 @@ a red check after that point is yours.
 
 ### What's Done
 
-- [x] Harness rebuilt for SmartWorkPermit Contractor (was still describing the deleted lending app)
+- [x] Harness rebuilt for e-safework Contractor (was still describing the deleted lending app)
   - `AGENTS.md` — module map, permit lifecycle, safety ranges, design palette, startup path
   - `feature_list.json` — 4 module-level root features
   - `docs/modules/{platform,permit,history,certificate}/` — per-module `context.md` + `feature_list.json` (26 items)
@@ -232,7 +232,7 @@ a red check after that point is yours.
 
 ## Files Modified This Session
 
-- `AGENTS.md` — full rewrite (lending app → SmartWorkPermit Contractor)
+- `AGENTS.md` — full rewrite (lending app → e-safework Contractor)
 - `feature_list.json` — replaced placeholder scaffold with 4 module-level features
 - `progress.md` — reset; recorded the red baseline
 - `init.sh` — added typecheck; run-all-and-summarize instead of fail-fast

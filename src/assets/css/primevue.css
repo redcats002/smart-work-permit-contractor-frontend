@@ -5,7 +5,7 @@
    ───────────────────────────────────────── */
 
 /* ─────────────────────────────────────────
-   Primary Palette  — SmartWorkPermit Red (#C81E2C)
+   Primary Palette  — e-safework Red (#C81E2C)
    Mirrors --color-primary-* in tailwind.css
    ───────────────────────────────────────── */
 :root {
@@ -43,7 +43,7 @@
 }
 
 /* ─────────────────────────────────────────
-   Brand Accent Tokens — SmartWorkPermit
+   Brand Accent Tokens — e-safework
    Mirrors the status/accent tokens in tailwind.css
    ───────────────────────────────────────── */
 :root {

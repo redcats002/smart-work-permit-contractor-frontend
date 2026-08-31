@@ -11,6 +11,9 @@ export interface IUseUpload {
 }
 
 export default function useUpload (): IUseUpload {
+  // Not renamed with the product (e-safework, 2026-08-31): a bucket name is an address and
+  // objects do not follow a rename. This URL is also legacy — production storage is MinIO
+  // behind storage.e-safework.com, not GCS. Fix the provider before fixing the name.
   const storageUrl = 'https://storage.googleapis.com/smart-work-permit-bucket'
   const UploadService: IUploadProvider = new UploadProvider()
 

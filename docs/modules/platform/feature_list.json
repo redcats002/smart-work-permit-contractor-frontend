@@ -29,7 +29,7 @@
       "id": "PLT-002",
       "type": "feature",
       "name": "Design system — SafePermit palette + typography",
-      "description": "Swap src/assets/css/tailwind.css @theme tokens from the lending brand (#BD0102 red / #4160BE navy) to the SmartWorkPermit design palette. Add semantic tokens for permit status and permit type so screens never hardcode a hex.",
+      "description": "Swap src/assets/css/tailwind.css @theme tokens from the lending brand (#BD0102 red / #4160BE navy) to the e-safework design palette. Add semantic tokens for permit status and permit type so screens never hardcode a hex.",
       "acceptance": [
         "--color-primary-* scale rebuilt around #C81E2C; --color-accent-* around #F26B1D",
         "Semantic tokens exist for: status (draft/pending/active/fire-monitor/closed/rejected/expired) and permit type (hot/confined/heights), each with fg + bg",
