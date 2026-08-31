@@ -29,6 +29,9 @@ export enum EApiErrorCode {
   PERMIT_NOT_SUBMITTABLE = 'PERMIT_NOT_SUBMITTABLE',
   PERMIT_NOT_ACTIVE = 'PERMIT_NOT_ACTIVE',
   NOT_HOT_WORK = 'NOT_HOT_WORK',
+  // wayfinder 022 — PATCH /permits/:id refuses a body with no editable field at all, so an
+  // empty-body PATCH can never withdraw a PENDING permit by accident (e.g. an editability probe).
+  PERMIT_UPDATE_EMPTY = 'PERMIT_UPDATE_EMPTY',
   // feat-023 — position on the facility plan. Submit refuses with this once an active plan
   // exists and the permit has no planId/planX/planY set.
   PERMIT_POSITION_REQUIRED = 'PERMIT_POSITION_REQUIRED',
