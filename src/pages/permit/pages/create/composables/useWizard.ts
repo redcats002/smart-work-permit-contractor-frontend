@@ -13,6 +13,7 @@ import type { TChecklistAnswer } from '../constants/SafetyChecklist'
 import {
   EMPTY_SUBMIT_FAILURES, extractSubmitFailures, stepIndexForSubmitFailure, type ISubmitFailures
 } from '../constants/SubmitErrorRouting'
+import { hasPartialJsaRow, toSubmittableJsaSteps } from '../schema/Step5Jsa.schema'
 import {
   useCertificatePreflight, type ICertificateProblem, type TCertificatePreflightState
 } from './useCertificatePreflight'
@@ -204,6 +205,21 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
 
     const { safetyReading, ...rest } = formData.value
     const payload: IUpdatePermitDraftPayload = { ...rest }
+    // wayfinder ticket 001. `jsaSteps` is replaced WHOLESALE by this PATCH (AGENTS.md), so a
+    // partial row (started, not finished) must never shrink the outgoing array — that would
+    // overwrite the permit's persisted jsaSteps and delete that row's already-complete siblings
+    // too. While any row is partial, skip the key entirely this round: `formData.jsaSteps` is
+    // untouched (the user keeps typing into it), and the next PATCH after they finish or delete
+    // the row sends the real list. A blank "add row" placeholder, on the other hand, was never
+    // persisted, so dropping IT from the array is safe — `toSubmittableJsaSteps` does that and
+    // recomputes sortOrder with no gaps.
+    if (payload.jsaSteps !== undefined) {
+      if (hasPartialJsaRow(payload.jsaSteps)) {
+        delete payload.jsaSteps
+      } else {
+        payload.jsaSteps = toSubmittableJsaSteps(payload.jsaSteps)
+      }
+    }
     const wireReading = safetyReading === undefined ? undefined : toWireReading(safetyReading)
     const serialized = wireReading === undefined ? undefined : JSON.stringify(wireReading)
     const shouldAppendReading = serialized !== undefined && serialized !== lastPersistedReading

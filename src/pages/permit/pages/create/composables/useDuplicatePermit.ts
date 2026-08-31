@@ -6,6 +6,7 @@ import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import type { IJsaStep, IPermitSafetyReading, IPermitWorker } from '@/models/modules/permit/Permit.model'
 import type { ICreatePermitDraftPayload, IUpdatePermitDraftPayload } from '@/models/request/permit/PermitReq.model'
 import PermitProvider, { type IPermitProvider } from '@/resources/provider/permit/Permit.provider'
+import { toSubmittableJsaSteps } from '../schema/Step5Jsa.schema'
 
 const PermitService: IPermitProvider = new PermitProvider()
 
@@ -28,9 +29,17 @@ export interface IUseDuplicatePermit {
   duplicatePermit (sourceId: string): Promise<string | undefined>
 }
 
-/** Strips server-assigned `id` — neither array is documented with one on the wire (openapi.json). */
+/**
+ * Strips server-assigned `id` — neither array is documented with one on the wire (openapi.json).
+ *
+ * wayfinder ticket 001. Also drops any blank/partial row and recomputes `sortOrder` per phase via
+ * `toSubmittableJsaSteps` — the source permit's rows already passed the server's own `minLength: 1`
+ * on their original save, so this is defensive rather than expected to change anything in
+ * practice, but the invariant ("what this app sends never violates minLength") must hold on every
+ * path that assembles a `jsaSteps` PATCH body, not just the wizard's own autosave.
+ */
 function toWireJsaSteps (steps: IJsaStep[]): Omit<IJsaStep, 'id'>[] {
-  return steps.map((step: IJsaStep): Omit<IJsaStep, 'id'> => ({
+  return toSubmittableJsaSteps(steps).map((step: IJsaStep): Omit<IJsaStep, 'id'> => ({
     phase: step.phase,
     step: step.step,
     hazard: step.hazard,

@@ -55,6 +55,7 @@
             class="border-t border-surface-muted">
             <td class="px-3.5 py-3">
               <InputText
+                :invalid="row.partial && !row.entry.step.trim()"
                 :model-value="row.entry.step"
                 :placeholder="t('permit.create.steps.jsa.placeholder.step')"
                 class="h-9 w-full"
@@ -62,6 +63,7 @@
             </td>
             <td class="px-3.5 py-3">
               <InputText
+                :invalid="row.partial && !row.entry.hazard.trim()"
                 :model-value="row.entry.hazard"
                 :placeholder="t('permit.create.steps.jsa.placeholder.hazard')"
                 class="h-9 w-full bg-status-pending-bg! text-status-pending-fg! font-semibold"
@@ -69,6 +71,7 @@
             </td>
             <td class="px-3.5 py-3">
               <InputText
+                :invalid="row.partial && !row.entry.control.trim()"
                 :model-value="row.entry.control"
                 :placeholder="t('permit.create.steps.jsa.placeholder.control')"
                 class="h-9 w-full"
@@ -121,7 +124,7 @@ import { useI18n } from 'vue-i18n'
 import DeleteModal from '@/components/modal/DeleteModal.vue'
 import { EJsaPhase, JSA_PHASE_ORDER, type TJsaPhase } from '@/enums/modules/permit/JsaPhase.enum'
 import type { IJsaStep } from '@/models/modules/permit/Permit.model'
-import { jsaRowComplete } from '../../schema/Step5Jsa.schema'
+import { jsaRowBlank, jsaRowComplete } from '../../schema/Step5Jsa.schema'
 import type { IWizardStepEmits, IWizardStepProps } from '../../wizard/WizardSteps'
 
 /**
@@ -143,6 +146,8 @@ interface IPhaseTab {
 interface IPhaseRow {
   index: number
   entry: IJsaStep
+  /** Started but not finished — a validation failure (a fully blank row is not). */
+  partial: boolean
 }
 
 const props = defineProps<IWizardStepProps>()
@@ -165,12 +170,16 @@ const phaseTabs: ComputedRef<IPhaseTab[]> = computed((): IPhaseTab[] =>
 
 const phaseRows: ComputedRef<IPhaseRow[]> = computed((): IPhaseRow[] =>
   rows.value
-    .map((entry: IJsaStep, index: number): IPhaseRow => ({ index, entry }))
+    .map((entry: IJsaStep, index: number): IPhaseRow => (
+      { index, entry, partial: !jsaRowComplete(entry) && !jsaRowBlank(entry) }
+    ))
     .filter((row: IPhaseRow): boolean => row.entry.phase === activePhase.value)
 )
 
+// A fully blank row (the "add row" placeholder) is dropped at serialization, never sent — it must
+// not surface as a validation failure. Only a row someone started and stopped mid-way blocks Next.
 const anyIncompleteRow: ComputedRef<boolean> = computed(
-  (): boolean => rows.value.some((entry: IJsaStep): boolean => !jsaRowComplete(entry))
+  (): boolean => rows.value.some((entry: IJsaStep): boolean => !jsaRowComplete(entry) && !jsaRowBlank(entry))
 )
 
 const pendingRowLabel: ComputedRef<string> = computed((): string => {
