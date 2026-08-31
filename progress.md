@@ -1576,3 +1576,68 @@ Files changed: `src/pages/permit/pages/detail/components/PermitStatusBanner.vue`
 `src/locales/{en,th}/permit.ts`, `docs/api/GAPS.md`,
 `src/tests/pages/permit/detail/PermitDetailPage.test.ts`,
 `src/tests/pages/permit/create/PermitEditPage.test.ts`.
+
+## 2026-08-31 — wayfinder 006, contractor half: native-control sweep (partial by design)
+
+Worked only this repo's rows from `../docs/wayfinder/assets/005-native-control-inventory.md`,
+per the ticket's own scope-control rule against a mechanical sweep. Full row-by-row reasoning is
+recorded in `../docs/wayfinder/tickets/006-replace-native-controls.md`'s "Resolution — contractor
+repo pass" section (workspace-root repo, left uncommitted there per this task's instructions — the
+coordinator commits it). Summary of what changed in THIS repo:
+
+1. **`ProfileDetailPage.vue`'s four `InputText` rows — done, schema-first as the owner ruled.**
+   Two commits: `src/pages/profile/schema/ProfileDetail.schema.ts` (mirrors `PATCH /users/me`'s
+   body schema — `firstName`/`lastName` required, `phoneNumber` exactly 10 chars only when
+   non-empty, staying optional so an unfilled phone doesn't block an unrelated save), then the page
+   itself converted from a bare `reactive()` + `@submit.prevent` form to `@primevue/forms` `<Form>`
+   + `LabelField`/`InputText` + `zodResolver`. Wire shape unchanged. New test asserts label
+   association (`LabelField`'s own `<label>` wrap), focus, and that the required-field validation
+   now blocks a client-side save before any request fires.
+2. **`CertificateListPage.vue`'s "+ Add Certificate" `<button>` — converted to Volt `Button`.**
+   Picked as the one clear, low-risk instance of the inventory's "worth converting" call — isolated
+   file, no disabled/loading state, no existing test to break. New test file (none existed before)
+   covers the conversion: real `<button type="button">`, default Volt focus-visible theme
+   untouched, click still opens `AddCertificateModal`.
+3. **File-input rows re-confirmed correct, left native, no code change** —
+   `FileInput.vue`/`UploadInput.vue` are wrapper internals already; `AddCertificateModal.vue`'s raw
+   `File` row stays native (the attachment isn't persisted server-side yet — `docs/api/GAPS.md`
+   row G — so a shape change there has no payoff right now).
+4. **The remaining ~74 `<button>` rows — judged by category, left native with recorded reasons,
+   not bulk-converted.** App chrome/nav, card-shaped click targets, segmented/toggle chip pickers,
+   `Paginate.vue`, and `TimePickerInput.vue` internals all have a settled reason to stay as-is
+   (matches the inventory's own verdicts). The ~30-button "real form/dialog actions" group across
+   13 files (`WizardFooter.vue`, every confirm modal, the detail/list/wizard pages) is genuinely
+   worth converting, per the inventory, but was deliberately deferred: several of those buttons
+   carry disabled/loading-state logic existing tests assert on, and converting 13 files in one pass
+   is exactly the high-risk/low-value mechanical sweep this ticket warns against. Recorded as a
+   follow-up, not silently skipped.
+
+```
+$ bunx eslint <every file touched above>
+(clean — no errors, no warnings)
+
+$ bun run typecheck
+$ vue-tsc --noEmit -p tsconfig.app.json
+(clean — no output)
+
+$ bun run test:run
+ Test Files  57 passed (57)
+      Tests  507 passed (507)
+
+$ bun run lint
+$ eslint .
+(2 pre-existing warnings in useNotificationPolling.test.ts, unrelated, unchanged)
+```
+
+Files changed: `src/pages/profile/schema/ProfileDetail.schema.ts` (new),
+`src/pages/profile/pages/ProfileDetailPage.vue`, `src/locales/{en,th}/profile.ts`,
+`src/pages/certificate/pages/list/pages/CertificateListPage.vue`,
+`src/tests/pages/profile/ProfileDetailPage.test.ts`,
+`src/tests/pages/certificate/list/CertificateListPage.test.ts` (new).
+
+**Deviation from the brief worth flagging:** the brief's own scope table implied roughly balanced
+work between the two tickets; ticket 006 in this repo turned out to be much larger in row-count
+(75 buttons alone) than ticket 012. Rather than either bulk-converting the button rows (explicitly
+forbidden by the ticket) or leaving them silently unaddressed, every row was individually judged
+and recorded — closing the ticket's "done when" bar ("every row is either replaced or has a
+recorded reason") for this repo without inflating the diff with a risky sweep.
