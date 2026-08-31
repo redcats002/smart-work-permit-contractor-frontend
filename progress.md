@@ -1699,3 +1699,51 @@ for DRAFT and for PENDING; 1 new test: client-side ACTIVE refusal never calls up
 Committed separately, ahead of this: `src/enums/modules/error/ApiErrorCode.enum.ts`,
 `src/locales/{en,th}/error.ts` (`PERMIT_UPDATE_EMPTY` vocabulary, pre-existing uncommitted work,
 unrelated to this fix).
+
+## 2026-08-31 — stop shipping demo login credentials in production bundles
+
+`useInitForm()` (`src/pages/auth/pages/login/composables/useInit.ts`) gated its login-form
+autofill on `useDev().isDev`, a runtime check (`window.location.hostname === 'localhost'`, not a
+build-time flag). Both ternary branches are therefore reachable at compile time and both compiled
+into every build — a production visitor's browser downloaded `'smoke.contractor@example.com'` and
+`'password123'` even though the autofill condition never fires for them at runtime. Same defect
+class as the sibling Safety/Inspector app's `systemadmin@email.com` finding.
+
+Fixed by gating on `import.meta.env.DEV` instead — a build-time constant Vite inlines to a literal
+`false` for `vite build`, letting the minifier prove the true branch of each ternary is dead code
+and drop both credential strings from the bundle. `vite dev` inlines `true`, so local dev keeps
+the exact same autofill convenience; this is not a trade-off against developer ergonomics.
+`useDev.ts` itself was not touched — `isDev` has other callers (`usePrint.ts`) with different,
+legitimate runtime semantics, and `isAlpha`/`isStaging`/`isProd` are unrelated.
+
+Considered and rejected: reading the demo values from env vars the way the trial-login button
+does (`VITE_TRIAL_LOGIN_PASSWORD`). That mechanism exists to let an *opted-in* deployment enable a
+convenience login without a code change; this credential has no such use case — it only ever needs
+to exist locally, where `import.meta.env.DEV` already covers it with zero new configuration
+surface. Adding an env var would be a second way to express the same on/off switch for no benefit.
+
+Verified, not assumed: `rm -rf dist && bun run build`, then
+`grep -rn "smoke.contractor@example.com\|password123" dist/` — no match, exit code 1, for both
+strings, confirming neither survives into the production bundle.
+
+```
+$ bunx eslint src/pages/auth/pages/login/composables/useInit.ts
+(clean — no errors, no warnings)
+
+$ bun run typecheck
+$ vue-tsc --noEmit -p tsconfig.app.json
+(clean — no output)
+
+$ bun run test:run
+ Test Files  57 passed (57)
+      Tests  509 passed (509)
+
+$ bun run lint
+$ eslint .
+(2 pre-existing warnings in useNotificationPolling.test.ts, unrelated, unchanged)
+
+$ rm -rf dist && bun run build && grep -rn "smoke.contractor@example.com\|password123" dist/
+(no output — grep exit 1, credentials absent from the built bundle)
+```
+
+Files changed: `src/pages/auth/pages/login/composables/useInit.ts`.
