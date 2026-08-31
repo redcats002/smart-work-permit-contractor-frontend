@@ -1,9 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent } from 'vue'
 import { z } from 'zod'
+import { toast } from '@/plugins/toast'
 import PermitProvider from '@/resources/provider/permit/Permit.provider'
 import { useWizard } from '@/pages/permit/pages/create/composables/useWizard'
 import type { IWizardStepDef } from '@/pages/permit/pages/create/wizard/WizardSteps'
+
+// `toast` wraps PrimeVue's ToastService, unavailable to a bare `useWizard()` call — mocking it
+// also lets the autosave test below assert silence, not just a lack of a crash.
+vi.mock('@/plugins/toast', () => ({
+  toast: { success: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() }
+}))
 
 /**
  * PMT-006 — the `safetyReading` append guard.
@@ -78,6 +85,26 @@ describe('useWizard — safetyReading append guard', () => {
     const sent = readingsSent(updateSpy).filter(Boolean)
     expect(sent).toHaveLength(1)
     expect(sent[0]).toMatchObject({ lel: 0, o2: 20.9 })
+  })
+
+  /**
+   * wayfinder ticket 008: the autosave PATCH (and its first-call POST leg) must never toast on
+   * SUCCESS — that is the exact "stream of notifications" the ruling forbids. This covers the
+   * happy path only. A FAILED autosave still toasts (see `persist()` in useWizard.ts) — that is
+   * deliberate, not an oversight: a silently-failed autosave is invisible data loss with no other
+   * channel telling the user their edit was not saved. Do not "fix" that error toast away.
+   */
+  it('NEVER toasts on a successful autosave — both the create and the update leg', async () => {
+    vi.mocked(toast.success).mockClear()
+    vi.mocked(toast.error).mockClear()
+
+    const { wizard } = await bootDraft() // fires the create leg (POST /permits)
+
+    wizard.updateFormData({ title: 'Warehouse repaint — revised' })
+    await vi.advanceTimersByTimeAsync(1600) // fires the update leg (PATCH /permits/:id)
+
+    expect(toast.success).not.toHaveBeenCalled()
+    expect(toast.error).not.toHaveBeenCalled()
   })
 
   it('appends again when the reading itself actually changes', async () => {

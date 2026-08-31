@@ -149,6 +149,17 @@ describe('PermitCreatePage — submit (PMT-009)', () => {
     expect(router.currentRoute.value.query.submitted).toBe('1')
   })
 
+  it('toasts a success confirmation on submit — wayfinder ticket 008', async () => {
+    vi.spyOn(PermitProvider.prototype, 'submit')
+      .mockResolvedValue({ message: 'success', data: { id: 'WP-HOT-20260820-001' } } as never)
+
+    const { wrapper } = await mountAtReview()
+    wrapper.findComponent(WizardFooter).vm.$emit('submit')
+    await flushPromises()
+
+    expect(toast.success).toHaveBeenCalledWith(i18n.global.t('permit.toast.submitted'))
+  })
+
   it('returns the user to Safety Checks on GAS_OUT_OF_RANGE and never renders the backend message', async () => {
     vi.spyOn(PermitProvider.prototype, 'submit').mockRejectedValue({
       code: 400,

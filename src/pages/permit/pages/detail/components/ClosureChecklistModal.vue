@@ -110,6 +110,7 @@ import { computed, ref, watch, type ComputedRef, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import { EApiErrorCode } from '@/enums/modules/error/ApiErrorCode.enum'
+import { toast } from '@/plugins/toast'
 import { useApiError } from '@/composables/useApiError'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import type { IClosePermitPayload } from '@/models/request/permit/PermitReq.model'
@@ -233,6 +234,9 @@ async function submit (): Promise<void> {
     const response = await PermitService.close(props.permit.id, payload)
     emits('closed', response.data)
     visible.value = false
+    // wayfinder ticket 008 — "permit closed" is sanctioned to toast, in addition to the status
+    // badge on the detail page updating in place once the modal closes.
+    toast.success(t('permit.toast.closed'))
   } catch (error: unknown) {
     // Never swallowed: whatever the server said is rendered here, in the user's language.
     const mapped = mapError(error)

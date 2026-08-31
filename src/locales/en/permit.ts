@@ -550,6 +550,14 @@ const permit = {
         description: 'Your QR code is generated automatically once the Safety Officer approves this permit.'
       }
     }
+  },
+  toast: {
+    // wayfinder ticket 008. These fire in ADDITION to any on-screen banner — the ruling names
+    // "submitted"/"closed" explicitly, and the banner only confirms once the user has already
+    // landed on the next page, not at the moment the action actually happened.
+    submitted: 'Permit submitted for review',
+    closed: 'Permit closed',
+    duplicated: 'Permit duplicated — continue editing the new draft'
   }
 }
 

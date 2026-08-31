@@ -1,6 +1,8 @@
 import type { Ref } from 'vue'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { dayjs } from '@/plugins/dayjs.plugin'
+import { toast } from '@/plugins/toast'
 import { useApiError, type IApiErrorResult } from '@/composables/useApiError'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import type { IJsaStep, IPermitSafetyReading, IPermitWorker } from '@/models/modules/permit/Permit.model'
@@ -77,6 +79,7 @@ function toWireReading (reading: IPermitSafetyReading): IPermitSafetyReading {
 
 export function useDuplicatePermit (): IUseDuplicatePermit {
   const { mapError } = useApiError()
+  const { t } = useI18n()
 
   const duplicating = ref(false)
   const duplicateError = ref<IApiErrorResult | undefined>(undefined)
@@ -112,6 +115,11 @@ export function useDuplicatePermit (): IUseDuplicatePermit {
       if (permit.latestSafetyReading) updatePayload.safetyReading = toWireReading(permit.latestSafetyReading)
 
       await PermitService.update(newId, updatePayload)
+
+      // wayfinder ticket 008 — "permit created" is sanctioned to toast. The caller navigates
+      // straight into the new draft's edit wizard, so nothing on screen otherwise tells the
+      // user a whole new permit now exists.
+      toast.success(t('permit.toast.duplicated'))
 
       return newId
     } catch (error: unknown) {

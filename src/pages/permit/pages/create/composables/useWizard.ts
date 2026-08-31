@@ -1,6 +1,7 @@
 import type { ComputedRef, Ref } from 'vue'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { dayjs } from '@/plugins/dayjs.plugin'
+import i18n from '@/plugins/I18n.plugin'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { useDebounce } from '@/utils/Debounce'
@@ -413,6 +414,10 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
     const response = await handleLoading(
       async (): Promise<string> => {
         const result = await PermitService.submit(id)
+        // wayfinder ticket 008 — "permit submitted" is sanctioned to toast. The detail page's
+        // `?submitted=1` banner confirms the state once the user has landed there; this toast
+        // confirms the ACTION at the moment it actually happened, during the navigation itself.
+        toast.success(i18n.global.t('permit.toast.submitted'))
         return result.data.id
       }, { loadingUnit: submitting }, (error: unknown): void => {
         const mapped = mapError(error)

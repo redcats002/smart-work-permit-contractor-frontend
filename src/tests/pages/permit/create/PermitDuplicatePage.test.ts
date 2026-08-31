@@ -5,6 +5,7 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import PrimeVue from 'primevue/config'
 import i18n, { setLocale } from '@/plugins/I18n.plugin'
+import { toast } from '@/plugins/toast'
 import PermitProvider from '@/resources/provider/permit/Permit.provider'
 import PermitDuplicatePage from '@/pages/permit/pages/create/pages/PermitDuplicatePage.vue'
 
@@ -117,5 +118,9 @@ describe('PermitDuplicatePage', () => {
 
     expect(router.currentRoute.value.name).toBe('PermitEditPage')
     expect(router.currentRoute.value.params.id).toBe('WP-HT-20260823-009')
+
+    // wayfinder ticket 008 — the user is bounced straight into the new draft's edit wizard, so
+    // nothing else on screen tells them a whole new permit now exists.
+    expect(toast.success).toHaveBeenCalledWith(i18n.global.t('permit.toast.duplicated'))
   })
 })
