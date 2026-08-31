@@ -47,13 +47,13 @@
    Mirrors the status/accent tokens in tailwind.css
    ───────────────────────────────────────── */
 :root {
-    /* Green  ── success / active status #1E8E5A */
+    /* Green  ── success / active status #1A7B4E (darkened from #1E8E5A, wayfinder 026 — WCAG AA) */
     --p-green-light: #e4f4ec;   /* badge / tag background */
-    --p-green:       #1e8e5a;   /* text / icon */
+    --p-green:       #1a7b4e;   /* text / icon */
 
-    /* Orange ── accent / fire-monitor #F26B1D */
+    /* Orange ── accent / fire-monitor #BB4B0B (darkened from #F26B1D, wayfinder 026 — WCAG AA) */
     --p-orange:      #fff1e6;   /* badge / tag background */
-    --p-orange-2:    #f26b1d;   /* text / icon */
+    --p-orange-2:    #bb4b0b;   /* text / icon */
 
     /* Red ── #C81E2C (alias for inline use) */
     --p-red:         #c81e2c;   /* danger / error */

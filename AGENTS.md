@@ -204,19 +204,35 @@ The design prototype's palette **replaces** the template's existing brand colors
 |---|---|---|
 | Primary / danger | `#C81E2C` | Brand primary, required-field `*`, blocked banners, "inside" alerts |
 | Accent orange | `#F26B1D` | Topbar accent border, logo mark, map pin |
-| Success green | `#1E8E5A` (dark `#176B45`, bg `#E4F4EC`, border `#B7E0CA`) | Safe atmosphere, Active status |
-| Pending amber | `#B26A00` (bg `#FFF3DC`) | `PENDING` status badge only |
-| Heights amber | `#B8860B` (bg `#FFF8E1`) | Working-at-Heights **type** chip/icon only |
+| Success green | `#1A7B4E`¹ (dark `#176B45`, bg `#E4F4EC`, border `#B7E0CA`) | Safe atmosphere, Active status |
+| Pending amber | `#9A5C00`¹ (bg `#FFF3DC`) | `PENDING` status badge only |
+| Heights amber | `#926A09`¹ (bg `#FFF8E1`) | Working-at-Heights **type** chip/icon only |
 | Confined-space purple | `#7C3AED` (bg `#F1E9FE`) | Confined Space type chip/icon |
 | Hot-work red bg | `#FCE9EB` | Hot Work type chip/icon |
 | Shell dark | `#111418` (topbar) · `#16191D` (sidebar, headings) | App chrome |
 | Sidebar text | `#C2CAD2` · muted `#6B7681` | Nav |
-| Body text | `#16191D` primary · `#5B656F` secondary · `#8B95A0` tertiary | Content |
+| Body text | `#16191D` primary · `#5B656F` secondary · `#636E79`¹ tertiary · `#65717D`¹ quaternary | Content |
 | Surfaces | `#F7F8FA` main bg · `#F4F6F8` · `#EEF1F4` · `#fff` cards | Backgrounds |
 | Borders | `#E1E6EB` · `#D7DCE2` · `#CBD2D9` | Dividers, card borders |
 
 **Never hardcode a hex.** Every color above is a `@theme` token in `src/assets/css/tailwind.css`:
 `--color-primary-*`, `--color-accent-*`, `--color-status-{draft,pending,active,fire-monitor,closed,rejected,expired}-{fg,bg,border}`, `--color-permit-type-{hot,confined,heights}-{fg,bg}`, `--color-shell-*`, `--color-text-*`, `--color-surface-*`, `--color-border*`. Use the token; if one is missing, add it to `tailwind.css` rather than inlining a hex.
+
+¹ Darkened from the original brief's `#1E8E5A`/`#B26A00` (wayfinder 026, 2026-09): both measured below WCAG AA's
+4.5:1 against their status backgrounds (3.64:1 and 3.86:1 respectively). The sweep also darkened
+`--color-status-fire-monitor-fg` (`#F26B1D` → `#BB4B0B`), `--color-status-fire-monitor-fg-emphasis`
+(`#E8590C` → `#A53F09`), `--color-status-expired-fg` (`#8B95A0` → `#5B656F`, reusing
+`--color-text-secondary`'s value), and `--color-permit-type-heights-fg` (`#B8860B` → `#926A09`,
+found while building the gate below, not one of the ticket's two named pairs) — none of which had
+a row of their own in this table before now. `--color-text-tertiary`/`--color-text-quaternary`
+were also sub-AA (`#8B95A0` was 2.86:1 on `--color-surface-app`, 4.08:1 on the darker
+`--color-surface-muted`; `#A4ADB6` was 2.27:1 on white) and are real body text at dozens of call
+sites, not decoration — darkened to `#636E79`/`#65717D`. Those two land only a few RGB units
+apart: this app's surface set cannot hold four AA-passing text tiers below primary/secondary, so
+treat tertiary and quaternary as visually near-identical going forward rather than adding a fifth,
+lighter grey that would just fail again.
+`scripts/check-contrast.mjs` now asserts every status/semantic pair on every build so a future
+regression here fails loudly instead of waiting to be found by hand.
 
 > Tailwind v4 only emits `@theme` variables that a scanned utility class actually references. A token that no class uses will not appear in the compiled CSS — that is expected, not a bug.
 

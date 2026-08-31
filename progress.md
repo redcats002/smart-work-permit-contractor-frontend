@@ -1814,3 +1814,150 @@ Files changed: `src/models/request/auth/public/AuthReq.public.model.ts`,
 `src/pages/auth/pages/login/pages/LoginPage.vue`, `.env.example`,
 `src/locales/en/platform.ts`, `src/locales/th/platform.ts`,
 `src/tests/pages/auth/login/LoginPage.trial.test.ts`.
+
+## 2026-09-01 — Status colour contrast sweep + build gate (wayfinder 026)
+
+`../docs/wayfinder/tickets/026-status-colour-contrast-sweep.md`. Measured first rather than
+assuming the sibling Safety app's numbers applied here — they mostly didn't transfer 1:1 (this
+app's own hexes differ), but the underlying defects were worse and more widespread than the
+ticket's two named pairs.
+
+**Measured (before → after), WCAG AA normal text needs 4.5:1:**
+
+| Pair | Before | After |
+|---|---|---|
+| DRAFT `#5b656f` on `#eef1f4` | 5.24:1 PASS | unchanged |
+| PENDING `#b26a00` on `#fff3dc` | 3.86:1 **FAIL** | `#9a5c00` → 4.89:1 |
+| PENDING fg on white (banner icon glyph) | 4.24:1 **FAIL** | 5.38:1 |
+| ACTIVE `#1e8e5a` on `#e4f4ec` | 3.64:1 **FAIL** | `#1a7b4e` → 4.63:1 |
+| ACTIVE fg-emphasis `#176b45` on `#e4f4ec` | 5.72:1 PASS | unchanged |
+| FIRE_MONITOR `#f26b1d` on `#fff1e6` | 2.75:1 **FAIL** (worst pair found) | `#bb4b0b` → 4.60:1 |
+| FIRE_MONITOR fg-emphasis `#e8590c` on `#fff1e6` | 3.24:1 **FAIL** | `#a53f09` → 5.72:1 |
+| CLOSED `#3c444c` on `#eef1f4` | 8.72:1 PASS | unchanged |
+| REJECTED `#c81e2c` on `#fce9eb` | 4.89:1 PASS | unchanged |
+| REJECTED fg-emphasis `#9b3540` on `#fce9eb` | 6.04:1 PASS | unchanged |
+| EXPIRED `#8b95a0` on `#f7f8fa` | 2.86:1 **FAIL** (the ticket's named pair) | `#5b656f` → 5.59:1 |
+| Hot Work type `#c81e2c` on `#fce9eb` | 4.89:1 PASS | unchanged |
+| Confined Space type `#7c3aed` on `#f1e9fe` | 4.84:1 PASS | unchanged |
+| Heights type `#b8860b` on `#fff8e1` | 3.06:1 **FAIL** (found while writing the gate) | `#926a09` → 4.61:1 |
+| info `#1060a8` on `#e8f5ff` | 5.81:1 PASS | unchanged |
+| `text-primary`/`text-secondary`/`text-strong` on their real surfaces | 5.9–17.6:1 PASS | unchanged |
+| `text-tertiary` `#8b95a0` on `surface-app`/card/`surface-muted` | 2.86 / 3.04 / 2.68:1 **FAIL** | `#636e79` → 4.90 / 5.20 / 4.59:1 |
+| `text-quaternary` `#a4adb6` on white / `surface-subtle` | 2.27 / 2.10:1 **FAIL** | `#65717d` → 4.99 / 4.60:1 |
+
+**Fixed 9 pairs, left 8 already-passing pairs untouched.** All hexes were darkened in place
+(fg only — bg/border of every triple is unchanged, so no triple's internal consistency broke), per
+the ticket's own instruction for EXPIRED, applied uniformly to every other failing pair:
+
+- `src/assets/css/tailwind.css`: `--color-status-pending-fg`, `--color-status-active-fg`,
+  `--color-status-fire-monitor-fg`, `--color-status-fire-monitor-fg-emphasis`,
+  `--color-status-expired-fg`, `--color-permit-type-heights-fg`, `--color-text-tertiary`,
+  `--color-text-quaternary`. Also updated the now-stale `--color-accent-600` comment that used to
+  read "← fire-monitor emphasis" — that literal-value coincidence with the old
+  `fire-monitor-fg-emphasis` ended here; the two are independent literals now (accent-600 is a
+  brand-orange ramp value with no text-contrast obligation against the status surface).
+- `src/assets/css/primevue.css`: `--p-green`/`--p-orange-2` updated to match — dead currently (no
+  `var(--p-green)`/`var(--p-orange-2)` consumer found anywhere), but the block's own comment
+  claims to "mirror the status/accent tokens in tailwind.css" and a stale duplicate is a trap for
+  whoever wires a PrimeVue Tag/Badge to it later.
+- `AGENTS.md` design-system table: `Success green`, `Pending amber`, `Heights amber`, `Body text`
+  rows updated to the new hexes, with a footnote explaining why and pointing at the gate.
+
+**Two findings beyond the ticket's two named pairs, fixed under "fix every pair below 4.5:1":**
+`FIRE_MONITOR` was measurably the worst pair in the app (2.75:1, worse than the ticket's headline
+EXPIRED finding) and was never flagged by anyone; `Heights amber` (a permit *type* colour, not a
+status colour) turned up only because the gate below checks it too. Both are now fixed rather than
+left red once found.
+
+**`text-tertiary`/`text-quaternary` — the largest finding, and an honest limit, not silently
+patched over.** These aren't part of a status triple; they're the generic body-text scale used at
+~40 real call sites (`PermitInfoCard` labels, `PermitAuditTimeline` timestamps, `HistoryTable`
+captions and row indices, table row numbers) — real content, not decoration, so full 4.5:1 AA
+applies. Fixed against the darkest surface each is *actually* rendered on in this repo (tertiary
+reaches `surface-muted` via the Step4/Step6 "loading"/"checking" chip; quaternary's darkest real
+background is `surface-subtle`), not an unused worst case. The two results (`#636e79`, `#65717d`)
+land a few RGB units apart: this app's surface set cannot hold four AA-passing text tiers below
+primary/secondary, so tertiary and quaternary are now close to visually indistinguishable. That's
+reported as a structural fact, not fixed further — inventing a fifth, lighter grey would just fail
+again, and settling the design question of whether the four-tier scale should collapse to three is
+a product decision, not something to make unilaterally inside a colour-contrast ticket.
+
+**One side effect worth flagging, not fixed:** `EXPIRED`'s new fg (`#5b656f`) is now byte-identical
+to `DRAFT`'s fg, and their backgrounds (`#f7f8fa` vs `#eef1f4`) are close. DRAFT and EXPIRED chips
+now read very similarly in a scanned list — exactly the "scan a list for a status" concern the
+ticket opens with. The ticket explicitly sanctioned `#5B656F` for EXPIRED ("surface-800 is the
+stated text floor, start there"), so implemented as specified rather than re-deciding it, but a
+human should look at the two chips side by side before calling this fully resolved.
+
+**The gate.** `scripts/check-contrast.mjs`, wired into `init.sh` and into all four `bun run build*`
+scripts via a new `check:contrast` script. Differs from
+`smart-work-permit-landing/scripts/check-landing.mjs`'s contrast half in one way: instead of a
+hardcoded duplicate hex list, it parses the live `--color-*` custom properties straight out of
+`src/assets/css/tailwind.css`'s light-mode `@theme` block, so a future colour change is checked
+against its real current value, not a copy that can silently drift out of sync. 26 pairs asserted:
+all seven status triples (fg and fg-emphasis where one exists) against their own surface, one
+status fg used as a button background against white text, all three permit-type chips, the info
+panel, and the text scale against every surface it is actually used on. Unknown-token references
+fail loudly (`process.exit(1)` with the bad token name) rather than silently passing.
+
+**Proved it actually fails, not just written to pass:** temporarily reverted
+`--color-status-expired-fg` and `--color-text-tertiary` back to their pre-fix hexes one at a time
+and re-ran the script — both failed with the exact ratio and pair name, then passed again after
+restoring the fix. Output:
+
+```
+$ node scripts/check-contrast.mjs   # after reverting --color-status-expired-fg to #8b95a0
+✗ below WCAG AA:
+    EXPIRED status text on its surface: 2.86:1 (needs 4.5:1) — #8b95a0 on #f7f8fa
+(exit 1)
+
+$ node scripts/check-contrast.mjs   # after reverting --color-text-tertiary to #8b95a0
+✗ below WCAG AA:
+    tertiary text on card: 3.04:1 (needs 4.5:1) — #8b95a0 on #ffffff
+    tertiary text on app surface: 2.86:1 (needs 4.5:1) — #8b95a0 on #f7f8fa
+    tertiary text on muted surface (loading/checking chip): 2.68:1 (needs 4.5:1) — #8b95a0 on #eef1f4
+(exit 1)
+
+$ node scripts/check-contrast.mjs   # both restored
+✓ all 26 colour pairs meet WCAG AA
+```
+
+**Still open:** ticket 026 is scoped `repos: [contractor, safety]` — this session only had access
+to `smart-work-permit-contractor-frontend`, so the sibling Safety/Inspector app's half (its own
+status colours, its own `--color-warning-*` scale, and porting the same gate there) is **not
+done**. Do not read this entry as closing the ticket.
+
+```
+$ bunx eslint src/assets/css/tailwind.css src/assets/css/primevue.css scripts/check-contrast.mjs
+(tailwind.css/primevue.css: ignored by eslint.config.js, as documented — no config error;
+ scripts/check-contrast.mjs: also ignored, per the `scripts/**` ignore rule)
+
+$ bun run typecheck
+$ vue-tsc --noEmit -p tsconfig.app.json
+(clean — no output)
+
+$ bun run test:run
+ Test Files  57 passed (57)
+      Tests  510 passed (510)
+
+$ bun run lint
+$ eslint .
+(2 pre-existing warnings in useNotificationPolling.test.ts, unrelated, unchanged — 0 errors)
+
+$ ./init.sh
+--- typecheck: PASS
+--- lint: PASS
+--- tests: PASS  (57 files / 510 tests)
+--- contrast: PASS  (26/26 pairs)
+--- smoke: PASS  (live API reachable this session)
+All checks passed.
+
+$ rm -rf dist && bun run build   # check:contrast runs before vite build in all four build scripts
+✓ built in 706ms
+$ bun run build:alpha && bun run build:staging && bun run build:production
+(all three exit 0, each preceded by check:contrast)
+```
+
+Files changed: `src/assets/css/tailwind.css`, `src/assets/css/primevue.css`, `AGENTS.md`,
+`scripts/check-contrast.mjs` (new), `package.json` (`check:contrast` script; all four build
+scripts now run it first), `init.sh` (new `contrast` gate step).
