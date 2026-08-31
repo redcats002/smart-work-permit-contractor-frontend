@@ -132,7 +132,12 @@ These are stated once in `docs/main/dev-handoff/00-SHARED-CONTEXT.md` and enforc
 always authoritative and the client must surface the server's verdict when the two disagree.
 
 - Status machine: `DRAFT → PENDING → REJECTED | ACTIVE → (hot only) FIRE_MONITOR → CLOSED`; `EXPIRED`
-  from `PENDING`/`ACTIVE` when the work window lapses. **One edge runs backwards**: a contractor
+  from `PENDING`/`ACTIVE` when the work window lapses — except that an **ACTIVE Hot Work permit is
+  granted the Fire Watch duration as grace** past `workTimeEnd` before it expires, because a Fire
+  Watch is by definition the period *after* hot work stops, so a hot permit's safety obligation
+  always outlives its work window (2026-08-31, `PROMPT-LOG.md` session 13). Expiry never *starts* a
+  Fire Watch: a Fire Watch is a person, and the system must never record a control no human
+  performed. A permit already in `FIRE_MONITOR` never expires. **One edge runs backwards**: a contractor
   editing their own `PENDING` permit returns it to `DRAFT` in the same transaction as the edit
   (2026-08-31, `PROMPT-LOG.md` session 11). It is not an in-place edit — an officer must never be
   able to approve a version they did not read, so the permit leaves the review queue rather than

@@ -743,6 +743,19 @@ locks every contractor out of submitting.** The two halves ship together or not 
   `smart-work-permit-landing/scripts/check-landing.mjs` fails the build on any other host.
 - **Blocked items are product decisions**, not work: backend `feat-011`, `SHL-006` (self-hosting
   fonts for the offline Inspector role). Do not implement them speculatively.
+- **A Fire Watch outlives the work window, so hot permits get grace before expiry.** A Fire Watch
+  is by definition the 30 minutes *after* hot work stops, so a Hot Work permit's safety obligation
+  always extends past `workTimeEnd`. Expiring a hot `ACTIVE` permit the instant its window lapsed
+  expired it at exactly the moment its most important control was supposed to begin — and because
+  `mark-complete` carries `status: 'ACTIVE'` in its WHERE, the expired permit could never reach
+  `FIRE_MONITOR`, locking the crew out of starting the watch at all. This was not a rare race: hot
+  work finishes *at* the end of its booked window, so it was the normal case. The sweep now grants
+  hot `ACTIVE` permits exactly `FIRE_WATCH_DURATION_MINUTES` of grace — derived from the domain
+  rule, never a hand-tuned fudge. Scoped to hot *and* ACTIVE: a hot `PENDING` permit was never
+  approved so no watch can be owed, and no other permit type has a post-window control.
+- **Expiry must never START a Fire Watch.** A Fire Watch is a person standing there. A sweep that
+  wrote `fireMonitorStartedAt` unattended would put a safety control into an append-only audit log
+  that no human performed — a false safety record is worse than a missing one.
 
 ---
 
