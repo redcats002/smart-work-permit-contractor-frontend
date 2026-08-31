@@ -1318,3 +1318,59 @@ $ bun run test:run
  Test Files  54 passed (54)
       Tests  484 passed (484)
 ```
+
+## 2026-08-31 — wayfinder ticket 008: roll out sanctioned toasts (contractor half)
+
+Applied the convention ticket 007 settled: toast only where the outcome is not already visible on
+screen. Full reasoning and the deliberately-silent list are on the ticket's Resolution section
+(`../docs/wayfinder/tickets/008-roll-out-toasts.md`); the load-bearing summary:
+
+**Toasts added** (`permit.toast.*`, EN + TH): permit submitted (`useWizard.submitDraft()`), permit
+closed (`ClosureChecklistModal.submit()`), permit created (`useDuplicatePermit.duplicatePermit()`
+— Duplicate & Edit is the only user-initiated, standalone "create" this repo has; every other
+permit is created invisibly as the first leg of the wizard's own debounced autosave, which the
+ticket explicitly forbids toasting).
+
+**Already correct, verified not touched:** `CreateCertificateModal.vue`'s "certificate created"
+toast (wired ahead of this ticket, wayfinder 004) and `AddCertificateModal.vue`'s silence (the
+`/certificates` list re-renders with the new row — the convention's "don't toast a list that just
+re-rendered" case, correctly not toasting already).
+
+**Deliberately silent, pinned by a new regression test:** the wizard's autosave — both the create
+leg and every PATCH leg — never toasts on a SUCCESSFUL persist (`useWizard.persistence.test.ts`,
+new test). A FAILED autosave still toasts (`persist()`'s existing `toast.error`) — kept, since a
+silently-failed autosave is invisible data loss with no other channel. Also silent, unchanged:
+Mark Work Complete (not named in the ruling; the Fire Watch panel changes in place), every inline
+submit/closure validation failure (already localized off `errorCode`, never duplicated into a
+toast), and the pre-existing profile-save toast (not a permit action, out of this ticket's scope).
+
+Offline queueing does not apply to this repo — that is a safety-repo (Inspector) concept only.
+
+Files changed:
+- `src/pages/permit/pages/create/composables/useWizard.ts` (success toast on submit)
+- `src/pages/permit/pages/detail/components/ClosureChecklistModal.vue` (success toast on close)
+- `src/pages/permit/pages/create/composables/useDuplicatePermit.ts` (success toast on duplicate)
+- `src/locales/en/permit.ts`, `src/locales/th/permit.ts` (`permit.toast.{submitted,closed,duplicated}`)
+
+Tests (new): success-toast assertions in `PermitCreatePage.submit.test.ts`,
+`ClosureChecklistModal.test.ts`, `PermitDuplicatePage.test.ts`; an autosave-silence regression in
+`useWizard.persistence.test.ts`. Failure-toast coverage (one with `errorCode`, one without) already
+existed pre-ticket — `PermitCreatePage.submit.test.ts`'s `GAS_OUT_OF_RANGE` case and
+`LoginPage.test.ts`'s no-`errorCode` fallback case — and needed no new test.
+
+```
+$ bun run typecheck
+$ vue-tsc --noEmit -p tsconfig.app.json
+(clean — no output)
+
+$ bun run lint
+$ eslint .
+/…/src/tests/composables/useNotificationPolling.test.ts
+  27:41  warning  There is more than one component in this file  vue/one-component-per-file
+  39:15  warning  There is more than one component in this file  vue/one-component-per-file
+✖ 2 problems (0 errors, 2 warnings)   ← pre-existing, unrelated to this change
+
+$ bun run test:run
+ Test Files  54 passed (54)
+      Tests  487 passed (487)
+```
