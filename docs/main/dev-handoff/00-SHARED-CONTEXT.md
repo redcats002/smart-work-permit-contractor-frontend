@@ -1,4 +1,4 @@
-# e-safework / SafePermit — Shared Product Context
+# e-safework — Shared Product Context
 
 This file is shared across all three repositories. Copy it into each repo alongside that repo's own task document (`01-backend-elysia-tasks.md`, `02-contractor-web-vue-tasks.md`, or `03-safety-inspector-web-vue-tasks.md`).
 

@@ -1,8 +1,8 @@
 import type platformEn from '@/locales/en/platform'
 
 const platform: typeof platformEn = {
-  appName: 'SafePermit',
-  appTagline: 'SMART WORK PERMIT · v3.0',
+  appName: 'e-safework',
+  appTagline: 'ELECTRONIC SAFE WORK PERMIT · v3.0',
   accountType: 'บัญชีผู้รับเหมา',
   sidebarSection: 'ผู้รับเหมา',
   nav: {

@@ -10,7 +10,7 @@
       "module": "platform",
       "harness": "docs/modules/platform/",
       "name": "Platform foundation",
-      "description": "Repair the broken baseline left by the lending-app strip, swap the design system to the SafePermit palette/typography, build the app shell (dark sidebar + topbar, responsive drawer), wire i18n (en/th), contractor auth + route guard, the API client with backend error-code localization, and notification polling.",
+      "description": "Repair the broken baseline left by the lending-app strip, swap the design system to the e-safework palette/typography, build the app shell (dark sidebar + topbar, responsive drawer), wire i18n (en/th), contractor auth + route guard, the API client with backend error-code localization, and notification polling.",
       "dependencies": [],
       "status": "in-progress",
       "evidence": ""

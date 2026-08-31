@@ -1101,3 +1101,36 @@ consumption was wired in this session** — that is a separate item, still open 
 unrelated), vitest 460 pass / 50 files, smoke 15/15 checks pass against a live backend
 (`contractor@e2e.test`) including "notifications are paginated (feat-011c) — same envelope shape as
 certificates".
+
+---
+
+## 2026-08-31 — wayfinder 013: the `SafePermit` strings, and the expansion decision
+
+Session 10 renamed the product to `e-safework` and swept `SmartWorkPermit` / `Smart Work Permit`.
+Two brand forms survived that sweep and were still on screen here: **`SafePermit`** (the wordmark)
+and **`SMART WORK PERMIT · v3.0`** (the mono sub-line under it). Both are gone.
+
+- `src/locales/en/platform.ts`, `src/locales/th/platform.ts` — `appName` `SafePermit` →
+  `e-safework`; `appTagline` `SMART WORK PERMIT · v3.0` → `ELECTRONIC SAFE WORK PERMIT · v3.0`.
+  Identical values in both locale files, for the reason `SHL-003` already recorded in the Safety
+  app: the sub-line is a Latin-uppercase version stamp set in IBM Plex Mono, a face with no Thai
+  glyphs, so a Thai rendering falls back to another family and breaks the lockup. Both files carry
+  the string, so a future Thai wordmark is one edit.
+- `src/components/app/AppTopbar.vue` — the 30px logo tile's glyph `S` → `e`. **This was forced.**
+  `AuthHeader.vue` derives its tile from `t('platform.appName').slice(0, 1)`, so the moment
+  `appName` became `e-safework` the login tile read `e` while the topbar still hardcoded `S`.
+  Leaving the topbar alone would have created a new mismatch inside one app.
+- `src/assets/css/tailwind.css` — the palette comment `e-safework (SafePermit)` → `e-safework`.
+- `feature_list.json`, `docs/modules/platform/{feature_list.json,context.md}` — brand strings only.
+  Measured `evidence` blocks keep their geometry; only the name and sub-line inside them changed,
+  per session 10's precedent that a product name is not a fact about what happened.
+
+**The expansion decision (wayfinder ticket 013).** The owner gave the name as "e-safework
+(electronic safe work permit)". The parenthetical is an **expansion, not part of the wordmark**:
+the name is `e-safework`, lowercase, everywhere the brand is the brand. The expansion goes in the
+subtitle slot that already existed — the mono sub-line. So the tab title, `DEFAULT_TITLE`
+(`src/router/index.ts:59`), `index.html:7` and the wordmark now all read exactly `e-safework`, and
+the expansion appears once, beneath the wordmark, where a subtitle belongs.
+
+`bun run typecheck` PASS, `bun run lint` PASS, `bun run test:run` 460 pass / 50 files.
+`node scripts/check-contract-sync.mjs` OK from the workspace root.

@@ -1,6 +1,6 @@
 const platform = {
-  appName: 'SafePermit',
-  appTagline: 'SMART WORK PERMIT · v3.0',
+  appName: 'e-safework',
+  appTagline: 'ELECTRONIC SAFE WORK PERMIT · v3.0',
   accountType: 'Contractor account',
   sidebarSection: 'CONTRACTOR',
   nav: {

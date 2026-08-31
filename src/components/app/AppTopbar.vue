@@ -17,7 +17,7 @@
       <div
         class="flex size-[30px] shrink-0 items-center justify-center rounded-[6px] bg-(--color-accent-500)
           text-base font-bold text-(--color-shell-topbar)">
-        S
+        e
       </div>
       <div class="min-w-0 leading-[1.05]">
         <div class="truncate text-sm font-bold tracking-[0.3px] text-white">
