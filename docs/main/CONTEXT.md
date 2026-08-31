@@ -149,7 +149,9 @@ always authoritative and the client must surface the server's verdict when the t
   30-minute Fire Watch is still running.
 - Expired/missing certificate blocks submission **and** field entry. No field override.
 - **Facility plan + permit position** (`feat-023`, 2026-08-24). A **facility plan** is the
-  uploaded, cropped floor-plan image; a **plan version** is immutable and retained forever —
+  uploaded, cropped floor-plan **raster image** (PNG/JPEG/WebP only — the map draws it with a plain
+  `<img>`, so PDF and HEIC are refused at the plan upload route even though the generic upload
+  route accepts them; 2026-08-31); a **plan version** is immutable and retained forever —
   replacing the plan creates a new version, never overwrites one. A **position** is
   `planId`/`planX`/`planY` (0–100, percentages of the plan frame) on a `Permit`. The **contractor**
   sets the position while the permit is DRAFT or REJECTED (the same editable window every other
