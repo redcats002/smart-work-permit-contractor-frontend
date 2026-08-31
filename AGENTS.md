@@ -21,6 +21,12 @@ This app is one of three repos in the e-safework workspace (`../`): this one, th
 and the `node scripts/check-contract-sync.mjs` glue check. Everything inside this repo stays governed
 by this file and `feature_list.json`.
 
+**Cross-repo consistency obligation.** A change here that makes a statement in another repo false —
+the API, the Safety Officer/Inspector app, or the landing page — must be corrected there in the same
+session. See `docs/main/CONTEXT.md` §"Cross-repo consistency". `check-contract-sync.mjs` only covers
+four files (`CONTEXT.md`, `PROMPT-LOG.md`, `openapi.json`, plus its own script copy); everything else
+is the author's responsibility.
+
 ## What this repo is
 
 **e-safework — Contractor web app.** Responsive web app (desktop/tablet first, must not break at 375px) where contractors draft, submit, and track their own work permits for a Thai industrial facility.

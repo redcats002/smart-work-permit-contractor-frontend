@@ -83,3 +83,31 @@ one component that already needed one.
 `./init.sh` green: typecheck PASS, lint PASS (0 errors on the touched `.vue` file), vitest 50
 files / 460 tests PASS (no new tests — pure CSS retokenization is not new logic), live smoke
 PASS.
+
+## 2026-09-01 — credential-in-bundle audit (no ticket, ad hoc per PROMPT-LOG ruling)
+
+Checked whether this repo has the sibling app's problem: `smart-work-permit-frontend` has a
+`MOCK_PASSWORD = 'password123'` in `src/resources/mock/fixtures/UserFixtures.ts`, statically
+imported by `src/resources/mock/MockRoutes.ts`, which survives into its production bundle. This
+repo has no `src/resources/mock/` directory at all and no reference to `VITE_APP_USE_MOCK`
+anywhere in `src/` — confirmed by `grep -rn "VITE_APP_USE_MOCK" .` (no matches) and
+`find src/resources/mock` (no such path). The mock-gateway subsystem PLT-007 references in the
+sibling repo was never built here.
+
+Built production (`rm -rf dist && bun run build`, i.e. `vue-tsc --noEmit` + `vite build`) and
+grepped `dist/`:
+- `grep -rn "password123" dist/` — no matches (exit 1).
+- `grep -rln "smoke.contractor@example.com" dist/` — no matches (the dev-only credential in
+  `useInit.ts`, gated on `import.meta.env.DEV`, is correctly eliminated).
+- `grep -rn "TRIAL_LOGIN_PASSWORD" dist/assets/*.js` — no matches (trial-login password is sourced
+  from `VITE_TRIAL_LOGIN_PASSWORD`, unset in `.env`, `VITE_TRIAL_LOGIN=false` by default, nothing
+  rendered/embedded when absent — matches the ruling in `PROMPT-LOG.md`).
+
+Negative result: nothing to fix. `dist/` removed after verification. Also added a short
+"Cross-repo consistency obligation" note to `AGENTS.md`'s "Working across repos" section pointing
+at `CONTEXT.md` §"Cross-repo consistency", per the standing instruction that this repo's own
+section didn't yet spell out.
+
+`bun run typecheck` PASS. `bun run lint` — 0 errors, 2 pre-existing warnings in
+`useNotificationPolling.test.ts` (unchanged, left as-is). `bun run test:run` — 57 files / 509
+tests passed (baseline unchanged, no code touched besides `AGENTS.md`).
