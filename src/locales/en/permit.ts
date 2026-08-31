@@ -549,8 +549,9 @@ const permit = {
     },
     pendingEditWarning: {
       // wayfinder 012 — the contractor half. The warning fires BEFORE the resume route is opened,
-      // because opening it (useResumePermit's empty-body PATCH) is itself what withdraws the
-      // permit server-side — never after the wizard's own save handler.
+      // because the wizard's own debounced save handler is what withdraws the permit server-side
+      // the moment the contractor edits a field (wayfinder 022 — opening the route itself is now
+      // read-only) — never after that save handler runs.
       title: 'Edit this pending permit?',
       body: 'This permit is awaiting Safety Officer review. Editing it now withdraws it from review and returns it to Draft. You will need to submit it again once you finish editing.',
       confirm: 'Continue Editing',

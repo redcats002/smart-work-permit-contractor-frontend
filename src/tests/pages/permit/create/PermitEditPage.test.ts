@@ -5,19 +5,20 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import PrimeVue from 'primevue/config'
 import i18n, { setLocale } from '@/plugins/I18n.plugin'
-import { EApiErrorCode } from '@/enums/modules/error/ApiErrorCode.enum'
 import FacilityPlanProvider from '@/resources/provider/facility-plan/FacilityPlan.provider'
 import PermitProvider from '@/resources/provider/permit/Permit.provider'
 import PermitEditPage from '@/pages/permit/pages/create/pages/PermitEditPage.vue'
 import StepperHeader from '@/pages/permit/pages/create/components/StepperHeader.vue'
 
 /**
- * PMT-014 — resume route.
- *
- * `PermitEditPage` confirms editability with a real (empty-body) `PATCH /permits/:id` rather than
- * guessing off `status` client-side — a non-DRAFT id answers 403 `PERMIT_NOT_EDITABLE` and the
- * page must render that verdict, never a broken wizard (../../PROMPT-LOG.md standing ruling: no
- * client rule pre-empts the server).
+ * PMT-014 — resume route. Updated for wayfinder ticket 022: `PermitEditPage` used to confirm
+ * editability with a real (empty-body) `PATCH /permits/:id`, which — since wayfinder 012 made
+ * `PATCH` withdraw a PENDING permit back to DRAFT — silently withdrew a PENDING permit from review
+ * on mere mount (deep link, bookmark, refresh, back-button return). It now confirms editability
+ * with a plain `GET /permits/:id` (`useResumePermit`) and decides off `status` client-side, mirroring
+ * `update.service.ts`'s own DRAFT/REJECTED gate — never a client rule stricter or looser than the
+ * server's (../../PROMPT-LOG.md standing ruling: no client rule pre-empts the server; the wizard's
+ * own save still round-trips a real PATCH and that response stays authoritative).
  */
 vi.mock('@/plugins/toast', () => ({
   toast: { success: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() }
@@ -105,7 +106,8 @@ describe('PermitEditPage', () => {
   })
 
   it('hydrates the wizard and lands on the first step that does not validate, not step 1', async () => {
-    vi.spyOn(PermitProvider.prototype, 'update')
+    const updateSpy = vi.spyOn(PermitProvider.prototype, 'update')
+    vi.spyOn(PermitProvider.prototype, 'detail')
       .mockResolvedValue({ message: 'success', data: draftPermit() } as never)
 
     const router = buildRouter()
@@ -122,13 +124,35 @@ describe('PermitEditPage', () => {
     // Step 3 (index 2) — safety checks — is the first to fail: no reading was ever recorded.
     expect(stepper.props('currentStepIndex')).toBe(2)
     expect(stepper.props('maxUnlockedStepIndex')).toBe(2)
+    // wayfinder 022 — mounting the edit page must perform no write of any kind.
+    expect(updateSpy).not.toHaveBeenCalled()
+  })
+
+  it('mounting the edit page for a PENDING permit performs no write of any kind (wayfinder 022)', async () => {
+    const updateSpy = vi.spyOn(PermitProvider.prototype, 'update')
+    vi.spyOn(PermitProvider.prototype, 'detail')
+      .mockResolvedValue({ message: 'success', data: { ...draftPermit(), status: 'PENDING' } } as never)
+
+    const router = buildRouter()
+    await router.push('/permits/WP-HT-20260820-001/edit')
+    await router.isReady()
+
+    mount(PermitEditPage, {
+      global: { plugins: [i18n, router, [PrimeVue, { unstyled: true }]] }
+    })
+    await flushPromises()
+
+    // A PENDING permit is editable (same edit route DRAFT uses, wayfinder 012's contractor half),
+    // so the read alone must not have withdrawn it: no PATCH fired just from opening the page.
+    expect(updateSpy).not.toHaveBeenCalled()
   })
 
   it('resuming a withdrawn PENDING permit (now DRAFT) re-includes the Position step once an active plan exists (wayfinder 012)', async () => {
-    // The backend now performs PENDING -> DRAFT withdrawal atomically INSIDE `PATCH /permits/:id`
-    // (wayfinder 012). `useResumePermit.fetchEditablePermit` is that same empty-body PATCH, so this
-    // mock stands in for "the permit that comes back is already DRAFT, with no position set" — the
-    // exact server-side round trip the ticket calls out ("position becomes editable again").
+    // The backend performs the PENDING -> DRAFT withdrawal atomically the moment the contractor's
+    // FIRST real edit round-trips through `PATCH /permits/:id` (wayfinder 012). This test mounts
+    // AFTER that has already happened — `GET /permits/:id` (wayfinder 022's `useResumePermit`)
+    // simply reads back a permit that is already DRAFT, with no position set — the exact
+    // server-side state the ticket calls out ("position becomes editable again").
     vi.spyOn(FacilityPlanProvider.prototype, 'getActive').mockResolvedValue({
       message: 'success',
       data: {
@@ -141,7 +165,7 @@ describe('PermitEditPage', () => {
         active: true
       }
     } as never)
-    vi.spyOn(PermitProvider.prototype, 'update').mockResolvedValue({
+    vi.spyOn(PermitProvider.prototype, 'detail').mockResolvedValue({
       message: 'success',
       data: { ...draftPermit(), status: 'DRAFT', planId: null, planX: null, planY: null }
     } as never)
@@ -160,9 +184,10 @@ describe('PermitEditPage', () => {
     expect(stepKeys).toContain('position')
   })
 
-  it('renders the server PERMIT_NOT_EDITABLE verdict instead of a broken wizard', async () => {
-    vi.spyOn(PermitProvider.prototype, 'update').mockRejectedValue({
-      code: 403, errorCode: EApiErrorCode.PERMIT_NOT_EDITABLE, message: 'backend english, never rendered'
+  it('renders the server verdict (ownership/404) instead of a broken wizard', async () => {
+    const updateSpy = vi.spyOn(PermitProvider.prototype, 'update')
+    vi.spyOn(PermitProvider.prototype, 'detail').mockRejectedValue({
+      code: 403, message: 'backend english, never rendered'
     })
 
     const router = buildRouter()
@@ -178,5 +203,28 @@ describe('PermitEditPage', () => {
     expect(errorCard.exists()).toBe(true)
     expect(errorCard.text()).not.toContain('backend english, never rendered')
     expect(wrapper.findComponent(StepperHeader).exists()).toBe(false)
+    expect(updateSpy).not.toHaveBeenCalled()
+  })
+
+  it('refuses a permit whose status is not DRAFT/REJECTED without ever calling update, mirroring PERMIT_NOT_EDITABLE', async () => {
+    const updateSpy = vi.spyOn(PermitProvider.prototype, 'update')
+    vi.spyOn(PermitProvider.prototype, 'detail').mockResolvedValue({
+      message: 'success', data: { ...draftPermit(), status: 'ACTIVE' }
+    } as never)
+
+    const router = buildRouter()
+    await router.push('/permits/WP-HT-20260820-001/edit')
+    await router.isReady()
+
+    const wrapper = mount(PermitEditPage, {
+      global: { plugins: [i18n, router, [PrimeVue, { unstyled: true }]] }
+    })
+    await flushPromises()
+
+    const errorCard = wrapper.find('[data-test="edit-not-editable"]')
+    expect(errorCard.exists()).toBe(true)
+    expect(errorCard.text()).toContain('This permit can no longer be edited')
+    expect(wrapper.findComponent(StepperHeader).exists()).toBe(false)
+    expect(updateSpy).not.toHaveBeenCalled()
   })
 })

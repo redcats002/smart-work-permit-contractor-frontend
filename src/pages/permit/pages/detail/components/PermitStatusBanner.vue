@@ -183,9 +183,10 @@ const showPendingWarning: Ref<boolean> = ref(false)
 
 /**
  * wayfinder 012 — the warning must fire BEFORE the contractor starts editing a PENDING permit,
- * never after. Opening `PermitEditPage` for a PENDING permit is itself what withdraws it from
- * review (see `PendingEditWarningModal`'s own comment), so DRAFT/REJECTED navigate straight
- * through while PENDING routes through the confirmation modal first.
+ * never after. Opening `PermitEditPage` for a PENDING permit is read-only until the contractor
+ * changes something (wayfinder 022 — see `PendingEditWarningModal`'s own comment), but the first
+ * real edit still withdraws it from review, so DRAFT/REJECTED navigate straight through while
+ * PENDING routes through the confirmation modal first.
  */
 function onEditClick (): void {
   if (variant.value === 'pending') {

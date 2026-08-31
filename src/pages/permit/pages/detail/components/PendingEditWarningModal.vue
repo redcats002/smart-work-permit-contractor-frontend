@@ -38,10 +38,11 @@ import BaseModal from '@/components/modal/BaseModal.vue'
 /**
  * wayfinder ticket 012 (contractor half). This is the gate at the ENTRY POINT — it must appear
  * before the contractor starts editing a PENDING permit, not after they save. Opening
- * `PermitEditPage` for a PENDING id already performs the withdrawal server-side (its
- * `useResumePermit` confirms editability with a real empty-body `PATCH`, which the backend now
- * treats as a real atomic edit-and-withdraw on a PENDING permit, not a no-op) — so this modal is
- * the only place the warning can land before the consequence happens.
+ * `PermitEditPage` no longer mutates anything by itself (wayfinder 022 — `useResumePermit` reads
+ * the permit instead of probing with an empty-body `PATCH`), but the wizard's own debounced save
+ * still round-trips a real `PATCH` the moment the contractor changes a field, and the backend
+ * treats a `PATCH` on a PENDING permit as an atomic edit-and-withdraw back to DRAFT — so this
+ * modal is still the only place the warning can land before that consequence happens.
  */
 interface IEmits {
   confirm: []
