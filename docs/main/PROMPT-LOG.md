@@ -723,9 +723,13 @@ locks every contractor out of submitting.** The two halves ship together or not 
 - **`facility-plans` is a server-owned upload prefix.** It is in `UPLOAD_ALLOWED_SUBFOLDERS` and NOT
   in `UPLOAD_CLIENT_SUBFOLDERS`, and `UploadService` re-checks it at runtime because the schema alone
   does not hold. Never widen the generic upload route to reach it.
-- **A history entry is not a scan.** A QR scan proves the inspector is at the permit. Anything
-  reached from a list, a link or a cached entry opens read-only; state-changing field actions
-  require a fresh scan. Never soften this for one fewer tap.
+- **A history entry is not a scan.** Anything reached from a list, a link or a cached entry opens
+  read-only; state-changing field actions require a fresh scan. Never soften this for one fewer
+  tap. **But be precise about what is actually enforced:** the manual-entry box on the scan page
+  has always accepted a typed permit ID and opened the full action panel, so "a scan proves the
+  inspector is at the permit" is a design intent, not a guarantee the system delivers. Ticket 017
+  logs the difference so the cost of closing that door is known before anyone closes it. Until
+  then, treat the read-only history as a UX guardrail, not a security boundary.
 - **Never activate a facility plan before the contractor position picker ships.** The submit route
   refuses a positionless permit once a plan is active, and the picker does not exist yet.
 - **The product is `e-safework`, lowercase.** Only the brand forms were renamed; every
