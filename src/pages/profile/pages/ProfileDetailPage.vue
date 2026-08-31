@@ -22,10 +22,13 @@
           height="3rem" />
       </div>
 
-      <form
+      <Form
         v-else
+        v-slot="$form"
+        :initial-values="formData"
+        :resolver="resolver"
         class="flex max-w-3xl flex-col gap-6"
-        @submit.prevent="save()">
+        @submit="onSubmit($event)">
         <p
           v-if="errorMessage"
           class="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
@@ -53,39 +56,31 @@
                 {{ profile?.permitRole ? t(`profile.role.${profile.permitRole}`) : '-' }}
               </p>
             </div>
-            <label class="flex flex-col gap-1">
-              <span class="text-xs text-text-secondary">{{ t('profile.fieldFirstName') }}</span>
-              <input
-                v-model="form.firstName"
-                class="min-h-10.5 rounded-lg border border-border px-3 text-sm"
-                type="text"
-                required>
-            </label>
-            <label class="flex flex-col gap-1">
-              <span class="text-xs text-text-secondary">{{ t('profile.fieldLastName') }}</span>
-              <input
-                v-model="form.lastName"
-                class="min-h-10.5 rounded-lg border border-border px-3 text-sm"
-                type="text"
-                required>
-            </label>
-            <label class="flex flex-col gap-1">
-              <span class="text-xs text-text-secondary">{{ t('profile.fieldPhone') }}</span>
-              <input
-                v-model="form.phoneNumber"
-                class="min-h-10.5 rounded-lg border border-border px-3 text-sm"
-                inputmode="numeric"
-                maxlength="10"
-                minlength="10"
-                type="tel">
-            </label>
-            <label class="flex flex-col gap-1">
-              <span class="text-xs text-text-secondary">{{ t('profile.fieldPhoneExtend') }}</span>
-              <input
-                v-model="form.phoneNumberExtend"
-                class="min-h-10.5 rounded-lg border border-border px-3 text-sm"
-                type="text">
-            </label>
+            <LabelField
+              v-model="formData.firstName"
+              :form="$form"
+              :label="t('profile.fieldFirstName')"
+              name="firstName"
+              required />
+            <LabelField
+              v-model="formData.lastName"
+              :form="$form"
+              :label="t('profile.fieldLastName')"
+              name="lastName"
+              required />
+            <LabelField
+              v-model="formData.phoneNumber"
+              :form="$form"
+              :label="t('profile.fieldPhone')"
+              inputmode="numeric"
+              maxlength="10"
+              name="phoneNumber"
+              type="tel" />
+            <LabelField
+              v-model="formData.phoneNumberExtend"
+              :form="$form"
+              :label="t('profile.fieldPhoneExtend')"
+              name="phoneNumberExtend" />
           </div>
         </section>
 
@@ -117,29 +112,33 @@
         </section>
 
         <div>
-          <button
-            :disabled="saving"
-            class="inline-flex h-10.5 items-center justify-center rounded-lg bg-text-primary px-5 text-sm font-semibold
-              text-white transition-colors hover:bg-shell-sidebar-hover disabled:opacity-60"
-            type="submit">
-            {{ t('common.save') }}
-          </button>
+          <ConfirmButton
+            :label="t('common.save')"
+            :loading="saving"
+            type="submit" />
         </div>
-      </form>
+      </Form>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, type ComputedRef, type Ref } from 'vue'
+import { computed, onMounted, ref, type ComputedRef, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { Form, type FormSubmitEvent } from '@primevue/forms'
+import { zodResolver } from '@primevue/forms/resolvers/zod'
 import Skeleton from '@/volt/Skeleton.vue'
 import { toast } from '@/plugins/toast'
 import { useAuthStore } from '@/stores/Auth'
 import { useApiError } from '@/composables/useApiError'
 import { useDayjs } from '@/utils/Dayjs'
+import { scrollToFirstError } from '@/utils/HandleSubmit'
+import { handleLoading } from '@/utils/HandleLoading'
+import LabelField from '@/components/input/LabelField.vue'
+import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import UserProvider, { type IUserProvider } from '@/resources/provider/user/User.provider'
 import type { IUserAccount } from '@/models/response/user/UserRes.model'
+import { ProfileDetailSchema, useProfileDetailInitialValues, type TProfileDetailFormValues } from '@/pages/profile/schema/ProfileDetail.schema'
 
 const { t } = useI18n()
 const { mapError } = useApiError()
@@ -153,12 +152,8 @@ const loading: Ref<boolean> = ref(false)
 const saving: Ref<boolean> = ref(false)
 const errorMessage: Ref<string> = ref('')
 
-const form = reactive({
-  firstName: '',
-  lastName: '',
-  phoneNumber: '',
-  phoneNumberExtend: ''
-})
+const resolver = zodResolver(ProfileDetailSchema)
+const formData: Ref<TProfileDetailFormValues> = ref(useProfileDetailInitialValues())
 
 const businessRows: ComputedRef<{ labelKey: string, value: string }[]> = computed((): { labelKey: string, value: string }[] => {
   const record = profile.value?.contractorProfile
@@ -175,10 +170,12 @@ const businessRows: ComputedRef<{ labelKey: string, value: string }[]> = compute
 
 function hydrate (account: IUserAccount): void {
   profile.value = account
-  form.firstName = account.firstName ?? ''
-  form.lastName = account.lastName ?? ''
-  form.phoneNumber = account.phoneNumber ?? ''
-  form.phoneNumberExtend = account.phoneNumberExtend ?? ''
+  formData.value = {
+    firstName: account.firstName ?? '',
+    lastName: account.lastName ?? '',
+    phoneNumber: account.phoneNumber ?? '',
+    phoneNumberExtend: account.phoneNumberExtend ?? ''
+  }
 }
 
 async function fetchProfile (): Promise<void> {
@@ -195,30 +192,35 @@ async function fetchProfile (): Promise<void> {
   }
 }
 
-async function save (): Promise<void> {
-  saving.value = true
-  errorMessage.value = ''
-  try {
-    const response = await UserService.updateMe({
-      firstName: form.firstName,
-      lastName: form.lastName,
-      // The API validates phoneNumber as exactly 10 characters, so an empty field is omitted
-      // rather than sent as '' — omitted means unchanged, which is what someone who never
-      // filled it in expects.
-      phoneNumber: form.phoneNumber || undefined,
-      phoneNumberExtend: form.phoneNumberExtend || null
-    })
-    hydrate(response.data)
+async function useUpdate (values: TProfileDetailFormValues): Promise<void> {
+  const response = await UserService.updateMe({
+    firstName: values.firstName,
+    lastName: values.lastName,
+    // The API validates phoneNumber as exactly 10 characters, so an empty field is omitted
+    // rather than sent as '' — omitted means unchanged, which is what someone who never
+    // filled it in expects.
+    phoneNumber: values.phoneNumber || undefined,
+    phoneNumberExtend: values.phoneNumberExtend || null
+  })
+  hydrate(response.data)
 
-    // Keep the drawer's account card in step without a reload.
-    authStore.updateUser({ firstName: response.data.firstName ?? '', lastName: response.data.lastName ?? '' })
+  // Keep the drawer's account card in step without a reload.
+  authStore.updateUser({ firstName: response.data.firstName ?? '', lastName: response.data.lastName ?? '' })
 
-    toast.success(t('profile.savedToast'))
-  } catch (error) {
-    errorMessage.value = mapError(error).message
-  } finally {
-    saving.value = false
+  toast.success(t('profile.savedToast'))
+}
+
+function onSubmit (event: FormSubmitEvent): void {
+  if (!event.valid) {
+    scrollToFirstError(event.errors)
+    return
   }
+  errorMessage.value = ''
+  handleLoading(async (): Promise<void> => {
+    await useUpdate(event.values as TProfileDetailFormValues)
+  }, { loadingUnit: saving }, (error: unknown): void => {
+    errorMessage.value = mapError(error).message
+  })
 }
 
 onMounted((): void => {
