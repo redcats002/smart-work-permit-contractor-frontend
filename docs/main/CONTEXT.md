@@ -101,7 +101,7 @@ files a row in its own `GAPS.md` under `api-adds` / `open` — it does not inven
 `UNAUTHENTICATED`, `FORBIDDEN_ROLE`, `USER_ALREADY_EXISTS`,
 `FILE_TYPE_NOT_ALLOWED`, `FILE_TOO_LARGE`, `UPLOAD_FOLDER_NOT_ALLOWED`, `STORAGE_UNAVAILABLE`,
 `ACCOUNT_DEACTIVATED`, `LAST_SAFETY_OFFICER`, `PERMIT_POSITION_REQUIRED`,
-`CLOSURE_REASON_REQUIRED`.
+`CLOSURE_REASON_REQUIRED`, `PERMIT_UPDATE_EMPTY`.
 
 > `FILE_*` / `UPLOAD_*` / `STORAGE_UNAVAILABLE` were added by the backend on 2026-08-19 (upload
 > hardening, `REVIEW-2026-08-19.md` S1–S3/C1). `ACCOUNT_DEACTIVATED` and `LAST_SAFETY_OFFICER` were
@@ -110,7 +110,7 @@ files a row in its own `GAPS.md` under `api-adds` / `open` — it does not inven
 > request. `PERMIT_POSITION_REQUIRED` was added 2026-08-24 with the facility plan + permit position
 > feature (`feat-023`): once an active facility plan exists, `POST /permits/:id/submit` refuses a
 > permit with no `planId`/`planX`/`planY` set. All are declared with EN/TH strings in both apps —
-> `check-contract-sync.mjs` reports **28 backend error codes all declared in both frontends**.
+> `check-contract-sync.mjs` reports **30 backend error codes all declared in both frontends**.
 > `RATE_LIMITED` is unchanged but is now emitted by the four public auth routes as well as the QR
 > scan route.
 
