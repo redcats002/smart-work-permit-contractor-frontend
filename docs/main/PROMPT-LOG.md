@@ -756,6 +756,33 @@ locks every contractor out of submitting.** The two halves ship together or not 
 - **Expiry must never START a Fire Watch.** A Fire Watch is a person standing there. A sweep that
   wrote `fireMonitorStartedAt` unattended would put a safety control into an append-only audit log
   that no human performed — a false safety record is worse than a missing one.
+- **Closure is the Foreman's act; an officer close is an exception and must say why.** The crew
+  know when the work is done and the area is cold. `safety_officer` was always authorised to close
+  any permit but had no UI, which turned load-bearing once `FIRE_MONITOR` was made non-expiring:
+  `close` is the only exit from that state, so a crew that went home, a disabled contractor account
+  or a lost phone stranded the permit permanently, leaving a manual database `UPDATE` — which
+  bypasses the audit chain — as the only recourse. An officer must now supply a `reason`
+  (`403 CLOSURE_REASON_REQUIRED`), recorded on the `PERMIT_CLOSED` audit row so the exception stays
+  distinguishable forever after. A contractor closing their own permit owes none. The UI is
+  deliberately subordinate to Approve/Reject — a backstop, not a parallel workflow.
+- **Facility plans are raster images only.** PNG/JPEG/WebP; PDF and HEIC are refused at the plan
+  upload route even though the generic upload route accepts them, because the map draws the plan
+  with a plain `<img>`. A bad version is permanent (versions are immutable and retained forever)
+  and is only discovered after activation, at which point every contractor is locked out of
+  submitting. **A photo of a printed plan is keystoned and cropping does not fix it** — a pin lands
+  where you clicked and still not where you meant, error growing toward the far edge, invisibly. The
+  upload flow therefore carries a skippable four-corner perspective correction.
+- **Never activate a facility plan until the contractor position picker has shipped.** Restated
+  because it is now imminent rather than hypothetical: `submit.service.ts` throws
+  `PERMIT_POSITION_REQUIRED` the moment any plan is active.
+- **A demo affordance must never become a second, weaker way in.** The trial auto-login buttons are
+  hidden behind `VITE_TRIAL_LOGIN` (default off), take their password from
+  `VITE_TRIAL_LOGIN_PASSWORD` (never hardcoded, nothing rendered if absent), put no password in any
+  committed file, and call the same `login()` provider the form calls — no client-minted tokens, no
+  skipped guards, no auth-store bypass.
+- **There is no `admin` role.** `UserRole` is exactly `contractor | safety_officer | inspector`. A
+  request naming an admin is a request for a role that does not exist; say so rather than inventing
+  one.
 
 ---
 
