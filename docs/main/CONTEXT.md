@@ -132,7 +132,11 @@ These are stated once in `docs/main/dev-handoff/00-SHARED-CONTEXT.md` and enforc
 always authoritative and the client must surface the server's verdict when the two disagree.
 
 - Status machine: `DRAFT → PENDING → REJECTED | ACTIVE → (hot only) FIRE_MONITOR → CLOSED`; `EXPIRED`
-  from `PENDING`/`ACTIVE` when the work window lapses.
+  from `PENDING`/`ACTIVE` when the work window lapses. **One edge runs backwards**: a contractor
+  editing their own `PENDING` permit returns it to `DRAFT` in the same transaction as the edit
+  (2026-08-31, `PROMPT-LOG.md` session 11). It is not an in-place edit — an officer must never be
+  able to approve a version they did not read, so the permit leaves the review queue rather than
+  mutating inside it, and the contractor resubmits.
 - Safety ranges: LEL `0%` (hot, confined; skippable only when `outdoorWork: true`), O₂ `19.5–23.5%`
   (hot, confined), CO `≤ 50 ppm` (confined), wind `≤ 25 km/h` (heights). No override.
 - Closure blocked (`403`) while any Confined Space entrant is checked in, or while the Hot Work
@@ -144,8 +148,11 @@ always authoritative and the client must surface the server's verdict when the t
   `planId`/`planX`/`planY` (0–100, percentages of the plan frame) on a `Permit`. The **contractor**
   sets the position while the permit is DRAFT or REJECTED (the same editable window every other
   field gets — REJECTED stays in scope so reject-with-reason can fix a wrong pin); it is **frozen
-  from PENDING onward** for everyone, officers included — no route accepts a position change
-  outside that window. `planId` records the plan VERSION a pin was placed on, not necessarily the
+  while PENDING and beyond** for everyone, officers included — no route accepts a position change
+  outside that window. Note this reads differently since the `PENDING → DRAFT` edge above: a
+  permit can now *leave* PENDING backwards, and its position becomes editable again because it is
+  DRAFT again. The rule is unchanged — position is editable exactly when the permit is DRAFT or
+  REJECTED — but "frozen from PENDING onward" is no longer a one-way description. `planId` records the plan VERSION a pin was placed on, not necessarily the
   active one, so a client can detect **stale-plan** (`planId` ≠ the active plan's id) instead of
   silently mis-plotting it; **unplaced** means no position at all. Position is required to submit
   **only once an active plan exists** — refused with `400 PERMIT_POSITION_REQUIRED` (§2);

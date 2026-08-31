@@ -44,6 +44,25 @@ change this repo cannot make. The sibling Safety/Inspector app made the same mig
 | K | **`safetyReading` has no `so2` field.** The PATCH body declares `{ lel, o2, co, wind, height }` only, while `IPermitSafetyReading` (and `SAFETY_RANGES.requiredByType.confined`) carry SO2, and the design shows an SO2 card on every Confined Space permit (design line ~273). Unknown keys are stripped, so an SO2 value 200s and vanishes. | `PMT-006` renders and validates the SO2 input but `useWizard.toWireReading()` strips it before the PATCH, so the app never claims to have stored it. Harmless to the verdict — SO2 is `blocking: false` (advisory guidance only, per `docs/modules/permit/context.md`), so it can never change a pass/fail. Needed: `so2` on the `safetyReading` PATCH body and on the `SafetyReading` model, echoed back in `latestSafetyReading`. |
 | I | **Entrant NAMES are not readable by the permit owner.** (The count is served — row A closed it as `entrantCount`.) `403 ENTRANTS_STILL_INSIDE` carries them only inside the backend-authored English `message`, which clients must never render. `GET /permits/:id/entrants` exists but is inspector-facing, and the public `GET /permits/qr/:token` needs an issued token. | `PMT-011`'s blocked banner can say *that* entrants are still inside and what to do about it, and how many (from the payload's `entrantCount`), but **not** the names the design shows (design line 590). Needed: entrant names on the contractor-readable detail payload, or structured `details` on the 403 body. |
 
+## Closed by the API on 2026-08-31 (wayfinder 012) — new capability, not a prior gap row
+
+Regenerated `openapi.json` in all three repos (description text only — no route/payload/`errorCode`
+change; still the same 28 codes); `node scripts/check-contract-sync.mjs` green.
+
+**Editing a PENDING permit now returns it to DRAFT.** `PATCH /api/v1/permits/:id` is no longer
+403 `PERMIT_NOT_EDITABLE` for your own PENDING permit — the edit is admitted and, in the same
+transaction, the permit's status atomically flips back to `DRAFT` alongside the field changes.
+This is deliberately **not** an in-place edit that leaves the permit PENDING: an officer must never
+be able to approve a version they did not read. You must resubmit (`POST /:id/submit`) afterward
+like any other DRAFT permit — `PERMIT_POSITION_REQUIRED` still gates that resubmit exactly as it
+does for a fresh DRAFT. `position` is accepted in this same PATCH too, because the permit is DRAFT
+by the time the write lands. The withdrawal writes a new `PERMIT_WITHDRAWN_FOR_EDIT` audit row and
+broadcasts a notification to `safety_officer`/`inspector` (the same two roles submit notifies).
+
+**Frontend-facing implication (not wired by this pass, stays open):** before this app starts an
+edit on a PENDING permit, it must warn the contractor that editing withdraws the permit and
+requires resubmission — **before** they start editing, not after they save.
+
 ## Closed by the API on 2026-08-24 (feat-023) — new capability, not a prior gap row
 
 Regenerated `openapi.json` in all three repos; `node scripts/check-contract-sync.mjs` green (28

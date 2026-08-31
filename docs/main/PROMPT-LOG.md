@@ -634,6 +634,69 @@ and no regeneration was needed.
 
 ---
 
+## 2026-08-31 — Session 11: four product rulings from the field-report grilling
+
+Owner decisions on the four questions that were blocking the field-report map. Full reasoning
+lives on each ticket in `docs/wayfinder/tickets/`; the load-bearing halves are here because they
+constrain code in more than one repo.
+
+### A worker stays a name string. No `worker` entity.
+
+The permit form's worker field becomes an AutoComplete over the certificate list, and **free text
+stays legal** — a name matching no certificate is still accepted there, because certificate gating
+belongs at submit, not in the middle of the wizard.
+
+A real `worker` table was declined on cost, not merit: migration, backfill of every existing name
+string, and every worker-touching route. **The consequence is accepted, not overlooked:** the join
+between `Certificate.workerName` and a permit worker's `workerName` is raw text, so two spellings
+are two people and a typo yields a worker whose certificate lookup finds nothing — reading as
+uncertified. The AutoComplete makes the certified spelling the path of least resistance. It does
+not close the hole.
+
+### Toast only where the outcome is not already on screen
+
+Toast on create, submit, approve, reject, close, a scan registering, a certificate created from the
+permit form. **Not** on a list that just re-rendered with the change visible in it. A toast on every
+action trains people to dismiss toasts, which is how the one that matters gets missed.
+
+**Validation failures stay inline, beside the field.** An out-of-range gas reading does not belong
+in a corner that vanishes after four seconds. This is the rule most likely to be broken while
+implementing "toast every action".
+
+**Offline says queued, never saved.** The Inspector replays a local queue; telling them a gas
+reading is recorded when it is sitting in a browser database is a lie with safety consequences.
+
+### Inspector scan history is on-device and read-only
+
+IndexedDB, in a store **separate from `smart-work-permit-offline-queue`** — that database must not
+grow a convenience feature.
+
+**A scan proves the inspector is physically at the permit; a history entry proves only that they
+were there once.** So an entry opens live status, read-only, and every state-changing action behind
+it — entrant check-in and check-out, gas log entry — still requires a fresh scan. Do not deep-link
+a history entry into the entrant register, however much shorter that path is.
+
+### The facility plan is a JPEG/PNG raster, and the upload flow does not exist
+
+Investigation found the risk map's placeholder is correct behaviour: **no plan version was ever
+activated, and no UI exists to activate one.** `FacilityPlan.provider.ts` declares `upload()`,
+`create()` and `activate()`; none has a caller anywhere in either frontend.
+
+The asset is a scan or clean export, so no rasteriser and no PDF renderer enters an app that bans
+third-party runtime requests. But the server accepts PDF and HEIC while the map draws with a plain
+`<img>` — **a PDF uploads successfully and then renders as a broken image**, failing silently after
+an officer believes the plan is installed. Narrowing the accepted types for the `facility-plans`
+prefix server-side is the honest fix.
+
+**The constraint that orders the work:** `submit.service.ts` throws `PERMIT_POSITION_REQUIRED` once
+an active plan exists, and the contractor app has no position picker — `planId`/`planX`/`planY`
+appear once in that repo, in a comment. **Activating the first plan without shipping the picker
+locks every contractor out of submitting.** The two halves ship together or not at all.
+
+**Applies to:** api, safety, contractor.
+
+---
+
 ## Standing rulings — do not re-decide these
 
 - **Never render the backend's `message` field.** Clients localize off `errorCode` (EN + TH). This
@@ -660,6 +723,11 @@ and no regeneration was needed.
 - **`facility-plans` is a server-owned upload prefix.** It is in `UPLOAD_ALLOWED_SUBFOLDERS` and NOT
   in `UPLOAD_CLIENT_SUBFOLDERS`, and `UploadService` re-checks it at runtime because the schema alone
   does not hold. Never widen the generic upload route to reach it.
+- **A history entry is not a scan.** A QR scan proves the inspector is at the permit. Anything
+  reached from a list, a link or a cached entry opens read-only; state-changing field actions
+  require a fresh scan. Never soften this for one fewer tap.
+- **Never activate a facility plan before the contractor position picker ships.** The submit route
+  refuses a positionless permit once a plan is active, and the picker does not exist yet.
 - **The product is `e-safework`, lowercase.** Only the brand forms were renamed; every
   lowercase-hyphen `smart-work-permit-*` token is a repo, a remote, a database, a bucket or a
   hostname and stays as it is. A remaining `smart-work-permit-` is correct; a remaining

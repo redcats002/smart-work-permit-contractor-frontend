@@ -1134,3 +1134,96 @@ the expansion appears once, beneath the wordmark, where a subtitle belongs.
 
 `bun run typecheck` PASS, `bun run lint` PASS, `bun run test:run` 460 pass / 50 files.
 `node scripts/check-contract-sync.mjs` OK from the workspace root.
+
+---
+
+## 2026-08-31 — wayfinder 001: stop sending blank/partial JSA rows on permit save
+
+Field report item 4: `PATCH /api/v1/permits/:id` 400'd on `/jsaSteps/3/step`, `/hazard`,
+`/control` — "Expected string length greater or equal to 1". The offending row was `{ phase:
+'pre', step: '', hazard: '', control: '', sortOrder: 1 }`, the "add row" button's own placeholder,
+sent wholesale by the wizard's debounced autosave (`useWizard.doPersist`) because `jsaSteps` is
+replaced WHOLESALE by that PATCH and nothing filtered what went out over the wire. Reported as
+happening "constantly" — every time a contractor clicked "add row" and paused before typing, the
+next 1.5s autosave tick 400'd.
+
+**The server's `minLength: 1` was not touched.** Two rules were added at the client instead, and
+the ticket's own instruction was to make sure they jointly guarantee the invariant:
+
+- A row where `step`, `hazard` **and** `control` are all blank is dropped from what actually gets
+  PATCHed — it was never real data, just the placeholder. `sortOrder` is recomputed per phase over
+  the survivors so no gap opens up. Applies on both the wizard's own autosave/submit path
+  (`useWizard.ts`) and the duplicate-permit path (`useDuplicatePermit.ts`) — the latter is
+  defensive only, since a duplicated permit's source rows already passed the server's own
+  `minLength` on their original save.
+- A row that is **partially** filled (started, not finished) is a different case: `Step5JsaSchema`
+  blocks Next/Submit on it with an inline error next to the empty field(s) (`InputText`'s
+  `invalid` prop, matching the pattern Step 3's atmosphere cards already use) — never a toast, per
+  the standing "validation failures stay inline" ruling. It is never silently dropped from
+  `formData`, so the user's half-typed row survives navigating away and back.
+- **The subtlety that needed a second pass** (caught before commit, not after): `jsaSteps` being a
+  wholesale-replace field means a partial row must not just be *filtered out* of the outgoing
+  array — on a replace endpoint, sending a smaller array still overwrites the permit's persisted
+  `jsaSteps`, deleting that row's already-complete siblings too. `doPersist` instead checks
+  `hasPartialJsaRow` and, while true, omits the `jsaSteps` key from that PATCH entirely rather than
+  sending a shrunken one. The next PATCH after the user finishes or deletes the row sends the real
+  list. Covered by a dedicated regression test (`useWizard.persistence.test.ts`) that persists two
+  complete rows, then edits one back to partial, and asserts the following PATCH carries no
+  `jsaSteps` key at all rather than a one-row array.
+
+**The `sortOrder` suspicion (ticket's explicit ask) was investigated and is a false alarm — the
+numbering was already correct, not fixed.** `Step5Jsa.vue`'s `withSortOrder` numbers rows 0, 1,
+2, … **per phase**, resetting the counter for each of `pre`/`process`/`post` independently. The
+field report's payload — every row at `sortOrder: 0` except the blank one at `sortOrder: 1` — is
+exactly what that produces for one row per phase (each first-in-its-phase, hence `0`) plus a
+second `pre` row (hence `1`); the error path `/jsaSteps/3/…` confirms a four-row list, consistent
+with three phases-worth of rows plus the blank one. Checked against the only consumer that reads
+`sortOrder` — the safety app's `groupJsaByPhase` (`smart-work-permit-frontend/src/utils/
+PermitNormalize.ts`) sorts the flat `jsaSteps[]` by `sortOrder` **before** bucketing by phase;
+since `Array.prototype.sort` is stable and only relative order within each phase's own bucket
+ends up mattering, per-phase numbering renders correctly there regardless of cross-phase ties.
+Left unchanged.
+
+**Deviations from the ticket:**
+- The ticket's "Done when" bullet reads "in both frontends". The safety app has no write path for
+  `jsaSteps` at all — `PermitNormalize.ts` only reads it — so that bullet is unsatisfiable as
+  literally written; this repo owns the entire fix, confirmed with the session that assigned this
+  ticket before starting.
+- `Step6Review.vue`'s JSA count (`{count} defined`) reads `formData.jsaSteps.length` — the raw,
+  unfiltered array — so a draft holding one blank row shows one more than what will actually be
+  submitted. Out of this ticket's scope (display-only, not a data-safety issue); noted for whoever
+  picks up the review step next.
+- Not implemented, intentionally: if literally every row is blanked back out simultaneously (every
+  field of every row cleared), `hasPartialJsaRow` is false (no row is partial) and the wholesale
+  PATCH legitimately sends `jsaSteps: []`, deleting the persisted list. This is the one case where
+  emptying `jsaSteps` on purpose and accidentally look identical on the wire, and matches what an
+  explicit "clear all JSA steps" action would need to do anyway; flagging rather than guarding
+  against it because guarding would mean inventing a "was this deliberate" heuristic the ticket
+  never asked for.
+
+Files changed: `src/pages/permit/pages/create/schema/Step5Jsa.schema.ts` (`jsaRowBlank`,
+`hasPartialJsaRow`, `toSubmittableJsaSteps`, `Step5JsaSchema` now only blocks a partial row),
+`src/pages/permit/pages/create/composables/useWizard.ts` (`doPersist`'s omit-vs-filter branch),
+`src/pages/permit/pages/create/composables/useDuplicatePermit.ts` (`toWireJsaSteps` filters via
+the same helper), `src/pages/permit/pages/create/components/steps/Step5Jsa.vue` (inline
+`invalid` highlighting scoped to partial rows only, blank rows no longer flagged). Tests:
+`src/tests/pages/permit/create/schema/Step5Jsa.schema.test.ts`,
+`src/tests/pages/permit/create/composables/useWizard.persistence.test.ts`,
+`src/tests/pages/permit/create/PermitCreatePage.jsaSteps.test.ts` (new).
+
+```
+$ bun run typecheck
+$ vue-tsc --noEmit -p tsconfig.app.json
+(clean — no output)
+
+$ bun run lint
+$ eslint .
+/…/src/tests/composables/useNotificationPolling.test.ts
+  27:41  warning  There is more than one component in this file  vue/one-component-per-file
+  39:15  warning  There is more than one component in this file  vue/one-component-per-file
+✖ 2 problems (0 errors, 2 warnings)   ← pre-existing, unrelated to this change
+
+$ bun run test:run
+ Test Files  51 passed (51)
+      Tests  474 passed (474)
+```

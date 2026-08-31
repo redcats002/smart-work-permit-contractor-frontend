@@ -99,7 +99,7 @@ Role column below: **✅** allowed for `contractor`, **⛔** 403 `FORBIDDEN_ROLE
 | GET | `/` | \* | Paginated. **Scoped to your own permits automatically** — the `contractorId` filter is ignored for contractor accounts. Filters: `status` (**multi-value**, see §4), `type`, `dateFrom`, `dateTo`; `search` matches id/title/location/foreman. Every row carries the live `entrantCount` / `fireWatch` fields |
 | POST | `/` | ✅ | `{type, title, location, foreman, workDate, workTimeStart, workTimeEnd, outdoorWork?}` → `DRAFT`, id `WP-{HOT\|CONF\|HT}-{YYYYMMDD}-{NNN}` |
 | GET | `/:id` | \* | Full detail, including live `entrantCount` / `fireWatch`. 403 on someone else's permit |
-| PATCH | `/:id` | ✅ | The wizard's save. All fields optional — see §4 |
+| PATCH | `/:id` | ✅ | The wizard's save. All fields optional — see §4. Works on your own `DRAFT`/`REJECTED` permit, and — **since 2026-08-31** — your own `PENDING` permit too: editing a `PENDING` permit atomically withdraws it back to `DRAFT` in the same request (it is never an in-place edit that leaves it `PENDING`), so you must resubmit afterward |
 | POST | `/:id/submit` | ✅ | → `PENDING`. This is where server-side validation bites — see §5 |
 | POST | `/:id/mark-complete` | ✅ | **Hot work only** → `FIRE_MONITOR`, starts the 30-minute fire watch. 403 `NOT_HOT_WORK`, 403 `PERMIT_NOT_ACTIVE` |
 | POST | `/:id/approve` | ⛔ | safety_officer |
@@ -160,7 +160,11 @@ One endpoint backs every step. All fields optional; send only what the step chan
 }
 ```
 
-403 `PERMIT_NOT_EDITABLE` once the permit leaves `DRAFT`.
+Allowed while the permit is `DRAFT`, `REJECTED`, or (since 2026-08-31, wayfinder 012) your own
+`PENDING` permit — editing a `PENDING` permit atomically returns it to `DRAFT` in the same request,
+so you must resubmit afterward. `PERMIT_POSITION_REQUIRED` still gates that resubmit exactly as it
+would for a fresh `DRAFT`. 403 `PERMIT_NOT_EDITABLE` once the permit is `ACTIVE`, `FIRE_MONITOR`,
+`CLOSED`, or `EXPIRED`.
 
 The permit detail response shape (what you render):
 
