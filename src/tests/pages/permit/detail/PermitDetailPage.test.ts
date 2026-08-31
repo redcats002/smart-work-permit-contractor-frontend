@@ -160,6 +160,47 @@ describe('PermitDetailPage (PMT-010)', () => {
     expect(action.text()).toContain('Edit Permit')
   })
 
+  it('gates a PENDING permit\'s edit action behind a warning shown BEFORE the resume route opens (wayfinder 012)', async () => {
+    vi.spyOn(PermitProvider.prototype, 'detail').mockResolvedValue(detailResponse(buildPermit({ status: 'PENDING' })))
+    vi.spyOn(PermitProvider.prototype, 'audit').mockResolvedValue(auditResponse([]))
+
+    const router = buildRouter()
+    await router.push(`/permits/${PERMIT_ID}`)
+    await router.isReady()
+
+    const wrapper = mount(PermitDetailPage, {
+      global: {
+        plugins: [i18n, router, [PrimeVue, { unstyled: true }]],
+        // PrimeVue's Dialog teleports its container to <body>; stubbing Teleport keeps the modal
+        // body inside the wrapper so it can be queried at all.
+        stubs: { teleport: true }
+      }
+    })
+    await flushPromises()
+
+    const banner = wrapper.find('[data-test="banner-pending"]')
+    expect(banner.exists()).toBe(true)
+    expect(banner.text()).toContain('Pending Review')
+
+    // Clicking the banner's edit action must NOT navigate yet — the warning has to land first.
+    await banner.find('button').trigger('click')
+    expect(router.currentRoute.value.name).toBe('PermitDetailPage')
+    expect(wrapper.find('[data-test="pending-edit-warning-body"]').text())
+      .toContain('withdraws it from review')
+
+    // Cancelling stays put.
+    await wrapper.find('[data-test="pending-edit-cancel"]').trigger('click')
+    await flushPromises()
+    expect(router.currentRoute.value.name).toBe('PermitDetailPage')
+
+    // Re-open and confirm — only now does the resume route open.
+    await wrapper.find('[data-test="banner-pending"] button').trigger('click')
+    await wrapper.find('[data-test="pending-edit-confirm"]').trigger('click')
+    await flushPromises()
+    expect(router.currentRoute.value.name).toBe('PermitEditPage')
+    expect(router.currentRoute.value.params.id).toBe(PERMIT_ID)
+  })
+
   it('renders the REJECTED banner with the reason and the rejecting officer from the audit trail', async () => {
     vi.spyOn(PermitProvider.prototype, 'detail').mockResolvedValue(detailResponse(buildPermit({
       status: 'REJECTED',

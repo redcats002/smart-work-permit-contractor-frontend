@@ -465,6 +465,11 @@ const permit = {
         meta: 'Rejected by: {who} · Immutable — logged to audit trail',
         action: 'Duplicate & Edit'
       },
+      pending: {
+        title: 'Pending Review',
+        description: 'Awaiting Safety Officer review. Editing now withdraws it from review and returns it to Draft — you will need to submit it again.',
+        action: 'Edit Permit'
+      },
       submitted: {
         title: 'Permit submitted successfully',
         description: 'The Safety Officer has been notified. You will receive your QR code once the permit is approved.'
@@ -499,6 +504,7 @@ const permit = {
         PERMIT_SUBMITTED: 'Permit submitted',
         PERMIT_APPROVED: 'Permit approved',
         PERMIT_REJECTED: 'Permit rejected',
+        PERMIT_WITHDRAWN_FOR_EDIT: 'Withdrawn from review for editing — returned to Draft',
         PERMIT_MARKED_COMPLETE: 'Work marked complete — Fire Watch started',
         PERMIT_CLOSED: 'Permit closed',
         CERT_BLOCKED: 'Entry blocked — certificate invalid'
@@ -540,6 +546,15 @@ const permit = {
         fireWatchDetail: 'The 30-minute Fire Watch is server-side. {remaining} remaining.',
         generic: 'Closure was refused'
       }
+    },
+    pendingEditWarning: {
+      // wayfinder 012 — the contractor half. The warning fires BEFORE the resume route is opened,
+      // because opening it (useResumePermit's empty-body PATCH) is itself what withdraws the
+      // permit server-side — never after the wizard's own save handler.
+      title: 'Edit this pending permit?',
+      body: 'This permit is awaiting Safety Officer review. Editing it now withdraws it from review and returns it to Draft. You will need to submit it again once you finish editing.',
+      confirm: 'Continue Editing',
+      cancel: 'Cancel'
     },
     markComplete: {
       // Design lines 549-559. The design's dialog also promises a GPS-tagged photo check after the

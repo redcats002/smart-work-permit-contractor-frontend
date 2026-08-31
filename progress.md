@@ -1496,3 +1496,83 @@ $ bun run test:run
 $ ./init.sh
 typecheck PASS · lint PASS · tests PASS (56 files / 503 tests) · smoke PASS (15/15 live contract checks)
 ```
+
+## 2026-08-31 — wayfinder 012, contractor half: warn before editing a PENDING permit
+
+Backend already ships the atomic `PENDING → DRAFT` withdrawal on `PATCH /permits/:id`
+(`../docs/wayfinder/tickets/012-pending-edit-returns-to-draft.md`) — this pass is only the
+contractor-app warning, gated at the entry point, per the ticket's explicit ordering requirement:
+the contractor must be told **before** they start editing, not after they save.
+
+**Where the entry point actually is, and why it matters.** The only PENDING-permit edit path in
+this app is `PermitDetailPage`'s status banner — `PermitCard.vue` (the list) only links to the
+detail page, it never links to edit directly. Before this pass `PermitStatusBanner`'s `variant`
+computed returned `null` for a plain PENDING permit (no `justSubmitted` query), so the banner did
+not render at all and there was no edit affordance to gate. **Also load-bearing:**
+`useResumePermit.fetchEditablePermit` (used by `PermitEditPage` on mount, PMT-014) confirms
+editability with a real *empty-body* `PATCH /permits/:id` — that used to be a true no-op for a
+DRAFT/REJECTED permit, but for a PENDING permit it is now the exact call that performs the
+withdrawal. So merely **opening** `/permits/:id/edit` on a PENDING permit already withdraws it —
+the warning cannot live inside the wizard or on the edit page itself, it has to intercept the
+navigation before that route ever mounts. This is why the gate lives in `PermitStatusBanner`, not
+in `PermitEditPage` or `useWizard`.
+
+**What changed.**
+
+- `PermitStatusBanner.vue` — new `pending` variant (amber `status-pending-*` triple, matching the
+  `PENDING` list badge, not a new color). `editRouteName` now resolves PENDING to `PermitEditPage`
+  as well as DRAFT. Clicking the action button no longer navigates directly when the variant is
+  `pending`: `onEditClick()` opens a local `showPendingWarning` ref instead, and only
+  `onConfirmPendingEdit()` (wired to the modal's `@confirm`) pushes the route. DRAFT/REJECTED are
+  unchanged — they still navigate on the first click, since editing them has no withdrawal
+  consequence to warn about.
+- New `src/pages/permit/pages/detail/components/PendingEditWarningModal.vue` — a `BaseModal`
+  confirm/cancel dialog, same shape as `MarkCompleteConfirmModal`/`ClosureChecklistModal`. Purely
+  local UI state (no API call of its own); "Continue Editing" emits `confirm`, "Cancel" just closes.
+- `PermitAuditTimeline.vue` gained a dot class and `permit.detail.audit.action.PERMIT_WITHDRAWN_FOR_EDIT`
+  label (EN+TH) for the new audit action the backend writes on withdrawal — it already rendered
+  gracefully as the raw action code without this (the component falls back to the code string for
+  an unmapped `te()` key), but an unlocalized machine code in the timeline reads like a bug.
+- `src/locales/{en,th}/permit.ts` — `permit.detail.banner.pending.{title,description,action}` and
+  `permit.detail.pendingEditWarning.{title,body,confirm,cancel}`, both languages.
+- `docs/api/GAPS.md` — the "frontend-facing implication, not wired" note under the wayfinder 012
+  section now says what actually wired it and where.
+
+**What did NOT need to change, and why.** The wizard itself (`useWizard`, `Step7Position.vue`,
+`Step7Position.schema.ts`) has no client-side status gate on the position field at all —
+editability there was already fully deferred to the server (PROMPT-LOG's standing "no client rule
+pre-empts the server" ruling), and the Position step's visibility depends only on whether an active
+facility plan exists (`usePlanPosition.required`), never on the permit's prior status. So once the
+backend hands back a DRAFT permit with position cleared, `PermitEditPage`/`useWizard` reproduce
+exactly the same "position step reappears, `PERMIT_POSITION_REQUIRED` gates Submit again" behavior
+a fresh DRAFT already gets — no new code path, just a test proving the existing one covers this
+case. The officer-queue filtering half of the ticket is the Safety app's repo, out of scope here.
+
+**Tests (new, 2):**
+- `PermitDetailPage.test.ts` — "gates a PENDING permit's edit action behind a warning shown BEFORE
+  the resume route opens": clicking the pending banner's action opens the modal without navigating;
+  Cancel stays on the detail route; Confirm navigates to `PermitEditPage` with the right `id`.
+- `PermitEditPage.test.ts` — "resuming a withdrawn PENDING permit (now DRAFT) re-includes the
+  Position step once an active plan exists": mocks the resume `PATCH` returning a DRAFT permit with
+  no position and `FacilityPlanProvider.getActive` returning an active plan, asserts the wizard's
+  `steps` (fed to `StepperHeader`) include the `position` key.
+
+```
+$ bunx eslint <every file touched above>
+(clean — no errors, no warnings)
+
+$ bun run typecheck
+$ vue-tsc --noEmit -p tsconfig.app.json
+(clean — no output)
+
+$ bun run test:run
+ Test Files  56 passed (56)
+      Tests  505 passed (505)
+```
+
+Files changed: `src/pages/permit/pages/detail/components/PermitStatusBanner.vue`,
+`src/pages/permit/pages/detail/components/PendingEditWarningModal.vue` (new),
+`src/pages/permit/pages/detail/components/PermitAuditTimeline.vue`,
+`src/locales/{en,th}/permit.ts`, `docs/api/GAPS.md`,
+`src/tests/pages/permit/detail/PermitDetailPage.test.ts`,
+`src/tests/pages/permit/create/PermitEditPage.test.ts`.

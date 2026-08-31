@@ -59,9 +59,12 @@ does for a fresh DRAFT. `position` is accepted in this same PATCH too, because t
 by the time the write lands. The withdrawal writes a new `PERMIT_WITHDRAWN_FOR_EDIT` audit row and
 broadcasts a notification to `safety_officer`/`inspector` (the same two roles submit notifies).
 
-**Frontend-facing implication (not wired by this pass, stays open):** before this app starts an
-edit on a PENDING permit, it must warn the contractor that editing withdraws the permit and
-requires resubmission — **before** they start editing, not after they save.
+**Frontend-facing implication — wired 2026-08-31 (wayfinder 012, contractor half; see
+`progress.md`).** `PermitStatusBanner` now shows a `pending` variant with its own "Edit Permit"
+action; clicking it opens `PendingEditWarningModal` (the withdraw/resubmit warning) BEFORE
+`PermitEditPage` ever opens — opening that route is itself what performs the withdrawal, via
+`useResumePermit`'s existing empty-body `PATCH`. Only "Continue Editing" navigates to the resume
+route; "Cancel" leaves the permit untouched and still PENDING.
 
 ## Closed by the API on 2026-08-24 (feat-023) — new capability, not a prior gap row
 

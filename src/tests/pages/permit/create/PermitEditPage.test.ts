@@ -124,6 +124,42 @@ describe('PermitEditPage', () => {
     expect(stepper.props('maxUnlockedStepIndex')).toBe(2)
   })
 
+  it('resuming a withdrawn PENDING permit (now DRAFT) re-includes the Position step once an active plan exists (wayfinder 012)', async () => {
+    // The backend now performs PENDING -> DRAFT withdrawal atomically INSIDE `PATCH /permits/:id`
+    // (wayfinder 012). `useResumePermit.fetchEditablePermit` is that same empty-body PATCH, so this
+    // mock stands in for "the permit that comes back is already DRAFT, with no position set" — the
+    // exact server-side round trip the ticket calls out ("position becomes editable again").
+    vi.spyOn(FacilityPlanProvider.prototype, 'getActive').mockResolvedValue({
+      message: 'success',
+      data: {
+        id: 7,
+        fileRef: 'facility-plans/v1.png',
+        uploadedById: 'u-9',
+        uploadedBy: null,
+        createdAt: '2026-08-01T00:00:00.000Z',
+        activatedAt: '2026-08-01T00:00:00.000Z',
+        active: true
+      }
+    } as never)
+    vi.spyOn(PermitProvider.prototype, 'update').mockResolvedValue({
+      message: 'success',
+      data: { ...draftPermit(), status: 'DRAFT', planId: null, planX: null, planY: null }
+    } as never)
+
+    const router = buildRouter()
+    await router.push('/permits/WP-HT-20260820-001/edit')
+    await router.isReady()
+
+    const wrapper = mount(PermitEditPage, {
+      global: { plugins: [i18n, router, [PrimeVue, { unstyled: true }]] }
+    })
+    await flushPromises()
+
+    const stepper = wrapper.findComponent(StepperHeader)
+    const stepKeys = (stepper.props('steps') as Array<{ key: string }>).map((step: { key: string }): string => step.key)
+    expect(stepKeys).toContain('position')
+  })
+
   it('renders the server PERMIT_NOT_EDITABLE verdict instead of a broken wizard', async () => {
     vi.spyOn(PermitProvider.prototype, 'update').mockRejectedValue({
       code: 403, errorCode: EApiErrorCode.PERMIT_NOT_EDITABLE, message: 'backend english, never rendered'

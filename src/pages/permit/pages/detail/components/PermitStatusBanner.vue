@@ -36,19 +36,24 @@
           class="inline-flex h-10.5 cursor-pointer items-center justify-center rounded-lg bg-primary px-4.5 text-[13px]
             font-semibold whitespace-nowrap text-white hover:bg-primary-emphasis"
           type="button"
-          @click="router.push({ name: editRouteName, params: { id: permit.id } })">
+          @click="onEditClick()">
           {{ t(`permit.detail.banner.${variant}.action`) }}
         </button>
       </slot>
     </div>
   </div>
+
+  <PendingEditWarningModal
+    v-model="showPendingWarning"
+    @confirm="onConfirmPendingEdit()" />
 </template>
 
 <script setup lang="ts">
-import { computed, type ComputedRef } from 'vue'
+import { computed, ref, type ComputedRef, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import type { IPermitDetail } from '@/models/response/permit/PermitRes.model'
+import PendingEditWarningModal from '@/pages/permit/pages/detail/components/PendingEditWarningModal.vue'
 
 /**
  * Banner variants, design lines 434-458 plus the ACTIVE / CLOSED strips.
@@ -57,7 +62,7 @@ import type { IPermitDetail } from '@/models/response/permit/PermitRes.model'
  * submits, driven by a `?submitted=1` route query. Nothing sets that query today (the wizard's
  * Submit is still a stub, PMT-009), so the variant is reachable only by visiting the URL directly.
  */
-export type TPermitBannerVariant = 'draft' | 'rejected' | 'submitted' | 'active' | 'activeHot' | 'closed'
+export type TPermitBannerVariant = 'draft' | 'rejected' | 'pending' | 'submitted' | 'active' | 'activeHot' | 'closed'
 
 interface IProps {
   permit: IPermitDetail
@@ -98,6 +103,13 @@ const STYLE: Record<TPermitBannerVariant, IBannerStyle> = {
     title: 'text-status-rejected-fg-emphasis',
     body: 'text-status-rejected-fg'
   },
+  pending: {
+    glyph: '⏳',
+    wrapper: 'border-status-pending-border bg-status-pending-bg',
+    icon: 'bg-white text-status-pending-fg',
+    title: 'text-status-pending-fg',
+    body: 'text-status-pending-fg'
+  },
   submitted: {
     glyph: '✅',
     wrapper: 'border-status-active-border bg-status-active-bg',
@@ -132,7 +144,7 @@ const variant: ComputedRef<TPermitBannerVariant | null> = computed((): TPermitBa
   if (props.permit.status === 'DRAFT') return 'draft'
   if (props.permit.status === 'REJECTED') return 'rejected'
   if (props.permit.status === 'CLOSED') return 'closed'
-  if (props.permit.status === 'PENDING') return props.justSubmitted ? 'submitted' : null
+  if (props.permit.status === 'PENDING') return props.justSubmitted ? 'submitted' : 'pending'
   if (props.permit.status === 'ACTIVE') return props.permit.type === 'hot' ? 'activeHot' : 'active'
   return null
 })
@@ -154,17 +166,42 @@ const rejectedByLabel: ComputedRef<string> = computed((): string => props.reject
 /**
  * DRAFT's "Edit Permit" opens the resume route against THIS permit's own id; REJECTED's
  * "Duplicate & Edit" opens the duplicate route, which clones it into a new draft before opening
- * that (PMT-014). Both routes are registered in `Permit.router.ts` in the same change as this one
- * — on vue-router 5 an unregistered name throws at render and blanks the page, so this must never
- * ship ahead of the route.
+ * that (PMT-014). PENDING's "Edit Permit" opens the SAME resume route as DRAFT — wayfinder ticket
+ * 012's contractor half. All three routes are registered in `Permit.router.ts` in the same change
+ * as this one — on vue-router 5 an unregistered name throws at render and blanks the page, so this
+ * must never ship ahead of the route.
  */
 const editRouteName: ComputedRef<'PermitEditPage' | 'PermitDuplicatePage' | undefined> = computed(
   (): 'PermitEditPage' | 'PermitDuplicatePage' | undefined => {
-    if (variant.value === 'draft') return 'PermitEditPage'
+    if (variant.value === 'draft' || variant.value === 'pending') return 'PermitEditPage'
     if (variant.value === 'rejected') return 'PermitDuplicatePage'
     return undefined
   }
 )
+
+const showPendingWarning: Ref<boolean> = ref(false)
+
+/**
+ * wayfinder 012 — the warning must fire BEFORE the contractor starts editing a PENDING permit,
+ * never after. Opening `PermitEditPage` for a PENDING permit is itself what withdraws it from
+ * review (see `PendingEditWarningModal`'s own comment), so DRAFT/REJECTED navigate straight
+ * through while PENDING routes through the confirmation modal first.
+ */
+function onEditClick (): void {
+  if (variant.value === 'pending') {
+    showPendingWarning.value = true
+    return
+  }
+  if (editRouteName.value) {
+    router.push({ name: editRouteName.value, params: { id: props.permit.id } })
+  }
+}
+
+function onConfirmPendingEdit (): void {
+  if (editRouteName.value) {
+    router.push({ name: editRouteName.value, params: { id: props.permit.id } })
+  }
+}
 </script>
 
 <style scoped>
