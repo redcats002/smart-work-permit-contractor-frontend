@@ -27,6 +27,19 @@ export function permitAuthorName (author?: IPermitAuthor | null): string {
   return name || author.email
 }
 
+/**
+ * feat-023 — the contractor's pin on the active facility plan. `planX`/`planY` are 0-100,
+ * PERCENTAGES of the rendered plan frame — NOT pixels (docs/main/PROMPT-LOG.md session 11).
+ * Sent on PATCH/POST as `position: IPermitPosition | null`; read back flattened as
+ * `planId`/`planX`/`planY` on the permit entity (see IPermitListItem) — two different shapes for
+ * the same data because that is what the two directions of the wire contract actually declare.
+ */
+export interface IPermitPosition {
+  planId: number
+  planX: number
+  planY: number
+}
+
 export interface IPermitBase {
   id: string
   type: TPermitType

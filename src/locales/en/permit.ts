@@ -20,7 +20,8 @@ const permit = {
       3: 'Safety Checks',
       4: 'PPE & Workers',
       5: 'Job Safety Analysis',
-      6: 'Review & Submit'
+      6: 'Plan Position',
+      7: 'Review & Submit'
     },
     stepOf: 'Step {current} of {total}',
     back: 'Back',
@@ -321,6 +322,17 @@ const permit = {
           confirm: 'Yes, remove'
         }
       },
+      position: {
+        subtitle: 'Tap the plan where this work is happening.',
+        loading: 'Checking for an active facility plan…',
+        noActivePlan: 'No facility plan has been activated yet — this step does not apply to your permit.',
+        olderVersion: 'This permit was placed on an earlier plan version. The plan has since been updated, but the pin stays where it was set.',
+        instruction: 'Tap or click the plan to place your pin.',
+        pinSet: 'Pin placed. Tap the plan again to move it.',
+        required: 'A position is required before this permit can be submitted.',
+        imageLoadFailed: 'The facility plan image could not be loaded. Try again in a moment.',
+        retry: 'Retry'
+      },
       review: {
         subtitle: 'Confirm every detail. Submitting notifies the Safety Officer for review.',
         idPending: 'ID pending',
@@ -342,6 +354,12 @@ const permit = {
             pass: 'Worker certificates are valid and not expired',
             fail: 'Certificate missing or expired for: {workers}',
             unknown: 'Worker certificates could not be checked — the server decides at submit'
+          },
+          position: {
+            loading: 'Checking the facility plan…',
+            pass: 'Position set on the facility plan',
+            fail: 'No position set — go back to Plan Position',
+            none: 'No active facility plan — a position is not required'
           }
         }
       }

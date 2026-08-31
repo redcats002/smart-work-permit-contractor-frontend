@@ -167,9 +167,21 @@ const readingFailures: ComputedRef<IReadingFailure[]> = computed((): IReadingFai
   return validateReadings(permitType.value, props.formData.safetyReading ?? {}, props.formData.outdoorWork ?? false)
 })
 
+/**
+ * feat-023. `positionState === 'none'` means no facility plan has ever been activated — the
+ * position step does not even show in the stepper in that case, and this row is omitted too
+ * rather than adding noise for what is still the common, unremarkable, production-default case.
+ */
+const POSITION_ROW_STATE: Partial<Record<string, TPreflightState>> = {
+  loading: 'loading',
+  ok: 'pass',
+  fail: 'fail'
+}
+
 const preflightRows: ComputedRef<IPreflightRow[]> = computed((): IPreflightRow[] => {
   const atmosphereBypassed = props.formData.outdoorWork === true
   const evidenceAttached = allEvidenceAttached(permitType.value, props.formData.photos)
+  const positionRowState = POSITION_ROW_STATE[props.positionState]
 
   return [
     {
@@ -197,7 +209,14 @@ const preflightRows: ComputedRef<IPreflightRow[]> = computed((): IPreflightRow[]
           .map((problem: ICertificateProblem): string => problem.workerName)
           .join(', ')
       }
-    }
+    },
+    ...(positionRowState
+      ? [{
+        key: 'position',
+        state: positionRowState,
+        labelKey: `permit.create.steps.review.check.position.${props.positionState}`
+      }]
+      : [])
   ]
 })
 </script>

@@ -1,5 +1,5 @@
 import type { ComputedRef, Ref } from 'vue'
-import { computed, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { dayjs } from '@/plugins/dayjs.plugin'
 import i18n from '@/plugins/I18n.plugin'
 import { toast } from '@/plugins/toast'
@@ -8,23 +8,32 @@ import { useDebounce } from '@/utils/Debounce'
 import { useApiError, type IApiErrorResult } from '@/composables/useApiError'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import type { ICreatePermitDraftPayload, IUpdatePermitDraftPayload } from '@/models/request/permit/PermitReq.model'
-import type { IPermitSafetyReading, IPermitWorker } from '@/models/modules/permit/Permit.model'
+import type { IFacilityPlan } from '@/models/modules/facility-plan/FacilityPlan.model'
+import type { IPermitPosition, IPermitSafetyReading, IPermitWorker } from '@/models/modules/permit/Permit.model'
 import type { IPermitDetail } from '@/models/response/permit/PermitRes.model'
 import type { TChecklistAnswer } from '../constants/SafetyChecklist'
 import {
-  EMPTY_SUBMIT_FAILURES, extractSubmitFailures, stepIndexForSubmitFailure, type ISubmitFailures
+  EMPTY_SUBMIT_FAILURES, extractSubmitFailures, stepKeyForSubmitFailure, type ISubmitFailures
 } from '../constants/SubmitErrorRouting'
 import { hasPartialJsaRow, toSubmittableJsaSteps } from '../schema/Step5Jsa.schema'
 import {
   useCertificatePreflight, type ICertificateProblem, type TCertificatePreflightState
 } from './useCertificatePreflight'
+import { usePlanPosition, type TPositionPreflightState } from './usePlanPosition'
 import PermitProvider, { type IPermitProvider } from '@/resources/provider/permit/Permit.provider'
 import { WIZARD_STEPS, type IWizardStepDef } from '../wizard/WizardSteps'
 
 const PermitService: IPermitProvider = new PermitProvider()
 
 export interface IUseWizard {
-  steps: IWizardStepDef[]
+  /**
+   * feat-023. The `position` step is filtered OUT of this whenever no active facility plan
+   * exists — that is the current production state today, and it must keep working unchanged
+   * (see `usePlanPosition`). Reactive because the underlying `GET /facility-plans/active` lookup
+   * is async; StepperHeader/WizardFooter/PermitCreatePage all bind `:steps="steps"`, which
+   * auto-unwraps a computed in the template with no consumer-side change.
+   */
+  steps: ComputedRef<IWizardStepDef[]>
   currentStepIndex: Ref<number>
   currentStep: ComputedRef<IWizardStepDef>
   maxUnlockedStepIndex: Ref<number>
@@ -58,6 +67,13 @@ export interface IUseWizard {
    * below only fires on a real worker-list edit).
    */
   recheckCertificates (): void
+  /**
+   * feat-023. Mirrors `certificateState` exactly, for the Position step + Review row. `'none'`
+   * (no active plan — today's production default) and `'loading'` never block; only a confirmed
+   * `'fail'` (an active plan exists and `formData.position` is unset) does.
+   */
+  positionState: ComputedRef<TPositionPreflightState>
+  activePlan: Ref<IFacilityPlan | null>
   isFirstStep: ComputedRef<boolean>
   isLastStep: ComputedRef<boolean>
   isNextBlocked: ComputedRef<boolean>
@@ -134,7 +150,7 @@ export function hasCreatableDraft (data: IUpdatePermitDraftPayload): boolean {
  * fake registry to exercise the gating logic against schemas that can
  * actually fail (the real placeholder schemas always pass, by design).
  */
-export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
+export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
   const { mapError } = useApiError()
 
   const currentStepIndex = ref(0)
@@ -159,19 +175,57 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
     check: checkCertificates
   } = useCertificatePreflight(certificateChecking)
 
-  const currentStep: ComputedRef<IWizardStepDef> = computed((): IWizardStepDef => steps[currentStepIndex.value])
+  // feat-023. ONE shared position pre-flight instance, mirroring the certificate one above —
+  // the Position step's gate and the Review row can never disagree about whether a pin is owed.
+  // Fetched on mount (not, say, debounced off an input like the certificate check) so it has
+  // resolved long before a real user, walking the wizard by hand, reaches the step it gates.
+  // `onMounted`, not a bare call at setup time: a composable-level test that calls `useWizard()`
+  // directly (no component tree — see src/tests/composables/useWizard.test.ts) has no active
+  // Pinia, and this app's 401 interceptor branch touches the auth store — exactly the failure
+  // mode `useCertificatePreflight` avoids by never firing unless there is a named worker to look
+  // up. Outside a mounted component `onMounted` is a documented no-op, so those tests are
+  // unaffected; a real page always mounts inside `main.ts`'s Pinia-registered app.
+  const { activePlan, required: positionRequired, fetchActive, stateFor: positionStateFor } = usePlanPosition()
+  onMounted((): void => {
+    void fetchActive()
+  })
+
+  const positionState: ComputedRef<TPositionPreflightState> = computed(
+    (): TPositionPreflightState => positionStateFor(formData.value.position)
+  )
+
+  /**
+   * The `position` step only appears once an active facility plan is confirmed — see the
+   * `IUseWizard.steps` doc. Every other step's `key` is a fixed member of `registry`; filtering
+   * never changes their relative order.
+   */
+  const steps: ComputedRef<IWizardStepDef[]> = computed(
+    (): IWizardStepDef[] => registry.filter((step: IWizardStepDef): boolean => step.key !== 'position' || positionRequired.value)
+  )
+
+  const currentStep: ComputedRef<IWizardStepDef> = computed(
+    (): IWizardStepDef => steps.value[currentStepIndex.value]
+  )
   const isFirstStep: ComputedRef<boolean> = computed((): boolean => currentStepIndex.value === 0)
-  const isLastStep: ComputedRef<boolean> = computed((): boolean => currentStepIndex.value === steps.length - 1)
+  const isLastStep: ComputedRef<boolean> = computed((): boolean => currentStepIndex.value === steps.value.length - 1)
   const isNextBlocked: ComputedRef<boolean> = computed((): boolean => {
     if (!currentStep.value.schema.safeParse(formData.value).success) return true
     // Only the PPE & Workers step gates on certificates, and only on a CONFIRMED 'fail' — never
     // on 'loading'/'unknown', which would make an unresolved lookup stricter than the server.
     if (currentStep.value.key === 'ppeWorkers' && certificateState.value === 'fail') return true
+    // Same shape for the Position step: only a CONFIRMED 'fail' (an active plan exists and no
+    // pin is set) blocks — 'loading'/'none' never do (../../../../../PROMPT-LOG.md "no
+    // client-side rule that blocks what the server would accept").
+    if (currentStep.value.key === 'position' && positionState.value === 'fail') return true
     return false
   })
   const canSubmit: ComputedRef<boolean> = computed(
     (): boolean => isLastStep.value && !isNextBlocked.value && draftId.value !== undefined
       && !saving.value && !submitting.value && certificateState.value !== 'fail'
+      // Guards the Review step specifically: Review's own schema can't see external plan state,
+      // so a hydrated draft that lands there with no pin must still be blocked here, not just on
+      // the Position step itself (which the user may never have re-visited this session).
+      && positionState.value !== 'fail'
   )
 
   // Debounced so typing a worker's name doesn't fire a lookup per keystroke; triggered only when
@@ -283,8 +337,8 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
 
   /** First step whose schema rejects the given data, or the last step when every step passes. */
   function firstInvalidStepIndex (data: IUpdatePermitDraftPayload): number {
-    const blockedIndex = steps.findIndex((step: IWizardStepDef): boolean => !step.schema.safeParse(data).success)
-    return blockedIndex === -1 ? steps.length - 1 : blockedIndex
+    const blockedIndex = steps.value.findIndex((step: IWizardStepDef): boolean => !step.schema.safeParse(data).success)
+    return blockedIndex === -1 ? steps.value.length - 1 : blockedIndex
   }
 
   /**
@@ -304,6 +358,16 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
     }))
   }
 
+  /**
+   * feat-023. GET returns the pin flattened (`planId`/`planX`/`planY`); the wizard's own
+   * `formData.position` shape is the nested one PATCH/POST accept — see `IPermitPosition`. `null`
+   * when the permit was never pinned (every permit before the first plan was ever activated).
+   */
+  function toFormPosition (permit: IPermitDetail): IPermitPosition | null {
+    if (permit.planId === null || permit.planX === null || permit.planY === null) return null
+    return { planId: permit.planId, planX: permit.planX, planY: permit.planY }
+  }
+
   function hydrate (permit: IPermitDetail): void {
     const hydrated: IUpdatePermitDraftPayload = {
       type: permit.type,
@@ -317,7 +381,8 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
       safetyReading: permit.latestSafetyReading ?? undefined,
       jsaSteps: permit.jsaSteps,
       workers: toFormWorkers(permit.workers),
-      photos: permit.photos
+      photos: permit.photos,
+      position: toFormPosition(permit)
     }
 
     formData.value = hydrated
@@ -382,7 +447,7 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
    */
   function goToStep (index: number): void {
     if (index < 0 || index > maxUnlockedStepIndex.value) return
-    const blockedBefore = steps
+    const blockedBefore = steps.value
       .slice(0, index)
       .some((step: IWizardStepDef): boolean => !step.schema.safeParse(formData.value).success)
     if (blockedBefore) return
@@ -424,12 +489,20 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
         submitError.value = mapped
         submitFailures.value = extractSubmitFailures(error)
         toast.error(mapped.message)
-        // Assigned directly rather than via goToStep(): goToStep refuses the jump when any
-        // EARLIER step fails its own schema, and the whole point of this branch is that the
-        // server disagreed with a client-side gate that passed. The user must always land on
-        // the step that can fix it, never be stranded on Review with an error they cannot act on.
-        const stepIndex = stepIndexForSubmitFailure(mapped.code, submitFailures.value)
-        if (stepIndex !== undefined && stepIndex <= maxUnlockedStepIndex.value) {
+        // feat-023. The server can disagree with the client's plan-activation belief (a plan was
+        // activated moments ago, after this session's own lookup) — re-fetch so the Position
+        // step actually exists to jump to below, instead of staying permanently hidden for the
+        // rest of the session on a stale 'none' verdict.
+        if (mapped.code === 'PERMIT_POSITION_REQUIRED' && !positionRequired.value) void fetchActive()
+        // Resolved against the CURRENT steps array, not a fixed index: the Position step may or
+        // may not exist in it depending on `positionRequired`. Assigned directly rather than via
+        // goToStep(): goToStep refuses the jump when any EARLIER step fails its own schema, and
+        // the whole point of this branch is that the server disagreed with a client-side gate
+        // that passed. The user must always land on the step that can fix it, never be stranded
+        // on Review with an error they cannot act on.
+        const stepKey = stepKeyForSubmitFailure(mapped.code, submitFailures.value)
+        const stepIndex = stepKey === undefined ? -1 : steps.value.findIndex((step: IWizardStepDef): boolean => step.key === stepKey)
+        if (stepIndex !== -1 && stepIndex <= maxUnlockedStepIndex.value) {
           currentStepIndex.value = stepIndex
         }
       }
@@ -453,6 +526,8 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
     certificateState,
     certificateProblems,
     recheckCertificates,
+    positionState,
+    activePlan,
     isFirstStep,
     isLastStep,
     isNextBlocked,

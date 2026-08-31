@@ -1374,3 +1374,125 @@ $ bun run test:run
  Test Files  54 passed (54)
       Tests  487 passed (487)
 ```
+
+## 2026-08-31 (later) — contract sync only: CLOSURE_REASON_REQUIRED + raster-only facility plans
+
+No feature work in this repo. Two backend changes landed that this repo must stay in contract with:
+
+- **`CLOSURE_REASON_REQUIRED`** (API `5a6b30d`) — a safety officer must now give a reason when
+  closing a permit. A contractor closing their **own** permit is the normal path and owes no
+  reason, so this app never triggers the code. It is declared anyway in
+  `src/enums/modules/error/ApiErrorCode.enum.ts` and both locale files because `CONTEXT.md` §2
+  requires every backend `errorCode` be localizable in *both* frontends — `check-contract-sync.mjs`
+  enforces it.
+- **Facility plan uploads are raster-only** (API `2892a3e`) — PNG/JPEG/WebP; PDF and HEIC are now
+  refused at the plan upload route even though the generic upload route still accepts them. Matters
+  here because the contractor position picker (wayfinder 015, not yet built) draws the plan with a
+  plain `<img>`.
+
+`bun run test:run` 54 files / **487 passed**, `bun run typecheck` 0 errors — unchanged baselines,
+as expected for a contract-only sync. Commits `19c278ba`, `b15a764f`.
+
+## 2026-08-31 (later still) — the contractor position picker ships (feat-023, wayfinder ticket 015), plus a trial auto-login button
+
+Two independent pieces of work.
+
+### Position picker
+
+This was the blocking half named in the previous entry: `submit.service.ts` refuses a positionless
+permit the instant any facility plan is active, and until this shipped, activating the first plan
+would have locked every contractor out of submitting. The wizard gained a 7th step, **Plan
+Position**, between JSA and Review — Review shifted from step 6 to step 7 (`permit.wizard.step.*`
+locale keys renumbered accordingly).
+
+The step only appears once `GET /facility-plans/active` resolves a real plan (`usePlanPosition.ts`,
+new — mirrors `useCertificatePreflight`'s shared-instance pattern exactly: one fetch, shared by
+`useWizard`'s Next/Submit gate and the Review row, `'loading'`/`'none'` never block, only a
+confirmed `'fail'` does). `useWizard.steps` is now a `ComputedRef`, filtering the step in/out —
+before this an active plan existed at all, today's production state, and it must stay that way.
+`WizardSteps.ts` carries the step unconditionally; the filter lives in `useWizard` alone.
+
+A click/tap on the plan `<img>` converts viewport coordinates to `planX`/`planY` percentages via
+the element's rendered rect AT CLICK TIME — `src/utils/PlanPosition.ts`, new, unit-tested (centre →
+50/50, bottom-right → 100/100, out-of-bounds clamped, no hardcoded dimension). A permit frozen
+against an older plan version resolves THAT version via `GET /facility-plans/:id` (plan versions
+are immutable and retained forever) rather than the active one, with an explicit "older version"
+note — never a silent re-projection. `position` follows the exact same DRAFT/REJECTED editability
+window as every other field; no separate stricter rule was added, per the brief.
+
+`SubmitErrorRouting.ts` changed shape: `stepIndexForSubmitError`/`stepIndexForSubmitFailure`
+(hardcoded step indices) became `stepKeyForSubmitError`/`stepKeyForSubmitFailure` (step KEYS),
+resolved to an index against `useWizard`'s own current `steps.value` at the call site. A fixed
+index was already wrong once one step could be conditionally absent, and `PERMIT_POSITION_REQUIRED`
+now routes to `'position'` alongside the existing reading/certificate codes.
+
+New provider: `src/resources/provider/facility-plan/FacilityPlan.provider.ts` — read-only
+(`getActive`/`getById`), deliberately no `upload`/`create`/`activate` (those are Safety Officer
+actions in the sibling repo; `facility-plans` stays a server-owned upload prefix). New models under
+`src/models/modules/facility-plan/` and `src/models/response/facility-plan/`. `Permit.model.ts`
+gained `IPermitPosition`; `IPermitListItem` gained flat `planId`/`planX`/`planY` (matches GET);
+`ICreatePermitDraftPayload`/`IUpdatePermitDraftPayload` gained nested `position` (matches
+PATCH/POST) — the two different shapes are what the wire contract actually declares in each
+direction, not an inconsistency.
+
+Files changed (non-test): `src/utils/PlanPosition.ts`, `src/models/modules/facility-plan/FacilityPlan.model.ts`,
+`src/models/response/facility-plan/FacilityPlanRes.model.ts`, `src/resources/provider/facility-plan/FacilityPlan.provider.ts`,
+`src/models/modules/permit/Permit.model.ts`, `src/models/response/permit/PermitRes.model.ts`,
+`src/models/request/permit/PermitReq.model.ts`, `src/pages/permit/pages/create/composables/usePlanPosition.ts`,
+`src/pages/permit/pages/create/composables/useWizard.ts`, `src/pages/permit/pages/create/wizard/WizardSteps.ts`,
+`src/pages/permit/pages/create/schema/Step7Position.schema.ts`,
+`src/pages/permit/pages/create/components/steps/Step7Position.vue`,
+`src/pages/permit/pages/create/components/steps/Step6Review.vue`,
+`src/pages/permit/pages/create/constants/SubmitErrorRouting.ts`,
+`src/pages/permit/pages/create/pages/PermitCreatePage.vue`, `src/pages/permit/pages/create/pages/PermitEditPage.vue`,
+`src/locales/{en,th}/permit.ts`, `AGENTS.md` (Modules table + main-flow prose, 7-step wizard).
+
+A mounted wizard now fetches `GET /facility-plans/active` on mount, so every existing full-page
+wizard test needed a `FacilityPlanProvider.getActive` mock added alongside its other provider
+mocks (`PermitCreatePage.walk/jsaSteps/submit.test.ts`, `PermitEditPage.test.ts`) — this repo's dev
+API happens to be reachable at `localhost:3000` and answers 401 unauthenticated, which without the
+mock triggered a real (and in a bare-composable test, Pinia-less) 401 logout side effect. Fixed the
+same way for direct-composable tests (`useWizard.test.ts` and friends, which call `useWizard()`
+with no mounted component at all) by moving the initial fetch behind `onMounted` — a no-op outside
+a real component tree, so those tests never touch the network at all, matching
+`useCertificatePreflight`'s existing "never fire without real data to check" discipline.
+`IPermitDetail`/`IPermitListItem` test fixtures across `PermitDetailPage`/`PermitDetailSections`/
+`FireWatch`/`ClosureChecklistModal`/`HistoryListPage`/`useWizard.hydrate` tests all needed
+`planId`/`planX`/`planY: null` added — the model gained required fields.
+
+### Trial auto-login button
+
+`LoginPage.vue` gained a subordinate "Trial account" affordance under the real form, visible only
+when `VITE_TRIAL_LOGIN === 'true'` (exact string) AND `VITE_TRIAL_LOGIN_PASSWORD` is set — both
+default off/unset, and a missing password hides the button rather than guessing one. Clicking it
+calls the exact same `performLogin()` the real form's submit calls — same `AuthPublicProvider.login()`
+call, same contractor-role gate, same error handling — with `contractor@e2e.test` and the env
+password. No client-side bypass, no token minted locally, no store write outside `authStore.userLogin()`.
+`.env.example` documents both keys with `VITE_TRIAL_LOGIN=false` / an empty password and a
+"development/demo only, never enable in production" comment — no real secret committed.
+
+Files changed: `src/pages/auth/pages/login/pages/LoginPage.vue`, `.env.example`,
+`src/locales/{en,th}/platform.ts` (`platform.auth.trial.{label,contractor}`).
+Test (new): `src/tests/pages/auth/login/LoginPage.trial.test.ts` — hidden by default, hidden with
+only one of the two env vars set, hidden for a near-miss value (`'TRUE'`), and the full sign-in
+path asserting the exact payload sent to the provider.
+
+```
+$ bun run typecheck
+$ vue-tsc --noEmit -p tsconfig.app.json
+(clean — no output)
+
+$ bun run lint
+$ eslint .
+/…/src/tests/composables/useNotificationPolling.test.ts
+  27:41  warning  There is more than one component in this file  vue/one-component-per-file
+  39:15  warning  There is more than one component in this file  vue/one-component-per-file
+✖ 2 problems (0 errors, 2 warnings)   ← pre-existing, unrelated to this change
+
+$ bun run test:run
+ Test Files  56 passed (56)
+      Tests  503 passed (503)
+
+$ ./init.sh
+typecheck PASS · lint PASS · tests PASS (56 files / 503 tests) · smoke PASS (15/15 live contract checks)
+```

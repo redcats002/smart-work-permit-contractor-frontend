@@ -29,6 +29,10 @@ const platform: typeof platformEn = {
     password: 'รหัสผ่าน',
     submit: 'เข้าสู่ระบบ',
     loginSuccess: 'ยินดีต้อนรับเข้าสู่ระบบ',
+    trial: {
+      label: 'บัญชีทดลองใช้งาน',
+      contractor: 'ผู้รับเหมา'
+    },
     validation: {
       emailRequired: 'กรุณากรอกอีเมล',
       emailInvalid: 'รูปแบบอีเมลไม่ถูกต้อง',

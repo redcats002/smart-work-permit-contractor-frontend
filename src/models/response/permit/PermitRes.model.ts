@@ -30,6 +30,15 @@ export interface IPermitListItem extends IPermitBase {
   entrantCount: number
   /** Server-computed remainder — render it, never recompute a verdict from it. `null` unless FIRE_MONITOR. */
   fireWatch: IPermitFireWatch | null
+  /**
+   * feat-023. Flattened here (not nested `position`) because that is what GET actually returns —
+   * PATCH/POST accept the nested `{ planId, planX, planY }` shape instead (see
+   * `IUpdatePermitDraftPayload.position`). All three are `null` together or set together; a
+   * permit created before any plan existed, or one never pinned, has all three `null`.
+   */
+  planId: number | null
+  planX: number | null
+  planY: number | null
 }
 
 /** GET /permits/:id — the entity plus its collections. */

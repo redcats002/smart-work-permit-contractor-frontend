@@ -69,7 +69,9 @@ function mountStep (): ReturnType<typeof mount> {
       checklistAnswers: {},
       submitFailures: EMPTY_SUBMIT_FAILURES,
       certificateState: 'idle',
-      certificateProblems: []
+      certificateProblems: [],
+      positionState: 'none',
+      activePlan: null
     } satisfies IWizardStepProps
   })
 }

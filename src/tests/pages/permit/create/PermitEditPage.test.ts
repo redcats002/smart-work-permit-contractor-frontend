@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import PrimeVue from 'primevue/config'
 import i18n, { setLocale } from '@/plugins/I18n.plugin'
 import { EApiErrorCode } from '@/enums/modules/error/ApiErrorCode.enum'
+import FacilityPlanProvider from '@/resources/provider/facility-plan/FacilityPlan.provider'
 import PermitProvider from '@/resources/provider/permit/Permit.provider'
 import PermitEditPage from '@/pages/permit/pages/create/pages/PermitEditPage.vue'
 import StepperHeader from '@/pages/permit/pages/create/components/StepperHeader.vue'
@@ -93,6 +94,10 @@ describe('PermitEditPage', () => {
     stubMatchMedia()
     setActivePinia(createPinia())
     setLocale('en')
+    // feat-023. No facility plan mounted in this suite — every wizard mount now fetches
+    // GET /facility-plans/active on mount (useWizard), and this repo's convention is to mock
+    // every provider a mounted page touches rather than let it hit a live/absent server.
+    vi.spyOn(FacilityPlanProvider.prototype, 'getActive').mockResolvedValue({ message: 'success', data: null } as never)
   })
 
   afterEach((): void => {

@@ -27,6 +27,10 @@ const platform = {
     password: 'Password',
     submit: 'Log in',
     loginSuccess: 'Welcome back',
+    trial: {
+      label: 'Trial account',
+      contractor: 'Contractor'
+    },
     validation: {
       emailRequired: 'Please enter your email',
       emailInvalid: 'Invalid email format',

@@ -1,5 +1,5 @@
 import type {
-  IJsaStep, IPermitPhoto, IPermitSafetyReading, IPermitWorker
+  IJsaStep, IPermitPhoto, IPermitPosition, IPermitSafetyReading, IPermitWorker
 } from '@/models/modules/permit/Permit.model'
 import type { TPermitStatus } from '@/enums/modules/permit/PermitStatus.enum'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
@@ -17,6 +17,14 @@ export interface ICreatePermitDraftPayload {
   workTimeStart: string
   workTimeEnd: string
   outdoorWork?: boolean
+  /**
+   * feat-023. `null` clears a pin; omitted leaves it unchanged (PATCH semantics — this field is
+   * NOT a collection, so omitting it never wipes an already-persisted pin). Required by the
+   * wizard's own client-side gate before submit only once an active plan exists — see
+   * `usePlanPosition`; the server is authoritative and answers `PERMIT_POSITION_REQUIRED`
+   * regardless of what the client thinks.
+   */
+  position?: IPermitPosition | null
 }
 
 /**

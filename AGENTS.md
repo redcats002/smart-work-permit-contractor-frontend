@@ -66,6 +66,18 @@ Two sibling apps exist in **other repos** and are **out of scope here**: the Saf
 > open: row **I** (entrant *names* are not readable by the permit owner — the count is), and rows **G**, **J**,
 > **K**, all of which need a backend field before any frontend work is possible.
 >
+> Built 2026-08-31 (`feat-023`, wayfinder ticket 015): the contractor position picker. The wizard's
+> `position` step (7th, between JSA and Review) only appears once `GET /facility-plans/active` resolves a
+> plan — the current no-plan production state is unchanged, and this is the half that had to ship before
+> the Safety app could ever activate one (`PERMIT_POSITION_REQUIRED` would otherwise lock out every
+> contractor). A click/tap on the plan `<img>` converts to `planX`/`planY` percentages via
+> `src/utils/PlanPosition.ts` (unit-tested) from the element's rendered rect at click time, never a
+> hardcoded size. `position` follows the same DRAFT/REJECTED editability window as the rest of the form —
+> no separate rule — and a permit frozen against an older plan version resolves THAT version via
+> `GET /facility-plans/:id`, never the active one, with an "older version" note. `usePlanPosition`
+> mirrors `useCertificatePreflight`'s shared-instance pattern exactly: one fetch, gates both the step's
+> Next and the Review row, never blocks on `'loading'`/`'none'` — only a confirmed `'fail'`.
+>
 > **The providers are live against the real backend** (`feat-005`, 2026-08-17). Every `USE_STUB_DATA` flag and both `*.mock.ts` files are gone; `VITE_APP_API_URL` points at the API and auth is a **better-auth session cookie**, not a bearer token.
 >
 > Before changing anything under `src/resources/` or `src/models/`, read `docs/main/dev-handoff/04-api-contract.md` — and treat `docs/api/openapi.json` (generated from a live boot, never hand-edited) as the authority over it. `01-backend-elysia-tasks.md` is the older *plan*; where the two disagree, the contract wins.
@@ -110,7 +122,7 @@ Each module owns parallel trees: routes (`src/router/modules/<Mod>.router.ts` or
 | Module | Prefix | Pages (`src/pages/<mod>/pages/`) | Providers | Harness | Built? |
 |---|---|---|---|---|---|
 | `platform` | `/auth` | `auth/login` ✅, `auth/reset-password` ✅, layout shell, i18n, API errors | `auth/public`, `auth/private`, `notification` | `docs/modules/platform/` | shell + i18n + errors + contractor auth/route guard (`PLT-005`) ✅ · notification polling `PLT-007` ✅ |
-| `permit` | `/permits` | `list` ✅, `create` (6-step wizard) ✅, `detail` ✅ | `permit` | `docs/modules/permit/` | provider + list ✅ · wizard complete, all six steps real (`PMT-004`–`PMT-009`) · detail built (`PMT-010`–`PMT-012`: banners, QR, audit timeline, closure modal, Fire Watch countdown) |
+| `permit` | `/permits` | `list` ✅, `create` (7-step wizard) ✅, `detail` ✅ | `permit`, `facility-plan` (read-only — `getActive`/`getById`, no upload/create/activate) | `docs/modules/permit/` | provider + list ✅ · wizard complete, all seven steps real (`PMT-004`–`PMT-009`, `feat-023`) · detail built (`PMT-010`–`PMT-012`: banners, QR, audit timeline, closure modal, Fire Watch countdown) |
 | `history` | `/history` | `list` ✅ | `permit` (reused — no own provider dir) | `docs/modules/history/` | ✅ |
 | `certificate` | `/certificates` | `list` ✅ | `certificate` | `docs/modules/certificate/` | ✅ |
 | `api-integration` | — (cross-cutting) | — | every provider + the transport | `docs/modules/api-integration/` | ✅ transport, auth, errors, permit/certificate/notification/upload |
@@ -145,7 +157,7 @@ Contractor-app journey across that machine:
 
 ```
 /permits (list)
-  → /permits/create  (6-step wizard: Type → Basic Info → Safety Checks → PPE & Workers → JSA → Review)
+  → /permits/create  (7-step wizard: Type → Basic Info → Safety Checks → PPE & Workers → JSA → Plan Position → Review)
     → submit                                   [DRAFT → PENDING]
       → /permits/:id  (status banner, QR when ACTIVE/FIRE_MONITOR, audit timeline)
         → mark-complete (hot work)             [ACTIVE → FIRE_MONITOR]

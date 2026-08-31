@@ -42,6 +42,9 @@ function basePermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail {
     qrIssuedAt: null,
     entrantCount: 0,
     fireWatch: null,
+    planId: null,
+    planX: null,
+    planY: null,
     jsaSteps: [],
     workers: [],
     photos: [],
@@ -84,8 +87,8 @@ describe('useWizard.hydrate', () => {
 
     wizard.hydrate(permit)
 
-    expect(wizard.currentStepIndex.value).toBe(wizard.steps.length - 1)
-    expect(wizard.maxUnlockedStepIndex.value).toBe(wizard.steps.length - 1)
+    expect(wizard.currentStepIndex.value).toBe(wizard.steps.value.length - 1)
+    expect(wizard.maxUnlockedStepIndex.value).toBe(wizard.steps.value.length - 1)
   })
 
   it('drops a worker\'s null health fields but keeps a real one (bloodPressure/alcoholReading are string-only on the wire)', () => {

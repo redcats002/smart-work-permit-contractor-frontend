@@ -72,7 +72,10 @@ function buildPermit (id: string, status: TPermitStatus): IPermitListItem {
     // Added to IPermitListItem when PMT-010 picked up the backend's 2026-08-21 fields
     // (docs/api/GAPS.md row A). This screen does not read them yet.
     entrantCount: 0,
-    fireWatch: null
+    fireWatch: null,
+    planId: null,
+    planX: null,
+    planY: null
   }
 }
 
