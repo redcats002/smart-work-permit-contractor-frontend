@@ -1641,3 +1641,61 @@ work between the two tickets; ticket 006 in this repo turned out to be much larg
 forbidden by the ticket) or leaving them silently unaddressed, every row was individually judged
 and recorded — closing the ticket's "done when" bar ("every row is either replaced or has a
 recorded reason") for this repo without inflating the diff with a risky sweep.
+
+## 2026-08-31 — wayfinder 022, client half: stop probing PENDING-permit editability by mutating
+
+`useResumePermit.fetchEditablePermit` used to confirm a permit was editable with a real
+empty-body `PATCH /permits/:id` — harmless before wayfinder 012, but since PATCH now atomically
+withdraws a PENDING permit back to DRAFT, merely mounting `PermitEditPage` (deep link, bookmark,
+refresh, back-button return — none of which `PendingEditWarningModal` can intercept, since that
+modal only gates the "Edit Permit" button click) silently withdrew a PENDING permit from officer
+review: append-only audit row, officer + inspector notifications, for a contractor who only
+looked.
+
+Fixed by replacing the probe with a read: `fetchEditablePermit` now calls `PermitService.detail`
+and decides editability client-side against `EDITABLE_STATUSES = {'DRAFT', 'REJECTED'}`, the same
+set `update.service.ts` gates on. A non-editable status manufactures the same `PERMIT_NOT_EDITABLE`
+verdict `mapError` would have produced from a real 403, so the page's error card is unchanged.
+Ownership and existence are **not** reimplemented client-side — `GET /permits/:id` is already
+scoped to the caller's own permits server-side, so a 403 (another contractor's permit) or 404
+still lands in the same `catch` block as before. The wizard's own debounced `persist()` still
+round-trips a real `PATCH` the moment a field changes, so the deliberate-withdrawal path (confirm
+`PendingEditWarningModal`, then actually edit) is unchanged end to end, and a server refusal on
+save still surfaces exactly as before (CONTEXT.md §3 — client mirrors, server is authoritative).
+
+Also found already sitting uncommitted in the tree and committed first, separately: the
+`PERMIT_UPDATE_EMPTY` errorCode vocabulary (`EApiErrorCode`, both locale `error.ts` files) for the
+API-side guard the ticket says is landing in parallel. This client fix does not depend on that
+guard — after the fix the client never sends an empty-body PATCH at all — and does not conflict
+with it.
+
+Comments referencing the old "opening the edit page is itself the withdrawal" framing were updated
+in `PendingEditWarningModal.vue`, `PermitStatusBanner.vue`, and `permit.ts`'s `pendingEditWarning`
+locale comment — the warning still gates the same UI entry point, but the mechanism it is warning
+about is now "the first real edit", not "the mount".
+
+```
+$ bunx eslint src/pages/permit/pages/create/composables/useResumePermit.ts src/pages/permit/pages/detail/components/PendingEditWarningModal.vue src/pages/permit/pages/detail/components/PermitStatusBanner.vue src/locales/en/permit.ts src/tests/pages/permit/create/PermitEditPage.test.ts
+(clean — no errors, no warnings)
+
+$ bun run typecheck
+$ vue-tsc --noEmit -p tsconfig.app.json
+(clean — no output)
+
+$ bun run test:run
+ Test Files  57 passed (57)
+      Tests  509 passed (509)
+
+$ bun run lint
+$ eslint .
+(2 pre-existing warnings in useNotificationPolling.test.ts, unrelated, unchanged)
+```
+
+Files changed: `src/pages/permit/pages/create/composables/useResumePermit.ts`,
+`src/pages/permit/pages/detail/components/PendingEditWarningModal.vue`,
+`src/pages/permit/pages/detail/components/PermitStatusBanner.vue`, `src/locales/en/permit.ts`,
+`src/tests/pages/permit/create/PermitEditPage.test.ts` (2 new tests: update never called on mount
+for DRAFT and for PENDING; 1 new test: client-side ACTIVE refusal never calls update either).
+Committed separately, ahead of this: `src/enums/modules/error/ApiErrorCode.enum.ts`,
+`src/locales/{en,th}/error.ts` (`PERMIT_UPDATE_EMPTY` vocabulary, pre-existing uncommitted work,
+unrelated to this fix).
