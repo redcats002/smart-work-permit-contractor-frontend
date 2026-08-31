@@ -23,6 +23,9 @@ const error = {
 
   // Closure guards
   ENTRANTS_STILL_INSIDE: 'Closure blocked — one or more entrants are still checked in.',
+  // A contractor closing their own permit never sees this; declared so every backend code is
+  // localizable in both apps (CONTEXT.md section 2).
+  CLOSURE_REASON_REQUIRED: 'A safety officer must give a reason for closing a permit.',
   FIRE_WATCH_NOT_ELAPSED: 'Closure is locked until the 30-minute Fire Watch countdown ends.',
   PERMIT_NOT_CLOSABLE: 'This permit cannot be closed in its current state.',
   PERMIT_NOT_PENDING: 'This permit is no longer awaiting review.',

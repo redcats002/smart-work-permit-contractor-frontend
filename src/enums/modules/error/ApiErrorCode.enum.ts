@@ -36,6 +36,7 @@ export enum EApiErrorCode {
   // Closure guards — safety-officer actions, surfaced here because a contractor watching a permit
   // needs to understand why it has not closed.
   ENTRANTS_STILL_INSIDE = 'ENTRANTS_STILL_INSIDE',
+  CLOSURE_REASON_REQUIRED = 'CLOSURE_REASON_REQUIRED',
   FIRE_WATCH_NOT_ELAPSED = 'FIRE_WATCH_NOT_ELAPSED',
   PERMIT_NOT_CLOSABLE = 'PERMIT_NOT_CLOSABLE',
   PERMIT_NOT_PENDING = 'PERMIT_NOT_PENDING',
