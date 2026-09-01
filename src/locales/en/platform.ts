@@ -32,6 +32,15 @@ const platform = {
       contractor: 'Contractor',
       unavailable: 'Trial login is not available in this environment.'
     },
+    // wayfinder ticket 032. Distinct from `trial` above: that button signs in through the
+    // server-issued demo-login route (023) and never touches a password. This one fills the
+    // FORM with a real test account so a UAT tester sees exactly what they are signing in as —
+    // it never submits by itself.
+    trialFill: {
+      label: 'UAT — fill sign-in form',
+      contractor: 'Fill Contractor',
+      hint: 'Fills the form with a test contractor account. Review the fields, then press Sign In.'
+    },
     validation: {
       emailRequired: 'Please enter your email',
       emailInvalid: 'Invalid email format',

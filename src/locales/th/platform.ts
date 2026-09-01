@@ -34,6 +34,11 @@ const platform: typeof platformEn = {
       contractor: 'ผู้รับเหมา',
       unavailable: 'ไม่สามารถใช้งานการเข้าสู่ระบบทดลองในสภาพแวดล้อมนี้ได้'
     },
+    trialFill: {
+      label: 'UAT — กรอกฟอร์มเข้าสู่ระบบ',
+      contractor: 'กรอกข้อมูลผู้รับเหมา',
+      hint: 'กรอกฟอร์มด้วยบัญชีผู้รับเหมาสำหรับทดสอบ ตรวจสอบข้อมูลก่อนกดเข้าสู่ระบบ'
+    },
     validation: {
       emailRequired: 'กรุณากรอกอีเมล',
       emailInvalid: 'รูปแบบอีเมลไม่ถูกต้อง',

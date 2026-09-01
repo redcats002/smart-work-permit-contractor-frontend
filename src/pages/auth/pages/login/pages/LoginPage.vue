@@ -26,6 +26,30 @@
             type="button"
             @click="onTrialLogin()" />
         </div>
+
+        <!--
+          wayfinder ticket 032 — deliberately a SEPARATE section from the trial-login one above,
+          with its own "UAT" heading, so the two are never mistaken for each other: this one fills
+          the form fields and stops (nothing submitted, no session started); the one above signs
+          in outright through the server-issued demo route.
+        -->
+        <div
+          v-if="showTrialFill"
+          class="mt-4 flex flex-col items-center gap-2 border-t border-border pt-5">
+          <span class="text-[11px] font-semibold tracking-wide text-text-tertiary uppercase">
+            {{ t('platform.auth.trialFill.label') }}
+          </span>
+          <SecondaryButton
+            :label="t('platform.auth.trialFill.contractor')"
+            class="w-full!"
+            data-testid="trial-fill-contractor-button"
+            size="small"
+            type="button"
+            @click="fillContractorCredentials()" />
+          <p class="text-center text-[11px] text-text-tertiary">
+            {{ t('platform.auth.trialFill.hint') }}
+          </p>
+        </div>
       </BaseContainer>
     </div>
   </section>
@@ -70,6 +94,14 @@ const demoLoginUnavailable: Ref<boolean> = ref(false)
 const showTrialLogin: ComputedRef<boolean> = computed(
   (): boolean => import.meta.env.VITE_TRIAL_LOGIN === 'true' && !demoLoginUnavailable.value
 )
+
+/**
+ * wayfinder ticket 032. Same flag as the trial-login button above (the owner's ruling — one flag,
+ * not a second one), but a DIFFERENT affordance: this fills the visible form with a real test
+ * account instead of calling the server. Not gated on `demoLoginUnavailable` — filling a form
+ * never touches that endpoint, so a deployment where demo-login 404s should not also hide this.
+ */
+const showTrialFill: ComputedRef<boolean> = computed((): boolean => import.meta.env.VITE_TRIAL_LOGIN === 'true')
 
 /**
  * Shared by the real form submit and the trial button once each has a session response — same
@@ -125,6 +157,20 @@ function onTrialLogin (): void {
     }
     toast.error(mapError(error).message)
   })
+}
+
+/**
+ * wayfinder ticket 032. Mirrors `useInit.ts`'s `useInitForm` dev-autofill exactly: the credential
+ * strings live INSIDE the `import.meta.env.VITE_TRIAL_LOGIN === 'true'` guard, not lifted to a
+ * module-level constant referenced from inside it — Vite inlines that env read to a literal for
+ * `vite build`, so a build with the flag unset compiles to `if (false) { ... return }`, which the
+ * bundler's minifier proves unreachable and strips, strings included. Never sends anything —
+ * `form.value` is the same ref the real `<LoginForm>` submit reads, so the tester still has to
+ * press the real Sign In button, and can edit the fields first.
+ */
+function fillContractorCredentials (): void {
+  if (import.meta.env.VITE_TRIAL_LOGIN !== 'true') return
+  form.value = { email: 'contractor1@mail.com', password: 'adminadmin' }
 }
 
 // Already-logged-in users hitting /auth/login directly (bookmark, browser back) go

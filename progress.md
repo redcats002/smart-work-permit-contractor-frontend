@@ -2149,3 +2149,66 @@ Files changed: `src/components/input/PasswordInput.vue` (keyboard-accessible, la
 or `<textarea>` existed to convert; no schema changes needed (no value-shape change — the toggle is
 purely visual, the bound value is unchanged). `PrimeVue` plugin registration confirmed correct, not
 touched.
+
+## 2026-09-01 — wayfinder ticket 032: UAT role-fill login button
+
+Added a second login-page affordance, gated behind the SAME `VITE_TRIAL_LOGIN` flag ticket 023's
+server-issued trial-login button already uses (the owner's ruling — one flag). The two are
+deliberately kept distinguishable: separate section (own "UAT — fill sign-in form" heading, own
+hint text), separate `data-testid`, and functionally different — the existing button (023) signs
+in outright through `POST /api/v1/auth/demo-login` and this client never sees a password for it;
+the new button only writes into `form.value` (the same ref `<LoginForm>`'s real submit reads) and
+stops — no endpoint call, no session, the tester still presses the real Sign In button and can
+edit the fields first.
+
+**DCE mechanism, matching this repo's own established pattern.** `useInit.ts`'s `useInitForm`
+already documents exactly this shape for its dev-only autofill (`import.meta.env.DEV` ternary,
+both branches compile, Vite inlines the env read to a literal for `vite build` so the minifier
+proves the true branch unreachable and drops the strings). `fillContractorCredentials` in
+`LoginPage.vue` copies that shape: `if (import.meta.env.VITE_TRIAL_LOGIN !== 'true') return`
+guards the literal object assignment directly — the credential strings live INSIDE the guarded
+function body, never lifted to a module-level constant referenced from inside it (a `const
+TRIAL_ACCOUNTS = [...]` at module scope can survive tree-shaking even when the branch that reads
+it is dead).
+
+**Verified by build + grep, not by reading the source.**
+
+```
+$ grep -n "VITE_TRIAL_LOGIN" .env .env.prod
+(no output — the flag is absent from both, so this build used the default-unset value)
+
+$ rm -rf dist && bun run build
+✓ built in 733ms
+
+$ grep -rn "contractor1@mail.com\|adminadmin" dist/
+(no output, exit code 1 — nothing found)
+
+$ rm -rf dist
+```
+
+New test file `src/tests/pages/auth/login/LoginPage.trialFill.test.ts` (4 cases): hidden when the
+flag is unset; hidden for any value other than the exact string `'true'`; fills the form and calls
+neither `login` nor `demoLogin`; both buttons coexist and are textually distinguishable when the
+flag is on.
+
+```
+$ bun run test:run
+ Test Files  62 passed (62)
+      Tests  524 passed (524)
+
+$ bun run typecheck
+$ vue-tsc --noEmit -p tsconfig.app.json
+(clean — no output)
+
+$ bun run lint
+$ eslint .
+(2 pre-existing warnings in useNotificationPolling.test.ts, unrelated, unchanged — 0 errors)
+
+$ node scripts/check-contrast.mjs
+✓ all 26 colour pairs meet WCAG AA
+```
+
+Files changed: `src/pages/auth/pages/login/pages/LoginPage.vue` (`fillContractorCredentials`,
+`showTrialFill`, new template section), `src/locales/{en,th}/platform.ts`
+(`platform.auth.trialFill.*`), `.env.example` (documents both trial affordances under the one
+flag, no credential value committed), new test file above.
