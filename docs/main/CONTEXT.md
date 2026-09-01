@@ -210,11 +210,34 @@ always authoritative and the client must surface the server's verdict when the t
   permissive default, deliberately the opposite of a security flag, so this cannot repeat
   `PERMIT_POSITION_REQUIRED`'s lock-every-contractor-out hazard. Existing permits are
   grandfathered with no area: no backfill, no invented values. Per-contractor area visibility
-  scoping and the overlap/conflict-detection query are deliberately **not** built here (034
-  resolution) — every role reads the full area list. `Permit.location` is **demoted, not
-  retired**: it is now a nullable free-text note nothing queries, kept for backward compatibility
-  (both frontends previously sent it as required) while they migrate their pickers onto `Area` in
-  a later ticket — `Area` is the structured, query/audit-able answer to "where is the work" now.
+  scoping is deliberately **not** built here (034 resolution) — every role reads the full area
+  list. `Permit.location` is **demoted, not retired**: it is now a nullable free-text note nothing
+  queries, kept for backward compatibility (both frontends previously sent it as required) while
+  they migrate their pickers onto `Area` in a later ticket — `Area` is the structured,
+  query/audit-able answer to "where is the work" now.
+- **Overlapping-permit warning** (`smart-work-permit-api` ticket 038, 2026-09-01; API half only —
+  decided by wayfinder 034's resolution 6). Every permit-detail response (detail, create, update,
+  submit, approve, reject, mark-complete, close) carries `overlappingPermits: { checked: boolean,
+  permits: OverlappingPermit[] }`: other permits on the **same approved area** whose work window
+  overlaps this one's. **Advisory only — it never gates submit or approve**, and adds no new
+  `errorCode`; two crews sharing an area is a thing a human reviewer may legitimately accept, per
+  this map's standing no-silent-block rule. `checked: false` means this permit has no `areaId`
+  (most permits, during the `PERMIT_AREA_REQUIRED` grandfather period above) — nothing was
+  compared — and is structurally distinct from `checked: true, permits: []` ("compared, nothing
+  overlaps"), so a client cannot render one reassuring empty state for both. **Which statuses
+  occupy an area**: `PENDING`, `ACTIVE`, `FIRE_MONITOR` — the last deliberately, because a Fire
+  Watch is by definition the period *after* hot work stops during which the area is still
+  hazardous (the "hot permit's safety obligation always outlives its work window" rule two bullets
+  up), so excluding it would tell a second crew an area is clear while someone is still standing
+  watch over it. `DRAFT`/`REJECTED`/`CLOSED`/`EXPIRED` do not occupy — never submitted, dead,
+  proven clear by closure's own guards, or past their (graced) window respectively. **Overlap is a
+  closed interval**: `a.workTimeStart <= b.workTimeEnd && a.workTimeEnd >= b.workTimeStart` — two
+  permits that only touch at a shared endpoint (one's `workTimeEnd` equals the other's
+  `workTimeStart`) DO count, the wider/safer reading being deliberate for an advisory-only check.
+  Served by one indexed query (`Permit @@index([areaId, workTimeStart, workTimeEnd])`), excluding
+  the permit itself and soft-deleted rows. Per-contractor area visibility scoping remains
+  deliberately not built (034 resolution, unchanged). **The safety frontend's consumption of this
+  field is a separate, not-yet-landed half of ticket 038.**
 - Audit log is append-only with a server-signed hash chain. Never expose an edit or delete path.
 - Timestamps stored UTC; displayed `Asia/Bangkok`. Default UI locale is **Thai**; every string is
   translated EN + TH.
