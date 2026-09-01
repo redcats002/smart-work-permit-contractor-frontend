@@ -9,7 +9,8 @@
       </span>
       <span
         :class="[statusClass.bg, statusClass.fg]"
-        class="shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap">
+        class="inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap">
+        <PermitStatusGlyph :status="permit.status" />
         {{ t(`permit.status.${permit.status}`) }}
       </span>
     </div>
@@ -39,6 +40,7 @@ import { useI18n } from 'vue-i18n'
 import type { TPermitStatus } from '@/enums/modules/permit/PermitStatus.enum'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import type { IPermitListItem } from '@/models/response/permit/PermitRes.model'
+import PermitStatusGlyph from '@/components/chip/PermitStatusGlyph.vue'
 
 interface IProps {
   permit: IPermitListItem

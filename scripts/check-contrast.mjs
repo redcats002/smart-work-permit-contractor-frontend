@@ -116,5 +116,76 @@ if (failures.length) {
   process.exit(1)
 }
 
-console.log(`✓ all ${PAIRS.length} colour pairs meet WCAG AA`)
+/**
+ * ── Chip-to-chip distinguishability gate (wayfinder 027) ──
+ *
+ * The WCAG luminance-ratio math above proves each status pair's fg reads legibly on its own
+ * bg — it cannot prove two DIFFERENT statuses' chips are distinguishable from each other. That
+ * is exactly how wayfinder 026 handed 027 a fresh bug: it darkened EXPIRED's fg to reuse
+ * --color-text-secondary, which happened to already equal DRAFT's fg verbatim — two colour
+ * pairs that read fine in isolation and collided in the browser.
+ *
+ * A second luminance-ratio check cannot catch that either: luminance can score two different
+ * hues (e.g. grey vs. green) as numerically "close" despite being visually obvious, so an
+ * all-pairs luminance-distance gate produces false positives across colour families. CIE76 ΔE
+ * in Lab space captures hue + lightness in one number and does not have that failure mode.
+ */
+function hexToRgb (h) { h = h.replace('#', ''); return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)] }
+function srgbToLinear (c) { c /= 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4 }
+function rgbToXyz ([r, g, b]) {
+  const [R, G, B] = [r, g, b].map(srgbToLinear)
+  return [
+    R * 0.4124564 + G * 0.3575761 + B * 0.1804375,
+    R * 0.2126729 + G * 0.7151522 + B * 0.0721750,
+    R * 0.0193339 + G * 0.1191920 + B * 0.9503041
+  ]
+}
+const D65 = { X: 0.95047, Y: 1.0, Z: 1.08883 }
+function fLab (t) { return t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116 }
+function xyzToLab ([X, Y, Z]) {
+  const fx = fLab(X / D65.X), fy = fLab(Y / D65.Y), fz = fLab(Z / D65.Z)
+  return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)]
+}
+function labOf (hex) { return xyzToLab(rgbToXyz(hexToRgb(hex))) }
+function deltaE (hex1, hex2) {
+  const [L1, a1, b1] = labOf(hex1)
+  const [L2, a2, b2] = labOf(hex2)
+  return Math.sqrt((L1 - L2) ** 2 + (a1 - a2) ** 2 + (b1 - b2) ** 2)
+}
+
+// THRESHOLD_DELTA_E = 6, centred between two measured anchors:
+//  - the bug this gate exists to catch (old EXPIRED #5b656f/#f7f8fa vs DRAFT #5b656f/#eef1f4,
+//    wayfinder 026 → 027): fg ΔE = 0.00 (identical), bg ΔE = 2.70. Must FAIL → threshold > 2.70.
+//  - the closest pair in the corrected palette, DRAFT vs CLOSED: fg ΔE ≈ 13.89, bg ΔE ≈ 1.89.
+//    Must PASS (bg is close, but fg is clearly not, so the AND condition must not trip) →
+//    threshold well below 13.89.
+//  6 sits centred in that gap (2.70 < 6 < 13.89) with comfortable margin either side.
+const THRESHOLD_DELTA_E = 6
+
+const STATUSES = ['draft', 'pending', 'active', 'fire-monitor', 'closed', 'rejected', 'expired']
+
+const statusFailures = []
+let pairCount = 0
+for (let i = 0; i < STATUSES.length; i++) {
+  for (let j = i + 1; j < STATUSES.length; j++) {
+    pairCount++
+    const a = STATUSES[i]
+    const b = STATUSES[j]
+    const fgDeltaE = deltaE(hex(`color-status-${a}-fg`), hex(`color-status-${b}-fg`))
+    const bgDeltaE = deltaE(hex(`color-status-${a}-bg`), hex(`color-status-${b}-bg`))
+    if (fgDeltaE < THRESHOLD_DELTA_E && bgDeltaE < THRESHOLD_DELTA_E) {
+      statusFailures.push([a, b, fgDeltaE, bgDeltaE])
+    }
+  }
+}
+
+if (statusFailures.length) {
+  console.error('✗ status pairs too close in BOTH foreground and background (perceptually indistinguishable):')
+  for (const [a, b, fgDeltaE, bgDeltaE] of statusFailures) {
+    console.error(`    ${a.toUpperCase()} vs ${b.toUpperCase()}: fg ΔE ${fgDeltaE.toFixed(2)}, bg ΔE ${bgDeltaE.toFixed(2)} (needs ≥ ${THRESHOLD_DELTA_E} on at least one channel)`)
+  }
+  process.exit(1)
+}
+
+console.log(`✓ all ${PAIRS.length} colour pairs meet WCAG AA, all ${pairCount} status pairs are perceptually distinguishable`)
 process.exit(0)

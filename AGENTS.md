@@ -234,6 +234,17 @@ lighter grey that would just fail again.
 `scripts/check-contrast.mjs` now asserts every status/semantic pair on every build so a future
 regression here fails loudly instead of waiting to be found by hand.
 
+`--color-status-expired-fg`'s wayfinder-026 value above (`#5B656F`, reusing
+`--color-text-secondary`) is now stale: wayfinder 027 (2026-09) found that it made EXPIRED share
+DRAFT's exact fg (`#5B656F`) with only a 2.70 ΔE bg difference — both AA-passing individually, but
+visually colliding chips. EXPIRED's fg is now `#16191D` (reusing `--color-text-primary` instead),
+and CLOSED's bg moved from `#EEF1F4` to `#F4F6F8` so the DRAFT/CLOSED/EXPIRED trio reads as three
+deliberately distinct neutral weights. DRAFT/CLOSED/EXPIRED chips also each render a small
+non-colour glyph (pencil/check/`!`) via `PermitStatusGlyph.vue` for colour-blind/greyscale
+legibility. `scripts/check-contrast.mjs` gained a CIE76 ΔE all-pairs check (threshold 6) alongside
+the WCAG ratio check so a future pair that passes AA individually but collides visually with
+another status also fails the build.
+
 > Tailwind v4 only emits `@theme` variables that a scanned utility class actually references. A token that no class uses will not appear in the compiled CSS — that is expected, not a bug.
 
 **Typography (resolved):** body face stays `LINE_Seed_Sans_TH` (already self-hosted, five weights, in `public/assets/fonts/`). `--font-mono` is currently a websafe stack (`ui-monospace, 'SF Mono', Menlo, monospace`) — the design specifies `IBM Plex Mono` for permit IDs, timestamps, and numeric readings, but its woff2 files are not in the repo. **No CDN or Google Fonts import** — this app runs inside an industrial facility. Self-host IBM Plex Mono to close the gap.

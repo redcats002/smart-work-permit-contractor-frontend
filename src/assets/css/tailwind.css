@@ -154,7 +154,23 @@
 
 	/* ── Status tokens ──────────────────────────
 	   One fg/bg (+ border where the design uses one) pair per permit
-	   status, so no screen hardcodes a status hex. */
+	   status, so no screen hardcodes a status hex.
+
+	   DRAFT/CLOSED/EXPIRED are a deliberate neutral-family three-weight ramp
+	   (wayfinder 027, 2026-09): wayfinder 026 fixed each status pair's own AA
+	   ratio in isolation but left DRAFT and EXPIRED sharing the identical fg
+	   (#5b656f) with only a 2.70 bg ΔE apart — numerically distinct, visually
+	   collided. 027 reuses three already-vetted tokens as light/medium/darkest
+	   text weights instead of inventing new hexes: DRAFT keeps
+	   --color-text-secondary (#5b656f) on --color-surface-muted (#eef1f4,
+	   5.24:1); CLOSED keeps --color-text-strong (#3c444c) but moves onto
+	   --color-surface-subtle (#f4f6f8, 9.13:1); EXPIRED moves onto
+	   --color-text-primary (#16191d) on --color-surface-app (#f7f8fa,
+	   16.59:1). All three clear WCAG AA by wide margins and are perceptually
+	   distinct per scripts/check-contrast.mjs's ΔE gate. Each of the three
+	   also gets a non-colour leading glyph in the chip (pencil/check/! dot) so
+	   colour-blind users and greyscale printouts can still tell them apart —
+	   see PermitStatusGlyph / the inline SVGs at each chip render site. */
 	--color-status-draft-fg: #5b656f;
 	--color-status-draft-bg: #eef1f4;
 
@@ -194,8 +210,13 @@
 	--color-status-fire-monitor-bg: #fff1e6;
 	--color-status-fire-monitor-border: #f5cfa8;
 
+	/* bg moved from #eef1f4 to --color-surface-subtle (#f4f6f8), wayfinder 027:
+	   #eef1f4 was shared verbatim with DRAFT's bg, leaving the two statuses
+	   one shade apart with fg doing all the distinguishing work. fg unchanged
+	   — #3c444c on #f4f6f8 is 9.13:1, comfortably AA. See the neutral-family
+	   note above --color-status-draft-fg. */
 	--color-status-closed-fg: #3c444c;
-	--color-status-closed-bg: #eef1f4;
+	--color-status-closed-bg: #f4f6f8;
 
 	--color-status-rejected-fg: #c81e2c;
 	--color-status-rejected-fg-emphasis: #9b3540;
@@ -205,8 +226,15 @@
 
 	/* fg was #8B95A0 on this bg — 2.86:1, the pair that started wayfinder 026.
 	   Darkened to match --color-text-secondary's value: an existing token
-	   already vetted as this app's text floor, not a new invented colour. */
-	--color-status-expired-fg: #5b656f;
+	   already vetted as this app's text floor, not a new invented colour.
+
+	   fg darkened again, #5b656f → #16191d (wayfinder 027, 2026-09): the 026
+	   fix made EXPIRED and DRAFT share the exact same fg (ΔE 0.00) with only
+	   a 2.70 bg ΔE apart, which is what ticket 027 reported as
+	   indistinguishable chips. Now reuses --color-text-primary — the darkest
+	   vetted weight in the neutral family — on the unchanged bg, 16.59:1. See
+	   the neutral-family note above --color-status-draft-fg. */
+	--color-status-expired-fg: #16191d;
 	--color-status-expired-bg: #f7f8fa;
 
 	/* ── Permit-type tokens ──────────────────────

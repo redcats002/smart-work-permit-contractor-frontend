@@ -73,7 +73,8 @@
             </span>
             <span
               :class="[statusClass.bg, statusClass.fg]"
-              class="rounded-full px-2.75 py-1 text-[11px] font-semibold">
+              class="inline-flex items-center gap-1 rounded-full px-2.75 py-1 text-[11px] font-semibold">
+              <PermitStatusGlyph :status="permit.status" />
               {{ t(`permit.status.${permit.status}`) }}
             </span>
           </div>
@@ -171,6 +172,7 @@ import type { TPermitStatus } from '@/enums/modules/permit/PermitStatus.enum'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import type { IPermitAuditEntry, IPermitFireWatch } from '@/models/modules/permit/Permit.model'
 import type { IPermitDetail } from '@/models/response/permit/PermitRes.model'
+import PermitStatusGlyph from '@/components/chip/PermitStatusGlyph.vue'
 import ClosureChecklistModal from '@/pages/permit/pages/detail/components/ClosureChecklistModal.vue'
 import FireMonitorPanel from '@/pages/permit/pages/detail/components/FireMonitorPanel.vue'
 import MarkCompleteConfirmModal from '@/pages/permit/pages/detail/components/MarkCompleteConfirmModal.vue'

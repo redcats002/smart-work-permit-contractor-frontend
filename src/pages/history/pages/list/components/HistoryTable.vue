@@ -61,7 +61,8 @@
         <span>
           <span
             :class="[statusChipClass(permit.status).bg, statusChipClass(permit.status).fg]"
-            class="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap">
+            class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap">
+            <PermitStatusGlyph :status="permit.status" />
             {{ t(`history.status.${permit.status}`) }}
           </span>
         </span>
@@ -85,7 +86,8 @@
         <span class="truncate font-mono text-[11px] tracking-wide text-text-tertiary">{{ permit.id }}</span>
         <span
           :class="[statusChipClass(permit.status).bg, statusChipClass(permit.status).fg]"
-          class="shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap">
+          class="inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap">
+          <PermitStatusGlyph :status="permit.status" />
           {{ t(`history.status.${permit.status}`) }}
         </span>
       </div>
@@ -116,6 +118,7 @@ import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import type { IPermitListItem } from '@/models/response/permit/PermitRes.model'
 import { useDayjs } from '@/utils/Dayjs'
 import { permitAuthorName } from '@/models/modules/permit/Permit.model'
+import PermitStatusGlyph from '@/components/chip/PermitStatusGlyph.vue'
 import {
   formatDuration, STATUS_CHIP_CLASS, TYPE_BORDER_CLASS, TYPE_CHIP_CLASS, type THistoryStatus
 } from '../composables/useHistory'

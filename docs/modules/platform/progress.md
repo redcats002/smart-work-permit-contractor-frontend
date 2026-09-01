@@ -111,3 +111,72 @@ section didn't yet spell out.
 `bun run typecheck` PASS. `bun run lint` — 0 errors, 2 pre-existing warnings in
 `useNotificationPolling.test.ts` (unchanged, left as-is). `bun run test:run` — 57 files / 509
 tests passed (baseline unchanged, no code touched besides `AGENTS.md`).
+
+## 2026-09-01 — wayfinder 027: DRAFT/CLOSED/EXPIRED chip collision (no feature_list item, ad hoc per wayfinder ticket)
+
+Wayfinder 026 fixed each status pair's own WCAG AA ratio in isolation but left a fresh collision:
+DRAFT and EXPIRED ended up sharing the exact same fg (`#5B656F`) with their bgs only 2.70 ΔE
+apart — numerically distinct pairs, visually indistinguishable chips. Ticket 027 tracked it; all
+values below were product-owner rulings, not re-derived here.
+
+**Final DRAFT/CLOSED/EXPIRED values** (all three are existing vetted tokens reused, not new
+hexes — a deliberate light/medium/darkest neutral-family ramp):
+
+| Status | fg | bg | AA ratio |
+|---|---|---|---|
+| DRAFT | `#5b656f` (`--color-text-secondary`) | `#eef1f4` (`--color-surface-muted`) | 5.24:1 |
+| CLOSED | `#3c444c` (`--color-text-strong`, unchanged) | `#f4f6f8` (`--color-surface-subtle`, was `#eef1f4`) | 9.13:1 |
+| EXPIRED | `#16191d` (`--color-text-primary`, was `#5b656f`) | `#f7f8fa` (`--color-surface-app`, unchanged) | 16.59:1 |
+
+Edited in `src/assets/css/tailwind.css` with inline comments layered onto the existing
+wayfinder-026 comments (not replacing them), and `AGENTS.md`'s footnote under the design-system
+table (which had documented the now-superseded 026 value for `--color-status-expired-fg`) got a
+follow-up paragraph pointing at 027 rather than being rewritten.
+
+**Non-colour glyphs.** DRAFT/CLOSED/EXPIRED chips also each render a small (10×10, `viewBox 0 0
+16 16`) inline SVG glyph before the label — pencil / check / `!`-dot respectively — so a
+colour-blind viewer or a greyscale printout can still tell the three apart, not just the widened
+fg weights. Inline SVG with `stroke`/`fill="currentColor"`, never `<Icon>`/`@iconify/vue` (this
+app runs Iconify in API mode — an Iconify icon would be a live network fetch behind a
+safety-status indicator, wayfinder 041, explicitly out of scope). Factored into one shared
+component, `src/components/chip/PermitStatusGlyph.vue` (next to `BaseChip.vue`), since the same
+three-glyph set was needed in 4 files / 5 render sites:
+- `src/pages/permit/pages/list/components/PermitCard.vue`
+- `src/pages/permit/pages/detail/pages/PermitDetailPage.vue`
+- `src/pages/history/pages/list/components/HistoryTable.vue` (desktop row + mobile card, two
+  sites)
+- `src/pages/history/pages/list/components/HistoryDetailDrawer.vue`
+
+`PermitAuditTimeline.vue`'s audit-event-type dot and `PermitStatusBanner.vue`'s own
+glyph-per-variant system were both left untouched per the ticket — different UI elements serving
+a different purpose, not permit-status chips.
+
+**ΔE distinguishability gate.** `scripts/check-contrast.mjs` gained a CIE76 ΔE (Lab-space)
+all-pairs check across all 7 permit statuses (21 pairs), dependency-free, alongside the existing
+WCAG luminance-ratio check — a second luminance check can't tell two different hues apart (grey
+vs. green can score "close" in luminance despite being visually obvious), so ΔE was used instead.
+`THRESHOLD_DELTA_E = 6`, reproduced and verified before committing to it:
+- old EXPIRED (`#5b656f`/`#f7f8fa`) vs DRAFT (`#5b656f`/`#eef1f4`): fg ΔE = 0.00, bg ΔE = 2.70 —
+  must fail, so threshold > 2.70.
+- corrected DRAFT vs CLOSED (closest pair in the new palette): fg ΔE ≈ 13.89, bg ΔE ≈ 1.89 — must
+  pass (bg close, fg clearly not, AND condition must not trip), so threshold well below 13.89.
+- 6 sits centred in that gap.
+
+Proof the gate actually catches the class of bug it exists for — temporarily set
+`--color-status-closed-fg`/`-bg` equal to DRAFT's in `tailwind.css`, ran
+`node scripts/check-contrast.mjs`:
+
+```
+✗ status pairs too close in BOTH foreground and background (perceptually indistinguishable):
+    DRAFT vs CLOSED: fg ΔE 0.00, bg ΔE 0.00 (needs ≥ 6 on at least one channel)
+```
+
+Exit code 1, names the exact pair. Reverted immediately after; `git diff src/assets/css/tailwind.css`
+shows only the real 027 edits, zero residue from the proof run.
+
+**Verification.** `bun run typecheck` PASS. `bunx eslint` on every touched file — 0 errors (one
+new file, `PermitStatusGlyph.vue`, had 7 auto-fixable `vue/max-attributes-per-line` warnings on
+its `<line>`/`<circle>` elements, fixed with `--fix`). `bun run test:run` — 64 files / 541 tests
+passed (matches the pre-change baseline; no test asserted an exact chip label or a hardcoded
+`#eef1f4`/`#5b656f` literal, so nothing needed updating). `node scripts/check-contrast.mjs` —
+`✓ all 26 colour pairs meet WCAG AA, all 21 status pairs are perceptually distinguishable`.
