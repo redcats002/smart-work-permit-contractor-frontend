@@ -49,6 +49,7 @@
       :next-blocked="isNextBlocked"
       @back="back()"
       @next="next()"
+      @save-draft="onSaveDraftConfirmed()"
       @submit="onSubmitClick()" />
   </div>
 </template>
@@ -87,7 +88,8 @@ const {
   goToStep,
   updateFormData,
   updateChecklistAnswers,
-  submitDraft
+  submitDraft,
+  saveDraft
 } = useWizard()
 
 /**
@@ -103,6 +105,15 @@ async function onSubmitClick (): Promise<void> {
   // (PermitStatusBanner.vue, PMT-010). Nothing else sets it — a plain visit to an already-PENDING
   // permit must NOT look like it was just submitted.
   await router.push({ name: 'PermitDetailPage', params: { id: permitId }, query: { submitted: '1' } })
+}
+
+/**
+ * wayfinder ticket 033. `saveDraft()` flushes the pending autosave and awaits the same `inflight`
+ * chain `submitDraft` does, so the PATCH/POST really has landed before the navigation below fires.
+ */
+async function onSaveDraftConfirmed (): Promise<void> {
+  await saveDraft()
+  await router.push({ name: 'PermitListPage' })
 }
 </script>
 

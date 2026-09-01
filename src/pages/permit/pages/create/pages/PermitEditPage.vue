@@ -79,6 +79,7 @@
         :next-blocked="isNextBlocked"
         @back="back()"
         @next="next()"
+        @save-draft="onSaveDraftConfirmed()"
         @submit="onSubmitClick()" />
     </template>
   </div>
@@ -129,6 +130,7 @@ const {
   updateFormData,
   updateChecklistAnswers,
   submitDraft,
+  saveDraft,
   hydrate
 } = useWizard()
 
@@ -138,6 +140,16 @@ async function onSubmitClick (): Promise<void> {
   const submittedId = await submitDraft()
   if (!submittedId) return
   await router.push({ name: 'PermitDetailPage', params: { id: submittedId }, query: { submitted: '1' } })
+}
+
+/**
+ * wayfinder ticket 033. Same explicit save-as-draft action as PermitCreatePage's, landing back on
+ * the permit's own detail page here instead of the list — this route is always editing ONE
+ * already-known permit id.
+ */
+async function onSaveDraftConfirmed (): Promise<void> {
+  await saveDraft()
+  await router.push({ name: 'PermitDetailPage', params: { id: permitId } })
 }
 
 onMounted(async (): Promise<void> => {

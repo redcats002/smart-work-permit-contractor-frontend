@@ -30,7 +30,16 @@ const permit = {
     // Design (SmartWorkPermit-v3.dc.html line 421) hardcodes this string in English
     // even in the Thai-first prototype, same as the "N inside" list indicator below —
     // not a truncation on our side.
-    blockedNote: 'Complete the required fields on this step to continue'
+    blockedNote: 'Complete the required fields on this step to continue',
+    // wayfinder ticket 033 — the explicit "Save as Draft" action, distinct from the debounced
+    // autosave that already runs on every field edit (no confirmation on that — see ticket).
+    saveDraft: {
+      action: 'Save as Draft',
+      title: 'Save as draft?',
+      body: 'This permit will be saved as a draft and you can come back to finish it later.',
+      confirm: 'Save Draft',
+      cancel: 'Cancel'
+    }
   },
   list: {
     title: 'My Permits',

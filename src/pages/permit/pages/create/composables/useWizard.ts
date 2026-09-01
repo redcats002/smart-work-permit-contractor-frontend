@@ -85,6 +85,16 @@ export interface IUseWizard {
   updateChecklistAnswers (patch: Record<string, TChecklistAnswer>): void
   submitDraft (): Promise<string | undefined>
   /**
+   * wayfinder ticket 033 — the explicit "Save as Draft" action (as opposed to the debounced
+   * autosave `updateFormData` already schedules on every field edit). Flushes any pending
+   * autosave and waits for the same `inflight` chain `submitDraft` waits on, so the confirmation
+   * dialog's "confirm" really has landed before the caller navigates away. Never fires a fresh
+   * create by itself — `debouncedPersist` only has something pending if `updateFormData` already
+   * scheduled one (see its own `hasCreatableDraft` gate), so calling this with nothing entered
+   * yet is a safe no-op.
+   */
+  saveDraft (): Promise<void>
+  /**
    * PMT-014. Seeds the wizard from an already-confirmed-editable permit (the resume/duplicate
    * routes own confirming editability — this function only seeds state, it never calls the API).
    * Sets `draftId` so the next edit PATCHes rather than creating a second draft, primes
@@ -455,6 +465,16 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
   }
 
   /**
+   * wayfinder ticket 033. See the `IUseWizard.saveDraft` doc — this is the whole implementation,
+   * deliberately mirroring the flush-then-await-inflight opening of `submitDraft` below without
+   * that function's POST /permits/:id/submit call.
+   */
+  async function saveDraft (): Promise<void> {
+    debouncedPersist.flush()
+    await inflight
+  }
+
+  /**
    * PMT-009. Flushes any pending autosave, then POSTs /permits/:id/submit.
    *
    * The SERVER'S VERDICT WINS: the client-side gate above is convenience only, so a 400 here is
@@ -538,6 +558,7 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
     updateFormData,
     updateChecklistAnswers,
     submitDraft,
+    saveDraft,
     hydrate
   }
 }

@@ -1961,3 +1961,66 @@ $ bun run build:alpha && bun run build:staging && bun run build:production
 Files changed: `src/assets/css/tailwind.css`, `src/assets/css/primevue.css`, `AGENTS.md`,
 `scripts/check-contrast.mjs` (new), `package.json` (`check:contrast` script; all four build
 scripts now run it first), `init.sh` (new `contrast` gate step).
+
+## 2026-09-01 — wayfinder ticket 033: confirm before saving as draft
+
+**Diagnosis first, as the ticket asked.** There is no explicit "save as draft" action anywhere in
+this repo before this change — `useWizard.ts`'s only write path is `updateFormData` →
+`debouncedPersist()` (1500ms) → `persist()` → `doPersist()`, which fires on every field edit once
+`hasCreatableDraft`/`draftId` allow it. Nothing else calls `PermitService.create`/`update` except
+`submitDraft` (an explicit PENDING submission, a different action) and `onUnmounted`'s
+`debouncedPersist.flush()` (a safety flush on navigation, not a user gesture). The owner's field
+report ("saving as draft happens with no confirmation") was this autosave firing silently on
+navigation — there was no button to confirm because none existed.
+
+Per the ticket's own constraint ("a confirmation attached to autosave would fire constantly and be
+worse than none, and cancel must be a true no-op"), gating the debounce itself was ruled out: by
+the time any dialog could appear, the debounce may have already written, so "cancel" would be
+lying about data already on the server. The fix adds the missing explicit action instead — a
+"Save as Draft" button in `WizardFooter.vue` (shared by `PermitCreatePage` and `PermitEditPage`)
+that opens a new `SaveDraftConfirmModal.vue` (mirrors `PendingEditWarningModal`'s
+BaseModal/confirm-emit shape exactly). Cancel closes the dialog with nothing having run yet — a
+genuine no-op. Confirm calls the wizard's new `saveDraft()` (flush the pending autosave, await the
+same `inflight` chain `submitDraft` awaits, so the PATCH/POST has really landed), then navigates
+away — to `/permits` from Create, to `/permits/:id` from Edit (always editing one known permit).
+Autosave itself (`debouncedPersist`, `onUnmounted`'s flush) is untouched and unprompted.
+
+**No double-prompt with `PendingEditWarningModal` (ticket 012):** that modal lives in
+`PermitStatusBanner.vue` and fires on *entry* to the edit route, before `PermitEditPage` even
+mounts. `SaveDraftConfirmModal` lives inside `WizardFooter`, only reachable once already inside
+the wizard, and fires on *exit*. Different components, different gestures, structurally
+non-overlapping — confirmed by reading `PermitEditPage.vue`'s full render tree (no
+`PermitStatusBanner` import) and by the existing `PermitEditPage.test.ts` suite, which already
+asserts mounting performs no write.
+
+New test file `src/tests/pages/permit/create/PermitCreatePage.saveDraft.test.ts` (4 cases): opening
+the dialog persists/navigates nothing yet; cancel truly no-ops; confirm flushes the create/update
+call and navigates to `PermitListPage`; autosave settling on its own 1500ms timer never opens the
+dialog. EN + TH copy added under `permit.wizard.saveDraft.*` in both locale files.
+
+```
+$ bun run test:run
+ Test Files  58 passed (58)
+      Tests  514 passed (514)
+
+$ bun run typecheck
+$ vue-tsc --noEmit -p tsconfig.app.json
+(clean — no output)
+
+$ bun run lint
+$ eslint .
+(2 pre-existing warnings in useNotificationPolling.test.ts, unrelated, unchanged — 0 errors)
+
+$ node scripts/check-contrast.mjs
+✓ all 26 colour pairs meet WCAG AA
+```
+
+Files changed: `src/pages/permit/pages/create/composables/useWizard.ts` (new `saveDraft()` +
+`IUseWizard.saveDraft`), `src/pages/permit/pages/create/components/WizardFooter.vue` (new button +
+modal + `save-draft` emit), `src/pages/permit/pages/create/components/SaveDraftConfirmModal.vue`
+(new), `src/pages/permit/pages/create/pages/PermitCreatePage.vue`,
+`src/pages/permit/pages/create/pages/PermitEditPage.vue` (both wire `@save-draft`),
+`src/locales/{en,th}/permit.ts` (`wizard.saveDraft.*`), new test file above.
+
+No deviation from the ticket. Baseline was 57 files / 510 tests before this session — confirmed
+green before the first edit.

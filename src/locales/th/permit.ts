@@ -33,7 +33,16 @@ const permit: typeof permitEn = {
     // this note, only the English string appears in the prototype (same as
     // list.card.inside below), and it names a safety "reading" — leaving it
     // English rather than inventing safety terminology.
-    blockedNote: 'กรอกข้อมูลที่จำเป็นในขั้นตอนนี้ให้ครบเพื่อไปต่อ'
+    blockedNote: 'กรอกข้อมูลที่จำเป็นในขั้นตอนนี้ให้ครบเพื่อไปต่อ',
+    // wayfinder ticket 033 — เฉพาะปุ่ม "บันทึกร่าง" ที่กดเอง เท่านั้นที่มีการยืนยัน
+    // ระบบบันทึกอัตโนมัติระหว่างกรอกฟอร์มไม่มีการถามซ้ำ (ดูรายละเอียดใน ticket)
+    saveDraft: {
+      action: 'บันทึกร่าง',
+      title: 'บันทึกเป็นร่างหรือไม่?',
+      body: 'ใบอนุญาตนี้จะถูกบันทึกเป็นร่าง และคุณสามารถกลับมากรอกต่อได้ภายหลัง',
+      confirm: 'บันทึกร่าง',
+      cancel: 'ยกเลิก'
+    }
   },
   list: {
     title: 'ใบอนุญาตของฉัน',
