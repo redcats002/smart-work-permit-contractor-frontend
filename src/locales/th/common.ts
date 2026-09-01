@@ -13,6 +13,10 @@ const common: typeof commonEn = {
   yes: 'ใช่',
   no: 'ไม่ใช่',
   notApplicable: 'N/A',
+  password: {
+    show: 'แสดงรหัสผ่าน',
+    hide: 'ซ่อนรหัสผ่าน'
+  },
   validation: {
     required: 'กรุณาเลือก{label}',
     requiredField: 'กรุณาระบุ{label}',

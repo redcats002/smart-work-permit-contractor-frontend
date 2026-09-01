@@ -2088,3 +2088,64 @@ unchanged — the investigation found them correct.
 is a different component built on PrimeVue's `Paginator` (per the ticket's own line numbers,
 `SafetyUserListPage.vue:225-226`/`:146`, `BaseTable.vue:215`) — this repo's fix does not apply
 there; the root cause has to be re-traced in that codebase.
+
+## 2026-09-01 — wayfinder ticket 028: remaining native controls + password toggle
+
+**Grep first, as the ticket asked.** `grep -rn "<select\|<textarea" src/pages src/components` finds
+**zero** matches — no native `<select>` and no native `<textarea>` exist anywhere in this repo.
+Volt's own `Select.vue` (`src/volt/Select.vue`) is already scaffolded and already in real use
+(`HistoryListPage.vue`'s two filter dropdowns). Checked the actual root cause the ticket named —
+whether the PrimeVue plugin is registered — anyway, since a fresh Volt component would hit it if it
+weren't: `src/plugins/primevue.plugin.ts`'s `registerPrimeVue()` calls `app.use(PrimeVue,
+primeVueConfig)` with `unstyled: true`, wired into `registerPlugins()` in `src/plugins/index.ts`.
+Registration is correct and was never the blocker in this repo — ticket 006's cited reason for the
+sibling app does not describe a defect here to fix.
+
+Native `<input type="file">` remains in four places (`FileInput.vue`, `PhotoSlot.vue`,
+`CreateCertificateModal.vue`, `AddCertificateModal.vue`) — Volt ships no file-upload wrapper, so
+per the ticket's own allowance this stays native **as a recorded decision, not an oversight**. Two
+different trigger patterns exist: `PhotoSlot.vue` hides the input and triggers it from a real
+`<button type="button">` (keyboard-operable, carries its own visible label text) — `FileInput.vue`
+does the same. `CreateCertificateModal.vue`/`AddCertificateModal.vue` instead wrap the hidden input
+in a `<label>`, which is native-file-picker-triggering on click but is not itself in the tab order
+or Enter/Space-operable in most browsers — a smaller gap than the ticket's password ask, not fixed
+here because the ticket names the password toggle specifically and this would be a drive-by change
+to three unrelated files; noting it for whoever picks it up next.
+
+**Password toggle:** already existed, more than the ticket assumed. `src/volt/Password.vue` ships
+`toggle-mask` support out of the box (mask/unmask icon slots), and this repo's own
+`PasswordInput.vue` (the wrapper every password field already goes through — `LoginForm.vue`,
+`ResetPasswordForm.vue` x2) already passes `toggle-mask`. What was missing: the toggle icon itself
+was PrimeVue's stock `@click`-only SVG with no `role`, no `tabindex`, no keyboard handler and no
+accessible name — upstream's own default, not something this app broke. Fixed by overriding the
+`#maskicon`/`#unmaskicon` slots in `PasswordInput.vue` (app-owned, never touches
+`src/volt/Password.vue`) with a `role="button" tabindex="0"` wrapper, `aria-label` from new
+`common.password.show`/`hide` EN+TH keys, and `@keydown.enter`/`@keydown.space.prevent` alongside
+`@click`. Every password field in the app inherits this from one change.
+
+New test file `src/tests/components/input/PasswordInput.test.ts` (3 cases): starts masked with a
+labelled "Show password" control that flips to plain text on click; Enter and Space both toggle,
+not only a mouse click; the Thai locale renders the Thai label.
+
+```
+$ bun run test:run
+ Test Files  61 passed (61)
+      Tests  520 passed (520)
+
+$ bun run typecheck
+$ vue-tsc --noEmit -p tsconfig.app.json
+(clean — no output)
+
+$ bun run lint
+$ eslint .
+(2 pre-existing warnings in useNotificationPolling.test.ts, unrelated, unchanged — 0 errors)
+
+$ node scripts/check-contrast.mjs
+✓ all 26 colour pairs meet WCAG AA
+```
+
+Files changed: `src/components/input/PasswordInput.vue` (keyboard-accessible, labelled toggle),
+`src/locales/{en,th}/common.ts` (`password.show`/`hide`), new test file above. No native `<select>`
+or `<textarea>` existed to convert; no schema changes needed (no value-shape change — the toggle is
+purely visual, the bound value is unchanged). `PrimeVue` plugin registration confirmed correct, not
+touched.
