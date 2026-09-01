@@ -2024,3 +2024,67 @@ modal + `save-draft` emit), `src/pages/permit/pages/create/components/SaveDraftC
 
 No deviation from the ticket. Baseline was 57 files / 510 tests before this session — confirmed
 green before the first edit.
+
+## 2026-09-01 — wayfinder ticket 029: pagination binding + single-line/responsive table
+
+**Diagnosis, as the ticket asked for.** This app's `Paginate.vue` (`src/components/table/Paginate.vue`)
+is NOT the sibling Safety app's PrimeVue `Paginator` — it is a hand-rolled component that reads
+`pagination.count` / `.totalPage` / `.page` / `.limit` directly off the same `IPagination` object
+every list composable assigns straight from the API response (`useHistory.ts`, `useMyPermits.ts`,
+`useCertificates.ts` all do `pagination.value.count = response.count; pagination.value.totalPage =
+response.totalPage`). There is no `rows`/`totalRecords`/`first` translation layer for the field
+report's "assigned correctly but rendered zero" bug to hide in — the same object that receives the
+write is the object the template reads. Traced this by hand, then pinned it with a test
+(`src/tests/components/table/Paginate.test.ts`) that binds `{ count: 4, totalPage: 1, page: 1,
+limit: 10 }` — the exact shape from the field report — straight to a mounted `Paginate` and asserts
+the rendered text contains the real numbers, never "0" or an empty page-size select. **The binding
+is correct here; nothing changed for this half of the ticket** — a clean negative, reported per the
+ticket's own instruction rather than patched over.
+
+Every list page checked (this repo only — `smart-work-permit-frontend` is a separate repo out of
+scope): `PermitListPage` and `CertificateListPage` both request `limit: 50` and render a card grid
+with no visible page control at all (no `<Paginate>` in either template) — there is nothing for
+this defect to live in on those two pages, though a contractor with more than 50 permits/certs has
+no way to reach page 2, which is a real but different gap, out of this ticket's scope, not filed as
+a new ticket per the instruction to stay in scope. `HistoryListPage` is the only page in this repo
+that renders `<Paginate>`, and it is the one this session verified.
+
+**Single-line rows + mobile responsive**, the other half. `HistoryTable.vue`'s desktop grid was
+already single-line (every cell `truncate`s) but relied on `overflow-x-auto` + `min-w-[700px]` to
+survive a narrow viewport — exactly "letting `overflow` decide" the ticket warns against. Replaced
+with a deliberate split: the single-line grid stays, now `hidden md:block`; a new `md:hidden`
+stacked-card layout appears below `md:`, reusing the id/status-badge-top,
+title-and-location-below, chips-row-bottom idiom `PermitCard.vue` already established elsewhere in
+this app for exactly this "one entity, one row" mobile case — not a new pattern. All existing
+fields survive the breakpoint switch (re-flowed, not hidden or scrolled away).
+
+New tests: `src/tests/components/table/Paginate.test.ts` (2 cases — real count/page render, never
+"0"; a real multi-page response highlights the right page), `src/tests/pages/history/list/
+HistoryTable.responsive.test.ts` (1 case — both layouts render with the right visibility classes,
+desktop cells truncate, mobile card keeps the full text).
+
+```
+$ bun run test:run
+ Test Files  60 passed (60)
+      Tests  517 passed (517)
+
+$ bun run typecheck
+$ vue-tsc --noEmit -p tsconfig.app.json
+(clean — no output)
+
+$ bun run lint
+$ eslint .
+(2 pre-existing warnings in useNotificationPolling.test.ts, unrelated, unchanged — 0 errors)
+
+$ node scripts/check-contrast.mjs
+✓ all 26 colour pairs meet WCAG AA
+```
+
+Files changed: `src/pages/history/pages/list/components/HistoryTable.vue` (desktop/mobile split),
+two new test files above. `src/components/table/Paginate.vue` and every list composable are
+unchanged — the investigation found them correct.
+
+**Note for whoever picks up the sibling Safety repo's half of this ticket:** that app's paginator
+is a different component built on PrimeVue's `Paginator` (per the ticket's own line numbers,
+`SafetyUserListPage.vue:225-226`/`:146`, `BaseTable.vue:215`) — this repo's fix does not apply
+there; the root cause has to be re-traced in that codebase.
