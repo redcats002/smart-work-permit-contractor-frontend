@@ -155,7 +155,8 @@ describe('Step4PpeWorkers — worker-name AutoComplete (wayfinder ticket 004)', 
    * resize while it is open, so that reflow closed it mid-typing.
    *
    * The fix is a trigger change, and that is what these two cases pin: typing alone must ask for
-   * NOTHING, and selecting/leaving the field must ask exactly once.
+   * NOTHING, and a mouse selection — whose blur, model write and option-select all arrive before
+   * the parent's write-back — must settle into exactly one lookup, fired after the click.
    */
   it('typing does not trigger the certificate pre-flight — only committing the name does', async () => {
     vi.spyOn(CertificateProvider.prototype, 'list').mockResolvedValue({
@@ -176,31 +177,45 @@ describe('Step4PpeWorkers — worker-name AutoComplete (wayfinder ticket 004)', 
     expect(wrapper.emitted('recheck-certificates')).toBeUndefined()
   })
 
-  it('selecting a suggestion commits the name and asks for one pre-flight; a blur with no further change asks for none', async () => {
+  it('selecting a suggestion commits the name once, and the blur that comes with the click adds no second lookup', async () => {
     vi.spyOn(CertificateProvider.prototype, 'list').mockResolvedValue({
       message: 'ok', data: [certificate({ workerName: 'Somchai' })], count: 1, totalPage: 1
     } as never)
+    vi.useFakeTimers({ shouldAdvanceTime: true })
 
     const wrapper = mountStep()
     await flushPromises()
 
     const autoComplete = wrapper.findComponent(AutoComplete)
+    // The real mouse sequence, in PrimeVue's order: mousedown blurs the input BEFORE the click
+    // that selects the option, and `onOptionSelect` emits `update:modelValue` and `option-select`
+    // in the same synchronous tick.
+    autoComplete.vm.$emit('blur')
     autoComplete.vm.$emit('update:modelValue', certificate({ workerName: 'Somchai' }))
-    await flushPromises()
-    // The step is controlled by its `formData` prop, so the parent's write-back is what actually
-    // puts the committed name on the row — mirror it before the commit event fires.
-    await wrapper.setProps({
-      formData: { type: 'hot', workers: [{ workerName: 'Somchai', roleOnPermit: 'Operator' }] }
-    } as never)
     autoComplete.vm.$emit('option-select', { value: certificate({ workerName: 'Somchai' }) })
     await flushPromises()
 
+    // Nothing yet: both commits are deferred past the click, which is what stops the pre-flight
+    // clearing the problems banner and hiding the overlay mid-selection.
+    expect(wrapper.emitted('recheck-certificates')).toBeUndefined()
+
+    // The parent's write-back lands before the deferred commit runs, so it hashes the settled
+    // name — which is why the blur and the select collapse into a single lookup, not two.
+    await wrapper.setProps({
+      formData: { type: 'hot', workers: [{ workerName: 'Somchai', roleOnPermit: 'Operator' }] }
+    } as never)
+    await vi.advanceTimersByTimeAsync(1)
+    await flushPromises()
+
     expect(wrapper.emitted('recheck-certificates')).toHaveLength(1)
 
-    // Blurring the same, unchanged row must not fire a second lookup.
+    // Leaving the same, unchanged row again asks for nothing.
     autoComplete.vm.$emit('blur')
+    await vi.advanceTimersByTimeAsync(1)
     await flushPromises()
     expect(wrapper.emitted('recheck-certificates')).toHaveLength(1)
+
+    vi.useRealTimers()
   })
 
   it('a certificate created from the wizard is added to the suggestion cache and rechecks certificates', async () => {

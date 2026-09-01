@@ -2289,9 +2289,10 @@ then flipping `certificateState`/`certificateProblems`, then replaying the paren
 write-back, leaves the overlay open every time. `useWizard.updateFormData` was also read and does
 no normalisation, so the round-tripped `workerName` is byte-identical to what was typed.
 
-The hider is PrimeVue's AutoComplete itself. `onOverlayAfterEnter` binds BOTH a
-`ConnectedOverlayScrollHandler` over the field's scrollable ancestors and a window resize
-listener, and each one calls `hide()`:
+The only remaining mechanism — inferred from PrimeVue's source, **not** reproduced, because jsdom
+fires neither scroll nor resize on reflow — is AutoComplete's own overlay listeners.
+`onOverlayAfterEnter` binds BOTH a `ConnectedOverlayScrollHandler` over the field's scrollable
+ancestors and a window resize listener, and each one calls `hide()`:
 
 ```js
 // node_modules/primevue/autocomplete/index.mjs
@@ -2300,18 +2301,30 @@ this.scrollHandler = new ConnectedOverlayScrollHandler(this.$refs.container, fun
 })
 ```
 
-The worker table is `overflow-x-auto` — a scrollable ancestor — and the certificate pre-flight's
-verdict mounts the `certificateProblems` banner *below* that table. So the sequence was: type →
-500ms debounced watch on `formData.workers` fires a lookup for a half-typed name → verdict lands →
-banner mounts → page reflows → overlay hides. jsdom fires neither scroll nor resize on reflow,
-which is why the existing four tests (all of which `$emit` directly on the component and never
-drive the input) never caught it.
+The worker table is `overflow-x-auto` — a scrollable ancestor — and the certificate pre-flight
+mounts and clears the `certificateProblems` banner *below* that table. So the sequence was: type →
+500ms debounced watch on `formData.workers` fires a lookup for a half-typed name → `check()`
+empties `problems` before its first await → banner unmounts → the page shortens, clamping a
+scroll position → overlay hides. The *clearing* is the likelier trigger of the two: growing the
+page clamps nothing, shrinking it can. The existing four tests never caught any of this because
+they all `$emit` directly on the component and never drive the input.
+
+Confirming this in a real browser is still owed; the fix does not depend on which of the two
+listeners fires, since neither can fire if the check no longer runs mid-typing.
 
 **Fix — a trigger change, exactly as asked.** The 500ms `watch` on `formData.workers` in
 `useWizard` is gone. `recheckCertificates()` is now the only entry point, called from:
 
 - `Step4PpeWorkers.commitWorkerNames()` — on `@option-select` and `@blur`, guarded on the joined
-  worker-name list having actually changed, so tabbing through an untouched row costs nothing
+  worker-name list having actually changed, so tabbing through an untouched row costs nothing.
+  **Deferred by a `setTimeout(0)`, and that is load-bearing.** Clicking a suggestion blurs the
+  input on `mousedown`, before the `click` that selects it — so a synchronous commit there would
+  clear `problems`, unmount the banner, and hide the overlay out from under the click, reinstating
+  the bug at the worst possible moment. `nextTick` does not help: it is a microtask and drains
+  before `mouseup`. A macrotask lands after the whole click sequence, and by then the parent's
+  `formData` write-back has rendered, so the change-guard sees the settled name and the blur that
+  accompanies a selection collapses into the same single lookup rather than a second one.
+  Cleared in `onBeforeUnmount` so a pending commit cannot emit into a torn-down parent
 - `confirmRemove()` — removing a row settles the list too
 - `onCertificateCreated()` — unchanged, already there
 - `useWizard.hydrate()` — replaces the removed watch's `immediate: true`, so a draft loaded
@@ -2322,6 +2335,11 @@ drive the input) never caught it.
   text, never touch a suggestion, press Next — the verdict is still current.
 
 `check()` is sequence-guarded already, so the overlapping calls this creates are safe.
+
+`PermitDuplicatePage` was checked and needs nothing: it never renders the wizard, it POSTs the new
+draft and `router.replace`s to `PermitEditPage`, which calls `hydrate()`. So both seeded-worker
+entry points get the arrival check that the removed watch's `immediate: true` used to provide, and
+neither can strand a row on the `'checking'` badge that `certificateState === 'idle'` produces.
 
 **One adjacent bug fixed while here.** `useWorkerCertificateSuggestions.filter('')` returned
 `certificates.value` *by reference*. PrimeVue opens the overlay from a watcher on the `suggestions`

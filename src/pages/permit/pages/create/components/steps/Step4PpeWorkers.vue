@@ -117,9 +117,9 @@
                   :suggestions="workerSuggestions"
                   class="h-9 w-full"
                   option-label="workerName"
-                  @blur="commitWorkerNames()"
+                  @blur="scheduleWorkerNameCommit()"
                   @complete="onWorkerNameComplete($event.query)"
-                  @option-select="commitWorkerNames()"
+                  @option-select="scheduleWorkerNameCommit()"
                   @update:model-value="onWorkerNameUpdate(row.index, $event)">
                   <template #option="{ option }">
                     <WorkerCertificateSuggestionOption :certificate="option" />
@@ -259,7 +259,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, type ComputedRef, type Ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, type ComputedRef, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DeleteModal from '@/components/modal/DeleteModal.vue'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
@@ -336,6 +336,7 @@ const {
 const workerSuggestions: Ref<ICertificate[]> = ref([])
 /** Last worker-name list handed to the pre-flight — see `commitWorkerNames` below. */
 let lastCommittedNames = ''
+let commitTimer: ReturnType<typeof setTimeout> | undefined
 
 onMounted((): void => {
   void fetchCertificateSuggestions()
@@ -361,12 +362,21 @@ function onWorkerNameUpdate (index: number, value: string | ICertificate | null)
 
 /**
  * The certificate pre-flight deliberately does NOT run while a name is being typed. Its verdict
- * mounts the `certificateProblems` banner below this table, and that reflow closes PrimeVue's
- * open suggestion overlay — AutoComplete binds a scroll listener on its scrollable ancestors
- * (this table is `overflow-x-auto`) and a window resize listener whenever the overlay is up, and
- * both call `hide()`. So the check fires here instead, on the events that actually settle a name:
- * picking a suggestion, and leaving the field. Guarded on the name list having really changed, so
- * tabbing through an untouched row costs nothing.
+ * mounts (and clears) the `certificateProblems` banner below this table, and that reflow closes
+ * PrimeVue's open suggestion overlay — AutoComplete binds a scroll listener on its scrollable
+ * ancestors (this table is `overflow-x-auto`) and a window resize listener whenever the overlay
+ * is up, and both call `hide()`. So the check fires here instead, on the events that actually
+ * settle a name: picking a suggestion, and leaving the field.
+ *
+ * Deferred by a macrotask, and that timing is load-bearing rather than incidental. Clicking a
+ * suggestion blurs the input on `mousedown`, BEFORE the `click` that selects it. Running the
+ * check synchronously there would clear `problems` (the pre-flight empties it before its first
+ * await), unmount the banner, shorten the page, and hide the overlay out from under the click —
+ * reinstating the reported bug at the exact moment the user is trying to pick a name. `nextTick`
+ * would not help: it is a microtask, and drains before `mouseup`. A `setTimeout` lands after the
+ * whole click sequence, so selection completes first — and by then the parent's `formData`
+ * write-back has rendered, so the guard below hashes the settled list and the blur that follows a
+ * selection is a no-op rather than a second lookup.
  */
 function commitWorkerNames (): void {
   const names = workers.value.map((worker: IPermitWorker): string => worker.workerName.trim()).join('\u0000')
@@ -374,6 +384,20 @@ function commitWorkerNames (): void {
   lastCommittedNames = names
   emit('recheck-certificates')
 }
+
+function scheduleWorkerNameCommit (): void {
+  if (commitTimer !== undefined) clearTimeout(commitTimer)
+  commitTimer = setTimeout((): void => {
+    commitTimer = undefined
+    commitWorkerNames()
+  }, 0)
+}
+
+// A pending commit must not emit into a torn-down parent — the user can leave the wizard within
+// the same tick as a blur (clicking the browser back button blurs the field first).
+onBeforeUnmount((): void => {
+  if (commitTimer !== undefined) clearTimeout(commitTimer)
+})
 
 /** wayfinder ticket 004 — a certificate created in-wizard suggests immediately, no refetch. */
 function onCertificateCreated (certificate: ICertificate): void {
