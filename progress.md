@@ -2212,3 +2212,65 @@ Files changed: `src/pages/auth/pages/login/pages/LoginPage.vue` (`fillContractor
 `showTrialFill`, new template section), `src/locales/{en,th}/platform.ts`
 (`platform.auth.trialFill.*`), `.env.example` (documents both trial affordances under the one
 flag, no credential value committed), new test file above.
+
+## 2026-09-01 — wayfinder ticket 030: SEO metadata
+
+**This is an authenticated internal tool, not a marketing site** — the ticket's own framing,
+confirmed against this repo: every route in `src/router/index.ts` sits behind `meta.auth` except
+the auth pages themselves, and holds permit/worker data once logged in. Did not copy the landing
+page's Open Graph setup, per the ticket.
+
+**Per-route `<title>` — mostly already true, three gaps closed.** `router.afterEach` in
+`src/router/index.ts` already builds `document.title` from `route.meta.title`, and every
+authenticated destination (`Auth`, `Permit`, `History`, `Certificate`, `Profile` router modules)
+already declares one. The three inline common routes did not: `NotPermittedPage`,
+`NotAvailablePage`, `NotFound` all fell back to the bare "e-safework" default — the exact "one
+static string for every route" the ticket named, just narrower than assumed (three routes, not
+every route). Added `meta.title` to all three. `HomePage` was left alone deliberately — it always
+`router.replace()`s immediately on mount (to `PermitListPage` or `LoginPage`), so its title is
+never perceived.
+
+**`<meta name="description">`, `robots: noindex, nofollow`, lang.** Added a static description and
+`<meta name="robots" content="noindex, nofollow">` to `index.html`, plus a companion
+`public/robots.txt` (`Disallow: /`) as the standard belt-and-suspenders — the meta tag is the
+primary mechanism since it also covers a crawler that ignores `robots.txt`. Also fixed a real,
+previously-unnoticed defect while doing this: `index.html` had `lang="en"` hardcoded, but this
+app's own documented default UI locale is Thai (`AGENTS.md` "i18n (en/th, default th)") — every
+first paint before a user ever touched the locale switcher was reporting the wrong document
+language. Changed the static default to `lang="th"` (the correct pre-JS best guess) and added
+`applyDocumentLocale()` to `src/plugins/I18n.plugin.ts`, called once at module load (so a returning
+EN user's persisted choice is reflected as early as JS runs, not just after their next `setLocale`
+call) and again inside `setLocale()` on every runtime switch.
+
+New/changed test coverage: `src/tests/plugins/I18n.plugin.test.ts` gained two cases (`lang` set
+from the persisted locale on load; `setLocale` updates it at runtime). New
+`src/tests/router/index.titles.test.ts` pins that the three previously-titleless routes now each
+declare a real `meta.title`.
+
+```
+$ bun run test:run
+ Test Files  63 passed (63)
+      Tests  529 passed (529)
+
+$ bun run typecheck
+$ vue-tsc --noEmit -p tsconfig.app.json
+(clean — no output)
+
+$ bun run lint
+$ eslint .
+(2 pre-existing warnings in useNotificationPolling.test.ts, unrelated, unchanged — 0 errors)
+
+$ node scripts/check-contrast.mjs
+✓ all 26 colour pairs meet WCAG AA
+
+$ rm -rf dist && bun run build
+✓ built in 801ms
+(dist/index.html carries the description/robots meta tags; dist/robots.txt present)
+$ rm -rf dist
+```
+
+Files changed: `index.html` (description, robots, lang default), `public/robots.txt` (new),
+`src/plugins/I18n.plugin.ts` (`applyDocumentLocale`), `src/router/index.ts` (three missing
+`meta.title`s), two test files above (one new, one extended). No touch to
+`smart-work-permit-frontend` (safety/inspector) or the landing repo — out of scope for this
+session, which was contractor-repo-only; their halves of this ticket are unaddressed here.

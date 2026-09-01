@@ -1,0 +1,7 @@
+# wayfinder ticket 030. This is an authenticated internal tool (contractor work-permit
+# management) — every route is behind a login and holds permit/worker data, so it is
+# deliberately non-indexable. The per-page <meta name="robots" content="noindex, nofollow">
+# in index.html is the primary mechanism (works even for a crawler that ignores robots.txt);
+# this file is the standard belt-and-suspenders companion.
+User-agent: *
+Disallow: /

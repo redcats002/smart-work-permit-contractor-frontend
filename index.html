@@ -1,9 +1,24 @@
 <!doctype html>
-<html lang="en">
+<!--
+  wayfinder ticket 030. `lang="th"` is the static best guess for first paint — matches this app's
+  documented default UI locale (AGENTS.md "i18n (en/th, default th)"). `src/plugins/I18n.plugin.ts`
+  overwrites this attribute at runtime with whatever locale is actually persisted/active, so a
+  returning EN user's document still reports "en" — this is only the pre-JS fallback.
+-->
+<html lang="th">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      This is an authenticated internal tool (contractor work-permit management for a Thai
+      industrial facility), not a public site — see the ticket for why it gets a different
+      metadata answer than the landing page. `noindex, nofollow` is deliberate: every page here
+      is behind a login and holds permit/worker data, so being indexed or having its links
+      followed is never a goal.
+    -->
+    <meta name="description" content="e-safework — contractor work permit portal. Draft, submit and track work permits for a Thai industrial facility." />
+    <meta name="robots" content="noindex, nofollow" />
     <title>e-safework</title>
   </head>
   <body>

@@ -49,6 +49,28 @@ describe('I18n plugin', () => {
     expect(getPersistedLocale()).toBe('en')
   })
 
+  // wayfinder ticket 030. `document.documentElement.lang` must track the ACTIVE locale, not
+  // index.html's static `th` guess — a returning EN user's document has to say so from load.
+  it('sets document.documentElement.lang to the persisted locale on module load', async () => {
+    const { LOCALE_STORAGE_KEY } = await import('@/plugins/I18n.plugin')
+    localStorage.setItem(LOCALE_STORAGE_KEY, 'en')
+
+    vi.resetModules()
+    await import('@/plugins/I18n.plugin')
+
+    expect(document.documentElement.lang).toBe('en')
+  })
+
+  it('setLocale updates document.documentElement.lang at runtime', async () => {
+    const { setLocale } = await import('@/plugins/I18n.plugin')
+
+    setLocale('en')
+    expect(document.documentElement.lang).toBe('en')
+
+    setLocale('th')
+    expect(document.documentElement.lang).toBe('th')
+  })
+
   it('exposes both en and th message trees with matching key shape', async () => {
     const { default: i18n } = await import('@/plugins/I18n.plugin')
     const en = i18n.global.getLocaleMessage('en')
