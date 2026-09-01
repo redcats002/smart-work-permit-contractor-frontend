@@ -84,6 +84,12 @@ describe('Step4PpeWorkers — worker-name AutoComplete (wayfinder ticket 004)', 
 
   afterEach((): void => {
     vi.restoreAllMocks()
+    // Unconditional, NOT at the end of the one test that installs fake timers. A failing
+    // assertion there would skip the restore and leak fake timers into the next test in this
+    // file, which then fails for a reason that has nothing to do with it and passes on a rerun —
+    // reported as a flake on 2026-09-01. Teardown that only runs on the happy path is not
+    // teardown. Calling this when real timers are already active is a no-op.
+    vi.useRealTimers()
   })
 
   it('populates suggestions from the certificate list, filtered by the typed query', async () => {
@@ -214,8 +220,6 @@ describe('Step4PpeWorkers — worker-name AutoComplete (wayfinder ticket 004)', 
     await vi.advanceTimersByTimeAsync(1)
     await flushPromises()
     expect(wrapper.emitted('recheck-certificates')).toHaveLength(1)
-
-    vi.useRealTimers()
   })
 
   it('a certificate created from the wizard is added to the suggestion cache and rechecks certificates', async () => {
