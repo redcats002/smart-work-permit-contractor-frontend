@@ -187,7 +187,11 @@ describe('Step4PpeWorkers — worker-name AutoComplete (wayfinder ticket 004)', 
     vi.spyOn(CertificateProvider.prototype, 'list').mockResolvedValue({
       message: 'ok', data: [certificate({ workerName: 'Somchai' })], count: 1, totalPage: 1
     } as never)
-    vi.useFakeTimers({ shouldAdvanceTime: true })
+    // Plain fake timers, NOT `{ shouldAdvanceTime: true }`. With auto-advance the fake clock also
+    // moves with real time, so `commitWorkerNames`'s deferred setTimeout(0) could fire on its own
+    // before the explicit advance below — making "nothing yet" and the final count depend on
+    // machine speed. It failed roughly 2 runs in 8. Only explicit advances may move time here.
+    vi.useFakeTimers()
 
     const wrapper = mountStep()
     await flushPromises()
