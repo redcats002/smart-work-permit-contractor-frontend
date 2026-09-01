@@ -49,7 +49,7 @@
 
 <script setup lang="ts">
 import { computed, ref, useTemplateRef } from 'vue'
-import { Icon } from '@iconify/vue'
+import Icon from '@/components/base/AppIcon.vue'
 import ConfirmModal from '../modal/ConfirmModal.vue'
 import DeleteModal, { type IDeleteModalProps } from '../modal/DeleteModal.vue'
 

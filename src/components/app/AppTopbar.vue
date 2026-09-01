@@ -98,7 +98,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Icon } from '@iconify/vue'
+import Icon from '@/components/base/AppIcon.vue'
 import { useDayjs } from '@/utils/Dayjs'
 import { toast } from '@/plugins/toast'
 import { useApiError } from '@/composables/useApiError'

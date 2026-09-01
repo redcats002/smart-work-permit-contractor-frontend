@@ -1,7 +1,10 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
-vi.mock('@iconify/vue', () => ({
-  Icon: {
+// wayfinder 041 — Switch.vue now imports its `Icon` binding from AppIcon.vue, not
+// '@iconify/vue' directly, so the mock target moved. This test only asserts the icon name
+// Switch.vue passes through, not real SVG output, so a stub is still the right tool here.
+vi.mock('@/components/base/AppIcon.vue', () => ({
+  default: {
     template: '<i :data-icon="icon" data-testid="switch-icon" />',
     props: ['icon']
   }

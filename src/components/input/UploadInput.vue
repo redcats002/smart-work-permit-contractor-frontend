@@ -131,7 +131,7 @@
 import { computed, ref, useTemplateRef } from 'vue'
 import { toast } from '@/plugins/toast'
 import type { IMedia } from '@/resources/provider/Upload.provider'
-import { Icon } from '@iconify/vue'
+import Icon from '@/components/base/AppIcon.vue'
 import BaseImage from '../base/BaseImage.vue'
 
 defineOptions({

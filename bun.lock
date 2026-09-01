@@ -28,6 +28,19 @@
       },
       "devDependencies": {
         "@eslint/js": "^9.39.4",
+        "@iconify-json/bxs": "^1.2.3",
+        "@iconify-json/lets-icons": "^1.2.2",
+        "@iconify-json/lucide": "^1.2.128",
+        "@iconify-json/material-icon-theme": "^1.2.70",
+        "@iconify-json/material-symbols": "^1.2.90",
+        "@iconify-json/mdi": "^1.2.3",
+        "@iconify-json/mynaui": "^1.2.19",
+        "@iconify-json/ph": "^1.2.2",
+        "@iconify-json/qlementine-icons": "^1.2.16",
+        "@iconify-json/solar": "^1.2.10",
+        "@iconify-json/system-uicons": "^1.2.4",
+        "@iconify-json/vscode-icons": "^1.2.76",
+        "@iconify/utils": "^3.1.4",
         "@iconify/vue": "^5.0.1",
         "@playwright/test": "^1.61.1",
         "@stylistic/eslint-plugin": "^5.10.0",
@@ -58,6 +71,8 @@
     },
   },
   "packages": {
+    "@antfu/install-pkg": ["@antfu/install-pkg@1.1.0", "", { "dependencies": { "package-manager-detector": "^1.3.0", "tinyexec": "^1.0.1" } }, "sha512-MGQsmw10ZyI+EJo45CdSER4zEb+p31LpDAFp2Z3gkSd1yqVZGi0Ebx++YTEMonJy4oChEMLsxZ64j8FH6sSqtQ=="],
+
     "@asamuzakjp/css-color": ["@asamuzakjp/css-color@5.1.11", "", { "dependencies": { "@asamuzakjp/generational-cache": "^1.0.1", "@csstools/css-calc": "^3.2.0", "@csstools/css-color-parser": "^4.1.0", "@csstools/css-parser-algorithms": "^4.0.0", "@csstools/css-tokenizer": "^4.0.0" } }, "sha512-KVw6qIiCTUQhByfTd78h2yD1/00waTmm9uy/R7Ck/ctUyAPj+AEDLkQIdJW0T8+qGgj3j5bpNKK7Q3G+LedJWg=="],
 
     "@asamuzakjp/dom-selector": ["@asamuzakjp/dom-selector@7.1.1", "", { "dependencies": { "@asamuzakjp/generational-cache": "^1.0.1", "@asamuzakjp/nwsapi": "^2.3.9", "bidi-js": "^1.0.3", "css-tree": "^3.2.1", "is-potential-custom-element-name": "^1.0.1" } }, "sha512-67RZDnYRc8H/8MLDgQCDE//zoqVFwajkepHZgmXrbwybzXOEwOWGPYGmALYl9J2DOLfFPPs6kKCqmbzV895hTQ=="],
@@ -132,7 +147,33 @@
 
     "@humanwhocodes/retry": ["@humanwhocodes/retry@0.4.3", "", {}, "sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ=="],
 
+    "@iconify-json/bxs": ["@iconify-json/bxs@1.2.3", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-SxRzB4e0zrWq1duwDUmuT5t5gaDjwN2nMu1yoO2mP2tNaiciylx33+hKxEz3ykxIGKPi3/ItX0V6Sfdju1FrZA=="],
+
+    "@iconify-json/lets-icons": ["@iconify-json/lets-icons@1.2.2", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-GBCeFoWNLA5v1ZRIM54cZGpE/lHtFcSJjxXXCi2W5SxkJoPDonNoLGf61/z8eNxiBkegynClvEgCAs0YjLeZkA=="],
+
+    "@iconify-json/lucide": ["@iconify-json/lucide@1.2.128", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-s8tZ6BIQfkwl6INcdHMri3bokShU/MwOVM8cyFUgE7QJ3EuwmIhXFsrqtA0WD8YrhoII1K+KA5EEIJ4x0JWIdw=="],
+
+    "@iconify-json/material-icon-theme": ["@iconify-json/material-icon-theme@1.2.70", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-pctYpp6/3f0TfNoX+yqiC1HRBDxL7+ybOe70MrdyvUa4KcGdtpbsyc4E1qHQTkPIkpU7+0kfP2MYU2C7BfmNrw=="],
+
+    "@iconify-json/material-symbols": ["@iconify-json/material-symbols@1.2.90", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-gCOGFOIhK4QFsmUBsxtp6q7EPghSP11txPFfvb5Dj4nDYZ9qO88xpTQGtIzEQJ4mTPdXfzE9OWR2G4KUif4nXg=="],
+
+    "@iconify-json/mdi": ["@iconify-json/mdi@1.2.3", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-O3cLwbDOK7NNDf2ihaQOH5F9JglnulNDFV7WprU2dSoZu3h3cWH//h74uQAB87brHmvFVxIOkuBX2sZSzYhScg=="],
+
+    "@iconify-json/mynaui": ["@iconify-json/mynaui@1.2.19", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-Nsoo0jaZLM7Ws45TDiSxBDGgWdbpwhLfgRil/5tQeDJykdtmS5ILZsJ6fkCS1iNXURghhAiLipb15A1d7IQcEQ=="],
+
+    "@iconify-json/ph": ["@iconify-json/ph@1.2.2", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-PgkEZNtqa8hBGjHXQa4pMwZa93hmfu8FUSjs/nv4oUU6yLsgv+gh9nu28Kqi8Fz9CCVu4hj1MZs9/60J57IzFw=="],
+
+    "@iconify-json/qlementine-icons": ["@iconify-json/qlementine-icons@1.2.16", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-fL6KWDEHl6NDP/KyZK8ThnEBXivG2Yi00DKlGyLVyoPsv83/3XODmWTy19tgYHqR0W5NijD5hYMKGJPx9cT8FQ=="],
+
+    "@iconify-json/solar": ["@iconify-json/solar@1.2.10", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-ChpZ3kNw8nDhHfUoLq5JJ3AdIzytFm57dFkjAS0fjXnL5a7WwibTINjMKfvqQDhuXBrgqejNLyGp8CCpG8UyCg=="],
+
+    "@iconify-json/system-uicons": ["@iconify-json/system-uicons@1.2.4", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-9WB9dmEm+TRCXI5Ml2IY8zQAPZES8euKxY0VOaf8D6E6ZaEr7ztO6DChMlGg7qWECs3m3FjFUqNgBx8ZpB+djw=="],
+
+    "@iconify-json/vscode-icons": ["@iconify-json/vscode-icons@1.2.76", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-gSu20bZiegbMFLSPHHtmliUJoOPhovTT77RNkMfr6u9ns5uC2bVZ4K5T7wUlywRAzQk4qgG7t4AULaucSsta4w=="],
+
     "@iconify/types": ["@iconify/types@2.0.0", "", {}, "sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg=="],
+
+    "@iconify/utils": ["@iconify/utils@3.1.4", "", { "dependencies": { "@antfu/install-pkg": "^1.1.0", "@iconify/types": "^2.0.0", "import-meta-resolve": "^4.2.0" } }, "sha512-b1S7B1k9ohZ+iNTi2ATxbRYG9fTrJmUT0rc46bvVnNxqNRGW7dyo/vRREwyniI5IRN2RSJHDcm+s3BjWrSAjHw=="],
 
     "@iconify/vue": ["@iconify/vue@5.0.1", "", { "dependencies": { "@iconify/types": "^2.0.0" }, "peerDependencies": { "vue": ">=3.0.0" } }, "sha512-aumwwooJlFJ5H5qYWB6ZTAyM0C8hpfcSVLB9/a3qnH1GGvIJ+FEbpEs4s/HfErYe/M5qZeLjwmESR5fFm3lXEw=="],
 
@@ -630,6 +671,8 @@
 
     "import-fresh": ["import-fresh@3.3.1", "", { "dependencies": { "parent-module": "^1.0.0", "resolve-from": "^4.0.0" } }, "sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ=="],
 
+    "import-meta-resolve": ["import-meta-resolve@4.2.0", "", {}, "sha512-Iqv2fzaTQN28s/FwZAoFq0ZSs/7hMAHJVX+w8PZl3cY19Pxk6jFFalxQoIfW2826i/fDLXv8IiEZRIT0lDuWcg=="],
+
     "imurmurhash": ["imurmurhash@0.1.4", "", {}, "sha512-JmXMZ6wuvDmLiHEml9ykzqO6lwFbof0GG4IkcGaENdCRDDmMVnny7s5HsIgHCbaq0w2MyPhDqkhTUgS2LU2PHA=="],
 
     "ini": ["ini@1.3.8", "", {}, "sha512-JV/yugV2uzW5iMRSiZAyDtQd+nxtUnjeLt0acNdw98kKLrvuRVyB80tsREOE7yvGVgalhZ6RNXCmEHkUKBKxew=="],
@@ -783,6 +826,8 @@
     "p-try": ["p-try@2.2.0", "", {}, "sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ=="],
 
     "package-json-from-dist": ["package-json-from-dist@1.0.1", "", {}, "sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw=="],
+
+    "package-manager-detector": ["package-manager-detector@1.8.0", "", {}, "sha512-yQA4H19AmPEoMUeavPMDIe1higySl/gH/yaQrkT/s07Qp+7pp2hYz30N3z2l5BkjVkF9Ow6o0wjJamm2y7Sn0A=="],
 
     "parchment": ["parchment@3.0.0", "", {}, "sha512-HUrJFQ/StvgmXRcQ1ftY6VEZUq3jA2t9ncFN4F84J/vN0/FPpQF+8FKXb3l6fLces6q0uOHj6NJn+2xvZnxO6A=="],
 

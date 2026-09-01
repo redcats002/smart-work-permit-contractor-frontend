@@ -157,7 +157,7 @@
 <script setup lang="ts">
 import { computed, ref, useAttrs } from 'vue'
 import Menu from '@/volt/Menu.vue'
-import { Icon } from '@iconify/vue'
+import Icon from '@/components/base/AppIcon.vue'
 
 defineOptions({
   inheritAttrs: false

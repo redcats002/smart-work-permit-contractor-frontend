@@ -51,7 +51,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { IMedia } from '@/resources/provider/Upload.provider'
-import { Icon } from '@iconify/vue'
+import Icon from '@/components/base/AppIcon.vue'
 
 interface IFormState {
   [key: string]: {

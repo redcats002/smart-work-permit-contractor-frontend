@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { Icon } from '@iconify/vue'
+import Icon from '@/components/base/AppIcon.vue'
 </script>
 
 <style scoped>

@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 import { type RouteLocationRaw, RouterLink } from 'vue-router'
-import { Icon } from '@iconify/vue'
+import Icon from '@/components/base/AppIcon.vue'
 
 interface IProps {
   label?: string

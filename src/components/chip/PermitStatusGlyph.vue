@@ -53,10 +53,12 @@ import type { TPermitStatus } from '@/enums/modules/permit/PermitStatus.enum'
  * each gets a small non-colour leading glyph inside its chip in addition to the widened fg
  * weights (see the tailwind.css comments above --color-status-draft-fg). Renders nothing for
  * every other status — this app's other statuses already carry enough colour separation and
- * were not part of the ticket. Inline SVG, never <Icon>/@iconify/vue: this app runs Iconify in
- * API mode, so an Iconify icon is a runtime network fetch and must never sit behind a
- * safety-status indicator (wayfinder 041, out of scope here). `stroke="currentColor"` /
- * `fill="currentColor"` so the glyph always matches the chip's own fg token.
+ * were not part of the ticket. Inline SVG, never <Icon>/<AppIcon>: wayfinder 041 bundled this
+ * app's Iconify data offline, so an icon is no longer a runtime network fetch — but it is still
+ * a Vue-reactive render sitting behind whatever `AppIcon`'s registered-check computed decides,
+ * not synchronous with paint the way this inline `<svg>` is. A safety-status indicator should
+ * still never depend on that. `stroke="currentColor"` / `fill="currentColor"` so the glyph
+ * always matches the chip's own fg token.
  */
 interface IProps {
   status: TPermitStatus
