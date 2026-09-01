@@ -58,7 +58,11 @@ export const SUBMIT_ERROR_STEP_KEY: Partial<Record<EApiErrorCode, string>> = {
   [EApiErrorCode.WIND_OUT_OF_RANGE]: 'safetyChecks',
   [EApiErrorCode.CERT_MISSING]: 'ppeWorkers',
   [EApiErrorCode.CERT_EXPIRED]: 'ppeWorkers',
-  [EApiErrorCode.PERMIT_POSITION_REQUIRED]: 'position'
+  [EApiErrorCode.PERMIT_POSITION_REQUIRED]: 'position',
+  // wayfinder ticket 037 — the `PERMIT_AREA_REQUIRED` deployment flag's submit gate, off by
+  // default today. Lands on the same step as the position picker, which now also carries the
+  // area picker (`AreaPicker.vue`).
+  [EApiErrorCode.AREA_REQUIRED]: 'position'
 }
 
 /** `undefined` = stay on the review step; nothing earlier can fix this code. */

@@ -340,7 +340,26 @@ const permit = {
         pinSet: 'Pin placed. Tap the plan again to move it.',
         required: 'A position is required before this permit can be submitted.',
         imageLoadFailed: 'The facility plan image could not be loaded. Try again in a moment.',
-        retry: 'Retry'
+        retry: 'Retry',
+        area: {
+          label: 'Work Area',
+          placeholder: 'Select an approved area (optional)',
+          empty: 'No approved areas yet — propose one below.',
+          propose: 'Propose new area',
+          proposedNote: 'Awaiting approval',
+          staleNote: '“{name}” is no longer an approved area. Choose another one.',
+          missingNote: 'This permit referenced an area that could not be found. Choose another one.',
+          proposeModal: {
+            title: 'Propose Area',
+            field: {
+              name: 'Area name'
+            },
+            submit: 'Submit for approval',
+            validation: {
+              nameRequired: 'Please enter the area name'
+            }
+          }
+        }
       },
       review: {
         subtitle: 'Confirm every detail. Submitting notifies the Safety Officer for review.',

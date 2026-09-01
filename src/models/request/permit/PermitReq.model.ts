@@ -25,6 +25,14 @@ export interface ICreatePermitDraftPayload {
    * regardless of what the client thinks.
    */
   position?: IPermitPosition | null
+  /**
+   * wayfinder ticket 037. `null` clears a reference; omitted leaves it unchanged (same PATCH
+   * semantics as `position`). Only an `APPROVED` area may be referenced — the server enforces
+   * this at write time (`400 AREA_NOT_APPROVED`), not this type. Optional at submit until a
+   * deployment flag says otherwise (`400 AREA_REQUIRED`) — see `usePlanPosition`'s sibling
+   * reasoning; there is no client-side gate on this field.
+   */
+  areaId?: number | null
 }
 
 /**

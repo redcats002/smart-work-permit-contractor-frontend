@@ -42,7 +42,8 @@ function permit (): IPermitListItem {
     fireWatch: null,
     planId: null,
     planX: null,
-    planY: null
+    planY: null,
+    areaId: null
   }
 }
 

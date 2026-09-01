@@ -128,7 +128,7 @@ Each module owns parallel trees: routes (`src/router/modules/<Mod>.router.ts` or
 | Module | Prefix | Pages (`src/pages/<mod>/pages/`) | Providers | Harness | Built? |
 |---|---|---|---|---|---|
 | `platform` | `/auth` | `auth/login` ✅, `auth/reset-password` ✅, layout shell, i18n, API errors | `auth/public`, `auth/private`, `notification` | `docs/modules/platform/` | shell + i18n + errors + contractor auth/route guard (`PLT-005`) ✅ · notification polling `PLT-007` ✅ |
-| `permit` | `/permits` | `list` ✅, `create` (7-step wizard) ✅, `detail` ✅ | `permit`, `facility-plan` (read-only — `getActive`/`getById`, no upload/create/activate) | `docs/modules/permit/` | provider + list ✅ · wizard complete, all seven steps real (`PMT-004`–`PMT-009`, `feat-023`) · detail built (`PMT-010`–`PMT-012`: banners, QR, audit timeline, closure modal, Fire Watch countdown) |
+| `permit` | `/permits` | `list` ✅, `create` (7-step wizard) ✅, `detail` ✅ | `permit`, `facility-plan` (read-only — `getActive`/`getById`, no upload/create/activate), `area` (list/getById/create — no approve/reject, safety-officer only) | `docs/modules/permit/` | provider + list ✅ · wizard complete, all seven steps real (`PMT-004`–`PMT-009`, `feat-023`) · detail built (`PMT-010`–`PMT-012`: banners, QR, audit timeline, closure modal, Fire Watch countdown) · area picker + propose-inline (wayfinder 037) |
 | `history` | `/history` | `list` ✅ | `permit` (reused — no own provider dir) | `docs/modules/history/` | ✅ |
 | `certificate` | `/certificates` | `list` ✅ | `certificate` | `docs/modules/certificate/` | ✅ |
 | `api-integration` | — (cross-cutting) | — | every provider + the transport | `docs/modules/api-integration/` | ✅ transport, auth, errors, permit/certificate/notification/upload |

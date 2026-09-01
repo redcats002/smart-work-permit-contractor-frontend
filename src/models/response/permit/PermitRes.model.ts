@@ -39,6 +39,13 @@ export interface IPermitListItem extends IPermitBase {
   planId: number | null
   planX: number | null
   planY: number | null
+  /**
+   * wayfinder ticket 037. The structured place this permit's work is in — nullable, and not
+   * necessarily `APPROVED` any more by the time this is read back (an area's approval can be
+   * revoked after a permit already references it). Render whatever this resolves to; never
+   * assume it is still approved.
+   */
+  areaId: number | null
 }
 
 /** GET /permits/:id — the entity plus its collections. */

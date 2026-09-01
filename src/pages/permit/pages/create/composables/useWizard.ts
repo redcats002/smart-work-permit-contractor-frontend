@@ -390,7 +390,11 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
       jsaSteps: permit.jsaSteps,
       workers: toFormWorkers(permit.workers),
       photos: permit.photos,
-      position: toFormPosition(permit)
+      position: toFormPosition(permit),
+      // wayfinder ticket 037. Seeded as-is, whatever it is — `AreaPicker` is what resolves
+      // whether it still names an APPROVED area and, if not, strips it back out of `formData`
+      // before the next autosave (see the doc comment on `AreaPicker.resolveStaleArea`).
+      areaId: permit.areaId ?? undefined
     }
 
     formData.value = hydrated

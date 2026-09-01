@@ -64,6 +64,12 @@ describe('step routing', () => {
     expect(stepKeyForSubmitError('PERMIT_POSITION_REQUIRED')).toBe('position')
   })
 
+  // wayfinder ticket 037 — the `PERMIT_AREA_REQUIRED` deployment flag's submit gate lands on the
+  // same step as the position picker, which now also carries the area picker.
+  it('sends AREA_REQUIRED to the Position step', () => {
+    expect(stepKeyForSubmitError('AREA_REQUIRED')).toBe('position')
+  })
+
   it('stays on Review for a code no earlier step can fix', () => {
     expect(stepKeyForSubmitError('PERMIT_NOT_SUBMITTABLE')).toBeUndefined()
     expect(stepKeyForSubmitError('RATE_LIMITED')).toBeUndefined()

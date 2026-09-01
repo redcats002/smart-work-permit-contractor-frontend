@@ -49,6 +49,7 @@ function buildPermit (type: TPermitType = 'confined', overrides: Partial<IPermit
     planId: null,
     planX: null,
     planY: null,
+    areaId: null,
     jsaSteps: [],
     workers: [],
     photos: [],

@@ -2373,3 +2373,125 @@ cases: typing asks for nothing; select-then-blur asks exactly once).
 
 Contractor repo only. No API, safety-app or landing change — the pre-flight contract
 (`GET /certificates/worker/:name`) is untouched, so no cross-repo alignment is owed.
+
+## 2026-09-01 — wayfinder ticket 037 (contractor half): the permit wizard's area picker
+
+Ticket 037 splits across two repos (`contractor` + `safety`); this session owns the contractor
+half only — the wizard's area picker, picking over APPROVED areas plus proposing a new one
+without leaving the wizard. **Not closing ticket 037** — the safety-officer area approval screen
+is the other repo's work.
+
+The backend (ticket 036) was already live: `Area { id, name, status: PENDING|APPROVED|REJECTED,
+planId?, planX?, planY?, ... }`, `POST /v1/areas` (contractor, always PENDING), `GET /v1/areas`
+(every role, filterable by status, default page size 10), `GET /v1/areas/:id`. `Permit.areaId` is
+nullable, gated behind `AREA_NOT_APPROVED`/`AREA_REQUIRED` — both error codes and their EN/TH
+strings were already declared by a prior session; nothing to add there.
+
+**What was built.** `AreaPicker.vue`, mounted inside `Step7Position.vue` above the pin frame
+(the wizard's `position` step, shown only once an active facility plan exists — see below).
+Fetches the full APPROVED set (`limit: 9999` — the server's page-size default is 10 and would
+have silently truncated the picker) on mount. A Volt `Select`, `show-clear`, over that list;
+picking an area with a default `planId/planX/planY` emits BOTH `areaId` and `position` in the
+same `update:formData` patch (034 resolution: the pin is "where exactly", the area is "which
+place" — independent but not simultaneous writes that could race). Picking one with no default
+position leaves `position` untouched. `CreateAreaModal.vue` (name only, patterned on
+`CreateCertificateModal.vue`/wayfinder ticket 004) proposes a new area inline; since it comes
+back PENDING and is not selectable, the created row is NOT auto-selected — it is added to a
+persistent "awaiting approval" list rendered in the picker itself, so proposing one is never
+silently invisible (the ticket's explicit requirement).
+
+**The one real design problem, not visible from the ticket text alone.** A hydrated (resumed
+DRAFT/REJECTED) permit's `areaId` can reference an area the fresh APPROVED fetch does not
+contain — proposed but never reviewed, rejected, or approved-then-later-not-approved. Two things
+had to be true at once: (1) render it anyway ("a permit referencing an area must still render if
+missing or not approved" — the ticket's own constraint), and (2) never let it sit in `formData`
+unresolved, because `useWizard.doPersist()` spreads the WHOLE `formData` into every autosave
+PATCH, and the server's `AREA_NOT_APPROVED` guard fires on the key's mere PRESENCE, not on
+whether the value changed (`update.service.ts`) — leaving it there would 400 every single
+autosave after hydrate, not just the area field's own save. Fixed by having `AreaPicker` resolve
+the stray id via `GET /v1/areas/:id` (open to every role), show it as a "no longer approved,
+choose another" note, and in the SAME beat emit `{ areaId: undefined }` — `undefined` OMITS the
+key from the outgoing PATCH (server leaves the stored value untouched) — distinct from a genuine
+user-driven clear via the Select's clear icon, which emits `{ areaId: null }` (server actually
+unsets it). `useWizard.hydrate()` seeds `formData.areaId` from `permit.areaId` unconditionally
+(so a still-valid area is never blanked); the picker is what corrects a stale one after the fact.
+
+**Deliberately not done, per the ticket's own scope and an advisor sanity-check before writing
+code:**
+- No shared preflight instance / no hoisting area state into `useWizard` — area never gates
+  Next/Submit (the ticket says so explicitly), so there is no invariant across step 4/6 to
+  protect the way `usePlanPosition` protects the pin. `AreaPicker` owns its state locally.
+- `Step6Review.vue` was NOT touched — it has no resolved area *name* to show without pulling in
+  exactly the shared-composable machinery just ruled out, and the "must still render" constraint
+  in the ticket reads as aimed at the officer's review screen / permit detail (ticket 015's
+  stale-pin precedent), not the contractor's own pre-submit summary.
+- `CreateAreaModal` collects a name only. `POST /v1/areas` also accepts an optional default
+  `position`, deliberately not collected here — there is no plan image inside this modal to
+  click on, and a wrong default pin on a brand-new area is worse than none.
+- The area picker inherits `Step7Position`'s existing gate: the whole step (and therefore the
+  picker) only renders once an active facility plan exists (`usePlanPosition.required`,
+  feat-023/wayfinder 015). Decoupling area visibility from that gate was not asked for and would
+  be a scope change to a different ticket's mechanism — flagging it, not fixing it.
+- No toast on a successful area proposal (unlike `CreateCertificateModal`'s sanctioned one,
+  PROMPT-LOG session 11) — nothing in PROMPT-LOG sanctions one for this action, and the
+  persistent "awaiting approval" row already satisfies the "say so in the UI" requirement without
+  inventing an unruled toast.
+
+**New surface added**, following existing conventions exactly (model-conventions.md,
+resources-api-layer.md, provider-pattern.md): `EAreaStatus`/`TAreaStatus`
+(`src/enums/modules/area/AreaStatus.enum.ts`), `IArea`
+(`src/models/modules/area/Area.model.ts`), `IGetAreaListQuery`/`ICreateAreaPayload`
+(`src/models/request/area/AreaReq.model.ts`), response types
+(`src/models/response/area/AreaRes.model.ts`), `AreaProvider`
+(`src/resources/provider/area/Area.provider.ts` — `list`/`getById`/`create` only, no
+approve/reject, same reasoning `PermitProvider` already uses for omitting safety-officer-only
+endpoints). `IPermitListItem.areaId` and `ICreatePermitDraftPayload.areaId` added, mirroring
+`planId`'s existing doc-comment shape. `AREA_REQUIRED` added to `SUBMIT_ERROR_STEP_KEY` (routes
+to the `position` step key, same as `PERMIT_POSITION_REQUIRED`).
+
+`AGENTS.md`'s Modules table `permit` row Providers cell updated in the same commit (added `area`
+provider dir), per the maintenance rule — no route/prefix change, so nothing else there moved.
+
+```
+$ bun run test:run
+ Test Files  64 passed (64)
+      Tests  541 passed (541)      (531 before — 10 new: 7 in AreaPicker.test.ts, 2 in
+                                     useWizard.hydrate.test.ts, 1 in SubmitErrorRouting.test.ts)
+
+$ bun run typecheck
+(clean — no output)
+
+$ bun run lint
+(2 pre-existing warnings in useNotificationPolling.test.ts, unrelated, unchanged — 0 errors)
+
+$ bun run check:contrast
+✓ all 26 colour pairs meet WCAG AA
+
+$ node ../scripts/check-contract-sync.mjs
+contract-sync: OK — openapi + glue docs in sync, 33 backend error codes all declared in both
+frontends, /api/v1 prefix present.
+```
+
+Files changed: `src/enums/modules/area/AreaStatus.enum.ts` (new),
+`src/models/modules/area/Area.model.ts` (new), `src/models/request/area/AreaReq.model.ts` (new),
+`src/models/response/area/AreaRes.model.ts` (new), `src/resources/provider/area/Area.provider.ts`
+(new), `src/pages/permit/pages/create/schema/CreateArea.schema.ts` (new),
+`src/pages/permit/pages/create/components/AreaPicker.vue` (new),
+`src/pages/permit/pages/create/components/CreateAreaModal.vue` (new),
+`src/pages/permit/pages/create/components/steps/Step7Position.vue` (wires `AreaPicker`),
+`src/pages/permit/pages/create/composables/useWizard.ts` (`hydrate()` seeds `areaId`),
+`src/pages/permit/pages/create/constants/SubmitErrorRouting.ts` (`AREA_REQUIRED` routing),
+`src/models/request/permit/PermitReq.model.ts`, `src/models/response/permit/PermitRes.model.ts`
+(`areaId` field), `src/locales/{en,th}/permit.ts` (`position.area.*` strings), `AGENTS.md`
+(Modules table), plus fixture updates in six existing permit/history tests that construct a full
+`IPermitListItem`/`IPermitDetail` (`areaId: null` added — the new required field), and
+`src/tests/pages/permit/create/components/AreaPicker.test.ts` (new, 7 cases),
+`src/tests/pages/permit/create/composables/useWizard.hydrate.test.ts` (+2 cases),
+`src/tests/pages/permit/create/constants/SubmitErrorRouting.test.ts` (+1 case).
+
+Contractor repo only. `docs/api/openapi.json` was touched by another session in the same window
+(ticket 038's `overlappingPermits` field, safety-app concern, unrelated to this ticket) and is
+NOT staged by this commit.
+
+Error codes (`AREA_NOT_APPROVED`, `AREA_NOT_PENDING`, `AREA_REQUIRED`) and both locale strings
+were already present before this session — no cross-repo error-vocabulary change owed here.

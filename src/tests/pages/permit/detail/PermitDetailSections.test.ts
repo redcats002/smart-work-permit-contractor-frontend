@@ -53,6 +53,7 @@ function buildPermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail {
     planId: null,
     planX: null,
     planY: null,
+    areaId: null,
     jsaSteps: [],
     workers: [],
     photos: [],

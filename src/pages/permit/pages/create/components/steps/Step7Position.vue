@@ -9,6 +9,10 @@
       </p>
     </div>
 
+    <AreaPicker
+      :area-id="formData.areaId"
+      @change="onAreaChange($event)" />
+
     <p
       v-if="positionState === 'loading'"
       class="text-sm text-text-tertiary">
@@ -85,6 +89,7 @@ import type { IPermitPosition } from '@/models/modules/permit/Permit.model'
 import { percentToPoint, pointToPercent } from '@/utils/PlanPosition'
 import FacilityPlanProvider, { type IFacilityPlanProvider } from '@/resources/provider/facility-plan/FacilityPlan.provider'
 import UploadProvider, { type IUploadProvider } from '@/resources/provider/Upload.provider'
+import AreaPicker from '../AreaPicker.vue'
 import type { IWizardStepEmits, IWizardStepProps } from '../../wizard/WizardSteps'
 
 /**
@@ -99,6 +104,11 @@ import type { IWizardStepEmits, IWizardStepProps } from '../../wizard/WizardStep
  * immutable and retained forever, so a permit frozen against an older version must still show
  * that version's image (a stale pin still plots, per the map's existing ruling), with an
  * explicit "older version" note rather than silently re-projecting onto the new one.
+ *
+ * wayfinder ticket 037 adds `AreaPicker` above the pin frame — "which place" (the area) and
+ * "where exactly" (the pin) are independent fields (034 resolution), so the area picker is
+ * always shown here, even in the `'loading'`/`'none'` states below that gate the pin frame
+ * itself.
  */
 const props = defineProps<IWizardStepProps>()
 const emit = defineEmits<IWizardStepEmits>()
@@ -152,6 +162,18 @@ async function loadPlanImage (): Promise<void> {
 
 function onImageError (): void {
   imageFailed.value = true
+}
+
+/**
+ * wayfinder ticket 037. `AreaPicker` owns its own fetch/propose/stale-reference state; this step
+ * only translates its verdict into a `formData` patch. `position` rides along in the SAME patch
+ * as `areaId` when the picked area carries a default one, so the two writes can never land as
+ * separate `updateFormData` calls that race each other.
+ */
+function onAreaChange (payload: { areaId: number | null | undefined, position?: IPermitPosition }): void {
+  emit('update:formData', payload.position !== undefined
+    ? { areaId: payload.areaId, position: payload.position }
+    : { areaId: payload.areaId })
 }
 
 function onFrameClick (event: MouseEvent): void {
