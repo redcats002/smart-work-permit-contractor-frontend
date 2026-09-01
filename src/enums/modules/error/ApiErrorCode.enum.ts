@@ -64,7 +64,17 @@ export enum EApiErrorCode {
   FILE_TYPE_NOT_ALLOWED = 'FILE_TYPE_NOT_ALLOWED',
   FILE_TOO_LARGE = 'FILE_TOO_LARGE',
   UPLOAD_FOLDER_NOT_ALLOWED = 'UPLOAD_FOLDER_NOT_ALLOWED',
-  STORAGE_UNAVAILABLE = 'STORAGE_UNAVAILABLE'
+  STORAGE_UNAVAILABLE = 'STORAGE_UNAVAILABLE',
+
+  // Area (wayfinder 034/036) — a contractor proposes an area (POST /areas) and it is unusable by
+  // any permit until a safety officer approves it. AREA_NOT_APPROVED is a contractor-visible 400
+  // from POST/PATCH /permits when the referenced area is still PENDING or was REJECTED.
+  // AREA_NOT_PENDING is the officer-only approve/reject race guard, surfaced here only so a
+  // contractor UI polling area status never renders the backend's raw message. AREA_REQUIRED is
+  // the PERMIT_AREA_REQUIRED-flag submit gate, off by default.
+  AREA_NOT_APPROVED = 'AREA_NOT_APPROVED',
+  AREA_NOT_PENDING = 'AREA_NOT_PENDING',
+  AREA_REQUIRED = 'AREA_REQUIRED'
 }
 
 export type TApiErrorCode = `${EApiErrorCode}`

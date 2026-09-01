@@ -117,7 +117,8 @@ deliberately, not marketing approximations, so a rule change in the API is a lan
 `UNAUTHENTICATED`, `FORBIDDEN_ROLE`, `USER_ALREADY_EXISTS`,
 `FILE_TYPE_NOT_ALLOWED`, `FILE_TOO_LARGE`, `UPLOAD_FOLDER_NOT_ALLOWED`, `STORAGE_UNAVAILABLE`,
 `ACCOUNT_DEACTIVATED`, `LAST_SAFETY_OFFICER`, `PERMIT_POSITION_REQUIRED`,
-`CLOSURE_REASON_REQUIRED`, `PERMIT_UPDATE_EMPTY`.
+`CLOSURE_REASON_REQUIRED`, `PERMIT_UPDATE_EMPTY`, `AREA_NOT_APPROVED`, `AREA_NOT_PENDING`,
+`AREA_REQUIRED`.
 
 > `FILE_*` / `UPLOAD_*` / `STORAGE_UNAVAILABLE` were added by the backend on 2026-08-19 (upload
 > hardening, `REVIEW-2026-08-19.md` S1–S3/C1). `ACCOUNT_DEACTIVATED` and `LAST_SAFETY_OFFICER` were
@@ -125,8 +126,12 @@ deliberately, not marketing approximations, so a rule change in the API is a lan
 > so a switched-off account must not read as "wrong password" at sign-in or as "wrong role" on a
 > request. `PERMIT_POSITION_REQUIRED` was added 2026-08-24 with the facility plan + permit position
 > feature (`feat-023`): once an active facility plan exists, `POST /permits/:id/submit` refuses a
-> permit with no `planId`/`planX`/`planY` set. All are declared with EN/TH strings in both apps —
-> `check-contract-sync.mjs` reports **30 backend error codes all declared in both frontends**.
+> permit with no `planId`/`planX`/`planY` set. `AREA_NOT_APPROVED`, `AREA_NOT_PENDING` and
+> `AREA_REQUIRED` were added 2026-09-01 with the Area entity (ticket 036, see section 3): a permit
+> may reference only an approved area, `AREA_NOT_PENDING` is the approve/reject race guard shared
+> with permits, and `AREA_REQUIRED` is the `PERMIT_AREA_REQUIRED`-flag submit gate. All are
+> declared with EN/TH strings in both apps — `check-contract-sync.mjs` reports **33 backend error
+> codes all declared in both frontends**.
 > `RATE_LIMITED` is unchanged but is now emitted by the four public auth routes as well as the QR
 > scan route.
 
@@ -186,6 +191,30 @@ always authoritative and the client must surface the server's verdict when the t
   cannot target the `facility-plans` prefix even if asked (defense in depth at both the schema
   and the service layer — see `upload.service.ts`). Cropping happens only before activation; once
   a version is activated its frame is frozen (there is no edit route at all, by design).
+- **Area** (`smart-work-permit-api` ticket 036, 2026-09-01; decided by wayfinder ticket 034). An
+  **Area** is a named place in the facility a permit's work is located in — flat, no
+  `Plant → Unit → Equipment` nesting (depth arrives later, if ever, via a nullable `parentId`
+  that never touches an existing permit reference). A **contractor proposes** an area
+  (`POST /v1/areas`, status `PENDING`); it is unusable by any permit until a **safety officer
+  approves** it (`POST /v1/areas/:id/approve`, status `APPROVED`) or **rejects** it with a
+  required reason (`POST /v1/areas/:id/reject`, status `REJECTED` — no revise-in-place, a
+  corrected proposal is a fresh `POST`). Approve/reject share the same atomic `updateMany`-with-
+  expected-status guard as permit approve/reject, and each writes an append-only, hash-chained
+  audit row (`AREA_APPROVED` / `AREA_REJECTED`) — an approved area is a safety artefact, not a
+  settings row. An area may carry an optional default position (`planId`/`planX`/`planY`, same
+  shape and convention as a permit's own position) so picking an approved area pre-drops the
+  contractor's pin, which they may still nudge — the pin and the area are independent fields, on
+  purpose. `Permit.areaId` is nullable and may reference only an `APPROVED` area
+  (`400 AREA_NOT_APPROVED` otherwise); it is optional at submit until a deployment opts in with
+  `PERMIT_AREA_REQUIRED=TRUE` (`400 AREA_REQUIRED` when required and unset) — unset is the
+  permissive default, deliberately the opposite of a security flag, so this cannot repeat
+  `PERMIT_POSITION_REQUIRED`'s lock-every-contractor-out hazard. Existing permits are
+  grandfathered with no area: no backfill, no invented values. Per-contractor area visibility
+  scoping and the overlap/conflict-detection query are deliberately **not** built here (034
+  resolution) — every role reads the full area list. `Permit.location` is **demoted, not
+  retired**: it is now a nullable free-text note nothing queries, kept for backward compatibility
+  (both frontends previously sent it as required) while they migrate their pickers onto `Area` in
+  a later ticket — `Area` is the structured, query/audit-able answer to "where is the work" now.
 - Audit log is append-only with a server-signed hash chain. Never expose an edit or delete path.
 - Timestamps stored UTC; displayed `Asia/Bangkok`. Default UI locale is **Thai**; every string is
   translated EN + TH.
