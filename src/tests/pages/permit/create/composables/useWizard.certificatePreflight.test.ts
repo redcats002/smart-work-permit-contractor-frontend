@@ -13,6 +13,11 @@ import type { IWizardStepDef } from '@/pages/permit/pages/create/wizard/WizardSt
  * unresolved or failed lookup must never be stricter than the server's real verdict at submit
  * (../PROMPT-LOG.md "no client-side rule that blocks what the server would accept", and the JSA
  * "at least one row" dead-end it cites as the failure mode to avoid repeating).
+ *
+ * The check is triggered on COMMIT, not on edits: `recheckCertificates()` is the only entry point
+ * (see its doc on IUseWizard). These tests therefore call it explicitly after seeding workers,
+ * exactly as step 4 does on option-select / blur — the debounced `formData.workers` watch this
+ * file used to drive was removed because it closed the suggestion overlay mid-typing.
  */
 const StubComponent = defineComponent({ template: '<div />' })
 
@@ -59,7 +64,7 @@ describe('useWizard — certificate pre-flight gate (CRT-004)', () => {
     expect(wizard.currentStep.value.key).toBe('ppeWorkers')
 
     wizard.updateFormData({ workers: [{ workerName: 'Somchai', roleOnPermit: 'Operator' }] })
-    await vi.advanceTimersByTimeAsync(600)
+    wizard.recheckCertificates()
     await flushMicrotasks()
 
     expect(wizard.certificateState.value).toBe('fail')
@@ -75,7 +80,7 @@ describe('useWizard — certificate pre-flight gate (CRT-004)', () => {
     wizard.next()
 
     wizard.updateFormData({ workers: [{ workerName: 'Somchai', roleOnPermit: 'Operator' }] })
-    await vi.advanceTimersByTimeAsync(600)
+    wizard.recheckCertificates()
     await flushMicrotasks()
 
     expect(wizard.certificateState.value).toBe('pass')
@@ -93,7 +98,7 @@ describe('useWizard — certificate pre-flight gate (CRT-004)', () => {
     wizard.next()
 
     wizard.updateFormData({ workers: [{ workerName: 'Somchai', roleOnPermit: 'Operator' }] })
-    await vi.advanceTimersByTimeAsync(600)
+    wizard.recheckCertificates()
     await flushMicrotasks()
 
     expect(wizard.certificateState.value).toBe('loading')
@@ -123,10 +128,12 @@ describe('useWizard — certificate pre-flight gate (CRT-004)', () => {
     wizard.next()
 
     wizard.updateFormData({ workers: [{ workerName: 'Somchai', roleOnPermit: 'Operator' }] })
-    await vi.advanceTimersByTimeAsync(600) // first check's byWorker call fires
+    wizard.recheckCertificates() // first check's byWorker call fires
+    await flushMicrotasks()
 
     wizard.updateFormData({ workers: [{ workerName: 'Malee', roleOnPermit: 'Operator' }] })
-    await vi.advanceTimersByTimeAsync(600) // second (newer) check's byWorker call fires
+    wizard.recheckCertificates() // second (newer) check's byWorker call fires
+    await flushMicrotasks()
 
     // The newer check resolves first, cleanly...
     resolveSecond({ message: 'ok', data: validCertificate('Malee') })

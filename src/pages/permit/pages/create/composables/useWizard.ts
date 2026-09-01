@@ -1,5 +1,5 @@
 import type { ComputedRef, Ref } from 'vue'
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { dayjs } from '@/plugins/dayjs.plugin'
 import i18n from '@/plugins/I18n.plugin'
 import { toast } from '@/plugins/toast'
@@ -61,10 +61,10 @@ export interface IUseWizard {
   certificateState: Ref<TCertificatePreflightState>
   certificateProblems: Ref<ICertificateProblem[]>
   /**
-   * wayfinder ticket 004. Re-runs the shared pre-flight against the CURRENT worker list on
-   * demand — used after a certificate is created from step 4 without leaving the wizard, since
-   * that action doesn't itself change `formData.workers`'s array reference (the debounced watch
-   * below only fires on a real worker-list edit).
+   * wayfinder ticket 004. Re-runs the shared pre-flight against the CURRENT worker list. This is
+   * the ONLY trigger: nothing watches `formData.workers`, because checking mid-typing closed the
+   * worker-name suggestion overlay (see the implementation note below). Step 4 calls it on the
+   * events that settle a name; the wizard calls it on hydrate and on every forward move.
    */
   recheckCertificates (): void
   /**
@@ -238,20 +238,18 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
       && positionState.value !== 'fail'
   )
 
-  // Debounced so typing a worker's name doesn't fire a lookup per keystroke; triggered only when
-  // the `workers` ARRAY REFERENCE changes (whole-list replace on every real edit — see
-  // Step4PpeWorkers.vue), not on every unrelated formData patch.
-  const debouncedCertificateCheck = useDebounce((workers: IPermitWorker[]): void => {
-    void checkCertificates(workers)
-  }, 500)
-
-  watch(
-    (): IPermitWorker[] | undefined => formData.value.workers, (next: IPermitWorker[] | undefined): void => {
-      debouncedCertificateCheck(next ?? [])
-    }, { immediate: true }
-  )
-
-  /** Bypasses the debounce — see the `recheckCertificates` doc on `IUseWizard`. */
+  /**
+   * The check runs on COMMIT, never on keystrokes. It used to run off a 500ms debounced watch on
+   * `formData.workers`, which meant a name half-typed into step 4's AutoComplete fired a lookup,
+   * and its verdict then mounted/unmounted the `certificateProblems` banner *below the table*
+   * while the suggestion overlay was open. PrimeVue's AutoComplete binds a scroll listener on its
+   * scrollable ancestors and a window resize listener whenever the overlay is up, and BOTH call
+   * `hide()` — so the reflow from that banner closed the suggestion list mid-typing (reported
+   * 2026-09-01). Step 4 now calls `recheckCertificates()` itself on the events that actually
+   * settle a name (selecting a suggestion, blurring the field with a changed name, removing a
+   * row, creating a certificate in-wizard), and the wizard re-runs it on every forward move so a
+   * gate can never be stale. `check()` is sequence-guarded, so overlapping calls are safe.
+   */
   function recheckCertificates (): void {
     void checkCertificates(formData.value.workers ?? [])
   }
@@ -406,6 +404,11 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
     const landingIndex = firstInvalidStepIndex(hydrated)
     maxUnlockedStepIndex.value = landingIndex
     currentStepIndex.value = landingIndex
+
+    // The removed watch carried `immediate: true`, so a hydrated draft's workers were checked on
+    // arrival. Keep that: step 6's review row must not read 'idle' for a draft loaded straight
+    // into it.
+    recheckCertificates()
   }
 
   function updateFormData (patch: Partial<IUpdatePermitDraftPayload>): void {
@@ -439,6 +442,10 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
     if (currentStepIndex.value > maxUnlockedStepIndex.value) {
       maxUnlockedStepIndex.value = currentStepIndex.value
     }
+    // Every forward move re-runs the check, so a verdict can never be stale by the time step 6
+    // reads it — the price of no longer checking on every keystroke. Cheap: `check()` is a no-op
+    // lookup when no worker is named, and is sequence-guarded against overlap.
+    recheckCertificates()
   }
 
   /** Back never validates the current step — the user can always retreat. */
@@ -462,6 +469,7 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
       .some((step: IWizardStepDef): boolean => !step.schema.safeParse(formData.value).success)
     if (blockedBefore) return
     currentStepIndex.value = index
+    recheckCertificates()
   }
 
   /**

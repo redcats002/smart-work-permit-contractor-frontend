@@ -2274,3 +2274,84 @@ Files changed: `index.html` (description, robots, lang default), `public/robots.
 `meta.title`s), two test files above (one new, one extended). No touch to
 `smart-work-permit-frontend` (safety/inspector) or the landing repo — out of scope for this
 session, which was contractor-repo-only; their halves of this ticket are unaddressed here.
+
+---
+
+## 2026-09-01 — worker-name suggestions vanished mid-typing (step 4, PPE & Workers)
+
+**Reported:** "when user input the worker name into field of add worker it show suggestion and
+then the validation is trigger and it make suggestion is dissapear. so i need it trigger only when
+user select the worker on suggestion."
+
+**Root cause — not what the symptom suggested.** Nothing was remounting the AutoComplete and
+nothing was resetting its model. Reproduced in jsdom against a real `<input>`: driving the field,
+then flipping `certificateState`/`certificateProblems`, then replaying the parent's `formData`
+write-back, leaves the overlay open every time. `useWizard.updateFormData` was also read and does
+no normalisation, so the round-tripped `workerName` is byte-identical to what was typed.
+
+The hider is PrimeVue's AutoComplete itself. `onOverlayAfterEnter` binds BOTH a
+`ConnectedOverlayScrollHandler` over the field's scrollable ancestors and a window resize
+listener, and each one calls `hide()`:
+
+```js
+// node_modules/primevue/autocomplete/index.mjs
+this.scrollHandler = new ConnectedOverlayScrollHandler(this.$refs.container, function () {
+  if (_this7.overlayVisible) { _this7.hide() }
+})
+```
+
+The worker table is `overflow-x-auto` — a scrollable ancestor — and the certificate pre-flight's
+verdict mounts the `certificateProblems` banner *below* that table. So the sequence was: type →
+500ms debounced watch on `formData.workers` fires a lookup for a half-typed name → verdict lands →
+banner mounts → page reflows → overlay hides. jsdom fires neither scroll nor resize on reflow,
+which is why the existing four tests (all of which `$emit` directly on the component and never
+drive the input) never caught it.
+
+**Fix — a trigger change, exactly as asked.** The 500ms `watch` on `formData.workers` in
+`useWizard` is gone. `recheckCertificates()` is now the only entry point, called from:
+
+- `Step4PpeWorkers.commitWorkerNames()` — on `@option-select` and `@blur`, guarded on the joined
+  worker-name list having actually changed, so tabbing through an untouched row costs nothing
+- `confirmRemove()` — removing a row settles the list too
+- `onCertificateCreated()` — unchanged, already there
+- `useWizard.hydrate()` — replaces the removed watch's `immediate: true`, so a draft loaded
+  straight into step 6 does not read `'idle'`
+- `useWizard.next()` and `goToStep()` — every forward move re-runs it, so the gate
+  (`isNextBlocked` on `certificateState === 'fail'`) can never be stale now that keystrokes no
+  longer refresh it. This is the half that keeps "only on select" from opening a hole: type free
+  text, never touch a suggestion, press Next — the verdict is still current.
+
+`check()` is sequence-guarded already, so the overlapping calls this creates are safe.
+
+**One adjacent bug fixed while here.** `useWorkerCertificateSuggestions.filter('')` returned
+`certificates.value` *by reference*. PrimeVue opens the overlay from a watcher on the `suggestions`
+prop, which only fires on a reference change — so two consecutive empty-query completes left the
+panel shut. Now returns a copy.
+
+```
+$ bun run test:run
+ Test Files  63 passed (63)
+      Tests  531 passed (531)      (529 before — two new regression cases)
+
+$ bun run typecheck
+(clean — no output)
+
+$ bun run lint
+(2 pre-existing warnings in useNotificationPolling.test.ts, unrelated, unchanged — 0 errors)
+
+$ node scripts/check-contrast.mjs
+✓ all 26 colour pairs meet WCAG AA
+```
+
+Files changed: `src/pages/permit/pages/create/composables/useWizard.ts` (watch removed, recheck
+wired into hydrate/next/goToStep, `watch` import dropped),
+`src/pages/permit/pages/create/components/steps/Step4PpeWorkers.vue` (`commitWorkerNames`,
+`@option-select`/`@blur`, recheck on row removal),
+`src/pages/permit/pages/create/composables/useWorkerCertificateSuggestions.ts` (copy, not
+reference), `src/tests/pages/permit/create/composables/useWizard.certificatePreflight.test.ts`
+(drives `recheckCertificates()` instead of the removed watch),
+`src/tests/pages/permit/create/components/Step4PpeWorkers.workerAutocomplete.test.ts` (two new
+cases: typing asks for nothing; select-then-blur asks exactly once).
+
+Contractor repo only. No API, safety-app or landing change — the pre-flight contract
+(`GET /certificates/worker/:name`) is untouched, so no cross-repo alignment is owed.

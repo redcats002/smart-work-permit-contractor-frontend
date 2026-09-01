@@ -43,7 +43,10 @@ export function useWorkerCertificateSuggestions (): IUseWorkerCertificateSuggest
 
   function filter (query: string): ICertificate[] {
     const normalized = query.trim().toLowerCase()
-    if (!normalized) return certificates.value
+    // A COPY, never `certificates.value` itself: PrimeVue's AutoComplete opens its overlay from a
+    // watcher on the `suggestions` prop, which only fires on a reference change. Handing back the
+    // same array twice in a row would leave the panel shut.
+    if (!normalized) return [...certificates.value]
     return certificates.value.filter(
       (certificate: ICertificate): boolean => certificate.workerName.toLowerCase().includes(normalized)
     )

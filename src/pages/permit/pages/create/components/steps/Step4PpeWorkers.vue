@@ -117,7 +117,9 @@
                   :suggestions="workerSuggestions"
                   class="h-9 w-full"
                   option-label="workerName"
+                  @blur="commitWorkerNames()"
                   @complete="onWorkerNameComplete($event.query)"
+                  @option-select="commitWorkerNames()"
                   @update:model-value="onWorkerNameUpdate(row.index, $event)">
                   <template #option="{ option }">
                     <WorkerCertificateSuggestionOption :certificate="option" />
@@ -332,6 +334,8 @@ const {
   fetch: fetchCertificateSuggestions
 } = useWorkerCertificateSuggestions()
 const workerSuggestions: Ref<ICertificate[]> = ref([])
+/** Last worker-name list handed to the pre-flight — see `commitWorkerNames` below. */
+let lastCommittedNames = ''
 
 onMounted((): void => {
   void fetchCertificateSuggestions()
@@ -353,6 +357,22 @@ function onWorkerNameUpdate (index: number, value: string | ICertificate | null)
     return
   }
   patchWorker(index, { workerName: typeof value === 'string' ? value : value.workerName })
+}
+
+/**
+ * The certificate pre-flight deliberately does NOT run while a name is being typed. Its verdict
+ * mounts the `certificateProblems` banner below this table, and that reflow closes PrimeVue's
+ * open suggestion overlay — AutoComplete binds a scroll listener on its scrollable ancestors
+ * (this table is `overflow-x-auto`) and a window resize listener whenever the overlay is up, and
+ * both call `hide()`. So the check fires here instead, on the events that actually settle a name:
+ * picking a suggestion, and leaving the field. Guarded on the name list having really changed, so
+ * tabbing through an untouched row costs nothing.
+ */
+function commitWorkerNames (): void {
+  const names = workers.value.map((worker: IPermitWorker): string => worker.workerName.trim()).join('\u0000')
+  if (names === lastCommittedNames) return
+  lastCommittedNames = names
+  emit('recheck-certificates')
 }
 
 /** wayfinder ticket 004 — a certificate created in-wizard suggests immediately, no refetch. */
@@ -466,6 +486,8 @@ function confirmRemove (): void {
   if (index === undefined) return
   emitWorkers(workers.value.filter((_worker: IPermitWorker, position: number): boolean => position !== index))
   pendingIndex.value = undefined
+  lastCommittedNames = ''
+  emit('recheck-certificates')
 }
 
 function onPhotoUploaded (photo: IPermitPhoto): void {

@@ -147,6 +147,62 @@ describe('Step4PpeWorkers — worker-name AutoComplete (wayfinder ticket 004)', 
     expect(lastPatch.workers?.[0]?.workerName).toBe('A Brand New Worker')
   })
 
+  /**
+   * REGRESSION (reported 2026-09-01): typing a worker name showed the suggestion list, then the
+   * list vanished on its own. The pre-flight ran off a debounced watch on `formData.workers`, so
+   * a half-typed name fired a lookup whose verdict mounted the `certificateProblems` banner below
+   * the table — and PrimeVue's AutoComplete hides its overlay on any ancestor scroll or window
+   * resize while it is open, so that reflow closed it mid-typing.
+   *
+   * The fix is a trigger change, and that is what these two cases pin: typing alone must ask for
+   * NOTHING, and selecting/leaving the field must ask exactly once.
+   */
+  it('typing does not trigger the certificate pre-flight — only committing the name does', async () => {
+    vi.spyOn(CertificateProvider.prototype, 'list').mockResolvedValue({
+      message: 'ok', data: [certificate({ workerName: 'Somchai' })], count: 1, totalPage: 1
+    } as never)
+
+    const wrapper = mountStep()
+    await flushPromises()
+
+    const autoComplete = wrapper.findComponent(AutoComplete)
+    // Three keystrokes, exactly as PrimeVue emits them for free text.
+    for (const typed of ['S', 'So', 'Som']) {
+      autoComplete.vm.$emit('update:modelValue', typed)
+      autoComplete.vm.$emit('complete', { query: typed })
+      await flushPromises()
+    }
+
+    expect(wrapper.emitted('recheck-certificates')).toBeUndefined()
+  })
+
+  it('selecting a suggestion commits the name and asks for one pre-flight; a blur with no further change asks for none', async () => {
+    vi.spyOn(CertificateProvider.prototype, 'list').mockResolvedValue({
+      message: 'ok', data: [certificate({ workerName: 'Somchai' })], count: 1, totalPage: 1
+    } as never)
+
+    const wrapper = mountStep()
+    await flushPromises()
+
+    const autoComplete = wrapper.findComponent(AutoComplete)
+    autoComplete.vm.$emit('update:modelValue', certificate({ workerName: 'Somchai' }))
+    await flushPromises()
+    // The step is controlled by its `formData` prop, so the parent's write-back is what actually
+    // puts the committed name on the row — mirror it before the commit event fires.
+    await wrapper.setProps({
+      formData: { type: 'hot', workers: [{ workerName: 'Somchai', roleOnPermit: 'Operator' }] }
+    } as never)
+    autoComplete.vm.$emit('option-select', { value: certificate({ workerName: 'Somchai' }) })
+    await flushPromises()
+
+    expect(wrapper.emitted('recheck-certificates')).toHaveLength(1)
+
+    // Blurring the same, unchanged row must not fire a second lookup.
+    autoComplete.vm.$emit('blur')
+    await flushPromises()
+    expect(wrapper.emitted('recheck-certificates')).toHaveLength(1)
+  })
+
   it('a certificate created from the wizard is added to the suggestion cache and rechecks certificates', async () => {
     vi.spyOn(CertificateProvider.prototype, 'list').mockResolvedValue({
       message: 'ok', data: [], count: 0, totalPage: 1
