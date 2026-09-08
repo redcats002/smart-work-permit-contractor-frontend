@@ -44,6 +44,45 @@ change this repo cannot make. The sibling Safety/Inspector app made the same mig
 | K | **`safetyReading` has no `so2` field.** The PATCH body declares `{ lel, o2, co, wind, height }` only, while `IPermitSafetyReading` (and `SAFETY_RANGES.requiredByType.confined`) carry SO2, and the design shows an SO2 card on every Confined Space permit (design line ~273). Unknown keys are stripped, so an SO2 value 200s and vanishes. | `PMT-006` renders and validates the SO2 input but `useWizard.toWireReading()` strips it before the PATCH, so the app never claims to have stored it. Harmless to the verdict — SO2 is `blocking: false` (advisory guidance only, per `docs/modules/permit/context.md`), so it can never change a pass/fail. Needed: `so2` on the `safetyReading` PATCH body and on the `SafetyReading` model, echoed back in `latestSafetyReading`. |
 | I | **Entrant NAMES are not readable by the permit owner.** (The count is served — row A closed it as `entrantCount`.) `403 ENTRANTS_STILL_INSIDE` carries them only inside the backend-authored English `message`, which clients must never render. `GET /permits/:id/entrants` exists but is inspector-facing, and the public `GET /permits/qr/:token` needs an issued token. | `PMT-011`'s blocked banner can say *that* entrants are still inside and what to do about it, and how many (from the payload's `entrantCount`), but **not** the names the design shows (design line 590). Needed: entrant names on the contractor-readable detail payload, or structured `details` on the 403 body. |
 
+## Closed by the API on 2026-09-08 (wayfinder 042 / 044) — new capability, not a prior gap row
+
+Regenerated `openapi.json` in all three repos (wayfinder 044 adds three `safety_officer`-only
+routes; 042 changes nothing in the document — see the note); `node scripts/check-contract-sync.mjs`
+green, **33 backend error codes all declared in both frontends**. No new `errorCode`.
+
+| # | Change | What this repo must do |
+|---|---|---|
+| W1 | **The server-issued demo login is DELETED** (042). `POST /api/v1/auth/demo-login`, `DEMO_LOGIN_ENABLED`, `DEMO_LOGIN_PASSWORD`, `bun run seed:demo` and the seed itself are gone; existing demo accounts are set `active: false` by migration (deactivated, never deleted). Owner ruling: no demo environment will exist, so a credential path that was only safe if the data behind it was worthless has nothing to stand on. **No openapi diff** — the route was mounted conditionally on `DEMO_LOGIN_ENABLED` and `dump-openapi.sh` boots with it unset, so the document never contained it. | Remove the trial/demo buttons and their `VITE_TRIAL_LOGIN` guard from `LoginPage.vue`, the demo-login call from `Auth.public.provider.ts` and its request model, the locale keys in `locales/en/platform.ts` / `th`, and both `LoginPage.trial.test.ts` and `LoginPage.trialFill.test.ts` (delete, do not skip). **DONE 2026-09-08** — all of the above, plus `VITE_TRIAL_LOGIN` out of `.env.example`. Absence proven against a real production build, not by reading the source: `bun run build` then `grep -rF` over `dist/` for `demo-login`, `demoLogin`, `contractor1@mail.com`, `adminadmin`, `VITE_TRIAL_LOGIN`, `Trial account` and `trialFill` — no matches for any of the seven. |
+| W2 | **Per-contractor area visibility** (044). A new `AreaGrant` join table plus three `safety_officer`-only routes (`POST`/`DELETE`/`GET /api/v1/areas/:id/grants…`). Behind them, `AREA_VISIBILITY_SCOPED=TRUE` narrows **this app's** `GET /api/v1/areas` to `status = APPROVED AND createdById = me` UNION areas granted to you, composing with the existing `status` filter. **Off by default** — unset is today's behaviour, every approved area visible. Nothing in this app calls the grant routes. | `AreaPicker.vue` already does most of what 044 requires, and the flag turns wayfinder 037's stale-area path from an edge case into the **common** one. Two things must hold: keep emitting `areaId: undefined` (omit the key), never `null`, for a permit whose area is not in the list — the server's guard fires on key presence, so `null` would be a destructive clear; and **show** the permit's current area as a read-only value (resolved via `GET /api/v1/areas/:id`, which is deliberately never scoped) rather than silently dropping it, so a contractor can see what their own permit references. A permit that already names an area must never become unsaveable because the flag was switched on — the `AREA_NOT_APPROVED` guard tests **status, not visibility**, and the API asserts that in `area-visibility-scope.spec.ts`. **DONE 2026-09-08.** No client-side flag, no query parameter and no call to the grant routes — the list call is byte-identical either way. `AreaPicker` now branches on the RESOLVED area's `status`: still `APPROVED` but out of scope renders a read-only "Current area" value (`data-testid="area-current-readonly"`), while a genuinely non-approved one keeps 037's amber "choose another one" note — the two were previously the same message, which would have told contractors to replace a perfectly good area. The omit-the-key invariant was made explicit rather than left resting on `JSON.stringify` dropping undefined properties: `useWizard.doPersist` now `delete`s `areaId` when it is `undefined`, mirroring the `jsaSteps` delete above it. `null` still reaches the wire for a real user clear. |
+
+> Wayfinder 043 (a change set in the `PERMIT_WITHDRAWN_FOR_EDIT` audit payload) also landed on the
+> API in this pass. It is **officer-facing only** — nothing in this app reads the audit trail — so
+> it carries no row here. `docs/main/dev-handoff/04-api-contract.md` gained an **Areas** section in
+> the same pass, and its `errorCode` list was corrected from a stale "25 codes" to the real 33.
+> Neither is a behaviour change; both were already true.
+
+## Closed by the API on 2026-08-31 (wayfinder 012) — new capability, not a prior gap row
+
+Regenerated `openapi.json` in all three repos (description text only — no route/payload/`errorCode`
+change; still the same 28 codes); `node scripts/check-contract-sync.mjs` green.
+
+**Editing a PENDING permit now returns it to DRAFT.** `PATCH /api/v1/permits/:id` is no longer
+403 `PERMIT_NOT_EDITABLE` for your own PENDING permit — the edit is admitted and, in the same
+transaction, the permit's status atomically flips back to `DRAFT` alongside the field changes.
+This is deliberately **not** an in-place edit that leaves the permit PENDING: an officer must never
+be able to approve a version they did not read. You must resubmit (`POST /:id/submit`) afterward
+like any other DRAFT permit — `PERMIT_POSITION_REQUIRED` still gates that resubmit exactly as it
+does for a fresh DRAFT. `position` is accepted in this same PATCH too, because the permit is DRAFT
+by the time the write lands. The withdrawal writes a new `PERMIT_WITHDRAWN_FOR_EDIT` audit row and
+broadcasts a notification to `safety_officer`/`inspector` (the same two roles submit notifies).
+
+**Frontend-facing implication — wired 2026-08-31 (wayfinder 012, contractor half; see
+`progress.md`).** `PermitStatusBanner` now shows a `pending` variant with its own "Edit Permit"
+action; clicking it opens `PendingEditWarningModal` (the withdraw/resubmit warning) BEFORE
+`PermitEditPage` ever opens — opening that route is itself what performs the withdrawal, via
+`useResumePermit`'s existing empty-body `PATCH`. Only "Continue Editing" navigates to the resume
+route; "Cancel" leaves the permit untouched and still PENDING.
+
 ## Closed by the API on 2026-08-24 (feat-023) — new capability, not a prior gap row
 
 Regenerated `openapi.json` in all three repos; `node scripts/check-contract-sync.mjs` green (28

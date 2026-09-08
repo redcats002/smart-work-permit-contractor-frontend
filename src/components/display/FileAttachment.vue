@@ -37,7 +37,7 @@ import UploadProvider, {
   type IMedia,
   type IUploadProvider
 } from '@/resources/provider/Upload.provider'
-import { Icon } from '@iconify/vue'
+import Icon from '@/components/base/AppIcon.vue'
 
 interface IProps {
   files?: IMedia[]

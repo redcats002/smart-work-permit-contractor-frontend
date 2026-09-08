@@ -4,6 +4,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import PrimeVue from 'primevue/config'
 import i18n, { setLocale } from '@/plugins/I18n.plugin'
+import { toast } from '@/plugins/toast'
 import PermitProvider from '@/resources/provider/permit/Permit.provider'
 import ClosureChecklistModal from '@/pages/permit/pages/detail/components/ClosureChecklistModal.vue'
 import type { TPermitStatus } from '@/enums/modules/permit/PermitStatus.enum'
@@ -45,6 +46,10 @@ function buildPermit (type: TPermitType = 'confined', overrides: Partial<IPermit
     qrIssuedAt: null,
     entrantCount: 0,
     fireWatch: null,
+    planId: null,
+    planX: null,
+    planY: null,
+    areaId: null,
     jsaSteps: [],
     workers: [],
     photos: [],
@@ -142,6 +147,19 @@ describe('ClosureChecklistModal (PMT-011)', () => {
     expect(payload.checklist.entrantsExited).toBe('yes')
     expect(payload.signature).toContain('Somchai P.')
     expect(wrapper.emitted('closed')?.[0]?.[0]).toEqual(closed)
+  })
+
+  it('toasts a success confirmation on close — wayfinder ticket 008', async () => {
+    const closed = buildPermit('confined', { status: 'CLOSED', closedAt: '2026-08-10T11:00:00.000Z' })
+    vi.spyOn(PermitProvider.prototype, 'close')
+      .mockResolvedValue({ message: 'success', data: closed } as TClosePermitResponse)
+
+    const wrapper = mountModal(buildPermit('confined'))
+    await completeChecklist(wrapper)
+    await wrapper.find('[data-test="closure-confirm"]').trigger('click')
+    await flushPromises()
+
+    expect(toast.success).toHaveBeenCalledWith(i18n.global.t('permit.toast.closed'))
   })
 
   it('renders ENTRANTS_STILL_INSIDE as a localized block banner — never the backend message', async () => {

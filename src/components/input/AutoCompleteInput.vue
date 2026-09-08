@@ -74,7 +74,7 @@
 import { computed, nextTick, ref, useAttrs } from 'vue'
 import type { TBaseModel } from '@/models/Global.model'
 import AutoComplete from '@/volt/AutoComplete.vue'
-import { Icon } from '@iconify/vue'
+import Icon from '@/components/base/AppIcon.vue'
 
 defineOptions({ inheritAttrs: false })
 

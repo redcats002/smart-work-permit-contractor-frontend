@@ -11,6 +11,13 @@ const common = {
   yes: 'Yes',
   no: 'No',
   notApplicable: 'N/A',
+  // wayfinder ticket 028 — the show/hide toggle Volt's Password ships with is icon-only and
+  // click-only (PrimeVue's own default, not something this repo broke); PasswordInput.vue adds
+  // the label + keyboard handling around it without editing src/volt/Password.vue.
+  password: {
+    show: 'Show password',
+    hide: 'Hide password'
+  },
   validation: {
     required: 'Please select {label}',
     requiredField: 'Please specify {label}',

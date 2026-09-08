@@ -22,7 +22,7 @@ import { computed } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { toast } from '@/plugins/toast'
 import useDev from '@/composables/useDev'
-import { Icon } from '@iconify/vue'
+import Icon from '@/components/base/AppIcon.vue'
 
 const route = useRoute()
 const router = useRouter()

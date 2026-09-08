@@ -20,7 +20,8 @@ const permit = {
       3: 'Safety Checks',
       4: 'PPE & Workers',
       5: 'Job Safety Analysis',
-      6: 'Review & Submit'
+      6: 'Plan Position',
+      7: 'Review & Submit'
     },
     stepOf: 'Step {current} of {total}',
     back: 'Back',
@@ -29,7 +30,16 @@ const permit = {
     // Design (SmartWorkPermit-v3.dc.html line 421) hardcodes this string in English
     // even in the Thai-first prototype, same as the "N inside" list indicator below —
     // not a truncation on our side.
-    blockedNote: 'Complete the required fields on this step to continue'
+    blockedNote: 'Complete the required fields on this step to continue',
+    // wayfinder ticket 033 — the explicit "Save as Draft" action, distinct from the debounced
+    // autosave that already runs on every field edit (no confirmation on that — see ticket).
+    saveDraft: {
+      action: 'Save as Draft',
+      title: 'Save as draft?',
+      body: 'This permit will be saved as a draft and you can come back to finish it later.',
+      confirm: 'Save Draft',
+      cancel: 'Cancel'
+    }
   },
   list: {
     title: 'My Permits',
@@ -227,8 +237,16 @@ const permit = {
         },
         workersTitle: 'Workers ({count})',
         addWorker: 'Add Worker',
+        addCertificate: 'New Certificate',
         removeWorker: 'Remove worker',
         noWorkers: 'No workers registered yet. Add everyone who will be on this permit.',
+        // wayfinder ticket 004 — worker-name AutoComplete suggestion item copy. A name matching
+        // no suggestion stays legal free text; "empty" tells the contractor that, not that they
+        // are blocked.
+        suggestion: {
+          expired: 'Expired',
+          empty: 'No certificate matches — you can still type this worker\'s name.'
+        },
         column: {
           worker: 'Worker',
           role: 'Role on permit',
@@ -313,6 +331,42 @@ const permit = {
           confirm: 'Yes, remove'
         }
       },
+      position: {
+        subtitle: 'Tap the plan where this work is happening.',
+        loading: 'Checking for an active facility plan…',
+        noActivePlan: 'No facility plan has been activated yet — this step does not apply to your permit.',
+        olderVersion: 'This permit was placed on an earlier plan version. The plan has since been updated, but the pin stays where it was set.',
+        instruction: 'Tap or click the plan to place your pin.',
+        pinSet: 'Pin placed. Tap the plan again to move it.',
+        required: 'A position is required before this permit can be submitted.',
+        imageLoadFailed: 'The facility plan image could not be loaded. Try again in a moment.',
+        retry: 'Retry',
+        area: {
+          label: 'Work Area',
+          placeholder: 'Select an approved area (optional)',
+          empty: 'No approved areas yet — propose one below.',
+          propose: 'Propose new area',
+          proposedNote: 'Awaiting approval',
+          // wayfinder 044. Shown when the permit's area is still APPROVED but outside the list
+          // this contractor can pick from. Deliberately NOT phrased as a problem — nothing is
+          // wrong with the permit, and `staleNote` below (which tells them to choose another
+          // one) would be wrong advice here.
+          currentLabel: 'Current area',
+          currentNote: 'This permit already uses this area. It is not in your selectable list, and it stays as it is unless you choose another one.',
+          staleNote: '“{name}” is no longer an approved area. Choose another one.',
+          missingNote: 'This permit referenced an area that could not be found. Choose another one.',
+          proposeModal: {
+            title: 'Propose Area',
+            field: {
+              name: 'Area name'
+            },
+            submit: 'Submit for approval',
+            validation: {
+              nameRequired: 'Please enter the area name'
+            }
+          }
+        }
+      },
       review: {
         subtitle: 'Confirm every detail. Submitting notifies the Safety Officer for review.',
         idPending: 'ID pending',
@@ -334,6 +388,12 @@ const permit = {
             pass: 'Worker certificates are valid and not expired',
             fail: 'Certificate missing or expired for: {workers}',
             unknown: 'Worker certificates could not be checked — the server decides at submit'
+          },
+          position: {
+            loading: 'Checking the facility plan…',
+            pass: 'Position set on the facility plan',
+            fail: 'No position set — go back to Plan Position',
+            none: 'No active facility plan — a position is not required'
           }
         }
       }
@@ -439,6 +499,11 @@ const permit = {
         meta: 'Rejected by: {who} · Immutable — logged to audit trail',
         action: 'Duplicate & Edit'
       },
+      pending: {
+        title: 'Pending Review',
+        description: 'Awaiting Safety Officer review. Editing now withdraws it from review and returns it to Draft — you will need to submit it again.',
+        action: 'Edit Permit'
+      },
       submitted: {
         title: 'Permit submitted successfully',
         description: 'The Safety Officer has been notified. You will receive your QR code once the permit is approved.'
@@ -473,6 +538,7 @@ const permit = {
         PERMIT_SUBMITTED: 'Permit submitted',
         PERMIT_APPROVED: 'Permit approved',
         PERMIT_REJECTED: 'Permit rejected',
+        PERMIT_WITHDRAWN_FOR_EDIT: 'Withdrawn from review for editing — returned to Draft',
         PERMIT_MARKED_COMPLETE: 'Work marked complete — Fire Watch started',
         PERMIT_CLOSED: 'Permit closed',
         CERT_BLOCKED: 'Entry blocked — certificate invalid'
@@ -515,6 +581,16 @@ const permit = {
         generic: 'Closure was refused'
       }
     },
+    pendingEditWarning: {
+      // wayfinder 012 — the contractor half. The warning fires BEFORE the resume route is opened,
+      // because the wizard's own debounced save handler is what withdraws the permit server-side
+      // the moment the contractor edits a field (wayfinder 022 — opening the route itself is now
+      // read-only) — never after that save handler runs.
+      title: 'Edit this pending permit?',
+      body: 'This permit is awaiting Safety Officer review. Editing it now withdraws it from review and returns it to Draft. You will need to submit it again once you finish editing.',
+      confirm: 'Continue Editing',
+      cancel: 'Cancel'
+    },
     markComplete: {
       // Design lines 549-559. The design's dialog also promises a GPS-tagged photo check after the
       // countdown; no endpoint models it, so it is not built and this copy does not claim it.
@@ -542,6 +618,14 @@ const permit = {
         description: 'Your QR code is generated automatically once the Safety Officer approves this permit.'
       }
     }
+  },
+  toast: {
+    // wayfinder ticket 008. These fire in ADDITION to any on-screen banner — the ruling names
+    // "submitted"/"closed" explicitly, and the banner only confirms once the user has already
+    // landed on the next page, not at the moment the action actually happened.
+    submitted: 'Permit submitted for review',
+    closed: 'Permit closed',
+    duplicated: 'Permit duplicated — continue editing the new draft'
   }
 }
 

@@ -24,6 +24,10 @@ import HttpRequest from '@/resources/HttpRequest'
  *
  * There is no token-probe endpoint: a reset token is only ever validated by the reset call itself,
  * which answers 400 for an expired or forged one.
+ *
+ * There is no demo/trial sign-in here and there must never be one again: wayfinder ticket 042
+ * deleted `POST /api/v1/auth/demo-login` from the API outright (owner ruling 2026-09-08 — no demo
+ * environment will exist), so a call to it would 404 on every deployment.
  */
 export interface IAuthPublicProvider {
   login (payload: ILoginPayload): Promise<TActionLoginResponse>

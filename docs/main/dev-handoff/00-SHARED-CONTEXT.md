@@ -1,4 +1,4 @@
-# SmartWorkPermit / SafePermit — Shared Product Context
+# e-safework — Shared Product Context
 
 This file is shared across all three repositories. Copy it into each repo alongside that repo's own task document (`01-backend-elysia-tasks.md`, `02-contractor-web-vue-tasks.md`, or `03-safety-inspector-web-vue-tasks.md`).
 
@@ -8,7 +8,7 @@ The design reference is `SmartWorkPermit-v3.dc.html` (an HTML prototype). It is 
 
 ## System overview
 
-SmartWorkPermit is a work-permit management system for a Thai industrial facility, split into three repos:
+e-safework is a work-permit management system for a Thai industrial facility, split into three repos:
 
 1. **Contractor web app** — responsive web app. Contractors draft, submit, and track their own work permits.
 2. **Safety Officer + Inspector web app** — one mobile-first responsive app, role-gated. Safety Officers (จป.) review/approve/close permits and monitor the site; Inspectors do field verification (QR scan, entrant register, gas readings) from a phone.

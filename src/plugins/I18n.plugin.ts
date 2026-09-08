@@ -37,6 +37,23 @@ export function persistLocale (locale: TLocale): void {
   }
 }
 
+/**
+ * wayfinder ticket 030. `index.html`'s static `lang="th"` is only a pre-JS best guess (this app's
+ * documented default locale) — a returning user who switched to English previously has `en`
+ * persisted, and the document's `lang` must say so too, both on load (below) and on every runtime
+ * switch (`setLocale`). Guarded for the same reason `getPersistedLocale`/`persistLocale` guard
+ * `localStorage`: this module also runs under vitest/SSR-less test environments where `document`
+ * exists but a stripped-down jsdom setup could still throw on an edge case — best-effort, never
+ * throws.
+ */
+export function applyDocumentLocale (locale: TLocale): void {
+  try {
+    document.documentElement.lang = locale
+  } catch {
+    // no document (non-browser test environment) — nothing to update
+  }
+}
+
 const i18n = createI18n({
   legacy: false,
   locale: getPersistedLocale(),
@@ -77,6 +94,12 @@ const i18n = createI18n({
 export function setLocale (locale: TLocale): void {
   i18n.global.locale.value = locale
   persistLocale(locale)
+  applyDocumentLocale(locale)
 }
+
+// Runs once at module load — matches document.documentElement.lang to whatever locale is
+// actually active (persisted choice or the `th` default) as early as possible, rather than
+// waiting for the first setLocale() call that may never come this session.
+applyDocumentLocale(getPersistedLocale())
 
 export default i18n

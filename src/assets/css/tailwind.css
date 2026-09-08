@@ -51,7 +51,7 @@
 }
 
 /* ─────────────────────────────────────────
-   Brand Color Palette — SmartWorkPermit (SafePermit)
+   Brand Color Palette — e-safework
    ─────────────────────────────────────────
    Source of truth: docs/main/SmartWorkPermit-v3.dc.html
    Full token table: root AGENTS.md § "Design system"
@@ -74,7 +74,7 @@
    This replaces the previous lending-app brand (primary red #BD0102,
    secondary navy #4160BE, plus the yellow/blue/green/orange "-brand" accents
    and font-gray scale). Those scales are removed, not kept alongside —
-   SmartWorkPermit has its own accent/status/type token groups below.
+   e-safework has its own accent/status/type token groups below.
    ───────────────────────────────────────── */
 @theme {
 	/* ── Typography ── */
@@ -118,7 +118,12 @@
 	--color-accent-300: #f4a77b;
 	--color-accent-400: #f28140;
 	--color-accent-500: #f26b1d; /* ← brand accent */
-	--color-accent-600: #e8590c; /* ← fire-monitor emphasis */
+	/* Was documented as "fire-monitor emphasis" — that literal-value coincidence with the OLD
+	   --color-status-fire-monitor-fg-emphasis ended at wayfinder 026: the status token was
+	   darkened to pass WCAG AA against --color-status-fire-monitor-bg and this accent ramp
+	   value was not (a brand-orange background/border swatch, not status text), so the two are
+	   independent literals now, not a shared value to keep in sync. */
+	--color-accent-600: #e8590c;
 	--color-accent-700: #ae4609;
 	--color-accent-800: #84370b;
 	--color-accent-900: #5c280a;
@@ -149,33 +154,69 @@
 
 	/* ── Status tokens ──────────────────────────
 	   One fg/bg (+ border where the design uses one) pair per permit
-	   status, so no screen hardcodes a status hex. */
+	   status, so no screen hardcodes a status hex.
+
+	   DRAFT/CLOSED/EXPIRED are a deliberate neutral-family three-weight ramp
+	   (wayfinder 027, 2026-09): wayfinder 026 fixed each status pair's own AA
+	   ratio in isolation but left DRAFT and EXPIRED sharing the identical fg
+	   (#5b656f) with only a 2.70 bg ΔE apart — numerically distinct, visually
+	   collided. 027 reuses three already-vetted tokens as light/medium/darkest
+	   text weights instead of inventing new hexes: DRAFT keeps
+	   --color-text-secondary (#5b656f) on --color-surface-muted (#eef1f4,
+	   5.24:1); CLOSED keeps --color-text-strong (#3c444c) but moves onto
+	   --color-surface-subtle (#f4f6f8, 9.13:1); EXPIRED moves onto
+	   --color-text-primary (#16191d) on --color-surface-app (#f7f8fa,
+	   16.59:1). All three clear WCAG AA by wide margins and are perceptually
+	   distinct per scripts/check-contrast.mjs's ΔE gate. Each of the three
+	   also gets a non-colour leading glyph in the chip (pencil/check/! dot) so
+	   colour-blind users and greyscale printouts can still tell them apart —
+	   see PermitStatusGlyph / the inline SVGs at each chip render site. */
 	--color-status-draft-fg: #5b656f;
 	--color-status-draft-bg: #eef1f4;
 
 	/* fg deviates from the AGENTS.md table's #B8860B: the design's canonical
 	   status source (smeta() + apStatusStyle() in SmartWorkPermit-v3.dc.html)
-	   renders PENDING as #B26A00 on #FFF3DC everywhere a *status* badge is
+	   renders PENDING as an amber on #FFF3DC everywhere a *status* badge is
 	   shown (dashboard "Pending review" stat, All-Permits status pill,
 	   timeline dot). #B8860B/#FFF8E1 is a different amber reserved for the
 	   "Working at Heights" permit *type* — see --color-permit-type-heights-*
-	   below, which stays literal to the table. Flagging as a deviation. */
-	--color-status-pending-fg: #b26a00;
+	   below, which stays literal to the table. Flagging as a deviation.
+	   fg darkened from the original #B26A00 (wayfinder 026): that hex measured
+	   3.86:1 on this bg and 4.24:1 on white, both below WCAG AA's 4.5:1 for
+	   normal text — the exact same reading the landing page's contrast gate
+	   made it fix to #9A5C00 there; reused verbatim rather than inventing a
+	   third amber. bg/border unchanged. */
+	--color-status-pending-fg: #9a5c00;
 	--color-status-pending-bg: #fff3dc;
 	--color-status-pending-border: #f5d6a0;
 
-	--color-status-active-fg: #1e8e5a;
+	/* fg darkened from #1E8E5A (wayfinder 026): 3.64:1 on this bg, below AA.
+	   -fg-emphasis (#176B45, the documented "dark" variant) already passed and
+	   is unchanged — this keeps the two-tier fg/fg-emphasis hierarchy intact,
+	   just moves the floor up. */
+	--color-status-active-fg: #1a7b4e;
 	--color-status-active-fg-emphasis: #176b45;
 	--color-status-active-bg: #e4f4ec;
 	--color-status-active-border: #b7e0ca;
 
-	--color-status-fire-monitor-fg: #f26b1d;
-	--color-status-fire-monitor-fg-emphasis: #e8590c;
+	/* Both fg tokens darkened (wayfinder 026): #F26B1D measured 2.75:1 and its
+	   -emphasis #E8590C measured 3.24:1 on this bg — both well below AA, the
+	   worst pair found in the sweep. New values keep the fg/fg-emphasis
+	   hierarchy (fg ≈4.6:1, emphasis ≈5.7:1) and the same bg/border; they no
+	   longer equal --color-accent-500/600 (the unrelated brand-orange ramp,
+	   which does not need to satisfy text contrast against this status bg). */
+	--color-status-fire-monitor-fg: #bb4b0b;
+	--color-status-fire-monitor-fg-emphasis: #a53f09;
 	--color-status-fire-monitor-bg: #fff1e6;
 	--color-status-fire-monitor-border: #f5cfa8;
 
+	/* bg moved from #eef1f4 to --color-surface-subtle (#f4f6f8), wayfinder 027:
+	   #eef1f4 was shared verbatim with DRAFT's bg, leaving the two statuses
+	   one shade apart with fg doing all the distinguishing work. fg unchanged
+	   — #3c444c on #f4f6f8 is 9.13:1, comfortably AA. See the neutral-family
+	   note above --color-status-draft-fg. */
 	--color-status-closed-fg: #3c444c;
-	--color-status-closed-bg: #eef1f4;
+	--color-status-closed-bg: #f4f6f8;
 
 	--color-status-rejected-fg: #c81e2c;
 	--color-status-rejected-fg-emphasis: #9b3540;
@@ -183,7 +224,17 @@
 	--color-status-rejected-border: #f2c4ca;
 	--color-status-rejected-border-strong: #e2b4b9; /* outline-button border variant */
 
-	--color-status-expired-fg: #8b95a0;
+	/* fg was #8B95A0 on this bg — 2.86:1, the pair that started wayfinder 026.
+	   Darkened to match --color-text-secondary's value: an existing token
+	   already vetted as this app's text floor, not a new invented colour.
+
+	   fg darkened again, #5b656f → #16191d (wayfinder 027, 2026-09): the 026
+	   fix made EXPIRED and DRAFT share the exact same fg (ΔE 0.00) with only
+	   a 2.70 bg ΔE apart, which is what ticket 027 reported as
+	   indistinguishable chips. Now reuses --color-text-primary — the darkest
+	   vetted weight in the neutral family — on the unchanged bg, 16.59:1. See
+	   the neutral-family note above --color-status-draft-fg. */
+	--color-status-expired-fg: #16191d;
 	--color-status-expired-bg: #f7f8fa;
 
 	/* ── Permit-type tokens ──────────────────────
@@ -195,7 +246,12 @@
 	--color-permit-type-confined-fg: #7c3aed;
 	--color-permit-type-confined-bg: #f1e9fe;
 
-	--color-permit-type-heights-fg: #b8860b;
+	/* fg darkened from #B8860B (found while building the wayfinder 026 contrast gate, same
+	   defect class as the status pairs it was written for): 3.06:1 on this bg, well below AA.
+	   Not one of the ticket's two named pairs, but the gate flags every chip fg/bg it now
+	   knows about, and shipping it red because a type chip failed felt worse than fixing a
+	   third amber while already fixing two. bg/accent unchanged. */
+	--color-permit-type-heights-fg: #926a09;
 	--color-permit-type-heights-bg: #fff8e1;
 	--color-permit-type-heights-accent: #e8b007; /* map pin / highlight variant */
 	--color-permit-type-heights-accent-fg: #3a2e00; /* text/icon on -accent bg */
@@ -211,12 +267,24 @@
 	--color-shell-sidebar-active: #22272e; /* active sidebar nav item bg (navOn) */
 	--color-shell-avatar: #2b3138;
 
-	/* ── Text scale ── */
+	/* ── Text scale ──
+	   tertiary/quaternary darkened (wayfinder 026): the originals — #8B95A0 (2.86:1 on
+	   --color-surface-app, 4.08:1 on the darker --color-surface-muted, both below AA) and
+	   #A4ADB6 (2.27:1 on white) — are real body text at dozens of call sites (PermitInfoCard
+	   labels, PermitAuditTimeline timestamps, HistoryTable captions, table row indices), not
+	   decoration, so WCAG 1.4.3 applies at full strength, not the 3:1 large-text/UI-component
+	   floor. Each is fixed against the darkest surface it is actually used on in this repo
+	   (tertiary reaches --color-surface-muted via the Step4/Step6 "loading"/"checking" chip;
+	   quaternary's darkest real background is --color-surface-subtle) rather than an
+	   unused worst case. The two land within a few RGB units of each other — this app's
+	   surface set cannot hold four AA-passing tiers below primary/secondary, so tertiary and
+	   quaternary are now close to indistinguishable by design; a genuine fourth tier would
+	   need a lighter surface than any this app currently renders text on. */
 	--color-text-primary: #16191d;
 	--color-text-strong: #3c444c;
 	--color-text-secondary: #5b656f;
-	--color-text-tertiary: #8b95a0;
-	--color-text-quaternary: #a4adb6;
+	--color-text-tertiary: #636e79;
+	--color-text-quaternary: #65717d;
 
 	/* ── Surface scale ── */
 	--color-surface-app: #f7f8fa;

@@ -1,4 +1,4 @@
-# SmartWorkPermit — Developer Handoff
+# e-safework — Developer Handoff
 
 Implementation package for three separate repositories built from the `SmartWorkPermit-v3.dc.html` design prototype.
 

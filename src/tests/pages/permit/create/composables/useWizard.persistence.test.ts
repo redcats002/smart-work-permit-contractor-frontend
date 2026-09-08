@@ -1,9 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent } from 'vue'
 import { z } from 'zod'
+import { toast } from '@/plugins/toast'
 import PermitProvider from '@/resources/provider/permit/Permit.provider'
 import { useWizard } from '@/pages/permit/pages/create/composables/useWizard'
 import type { IWizardStepDef } from '@/pages/permit/pages/create/wizard/WizardSteps'
+
+// `toast` wraps PrimeVue's ToastService, unavailable to a bare `useWizard()` call — mocking it
+// also lets the autosave test below assert silence, not just a lack of a crash.
+vi.mock('@/plugins/toast', () => ({
+  toast: { success: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() }
+}))
 
 /**
  * PMT-006 — the `safetyReading` append guard.
@@ -80,6 +87,26 @@ describe('useWizard — safetyReading append guard', () => {
     expect(sent[0]).toMatchObject({ lel: 0, o2: 20.9 })
   })
 
+  /**
+   * wayfinder ticket 008: the autosave PATCH (and its first-call POST leg) must never toast on
+   * SUCCESS — that is the exact "stream of notifications" the ruling forbids. This covers the
+   * happy path only. A FAILED autosave still toasts (see `persist()` in useWizard.ts) — that is
+   * deliberate, not an oversight: a silently-failed autosave is invisible data loss with no other
+   * channel telling the user their edit was not saved. Do not "fix" that error toast away.
+   */
+  it('NEVER toasts on a successful autosave — both the create and the update leg', async () => {
+    vi.mocked(toast.success).mockClear()
+    vi.mocked(toast.error).mockClear()
+
+    const { wizard } = await bootDraft() // fires the create leg (POST /permits)
+
+    wizard.updateFormData({ title: 'Warehouse repaint — revised' })
+    await vi.advanceTimersByTimeAsync(1600) // fires the update leg (PATCH /permits/:id)
+
+    expect(toast.success).not.toHaveBeenCalled()
+    expect(toast.error).not.toHaveBeenCalled()
+  })
+
   it('appends again when the reading itself actually changes', async () => {
     const { wizard, updateSpy } = await bootDraft()
 
@@ -123,6 +150,91 @@ describe('useWizard — safetyReading append guard', () => {
   })
 })
 
+/**
+ * wayfinder ticket 044 (building on 037) — "a permit that already references an area must never
+ * become unsaveable because a visibility flag was switched on."
+ *
+ * Once the deployment sets `AREA_VISIBILITY_SCOPED=TRUE`, `GET /v1/areas` stops listing areas this
+ * contractor neither proposed nor was granted. `AreaPicker` answers by emitting
+ * `{ areaId: undefined }`, and `updateFormData`'s spread copies that key rather than removing it —
+ * so `doPersist` is the only place that can guarantee it never reaches the wire. The server's
+ * `AREA_NOT_APPROVED` guard fires on the key's PRESENCE, so one leaked key would 400 every
+ * autosave for the rest of the session; `null`, meanwhile, is a real destructive clear and must
+ * still get through when a human actually asked for it. Both spellings are pinned here.
+ */
+describe('useWizard — areaId omission on autosave (wayfinder tickets 037 + 044)', () => {
+  beforeEach((): void => {
+    vi.useFakeTimers()
+  })
+
+  afterEach((): void => {
+    vi.useRealTimers()
+    vi.restoreAllMocks()
+  })
+
+  async function bootDraft (): Promise<{ wizard: ReturnType<typeof useWizard>, updateSpy: ReturnType<typeof vi.spyOn> }> {
+    vi.spyOn(PermitProvider.prototype, 'create')
+      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
+    const updateSpy = vi.spyOn(PermitProvider.prototype, 'update')
+      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
+
+    const wizard = useWizard(makeSteps())
+    wizard.updateFormData(creatableDraft())
+    await vi.advanceTimersByTimeAsync(1600) // POST /permits
+    return { wizard, updateSpy }
+  }
+
+  function lastPatchBody (updateSpy: ReturnType<typeof vi.spyOn>): Record<string, unknown> {
+    return (updateSpy.mock.calls.at(-1) as [string, Record<string, unknown>])[1]
+  }
+
+  it('HEADLINE — a permit whose area is scoped out of the list still autosaves, with no areaId key at all', async () => {
+    vi.mocked(toast.error).mockClear()
+    const { wizard, updateSpy } = await bootDraft()
+
+    // The permit was hydrated against area 77; AreaPicker could not find 77 in the scoped list and
+    // stripped it. `undefined`, deliberately — see AreaPicker.resolveStaleArea.
+    wizard.updateFormData({ areaId: 77 })
+    wizard.updateFormData({ areaId: undefined })
+    await vi.advanceTimersByTimeAsync(1600)
+
+    // The permit is still saveable: a PATCH really went out...
+    expect(updateSpy).toHaveBeenCalled()
+    // ...and it carries no `areaId` key whatsoever. `toEqual`/`toMatchObject` would pass here even
+    // if the key were present holding `undefined`, so assert on the key itself — that presence is
+    // exactly what the server's guard tests.
+    expect(Object.keys(lastPatchBody(updateSpy))).not.toContain('areaId')
+    expect(lastPatchBody(updateSpy)).not.toHaveProperty('areaId')
+    expect(toast.error).not.toHaveBeenCalled()
+
+    // Every later autosave stays clean too — the strip is not a one-shot that a subsequent edit
+    // re-dirties.
+    wizard.updateFormData({ title: 'Warehouse repaint — revised' })
+    await vi.advanceTimersByTimeAsync(1600)
+    expect(Object.keys(lastPatchBody(updateSpy))).not.toContain('areaId')
+  })
+
+  it('still sends areaId: null for a user’s deliberate clear — the strip must not swallow that', async () => {
+    const { wizard, updateSpy } = await bootDraft()
+
+    wizard.updateFormData({ areaId: 5 })
+    await vi.advanceTimersByTimeAsync(1600)
+    wizard.updateFormData({ areaId: null })
+    await vi.advanceTimersByTimeAsync(1600)
+
+    expect(lastPatchBody(updateSpy)).toHaveProperty('areaId', null)
+  })
+
+  it('sends a real areaId untouched — an approved area the contractor CAN see still saves', async () => {
+    const { wizard, updateSpy } = await bootDraft()
+
+    wizard.updateFormData({ areaId: 12 })
+    await vi.advanceTimersByTimeAsync(1600)
+
+    expect(lastPatchBody(updateSpy)).toHaveProperty('areaId', 12)
+  })
+})
+
 describe('useWizard — step 3 checklist state', () => {
   it('keeps checklist answers out of formData entirely (no wire field — GAPS row J)', () => {
     const wizard = useWizard(makeSteps())
@@ -132,5 +244,128 @@ describe('useWizard — step 3 checklist state', () => {
 
     expect(wizard.checklistAnswers.value).toEqual({ 'hot-1': 'yes', 'hot-2': 'na' })
     expect(wizard.formData.value).not.toHaveProperty('checklistAnswers')
+  })
+})
+
+/**
+ * wayfinder ticket 001 (field report item 4). `PATCH /permits/:id` 400'd on `/jsaSteps/3/step`,
+ * `/hazard`, `/control` with `Expected string length greater or equal to 1` — the offending row
+ * was `{ phase: 'pre', step: '', hazard: '', control: '', sortOrder: 1 }`, an untouched "add row"
+ * placeholder sent wholesale by `doPersist`. Covers both "Done when" bullets from the ticket, at
+ * the composable level: an untouched empty row is dropped from what is actually PATCHed (formData
+ * itself keeps it, so it is not lost from the UI), and a half-filled row never reaches the wire
+ * either — the wizard mirrors the server's `minLength: 1`, it never gates beyond it.
+ */
+describe('useWizard — JSA row filtering at serialization (wayfinder ticket 001)', () => {
+  beforeEach((): void => {
+    vi.useFakeTimers()
+  })
+
+  afterEach((): void => {
+    vi.useRealTimers()
+    vi.restoreAllMocks()
+  })
+
+  async function bootDraft (): Promise<{ wizard: ReturnType<typeof useWizard>, updateSpy: ReturnType<typeof vi.spyOn> }> {
+    vi.spyOn(PermitProvider.prototype, 'create')
+      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
+    const updateSpy = vi.spyOn(PermitProvider.prototype, 'update')
+      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
+
+    const wizard = useWizard(makeSteps())
+    wizard.updateFormData(creatableDraft())
+    await vi.advanceTimersByTimeAsync(1600) // POST /permits — jsaSteps has no home on create anyway
+    return { wizard, updateSpy }
+  }
+
+  function jsaStepsSent (updateSpy: ReturnType<typeof vi.spyOn>): unknown {
+    const lastCall = updateSpy.mock.calls.at(-1) as [string, { jsaSteps?: unknown }] | undefined
+    return lastCall?.[1].jsaSteps
+  }
+
+  it('drops an untouched empty row from the PATCH — the field report payload exactly', async () => {
+    const { wizard, updateSpy } = await bootDraft()
+
+    wizard.updateFormData({
+      jsaSteps: [
+        { phase: 'pre', step: 'Isolate the line', hazard: 'Residual pressure', control: 'Lockout / tagout' },
+        { phase: 'pre', step: '', hazard: '', control: '', sortOrder: 1 }
+      ]
+    })
+    await vi.advanceTimersByTimeAsync(1600)
+
+    expect(updateSpy).toHaveBeenCalled()
+    expect(jsaStepsSent(updateSpy)).toEqual([
+      { phase: 'pre', step: 'Isolate the line', hazard: 'Residual pressure', control: 'Lockout / tagout', sortOrder: 0 }
+    ])
+    // Not lost from the UI, only from the wire — the row is still there for the user to fill in.
+    expect(wizard.formData.value.jsaSteps).toHaveLength(2)
+  })
+
+  it('omits jsaSteps from the PATCH entirely while a row is half-filled — never sends a shrunken array', async () => {
+    const { wizard, updateSpy } = await bootDraft()
+
+    wizard.updateFormData({
+      jsaSteps: [{ phase: 'pre', step: 'Isolate the line', hazard: '', control: '' }]
+    })
+    await vi.advanceTimersByTimeAsync(1600)
+
+    expect(updateSpy).toHaveBeenCalled()
+    // NOT `[]` — jsaSteps is REPLACED WHOLESALE by this endpoint (AGENTS.md), so sending an array
+    // with the partial row filtered out would still overwrite the permit's persisted jsaSteps.
+    // The only safe move while a row is unfinished is to leave the key off the PATCH entirely.
+    const lastCall = updateSpy.mock.calls.at(-1) as [string, Record<string, unknown>]
+    expect(lastCall[1]).not.toHaveProperty('jsaSteps')
+    // Still not lost — the partial row stays in formData so the user's typing survives.
+    expect(wizard.formData.value.jsaSteps).toEqual([
+      { phase: 'pre', step: 'Isolate the line', hazard: '', control: '' }
+    ])
+  })
+
+  it('REGRESSION — a partial row left mid-edit must never wipe the permit\'s already-persisted JSA rows', async () => {
+    const { wizard, updateSpy } = await bootDraft()
+
+    // First PATCH: two complete rows land safely.
+    wizard.updateFormData({
+      jsaSteps: [
+        { phase: 'pre', step: 'Isolate the line', hazard: 'Residual pressure', control: 'Lockout / tagout' },
+        { phase: 'pre', step: 'Ventilate', hazard: 'Fumes', control: 'Fan running' }
+      ]
+    })
+    await vi.advanceTimersByTimeAsync(1600)
+    expect(jsaStepsSent(updateSpy)).toHaveLength(2)
+
+    // User clears `hazard` on the first row to retype it — that row is now partial mid-edit, and
+    // the debounced autosave fires while it is still empty (e.g. they pause, or navigate away and
+    // onUnmounted flushes it). This PATCH must NOT tell the server "jsaSteps is now this shorter
+    // array" — on a wholesale-replace endpoint that deletes the second, still-complete row too.
+    wizard.updateFormData({
+      jsaSteps: [
+        { phase: 'pre', step: 'Isolate the line', hazard: '', control: 'Lockout / tagout' },
+        { phase: 'pre', step: 'Ventilate', hazard: 'Fumes', control: 'Fan running' }
+      ]
+    })
+    await vi.advanceTimersByTimeAsync(1600)
+
+    const lastCall = updateSpy.mock.calls.at(-1) as [string, Record<string, unknown>]
+    expect(lastCall[1]).not.toHaveProperty('jsaSteps')
+  })
+
+  it('recomputes sortOrder with no gaps once a mid-list row is dropped', async () => {
+    const { wizard, updateSpy } = await bootDraft()
+
+    wizard.updateFormData({
+      jsaSteps: [
+        { phase: 'pre', step: 'First', hazard: 'H1', control: 'C1', sortOrder: 0 },
+        { phase: 'pre', step: '', hazard: '', control: '', sortOrder: 1 },
+        { phase: 'pre', step: 'Third', hazard: 'H3', control: 'C3', sortOrder: 2 }
+      ]
+    })
+    await vi.advanceTimersByTimeAsync(1600)
+
+    expect(jsaStepsSent(updateSpy)).toEqual([
+      { phase: 'pre', step: 'First', hazard: 'H1', control: 'C1', sortOrder: 0 },
+      { phase: 'pre', step: 'Third', hazard: 'H3', control: 'C3', sortOrder: 1 }
+    ])
   })
 })

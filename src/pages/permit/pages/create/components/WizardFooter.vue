@@ -8,6 +8,14 @@
       <span aria-hidden="true">←</span> {{ t('permit.wizard.back') }}
     </button>
 
+    <button
+      class="h-11.5 rounded-lg border border-border-input bg-surface-card px-5.5 text-sm font-semibold text-text-primary"
+      data-test="wizard-save-draft"
+      type="button"
+      @click="showSaveDraftConfirm = true">
+      {{ t('permit.wizard.saveDraft.action') }}
+    </button>
+
     <div class="ml-auto flex items-center gap-3.5">
       <span
         v-if="nextBlocked && !isLastStep"
@@ -35,10 +43,16 @@
       </button>
     </div>
   </div>
+
+  <SaveDraftConfirmModal
+    v-model="showSaveDraftConfirm"
+    @confirm="emit('save-draft')" />
 </template>
 
 <script setup lang="ts">
+import { ref, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SaveDraftConfirmModal from './SaveDraftConfirmModal.vue'
 
 interface IProps {
   canBack: boolean
@@ -48,15 +62,19 @@ interface IProps {
 }
 
 interface IEmits {
-  back: []
-  next: []
-  submit: []
+  'back': []
+  'next': []
+  'submit': []
+  /** wayfinder ticket 033 — fired once the SaveDraftConfirmModal is confirmed, never on cancel. */
+  'save-draft': []
 }
 
 defineProps<IProps>()
 const emit = defineEmits<IEmits>()
 
 const { t } = useI18n()
+
+const showSaveDraftConfirm: Ref<boolean> = ref(false)
 </script>
 
 <style scoped>

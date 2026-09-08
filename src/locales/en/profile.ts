@@ -17,6 +17,11 @@ export default {
   fieldContractStart: 'Contract start',
   fieldContractEnd: 'Contract end',
   savedToast: 'Profile updated',
+  validation: {
+    firstNameRequired: 'First name is required',
+    lastNameRequired: 'Last name is required',
+    phoneLength: 'Phone number must be exactly 10 digits'
+  },
   role: {
     contractor: 'Contractor',
     safety_officer: 'Safety Officer',

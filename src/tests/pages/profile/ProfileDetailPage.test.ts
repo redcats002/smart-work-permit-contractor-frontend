@@ -1,4 +1,4 @@
-import type { VueWrapper } from '@vue/test-utils'
+import type { DOMWrapper, VueWrapper } from '@vue/test-utils'
 import type { Router } from 'vue-router'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
@@ -98,6 +98,56 @@ describe('ProfileDetailPage (CRT-005)', () => {
     expect(payload).not.toHaveProperty('permitRole')
     expect(payload).not.toHaveProperty('active')
     expect(payload).not.toHaveProperty('email')
+  })
+
+  it('validates first/last name and phone length client-side via the new zod schema, and keeps label + focus on the converted fields (wayfinder 006)', async () => {
+    // jsdom has no scrollIntoView implementation; scrollToFirstError() calls it on the first
+    // invalid field when a submit is blocked, same as every other real Form in this app.
+    Element.prototype.scrollIntoView = vi.fn()
+
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+
+    const i18n = createI18n({ legacy: false, locale: 'en', fallbackLocale: 'en', messages: { en, th } })
+    const router: Router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: '/profile', name: 'ProfileDetailPage', component: ProfileDetailPage }]
+    })
+    await router.push('/profile')
+
+    const wrapper = mount(ProfileDetailPage, {
+      attachTo: container,
+      global: { plugins: [i18n, router, [PrimeVue, { unstyled: true }]] }
+    })
+    await flushPromises()
+
+    // The first-name field is now a Volt InputText inside LabelField's own <label> wrapper — that
+    // wrapping IS the label association (no separate `for`/`id` pair needed for it to be valid).
+    const nameLabel = wrapper.findAll('label').find((label: DOMWrapper<Element>): boolean => label.text().includes('First name'))
+    expect(nameLabel?.exists()).toBe(true)
+    const nameInput = nameLabel!.find('input')
+    expect(nameInput.exists()).toBe(true)
+
+    const nameInputEl = nameInput.element as HTMLInputElement
+    nameInputEl.focus()
+    expect(document.activeElement).toBe(nameInputEl)
+
+    // Clearing the required first-name field and submitting must block on the client — the zod
+    // schema this test exercises — before any request goes out.
+    const updateMe = vi.spyOn(UserProvider.prototype, 'updateMe')
+    await nameInput.setValue('')
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+
+    expect(updateMe).not.toHaveBeenCalled()
+    // The zod schema's messages route through the app's own i18n SINGLETON (@/plugins/I18n.plugin),
+    // like useApiError()'s mapError() does — not through this test's own local `createI18n`
+    // instance, which only drives the page's own {{ t(...) }} template calls. The singleton's
+    // default locale is Thai (see the "renders the localized error" test below for the same trap).
+    expect(wrapper.text()).toContain('กรุณากรอกชื่อ')
+
+    wrapper.unmount()
+    container.remove()
   })
 
   it('renders the localized error, never the backend message', async () => {

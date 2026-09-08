@@ -44,7 +44,7 @@
 import { ref } from 'vue'
 import type { IMedia } from '@/resources/provider/Upload.provider'
 import { ptViewMerge } from '@/volt/utils'
-import { Icon } from '@iconify/vue'
+import Icon from '@/components/base/AppIcon.vue'
 import type { GalleriaPassThroughOptions, GalleriaResponsiveOptions } from 'primevue'
 import Galleria from 'primevue/galleria'
 import BaseImage from './BaseImage.vue'

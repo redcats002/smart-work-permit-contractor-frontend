@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 import { useCopy } from '@/composables/useCopy'
-import { Icon } from '@iconify/vue'
+import Icon from '@/components/base/AppIcon.vue'
 
 interface IProps {
   value: string

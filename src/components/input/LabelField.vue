@@ -106,7 +106,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useAttrs, watch } from 'vue'
 import type { TBaseOption } from '@/models/Global.model'
-import { Icon } from '@iconify/vue'
+import Icon from '@/components/base/AppIcon.vue'
 
 type TInputTag = 'label' | 'div'
 

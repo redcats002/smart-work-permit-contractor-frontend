@@ -1,6 +1,6 @@
 const platform = {
-  appName: 'SafePermit',
-  appTagline: 'SMART WORK PERMIT · v3.0',
+  appName: 'e-safework',
+  appTagline: 'ELECTRONIC SAFE WORK PERMIT · v3.0',
   accountType: 'Contractor account',
   sidebarSection: 'CONTRACTOR',
   nav: {
@@ -27,6 +27,8 @@ const platform = {
     password: 'Password',
     submit: 'Log in',
     loginSuccess: 'Welcome back',
+    // wayfinder ticket 042 — the `trial` (023) and `trialFill` (032) key groups were DELETED with
+    // the buttons they labelled. No demo environment will exist; do not re-add either group.
     validation: {
       emailRequired: 'Please enter your email',
       emailInvalid: 'Invalid email format',

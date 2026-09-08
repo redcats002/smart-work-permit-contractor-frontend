@@ -29,6 +29,9 @@ export enum EApiErrorCode {
   PERMIT_NOT_SUBMITTABLE = 'PERMIT_NOT_SUBMITTABLE',
   PERMIT_NOT_ACTIVE = 'PERMIT_NOT_ACTIVE',
   NOT_HOT_WORK = 'NOT_HOT_WORK',
+  // wayfinder 022 — PATCH /permits/:id refuses a body with no editable field at all, so an
+  // empty-body PATCH can never withdraw a PENDING permit by accident (e.g. an editability probe).
+  PERMIT_UPDATE_EMPTY = 'PERMIT_UPDATE_EMPTY',
   // feat-023 — position on the facility plan. Submit refuses with this once an active plan
   // exists and the permit has no planId/planX/planY set.
   PERMIT_POSITION_REQUIRED = 'PERMIT_POSITION_REQUIRED',
@@ -36,6 +39,7 @@ export enum EApiErrorCode {
   // Closure guards — safety-officer actions, surfaced here because a contractor watching a permit
   // needs to understand why it has not closed.
   ENTRANTS_STILL_INSIDE = 'ENTRANTS_STILL_INSIDE',
+  CLOSURE_REASON_REQUIRED = 'CLOSURE_REASON_REQUIRED',
   FIRE_WATCH_NOT_ELAPSED = 'FIRE_WATCH_NOT_ELAPSED',
   PERMIT_NOT_CLOSABLE = 'PERMIT_NOT_CLOSABLE',
   PERMIT_NOT_PENDING = 'PERMIT_NOT_PENDING',
@@ -60,7 +64,17 @@ export enum EApiErrorCode {
   FILE_TYPE_NOT_ALLOWED = 'FILE_TYPE_NOT_ALLOWED',
   FILE_TOO_LARGE = 'FILE_TOO_LARGE',
   UPLOAD_FOLDER_NOT_ALLOWED = 'UPLOAD_FOLDER_NOT_ALLOWED',
-  STORAGE_UNAVAILABLE = 'STORAGE_UNAVAILABLE'
+  STORAGE_UNAVAILABLE = 'STORAGE_UNAVAILABLE',
+
+  // Area (wayfinder 034/036) — a contractor proposes an area (POST /areas) and it is unusable by
+  // any permit until a safety officer approves it. AREA_NOT_APPROVED is a contractor-visible 400
+  // from POST/PATCH /permits when the referenced area is still PENDING or was REJECTED.
+  // AREA_NOT_PENDING is the officer-only approve/reject race guard, surfaced here only so a
+  // contractor UI polling area status never renders the backend's raw message. AREA_REQUIRED is
+  // the PERMIT_AREA_REQUIRED-flag submit gate, off by default.
+  AREA_NOT_APPROVED = 'AREA_NOT_APPROVED',
+  AREA_NOT_PENDING = 'AREA_NOT_PENDING',
+  AREA_REQUIRED = 'AREA_REQUIRED'
 }
 
 export type TApiErrorCode = `${EApiErrorCode}`

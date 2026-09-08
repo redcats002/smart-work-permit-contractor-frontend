@@ -9,14 +9,15 @@
           {{ t('certificate.list.subtitle') }}
         </p>
       </div>
-      <button
-        class="inline-flex h-10.5 shrink-0 items-center justify-center gap-2 rounded-lg bg-text-primary px-5 text-sm
-          font-semibold text-white transition-colors hover:bg-shell-sidebar-hover"
+      <Button
+        class="rounded-lg! border-text-primary! bg-text-primary! px-5! text-sm! font-semibold! text-white!
+          transition-colors hover:bg-shell-sidebar-hover! hover:border-shell-sidebar-hover!"
+        data-test="add-certificate-open"
         type="button"
         @click="showAddModal = true">
         <span aria-hidden="true">＋</span>
         {{ t('certificate.list.addButton') }}
-      </button>
+      </Button>
     </div>
 
     <div class="px-4 py-6 md:px-8">

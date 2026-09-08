@@ -28,7 +28,7 @@
 import { onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useDebounce } from '@/utils/Debounce'
-import { Icon } from '@iconify/vue'
+import Icon from '@/components/base/AppIcon.vue'
 
 interface IEmits {
   search: [searchValue: string]

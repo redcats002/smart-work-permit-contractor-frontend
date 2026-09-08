@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { EApiErrorCode } from '@/enums/modules/error/ApiErrorCode.enum'
 import {
-  EMPTY_SUBMIT_FAILURES, extractSubmitFailures, stepIndexForSubmitError, stepIndexForSubmitFailure
+  EMPTY_SUBMIT_FAILURES, extractSubmitFailures, stepKeyForSubmitError, stepKeyForSubmitFailure
 } from '@/pages/permit/pages/create/constants/SubmitErrorRouting'
 
 /**
@@ -54,29 +54,39 @@ describe('extractSubmitFailures', () => {
 describe('step routing', () => {
   it('sends every reading code to Safety Checks and both certificate codes to PPE & Workers', () => {
     for (const code of ['LEL_MISSING', 'O2_MISSING', 'CO_MISSING', 'WIND_MISSING', 'GAS_OUT_OF_RANGE', 'WIND_OUT_OF_RANGE']) {
-      expect(stepIndexForSubmitError(code)).toBe(2)
+      expect(stepKeyForSubmitError(code)).toBe('safetyChecks')
     }
-    expect(stepIndexForSubmitError('CERT_MISSING')).toBe(3)
-    expect(stepIndexForSubmitError('CERT_EXPIRED')).toBe(3)
+    expect(stepKeyForSubmitError('CERT_MISSING')).toBe('ppeWorkers')
+    expect(stepKeyForSubmitError('CERT_EXPIRED')).toBe('ppeWorkers')
+  })
+
+  it('sends PERMIT_POSITION_REQUIRED to the Position step', () => {
+    expect(stepKeyForSubmitError('PERMIT_POSITION_REQUIRED')).toBe('position')
+  })
+
+  // wayfinder ticket 037 — the `PERMIT_AREA_REQUIRED` deployment flag's submit gate lands on the
+  // same step as the position picker, which now also carries the area picker.
+  it('sends AREA_REQUIRED to the Position step', () => {
+    expect(stepKeyForSubmitError('AREA_REQUIRED')).toBe('position')
   })
 
   it('stays on Review for a code no earlier step can fix', () => {
-    expect(stepIndexForSubmitError('PERMIT_NOT_SUBMITTABLE')).toBeUndefined()
-    expect(stepIndexForSubmitError('RATE_LIMITED')).toBeUndefined()
+    expect(stepKeyForSubmitError('PERMIT_NOT_SUBMITTABLE')).toBeUndefined()
+    expect(stepKeyForSubmitError('RATE_LIMITED')).toBeUndefined()
   })
 
   it('prefers the failure arrays over the envelope code', () => {
     // The envelope says CERT_EXPIRED, but readings also failed — readings is the earlier fix.
-    expect(stepIndexForSubmitFailure('CERT_EXPIRED', {
+    expect(stepKeyForSubmitFailure('CERT_EXPIRED', {
       readings: [{ field: 'lel', errorCode: 'GAS_OUT_OF_RANGE' }],
       certificates: [{ workerName: 'Somchai', errorCode: 'CERT_EXPIRED' }]
-    })).toBe(2)
+    })).toBe('safetyChecks')
 
-    expect(stepIndexForSubmitFailure('PERMIT_NOT_SUBMITTABLE', {
+    expect(stepKeyForSubmitFailure('PERMIT_NOT_SUBMITTABLE', {
       readings: [],
       certificates: [{ workerName: 'Somchai', errorCode: 'CERT_MISSING' }]
-    })).toBe(3)
+    })).toBe('ppeWorkers')
 
-    expect(stepIndexForSubmitFailure('GAS_OUT_OF_RANGE', EMPTY_SUBMIT_FAILURES)).toBe(2)
+    expect(stepKeyForSubmitFailure('GAS_OUT_OF_RANGE', EMPTY_SUBMIT_FAILURES)).toBe('safetyChecks')
   })
 })

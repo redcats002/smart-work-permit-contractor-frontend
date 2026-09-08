@@ -20,13 +20,16 @@
     <div class="w-full min-h-90 rounded-xl border border-border bg-surface-card p-5 md:p-7">
       <component
         :is="currentStep.component"
+        :active-plan="activePlan"
         :certificate-problems="certificateProblems"
         :certificate-state="certificateState"
         :checklist-answers="checklistAnswers"
         :draft-id="draftId"
         :form-data="formData"
+        :position-state="positionState"
         :submit-failures="submitFailures"
         :title="t(currentStep.labelKey)"
+        @recheck-certificates="recheckCertificates()"
         @update:checklist-answers="updateChecklistAnswers($event)"
         @update:form-data="updateFormData($event)" />
     </div>
@@ -46,6 +49,7 @@
       :next-blocked="isNextBlocked"
       @back="back()"
       @next="next()"
+      @save-draft="onSaveDraftConfirmed()"
       @submit="onSubmitClick()" />
   </div>
 </template>
@@ -72,6 +76,9 @@ const {
   submitFailures,
   certificateState,
   certificateProblems,
+  recheckCertificates,
+  positionState,
+  activePlan,
   isFirstStep,
   isLastStep,
   isNextBlocked,
@@ -81,7 +88,8 @@ const {
   goToStep,
   updateFormData,
   updateChecklistAnswers,
-  submitDraft
+  submitDraft,
+  saveDraft
 } = useWizard()
 
 /**
@@ -97,6 +105,15 @@ async function onSubmitClick (): Promise<void> {
   // (PermitStatusBanner.vue, PMT-010). Nothing else sets it — a plain visit to an already-PENDING
   // permit must NOT look like it was just submitted.
   await router.push({ name: 'PermitDetailPage', params: { id: permitId }, query: { submitted: '1' } })
+}
+
+/**
+ * wayfinder ticket 033. `saveDraft()` flushes the pending autosave and awaits the same `inflight`
+ * chain `submitDraft` does, so the PATCH/POST really has landed before the navigation below fires.
+ */
+async function onSaveDraftConfirmed (): Promise<void> {
+  await saveDraft()
+  await router.push({ name: 'PermitListPage' })
 }
 </script>
 

@@ -14,16 +14,22 @@ Before doing any non-trivial work in this repo, read the project skill index at 
 
 ## Working across repos
 
-This app is one of three repos in the SmartWorkPermit workspace (`../`): this one, the Safety Officer
+This app is one of three repos in the e-safework workspace (`../`): this one, the Safety Officer
 + Inspector app (`../smart-work-permit-frontend`), and the single backend (`../smart-work-permit-api`).
 **If your change touches a route, payload, `errorCode`, role or the permit status machine, read
 `docs/main/CONTEXT.md` first** — it owns the cross-repo contract rules, the openapi propagation procedure,
 and the `node scripts/check-contract-sync.mjs` glue check. Everything inside this repo stays governed
 by this file and `feature_list.json`.
 
+**Cross-repo consistency obligation.** A change here that makes a statement in another repo false —
+the API, the Safety Officer/Inspector app, or the landing page — must be corrected there in the same
+session. See `docs/main/CONTEXT.md` §"Cross-repo consistency". `check-contract-sync.mjs` only covers
+four files (`CONTEXT.md`, `PROMPT-LOG.md`, `openapi.json`, plus its own script copy); everything else
+is the author's responsibility.
+
 ## What this repo is
 
-**SmartWorkPermit — Contractor web app.** Responsive web app (desktop/tablet first, must not break at 375px) where contractors draft, submit, and track their own work permits for a Thai industrial facility.
+**e-safework — Contractor web app.** Responsive web app (desktop/tablet first, must not break at 375px) where contractors draft, submit, and track their own work permits for a Thai industrial facility.
 
 Specs live in `docs/main/`:
 
@@ -65,6 +71,18 @@ Two sibling apps exist in **other repos** and are **out of scope here**: the Saf
 > admits `contractor` scoped to their own permit (`feat-020`), so `PMT-011`'s modal works end to end. Still
 > open: row **I** (entrant *names* are not readable by the permit owner — the count is), and rows **G**, **J**,
 > **K**, all of which need a backend field before any frontend work is possible.
+>
+> Built 2026-08-31 (`feat-023`, wayfinder ticket 015): the contractor position picker. The wizard's
+> `position` step (7th, between JSA and Review) only appears once `GET /facility-plans/active` resolves a
+> plan — the current no-plan production state is unchanged, and this is the half that had to ship before
+> the Safety app could ever activate one (`PERMIT_POSITION_REQUIRED` would otherwise lock out every
+> contractor). A click/tap on the plan `<img>` converts to `planX`/`planY` percentages via
+> `src/utils/PlanPosition.ts` (unit-tested) from the element's rendered rect at click time, never a
+> hardcoded size. `position` follows the same DRAFT/REJECTED editability window as the rest of the form —
+> no separate rule — and a permit frozen against an older plan version resolves THAT version via
+> `GET /facility-plans/:id`, never the active one, with an "older version" note. `usePlanPosition`
+> mirrors `useCertificatePreflight`'s shared-instance pattern exactly: one fetch, gates both the step's
+> Next and the Review row, never blocks on `'loading'`/`'none'` — only a confirmed `'fail'`.
 >
 > **The providers are live against the real backend** (`feat-005`, 2026-08-17). Every `USE_STUB_DATA` flag and both `*.mock.ts` files are gone; `VITE_APP_API_URL` points at the API and auth is a **better-auth session cookie**, not a bearer token.
 >
@@ -110,7 +128,7 @@ Each module owns parallel trees: routes (`src/router/modules/<Mod>.router.ts` or
 | Module | Prefix | Pages (`src/pages/<mod>/pages/`) | Providers | Harness | Built? |
 |---|---|---|---|---|---|
 | `platform` | `/auth` | `auth/login` ✅, `auth/reset-password` ✅, layout shell, i18n, API errors | `auth/public`, `auth/private`, `notification` | `docs/modules/platform/` | shell + i18n + errors + contractor auth/route guard (`PLT-005`) ✅ · notification polling `PLT-007` ✅ |
-| `permit` | `/permits` | `list` ✅, `create` (6-step wizard) ✅, `detail` ✅ | `permit` | `docs/modules/permit/` | provider + list ✅ · wizard complete, all six steps real (`PMT-004`–`PMT-009`) · detail built (`PMT-010`–`PMT-012`: banners, QR, audit timeline, closure modal, Fire Watch countdown) |
+| `permit` | `/permits` | `list` ✅, `create` (7-step wizard) ✅, `detail` ✅ | `permit`, `facility-plan` (read-only — `getActive`/`getById`, no upload/create/activate), `area` (list/getById/create — no approve/reject, safety-officer only) | `docs/modules/permit/` | provider + list ✅ · wizard complete, all seven steps real (`PMT-004`–`PMT-009`, `feat-023`) · detail built (`PMT-010`–`PMT-012`: banners, QR, audit timeline, closure modal, Fire Watch countdown) · area picker + propose-inline (wayfinder 037), read-only display of an area outside the contractor's scoped list (wayfinder 044) |
 | `history` | `/history` | `list` ✅ | `permit` (reused — no own provider dir) | `docs/modules/history/` | ✅ |
 | `certificate` | `/certificates` | `list` ✅ | `certificate` | `docs/modules/certificate/` | ✅ |
 | `api-integration` | — (cross-cutting) | — | every provider + the transport | `docs/modules/api-integration/` | ✅ transport, auth, errors, permit/certificate/notification/upload |
@@ -145,7 +163,7 @@ Contractor-app journey across that machine:
 
 ```
 /permits (list)
-  → /permits/create  (6-step wizard: Type → Basic Info → Safety Checks → PPE & Workers → JSA → Review)
+  → /permits/create  (7-step wizard: Type → Basic Info → Safety Checks → PPE & Workers → JSA → Plan Position → Review)
     → submit                                   [DRAFT → PENDING]
       → /permits/:id  (status banner, QR when ACTIVE/FIRE_MONITOR, audit timeline)
         → mark-complete (hot work)             [ACTIVE → FIRE_MONITOR]
@@ -186,19 +204,46 @@ The design prototype's palette **replaces** the template's existing brand colors
 |---|---|---|
 | Primary / danger | `#C81E2C` | Brand primary, required-field `*`, blocked banners, "inside" alerts |
 | Accent orange | `#F26B1D` | Topbar accent border, logo mark, map pin |
-| Success green | `#1E8E5A` (dark `#176B45`, bg `#E4F4EC`, border `#B7E0CA`) | Safe atmosphere, Active status |
-| Pending amber | `#B26A00` (bg `#FFF3DC`) | `PENDING` status badge only |
-| Heights amber | `#B8860B` (bg `#FFF8E1`) | Working-at-Heights **type** chip/icon only |
+| Success green | `#1A7B4E`¹ (dark `#176B45`, bg `#E4F4EC`, border `#B7E0CA`) | Safe atmosphere, Active status |
+| Pending amber | `#9A5C00`¹ (bg `#FFF3DC`) | `PENDING` status badge only |
+| Heights amber | `#926A09`¹ (bg `#FFF8E1`) | Working-at-Heights **type** chip/icon only |
 | Confined-space purple | `#7C3AED` (bg `#F1E9FE`) | Confined Space type chip/icon |
 | Hot-work red bg | `#FCE9EB` | Hot Work type chip/icon |
 | Shell dark | `#111418` (topbar) · `#16191D` (sidebar, headings) | App chrome |
 | Sidebar text | `#C2CAD2` · muted `#6B7681` | Nav |
-| Body text | `#16191D` primary · `#5B656F` secondary · `#8B95A0` tertiary | Content |
+| Body text | `#16191D` primary · `#5B656F` secondary · `#636E79`¹ tertiary · `#65717D`¹ quaternary | Content |
 | Surfaces | `#F7F8FA` main bg · `#F4F6F8` · `#EEF1F4` · `#fff` cards | Backgrounds |
 | Borders | `#E1E6EB` · `#D7DCE2` · `#CBD2D9` | Dividers, card borders |
 
 **Never hardcode a hex.** Every color above is a `@theme` token in `src/assets/css/tailwind.css`:
 `--color-primary-*`, `--color-accent-*`, `--color-status-{draft,pending,active,fire-monitor,closed,rejected,expired}-{fg,bg,border}`, `--color-permit-type-{hot,confined,heights}-{fg,bg}`, `--color-shell-*`, `--color-text-*`, `--color-surface-*`, `--color-border*`. Use the token; if one is missing, add it to `tailwind.css` rather than inlining a hex.
+
+¹ Darkened from the original brief's `#1E8E5A`/`#B26A00` (wayfinder 026, 2026-09): both measured below WCAG AA's
+4.5:1 against their status backgrounds (3.64:1 and 3.86:1 respectively). The sweep also darkened
+`--color-status-fire-monitor-fg` (`#F26B1D` → `#BB4B0B`), `--color-status-fire-monitor-fg-emphasis`
+(`#E8590C` → `#A53F09`), `--color-status-expired-fg` (`#8B95A0` → `#5B656F`, reusing
+`--color-text-secondary`'s value), and `--color-permit-type-heights-fg` (`#B8860B` → `#926A09`,
+found while building the gate below, not one of the ticket's two named pairs) — none of which had
+a row of their own in this table before now. `--color-text-tertiary`/`--color-text-quaternary`
+were also sub-AA (`#8B95A0` was 2.86:1 on `--color-surface-app`, 4.08:1 on the darker
+`--color-surface-muted`; `#A4ADB6` was 2.27:1 on white) and are real body text at dozens of call
+sites, not decoration — darkened to `#636E79`/`#65717D`. Those two land only a few RGB units
+apart: this app's surface set cannot hold four AA-passing text tiers below primary/secondary, so
+treat tertiary and quaternary as visually near-identical going forward rather than adding a fifth,
+lighter grey that would just fail again.
+`scripts/check-contrast.mjs` now asserts every status/semantic pair on every build so a future
+regression here fails loudly instead of waiting to be found by hand.
+
+`--color-status-expired-fg`'s wayfinder-026 value above (`#5B656F`, reusing
+`--color-text-secondary`) is now stale: wayfinder 027 (2026-09) found that it made EXPIRED share
+DRAFT's exact fg (`#5B656F`) with only a 2.70 ΔE bg difference — both AA-passing individually, but
+visually colliding chips. EXPIRED's fg is now `#16191D` (reusing `--color-text-primary` instead),
+and CLOSED's bg moved from `#EEF1F4` to `#F4F6F8` so the DRAFT/CLOSED/EXPIRED trio reads as three
+deliberately distinct neutral weights. DRAFT/CLOSED/EXPIRED chips also each render a small
+non-colour glyph (pencil/check/`!`) via `PermitStatusGlyph.vue` for colour-blind/greyscale
+legibility. `scripts/check-contrast.mjs` gained a CIE76 ΔE all-pairs check (threshold 6) alongside
+the WCAG ratio check so a future pair that passes AA individually but collides visually with
+another status also fails the build.
 
 > Tailwind v4 only emits `@theme` variables that a scanned utility class actually references. A token that no class uses will not appear in the compiled CSS — that is expected, not a bug.
 

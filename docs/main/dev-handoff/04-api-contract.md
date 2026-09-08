@@ -99,7 +99,7 @@ Role column below: **✅** allowed for `contractor`, **⛔** 403 `FORBIDDEN_ROLE
 | GET | `/` | \* | Paginated. **Scoped to your own permits automatically** — the `contractorId` filter is ignored for contractor accounts. Filters: `status` (**multi-value**, see §4), `type`, `dateFrom`, `dateTo`; `search` matches id/title/location/foreman. Every row carries the live `entrantCount` / `fireWatch` fields |
 | POST | `/` | ✅ | `{type, title, location, foreman, workDate, workTimeStart, workTimeEnd, outdoorWork?}` → `DRAFT`, id `WP-{HOT\|CONF\|HT}-{YYYYMMDD}-{NNN}` |
 | GET | `/:id` | \* | Full detail, including live `entrantCount` / `fireWatch`. 403 on someone else's permit |
-| PATCH | `/:id` | ✅ | The wizard's save. All fields optional — see §4 |
+| PATCH | `/:id` | ✅ | The wizard's save. All fields optional — see §4. Works on your own `DRAFT`/`REJECTED` permit, and — **since 2026-08-31** — your own `PENDING` permit too: editing a `PENDING` permit atomically withdraws it back to `DRAFT` in the same request (it is never an in-place edit that leaves it `PENDING`), so you must resubmit afterward |
 | POST | `/:id/submit` | ✅ | → `PENDING`. This is where server-side validation bites — see §5 |
 | POST | `/:id/mark-complete` | ✅ | **Hot work only** → `FIRE_MONITOR`, starts the 30-minute fire watch. 403 `NOT_HOT_WORK`, 403 `PERMIT_NOT_ACTIVE` |
 | POST | `/:id/approve` | ⛔ | safety_officer |
@@ -120,6 +120,44 @@ Role column below: **✅** allowed for `contractor`, **⛔** 403 `FORBIDDEN_ROLE
 | GET | `/` | \* | Paginated, scoped to your own. Rows carry a **computed `expired`** — do not recompute it |
 | POST | `/` | ✅ | `{workerName, role, certType, issuedDate, expiryDate}` |
 | GET | `/worker/:name` | \* | One cert or `null` |
+
+### Areas — `/api/v1/areas`
+
+An **Area** is a named place in the facility the work is located in — flat, no nesting (wayfinder
+034/036). You propose one; it is `PENDING` and **unusable by any permit** until a safety officer
+approves it. There is no edit route by design: a corrected proposal is a fresh `POST`.
+
+| Method | Path | Contractor | Notes |
+|---|---|---|---|
+| GET | `/` | \* | Paginated; `status` filter. `AreaPicker.vue` asks for `status=APPROVED` — see the scoping note below |
+| POST | `/` | ✅ | `{name, position?}` → `PENDING` |
+| GET | `/:id` | \* | One area, **any status, never scoped**. This is what lets a permit always display its own area, including one you cannot see in the list |
+| POST | `/:id/approve` \| `/:id/reject` | ⛔ | safety_officer |
+| POST/DELETE/GET | `/:id/grants…` | ⛔ | safety_officer — visibility grants, below |
+
+`Permit.areaId` is nullable and may reference only an `APPROVED` area (`400 AREA_NOT_APPROVED`
+otherwise — and the guard fires on the **key's presence**, not on whether the value changed, which
+is why the picker emits `areaId: undefined` rather than `null` for a stale reference). It is
+optional at submit unless the deployment sets `PERMIT_AREA_REQUIRED=TRUE` (`400 AREA_REQUIRED`).
+
+**Visibility scoping — `AREA_VISIBILITY_SCOPED`** (wayfinder 044, API half landed 2026-09-08).
+Off by default; unset is today's behaviour, every approved area visible. When a deployment sets it
+to `TRUE`, `GET /areas` returns, for a contractor, `status = APPROVED AND createdById = me` UNION
+the areas a safety officer has granted to you. It composes with the `status` filter rather than
+replacing it.
+
+What this repo has to get right, and it is exactly wayfinder 037's autosave trap made **common
+rather than exceptional**:
+
+- A permit may reference an area that is no longer in your list. `GET /areas/:id` still resolves
+  it (that route is deliberately unscoped), so **show it as a read-only value** rather than
+  silently dropping it — the contractor should be able to see what their own permit references.
+- Keep emitting `areaId: undefined` (omit the key) for such a permit, never `null`. `undefined`
+  means "leave unchanged"; `null` is a deliberate clear and is a different, destructive statement.
+- **The permit still saves.** The `AREA_NOT_APPROVED` guard tests an area's status, never its
+  visibility, so a permit referencing an ungranted-but-approved area saves and autosaves normally.
+  If a permit ever becomes unsaveable because this flag was switched on, that is a bug, not the
+  design.
 
 ### Everything else
 
@@ -160,7 +198,11 @@ One endpoint backs every step. All fields optional; send only what the step chan
 }
 ```
 
-403 `PERMIT_NOT_EDITABLE` once the permit leaves `DRAFT`.
+Allowed while the permit is `DRAFT`, `REJECTED`, or (since 2026-08-31, wayfinder 012) your own
+`PENDING` permit — editing a `PENDING` permit atomically returns it to `DRAFT` in the same request,
+so you must resubmit afterward. `PERMIT_POSITION_REQUIRED` still gates that resubmit exactly as it
+would for a fresh `DRAFT`. 403 `PERMIT_NOT_EDITABLE` once the permit is `ACTIVE`, `FIRE_MONITOR`,
+`CLOSED`, or `EXPIRED`.
 
 The permit detail response shape (what you render):
 
@@ -228,9 +270,17 @@ PERMIT_NOT_ACTIVE  PERMIT_NOT_PENDING  PERMIT_NOT_EDITABLE  PERMIT_NOT_SUBMITTAB
 PERMIT_NOT_CLOSABLE  NOT_HOT_WORK  INVALID_QR_TOKEN  RATE_LIMITED  USER_ALREADY_EXISTS
 UNAUTHENTICATED  FORBIDDEN_ROLE
 FILE_TYPE_NOT_ALLOWED  FILE_TOO_LARGE  UPLOAD_FOLDER_NOT_ALLOWED  STORAGE_UNAVAILABLE
+ACCOUNT_DEACTIVATED  LAST_SAFETY_OFFICER  PERMIT_POSITION_REQUIRED  CLOSURE_REASON_REQUIRED
+PERMIT_UPDATE_EMPTY  AREA_NOT_APPROVED  AREA_NOT_PENDING  AREA_REQUIRED
 ```
 
-25 codes. The last four were added by the backend's 2026-08-19 upload-hardening pass
+**33 codes.** This line said 25 until 2026-09-08 and was eight behind reality; the authoritative
+count is whatever `node scripts/check-contract-sync.mjs` reports from the workspace root, which
+machine-checks `EApiErrorCode` against what the backend actually emits. The last eight came from
+`feat-022` (contractor management), `feat-023` (permit position), wayfinder 020/022 and wayfinder
+036 (the Area entity). Wayfinder 042, 043 and 044 added **no** new code.
+
+The first four of the upload group were added by the backend's 2026-08-19 upload-hardening pass
 (`docs/api/GAPS.md` rows V3/V4). `RATE_LIMITED` is unchanged but is now emitted by the public auth
 routes (`login`, `register`, `user-request-password-reset`, `user-reset-password`) as well as the
 QR scan route — of those, only `login` and `user-reset-password` are called from this app.

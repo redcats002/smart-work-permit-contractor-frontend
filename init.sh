@@ -22,6 +22,13 @@ echo "=== Harness Initialization ==="
 run_check typecheck bun run typecheck
 run_check lint      bun run lint
 run_check tests     bunx vitest run
+# WCAG AA gate on every status/semantic colour pair (wayfinder 026) — reads the live tokens
+# straight out of tailwind.css, no build required, so this fails a bad pair here instead of
+# waiting for someone to notice a chip is hard to read.
+run_check contrast  bun run check:contrast
+# Icon allow-list gate (wayfinder 041) — every Iconify name referenced in src/ must be on
+# scripts/icons/allowlist.mjs, the source that scripts/generate-icons.mjs bundles offline.
+run_check icons      bun run check:icons
 # Live contract check. Skips (exit 0) when no API is reachable, so this stays runnable offline —
 # but vitest alone only proves the app agrees with its own types, never with the server.
 run_check smoke     node scripts/smoke-api.mjs

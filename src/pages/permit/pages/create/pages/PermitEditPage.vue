@@ -50,13 +50,16 @@
       <div class="w-full min-h-90 rounded-xl border border-border bg-surface-card p-5 md:p-7">
         <component
           :is="currentStep.component"
+          :active-plan="activePlan"
           :certificate-problems="certificateProblems"
           :certificate-state="certificateState"
           :checklist-answers="checklistAnswers"
           :draft-id="draftId"
           :form-data="formData"
+          :position-state="positionState"
           :submit-failures="submitFailures"
           :title="t(currentStep.labelKey)"
+          @recheck-certificates="recheckCertificates()"
           @update:checklist-answers="updateChecklistAnswers($event)"
           @update:form-data="updateFormData($event)" />
       </div>
@@ -76,6 +79,7 @@
         :next-blocked="isNextBlocked"
         @back="back()"
         @next="next()"
+        @save-draft="onSaveDraftConfirmed()"
         @submit="onSubmitClick()" />
     </template>
   </div>
@@ -113,6 +117,9 @@ const {
   submitFailures,
   certificateState,
   certificateProblems,
+  recheckCertificates,
+  positionState,
+  activePlan,
   isFirstStep,
   isLastStep,
   isNextBlocked,
@@ -123,6 +130,7 @@ const {
   updateFormData,
   updateChecklistAnswers,
   submitDraft,
+  saveDraft,
   hydrate
 } = useWizard()
 
@@ -132,6 +140,16 @@ async function onSubmitClick (): Promise<void> {
   const submittedId = await submitDraft()
   if (!submittedId) return
   await router.push({ name: 'PermitDetailPage', params: { id: submittedId }, query: { submitted: '1' } })
+}
+
+/**
+ * wayfinder ticket 033. Same explicit save-as-draft action as PermitCreatePage's, landing back on
+ * the permit's own detail page here instead of the list — this route is always editing ONE
+ * already-known permit id.
+ */
+async function onSaveDraftConfirmed (): Promise<void> {
+  await saveDraft()
+  await router.push({ name: 'PermitDetailPage', params: { id: permitId } })
 }
 
 onMounted(async (): Promise<void> => {

@@ -30,6 +30,22 @@ export interface IPermitListItem extends IPermitBase {
   entrantCount: number
   /** Server-computed remainder — render it, never recompute a verdict from it. `null` unless FIRE_MONITOR. */
   fireWatch: IPermitFireWatch | null
+  /**
+   * feat-023. Flattened here (not nested `position`) because that is what GET actually returns —
+   * PATCH/POST accept the nested `{ planId, planX, planY }` shape instead (see
+   * `IUpdatePermitDraftPayload.position`). All three are `null` together or set together; a
+   * permit created before any plan existed, or one never pinned, has all three `null`.
+   */
+  planId: number | null
+  planX: number | null
+  planY: number | null
+  /**
+   * wayfinder ticket 037. The structured place this permit's work is in — nullable, and not
+   * necessarily `APPROVED` any more by the time this is read back (an area's approval can be
+   * revoked after a permit already references it). Render whatever this resolves to; never
+   * assume it is still approved.
+   */
+  areaId: number | null
 }
 
 /** GET /permits/:id — the entity plus its collections. */

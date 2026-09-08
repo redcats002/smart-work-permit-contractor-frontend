@@ -48,7 +48,7 @@ Plus `eslint.config.js` `ignores` does not cover `docs/**`, `.agents/**`, `.clau
 project's source.
 
 **Rule for `PLT-001`: delete, do not repair.** A dangling lending model is not a
-SmartWorkPermit model in disguise.
+e-safework model in disguise.
 
 ## What survives the strip and must be kept
 
@@ -78,7 +78,7 @@ and a pill whose fg/bg pair encodes status.
 
 ## Shell layout (from the design)
 
-- **Topbar** — 54px, `#111418`, `2px solid #F26B1D` bottom border, sticky, `z-index: 50`. Left: 30px `#F26B1D` rounded-6px logo mark + "SafePermit" / "SMART WORK PERMIT · v3.0" in mono. Right: locale switcher (EN / ไทย) as a 2-button pill on `#1E232A`.
+- **Topbar** — 54px, `#111418`, `2px solid #F26B1D` bottom border, sticky, `z-index: 50`. Left: 30px `#F26B1D` rounded-6px logo mark + "e-safework" / "ELECTRONIC SAFE WORK PERMIT · v3.0" in mono. Right: locale switcher (EN / ไทย) as a 2-button pill on `#1E232A`.
 - **Sidebar** — 212px fixed, `#16191D`, text `#C2CAD2`, section label `#6B7681`. Four nav items: My Permits `▦`, New Permit `＋`, History `◷`, Certificates `◎`. Bottom: account card (32px avatar circle `#2B3138`, company name, "บัญชีผู้รับเหมา"), separated by `1px solid #262C33`.
 - **Main** — `#F7F8FA`, scrollable, `26px 30px` padding.
 - **Responsive** — below ~900px the sidebar collapses to a hamburger-triggered drawer. Test at 375 / 768 / 1280px.

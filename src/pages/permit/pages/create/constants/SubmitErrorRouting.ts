@@ -38,24 +38,36 @@ export interface ISubmitFailures {
 export const EMPTY_SUBMIT_FAILURES: ISubmitFailures = { readings: [], certificates: [] }
 
 /**
- * Every reading code lands on step 3 and both certificate codes on step 4 — not just the two
- * named in PMT-009's acceptance, because `LEL_MISSING` and `GAS_OUT_OF_RANGE` need the same fix
- * in the same place.
+ * Every reading code lands on the Safety Checks step and both certificate codes on PPE &
+ * Workers — not just the two named in PMT-009's acceptance, because `LEL_MISSING` and
+ * `GAS_OUT_OF_RANGE` need the same fix in the same place. `PERMIT_POSITION_REQUIRED` (feat-023)
+ * lands on the Position step.
+ *
+ * Keyed by `IWizardStepDef.key`, NOT a hardcoded index: the Position step only exists in
+ * `useWizard`'s `steps` when an active facility plan is present, so a fixed index would be wrong
+ * whenever that step is absent (every permit before the first plan is ever activated). The
+ * caller (`useWizard.submitDraft`) resolves the key to an index against its OWN current `steps`
+ * array via `findIndex` — see `usePlanPosition`.
  */
-export const SUBMIT_ERROR_STEP_INDEX: Partial<Record<EApiErrorCode, number>> = {
-  [EApiErrorCode.LEL_MISSING]: 2,
-  [EApiErrorCode.O2_MISSING]: 2,
-  [EApiErrorCode.CO_MISSING]: 2,
-  [EApiErrorCode.WIND_MISSING]: 2,
-  [EApiErrorCode.GAS_OUT_OF_RANGE]: 2,
-  [EApiErrorCode.WIND_OUT_OF_RANGE]: 2,
-  [EApiErrorCode.CERT_MISSING]: 3,
-  [EApiErrorCode.CERT_EXPIRED]: 3
+export const SUBMIT_ERROR_STEP_KEY: Partial<Record<EApiErrorCode, string>> = {
+  [EApiErrorCode.LEL_MISSING]: 'safetyChecks',
+  [EApiErrorCode.O2_MISSING]: 'safetyChecks',
+  [EApiErrorCode.CO_MISSING]: 'safetyChecks',
+  [EApiErrorCode.WIND_MISSING]: 'safetyChecks',
+  [EApiErrorCode.GAS_OUT_OF_RANGE]: 'safetyChecks',
+  [EApiErrorCode.WIND_OUT_OF_RANGE]: 'safetyChecks',
+  [EApiErrorCode.CERT_MISSING]: 'ppeWorkers',
+  [EApiErrorCode.CERT_EXPIRED]: 'ppeWorkers',
+  [EApiErrorCode.PERMIT_POSITION_REQUIRED]: 'position',
+  // wayfinder ticket 037 — the `PERMIT_AREA_REQUIRED` deployment flag's submit gate, off by
+  // default today. Lands on the same step as the position picker, which now also carries the
+  // area picker (`AreaPicker.vue`).
+  [EApiErrorCode.AREA_REQUIRED]: 'position'
 }
 
 /** `undefined` = stay on the review step; nothing earlier can fix this code. */
-export function stepIndexForSubmitError (code: string): number | undefined {
-  return SUBMIT_ERROR_STEP_INDEX[code as EApiErrorCode]
+export function stepKeyForSubmitError (code: string): string | undefined {
+  return SUBMIT_ERROR_STEP_KEY[code as EApiErrorCode]
 }
 
 interface ISubmitErrorBody {
@@ -110,12 +122,12 @@ export function extractSubmitFailures (error: unknown): ISubmitFailures {
 }
 
 /**
- * The step to land on, preferring the failure arrays over the single envelope `errorCode`: if the
- * server reported failing readings, the readings step is where the fix is, whatever code happened
- * to be first.
+ * The step key to land on, preferring the failure arrays over the single envelope `errorCode`: if
+ * the server reported failing readings, the readings step is where the fix is, whatever code
+ * happened to be first.
  */
-export function stepIndexForSubmitFailure (code: string, failures: ISubmitFailures): number | undefined {
-  if (failures.readings.length > 0) return 2
-  if (failures.certificates.length > 0) return 3
-  return stepIndexForSubmitError(code)
+export function stepKeyForSubmitFailure (code: string, failures: ISubmitFailures): string | undefined {
+  if (failures.readings.length > 0) return 'safetyChecks'
+  if (failures.certificates.length > 0) return 'ppeWorkers'
+  return stepKeyForSubmitError(code)
 }

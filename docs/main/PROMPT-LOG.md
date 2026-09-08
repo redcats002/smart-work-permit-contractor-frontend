@@ -1,4 +1,4 @@
-# Prompt & Decision Log — SmartWorkPermit
+# Prompt & Decision Log — e-safework
 
 **Read this before implementing anything.** It is the base knowledge for this workspace: what the
 product owner actually asked for, in their words, and every ruling they gave when an agent hit an
@@ -497,6 +497,206 @@ any future route declaring `meta.root` gets a correct back link for free.
 
 ---
 
+## 2026-08-31 — Session 9: the docs site, and a fourth repo for the landing page
+
+Two pieces of work that sit outside all three app repos, plus one accessibility finding that
+belongs inside two of them.
+
+### The docs site is VitePress over the existing `docs/` tree, and the numbered files keep their names
+
+**Now:** `bun run docs:dev` / `docs:build` / `docs:check` at the workspace root serve
+`docs/` as a VitePress site: a Guide section (architecture, data model, permit lifecycle,
+CI/CD, current state, doc drift, and the three applications) alongside the existing
+deployment runbooks.
+
+**Was:** loose Markdown with no index. The rejected option was renaming
+`10-DEPLOYMENT-OVERVIEW.md` and friends to pretty slugs — `10` declares itself normative and
+is mirrored into all three app repos, which cross-reference `11`/`12`/`13` **by filename**.
+Ugly URLs, working mirrors. `srcExclude` keeps `docs/deployment/env/**` (real `.env` files,
+gitignored) out of `dist/`, because VitePress does not read `.gitignore`.
+
+Two traps worth not re-learning. VitePress interpolates `${{ … }}` in **inline** code spans as
+a Vue expression — a GitHub Actions `${{ github.sha }}` in backticks fails the build with
+`Cannot read properties of undefined (reading 'sha')`; fenced blocks are unaffected, and the
+fix is `<code v-pre>`. And **`vitepress build` cannot catch a broken mermaid diagram**: the
+plugin renders client-side, so a syntax error ships as a blank box rather than failing the
+build. `scripts/check-mermaid.mjs` parses every fence in jsdom and is wired into `docs:check`;
+it caught an invalid `PK_FK` ER key on the day it was written. Diagrams are click-to-zoom via
+one delegated listener (`docs/.vitepress/theme/mermaid-zoom.ts`), covered by
+`scripts/check-mermaid-zoom.mjs`.
+
+**Applies to:** workspace root only.
+
+### Ruling — the landing page is a fourth repo, and it resolves the two apps' primary-colour split
+
+**Now:** `smart-work-permit-landing/` is a Vue 3 + Vite + Tailwind v4 + PrimeVue/Volt static
+page, built from the same tokens as the apps, with **red `#C81E2C` as primary and orange
+`#F26B1D` as accent**.
+
+**Was:** nothing — the repo was empty. The two apps disagree on primary (contractor red,
+safety orange) and on body font (LINE Seed Sans TH, IBM Plex Sans), so "match both" had to
+pick. Red-primary/orange-accent is not a new invention: the contractor app's own
+`tailwind.css` already ships both scales, and its `--color-accent-500/600` are byte-identical
+to the safety app's `--p-primary-500/600`. Neutrals, the dark base shell scale, the status
+triples and IBM Plex come from the safety app, which is the accessibility-audited set and the
+one with a metrically-matched Thai face. The rejected option was inventing a neutral third
+palette, which would have made the landing look like a different product.
+
+The landing is **not** a contract-sync participant — it has no openapi copy, no error codes,
+no `/api/v1` prefix. `check-contract-sync.mjs` stays a three-repo check. It does carry its
+own gate, `scripts/check-landing.mjs`, which fails the build on any third-party origin in the
+bundle and on any enumerated text pair below WCAG AA. First-party is not a preference here:
+the landing serves from the apex, where `COOKIE_DOMAIN=.e-safework.com` means every request
+on that origin carries the better-auth session cookie. No CDN fonts, no analytics snippet, no
+icon API.
+
+**Human action, not yet done:** the landing needs a fifth destination. §5 of `CONTEXT.md`
+fixes four subdomains (`api.` `storage.` `app.` `safety.`); this page needs the apex or
+`www.`. Serving it from `www.` with a 301 from the apex keeps the session cookie off the
+marketing origin entirely and is worth preferring.
+
+**Applies to:** landing (new), and §5 of `CONTEXT.md`.
+
+### Finding — `--color-warning-text: #B26A00` is sub-AA in both frontends
+
+**Now:** the landing uses `#9A5C00` — 4.89:1 on `--color-warning-surface` (`#FFF3DC`) and
+5.38:1 on white.
+
+**Was, and still is in both app repos:** `#B26A00`, which measures **3.86:1 on its own status
+surface and 4.24:1 on white**. Both are below the 4.5:1 AA floor for body-size text. This is
+the same class of defect Session 6 fixed and `check-contract-sync.mjs` check 5 enforces —
+that check reads Tailwind *classes* against the surface scale, so a hex written directly into
+a `@theme` token is outside what it can see. The contractor app carries the same value as
+`--color-status-pending-fg`.
+
+Not fixed in the app repos here: it is a two-repo visual change and belongs in its own pass
+with a screenshot check, not folded into a landing-page session. Recorded so it is not
+rediscovered a third time.
+
+**Applies to:** safety, contractor.
+
+---
+
+## 2026-08-31 — Session 10: the product is called e-safework
+
+**Now:** the official product name is **`e-safework`**, lowercase, matching the domain
+(`e-safework.com`) and the `esw` deploy prefix that were already in place. Owner's call.
+
+**Was:** `SmartWorkPermit` (159 occurrences) and `Smart Work Permit` (42), plus one
+`smartworkpermit` directory. All swept across all five repos — prose, UI strings, browser tab
+titles, the `DEFAULT_TITLE` in both routers, the landing wordmark, the design-system artifacts,
+and the Thai proposal document. Historical entries in `progress.md`, `feature_list.json` and
+this log were swept too: a product name is not a fact about what happened, and leaving the old
+name in past-tense entries only would produce a codebase where nobody can tell whether an
+inconsistency is deliberate. This entry is what makes the old name findable.
+
+### The rule — and it is greppable on purpose
+
+**Only the brand forms changed.** Every lowercase-hyphen `smart-work-permit-*` token was left
+exactly as it was, because that form is never the brand — it is a repo directory, a git remote,
+a package name matching its directory, an IndexedDB database, a storage bucket, or a legacy
+deploy hostname.
+
+So, after this sweep: a remaining `smart-work-permit-` is **correct**, and a remaining
+`SmartWorkPermit` is a **miss**. One grep tells you which.
+
+### What must never be renamed, and why the comments matter more than this entry
+
+Four identifiers kept the old brand, each with a comment at its own call site explaining why —
+because the next agent doing a rename sweep will read the code, not this log:
+
+- **`smart-work-permit-offline-queue`** (`smart-work-permit-frontend/src/utils/OfflineQueue.ts`)
+  is the Inspector's IndexedDB **database name**. A database name is an address, not a label.
+  Renaming it does not migrate the store, it **orphans** it: a device holding unsynced
+  check-ins or gas readings would open a new empty database while the old one became
+  unreachable from app code. That is silent loss of field safety data. Renaming it safely means
+  writing a migration that opens the old database, copies every entry, and only then drops it.
+- **`smart-work-permit-bucket`** — object storage does not follow a renamed bucket. Legacy
+  besides: production storage is MinIO behind `storage.e-safework.com`, not GCS.
+- **`smart-work-permit-alpha` / `-staging`.vercel.app** — external addresses. Renaming the
+  string does not rename the deployment, it just stops matching. Also legacy: both frontends
+  deploy to Cloudflare Pages now.
+- **Repo directory names and git remotes.** Renaming those is a GitHub operation plus every CI
+  secret and every doc path, not a text substitution. Out of scope until someone asks for it.
+
+### Two filenames were left alone
+
+`SmartWorkPermit-v3.dc.html` and `SmartWorkPermit Proposal.dc.html` keep their names; their
+**contents** were swept. They are referenced by path from `CONTEXT.md`, both apps' `AGENTS.md`
+and `feature_list.json` evidence, and renaming them means four copies of two files plus every
+reference, with `check-contract-sync.mjs` check 4 failing mid-flight if the root copy moves
+before the repo copies. A stale filename on a historical proposal document is not drift.
+
+`docs/openapi.json` contained no brand string at all, so all three copies stayed byte-identical
+and no regeneration was needed.
+
+**Applies to:** api, safety, contractor, landing, root.
+
+---
+
+## 2026-08-31 — Session 11: four product rulings from the field-report grilling
+
+Owner decisions on the four questions that were blocking the field-report map. Full reasoning
+lives on each ticket in `docs/wayfinder/tickets/`; the load-bearing halves are here because they
+constrain code in more than one repo.
+
+### A worker stays a name string. No `worker` entity.
+
+The permit form's worker field becomes an AutoComplete over the certificate list, and **free text
+stays legal** — a name matching no certificate is still accepted there, because certificate gating
+belongs at submit, not in the middle of the wizard.
+
+A real `worker` table was declined on cost, not merit: migration, backfill of every existing name
+string, and every worker-touching route. **The consequence is accepted, not overlooked:** the join
+between `Certificate.workerName` and a permit worker's `workerName` is raw text, so two spellings
+are two people and a typo yields a worker whose certificate lookup finds nothing — reading as
+uncertified. The AutoComplete makes the certified spelling the path of least resistance. It does
+not close the hole.
+
+### Toast only where the outcome is not already on screen
+
+Toast on create, submit, approve, reject, close, a scan registering, a certificate created from the
+permit form. **Not** on a list that just re-rendered with the change visible in it. A toast on every
+action trains people to dismiss toasts, which is how the one that matters gets missed.
+
+**Validation failures stay inline, beside the field.** An out-of-range gas reading does not belong
+in a corner that vanishes after four seconds. This is the rule most likely to be broken while
+implementing "toast every action".
+
+**Offline says queued, never saved.** The Inspector replays a local queue; telling them a gas
+reading is recorded when it is sitting in a browser database is a lie with safety consequences.
+
+### Inspector scan history is on-device and read-only
+
+IndexedDB, in a store **separate from `smart-work-permit-offline-queue`** — that database must not
+grow a convenience feature.
+
+**A scan proves the inspector is physically at the permit; a history entry proves only that they
+were there once.** So an entry opens live status, read-only, and every state-changing action behind
+it — entrant check-in and check-out, gas log entry — still requires a fresh scan. Do not deep-link
+a history entry into the entrant register, however much shorter that path is.
+
+### The facility plan is a JPEG/PNG raster, and the upload flow does not exist
+
+Investigation found the risk map's placeholder is correct behaviour: **no plan version was ever
+activated, and no UI exists to activate one.** `FacilityPlan.provider.ts` declares `upload()`,
+`create()` and `activate()`; none has a caller anywhere in either frontend.
+
+The asset is a scan or clean export, so no rasteriser and no PDF renderer enters an app that bans
+third-party runtime requests. But the server accepts PDF and HEIC while the map draws with a plain
+`<img>` — **a PDF uploads successfully and then renders as a broken image**, failing silently after
+an officer believes the plan is installed. Narrowing the accepted types for the `facility-plans`
+prefix server-side is the honest fix.
+
+**The constraint that orders the work:** `submit.service.ts` throws `PERMIT_POSITION_REQUIRED` once
+an active plan exists, and the contractor app has no position picker — `planId`/`planX`/`planY`
+appear once in that repo, in a comment. **Activating the first plan without shipping the picker
+locks every contractor out of submitting.** The two halves ship together or not at all.
+
+**Applies to:** api, safety, contractor.
+
+---
+
 ## Standing rulings — do not re-decide these
 
 - **Never render the backend's `message` field.** Clients localize off `errorCode` (EN + TH). This
@@ -523,8 +723,99 @@ any future route declaring `meta.root` gets a correct back link for free.
 - **`facility-plans` is a server-owned upload prefix.** It is in `UPLOAD_ALLOWED_SUBFOLDERS` and NOT
   in `UPLOAD_CLIENT_SUBFOLDERS`, and `UploadService` re-checks it at runtime because the schema alone
   does not hold. Never widen the generic upload route to reach it.
+- **A history entry is not a scan.** Anything reached from a list, a link or a cached entry opens
+  read-only; state-changing field actions require a fresh scan. Never soften this for one fewer
+  tap. **But be precise about what is actually enforced:** the manual-entry box on the scan page
+  has always accepted a typed permit ID and opened the full action panel, so "a scan proves the
+  inspector is at the permit" is a design intent, not a guarantee the system delivers. Ticket 017
+  logs the difference so the cost of closing that door is known before anyone closes it. Until
+  then, treat the read-only history as a UX guardrail, not a security boundary.
+- **Never activate a facility plan before the contractor position picker ships.** The submit route
+  refuses a positionless permit once a plan is active, and the picker does not exist yet.
+- **The product is `e-safework`, lowercase.** Only the brand forms were renamed; every
+  lowercase-hyphen `smart-work-permit-*` token is a repo, a remote, a database, a bucket or a
+  hostname and stays as it is. A remaining `smart-work-permit-` is correct; a remaining
+  `SmartWorkPermit` is a miss. **Never rename the IndexedDB database
+  `smart-work-permit-offline-queue`** without a migration — it orphans unsynced field data.
+- **The landing page is first-party only.** It serves from an origin covered by
+  `COOKIE_DOMAIN=.e-safework.com`, so every request it makes on that origin carries the
+  session cookie. No CDN fonts, no analytics snippet, no runtime icon API — ever.
+  `smart-work-permit-landing/scripts/check-landing.mjs` fails the build on any other host.
 - **Blocked items are product decisions**, not work: backend `feat-011`, `SHL-006` (self-hosting
   fonts for the offline Inspector role). Do not implement them speculatively.
+- **A Fire Watch outlives the work window, so hot permits get grace before expiry.** A Fire Watch
+  is by definition the 30 minutes *after* hot work stops, so a Hot Work permit's safety obligation
+  always extends past `workTimeEnd`. Expiring a hot `ACTIVE` permit the instant its window lapsed
+  expired it at exactly the moment its most important control was supposed to begin — and because
+  `mark-complete` carries `status: 'ACTIVE'` in its WHERE, the expired permit could never reach
+  `FIRE_MONITOR`, locking the crew out of starting the watch at all. This was not a rare race: hot
+  work finishes *at* the end of its booked window, so it was the normal case. The sweep now grants
+  hot `ACTIVE` permits exactly `FIRE_WATCH_DURATION_MINUTES` of grace — derived from the domain
+  rule, never a hand-tuned fudge. Scoped to hot *and* ACTIVE: a hot `PENDING` permit was never
+  approved so no watch can be owed, and no other permit type has a post-window control.
+- **Expiry must never START a Fire Watch.** A Fire Watch is a person standing there. A sweep that
+  wrote `fireMonitorStartedAt` unattended would put a safety control into an append-only audit log
+  that no human performed — a false safety record is worse than a missing one.
+- **Closure is the Foreman's act; an officer close is an exception and must say why.** The crew
+  know when the work is done and the area is cold. `safety_officer` was always authorised to close
+  any permit but had no UI, which turned load-bearing once `FIRE_MONITOR` was made non-expiring:
+  `close` is the only exit from that state, so a crew that went home, a disabled contractor account
+  or a lost phone stranded the permit permanently, leaving a manual database `UPDATE` — which
+  bypasses the audit chain — as the only recourse. An officer must now supply a `reason`
+  (`403 CLOSURE_REASON_REQUIRED`), recorded on the `PERMIT_CLOSED` audit row so the exception stays
+  distinguishable forever after. A contractor closing their own permit owes none. The UI is
+  deliberately subordinate to Approve/Reject — a backstop, not a parallel workflow.
+- **Facility plans are raster images only.** PNG/JPEG/WebP; PDF and HEIC are refused at the plan
+  upload route even though the generic upload route accepts them, because the map draws the plan
+  with a plain `<img>`. A bad version is permanent (versions are immutable and retained forever)
+  and is only discovered after activation, at which point every contractor is locked out of
+  submitting. **A photo of a printed plan is keystoned and cropping does not fix it** — a pin lands
+  where you clicked and still not where you meant, error growing toward the far edge, invisibly. The
+  upload flow therefore carries a skippable four-corner perspective correction.
+- **Never activate a facility plan until the contractor position picker has shipped.** Restated
+  because it is now imminent rather than hypothetical: `submit.service.ts` throws
+  `PERMIT_POSITION_REQUIRED` the moment any plan is active.
+- **A demo affordance must never become a second, weaker way in.** ~~The trial auto-login buttons are
+  hidden behind `VITE_TRIAL_LOGIN` (default off), take their password from
+  `VITE_TRIAL_LOGIN_PASSWORD` (never hardcoded, nothing rendered if absent), put no password in any
+  committed file, and call the same `login()` provider the form calls — no client-minted tokens, no
+  skipped guards, no auth-store bypass.~~ **Superseded 2026-09-08 (wayfinder 042): there is no demo
+  affordance at all.** The principle stands and is why the feature is gone rather than hardened
+  further — the owner ruled that no demo environment will exist, and a credential path whose only
+  safety argument was "the data behind it is worth nothing" cannot be justified once nobody owns
+  that environment. `POST /api/v1/auth/demo-login`, the seeded demo accounts, `VITE_TRIAL_LOGIN` and
+  `VITE_TRIAL_LOGIN_PASSWORD` are all removed. Do not reintroduce any of them; if trial access is
+  wanted again, that is a new decision about a demo *environment* first, not a login shortcut.
+- **There is no `admin` role.** `UserRole` is exactly `contractor | safety_officer | inspector`. A
+  request naming an admin is a request for a role that does not exist; say so rather than inventing
+  one. (2026-08-31: the owner considered adding one and then ruled it out
+  of scope — wayfinder 024/025. The bypass login shipped for the three roles that exist; 2026-09-08:
+  that login has since been removed entirely, see the demo-affordance bullet above. The no-admin
+  ruling is unaffected — it never depended on it.)
+- **Demo login is for UAT, on data whose loss costs nothing.** ~~The owner's ruling when asked what
+  the demo accounts point at. That is what makes an open endpoint acceptable — not the flag, not
+  the rate limit, both of which are still required. If demo login is ever pointed at real permit
+  data this ruling no longer holds and the endpoint must be disabled.~~ **Resolved 2026-09-08
+  (wayfinder 042) by removing the endpoint.** This ruling's own condition is what closed it: asked
+  directly whether that loss-costs-nothing environment exists, the owner ruled it never would.
+  Three alternatives were rejected on the way — a separate demo deployment (infrastructure nobody
+  wants to run), pointing demo login at staging (whose data is not disposable, so a leak there is a
+  real leak), and flagging demo rows inside the real database (every list, count, expiry sweep and
+  audit query would need the filter, and one missed filter puts a fake permit in front of a safety
+  officer).
+- **No credential string may survive into a production bundle, mock ones included.** A frontend
+  cannot keep a secret: Vite env vars are build-time substitutions, and a runtime check like
+  `hostname === 'localhost'` leaves both branches in the shipped JavaScript. Gate on
+  `import.meta.env.DEV`, which the bundler can prove false and eliminate. Verify by building and
+  grepping `dist/` — never by reading the source and assuming.
+- **Every repo's data must agree with every other repo's.** `CONTEXT.md`, `PROMPT-LOG.md` and
+  `openapi.json` are byte-identical across the workspace root and all three app repos, and
+  `check-contract-sync.mjs` enforces it. But the rule is broader than the checker: a change in one
+  repo that makes a statement in another repo false — a status machine, a threshold, a role list,
+  a lifecycle diagram, landing-page copy describing a feature — **must be corrected in that other
+  repo in the same session**. A doc that describes behaviour the code no longer has is worse than
+  no doc, because it is trusted. The checker catches divergence in four files; everything else is
+  the author's responsibility.
 
 ---
 

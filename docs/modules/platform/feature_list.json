@@ -28,8 +28,8 @@
     {
       "id": "PLT-002",
       "type": "feature",
-      "name": "Design system — SafePermit palette + typography",
-      "description": "Swap src/assets/css/tailwind.css @theme tokens from the lending brand (#BD0102 red / #4160BE navy) to the SmartWorkPermit design palette. Add semantic tokens for permit status and permit type so screens never hardcode a hex.",
+      "name": "Design system — e-safework palette + typography",
+      "description": "Swap src/assets/css/tailwind.css @theme tokens from the lending brand (#BD0102 red / #4160BE navy) to the e-safework design palette. Add semantic tokens for permit status and permit type so screens never hardcode a hex.",
       "acceptance": [
         "--color-primary-* scale rebuilt around #C81E2C; --color-accent-* around #F26B1D",
         "Semantic tokens exist for: status (draft/pending/active/fire-monitor/closed/rejected/expired) and permit type (hot/confined/heights), each with fg + bg",
@@ -52,7 +52,7 @@
       "name": "App shell — topbar, sidebar, responsive drawer",
       "description": "Build the DefaultLayout chrome from the design: 54px dark topbar with orange accent border and brand mark, 212px dark sidebar with four nav items and an account card, light scrollable main area. Collapses to a hamburger drawer below ~900px.",
       "acceptance": [
-        "Topbar: 54px, #111418, 2px #F26B1D bottom border, sticky, z-50; logo mark + SafePermit wordmark + 'SMART WORK PERMIT · v3.0' mono subtitle",
+        "Topbar: 54px, #111418, 2px #F26B1D bottom border, sticky, z-50; logo mark + e-safework wordmark + 'ELECTRONIC SAFE WORK PERMIT · v3.0' mono subtitle",
         "Sidebar: 212px, #16191D, nav items My Permits / New Permit / History / Certificates with active-state styling; account card pinned to the bottom above a #262C33 divider",
         "Active nav item is derived from the route, not local state",
         "Below 900px the sidebar is hidden and reachable via a hamburger drawer (reuse src/components/app/AppDrawer.vue)",

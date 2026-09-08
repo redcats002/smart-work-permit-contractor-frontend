@@ -108,7 +108,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/Auth'
 import { useAppDrawer } from '@/composables/useAppDrawer'
 import useLogout from '@/pages/auth/composables/useLogout'
-import { Icon } from '@iconify/vue'
+import Icon from '@/components/base/AppIcon.vue'
 
 interface INavItem {
   name: string

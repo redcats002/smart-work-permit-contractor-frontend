@@ -42,6 +42,10 @@ function basePermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail {
     qrIssuedAt: null,
     entrantCount: 0,
     fireWatch: null,
+    planId: null,
+    planX: null,
+    planY: null,
+    areaId: null,
     jsaSteps: [],
     workers: [],
     photos: [],
@@ -73,6 +77,24 @@ describe('useWizard.hydrate', () => {
     expect(wizard.maxUnlockedStepIndex.value).toBe(1)
   })
 
+  // wayfinder ticket 037 — the resume/edit surface must seed the permit's existing area
+  // reference, or a resumed permit that HAS one renders an empty picker (looks like data loss).
+  it('seeds formData.areaId from the permit (wayfinder ticket 037)', () => {
+    setLocale('en')
+    const wizard = useWizard()
+
+    wizard.hydrate(basePermit({ areaId: 7 }))
+    expect(wizard.formData.value.areaId).toBe(7)
+  })
+
+  it('seeds formData.areaId as undefined, never null, for an unplaced permit', () => {
+    setLocale('en')
+    const wizard = useWizard()
+
+    wizard.hydrate(basePermit({ areaId: null }))
+    expect(wizard.formData.value.areaId).toBeUndefined()
+  })
+
   it('lands on the last step (Review) when every step already validates', () => {
     setLocale('en')
     const wizard = useWizard()
@@ -84,8 +106,8 @@ describe('useWizard.hydrate', () => {
 
     wizard.hydrate(permit)
 
-    expect(wizard.currentStepIndex.value).toBe(wizard.steps.length - 1)
-    expect(wizard.maxUnlockedStepIndex.value).toBe(wizard.steps.length - 1)
+    expect(wizard.currentStepIndex.value).toBe(wizard.steps.value.length - 1)
+    expect(wizard.maxUnlockedStepIndex.value).toBe(wizard.steps.value.length - 1)
   })
 
   it('drops a worker\'s null health fields but keeps a real one (bloodPressure/alcoholReading are string-only on the wire)', () => {

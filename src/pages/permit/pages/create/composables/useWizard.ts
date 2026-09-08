@@ -1,28 +1,39 @@
 import type { ComputedRef, Ref } from 'vue'
-import { computed, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { dayjs } from '@/plugins/dayjs.plugin'
+import i18n from '@/plugins/I18n.plugin'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { useDebounce } from '@/utils/Debounce'
 import { useApiError, type IApiErrorResult } from '@/composables/useApiError'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import type { ICreatePermitDraftPayload, IUpdatePermitDraftPayload } from '@/models/request/permit/PermitReq.model'
-import type { IPermitSafetyReading, IPermitWorker } from '@/models/modules/permit/Permit.model'
+import type { IFacilityPlan } from '@/models/modules/facility-plan/FacilityPlan.model'
+import type { IPermitPosition, IPermitSafetyReading, IPermitWorker } from '@/models/modules/permit/Permit.model'
 import type { IPermitDetail } from '@/models/response/permit/PermitRes.model'
 import type { TChecklistAnswer } from '../constants/SafetyChecklist'
 import {
-  EMPTY_SUBMIT_FAILURES, extractSubmitFailures, stepIndexForSubmitFailure, type ISubmitFailures
+  EMPTY_SUBMIT_FAILURES, extractSubmitFailures, stepKeyForSubmitFailure, type ISubmitFailures
 } from '../constants/SubmitErrorRouting'
+import { hasPartialJsaRow, toSubmittableJsaSteps } from '../schema/Step5Jsa.schema'
 import {
   useCertificatePreflight, type ICertificateProblem, type TCertificatePreflightState
 } from './useCertificatePreflight'
+import { usePlanPosition, type TPositionPreflightState } from './usePlanPosition'
 import PermitProvider, { type IPermitProvider } from '@/resources/provider/permit/Permit.provider'
 import { WIZARD_STEPS, type IWizardStepDef } from '../wizard/WizardSteps'
 
 const PermitService: IPermitProvider = new PermitProvider()
 
 export interface IUseWizard {
-  steps: IWizardStepDef[]
+  /**
+   * feat-023. The `position` step is filtered OUT of this whenever no active facility plan
+   * exists — that is the current production state today, and it must keep working unchanged
+   * (see `usePlanPosition`). Reactive because the underlying `GET /facility-plans/active` lookup
+   * is async; StepperHeader/WizardFooter/PermitCreatePage all bind `:steps="steps"`, which
+   * auto-unwraps a computed in the template with no consumer-side change.
+   */
+  steps: ComputedRef<IWizardStepDef[]>
   currentStepIndex: Ref<number>
   currentStep: ComputedRef<IWizardStepDef>
   maxUnlockedStepIndex: Ref<number>
@@ -49,6 +60,20 @@ export interface IUseWizard {
    */
   certificateState: Ref<TCertificatePreflightState>
   certificateProblems: Ref<ICertificateProblem[]>
+  /**
+   * wayfinder ticket 004. Re-runs the shared pre-flight against the CURRENT worker list. This is
+   * the ONLY trigger: nothing watches `formData.workers`, because checking mid-typing closed the
+   * worker-name suggestion overlay (see the implementation note below). Step 4 calls it on the
+   * events that settle a name; the wizard calls it on hydrate and on every forward move.
+   */
+  recheckCertificates (): void
+  /**
+   * feat-023. Mirrors `certificateState` exactly, for the Position step + Review row. `'none'`
+   * (no active plan — today's production default) and `'loading'` never block; only a confirmed
+   * `'fail'` (an active plan exists and `formData.position` is unset) does.
+   */
+  positionState: ComputedRef<TPositionPreflightState>
+  activePlan: Ref<IFacilityPlan | null>
   isFirstStep: ComputedRef<boolean>
   isLastStep: ComputedRef<boolean>
   isNextBlocked: ComputedRef<boolean>
@@ -59,6 +84,16 @@ export interface IUseWizard {
   updateFormData (patch: Partial<IUpdatePermitDraftPayload>): void
   updateChecklistAnswers (patch: Record<string, TChecklistAnswer>): void
   submitDraft (): Promise<string | undefined>
+  /**
+   * wayfinder ticket 033 — the explicit "Save as Draft" action (as opposed to the debounced
+   * autosave `updateFormData` already schedules on every field edit). Flushes any pending
+   * autosave and waits for the same `inflight` chain `submitDraft` waits on, so the confirmation
+   * dialog's "confirm" really has landed before the caller navigates away. Never fires a fresh
+   * create by itself — `debouncedPersist` only has something pending if `updateFormData` already
+   * scheduled one (see its own `hasCreatableDraft` gate), so calling this with nothing entered
+   * yet is a safe no-op.
+   */
+  saveDraft (): Promise<void>
   /**
    * PMT-014. Seeds the wizard from an already-confirmed-editable permit (the resume/duplicate
    * routes own confirming editability — this function only seeds state, it never calls the API).
@@ -125,7 +160,7 @@ export function hasCreatableDraft (data: IUpdatePermitDraftPayload): boolean {
  * fake registry to exercise the gating logic against schemas that can
  * actually fail (the real placeholder schemas always pass, by design).
  */
-export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
+export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
   const { mapError } = useApiError()
 
   const currentStepIndex = ref(0)
@@ -150,33 +185,74 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
     check: checkCertificates
   } = useCertificatePreflight(certificateChecking)
 
-  const currentStep: ComputedRef<IWizardStepDef> = computed((): IWizardStepDef => steps[currentStepIndex.value])
+  // feat-023. ONE shared position pre-flight instance, mirroring the certificate one above —
+  // the Position step's gate and the Review row can never disagree about whether a pin is owed.
+  // Fetched on mount (not, say, debounced off an input like the certificate check) so it has
+  // resolved long before a real user, walking the wizard by hand, reaches the step it gates.
+  // `onMounted`, not a bare call at setup time: a composable-level test that calls `useWizard()`
+  // directly (no component tree — see src/tests/composables/useWizard.test.ts) has no active
+  // Pinia, and this app's 401 interceptor branch touches the auth store — exactly the failure
+  // mode `useCertificatePreflight` avoids by never firing unless there is a named worker to look
+  // up. Outside a mounted component `onMounted` is a documented no-op, so those tests are
+  // unaffected; a real page always mounts inside `main.ts`'s Pinia-registered app.
+  const { activePlan, required: positionRequired, fetchActive, stateFor: positionStateFor } = usePlanPosition()
+  onMounted((): void => {
+    void fetchActive()
+  })
+
+  const positionState: ComputedRef<TPositionPreflightState> = computed(
+    (): TPositionPreflightState => positionStateFor(formData.value.position)
+  )
+
+  /**
+   * The `position` step only appears once an active facility plan is confirmed — see the
+   * `IUseWizard.steps` doc. Every other step's `key` is a fixed member of `registry`; filtering
+   * never changes their relative order.
+   */
+  const steps: ComputedRef<IWizardStepDef[]> = computed(
+    (): IWizardStepDef[] => registry.filter((step: IWizardStepDef): boolean => step.key !== 'position' || positionRequired.value)
+  )
+
+  const currentStep: ComputedRef<IWizardStepDef> = computed(
+    (): IWizardStepDef => steps.value[currentStepIndex.value]
+  )
   const isFirstStep: ComputedRef<boolean> = computed((): boolean => currentStepIndex.value === 0)
-  const isLastStep: ComputedRef<boolean> = computed((): boolean => currentStepIndex.value === steps.length - 1)
+  const isLastStep: ComputedRef<boolean> = computed((): boolean => currentStepIndex.value === steps.value.length - 1)
   const isNextBlocked: ComputedRef<boolean> = computed((): boolean => {
     if (!currentStep.value.schema.safeParse(formData.value).success) return true
     // Only the PPE & Workers step gates on certificates, and only on a CONFIRMED 'fail' — never
     // on 'loading'/'unknown', which would make an unresolved lookup stricter than the server.
     if (currentStep.value.key === 'ppeWorkers' && certificateState.value === 'fail') return true
+    // Same shape for the Position step: only a CONFIRMED 'fail' (an active plan exists and no
+    // pin is set) blocks — 'loading'/'none' never do (../../../../../PROMPT-LOG.md "no
+    // client-side rule that blocks what the server would accept").
+    if (currentStep.value.key === 'position' && positionState.value === 'fail') return true
     return false
   })
   const canSubmit: ComputedRef<boolean> = computed(
     (): boolean => isLastStep.value && !isNextBlocked.value && draftId.value !== undefined
       && !saving.value && !submitting.value && certificateState.value !== 'fail'
+      // Guards the Review step specifically: Review's own schema can't see external plan state,
+      // so a hydrated draft that lands there with no pin must still be blocked here, not just on
+      // the Position step itself (which the user may never have re-visited this session).
+      && positionState.value !== 'fail'
   )
 
-  // Debounced so typing a worker's name doesn't fire a lookup per keystroke; triggered only when
-  // the `workers` ARRAY REFERENCE changes (whole-list replace on every real edit — see
-  // Step4PpeWorkers.vue), not on every unrelated formData patch.
-  const debouncedCertificateCheck = useDebounce((workers: IPermitWorker[]): void => {
-    void checkCertificates(workers)
-  }, 500)
-
-  watch(
-    (): IPermitWorker[] | undefined => formData.value.workers, (next: IPermitWorker[] | undefined): void => {
-      debouncedCertificateCheck(next ?? [])
-    }, { immediate: true }
-  )
+  /**
+   * The check runs on COMMIT, never on keystrokes. It used to run off a 500ms debounced watch on
+   * `formData.workers`, which meant a name half-typed into step 4's AutoComplete fired a lookup,
+   * and its verdict then mounted/unmounted the `certificateProblems` banner *below the table*
+   * while the suggestion overlay was open. PrimeVue's AutoComplete binds a scroll listener on its
+   * scrollable ancestors and a window resize listener whenever the overlay is up, and BOTH call
+   * `hide()` — so the reflow from that banner closed the suggestion list mid-typing (reported
+   * 2026-09-01). Step 4 now calls `recheckCertificates()` itself on the events that actually
+   * settle a name (selecting a suggestion, blurring the field with a changed name, removing a
+   * row, creating a certificate in-wizard), and the wizard re-runs it on every forward move so a
+   * gate can never be stale. `check()` is sequence-guarded, so overlapping calls are safe.
+   */
+  function recheckCertificates (): void {
+    void checkCertificates(formData.value.workers ?? [])
+  }
 
   /**
    * Creates the draft on the first call (draftId still undefined), PATCHes it
@@ -204,6 +280,31 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
 
     const { safetyReading, ...rest } = formData.value
     const payload: IUpdatePermitDraftPayload = { ...rest }
+    // wayfinder ticket 001. `jsaSteps` is replaced WHOLESALE by this PATCH (AGENTS.md), so a
+    // partial row (started, not finished) must never shrink the outgoing array — that would
+    // overwrite the permit's persisted jsaSteps and delete that row's already-complete siblings
+    // too. While any row is partial, skip the key entirely this round: `formData.jsaSteps` is
+    // untouched (the user keeps typing into it), and the next PATCH after they finish or delete
+    // the row sends the real list. A blank "add row" placeholder, on the other hand, was never
+    // persisted, so dropping IT from the array is safe — `toSubmittableJsaSteps` does that and
+    // recomputes sortOrder with no gaps.
+    if (payload.jsaSteps !== undefined) {
+      if (hasPartialJsaRow(payload.jsaSteps)) {
+        delete payload.jsaSteps
+      } else {
+        payload.jsaSteps = toSubmittableJsaSteps(payload.jsaSteps)
+      }
+    }
+    // wayfinder tickets 037 + 044. `AreaPicker` strips an area this contractor cannot see by
+    // emitting `areaId: undefined`, and `updateFormData`'s spread COPIES that key rather than
+    // removing it — so `payload.areaId` exists here, holding `undefined`. It survives to the wire
+    // only by JSON.stringify's habit of dropping undefined-valued properties, which is an
+    // invisible dependency for something load-bearing: the server's `AREA_NOT_APPROVED` guard
+    // fires on the key's PRESENCE, so if that ever changed, every autosave on a permit with an
+    // out-of-list area would 400 forever. Delete it explicitly, the same way `jsaSteps` above is
+    // dropped for a different reason. `null` is untouched by this — that is a user's deliberate
+    // clear and must reach the server.
+    if ('areaId' in payload && payload.areaId === undefined) delete payload.areaId
     const wireReading = safetyReading === undefined ? undefined : toWireReading(safetyReading)
     const serialized = wireReading === undefined ? undefined : JSON.stringify(wireReading)
     const shouldAppendReading = serialized !== undefined && serialized !== lastPersistedReading
@@ -254,8 +355,8 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
 
   /** First step whose schema rejects the given data, or the last step when every step passes. */
   function firstInvalidStepIndex (data: IUpdatePermitDraftPayload): number {
-    const blockedIndex = steps.findIndex((step: IWizardStepDef): boolean => !step.schema.safeParse(data).success)
-    return blockedIndex === -1 ? steps.length - 1 : blockedIndex
+    const blockedIndex = steps.value.findIndex((step: IWizardStepDef): boolean => !step.schema.safeParse(data).success)
+    return blockedIndex === -1 ? steps.value.length - 1 : blockedIndex
   }
 
   /**
@@ -275,6 +376,16 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
     }))
   }
 
+  /**
+   * feat-023. GET returns the pin flattened (`planId`/`planX`/`planY`); the wizard's own
+   * `formData.position` shape is the nested one PATCH/POST accept — see `IPermitPosition`. `null`
+   * when the permit was never pinned (every permit before the first plan was ever activated).
+   */
+  function toFormPosition (permit: IPermitDetail): IPermitPosition | null {
+    if (permit.planId === null || permit.planX === null || permit.planY === null) return null
+    return { planId: permit.planId, planX: permit.planX, planY: permit.planY }
+  }
+
   function hydrate (permit: IPermitDetail): void {
     const hydrated: IUpdatePermitDraftPayload = {
       type: permit.type,
@@ -288,7 +399,14 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
       safetyReading: permit.latestSafetyReading ?? undefined,
       jsaSteps: permit.jsaSteps,
       workers: toFormWorkers(permit.workers),
-      photos: permit.photos
+      photos: permit.photos,
+      position: toFormPosition(permit),
+      // wayfinder tickets 037 + 044. Seeded as-is, whatever it is — `AreaPicker` is what resolves
+      // whether the area is in the list this contractor can actually see and, if it is not,
+      // displays it and strips it back out of `formData` before the next autosave (see the doc
+      // comment on `AreaPicker.resolveStaleArea`). Since 044 that is the ordinary case, not a rare
+      // one, so nothing here may assume a seeded `areaId` is selectable.
+      areaId: permit.areaId ?? undefined
     }
 
     formData.value = hydrated
@@ -302,6 +420,11 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
     const landingIndex = firstInvalidStepIndex(hydrated)
     maxUnlockedStepIndex.value = landingIndex
     currentStepIndex.value = landingIndex
+
+    // The removed watch carried `immediate: true`, so a hydrated draft's workers were checked on
+    // arrival. Keep that: step 6's review row must not read 'idle' for a draft loaded straight
+    // into it.
+    recheckCertificates()
   }
 
   function updateFormData (patch: Partial<IUpdatePermitDraftPayload>): void {
@@ -335,6 +458,10 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
     if (currentStepIndex.value > maxUnlockedStepIndex.value) {
       maxUnlockedStepIndex.value = currentStepIndex.value
     }
+    // Every forward move re-runs the check, so a verdict can never be stale by the time step 6
+    // reads it — the price of no longer checking on every keystroke. Cheap: `check()` is a no-op
+    // lookup when no worker is named, and is sequence-guarded against overlap.
+    recheckCertificates()
   }
 
   /** Back never validates the current step — the user can always retreat. */
@@ -353,11 +480,22 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
    */
   function goToStep (index: number): void {
     if (index < 0 || index > maxUnlockedStepIndex.value) return
-    const blockedBefore = steps
+    const blockedBefore = steps.value
       .slice(0, index)
       .some((step: IWizardStepDef): boolean => !step.schema.safeParse(formData.value).success)
     if (blockedBefore) return
     currentStepIndex.value = index
+    recheckCertificates()
+  }
+
+  /**
+   * wayfinder ticket 033. See the `IUseWizard.saveDraft` doc — this is the whole implementation,
+   * deliberately mirroring the flush-then-await-inflight opening of `submitDraft` below without
+   * that function's POST /permits/:id/submit call.
+   */
+  async function saveDraft (): Promise<void> {
+    debouncedPersist.flush()
+    await inflight
   }
 
   /**
@@ -385,18 +523,30 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
     const response = await handleLoading(
       async (): Promise<string> => {
         const result = await PermitService.submit(id)
+        // wayfinder ticket 008 — "permit submitted" is sanctioned to toast. The detail page's
+        // `?submitted=1` banner confirms the state once the user has landed there; this toast
+        // confirms the ACTION at the moment it actually happened, during the navigation itself.
+        toast.success(i18n.global.t('permit.toast.submitted'))
         return result.data.id
       }, { loadingUnit: submitting }, (error: unknown): void => {
         const mapped = mapError(error)
         submitError.value = mapped
         submitFailures.value = extractSubmitFailures(error)
         toast.error(mapped.message)
-        // Assigned directly rather than via goToStep(): goToStep refuses the jump when any
-        // EARLIER step fails its own schema, and the whole point of this branch is that the
-        // server disagreed with a client-side gate that passed. The user must always land on
-        // the step that can fix it, never be stranded on Review with an error they cannot act on.
-        const stepIndex = stepIndexForSubmitFailure(mapped.code, submitFailures.value)
-        if (stepIndex !== undefined && stepIndex <= maxUnlockedStepIndex.value) {
+        // feat-023. The server can disagree with the client's plan-activation belief (a plan was
+        // activated moments ago, after this session's own lookup) — re-fetch so the Position
+        // step actually exists to jump to below, instead of staying permanently hidden for the
+        // rest of the session on a stale 'none' verdict.
+        if (mapped.code === 'PERMIT_POSITION_REQUIRED' && !positionRequired.value) void fetchActive()
+        // Resolved against the CURRENT steps array, not a fixed index: the Position step may or
+        // may not exist in it depending on `positionRequired`. Assigned directly rather than via
+        // goToStep(): goToStep refuses the jump when any EARLIER step fails its own schema, and
+        // the whole point of this branch is that the server disagreed with a client-side gate
+        // that passed. The user must always land on the step that can fix it, never be stranded
+        // on Review with an error they cannot act on.
+        const stepKey = stepKeyForSubmitFailure(mapped.code, submitFailures.value)
+        const stepIndex = stepKey === undefined ? -1 : steps.value.findIndex((step: IWizardStepDef): boolean => step.key === stepKey)
+        if (stepIndex !== -1 && stepIndex <= maxUnlockedStepIndex.value) {
           currentStepIndex.value = stepIndex
         }
       }
@@ -419,6 +569,9 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
     submitFailures,
     certificateState,
     certificateProblems,
+    recheckCertificates,
+    positionState,
+    activePlan,
     isFirstStep,
     isLastStep,
     isNextBlocked,
@@ -429,6 +582,7 @@ export function useWizard (steps: IWizardStepDef[] = WIZARD_STEPS): IUseWizard {
     updateFormData,
     updateChecklistAnswers,
     submitDraft,
+    saveDraft,
     hydrate
   }
 }

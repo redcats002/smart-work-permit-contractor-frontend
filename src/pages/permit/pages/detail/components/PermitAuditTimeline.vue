@@ -58,6 +58,7 @@ const DOT_CLASS: Record<string, string> = {
   PERMIT_SUBMITTED: 'bg-status-pending-fg shadow-[0_0_0_1.5px_var(--color-status-pending-fg)]',
   PERMIT_APPROVED: 'bg-status-active-fg shadow-[0_0_0_1.5px_var(--color-status-active-fg)]',
   PERMIT_REJECTED: 'bg-status-rejected-fg shadow-[0_0_0_1.5px_var(--color-status-rejected-fg)]',
+  PERMIT_WITHDRAWN_FOR_EDIT: 'bg-status-pending-fg shadow-[0_0_0_1.5px_var(--color-status-pending-fg)]',
   PERMIT_MARKED_COMPLETE: 'bg-status-fire-monitor-fg shadow-[0_0_0_1.5px_var(--color-status-fire-monitor-fg)]',
   PERMIT_CLOSED: 'bg-status-closed-fg shadow-[0_0_0_1.5px_var(--color-status-closed-fg)]',
   CERT_BLOCKED: 'bg-primary shadow-[0_0_0_1.5px_var(--color-primary)]'

@@ -24,7 +24,10 @@ export const routes: RouteRecordRaw[] = [
     name: 'NotPermittedPage',
     component: (): ComponentOptions => import('@/pages/common/pages/not-permitted/pages/NotPermittedPage.vue'),
     meta: {
-      layout: 'blank'
+      layout: 'blank',
+      // wayfinder ticket 030 — every route gets its own <title>, this one included; it used to
+      // fall back to the bare "e-safework" default like every other unset route.
+      title: 'ไม่มีสิทธิ์เข้าถึง'
     }
   },
   {
@@ -32,7 +35,8 @@ export const routes: RouteRecordRaw[] = [
     name: 'NotAvailablePage',
     component: (): ComponentOptions => import('@/pages/common/pages/not-available/pages/NotAvailablePage.vue'),
     meta: {
-      layout: 'blank'
+      layout: 'blank',
+      title: 'ไม่พร้อมใช้งาน'
     }
   },
   AuthRouter,
@@ -46,7 +50,8 @@ export const routes: RouteRecordRaw[] = [
     name: 'NotFound',
     component: (): ComponentOptions => import('@/pages/common/pages/not-found/pages/NotFoundPage.vue'),
     meta: {
-      layout: 'blank'
+      layout: 'blank',
+      title: 'ไม่พบหน้าที่ต้องการ'
     }
   }
 ]
@@ -56,7 +61,7 @@ const router: Router = createRouter({
   routes
 })
 
-const DEFAULT_TITLE: string = 'Smart Work Permit'
+const DEFAULT_TITLE: string = 'e-safework'
 
 export let previousRoutePath: string | null = null
 

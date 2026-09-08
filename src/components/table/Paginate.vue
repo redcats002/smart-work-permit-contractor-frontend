@@ -111,7 +111,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { IPagination } from '@/composables/usePagination'
-import { Icon } from '@iconify/vue'
+import Icon from '@/components/base/AppIcon.vue'
 
 const emits = defineEmits<{
   update: []

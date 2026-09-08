@@ -18,7 +18,8 @@
             </span>
             <span
               :class="[STATUS_CHIP_CLASS[detail.status as THistoryStatus].bg, STATUS_CHIP_CLASS[detail.status as THistoryStatus].fg]"
-              class="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold">
+              class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold">
+              <PermitStatusGlyph :status="detail.status" />
               {{ t(`history.status.${detail.status}`) }}
             </span>
           </div>
@@ -134,6 +135,7 @@ import type { IPermitDetail } from '@/models/response/permit/PermitRes.model'
 import { useDayjs } from '@/utils/Dayjs'
 import { formatDuration, STATUS_CHIP_CLASS, TYPE_CHIP_CLASS, type THistoryStatus } from '../composables/useHistory'
 import { permitAuthorName } from '@/models/modules/permit/Permit.model'
+import PermitStatusGlyph from '@/components/chip/PermitStatusGlyph.vue'
 
 interface IProps {
   open: boolean

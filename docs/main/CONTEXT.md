@@ -1,4 +1,4 @@
-# SmartWorkPermit — Cross-Repo Context
+# e-safework — Cross-Repo Context
 
 **Read this first if you are working in more than one of the three repos, or if you are about to
 change anything that crosses a repo boundary (API shape, error code, role, status machine).**
@@ -27,6 +27,12 @@ Each repo is its own git repository. The workspace root holding them (this direc
 `PROMPT-LOG.md`, `docs/main/`, `scripts/` and `.claude/agents/`, which were versioned nowhere before.
 The three app repos are **gitignored there, not vendored as submodules**: how they are cloned,
 branched and pushed is unchanged.
+
+There is a fourth repo, `smart-work-permit-landing/` — the marketing page. It is gitignored
+here on the same terms, and it is deliberately **not** part of anything in this document: no
+openapi copy, no error-code vocabulary, no `/api/v1` prefix, and `check-contract-sync.mjs`
+stays a three-repo check. It links to the two app subdomains and nothing else. Its own
+`AGENTS.md` is authoritative for work inside it.
 
 The root has **no remote**. It is the *edit origin* for the two glue files, not their distribution
 channel — so both are **copied into each repo** (`docs/main/CONTEXT.md`, `docs/main/PROMPT-LOG.md`)
@@ -86,6 +92,22 @@ files a row in its own `GAPS.md` under `api-adds` / `open` — it does not inven
   403s and request-validation 400s; clients fall back for those.
 - **Auth**: Better Auth session cookie, not a bearer header.
 
+### Cross-repo consistency
+
+Five repos describe one system: the workspace root, three app repos, and the landing page.
+`CONTEXT.md`, `PROMPT-LOG.md` and `openapi.json` are byte-identical across the root and the three
+app repos, enforced by `scripts/check-contract-sync.mjs`.
+
+**The obligation is wider than the checker.** Any change that makes a statement in another repo
+false must be corrected there in the same session — a status machine, a safety threshold, a role
+list, an error-code list, a lifecycle description, or landing-page copy describing a feature. The
+checker verifies four files; every other claim across the five repos is the author's
+responsibility. A document describing behaviour the code no longer has is worse than no document,
+because it is trusted.
+
+Landing-page copy counts. It states shipped server-side thresholds and the real status machine
+deliberately, not marketing approximations, so a rule change in the API is a landing-page change.
+
 ### Error-code vocabulary (closed set, emitted by the backend)
 
 `LEL_MISSING`, `O2_MISSING`, `CO_MISSING`, `WIND_MISSING`, `GAS_OUT_OF_RANGE`, `WIND_OUT_OF_RANGE`,
@@ -94,7 +116,9 @@ files a row in its own `GAPS.md` under `api-adds` / `open` — it does not inven
 `ENTRANTS_STILL_INSIDE`, `FIRE_WATCH_NOT_ELAPSED`, `INVALID_QR_TOKEN`, `RATE_LIMITED`,
 `UNAUTHENTICATED`, `FORBIDDEN_ROLE`, `USER_ALREADY_EXISTS`,
 `FILE_TYPE_NOT_ALLOWED`, `FILE_TOO_LARGE`, `UPLOAD_FOLDER_NOT_ALLOWED`, `STORAGE_UNAVAILABLE`,
-`ACCOUNT_DEACTIVATED`, `LAST_SAFETY_OFFICER`, `PERMIT_POSITION_REQUIRED`.
+`ACCOUNT_DEACTIVATED`, `LAST_SAFETY_OFFICER`, `PERMIT_POSITION_REQUIRED`,
+`CLOSURE_REASON_REQUIRED`, `PERMIT_UPDATE_EMPTY`, `AREA_NOT_APPROVED`, `AREA_NOT_PENDING`,
+`AREA_REQUIRED`.
 
 > `FILE_*` / `UPLOAD_*` / `STORAGE_UNAVAILABLE` were added by the backend on 2026-08-19 (upload
 > hardening, `REVIEW-2026-08-19.md` S1–S3/C1). `ACCOUNT_DEACTIVATED` and `LAST_SAFETY_OFFICER` were
@@ -102,8 +126,12 @@ files a row in its own `GAPS.md` under `api-adds` / `open` — it does not inven
 > so a switched-off account must not read as "wrong password" at sign-in or as "wrong role" on a
 > request. `PERMIT_POSITION_REQUIRED` was added 2026-08-24 with the facility plan + permit position
 > feature (`feat-023`): once an active facility plan exists, `POST /permits/:id/submit` refuses a
-> permit with no `planId`/`planX`/`planY` set. All are declared with EN/TH strings in both apps —
-> `check-contract-sync.mjs` reports **28 backend error codes all declared in both frontends**.
+> permit with no `planId`/`planX`/`planY` set. `AREA_NOT_APPROVED`, `AREA_NOT_PENDING` and
+> `AREA_REQUIRED` were added 2026-09-01 with the Area entity (ticket 036, see section 3): a permit
+> may reference only an approved area, `AREA_NOT_PENDING` is the approve/reject race guard shared
+> with permits, and `AREA_REQUIRED` is the `PERMIT_AREA_REQUIRED`-flag submit gate. All are
+> declared with EN/TH strings in both apps — `check-contract-sync.mjs` reports **33 backend error
+> codes all declared in both frontends**.
 > `RATE_LIMITED` is unchanged but is now emitted by the four public auth routes as well as the QR
 > scan route.
 
@@ -126,20 +154,34 @@ These are stated once in `docs/main/dev-handoff/00-SHARED-CONTEXT.md` and enforc
 always authoritative and the client must surface the server's verdict when the two disagree.
 
 - Status machine: `DRAFT → PENDING → REJECTED | ACTIVE → (hot only) FIRE_MONITOR → CLOSED`; `EXPIRED`
-  from `PENDING`/`ACTIVE` when the work window lapses.
+  from `PENDING`/`ACTIVE` when the work window lapses — except that an **ACTIVE Hot Work permit is
+  granted the Fire Watch duration as grace** past `workTimeEnd` before it expires, because a Fire
+  Watch is by definition the period *after* hot work stops, so a hot permit's safety obligation
+  always outlives its work window (2026-08-31, `PROMPT-LOG.md` session 13). Expiry never *starts* a
+  Fire Watch: a Fire Watch is a person, and the system must never record a control no human
+  performed. A permit already in `FIRE_MONITOR` never expires. **One edge runs backwards**: a contractor
+  editing their own `PENDING` permit returns it to `DRAFT` in the same transaction as the edit
+  (2026-08-31, `PROMPT-LOG.md` session 11). It is not an in-place edit — an officer must never be
+  able to approve a version they did not read, so the permit leaves the review queue rather than
+  mutating inside it, and the contractor resubmits.
 - Safety ranges: LEL `0%` (hot, confined; skippable only when `outdoorWork: true`), O₂ `19.5–23.5%`
   (hot, confined), CO `≤ 50 ppm` (confined), wind `≤ 25 km/h` (heights). No override.
 - Closure blocked (`403`) while any Confined Space entrant is checked in, or while the Hot Work
   30-minute Fire Watch is still running.
 - Expired/missing certificate blocks submission **and** field entry. No field override.
 - **Facility plan + permit position** (`feat-023`, 2026-08-24). A **facility plan** is the
-  uploaded, cropped floor-plan image; a **plan version** is immutable and retained forever —
+  uploaded, cropped floor-plan **raster image** (PNG/JPEG/WebP only — the map draws it with a plain
+  `<img>`, so PDF and HEIC are refused at the plan upload route even though the generic upload
+  route accepts them; 2026-08-31); a **plan version** is immutable and retained forever —
   replacing the plan creates a new version, never overwrites one. A **position** is
   `planId`/`planX`/`planY` (0–100, percentages of the plan frame) on a `Permit`. The **contractor**
   sets the position while the permit is DRAFT or REJECTED (the same editable window every other
   field gets — REJECTED stays in scope so reject-with-reason can fix a wrong pin); it is **frozen
-  from PENDING onward** for everyone, officers included — no route accepts a position change
-  outside that window. `planId` records the plan VERSION a pin was placed on, not necessarily the
+  while PENDING and beyond** for everyone, officers included — no route accepts a position change
+  outside that window. Note this reads differently since the `PENDING → DRAFT` edge above: a
+  permit can now *leave* PENDING backwards, and its position becomes editable again because it is
+  DRAFT again. The rule is unchanged — position is editable exactly when the permit is DRAFT or
+  REJECTED — but "frozen from PENDING onward" is no longer a one-way description. `planId` records the plan VERSION a pin was placed on, not necessarily the
   active one, so a client can detect **stale-plan** (`planId` ≠ the active plan's id) instead of
   silently mis-plotting it; **unplaced** means no position at all. Position is required to submit
   **only once an active plan exists** — refused with `400 PERMIT_POSITION_REQUIRED` (§2);
@@ -149,6 +191,75 @@ always authoritative and the client must surface the server's verdict when the t
   cannot target the `facility-plans` prefix even if asked (defense in depth at both the schema
   and the service layer — see `upload.service.ts`). Cropping happens only before activation; once
   a version is activated its frame is frozen (there is no edit route at all, by design).
+- **Area** (`smart-work-permit-api` ticket 036, 2026-09-01; decided by wayfinder ticket 034). An
+  **Area** is a named place in the facility a permit's work is located in — flat, no
+  `Plant → Unit → Equipment` nesting (depth arrives later, if ever, via a nullable `parentId`
+  that never touches an existing permit reference). A **contractor proposes** an area
+  (`POST /v1/areas`, status `PENDING`); it is unusable by any permit until a **safety officer
+  approves** it (`POST /v1/areas/:id/approve`, status `APPROVED`) or **rejects** it with a
+  required reason (`POST /v1/areas/:id/reject`, status `REJECTED` — no revise-in-place, a
+  corrected proposal is a fresh `POST`). Approve/reject share the same atomic `updateMany`-with-
+  expected-status guard as permit approve/reject, and each writes an append-only, hash-chained
+  audit row (`AREA_APPROVED` / `AREA_REJECTED`) — an approved area is a safety artefact, not a
+  settings row. An area may carry an optional default position (`planId`/`planX`/`planY`, same
+  shape and convention as a permit's own position) so picking an approved area pre-drops the
+  contractor's pin, which they may still nudge — the pin and the area are independent fields, on
+  purpose. `Permit.areaId` is nullable and may reference only an `APPROVED` area
+  (`400 AREA_NOT_APPROVED` otherwise); it is optional at submit until a deployment opts in with
+  `PERMIT_AREA_REQUIRED=TRUE` (`400 AREA_REQUIRED` when required and unset) — unset is the
+  permissive default, deliberately the opposite of a security flag, so this cannot repeat
+  `PERMIT_POSITION_REQUIRED`'s lock-every-contractor-out hazard. Existing permits are
+  grandfathered with no area: no backfill, no invented values. `Permit.location` is **demoted, not retired**: it is now a nullable free-text note nothing
+  queries, kept for backward compatibility (both frontends previously sent it as required) while
+  they migrate their pickers onto `Area` in a later ticket — `Area` is the structured,
+  query/audit-able answer to "where is the work" now.
+- **Overlapping-permit warning** (`smart-work-permit-api` ticket 038, 2026-09-01; API half only —
+  decided by wayfinder 034's resolution 6). Every permit-detail response (detail, create, update,
+  submit, approve, reject, mark-complete, close) carries `overlappingPermits: { checked: boolean,
+  permits: OverlappingPermit[] }`: other permits on the **same approved area** whose work window
+  overlaps this one's. **Advisory only — it never gates submit or approve**, and adds no new
+  `errorCode`; two crews sharing an area is a thing a human reviewer may legitimately accept, per
+  this map's standing no-silent-block rule. `checked: false` means this permit has no `areaId`
+  (most permits, during the `PERMIT_AREA_REQUIRED` grandfather period above) — nothing was
+  compared — and is structurally distinct from `checked: true, permits: []` ("compared, nothing
+  overlaps"), so a client cannot render one reassuring empty state for both. **Which statuses
+  occupy an area**: `PENDING`, `ACTIVE`, `FIRE_MONITOR` — the last deliberately, because a Fire
+  Watch is by definition the period *after* hot work stops during which the area is still
+  hazardous (the "hot permit's safety obligation always outlives its work window" rule two bullets
+  up), so excluding it would tell a second crew an area is clear while someone is still standing
+  watch over it. `DRAFT`/`REJECTED`/`CLOSED`/`EXPIRED` do not occupy — never submitted, dead,
+  proven clear by closure's own guards, or past their (graced) window respectively. **Overlap is a
+  closed interval**: `a.workTimeStart <= b.workTimeEnd && a.workTimeEnd >= b.workTimeStart` — two
+  permits that only touch at a shared endpoint (one's `workTimeEnd` equals the other's
+  `workTimeStart`) DO count, the wider/safer reading being deliberate for an advisory-only check.
+  Served by one indexed query (`Permit @@index([areaId, workTimeStart, workTimeEnd])`), excluding
+  the permit itself and soft-deleted rows. **The safety frontend's consumption of this
+  field is a separate, not-yet-landed half of ticket 038.**
+- **Per-contractor area visibility** (`smart-work-permit-api` ticket 044, 2026-09-08; API half
+  only — reverses 034's "revisit only if someone asks", by owner ruling). A new `AreaGrant`
+  join table (`areaId`, `userId`, `grantedById`, `grantedBy`, `grantedAt`, unique on
+  `(areaId, userId)`) makes one area visible to one contractor who did not propose it. `Area`
+  itself is unchanged — it gains a virtual back-relation and no column. The officer grants and
+  revokes with `POST /v1/areas/:id/grants` `{ userId }`, `DELETE /v1/areas/:id/grants/:userId`
+  and `GET /v1/areas/:id/grants`, all three `safety_officer`-only; grant is an idempotent
+  upsert, revoke is an idempotent hard delete, and neither adds an `errorCode`. Grants are
+  deliberately **not** written to the audit chain: unlike approve/reject they decide nothing
+  about hazard, so a new action string in both frontends' label maps would buy nothing —
+  `grantedById`/`grantedBy` on the row keep it attributable. Scoping is gated behind
+  `AREA_VISIBILITY_SCOPED=TRUE`, **off by default**, parsed exactly like
+  `PERMIT_AREA_REQUIRED` and for the same reason — a narrowing rule must never switch itself
+  on, per the `PERMIT_POSITION_REQUIRED` lockout. Unset means the previous behaviour: every
+  role reads the full area list. With it set, a **contractor's** `GET /v1/areas` returns
+  `status = APPROVED AND createdById = me` UNION areas granted to them; it composes with the
+  existing `status` query param rather than replacing it. **It narrows that one query and
+  nothing else** — `safety_officer` and `inspector` lists are untouched, ticket 038's overlap
+  query still reads every occupying `PENDING`/`ACTIVE`/`FIRE_MONITOR` permit whoever proposed
+  the area, `GET /v1/areas/:id` stays unscoped so a permit can always show its own area, and
+  the `AREA_NOT_APPROVED` guard tests an area's **status, never its visibility**, so a permit
+  referencing an area its contractor was not granted still saves and still autosaves. A
+  contractor not seeing an area is a convenience; an officer not seeing a conflict is a hazard.
+  **Both frontend halves — the contractor picker's read-only stale-area display and the
+  officer's grant/revoke screen — are separate, not-yet-landed halves of ticket 044.**
 - Audit log is append-only with a server-signed hash chain. Never expose an edit or delete path.
 - Timestamps stored UTC; displayed `Asia/Bangkok`. Default UI locale is **Thai**; every string is
   translated EN + TH.
@@ -201,22 +312,27 @@ against the real API. Real-API evidence means a live smoke run against a booted 
 
 Full runbooks live per repo at `deploy/RUNBOOK.md`. Only what crosses a repo boundary is here.
 
-- **Topology.** API + Postgres + Redis + MinIO + nginx + cloudflared on one VM (Oracle
-  `E2.1.Micro`, x86_64, **1 OCPU / 1 GB, unresizable**); both SPAs on Cloudflare Pages. Nothing
-  on the VM listens publicly — `cloudflared` dials out, inbound is SSH only.
+- **Topology.** API + Postgres + Redis + MinIO + nginx + cloudflared on one VM (a DigitalOcean
+  droplet, x86_64, Ubuntu 24.04); both SPAs on Cloudflare Pages. Nothing on the VM listens
+  publicly — the compose file binds **no** host ports, `cloudflared` dials out, inbound is SSH
+  only. Deploy user is `esw` (non-root), read by CI from the `VM_USER` secret so the box can
+  move between providers without a workflow change.
 - **One apex domain, four subdomains:** `api.` `storage.` `app.` `safety.`. This is a hard
   requirement — the session cookie is issued on the apex, so `*.pages.dev` frontends would make
   it cross-site and Safari ITP would drop it.
-- **`COOKIE_DOMAIN=.<domain>` is what makes that work**, and it was *not* implemented until
+- **`COOKIE_DOMAIN=.e-safework.com` is what makes that work**, and it was *not* implemented until
   2026-08-23: `user-auth.plugin.ts` now enables better-auth `crossSubDomainCookies` when the var
   is set, and drops back to `SameSite=Lax` because apex subdomains are same-site.
   `smart-work-permit-api/scripts/check-cookie-domain.sh` asserts the issued cookie.
-- **`MINIO_ENDPOINT` is the PUBLIC host** (`storage.<domain>:443`, SSL on), never the compose
+- **`MINIO_ENDPOINT` is the PUBLIC host** (`storage.e-safework.com:443`, SSL on), never the compose
   service name. `uploadOne` hands its presigned URL straight to the browser and the host is part
   of the SigV4 signature. Cost: server-side puts hairpin out through the tunnel. Bucket CORS is
   **not** needed as things stand — those URLs are only ever bound to `<img :src>`, which is not
   CORS-gated. It becomes needed the day anything fetches the storage origin with `fetch`/XHR.
-- **`dev` is the deploy branch** in all three repos. `origin/main` is stale.
+- **`main` is the deploy branch** in all three repos — merging into it ships to
+  production. `dev` is the working branch and reaches `main` through a PR whose
+  `check` job must pass. Cloudflare Pages' production branch must be `main` too,
+  or the SPAs keep deploying from `dev` while the API deploys from `main`.
 - **`check-contract-sync.mjs` is not in frontend CI.** It lives in this workspace root, which is a
   separate repo that gitignores the three app repos, so their pipelines cannot run it. It stays a
   local pre-push check — run it yourself before pushing a contract change.

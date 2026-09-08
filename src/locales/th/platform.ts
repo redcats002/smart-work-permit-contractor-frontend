@@ -1,8 +1,8 @@
 import type platformEn from '@/locales/en/platform'
 
 const platform: typeof platformEn = {
-  appName: 'SafePermit',
-  appTagline: 'SMART WORK PERMIT · v3.0',
+  appName: 'e-safework',
+  appTagline: 'ELECTRONIC SAFE WORK PERMIT · v3.0',
   accountType: 'บัญชีผู้รับเหมา',
   sidebarSection: 'ผู้รับเหมา',
   nav: {
@@ -29,6 +29,8 @@ const platform: typeof platformEn = {
     password: 'รหัสผ่าน',
     submit: 'เข้าสู่ระบบ',
     loginSuccess: 'ยินดีต้อนรับเข้าสู่ระบบ',
+    // wayfinder ticket 042 — the `trial` (023) and `trialFill` (032) key groups were DELETED with
+    // the buttons they labelled. No demo environment will exist; do not re-add either group.
     validation: {
       emailRequired: 'กรุณากรอกอีเมล',
       emailInvalid: 'รูปแบบอีเมลไม่ถูกต้อง',

@@ -20,9 +20,13 @@ const error = {
   PERMIT_NOT_ACTIVE: 'This action is only available while the permit is active.',
   NOT_HOT_WORK: 'Fire Watch applies to Hot Work permits only.',
   PERMIT_POSITION_REQUIRED: 'Set a position on the facility plan before submitting this permit.',
+  PERMIT_UPDATE_EMPTY: 'No changes were made to this permit.',
 
   // Closure guards
   ENTRANTS_STILL_INSIDE: 'Closure blocked — one or more entrants are still checked in.',
+  // A contractor closing their own permit never sees this; declared so every backend code is
+  // localizable in both apps (CONTEXT.md section 2).
+  CLOSURE_REASON_REQUIRED: 'A safety officer must give a reason for closing a permit.',
   FIRE_WATCH_NOT_ELAPSED: 'Closure is locked until the 30-minute Fire Watch countdown ends.',
   PERMIT_NOT_CLOSABLE: 'This permit cannot be closed in its current state.',
   PERMIT_NOT_PENDING: 'This permit is no longer awaiting review.',
@@ -43,6 +47,11 @@ const error = {
   STORAGE_UNAVAILABLE: 'File storage is unavailable right now. Your file was not saved — please try again shortly.',
   ACCOUNT_DEACTIVATED: 'This account has been deactivated. Contact your safety officer to have it reactivated.',
   LAST_SAFETY_OFFICER: 'This is the last active safety officer. Add or reactivate another one before changing this account.',
+
+  // Area (wayfinder 034/036)
+  AREA_NOT_APPROVED: 'This area has not been approved yet. Choose an approved area or wait for a safety officer to review it.',
+  AREA_NOT_PENDING: 'This area is no longer awaiting review.',
+  AREA_REQUIRED: 'Please choose an approved area before submitting this permit.',
 
   unknown: 'Something went wrong. Please try again.'
 }
