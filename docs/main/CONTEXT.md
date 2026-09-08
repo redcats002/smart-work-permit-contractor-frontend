@@ -209,9 +209,7 @@ always authoritative and the client must surface the server's verdict when the t
   `PERMIT_AREA_REQUIRED=TRUE` (`400 AREA_REQUIRED` when required and unset) — unset is the
   permissive default, deliberately the opposite of a security flag, so this cannot repeat
   `PERMIT_POSITION_REQUIRED`'s lock-every-contractor-out hazard. Existing permits are
-  grandfathered with no area: no backfill, no invented values. Per-contractor area visibility
-  scoping is deliberately **not** built here (034 resolution) — every role reads the full area
-  list. `Permit.location` is **demoted, not retired**: it is now a nullable free-text note nothing
+  grandfathered with no area: no backfill, no invented values. `Permit.location` is **demoted, not retired**: it is now a nullable free-text note nothing
   queries, kept for backward compatibility (both frontends previously sent it as required) while
   they migrate their pickers onto `Area` in a later ticket — `Area` is the structured,
   query/audit-able answer to "where is the work" now.
@@ -235,9 +233,33 @@ always authoritative and the client must surface the server's verdict when the t
   permits that only touch at a shared endpoint (one's `workTimeEnd` equals the other's
   `workTimeStart`) DO count, the wider/safer reading being deliberate for an advisory-only check.
   Served by one indexed query (`Permit @@index([areaId, workTimeStart, workTimeEnd])`), excluding
-  the permit itself and soft-deleted rows. Per-contractor area visibility scoping remains
-  deliberately not built (034 resolution, unchanged). **The safety frontend's consumption of this
+  the permit itself and soft-deleted rows. **The safety frontend's consumption of this
   field is a separate, not-yet-landed half of ticket 038.**
+- **Per-contractor area visibility** (`smart-work-permit-api` ticket 044, 2026-09-08; API half
+  only — reverses 034's "revisit only if someone asks", by owner ruling). A new `AreaGrant`
+  join table (`areaId`, `userId`, `grantedById`, `grantedBy`, `grantedAt`, unique on
+  `(areaId, userId)`) makes one area visible to one contractor who did not propose it. `Area`
+  itself is unchanged — it gains a virtual back-relation and no column. The officer grants and
+  revokes with `POST /v1/areas/:id/grants` `{ userId }`, `DELETE /v1/areas/:id/grants/:userId`
+  and `GET /v1/areas/:id/grants`, all three `safety_officer`-only; grant is an idempotent
+  upsert, revoke is an idempotent hard delete, and neither adds an `errorCode`. Grants are
+  deliberately **not** written to the audit chain: unlike approve/reject they decide nothing
+  about hazard, so a new action string in both frontends' label maps would buy nothing —
+  `grantedById`/`grantedBy` on the row keep it attributable. Scoping is gated behind
+  `AREA_VISIBILITY_SCOPED=TRUE`, **off by default**, parsed exactly like
+  `PERMIT_AREA_REQUIRED` and for the same reason — a narrowing rule must never switch itself
+  on, per the `PERMIT_POSITION_REQUIRED` lockout. Unset means the previous behaviour: every
+  role reads the full area list. With it set, a **contractor's** `GET /v1/areas` returns
+  `status = APPROVED AND createdById = me` UNION areas granted to them; it composes with the
+  existing `status` query param rather than replacing it. **It narrows that one query and
+  nothing else** — `safety_officer` and `inspector` lists are untouched, ticket 038's overlap
+  query still reads every occupying `PENDING`/`ACTIVE`/`FIRE_MONITOR` permit whoever proposed
+  the area, `GET /v1/areas/:id` stays unscoped so a permit can always show its own area, and
+  the `AREA_NOT_APPROVED` guard tests an area's **status, never its visibility**, so a permit
+  referencing an area its contractor was not granted still saves and still autosaves. A
+  contractor not seeing an area is a convenience; an officer not seeing a conflict is a hazard.
+  **Both frontend halves — the contractor picker's read-only stale-area display and the
+  officer's grant/revoke screen — are separate, not-yet-landed halves of ticket 044.**
 - Audit log is append-only with a server-signed hash chain. Never expose an edit or delete path.
 - Timestamps stored UTC; displayed `Asia/Bangkok`. Default UI locale is **Thai**; every string is
   translated EN + TH.
