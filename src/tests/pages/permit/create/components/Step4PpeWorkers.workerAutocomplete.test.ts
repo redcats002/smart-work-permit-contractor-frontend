@@ -250,4 +250,29 @@ describe('Step4PpeWorkers — worker-name AutoComplete (wayfinder ticket 004)', 
     expect(suggestions.map((c: ICertificate): string => c.workerName)).toEqual(['Newly Created'])
     expect(wrapper.emitted('recheck-certificates')).toBeTruthy()
   })
+
+  /**
+   * wayfinder ticket 048 — the field report's "the name box is too narrow to read".
+   *
+   * The width comes from Volt's PT class `p-fluid:w-full` on the inner <input>, a Tailwind
+   * variant that only matches once PrimeVue stamps `data-p="fluid"` on the element — which it
+   * does only when the `fluid` prop is set. Without it the `w-full` on the wrapper styles the
+   * wrapper alone and the input renders at the UA default (~20ch) however wide the cell is.
+   * Asserted on the rendered <input>, not on the prop, because it is the stamped attribute the
+   * stylesheet actually selects on.
+   */
+  it('renders the worker-name input fluid, so Volt\'s p-fluid:w-full can size it (wayfinder 048)', async () => {
+    vi.spyOn(CertificateProvider.prototype, 'list').mockResolvedValue({
+      message: 'ok', data: [], count: 0, totalPage: 1
+    } as never)
+
+    const wrapper = mountStep()
+    await flushPromises()
+
+    const input = wrapper.findComponent(AutoComplete).find('input')
+    expect(input.attributes('data-p')?.split(' ')).toContain('fluid')
+    // And the cell it fills is wide enough to be worth filling — the table is `overflow-x-auto`,
+    // so this column scrolls rather than squeezing the role/health columns beside it.
+    expect(wrapper.findComponent(AutoComplete).classes()).toContain('min-w-[13.75rem]')
+  })
 })

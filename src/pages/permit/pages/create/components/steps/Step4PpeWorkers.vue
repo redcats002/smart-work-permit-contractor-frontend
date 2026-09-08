@@ -110,13 +110,27 @@
                 {{ row.index + 1 }}
               </td>
               <td class="px-3 py-3">
+                <!--
+                  wayfinder ticket 048. `fluid` is load-bearing, not decoration: Volt's PT gives
+                  the inner <input> its width through `p-fluid:w-full`, a variant that only
+                  matches once PrimeVue stamps `data-p="fluid"`. Without it the `w-full` here
+                  styles the wrapper alone and the input sits at the UA default (~20ch) however
+                  wide the cell is — the reported "too narrow to read". `min-w` then makes the
+                  cell itself wide enough to be worth filling: this table is `overflow-x-auto`,
+                  so a column claiming real width scrolls rather than squeezing its neighbours.
+
+                  It also fixes the suggestion list, which is why there is no separate change
+                  for it — PrimeVue sizes the overlay's `min-width` from the input's rendered
+                  width, so a narrow input produced a narrow list.
+                -->
                 <AutoComplete
                   :force-selection="false"
                   :model-value="row.worker.workerName"
                   :placeholder="t('permit.create.steps.ppeWorkers.placeholder.worker')"
                   :suggestions="workerSuggestions"
-                  class="h-9 w-full"
+                  class="h-9 w-full min-w-[13.75rem]"
                   option-label="workerName"
+                  fluid
                   @blur="scheduleWorkerNameCommit()"
                   @complete="onWorkerNameComplete($event.query)"
                   @option-select="scheduleWorkerNameCommit()"
