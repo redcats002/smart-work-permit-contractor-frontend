@@ -123,7 +123,7 @@
           </PermitDetailSection>
 
           <PermitDetailSection
-            :title="t('permit.detail.sections.closure.title')"
+            :title="closureSectionTitle"
             name="closure">
             <PermitClosureSection
               :fire-watch-remaining="fireWatchRemaining"
@@ -226,6 +226,18 @@ const STATUS_CLASS: Record<TPermitStatus, { bg: string, fg: string }> = {
 
 const typeChipClass: ComputedRef<{ bg: string, fg: string }> = computed(
   (): { bg: string, fg: string } => TYPE_CHIP_CLASS[permit.value?.type ?? 'hot'])
+
+/**
+ * wayfinder ticket 047. §5 keeps its "& Fire Watch" half only on a hot-work permit, because that
+ * is the only type whose section can ever contain one — `PermitClosureSection` renders no Fire
+ * Watch block at all otherwise, and a heading naming a region that is not on the page is worse
+ * than the empty region it replaced.
+ */
+const closureSectionTitle: ComputedRef<string> = computed((): string => (
+  permit.value?.type === 'hot'
+    ? t('permit.detail.sections.closure.title')
+    : t('permit.detail.sections.closure.titleClosureOnly')
+))
 
 const statusClass: ComputedRef<{ bg: string, fg: string }> = computed(
   (): { bg: string, fg: string } => STATUS_CLASS[permit.value?.status ?? 'DRAFT'])

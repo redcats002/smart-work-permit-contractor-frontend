@@ -232,7 +232,10 @@ describe('PermitDetailPage sections (PMT-013)', () => {
     expect(closure.find('[data-test="closure-item-entrantsExited"]').text()).toContain('All entrants safely exited')
     expect(closure.find('[data-test="closure-item-worksiteRestored"]').text()).toContain('No')
     expect(closure.text()).toContain('Somchai P.')
-    expect(closure.text()).toContain('No Fire Watch has been started')
+    // wayfinder ticket 047 — this fixture is a CONFINED permit, which can never hold a Fire
+    // Watch, so the block is absent entirely rather than showing an always-empty "none" state.
+    // Presence on a hot-work permit is covered in PermitClosureFireWatch.test.ts.
+    expect(closure.find('[data-test="closure-fire-watch"]').exists()).toBe(false)
     // Entrant names are not readable by a contractor (GAPS row I) — only the count is.
     expect(closure.text()).toContain('only the count is exposed')
   })

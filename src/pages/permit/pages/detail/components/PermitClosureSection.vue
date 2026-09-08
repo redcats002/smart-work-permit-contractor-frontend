@@ -14,7 +14,19 @@
       </p>
     </div>
 
-    <div data-test="closure-fire-watch">
+    <!--
+      wayfinder ticket 047. Fire Watch is a HOT-WORK-ONLY leg of the status machine (`FIRE_MONITOR`
+      is unreachable for `confined`/`heights`), so a heights or confined-space permit renders no
+      heading and no empty state here at all — an always-empty region beside the Close action
+      trains the user to skim exactly the wrong part of a safety document.
+
+      Gated on `permit.type`, deliberately NOT on `permit.fireWatch`: a hot-work permit before the
+      watch starts must still show the "none" state, so the block it will fill is visible from the
+      moment the permit exists.
+    -->
+    <div
+      v-if="isHotWork"
+      data-test="closure-fire-watch">
       <p class="mb-1.5 text-[12px] font-semibold text-text-secondary">
         {{ t('permit.detail.sections.closure.fireWatchTitle') }}
       </p>
@@ -106,6 +118,7 @@
 import { computed, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { permitAuthorName } from '@/models/modules/permit/Permit.model'
+import { EPermitType } from '@/enums/modules/permit/PermitType.enum'
 import type { IPermitDetail } from '@/models/response/permit/PermitRes.model'
 
 /**
@@ -137,6 +150,9 @@ interface IChecklistRow {
 const props = withDefaults(defineProps<IProps>(), { fireWatchRemaining: '' })
 
 const { t, d } = useI18n()
+
+/** wayfinder ticket 047 — see the template comment on the Fire Watch block. */
+const isHotWork: ComputedRef<boolean> = computed((): boolean => props.permit.type === EPermitType.HOT)
 
 /** Stored UTC, displayed Asia/Bangkok. */
 function stamp (value: string | null): string {
