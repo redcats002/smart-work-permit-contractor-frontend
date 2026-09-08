@@ -775,19 +775,34 @@ locks every contractor out of submitting.** The two halves ship together or not 
 - **Never activate a facility plan until the contractor position picker has shipped.** Restated
   because it is now imminent rather than hypothetical: `submit.service.ts` throws
   `PERMIT_POSITION_REQUIRED` the moment any plan is active.
-- **A demo affordance must never become a second, weaker way in.** The trial auto-login buttons are
+- **A demo affordance must never become a second, weaker way in.** ~~The trial auto-login buttons are
   hidden behind `VITE_TRIAL_LOGIN` (default off), take their password from
   `VITE_TRIAL_LOGIN_PASSWORD` (never hardcoded, nothing rendered if absent), put no password in any
   committed file, and call the same `login()` provider the form calls — no client-minted tokens, no
-  skipped guards, no auth-store bypass.
+  skipped guards, no auth-store bypass.~~ **Superseded 2026-09-08 (wayfinder 042): there is no demo
+  affordance at all.** The principle stands and is why the feature is gone rather than hardened
+  further — the owner ruled that no demo environment will exist, and a credential path whose only
+  safety argument was "the data behind it is worth nothing" cannot be justified once nobody owns
+  that environment. `POST /api/v1/auth/demo-login`, the seeded demo accounts, `VITE_TRIAL_LOGIN` and
+  `VITE_TRIAL_LOGIN_PASSWORD` are all removed. Do not reintroduce any of them; if trial access is
+  wanted again, that is a new decision about a demo *environment* first, not a login shortcut.
 - **There is no `admin` role.** `UserRole` is exactly `contractor | safety_officer | inspector`. A
   request naming an admin is a request for a role that does not exist; say so rather than inventing
   one. (2026-08-31: the owner considered adding one and then ruled it out
-  of scope — wayfinder 024/025. The bypass login ships for the three roles that exist.)
-- **Demo login is for UAT, on data whose loss costs nothing.** The owner's ruling when asked what
+  of scope — wayfinder 024/025. The bypass login shipped for the three roles that exist; 2026-09-08:
+  that login has since been removed entirely, see the demo-affordance bullet above. The no-admin
+  ruling is unaffected — it never depended on it.)
+- **Demo login is for UAT, on data whose loss costs nothing.** ~~The owner's ruling when asked what
   the demo accounts point at. That is what makes an open endpoint acceptable — not the flag, not
   the rate limit, both of which are still required. If demo login is ever pointed at real permit
-  data this ruling no longer holds and the endpoint must be disabled.
+  data this ruling no longer holds and the endpoint must be disabled.~~ **Resolved 2026-09-08
+  (wayfinder 042) by removing the endpoint.** This ruling's own condition is what closed it: asked
+  directly whether that loss-costs-nothing environment exists, the owner ruled it never would.
+  Three alternatives were rejected on the way — a separate demo deployment (infrastructure nobody
+  wants to run), pointing demo login at staging (whose data is not disposable, so a leak there is a
+  real leak), and flagging demo rows inside the real database (every list, count, expiry sweep and
+  audit query would need the filter, and one missed filter puts a fake permit in front of a safety
+  officer).
 - **No credential string may survive into a production bundle, mock ones included.** A frontend
   cannot keep a secret: Vite env vars are build-time substitutions, and a runtime check like
   `hostname === 'localhost'` leaves both branches in the shipped JavaScript. Gate on
