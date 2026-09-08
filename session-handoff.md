@@ -53,8 +53,16 @@ pushing.
      which is why it read as noise for a while. `hydrate` ends with `recheckCertificates()`, so a
      fixture with a named worker fired a real `byWorker` lookup that rejected after the test body
      returned; `useApiError`'s `console.error` then raced the worker shutdown. The provider is now
-     stubbed in that file and the `afterEach` awaits `flushPromises()`. If you add a `hydrate` test
-     with a named worker anywhere else, stub it there too.
+     stubbed in that file and the `afterEach` awaits `flushPromises()`.
+
+     **The rest of the composable tests were surveyed, not assumed.** Every file calling
+     `useWizard()` was checked for the same shape — a named worker reaching `recheckCertificates`
+     with no `byWorker` stub. `useWizard.certificatePreflight.test.ts` already stubs it at all 8
+     sites; `useWizard.test.ts` never hydrates and names no worker; `useWizard.persistence.test.ts`
+     hydrates twice but its fixture is `workers: []`, and the pre-flight early-returns with no call
+     when nothing is named. So `hydrate.test.ts` was the only one — but the persistence fixture is
+     one added worker away from reopening it. If you put a named worker in a composable-level
+     fixture, stub `CertificateProvider.prototype.byWorker` in that file.
 
 5. **FR-3 is still live in the safety app, and ticket 047 says the opposite.** 047 states as a
    *verified* finding that the safety app "already gets this right". It does not: its

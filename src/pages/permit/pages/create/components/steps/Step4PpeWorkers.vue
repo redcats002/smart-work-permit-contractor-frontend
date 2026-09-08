@@ -119,6 +119,14 @@
                   cell itself wide enough to be worth filling: this table is `overflow-x-auto`,
                   so a column claiming real width scrolls rather than squeezing its neighbours.
 
+                  13.75rem = 220px, and it is derived, not picked. At the 375px floor this app
+                  must not break at, the scroll container is ~303px wide (375 − 32 page `px-4`
+                  − 40 card `p-5`). This is the SECOND column, after `#` at `w-10`: 40 + 220 + 24
+                  (cell `px-3`) + 2 (table borders) = 286px, so the whole field is on screen at
+                  scroll 0 with room to spare, rather than needing a horizontal pan to read the
+                  name — which is what the field report was actually about. Anything much wider
+                  buys legibility at the cost of that, so raise it only against a real measurement.
+
                   It also fixes the suggestion list, which is why there is no separate change
                   for it — PrimeVue sizes the overlay's `min-width` from the input's rendered
                   width, so a narrow input produced a narrow list.
