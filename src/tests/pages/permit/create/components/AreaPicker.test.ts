@@ -30,7 +30,14 @@ function stubMatchMedia (): void {
  * new one inline. Area is optional and never gates anything (unlike `usePlanPosition`'s
  * `position` step), so this file only exercises `AreaPicker`'s own contract: what it fetches,
  * what it emits on selection, and how it renders a permit's already-referenced area that the
- * approved list no longer contains.
+ * list it can see does not contain.
+ *
+ * wayfinder ticket 044 adds the two cases that matter once `AREA_VISIBILITY_SCOPED=TRUE` makes
+ * that last situation ordinary rather than rare: a still-APPROVED area outside this contractor's
+ * scope renders as a read-only value (not as 037's "no longer approved" warning), and nothing
+ * this component does on its own may ever emit `areaId: null`. The wire-level half of that second
+ * invariant — the key never reaching the PATCH body — lives in
+ * `../composables/useWizard.persistence.test.ts`.
  */
 function area (overrides: Partial<IArea> = {}): IArea {
   return {
@@ -150,6 +157,54 @@ describe('AreaPicker (wayfinder ticket 037)', () => {
     await flushPromises()
 
     expect(wrapper.emitted('change')?.at(-1)?.[0]).toEqual({ areaId: null })
+  })
+
+  /**
+   * wayfinder ticket 044 — the headline case. `AREA_VISIBILITY_SCOPED=TRUE` narrows the list
+   * server-side, so a permit's own area is routinely absent from it while still being perfectly
+   * APPROVED. That must read as a read-only value, never as the "no longer approved, choose
+   * another one" warning, which would be wrong advice about a permit that is fine.
+   */
+  it('an APPROVED area outside this contractor’s scoped list renders read-only — not as a stale warning', async () => {
+    vi.spyOn(AreaProvider.prototype, 'list').mockResolvedValue({
+      message: 'success', data: [area({ id: 1, name: 'Tank Farm A' })], page: 1, limit: 9999, totalPage: 1, count: 1
+    } as never)
+    const getByIdSpy = vi.spyOn(AreaProvider.prototype, 'getById').mockResolvedValue({
+      message: 'success', data: area({ id: 77, name: 'Granted Yard B', status: 'APPROVED' })
+    } as never)
+    setLocale('en')
+
+    const wrapper = mountPicker(77)
+    await flushPromises()
+
+    // Resolved through GET /v1/areas/:id, which ticket 044 deliberately left unscoped.
+    expect(getByIdSpy).toHaveBeenCalledWith(77)
+    const readOnly = wrapper.find('[data-testid="area-current-readonly"]')
+    expect(readOnly.exists()).toBe(true)
+    expect(readOnly.text()).toContain('Current area')
+    expect(readOnly.text()).toContain('Granted Yard B')
+    // The 037 wording must NOT appear — this area is approved, and telling the contractor to pick
+    // a different one would be a lie about their own permit.
+    expect(wrapper.text()).not.toContain('no longer an approved area')
+    expect(wrapper.text()).not.toContain('could not be found')
+  })
+
+  it('a scoped-out area is stripped as undefined and NEVER as null — the permit stays saveable', async () => {
+    vi.spyOn(AreaProvider.prototype, 'list').mockResolvedValue({
+      message: 'success', data: [], page: 1, limit: 9999, totalPage: 1, count: 0
+    } as never)
+    vi.spyOn(AreaProvider.prototype, 'getById').mockResolvedValue({
+      message: 'success', data: area({ id: 77, name: 'Granted Yard B', status: 'APPROVED' })
+    } as never)
+
+    const wrapper = mountPicker(77)
+    await flushPromises()
+
+    const emitted = wrapper.emitted('change')
+    expect(emitted?.at(-1)?.[0]).toEqual({ areaId: undefined })
+    // `null` is a destructive clear the server would honour. Nothing this component does on its
+    // own — mounting, resolving, rendering — may ever emit it; only a human using the Select can.
+    expect(emitted?.some((call: unknown[]): boolean => (call[0] as { areaId: unknown }).areaId === null)).toBe(false)
   })
 
   it('a hydrated areaId not in the approved list still renders — resolved and shown, not hidden', async () => {

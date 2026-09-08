@@ -2495,3 +2495,256 @@ NOT staged by this commit.
 
 Error codes (`AREA_NOT_APPROVED`, `AREA_NOT_PENDING`, `AREA_REQUIRED`) and both locale strings
 were already present before this session — no cross-repo error-vocabulary change owed here.
+
+---
+
+## 2026-09-08 — wayfinder ticket 042: remove the trial and demo logins
+
+Owner ruling 2026-09-08: **no demo environment will exist**, so the demo login comes out rather
+than being left in place with nobody owning it. Not "disabled by default" — removed. A flag that
+is off by default is still a route in the bundle and a password in a runbook. The API half landed
+first and is committed; this is the contractor half. Committed **alone**, before the 044 work, at
+the requester's explicit instruction — the owner may revert it pending an unrelated question, and
+a clean isolated commit is the point.
+
+**Deleted, exactly the surface the ticket inventoried:**
+
+- `LoginPage.vue` — both blocks (ticket 023's server-issued trial-login button, ticket 032's UAT
+  form-fill button), the shared `VITE_TRIAL_LOGIN` computed guards, `demoLoginUnavailable`,
+  `performDemoLogin`, `onTrialLogin`, `fillContractorCredentials`, and the now-unused `computed` /
+  `ComputedRef` / `Ref` imports.
+- `Auth.public.provider.ts` — `demoLogin()` and its interface member, plus the doc paragraph
+  describing the route.
+- `AuthReq.public.model.ts` — `IDemoLoginPayload` and, with it, the file's only `TUserRole` import.
+- `locales/{en,th}/platform.ts` — the whole `auth.trial` and `auth.trialFill` key groups.
+- `src/tests/pages/auth/login/LoginPage.trial.test.ts` and `LoginPage.trialFill.test.ts` —
+  **deleted, not skipped**, per the ticket.
+- `.env.example` — the `VITE_TRIAL_LOGIN` var and its 15-line explanatory block. This was not in
+  the ticket's inventory but is a tracked file that would otherwise document two buttons that no
+  longer exist. `.env` / `.env.prod` are untracked and were left alone.
+
+**Deliberately NOT removed**, because over-deleting here is the easy mistake:
+
+- `CONTRACTOR_ROLE` and `applySession`'s role gate — that is the real form's refusal of a
+  safety-officer/inspector session, not the trial button's.
+- `src/pages/auth/pages/login/composables/useInit.ts` — its `import.meta.env.DEV` autofill is a
+  different affordance on a different guard, and is not in 042's scope.
+- `LoginPage.test.ts` — checked first; it never referenced the trial flag or copy, so it needed no
+  edit and its five cases still pass unchanged.
+
+**Absence proven against a real production build, not by reading the source.** PROMPT-LOG's
+standing rule ("verify by building and grepping `dist/` — never by reading the source and
+assuming") is the whole reason this step exists, and 042 asks for it explicitly:
+
+```
+$ bun run build            # ✓ built in 18.53s
+$ grep -rF <needle> dist/
+demo-login               no matches
+demoLogin                no matches
+contractor1@mail.com     no matches
+adminadmin               no matches
+VITE_TRIAL_LOGIN         no matches
+Trial account            no matches
+trialFill                no matches
+```
+
+Also confirmed live, against the running API, that the server half really is gone:
+`POST /api/v1/auth/demo-login` → `404 {"code":404,"message":"Not Found!"}` with an authenticated
+contractor session. So even a stale cached bundle could not use it.
+
+`docs/api/GAPS.md` row **W1** marked DONE with that evidence.
+
+```
+$ ./init.sh
+--- typecheck: PASS
+--- lint: PASS      (2 pre-existing warnings in useNotificationPolling.test.ts, unrelated)
+--- tests: PASS     63 files / 537 tests   (65 / 546 before — the two deleted trial files
+                                            accounted for 9 of the 9 removed cases)
+--- contrast: PASS
+--- icons: PASS
+--- smoke: SKIP     (no API reachable at the time of this run; re-verified live later — see 044)
+All checks passed.
+```
+
+### What 042 got wrong, or left stale
+
+`docs/main/PROMPT-LOG.md` still carries three bullets that this change makes false — "**A demo
+affordance must never become a second, weaker way in**" (and its `VITE_TRIAL_LOGIN_PASSWORD`
+reference, already stale since 023 moved the password server-side), and "**Demo login is for UAT,
+on data whose loss costs nothing**". That file is byte-identical across all three repos and gated
+by `scripts/check-contract-sync.mjs`, and this session was explicitly forbidden to edit it, so the
+bullets stand. **They are superseded by the 2026-09-08 ruling and must not be treated as live
+guidance.** Whoever owns the next PROMPT-LOG sync should retire them. The one bullet in that
+neighbourhood that does still stand — "no credential string may survive into a production bundle"
+— is exactly what the `dist/` grep above discharges.
+
+---
+
+## 2026-09-08 — wayfinder ticket 044 (contractor half): area visibility scoping
+
+The API now narrows this app's `GET /v1/areas` to "areas I proposed and that were APPROVED, UNION
+areas granted to me" when the deployment sets `AREA_VISIBILITY_SCOPED=TRUE`, and returns today's
+unfiltered behaviour when it is unset. Off by default.
+
+**There is nothing to build for the filter itself.** No client flag, no query parameter, no call
+to the new `safety_officer`-only grant routes (`POST`/`DELETE`/`GET /v1/areas/:id/grants…` — those
+are the safety app's). This repo's only caller of the list is `AreaPicker.vue`, which already asks
+for `status: 'APPROVED'` with an explicit `limit: 9999`; the request is byte-identical either way.
+A shorter list is also indistinguishable from a deployment that simply has fewer approved areas,
+and does not need to be distinguished — a note now says so in `AreaReq.model.ts` so nobody adds a
+detection heuristic later.
+
+### The real work: ticket 037's autosave trap, which scoping turns from rare into common
+
+037 found that a hydrated permit's `areaId` can point outside the list this app can see, and that
+because autosave sends the whole `formData` and the server's `AREA_NOT_APPROVED` guard fires on the
+key's **presence** — not on whether the value changed — leaving it in would 400 every later
+autosave for the rest of the session. Its fix was to emit `areaId: undefined` (omit the key),
+deliberately distinct from a user's clear (`null`, a real destructive unset the server honours).
+Scoping makes that path the ordinary one. Two things were done about it.
+
+**1. The omit-the-key invariant was made explicit instead of implicit.** This is the one real
+change of substance, and it is a deviation from what 037 wrote — flagged as such.
+
+`AreaPicker` emits `{ areaId: undefined }` → `Step7Position` forwards it → `useWizard`'s
+`updateFormData` does `formData.value = { ...formData.value, ...patch }`. **A spread copies the
+key holding `undefined`; it does not remove it.** So `payload.areaId` genuinely exists in
+`doPersist`, and the key survived to the wire only because `JSON.stringify` happens to drop
+undefined-valued properties. That is an invisible dependency underneath something load-bearing: if
+axios serialization ever changed, or a caller inspected the body, the guard would fire again.
+`doPersist` now deletes it outright, mirroring the `delete payload.jsaSteps` five lines above it
+that exists for a different reason:
+
+```ts
+if ('areaId' in payload && payload.areaId === undefined) delete payload.areaId
+```
+
+Narrow on purpose — `null` passes straight through, because that is a human asking to clear the
+field. It is emphatically **not** a generic "strip all undefined keys" pass; `position` can
+legitimately be `null` and other keys have their own conventions.
+
+The headline test was falsified before being trusted: with that line reverted it fails with
+`expected [ 'type', 'title', 'location', …(5) ] to not include 'areaId'`, confirming the key really
+was present and that `toEqual`/`toMatchObject` (which both ignore undefined-valued properties)
+would have passed regardless and proven nothing.
+
+**2. The permit's current area is now SHOWN as a read-only value, not a warning.** 037 already
+resolved an out-of-list `areaId` through `GET /v1/areas/:id` — deliberately never scoped, which is
+what makes this possible at all — and rendered `staleNote`: *"'{name}' is no longer an approved
+area. Choose another one."* Under scoping that copy becomes a **lie**: the area is usually still
+perfectly APPROVED, just invisible to this contractor, and telling them to replace it is wrong
+advice about a permit that is fine.
+
+`AreaPicker` now branches on the resolved area's own `status`:
+
+| Resolved | Rendered |
+|---|---|
+| `status === 'APPROVED'` (044 scoping) | Read-only "Current area" value — neutral `bg-surface-muted` / `border-border`, `data-testid="area-current-readonly"` |
+| any other status (037's cases) | The existing amber `staleNote` — "no longer an approved area, choose another one" |
+| resolution failed | The existing `missingNote` |
+
+All three still strip the id from `formData` as `undefined`. Stripping is right even in the
+still-APPROVED case where the PATCH would in fact be accepted: re-sending a value the contractor
+cannot see and did not choose buys nothing, and `undefined` preserves it server-side regardless.
+
+New locale keys, EN + TH, in `permit.create.steps.position.area`: `currentLabel` / `currentNote`.
+
+### Verified live, not only in unit tests
+
+With the API running, against an authenticated contractor session:
+
+```
+GET /areas?status=APPROVED  -> 200, count 0
+GET /areas                  -> 200, ids [60]
+GET /areas/60               -> 200, "Front", PENDING
+```
+
+The last line is the one that matters: the **detail** route really does resolve an area that the
+contractor's own list does not contain. That is the mechanism the read-only display depends on.
+(The flag is off in that deployment and the approved set is empty, so the scoped list itself could
+not be observed end to end from this side — the API's `area-visibility-scope.spec.ts` owns that.)
+
+### Deliberately not asserted from this end
+
+044's "the officer's area list, 038's overlap query and the `AREA_NOT_APPROVED` guard are provably
+untouched by the flag" bullet is **server-side and belongs to the API's spec**. A contractor-app
+test cannot see any of the three, and writing one that pretended to would be worse than none.
+
+### Tests
+
+- `AreaPicker.test.ts` (+2, now 9): an APPROVED-but-out-of-scope area renders read-only and does
+  **not** carry 037's "no longer an approved area" wording; and nothing this component does on its
+  own — mounting, resolving, rendering — ever emits `areaId: null`, only a human using the Select
+  can. The pre-existing REJECTED case still pins the 037 branch, so the split is covered both ways.
+- `useWizard.persistence.test.ts` (+3): the headline — a permit whose area is scoped out still
+  autosaves, the PATCH really fires, the body has no `areaId` key at all and nothing toasts, and a
+  later unrelated edit stays clean; plus `areaId: null` still reaching the wire for a real clear,
+  and a normal visible `areaId` sent untouched.
+
+### Files changed
+
+`src/pages/permit/pages/create/components/AreaPicker.vue` (read-only branch, `staleArea` renamed
+`referencedArea`, doc comments), `src/pages/permit/pages/create/composables/useWizard.ts`
+(`doPersist` deletes an undefined `areaId`; `hydrate` comment), `src/models/modules/area/Area.model.ts`
+and `src/models/request/area/AreaReq.model.ts` (doc comments that asserted the opposite of reality),
+`src/locales/{en,th}/permit.ts` (two new keys), `docs/api/GAPS.md` (row W2 DONE), plus the two test
+files above. No module wiring, route prefix or provider directory changed, so `AGENTS.md`'s Modules
+table needed only its `permit` "Built?" cell extended.
+
+```
+$ ./init.sh
+--- typecheck: PASS
+--- lint: PASS      (2 pre-existing warnings in useNotificationPolling.test.ts, unrelated)
+--- tests: PASS     63 files / 542 tests   (537 before — 5 new: 2 in AreaPicker.test.ts,
+                                            3 in useWizard.persistence.test.ts)
+--- contrast: PASS  all 26 colour pairs meet WCAG AA, all 21 status pairs distinguishable
+--- icons: PASS     45 icon names on the allow-list, no network-build imports
+--- smoke: PASS     16/16 against the live API on :3000
+All checks passed.
+```
+
+### A pre-existing full-suite flake, found here and NOT caused by this change — read before you trust a red run
+
+Re-running the suite repeatedly after this change produced intermittent failures: **entire test
+files failing, a different set on each run** — `PermitEditPage`, `ProfileDetailPage`,
+`PermitDetailPage`, `PermitCreatePage.{submit,walk,jsaSteps}`, none of which this change touches.
+The error is always the same and is not an assertion:
+
+```
+Error: Test timed out in 5000ms.
+```
+
+It was **bisected to be pre-existing**, not a regression: `git stash`ed to bare HEAD (the 042
+commit, without any 044 work) and re-ran the full suite three times — 2 of the 3 runs failed, on
+files this change never touches. Each affected file also passes 4/4 when run in isolation.
+
+The trigger is load contention against vitest's 5000 ms default `testTimeout` on the heavy
+whole-page mounts, and it showed up in this session specifically because the API dev server was
+started on `:3000` (for the live verification above) and competes for CPU. It did not appear in
+any run made while the API was down, including this session's own baseline (65 files / 546 tests,
+green) and the 042 gate (63 / 537, green).
+
+**Do not chase this as a logic bug, and do not "fix" it by loosening an assertion.** If it needs
+closing, the honest fix is a raised `testTimeout` in `vitest.config.ts` (or `pool`/concurrency
+limits), which is a harness change with its own blast radius and is not in 042's or 044's scope.
+Worth its own wayfinder ticket. Until then: a red run naming a *whole file* with `Test timed out`
+is this, not you — re-run it, and check whether an API or another agent's dev server is running.
+
+### What the tickets got wrong
+
+- **044 says "The picker must keep the existing behaviour and, better, show the permit's current
+  area as a read-only value rather than silently dropping it."** The picker was never *silently*
+  dropping it — 037 already showed the name. The actual defect scoping exposes is subtler and the
+  ticket does not name it: the message it showed was **wrong**, because it assumed the only reason
+  an area is missing from the list is that it lost approval. That assumption is what 044 breaks.
+- **`permit.create.steps.position.area.empty`** ("No approved areas yet — propose one below.")
+  becomes mildly untrue under scoping: there may be plenty of approved areas, just none visible to
+  this contractor. Left alone deliberately — it is not in 044's done-when, the honest replacement
+  needs owner-approved copy, and the owner's field-report pipeline is active on this app right now.
+  Flagged rather than fixed.
+- **A pre-existing 037 hole, not created by 044 and not fixed here:** the strip only happens if
+  `AreaPicker` mounts, and `Step7Position` is filtered out of the wizard entirely when no facility
+  plan is active. So a permit referencing a genuinely non-approved area, in a deployment with no
+  active plan, would still 400 every autosave with no UI able to clear it. Scoping does not widen
+  this (it changes visibility, not status), and the current production state has no active plan.
+  Worth a ticket; out of scope for this one.

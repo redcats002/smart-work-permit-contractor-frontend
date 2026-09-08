@@ -150,6 +150,91 @@ describe('useWizard — safetyReading append guard', () => {
   })
 })
 
+/**
+ * wayfinder ticket 044 (building on 037) — "a permit that already references an area must never
+ * become unsaveable because a visibility flag was switched on."
+ *
+ * Once the deployment sets `AREA_VISIBILITY_SCOPED=TRUE`, `GET /v1/areas` stops listing areas this
+ * contractor neither proposed nor was granted. `AreaPicker` answers by emitting
+ * `{ areaId: undefined }`, and `updateFormData`'s spread copies that key rather than removing it —
+ * so `doPersist` is the only place that can guarantee it never reaches the wire. The server's
+ * `AREA_NOT_APPROVED` guard fires on the key's PRESENCE, so one leaked key would 400 every
+ * autosave for the rest of the session; `null`, meanwhile, is a real destructive clear and must
+ * still get through when a human actually asked for it. Both spellings are pinned here.
+ */
+describe('useWizard — areaId omission on autosave (wayfinder tickets 037 + 044)', () => {
+  beforeEach((): void => {
+    vi.useFakeTimers()
+  })
+
+  afterEach((): void => {
+    vi.useRealTimers()
+    vi.restoreAllMocks()
+  })
+
+  async function bootDraft (): Promise<{ wizard: ReturnType<typeof useWizard>, updateSpy: ReturnType<typeof vi.spyOn> }> {
+    vi.spyOn(PermitProvider.prototype, 'create')
+      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
+    const updateSpy = vi.spyOn(PermitProvider.prototype, 'update')
+      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
+
+    const wizard = useWizard(makeSteps())
+    wizard.updateFormData(creatableDraft())
+    await vi.advanceTimersByTimeAsync(1600) // POST /permits
+    return { wizard, updateSpy }
+  }
+
+  function lastPatchBody (updateSpy: ReturnType<typeof vi.spyOn>): Record<string, unknown> {
+    return (updateSpy.mock.calls.at(-1) as [string, Record<string, unknown>])[1]
+  }
+
+  it('HEADLINE — a permit whose area is scoped out of the list still autosaves, with no areaId key at all', async () => {
+    vi.mocked(toast.error).mockClear()
+    const { wizard, updateSpy } = await bootDraft()
+
+    // The permit was hydrated against area 77; AreaPicker could not find 77 in the scoped list and
+    // stripped it. `undefined`, deliberately — see AreaPicker.resolveStaleArea.
+    wizard.updateFormData({ areaId: 77 })
+    wizard.updateFormData({ areaId: undefined })
+    await vi.advanceTimersByTimeAsync(1600)
+
+    // The permit is still saveable: a PATCH really went out...
+    expect(updateSpy).toHaveBeenCalled()
+    // ...and it carries no `areaId` key whatsoever. `toEqual`/`toMatchObject` would pass here even
+    // if the key were present holding `undefined`, so assert on the key itself — that presence is
+    // exactly what the server's guard tests.
+    expect(Object.keys(lastPatchBody(updateSpy))).not.toContain('areaId')
+    expect(lastPatchBody(updateSpy)).not.toHaveProperty('areaId')
+    expect(toast.error).not.toHaveBeenCalled()
+
+    // Every later autosave stays clean too — the strip is not a one-shot that a subsequent edit
+    // re-dirties.
+    wizard.updateFormData({ title: 'Warehouse repaint — revised' })
+    await vi.advanceTimersByTimeAsync(1600)
+    expect(Object.keys(lastPatchBody(updateSpy))).not.toContain('areaId')
+  })
+
+  it('still sends areaId: null for a user’s deliberate clear — the strip must not swallow that', async () => {
+    const { wizard, updateSpy } = await bootDraft()
+
+    wizard.updateFormData({ areaId: 5 })
+    await vi.advanceTimersByTimeAsync(1600)
+    wizard.updateFormData({ areaId: null })
+    await vi.advanceTimersByTimeAsync(1600)
+
+    expect(lastPatchBody(updateSpy)).toHaveProperty('areaId', null)
+  })
+
+  it('sends a real areaId untouched — an approved area the contractor CAN see still saves', async () => {
+    const { wizard, updateSpy } = await bootDraft()
+
+    wizard.updateFormData({ areaId: 12 })
+    await vi.advanceTimersByTimeAsync(1600)
+
+    expect(lastPatchBody(updateSpy)).toHaveProperty('areaId', 12)
+  })
+})
+
 describe('useWizard — step 3 checklist state', () => {
   it('keeps checklist answers out of formData entirely (no wire field — GAPS row J)', () => {
     const wizard = useWizard(makeSteps())

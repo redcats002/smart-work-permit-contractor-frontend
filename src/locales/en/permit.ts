@@ -347,6 +347,12 @@ const permit = {
           empty: 'No approved areas yet — propose one below.',
           propose: 'Propose new area',
           proposedNote: 'Awaiting approval',
+          // wayfinder 044. Shown when the permit's area is still APPROVED but outside the list
+          // this contractor can pick from. Deliberately NOT phrased as a problem — nothing is
+          // wrong with the permit, and `staleNote` below (which tells them to choose another
+          // one) would be wrong advice here.
+          currentLabel: 'Current area',
+          currentNote: 'This permit already uses this area. It is not in your selectable list, and it stays as it is unless you choose another one.',
           staleNote: '“{name}” is no longer an approved area. Choose another one.',
           missingNote: 'This permit referenced an area that could not be found. Choose another one.',
           proposeModal: {

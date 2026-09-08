@@ -295,6 +295,16 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
         payload.jsaSteps = toSubmittableJsaSteps(payload.jsaSteps)
       }
     }
+    // wayfinder tickets 037 + 044. `AreaPicker` strips an area this contractor cannot see by
+    // emitting `areaId: undefined`, and `updateFormData`'s spread COPIES that key rather than
+    // removing it — so `payload.areaId` exists here, holding `undefined`. It survives to the wire
+    // only by JSON.stringify's habit of dropping undefined-valued properties, which is an
+    // invisible dependency for something load-bearing: the server's `AREA_NOT_APPROVED` guard
+    // fires on the key's PRESENCE, so if that ever changed, every autosave on a permit with an
+    // out-of-list area would 400 forever. Delete it explicitly, the same way `jsaSteps` above is
+    // dropped for a different reason. `null` is untouched by this — that is a user's deliberate
+    // clear and must reach the server.
+    if ('areaId' in payload && payload.areaId === undefined) delete payload.areaId
     const wireReading = safetyReading === undefined ? undefined : toWireReading(safetyReading)
     const serialized = wireReading === undefined ? undefined : JSON.stringify(wireReading)
     const shouldAppendReading = serialized !== undefined && serialized !== lastPersistedReading
@@ -391,9 +401,11 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
       workers: toFormWorkers(permit.workers),
       photos: permit.photos,
       position: toFormPosition(permit),
-      // wayfinder ticket 037. Seeded as-is, whatever it is — `AreaPicker` is what resolves
-      // whether it still names an APPROVED area and, if not, strips it back out of `formData`
-      // before the next autosave (see the doc comment on `AreaPicker.resolveStaleArea`).
+      // wayfinder tickets 037 + 044. Seeded as-is, whatever it is — `AreaPicker` is what resolves
+      // whether the area is in the list this contractor can actually see and, if it is not,
+      // displays it and strips it back out of `formData` before the next autosave (see the doc
+      // comment on `AreaPicker.resolveStaleArea`). Since 044 that is the ordinary case, not a rare
+      // one, so nothing here may assume a seeded `areaId` is selectable.
       areaId: permit.areaId ?? undefined
     }
 

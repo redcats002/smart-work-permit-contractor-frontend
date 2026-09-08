@@ -29,12 +29,34 @@
       {{ t('permit.create.steps.position.area.empty') }}
     </p>
 
+    <!--
+      wayfinder ticket 044. The permit already names an area that is still APPROVED but is not in
+      THIS contractor's list — the normal case once `AREA_VISIBILITY_SCOPED=TRUE`. Shown as a
+      read-only value, not a warning: nothing is wrong with the permit, and the contractor must be
+      able to see what their own permit references instead of watching it disappear from an empty
+      Select. Deliberately NOT the amber `staleNote` below, which says "choose another one" —
+      advice that would be flatly wrong here.
+    -->
+    <div
+      v-if="referencedArea && referencedArea.status === 'APPROVED'"
+      class="flex flex-col gap-1 rounded-lg border border-border bg-surface-muted px-3.5 py-2.5"
+      data-testid="area-current-readonly"
+      role="status">
+      <span class="text-[11px] font-semibold tracking-wide text-text-secondary uppercase">
+        {{ t('permit.create.steps.position.area.currentLabel') }}
+      </span>
+      <span class="text-[13px] font-semibold text-text-primary">{{ referencedArea.name }}</span>
+      <span class="text-[12px] text-text-secondary">
+        {{ t('permit.create.steps.position.area.currentNote') }}
+      </span>
+    </div>
+
     <p
-      v-if="staleArea"
+      v-else-if="referencedArea"
       class="rounded-lg border border-status-pending-border bg-status-pending-bg px-3.5 py-2.5 text-[12.5px] font-medium text-status-pending-fg"
       role="status">
       <span aria-hidden="true">ⓘ</span>
-      {{ t('permit.create.steps.position.area.staleNote', { name: staleArea.name }) }}
+      {{ t('permit.create.steps.position.area.staleNote', { name: referencedArea.name }) }}
     </p>
     <p
       v-else-if="areaResolveFailed"
@@ -82,6 +104,18 @@ import CreateAreaModal from './CreateAreaModal.vue'
  * unlike `usePlanPosition`, there is no shared preflight instance here and no invariant to
  * protect, so this component owns its own local state rather than being hoisted into
  * `useWizard`.
+ *
+ * wayfinder ticket 044 — the server may now scope `list()` to areas this contractor proposed or
+ * was granted (`AREA_VISIBILITY_SCOPED=TRUE`, off by default). Nothing about the CALL changes;
+ * what changes is that "the permit's `areaId` is not in the list" flips from an edge case to the
+ * ordinary one. Two invariants carry the weight, and both have tests:
+ *
+ * 1. Such an `areaId` is stripped from the wizard's own `formData` as `undefined` — never `null`
+ *    — so it is omitted from, not cleared by, every later autosave PATCH. See `resolveStaleArea`.
+ * 2. It is still SHOWN, resolved through the deliberately-unscoped `GET /v1/areas/:id`, and shown
+ *    as a plain read-only value when it is still APPROVED rather than as a "no longer approved"
+ *    warning. A permit must never look like it has no area just because a visibility flag was
+ *    switched on.
  */
 interface IProps {
   /** `formData.areaId` as it stands right now — may reference an area outside the approved list. */
@@ -115,8 +149,13 @@ const approvedAreas: Ref<IArea[]> = ref([])
 const loadingAreas: Ref<boolean> = ref(false)
 /** Areas proposed THIS session via the modal below — not selectable (still PENDING), shown so proposing one is never silently invisible. */
 const proposedAreas: Ref<IArea[]> = ref([])
-/** The permit's existing `areaId`, resolved, when it is not (or no longer) in the approved list. */
-const staleArea: Ref<IArea | undefined> = ref(undefined)
+/**
+ * The permit's existing `areaId`, resolved, when the list this contractor can see does not
+ * contain it. `status` is what distinguishes the two reasons that can be true of: still APPROVED
+ * but invisible to this contractor (ticket 044 scoping — a read-only value, nothing is wrong), or
+ * genuinely not approved / no longer approved (ticket 037 — an amber "choose another one" note).
+ */
+const referencedArea: Ref<IArea | undefined> = ref(undefined)
 const areaResolveFailed: Ref<boolean> = ref(false)
 const createAreaOpen: Ref<boolean> = ref(false)
 
@@ -149,22 +188,33 @@ async function fetchApprovedAreas (): Promise<void> {
 }
 
 /**
- * The permit already references an area the APPROVED list does not contain — proposed but not
- * yet reviewed, rejected, or approval later revoked. Resolves it (any status, every role may
- * read `GET /v1/areas/:id`) purely to SHOW what it used to be, and strips it from the wizard's
- * OWN `formData.areaId` in the same beat: leaving a non-approved id sitting in `formData` would
- * resend it on every later autosave PATCH and 400 `AREA_NOT_APPROVED` forever, since the
- * server's guard fires on the key's mere presence, not on whether the value changed
- * (update.service.ts). Emitting `{ areaId: undefined }` omits the key from the outgoing payload
- * entirely, which the server treats as "leave unchanged" — the permit's own stored value is
- * untouched either way.
+ * The permit already references an area the list this contractor can see does not contain. Four
+ * causes, and this function deliberately does not care which: proposed but not yet reviewed,
+ * rejected, approval later revoked, or — since wayfinder 044 — still APPROVED but outside this
+ * contractor's granted set. Resolves it through `GET /v1/areas/:id` (any status, every role, and
+ * deliberately never scoped) purely to SHOW it, and strips it from the wizard's OWN
+ * `formData.areaId` in the same beat.
+ *
+ * The strip is the load-bearing part and it is NOT about this component's own display: leaving
+ * the id sitting in `formData` would resend it on every later autosave PATCH, and the server's
+ * `AREA_NOT_APPROVED` guard fires on the key's mere presence, not on whether the value changed
+ * (update.service.ts) — so one non-approved reference would 400 every autosave for the rest of
+ * the session. Emitting `{ areaId: undefined }` omits the key from the outgoing payload entirely
+ * (`useWizard.doPersist` deletes it), which the server treats as "leave unchanged": the permit's
+ * own stored value is untouched either way. `null` would be a real, destructive clear and must
+ * never be emitted from here — that spelling belongs to `onSelectChange`, where a human actually
+ * asked for it.
+ *
+ * Stripping is right even for the still-APPROVED 044 case, where the PATCH would in fact be
+ * accepted: re-sending a value the contractor cannot see and did not choose buys nothing, and
+ * `undefined` preserves it on the server regardless.
  */
 async function resolveStaleArea (id: number): Promise<void> {
   try {
     const { data } = await AreaService.getById(id)
-    staleArea.value = data
+    referencedArea.value = data
   } catch (error: unknown) {
-    console.error('[AreaPicker] stale area resolution failed', mapError(error).code)
+    console.error('[AreaPicker] referenced area resolution failed', mapError(error).code)
     areaResolveFailed.value = true
   } finally {
     emit('change', { areaId: undefined })
@@ -186,7 +236,7 @@ onMounted(async (): Promise<void> => {
  * is never overwritten by picking one.
  */
 function onSelectChange (value: number | undefined): void {
-  staleArea.value = undefined
+  referencedArea.value = undefined
   areaResolveFailed.value = false
   if (value === undefined) {
     // A user-driven clear (picked no option, or the clear icon) — send `null` so the server
