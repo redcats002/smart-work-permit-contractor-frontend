@@ -2748,3 +2748,120 @@ is this, not you — re-run it, and check whether an API or another agent's dev 
   active plan, would still 400 every autosave with no UI able to clear it. Scoping does not widen
   this (it changes visibility, not status), and the current production state has no active plan.
   Worth a ticket; out of scope for this one.
+
+---
+
+## 2026-09-08 (second session) — wayfinder 047, 048, 045
+
+Three field-report/follow-up tickets in this repo, one commit each, each gated on its own green
+`./init.sh` before the next was started. A parallel agent owned the safety repo throughout; nothing
+outside this repo was touched. Not pushed.
+
+| Commit | Ticket |
+|---|---|
+| `f20e69e3` | 047 — render Fire Watch only on a hot-work permit |
+| `63484612` | 048 — make the step-4 worker name readable |
+| `1ef1b6a8` | 045 — send `areaId` only when a human set it |
+| `162a8d4e` | (not a ticket) stop `useWizard.hydrate` leaking a rejected lookup past teardown |
+
+Final gate: typecheck PASS, lint PASS (the same 2 pre-existing `vue/one-component-per-file`
+warnings), vitest **64 files / 552 tests** PASS, contrast PASS (26 colour pairs, 21 status pairs),
+icons PASS (45 allow-listed), smoke SKIP (no API running).
+
+### 047 — Fire Watch is hot-work only
+
+`FIRE_MONITOR` is unreachable for `confined`/`heights`, so `PermitClosureSection` gates its Fire
+Watch block on `permit.type === EPermitType.HOT`, and `PermitDetailPage` swaps §5's heading to the
+new `closure.titleClosureOnly` (`5. Closure` / `5. การปิดงาน`) for the other two types.
+
+**Gated on the type, not on `permit.fireWatch`.** A hot-work permit before the watch starts must
+keep its "none" state — the block it will fill has to be visible from the moment the permit exists.
+Copying the safety app's `v-if="permit.fireWatch"` would have broken exactly that.
+
+**The ticket's "verified" claim about the safety app is false**, and it is the kind of claim the
+workspace AGENTS.md exists to catch. It says that app "already gets this right — its
+`ClosureFireWatchSection.vue` is `v-if="permit.fireWatch"`, so it renders nothing when there is no
+watch." The `v-if` is on the `FireWatchCountdown` **child** and carries a `v-else` reading
+"Fire Watch not started"; the parent renders `<ReviewSection :index="5">` with no type gate at all.
+So the officer's review screen has the same defect. Left untouched as instructed — it needs its own
+ticket.
+
+### 048 — it was both, with the input as root cause
+
+`Step4PpeWorkers` rendered `<AutoComplete class="h-9 w-full">` with **no `fluid`**. Volt gives the
+inner `<input>` its width through `p-fluid:w-full`, a variant that matches only once PrimeVue
+stamps `data-p="fluid"`. Verified by mounting Volt's `AutoComplete` both ways: `data-p=""` without
+the prop, `data-p="fluid"` with it. So `w-full` styled the wrapper and the input sat at the UA
+default however wide the cell was. `src/components/input/AutoCompleteInput.vue` is the in-repo
+precedent — `w-full` **and** `fluid`, together.
+
+The column also needed width worth filling. A **confined** permit adds three health columns to six
+fixed-width ones inside a `min-w-[680px]` table, so the name column loses the squeeze first — which
+is why the report came from that type, though nothing about the defect is type-specific. The
+AutoComplete now carries `min-w-[13.75rem]`; the wrapper is `overflow-x-auto`, so that column
+scrolls instead of crushing its neighbours.
+
+The suggestion list is fixed by the same change, because PrimeVue sizes the overlay's `min-width`
+from the input's rendered width. **The ticket's stated reason for suspecting the row is not the
+mechanism**: `WorkerCertificateSuggestionOption` is a `flex-col`, so the name has its own line and
+never competes with `certType` for horizontal space. The row's real defect was Volt's option class
+`whitespace-nowrap overflow-hidden` (`src/volt/AutoComplete.vue:121`) — `white-space` inherits, so
+a long name was clipped mid-word with no ellipsis. The name now wraps
+(`whitespace-normal break-words`) and the `certType · expiry` line is the half allowed to
+`truncate`. Free text with no match stays legal (ticket 003); nothing on that path was touched.
+
+### 045 — the condition was wrong, not the location
+
+**The ticket mis-located the defect.** It proposes moving the strip "where the payload is
+assembled"; it was already there, one line above the `PATCH` in `useWizard.doPersist`. What was
+wrong was the **condition**: `payload.areaId === undefined` stood in for "AreaPicker told us to
+strip this", and `AreaPicker` lives inside `Step7Position`, which `useWizard.steps` filters out
+whenever no facility plan is active (`useWizard.ts:212-214`) — production today.
+
+Replaced by an invariant that does not depend on which steps mounted: **`areaId` reaches the wire
+only when a human set it in this session.** `areaIdIsUserChoice` is owned by `useWizard` and set in
+`updateFormData` (`'areaId' in patch` and the value is not `undefined`), so it is set where patches
+arrive rather than where the picker speaks. `hydrate` assigns `formData` wholesale, so seeding
+cannot set it, and clears it explicitly so a later refactor routing `hydrate` through
+`updateFormData` cannot silently reopen the hole.
+
+The three spellings stay distinct and must not be collapsed: `12` → sent (a pick); `null` → sent (a
+deliberate, destructive clear); `undefined` → key omitted (the picker stripped something nobody
+chose); key absent after a hydrate → omitted (leave the server's stored value alone).
+
+**Considered and rejected:** loosening the server's `AREA_NOT_APPROVED` guard to tolerate an
+unchanged non-approved `areaId`. It is a cross-repo change for a hole the client closes alone, and
+presence-based checking is precisely what makes `undefined` and `null` mean different things. Also
+rejected: holding the hydrated id outside `formData` — a bigger change with the same effect, and
+two sources to keep in sync instead of one boolean.
+
+### A second, distinct pre-existing flake — diagnosed and fixed
+
+Not the `Test timed out in 5000ms` contention flake described in the previous handoff. This one is
+`EnvironmentTeardownError: Closing rpc while "onUserConsoleLog" was pending`, always naming
+`useWizard.hydrate.test.ts`. It **fails no test**: the run reports `552 passed (552)` and
+`Errors 1 error`, and `init.sh` prints `tests: FAIL` anyway. It blocked a commit today and reddened
+the gate twice.
+
+Mechanism, traced rather than guessed: `hydrate` ends with `recheckCertificates()`, so every
+fixture with a named worker fires a real `GET /certificates/by-worker`; with no server it rejects
+*after* the synchronous test body returns, and `useApiError`'s `console.error` (`useApiError.ts:78`)
+can land while vitest is already closing the worker. Measured ~1 run in 6 in isolation.
+
+Fixed at the source — `CertificateProvider.prototype.byWorker` is stubbed in that file's
+`beforeEach` and the `afterEach` awaits `flushPromises()`, so the lookup settles inside the test
+that started it. Not a timeout bump and not a skip. 8/8 clean after.
+
+### Testing notes
+
+Every new assertion was falsified before being trusted — reverted the fix, watched it fail:
+
+- 047: `PermitClosureFireWatch.test.ts` 2/6 red (`expected true to be false` on heights/confined).
+- 048: `expected [ '' ] to include 'fluid'`, and
+  `expected [ 'text-sm', 'font-medium', …(1) ] to include 'whitespace-normal'`.
+- 045: `expected [ 'type', 'title', 'location', …(10) ] to not include 'areaId'` — asserted on the
+  **key list**, because `toEqual` and `toMatchObject` both ignore undefined-valued properties and
+  would have passed against the broken code either way.
+
+One existing assertion was inverted rather than deleted: `PermitDetailSections.test.ts`'s closure
+case runs on a **confined** fixture and pinned the `No Fire Watch has been started` empty state.
