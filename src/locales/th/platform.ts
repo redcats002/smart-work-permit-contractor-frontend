@@ -29,16 +29,8 @@ const platform: typeof platformEn = {
     password: 'รหัสผ่าน',
     submit: 'เข้าสู่ระบบ',
     loginSuccess: 'ยินดีต้อนรับเข้าสู่ระบบ',
-    trial: {
-      label: 'บัญชีทดลองใช้งาน',
-      contractor: 'ผู้รับเหมา',
-      unavailable: 'ไม่สามารถใช้งานการเข้าสู่ระบบทดลองในสภาพแวดล้อมนี้ได้'
-    },
-    trialFill: {
-      label: 'UAT — กรอกฟอร์มเข้าสู่ระบบ',
-      contractor: 'กรอกข้อมูลผู้รับเหมา',
-      hint: 'กรอกฟอร์มด้วยบัญชีผู้รับเหมาสำหรับทดสอบ ตรวจสอบข้อมูลก่อนกดเข้าสู่ระบบ'
-    },
+    // wayfinder ticket 042 — the `trial` (023) and `trialFill` (032) key groups were DELETED with
+    // the buttons they labelled. No demo environment will exist; do not re-add either group.
     validation: {
       emailRequired: 'กรุณากรอกอีเมล',
       emailInvalid: 'รูปแบบอีเมลไม่ถูกต้อง',
