@@ -269,6 +269,19 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
    */
   let lastPersistedReading: string | undefined
 
+  /**
+   * wayfinder ticket 045. True only while `formData.areaId` holds a value a HUMAN chose in this
+   * session — picking an area, or clearing one. It is deliberately NOT "formData has an areaId":
+   * `hydrate` seeds the permit's stored `areaId` for display, and echoing that back on every
+   * autosave is what makes a permit referencing a non-APPROVED area unsaveable forever.
+   *
+   * Set from `updateFormData`, so it holds regardless of which wizard steps mounted — the whole
+   * point of 045, since `AreaPicker` lives on a step that production never renders. Cleared by an
+   * explicit `areaId: undefined`, which is `AreaPicker.resolveStaleArea`'s "I stripped this, do
+   * not send it" and the one spelling that is not a user choice.
+   */
+  let areaIdIsUserChoice = false
+
   async function doPersist (): Promise<void> {
     if (formData.value.type === undefined) return
 
@@ -295,16 +308,22 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
         payload.jsaSteps = toSubmittableJsaSteps(payload.jsaSteps)
       }
     }
-    // wayfinder tickets 037 + 044. `AreaPicker` strips an area this contractor cannot see by
-    // emitting `areaId: undefined`, and `updateFormData`'s spread COPIES that key rather than
-    // removing it — so `payload.areaId` exists here, holding `undefined`. It survives to the wire
-    // only by JSON.stringify's habit of dropping undefined-valued properties, which is an
-    // invisible dependency for something load-bearing: the server's `AREA_NOT_APPROVED` guard
-    // fires on the key's PRESENCE, so if that ever changed, every autosave on a permit with an
-    // out-of-list area would 400 forever. Delete it explicitly, the same way `jsaSteps` above is
-    // dropped for a different reason. `null` is untouched by this — that is a user's deliberate
-    // clear and must reach the server.
-    if ('areaId' in payload && payload.areaId === undefined) delete payload.areaId
+    // wayfinder tickets 037 + 044 + 045. The invariant: `areaId` goes on the wire ONLY when a
+    // human set it in this session. A value that merely arrived from `hydrate` is display state,
+    // never outgoing payload, so it is deleted here — the server's `AREA_NOT_APPROVED` guard
+    // fires on the key's PRESENCE, not on whether the value changed, and omitting the key is what
+    // the server reads as "leave the stored value alone".
+    //
+    // 045: this used to be `payload.areaId === undefined`, which was a proxy for "AreaPicker told
+    // us to strip it" — correct only while `AreaPicker` mounts. It lives inside `Step7Position`,
+    // which `steps` filters out entirely when no facility plan is active, and that is production
+    // today. A permit carrying a non-APPROVED `areaId` would then 400 on EVERY autosave, forever,
+    // with no UI able to clear it. The condition is now `areaIdIsUserChoice`, which no step has to
+    // mount to be right.
+    //
+    // `null` still reaches the server — that is a user's deliberate clear, and it is destructive
+    // on purpose. Do not collapse `undefined` and `null` here; they mean opposite things.
+    if (!areaIdIsUserChoice) delete payload.areaId
     const wireReading = safetyReading === undefined ? undefined : toWireReading(safetyReading)
     const serialized = wireReading === undefined ? undefined : JSON.stringify(wireReading)
     const shouldAppendReading = serialized !== undefined && serialized !== lastPersistedReading
@@ -401,15 +420,19 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
       workers: toFormWorkers(permit.workers),
       photos: permit.photos,
       position: toFormPosition(permit),
-      // wayfinder tickets 037 + 044. Seeded as-is, whatever it is — `AreaPicker` is what resolves
-      // whether the area is in the list this contractor can actually see and, if it is not,
-      // displays it and strips it back out of `formData` before the next autosave (see the doc
-      // comment on `AreaPicker.resolveStaleArea`). Since 044 that is the ordinary case, not a rare
-      // one, so nothing here may assume a seeded `areaId` is selectable.
+      // wayfinder tickets 037 + 044 + 045. Seeded as-is, whatever it is, purely so `AreaPicker`
+      // can DISPLAY it — the picker resolves whether the area is in the list this contractor can
+      // actually see, and since 044 "it is not" is the ordinary case, not a rare one. Nothing
+      // here may assume a seeded `areaId` is selectable, or even approved.
+      //
+      // 045: seeding is not choosing. `areaIdIsUserChoice` stays false below, so this value is
+      // never echoed back on an autosave no matter which steps mount — the permit stays saveable
+      // even when the picker that used to strip it is filtered out of the wizard entirely.
       areaId: permit.areaId ?? undefined
     }
 
     formData.value = hydrated
+    areaIdIsUserChoice = false
     draftId.value = permit.id
     submitError.value = undefined
     submitFailures.value = EMPTY_SUBMIT_FAILURES
@@ -429,6 +452,10 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
 
   function updateFormData (patch: Partial<IUpdatePermitDraftPayload>): void {
     formData.value = { ...formData.value, ...patch }
+    // wayfinder ticket 045 — see `areaIdIsUserChoice`. Only an explicit key counts, and an
+    // explicit `undefined` counts the other way: that is the picker stripping a reference the
+    // user never asked about, not choosing one.
+    if ('areaId' in patch) areaIdIsUserChoice = patch.areaId !== undefined
     // Any edit makes the last server verdict stale, so drop it: otherwise a reading the server
     // rejected stays red — and its banner stays up — even after the user has corrected the value,
     // until they press Submit again. Cleared on ANY field edit rather than only the rejected one:

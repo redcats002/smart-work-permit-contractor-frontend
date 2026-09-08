@@ -465,6 +465,8 @@ const permit = {
       },
       closure: {
         title: '5. Closure & Fire Watch',
+        // wayfinder ticket 047 — heading for a permit type that can never hold a Fire Watch.
+        titleClosureOnly: '5. Closure',
         empty: 'This permit has not been closed yet. The closure checklist appears here once it is closed.',
         checklistTitle: 'Closure checklist',
         closedBy: 'Closed by',

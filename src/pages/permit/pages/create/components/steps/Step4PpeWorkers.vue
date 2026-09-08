@@ -110,13 +110,35 @@
                 {{ row.index + 1 }}
               </td>
               <td class="px-3 py-3">
+                <!--
+                  wayfinder ticket 048. `fluid` is load-bearing, not decoration: Volt's PT gives
+                  the inner <input> its width through `p-fluid:w-full`, a variant that only
+                  matches once PrimeVue stamps `data-p="fluid"`. Without it the `w-full` here
+                  styles the wrapper alone and the input sits at the UA default (~20ch) however
+                  wide the cell is — the reported "too narrow to read". `min-w` then makes the
+                  cell itself wide enough to be worth filling: this table is `overflow-x-auto`,
+                  so a column claiming real width scrolls rather than squeezing its neighbours.
+
+                  13.75rem = 220px, and it is derived, not picked. At the 375px floor this app
+                  must not break at, the scroll container is ~303px wide (375 − 32 page `px-4`
+                  − 40 card `p-5`). This is the SECOND column, after `#` at `w-10`: 40 + 220 + 24
+                  (cell `px-3`) + 2 (table borders) = 286px, so the whole field is on screen at
+                  scroll 0 with room to spare, rather than needing a horizontal pan to read the
+                  name — which is what the field report was actually about. Anything much wider
+                  buys legibility at the cost of that, so raise it only against a real measurement.
+
+                  It also fixes the suggestion list, which is why there is no separate change
+                  for it — PrimeVue sizes the overlay's `min-width` from the input's rendered
+                  width, so a narrow input produced a narrow list.
+                -->
                 <AutoComplete
                   :force-selection="false"
                   :model-value="row.worker.workerName"
                   :placeholder="t('permit.create.steps.ppeWorkers.placeholder.worker')"
                   :suggestions="workerSuggestions"
-                  class="h-9 w-full"
+                  class="h-9 w-full min-w-[13.75rem]"
                   option-label="workerName"
+                  fluid
                   @blur="scheduleWorkerNameCommit()"
                   @complete="onWorkerNameComplete($event.query)"
                   @option-select="scheduleWorkerNameCommit()"

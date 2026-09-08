@@ -195,15 +195,17 @@ async function fetchApprovedAreas (): Promise<void> {
  * deliberately never scoped) purely to SHOW it, and strips it from the wizard's OWN
  * `formData.areaId` in the same beat.
  *
- * The strip is the load-bearing part and it is NOT about this component's own display: leaving
- * the id sitting in `formData` would resend it on every later autosave PATCH, and the server's
- * `AREA_NOT_APPROVED` guard fires on the key's mere presence, not on whether the value changed
- * (update.service.ts) — so one non-approved reference would 400 every autosave for the rest of
- * the session. Emitting `{ areaId: undefined }` omits the key from the outgoing payload entirely
- * (`useWizard.doPersist` deletes it), which the server treats as "leave unchanged": the permit's
- * own stored value is untouched either way. `null` would be a real, destructive clear and must
- * never be emitted from here — that spelling belongs to `onSelectChange`, where a human actually
- * asked for it.
+ * Emitting `{ areaId: undefined }` tells `useWizard` this reference is not a user's choice, so it
+ * is omitted from the outgoing PATCH entirely — which the server reads as "leave unchanged", not
+ * as a clear. `null` would be a real, destructive clear and must never be emitted from here; that
+ * spelling belongs to `onSelectChange`, where a human actually asked for it.
+ *
+ * wayfinder ticket 045 — this strip is no longer what KEEPS such a permit saveable, and must not
+ * be described as if it were. `useWizard.doPersist` omits any `areaId` that a human did not set
+ * this session (`areaIdIsUserChoice`), because this component sits inside `Step7Position`, which
+ * the wizard filters out whenever no facility plan is active — so on the deployment where it
+ * matters most, nothing here runs at all. The emit stays because it keeps `formData` honest about
+ * what the picker is actually showing.
  *
  * Stripping is right even for the still-APPROVED 044 case, where the PATCH would in fact be
  * accepted: re-sending a value the contractor cannot see and did not choose buys nothing, and

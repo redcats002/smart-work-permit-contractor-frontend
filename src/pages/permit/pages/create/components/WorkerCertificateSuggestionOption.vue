@@ -1,9 +1,17 @@
 <template>
-  <div class="flex flex-col gap-0.5 py-0.5">
-    <span class="text-sm font-medium text-text-primary">{{ certificate.workerName }}</span>
+  <!--
+    wayfinder ticket 048. Volt's AutoComplete option is `whitespace-nowrap overflow-hidden`, and
+    that inherits: an over-long name was CLIPPED mid-word with no ellipsis and no other signal it
+    had been cut. The name is the field being searched, so it is the half that must never be cut —
+    it wraps instead (`whitespace-normal break-words`), and the row grows a line. The metadata
+    line is the stated degradation: `certType · expiry` ellipsizes if it has to, and its expired
+    marker keeps ticket 004's `text-status-rejected-fg` weight either way.
+  -->
+  <div class="flex w-full min-w-0 flex-col gap-0.5 py-0.5">
+    <span class="text-sm font-medium break-words whitespace-normal text-text-primary">{{ certificate.workerName }}</span>
     <span
       :class="certificate.expired ? 'font-semibold text-status-rejected-fg' : 'text-text-secondary'"
-      class="text-xs">
+      class="truncate text-xs">
       {{ certificate.certType }} · {{ expiryLabel }}
       <template v-if="certificate.expired">
         · {{ t('permit.create.steps.ppeWorkers.suggestion.expired') }}

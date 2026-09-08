@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { toast } from '@/plugins/toast'
 import PermitProvider from '@/resources/provider/permit/Permit.provider'
 import { useWizard } from '@/pages/permit/pages/create/composables/useWizard'
+import type { IPermitDetail } from '@/models/response/permit/PermitRes.model'
 import type { IWizardStepDef } from '@/pages/permit/pages/create/wizard/WizardSteps'
 
 // `toast` wraps PrimeVue's ToastService, unavailable to a bare `useWizard()` call — mocking it
@@ -39,6 +40,52 @@ function creatableDraft (): Record<string, unknown> {
     workDate: '2026-08-20',
     workTimeStart: '2026-08-20T01:00:00.000Z',
     workTimeEnd: '2026-08-20T09:00:00.000Z'
+  }
+}
+
+/**
+ * wayfinder ticket 045 — a permit as `GET /permits/:id` returns it, for the hydrate path. Only
+ * `areaId` varies across the cases below; everything else is a valid, complete draft so
+ * `hydrate`'s own conversions (workDate, workers, position) have real input to work on.
+ */
+function hydratedPermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail {
+  return {
+    id: 'WP-TEST-1',
+    type: 'heights',
+    status: 'DRAFT',
+    title: 'Roof repair',
+    foreman: 'Somchai',
+    location: 'Zone 3',
+    workDate: '2026-08-20T00:00:00.000Z',
+    workTimeStart: '2026-08-20T01:00:00.000Z',
+    workTimeEnd: '2026-08-20T09:00:00.000Z',
+    outdoorWork: false,
+    createdById: 'u1',
+    createdBy: null,
+    createdAt: '2026-08-19T00:00:00.000Z',
+    updatedAt: '2026-08-19T00:00:00.000Z',
+    submittedAt: null,
+    approvedById: null,
+    approvedBy: null,
+    approvedAt: null,
+    rejectedReason: null,
+    rejectedAt: null,
+    closedById: null,
+    closedBy: null,
+    closedAt: null,
+    fireMonitorStartedAt: null,
+    qrIssuedAt: null,
+    entrantCount: 0,
+    fireWatch: null,
+    planId: null,
+    planX: null,
+    planY: null,
+    areaId: null,
+    jsaSteps: [],
+    workers: [],
+    photos: [],
+    latestSafetyReading: null,
+    ...overrides
   }
 }
 
@@ -162,7 +209,7 @@ describe('useWizard — safetyReading append guard', () => {
  * autosave for the rest of the session; `null`, meanwhile, is a real destructive clear and must
  * still get through when a human actually asked for it. Both spellings are pinned here.
  */
-describe('useWizard — areaId omission on autosave (wayfinder tickets 037 + 044)', () => {
+describe('useWizard — areaId omission on autosave (wayfinder tickets 037 + 044 + 045)', () => {
   beforeEach((): void => {
     vi.useFakeTimers()
   })
@@ -232,6 +279,68 @@ describe('useWizard — areaId omission on autosave (wayfinder tickets 037 + 044
     await vi.advanceTimersByTimeAsync(1600)
 
     expect(lastPatchBody(updateSpy)).toHaveProperty('areaId', 12)
+  })
+
+  /**
+   * wayfinder ticket 045 — the hole 044's fix left. Its strip only ran when `AreaPicker` emitted
+   * `areaId: undefined`, which needs `AreaPicker` to MOUNT. It lives inside `Step7Position`, and
+   * `steps` filters that step out entirely when no facility plan is active — which is production
+   * today (ticket 014: no plan version was ever activated).
+   *
+   * So a hydrated permit whose `areaId` names a genuinely non-APPROVED area re-sent that id on
+   * every autosave, the server's presence-based `AREA_NOT_APPROVED` guard 400'd every one, and no
+   * UI existed that could clear it. This is that permit, saving with no picker anywhere: the
+   * wizard is built on a single-step registry, so `Step7Position` provably never mounts.
+   */
+  it('HEADLINE 045 — a hydrated areaId is never echoed back, even with no AreaPicker in the wizard', async () => {
+    vi.mocked(toast.error).mockClear()
+    const updateSpy = vi.spyOn(PermitProvider.prototype, 'update')
+      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
+    const createSpy = vi.spyOn(PermitProvider.prototype, 'create')
+      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
+
+    const wizard = useWizard(makeSteps())
+    wizard.hydrate(hydratedPermit({ areaId: 77 }))
+
+    // Seeded for display — the picker, when it exists, needs it to resolve and show the area.
+    expect(wizard.formData.value.areaId).toBe(77)
+
+    // An ordinary edit somewhere else in the wizard triggers the autosave.
+    wizard.updateFormData({ title: 'Roof repair — revised' })
+    await vi.advanceTimersByTimeAsync(1600)
+
+    expect(createSpy).not.toHaveBeenCalled()
+    expect(updateSpy).toHaveBeenCalled()
+    // Assert on the KEY LIST. `toEqual` and `toMatchObject` both ignore undefined-valued
+    // properties, so either would pass whether or not the key was stripped — 044 hit exactly
+    // that trap, and the server's guard tests presence, not value.
+    expect(Object.keys(lastPatchBody(updateSpy))).not.toContain('areaId')
+    expect(toast.error).not.toHaveBeenCalled()
+
+    // Still clean on every later autosave, not just the first.
+    wizard.updateFormData({ foreman: 'Wichai' })
+    await vi.advanceTimersByTimeAsync(1600)
+    expect(Object.keys(lastPatchBody(updateSpy))).not.toContain('areaId')
+  })
+
+  it('sends a user’s pick made AFTER a hydrate — seeding is not choosing, but choosing is', async () => {
+    vi.spyOn(PermitProvider.prototype, 'create')
+      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
+    const updateSpy = vi.spyOn(PermitProvider.prototype, 'update')
+      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
+
+    const wizard = useWizard(makeSteps())
+    wizard.hydrate(hydratedPermit({ areaId: 77 }))
+
+    wizard.updateFormData({ areaId: 91 })
+    await vi.advanceTimersByTimeAsync(1600)
+    expect(lastPatchBody(updateSpy)).toHaveProperty('areaId', 91)
+
+    // …and a deliberate clear after a hydrate still reaches the server as a real `null`, which is
+    // the case a blanket "always delete areaId" fix would silently destroy.
+    wizard.updateFormData({ areaId: null })
+    await vi.advanceTimersByTimeAsync(1600)
+    expect(lastPatchBody(updateSpy)).toHaveProperty('areaId', null)
   })
 })
 

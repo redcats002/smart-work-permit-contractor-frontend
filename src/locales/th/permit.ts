@@ -463,6 +463,8 @@ const permit: typeof permitEn = {
       },
       closure: {
         title: '5. การปิดงานและ Fire Watch',
+        // wayfinder ticket 047 — หัวข้อสำหรับประเภทงานที่ไม่มี Fire Watch ได้เลย
+        titleClosureOnly: '5. การปิดงาน',
         empty: 'ใบอนุญาตนี้ยังไม่ถูกปิดงาน รายการตรวจสอบก่อนปิดงานจะแสดงที่นี่เมื่อปิดงานแล้ว',
         checklistTitle: 'รายการตรวจสอบก่อนปิดงาน',
         closedBy: 'ปิดงานโดย',

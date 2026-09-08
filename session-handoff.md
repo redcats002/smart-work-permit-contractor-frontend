@@ -3,6 +3,99 @@
 > Fill this in before ending every session. The next agent reads this file, `progress.md`,
 > and the active module's `feature_list.json` — nothing else is guaranteed to be in context.
 
+**Date:** 2026-09-08 (second session)
+**Session did:** wayfinder **047**, **048** and **045**, in that order, one commit each, each gated
+on its own green `./init.sh` before the next started. A parallel agent owned the safety repo the
+whole time — nothing outside this repo was touched. **Not pushed.** Working tree is clean.
+
+| Commit | Ticket |
+|---|---|
+| `f20e69e3` | 047 — Fire Watch renders only on a hot-work permit |
+| `63484612` | 048 — the step-4 worker name is readable |
+| `1ef1b6a8` | 045 — `areaId` goes on the wire only when a human set it |
+| `162a8d4e` | (not a ticket) `useWizard.hydrate.test.ts` no longer leaks a rejected lookup past teardown |
+
+**Status:** `./init.sh` green — typecheck PASS, lint PASS (the same 2 pre-existing
+`vue/one-component-per-file` warnings), vitest **64 files / 552 tests** PASS, contrast PASS, icons
+PASS, smoke SKIP (no API running). **Nothing was verified against a live backend this session** —
+045 changes what a `PATCH /permits/:id` body contains, so per this repo's Definition of Done that
+change is *not* fully verified until it has run against `../smart-work-permit-api`. Do that before
+pushing.
+
+## Five things to read before touching this area
+
+1. **`useWizard` sends `areaId` only when a human set it this session — `areaIdIsUserChoice`.**
+   This replaces 044's `delete` on an `undefined` value, which the previous handoff (below) told
+   you was load-bearing. It was, and it was also insufficient: it only fired when `AreaPicker`
+   emitted, and `AreaPicker` lives in `Step7Position`, which the wizard filters out whenever no
+   facility plan is active — production today. The flag is set in `updateFormData`, where patches
+   arrive, precisely so no step has to mount for it to hold. `hydrate` clears it: seeding is not
+   choosing. **Four spellings, none interchangeable** — a number and `null` are sent (`null` is a
+   real destructive clear), `undefined` and "key absent after a hydrate" are omitted.
+
+2. **§5 of the permit detail page is gated on `permit.type`, not on `permit.fireWatch`.** A
+   hot-work permit before its watch starts must keep the "none" state. The safety app's
+   `v-if="permit.fireWatch"` is *not* the pattern to copy here — see point 5.
+
+3. **The step-4 worker AutoComplete needs `fluid`, not just `w-full`.** Volt sizes the inner
+   `<input>` through `p-fluid:w-full`, which matches only once PrimeVue stamps `data-p="fluid"`.
+   Dropping the prop puts the input back at the UA default however wide the cell is, and narrows
+   the suggestion overlay with it (PrimeVue derives the overlay's `min-width` from the input). A
+   test asserts the stamped attribute on the rendered `<input>`.
+
+4. **There are TWO distinct pre-existing test flakes in this repo — do not conflate them.**
+   - `Error: Test timed out in 5000ms` on heavy whole-page mounts, a different set of files each
+     run: CPU contention against vitest's default `testTimeout`. Still open, still not yours,
+     still deserves its own ticket. Described at length in the previous handoff below.
+   - `EnvironmentTeardownError: Closing rpc while "onUserConsoleLog" was pending`, always naming
+     `useWizard.hydrate.test.ts`: **fixed this session** (`162a8d4e`). It failed no test — the run
+     read `552 passed (552)` with `Errors 1 error` and `init.sh` printed `tests: FAIL` anyway,
+     which is why it read as noise for a while. `hydrate` ends with `recheckCertificates()`, so a
+     fixture with a named worker fired a real `byWorker` lookup that rejected after the test body
+     returned; `useApiError`'s `console.error` then raced the worker shutdown. The provider is now
+     stubbed in that file and the `afterEach` awaits `flushPromises()`.
+
+     **The rest of the composable tests were surveyed, not assumed.** Every file calling
+     `useWizard()` was checked for the same shape — a named worker reaching `recheckCertificates`
+     with no `byWorker` stub. `useWizard.certificatePreflight.test.ts` already stubs it at all 8
+     sites; `useWizard.test.ts` never hydrates and names no worker; `useWizard.persistence.test.ts`
+     hydrates twice but its fixture is `workers: []`, and the pre-flight early-returns with no call
+     when nothing is named. So `hydrate.test.ts` was the only one — but the persistence fixture is
+     one added worker away from reopening it. If you put a named worker in a composable-level
+     fixture, stub `CertificateProvider.prototype.byWorker` in that file.
+
+5. **FR-3 is still live in the safety app, and ticket 047 says the opposite.** 047 states as a
+   *verified* finding that the safety app "already gets this right". It does not: its
+   `v-if="permit.fireWatch"` is on the `FireWatchCountdown` child and has a `v-else` reading
+   "Fire Watch not started", and `SafetyReviewDetailPage.vue:87-92` renders §5 with no permit-type
+   gate at all. That app was left untouched as 047 instructed. **It needs its own ticket** — the
+   fix is the same one-line `permit.type` gate plus a heading variant.
+
+## Open items owed to someone else
+
+- **A safety-app ticket for FR-3** (point 5 above). Not written here to avoid colliding with the
+  parallel agent's ticket numbering in the workspace repo.
+- **The `Test timed out in 5000ms` contention flake** still has no ticket.
+- **`permit.create.steps.position.area.empty`** ("No approved areas yet — propose one below.")
+  stays mildly untrue under `AREA_VISIBILITY_SCOPED` — carried over from the previous session,
+  still needs owner-approved copy, still not fixed.
+- **`docs/main/PROMPT-LOG.md`'s three demo-login bullets** — retired by the parallel agent's
+  `1361efcc` sync; nothing owed here any more.
+
+## Next work
+
+The remaining open field-report tickets for this repo are **049/050** (`certType` vocabulary —
+049 is a `grilling` ticket and blocks 050) and **051/052/053** (the tabbed detail-page convention,
+which also introduces a Volt tabs wrapper). 046 (nothing has deployed in twenty days) outranks all
+of them and is not a code change in this repo.
+
+Full decision log for all three tickets is in `progress.md` under
+**2026-09-08 (second session)**.
+
+---
+
+# Addendum — 2026-09-08 (first session), wayfinder 042 + 044
+
 **Date:** 2026-09-08
 **Session did:** wayfinder **042** (remove the trial/demo logins) and **044** (per-contractor area
 visibility, contractor half). Both API halves were already committed; this is the contractor-app

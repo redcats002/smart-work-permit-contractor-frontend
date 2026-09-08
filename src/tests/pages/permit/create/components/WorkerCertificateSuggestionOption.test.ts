@@ -49,4 +49,27 @@ describe('WorkerCertificateSuggestionOption', () => {
     expect(wrapper.text()).toContain('Expired')
     expect(wrapper.find('.text-status-rejected-fg').exists()).toBe(true)
   })
+
+  /**
+   * wayfinder ticket 048. Volt's AutoComplete option carries `whitespace-nowrap overflow-hidden`
+   * and that inherits, so a long name used to be clipped mid-word with no ellipsis. The name is
+   * the field being searched and must never be the half that is cut: it opts back out of nowrap
+   * and wraps, and the `certType · expiry` line is the one allowed to ellipsize.
+   */
+  it('lets a long worker name wrap instead of inheriting the overlay row\'s hard clip', () => {
+    const wrapper = mount(WorkerCertificateSuggestionOption, {
+      global: { plugins: [i18n] },
+      props: { certificate: certificate({ workerName: 'Kittipong Rattanaporn-Suwannachai' }) }
+    })
+
+    const name = wrapper.findAll('span')[0]
+    expect(name.text()).toBe('Kittipong Rattanaporn-Suwannachai')
+    expect(name.classes()).toContain('whitespace-normal')
+    expect(name.classes()).toContain('break-words')
+    // The name must not be the element that truncates — that is the metadata line's job.
+    expect(name.classes()).not.toContain('truncate')
+    expect(wrapper.findAll('span')[1].classes()).toContain('truncate')
+    // The row itself may shrink below its content so `truncate` has something to act on.
+    expect(wrapper.find('div').classes()).toContain('min-w-0')
+  })
 })

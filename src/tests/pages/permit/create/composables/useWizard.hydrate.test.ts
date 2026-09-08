@@ -1,6 +1,8 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { flushPromises } from '@vue/test-utils'
 import { setLocale } from '@/plugins/I18n.plugin'
 import type { IPermitDetail } from '@/models/response/permit/PermitRes.model'
+import CertificateProvider from '@/resources/provider/certificate/Certificate.provider'
 import { useWizard } from '@/pages/permit/pages/create/composables/useWizard'
 
 /**
@@ -55,6 +57,29 @@ function basePermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail {
 }
 
 describe('useWizard.hydrate', () => {
+  /**
+   * `hydrate` ends with `recheckCertificates()`, so every fixture below carrying a NAMED worker
+   * fires a real `GET /certificates/by-worker` — which, with no server, rejects and reaches
+   * `useApiError`'s `console.error`. That rejection settles after the synchronous test body has
+   * returned, so the log could land while vitest was already closing the worker:
+   * `EnvironmentTeardownError: Closing rpc while "onUserConsoleLog" was pending`. It failed no
+   * test and passed no assertion — it flipped the FILE's result and turned `./init.sh` red at
+   * roughly 1 run in 6, which is exactly the shape of thing that gets dismissed as flaky.
+   *
+   * Stubbing it is the fix rather than the workaround: this file is about what `hydrate` seeds,
+   * the pre-flight is covered in `useWizard.certificatePreflight.test.ts`, and a floating promise
+   * that outlives the test it belongs to has no business crossing that boundary.
+   */
+  beforeEach((): void => {
+    vi.spyOn(CertificateProvider.prototype, 'byWorker')
+      .mockResolvedValue({ message: 'success', data: null } as never)
+  })
+
+  afterEach(async (): Promise<void> => {
+    await flushPromises()
+    vi.restoreAllMocks()
+  })
+
   it('seeds formData/draftId and lands on the first step that does not validate', () => {
     setLocale('en')
     const wizard = useWizard()
