@@ -1,18 +1,23 @@
 <template>
   <section
     id="login-page"
-    class="grid h-screen w-screen place-content-center bg-(--color-surface-app) px-4 sm:px-0">
-    <div class="w-full max-w-136">
-      <BaseContainer class="rounded-3xl!">
+    class="grid h-screen w-screen bg-(--color-surface-card) lg:grid-cols-2">
+    <!-- Form left, decoration right. Below `lg` the panel is dropped entirely and the form gets
+         the whole viewport: this app must not break at 375px, and a squeezed two-column layout
+         is worse than one column on a phone the contractor is holding at a site gate. -->
+    <div class="flex items-center justify-center overflow-y-auto px-4 py-10 sm:px-8">
+      <div class="w-full max-w-96">
         <AuthHeader
           :description="t('platform.auth.subtitle')"
           :title="t('platform.auth.title')" />
         <LoginForm
           v-model="form"
-          class="mt-6"
+          class="mt-8"
           @submit="onLogin()" />
-      </BaseContainer>
+      </div>
     </div>
+
+    <AuthSplitPanel />
   </section>
 </template>
 
@@ -28,8 +33,8 @@ import type { ILoginPayload } from '@/models/request/auth/public/AuthReq.public.
 import type { TActionLoginResponse } from '@/models/response/auth/public/AuthRes.public.model'
 import type { IAuthPublicProvider } from '@/resources/provider/auth/public/Auth.public.provider'
 import AuthPublicProvider from '@/resources/provider/auth/public/Auth.public.provider'
-import BaseContainer from '@/components/base/BaseContainer.vue'
 import AuthHeader from '../components/auth/AuthHeader.vue'
+import AuthSplitPanel from '../components/auth/AuthSplitPanel.vue'
 import LoginForm from '../components/auth/form/LoginForm.vue'
 import { useInitForm } from '../composables/useInit'
 

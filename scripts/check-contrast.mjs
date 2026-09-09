@@ -90,6 +90,13 @@ const PAIRS = [
   // decorative/fill brand orange and is not held to 4.5 on its own; the 700 is what white sits on.
   ['white text on accent (Fire Monitor panel, chips)', WHITE, 'color-accent-700', 4.5],
 
+  // Sign-in split panel. The copy sits on a mesh gradient, which has no single background for
+  // this gate to check — white clears AA against the panel base but is 3.44:1 over the lightest
+  // mesh stop. A scrim gives it a known floor, and THAT is what is asserted here. If the scrim
+  // is ever removed, this row stops describing what renders: delete the row too, or the gate
+  // becomes another one that measures something narrower than it appears to.
+  ['sign-in panel copy on its scrim', WHITE, 'color-primary-950', 4.5],
+
   // ── Permit-type chips ──
   ['Hot Work type text on its surface', 'color-permit-type-hot-fg', 'color-permit-type-hot-bg', 4.5],
   ['Confined Space type text on its surface', 'color-permit-type-confined-fg', 'color-permit-type-confined-bg', 4.5],

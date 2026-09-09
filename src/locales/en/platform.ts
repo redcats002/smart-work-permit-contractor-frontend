@@ -23,6 +23,8 @@ const platform = {
   auth: {
     title: 'Log in',
     subtitle: 'Enter your email and password to log in.',
+    welcome: 'Welcome.',
+    welcomeBody: 'Request, track and close your work permits. Every safety check is verified by the server before a permit goes live.',
     email: 'Email',
     password: 'Password',
     submit: 'Log in',
