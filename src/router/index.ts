@@ -61,7 +61,9 @@ const router: Router = createRouter({
   routes
 })
 
-const DEFAULT_TITLE: string = 'e-safework'
+// Suffixed so the two apps are tellable apart in the tab strip. Wayfinder 055 gives them
+// independent sessions, so both being open at once is now the expected case, not an edge one.
+const DEFAULT_TITLE: string = 'e-safework Contractor'
 
 export let previousRoutePath: string | null = null
 

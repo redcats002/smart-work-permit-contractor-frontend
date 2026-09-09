@@ -1,7 +1,7 @@
 import type platformEn from '@/locales/en/platform'
 
 const platform: typeof platformEn = {
-  appName: 'e-safework',
+  appName: 'e-safework ผู้รับเหมา',
   appTagline: 'ELECTRONIC SAFE WORK PERMIT · v3.0',
   accountType: 'บัญชีผู้รับเหมา',
   sidebarSection: 'ผู้รับเหมา',

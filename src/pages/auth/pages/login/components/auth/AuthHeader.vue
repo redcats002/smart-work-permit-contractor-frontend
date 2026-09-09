@@ -2,7 +2,7 @@
   <div class="flex flex-col items-center gap-3">
     <div
       aria-hidden="true"
-      class="flex size-11 items-center justify-center rounded-[10px] bg-(--color-accent-500) text-lg font-bold text-white">
+      class="flex size-11 items-center justify-center rounded-[10px] bg-(--color-primary-500) text-lg font-bold text-white">
       {{ t('platform.appName').slice(0, 1) }}
     </div>
     <div class="flex flex-col items-center gap-0.5">

@@ -43,7 +43,7 @@
         <RouterLink
           v-if="isRegistered(item.name)"
           :class="isActive(item)
-            ? 'border-(--color-accent-500) bg-(--color-shell-sidebar-active) pl-[15px] text-white'
+            ? 'border-(--color-primary-500) bg-(--color-shell-sidebar-active) pl-[15px] text-white'
             : 'border-transparent pl-[18px] text-(--color-shell-sidebar-fg) hover:bg-(--color-shell-sidebar-hover)'"
           :to="{ name: item.name }"
           class="flex items-center gap-[11px] border-l-[3px] py-[11px] pr-[18px] text-[13.5px] font-medium

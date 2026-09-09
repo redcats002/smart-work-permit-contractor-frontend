@@ -1,6 +1,6 @@
 <template>
   <header
-    class="sticky top-0 z-50 flex h-[54px] shrink-0 items-center gap-[18px] border-b-2 border-(--color-accent-500)
+    class="sticky top-0 z-50 flex h-[54px] shrink-0 items-center gap-[18px] border-b-2 border-(--color-primary-500)
       bg-(--color-shell-topbar) px-[18px]">
     <button
       :aria-label="t('platform.menu')"
@@ -14,9 +14,13 @@
     </button>
 
     <div class="flex min-w-0 items-center gap-[10px]">
+      <!-- Primary red, not accent orange: the accent ramp is the SAFETY app's brand primary, so
+           painting this app's chrome with it made the two indistinguishable (wayfinder 058). White
+           on #c81e2c is 5.71:1; the old dark-on-orange was 6.06:1 and dark-on-red would be 3.23:1,
+           so the text colour flips with the background rather than staying put. -->
       <div
-        class="flex size-[30px] shrink-0 items-center justify-center rounded-[6px] bg-(--color-accent-500)
-          text-base font-bold text-(--color-shell-topbar)">
+        class="flex size-[30px] shrink-0 items-center justify-center rounded-[6px] bg-(--color-primary-500)
+          text-base font-bold text-white">
         e
       </div>
       <div class="min-w-0 leading-[1.05]">

@@ -130,10 +130,16 @@
 	--color-accent-950: #3a1a08;
 
 	/* Semantic aliases – Accent */
-	--color-accent: var(--color-accent-500);
+	/* The white-text aliases point at 700/800, NOT 500/600 (wayfinder 058). Every `bg-accent`
+	   call site in this app pairs with `text-white` — FireMonitorPanel, the two permit-detail
+	   modals, the detail page's CTA — and white on accent-500 (#f26b1d) is 3.05:1, well under
+	   WCAG AA. The 500 stays the decorative fill (it carries DARK text on the topbar square at
+	   6.06:1, which is fine); these aliases are the ones text sits on. scripts/check-contrast.mjs
+	   now asserts it. */
+	--color-accent: var(--color-accent-700);
 	--color-accent-contrast: var(--p-surface-0);
-	--color-accent-emphasis: var(--color-accent-600);
-	--color-accent-emphasis-alt: var(--color-accent-700);
+	--color-accent-emphasis: var(--color-accent-800);
+	--color-accent-emphasis-alt: var(--color-accent-900);
 
 	/* ── Info / blue ── PLT-011 ──────────────────
 	   The palette had primary (red), accent (orange), status and neutrals, but no blue — flagged

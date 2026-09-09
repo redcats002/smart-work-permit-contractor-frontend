@@ -2910,3 +2910,33 @@ been registered for a long time, and both mislead anyone reading the module cold
 
 Verified: `./init.sh` All checks passed — typecheck, lint (0 errors), vitest 66 files / 563 tests,
 contrast, icons, and the live API smoke against a running backend.
+
+## 2026-09-09 — wayfinder 058: app identity, and a WCAG failure the gate was blind to
+
+This app now says `e-safework Contractor` in the tab and ships a red favicon; the safety app says
+`e-safework Safety` and ships an orange one. They were byte-identical before, which starts to
+matter now that wayfinder 055 makes both being signed in at once the expected case.
+
+**The chrome was painted in the other app's brand colour.** `--color-accent-500` is `#F26B1D` —
+exactly the safety app's `--color-primary-500`. The topbar border, the topbar logo square, the
+sidebar active marker and the login header all used it. They use `--color-primary-500` (red) now.
+The logo square's text flipped with the background: dark-on-orange was 6.06:1, dark-on-red is
+3.23:1, so it is white-on-red at 5.71:1.
+
+**A real AA failure, found while doing something else — the third time in this repo.** White on
+`--color-accent-500` is **3.05:1**. It renders on `FireMonitorPanel`, `AuthHeader`, both
+permit-detail modals and the detail page CTA. `scripts/check-contrast.mjs` never caught it because
+every pair in its list is a status, permit-type or body-text pair — white-on-brand was a blind
+spot, exactly as 026 and 027 were.
+
+Fixed with two token edits rather than component churn: `--color-accent` → `accent-700`
+(#ae4609, 5.71:1) and `--color-accent-emphasis` → `accent-800` (8.29:1). The 500 stays the
+decorative fill, where it carries dark text at 6.06:1. Fire Monitor stays orange — it is orange
+because fire is, and that should not have become red.
+
+The gate gained three white-on-brand rows, and **was proven to fail first**: pointing the new row
+at `accent-500` (what the code actually rendered) turned it red at 3.05:1, then the fix turned it
+green. A gate never seen failing is not known to work.
+
+Verified: `./init.sh` All checks passed — typecheck, lint, 563 tests, contrast (29 pairs, 21 ΔE),
+icons, live API smoke.

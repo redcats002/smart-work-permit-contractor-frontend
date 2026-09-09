@@ -78,6 +78,18 @@ const PAIRS = [
   // ── Status colours used as a button/badge background with white text ──
   ['white text on ACTIVE fg background', WHITE, 'color-status-active-fg', 4.5],
 
+  // ── Brand colours carrying white text (wayfinder 058) ──
+  // This family was the gate's blind spot: every pair above is a status, permit-type or body-text
+  // colour, so white-on-brand was never checked — and white on --color-accent-500 (#f26b1d) was
+  // sitting at 3.05:1 in FireMonitorPanel, AppTopbar's logo square and AuthHeader. Same shape as
+  // the failures 026 and 027 were opened for, found the same way: by accident, while doing
+  // something else. These rows exist so the next one fails the build instead.
+  ['white text on brand primary', WHITE, 'color-primary-500', 4.5],
+  ['white text on brand primary emphasis', WHITE, 'color-primary-600', 4.5],
+  // Only the shade that ACTUALLY carries white text is listed. --color-accent-500 remains the
+  // decorative/fill brand orange and is not held to 4.5 on its own; the 700 is what white sits on.
+  ['white text on accent (Fire Monitor panel, chips)', WHITE, 'color-accent-700', 4.5],
+
   // ── Permit-type chips ──
   ['Hot Work type text on its surface', 'color-permit-type-hot-fg', 'color-permit-type-hot-bg', 4.5],
   ['Confined Space type text on its surface', 'color-permit-type-confined-fg', 'color-permit-type-confined-bg', 4.5],
