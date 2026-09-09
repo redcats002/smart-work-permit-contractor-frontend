@@ -28,7 +28,35 @@ const certificate: typeof certificateEn = {
     certType: 'ชนิดบัตร',
     issued: 'ออกเมื่อ',
     expiry: 'หมดอายุ',
-    noFile: 'ไม่มีไฟล์แนบ'
+    noFile: 'ไม่มีไฟล์แนบ',
+    hasFile: 'มีไฟล์แนบ',
+    viewHint: 'ดูรายละเอียด'
+  },
+  detail: {
+    title: 'รายละเอียดใบรับรอง',
+    editButton: 'แก้ไขใบรับรอง',
+    backToList: 'กลับไปหน้ารายการ',
+    attachment: 'ไฟล์แนบ',
+    openFile: 'เปิดไฟล์แนบ',
+    openingFile: 'กำลังเปิด…',
+    registered: 'บันทึกเมื่อ',
+    lastUpdated: 'แก้ไขล่าสุด',
+    error: {
+      loadFailed: 'ไม่สามารถโหลดใบรับรองนี้ได้ กรุณาลองใหม่อีกครั้ง',
+      fileFailed: 'ไม่สามารถเปิดไฟล์แนบได้ กรุณาลองใหม่อีกครั้ง'
+    }
+  },
+  edit: {
+    title: 'แก้ไขใบรับรอง',
+    submit: 'บันทึกการแก้ไข',
+    cancel: 'ยกเลิก',
+    saved: 'แก้ไขใบรับรองแล้ว',
+    currentFile: 'ไฟล์แนบปัจจุบัน',
+    replaceFile: 'เปลี่ยนไฟล์แนบ',
+    keepFileHint: 'เว้นว่างไว้เพื่อใช้ไฟล์เดิม',
+    removeFile: 'นำไฟล์แนบออก',
+    removeFileHint: 'ใบรับรองจะถูกบันทึกโดยไม่มีไฟล์แนบ',
+    undoRemoveFile: 'ใช้ไฟล์เดิมต่อ'
   },
   form: {
     title: 'เพิ่มใบรับรอง',
@@ -39,11 +67,9 @@ const certificate: typeof certificateEn = {
       issuedDate: 'วันที่ออก',
       expiryDate: 'วันหมดอายุ',
       file: 'ไฟล์แนบ',
-      filePlaceholder: 'แนบไฟล์ (ไม่บังคับ)',
-      fileNotStoredHint: 'ระบบยังไม่จัดเก็บไฟล์แนบ ข้อมูลใบรับรองจะถูกบันทึกโดยไม่มีไฟล์'
+      filePlaceholder: 'แนบไฟล์ (ไม่บังคับ)'
     },
     submit: 'บันทึกใบรับรอง',
-    attachmentNotStored: 'บันทึกใบรับรองแล้ว แต่ไฟล์แนบยังไม่ถูกจัดเก็บ เนื่องจากระบบยังไม่รองรับไฟล์แนบ',
     validation: {
       workerNameRequired: 'กรุณากรอกชื่อพนักงาน',
       roleRequired: 'กรุณากรอกตำแหน่ง',

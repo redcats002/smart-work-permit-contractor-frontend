@@ -2865,3 +2865,48 @@ Every new assertion was falsified before being trusted — reverted the fix, wat
 
 One existing assertion was inverted rather than deleted: `PermitDetailSections.test.ts`'s closure
 case runs on a **confined** fixture and pinned the `No Fire Watch has been started` empty state.
+
+## 2026-09-09 — CRT-005 / CRT-006: certificate detail and edit pages
+
+The contractor half of wayfinder 056/057. `GAPS.md` row G is now closed on both sides.
+
+**The reported bug was a missing feature.** The report was that the list page drops files out of
+its pagination. It never did — `CertificateCard.vue:44` rendered `t('certificate.card.noFile')`
+**unconditionally**. It was a hardcoded string, not a field read coming back empty, because until
+the backend's `feat-024` there was no `filePath` on the wire at all.
+
+Added:
+
+- `/certificates/:id` and `/certificates/:id/edit`, following `Permit.router.ts`'s `:id` /
+  `:id/edit` convention.
+- `CertificateCard` is now a `RouterLink`. It had **no click handler and no link** before this —
+  there was no existing navigation to repurpose, which is why the module had a list and nothing else.
+- The card's attachment row reads `filePath` instead of always claiming there is none.
+- `CertificateProvider.detail()` / `.update()`, and `IUpdateCertificatePayload`.
+
+The detail page reuses `certificateStatus()` and the server's `expired` flag rather than computing
+expiry — `Certificate.model.ts` says why, and a test asserts it by handing the page a far-future
+expiry date with `expired: true` and requiring "Expired".
+
+The attachment opens through `Upload.provider.getFileUrl()` **at click time**, never resolved on
+mount: the presigned handle dies 60 seconds after issue, so a URL fetched on mount would be dead
+before anyone clicked it. A test asserts nothing is fetched until the click.
+
+**The edit form's file input has three states, not two**, matching what the PATCH body can express:
+omitted keeps the current attachment, a picked file replaces it, and an explicit `null` detaches
+it. Removal is a separate toggle rather than "an empty input means clear" — an empty input is
+overwhelmingly "I am not touching the file", and making that mean deletion would silently lose an
+attachment on every unrelated edit. Three tests cover it, and they are mutation-checked: making
+`buildPayload` always send `filePath` turns two of them red.
+
+**Removed `certificate.form.attachmentNotStored` and `fileNotStoredHint`.** They warned the user
+their file was discarded, which is now false. Note there were **two** copies, not one —
+`AddCertificateModal` and the permit wizard's `CreateCertificateModal` — and the ticket only
+mentioned the first.
+
+Also corrected two stale header comments while in the files: `Certificate.router.ts` and
+`History.router.ts` both claimed they were "NOT yet registered in src/router/index.ts". Both have
+been registered for a long time, and both mislead anyone reading the module cold.
+
+Verified: `./init.sh` All checks passed — typecheck, lint (0 errors), vitest 66 files / 563 tests,
+contrast, icons, and the live API smoke against a running backend.

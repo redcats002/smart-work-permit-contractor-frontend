@@ -21,7 +21,35 @@ const certificate = {
     certType: 'Certificate type',
     issued: 'Issued',
     expiry: 'Expires',
-    noFile: 'No file attached'
+    noFile: 'No file attached',
+    hasFile: 'Attachment',
+    viewHint: 'View details'
+  },
+  detail: {
+    title: 'Certificate',
+    editButton: 'Edit certificate',
+    backToList: 'Back to certificates',
+    attachment: 'Attachment',
+    openFile: 'Open attachment',
+    openingFile: 'Opening…',
+    registered: 'Registered',
+    lastUpdated: 'Last updated',
+    error: {
+      loadFailed: 'Could not load this certificate. Please try again.',
+      fileFailed: 'Could not open the attachment. Please try again.'
+    }
+  },
+  edit: {
+    title: 'Edit Certificate',
+    submit: 'Save changes',
+    cancel: 'Cancel',
+    saved: 'Certificate updated.',
+    currentFile: 'Current attachment',
+    replaceFile: 'Replace attachment',
+    keepFileHint: 'Leave empty to keep the current attachment.',
+    removeFile: 'Remove attachment',
+    removeFileHint: 'The certificate will be saved without an attachment.',
+    undoRemoveFile: 'Keep it after all'
   },
   form: {
     title: 'Add Certificate',
@@ -32,11 +60,9 @@ const certificate = {
       issuedDate: 'Issued date',
       expiryDate: 'Expiry date',
       file: 'Attachment',
-      filePlaceholder: 'Attach file (optional)',
-      fileNotStoredHint: 'Attachments are not stored by the server yet — the certificate record saves without the file.'
+      filePlaceholder: 'Attach file (optional)'
     },
     submit: 'Save Certificate',
-    attachmentNotStored: 'Certificate saved, but the attached file was not stored — the server does not accept attachments yet.',
     validation: {
       workerNameRequired: 'Please enter the worker name',
       roleRequired: 'Please enter the role',

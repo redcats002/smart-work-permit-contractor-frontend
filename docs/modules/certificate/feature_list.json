@@ -86,6 +86,52 @@
       ],
       "status": "done",
       "evidence": "2026-08-23. Bullets 3/4 were ALREADY SATISFIED by prior work and are unchanged here: PMT-009's `useCertificatePreflight` (Step6Review.vue) already drove the real 'Worker certificates valid & not expired' row off GET /certificates/worker/:name, and the backend's feat-010 pass already had submitDraft() extract `certificateFailures[]` off a rejected POST /permits/:id/submit (SubmitErrorRouting.ts) and route back to step 4 with the offending worker highlighted (Step4PpeWorkers.vue's `serverRejectedCertificates`) — the server's verdict already won over any client guess. Bullets 1/2 (a live client-side gate on step 4/6, before submit) were NOT built and are what this item added: `useCertificatePreflight` gained a debounce-safe sequence token so a stale (superseded) lookup can never overwrite a newer one's verdict — the exact JSA-dead-end failure class PROMPT-LOG warns against; `useWizard` hoisted ONE shared instance (debounced on the `workers` array reference, immediate on mount, local `certificateChecking` loading flag so it never drives the global spinner) so step 4's gate and step 6's row can never disagree; `isNextBlocked`/`canSubmit` now also gate on a CONFIRMED `certificateState === 'fail'` only — never 'loading'/'unknown', so an unresolved lookup can never be stricter than the server; Step4PpeWorkers.vue got a per-worker certificate badge column plus a named-worker blocking list (mirrors the existing server-rejected list); Step6Review.vue now reads `certificateState`/`certificateProblems` as props instead of owning its own instance (same behavior, one source of truth). Bullet 5 is a negative acceptance (Inspector-side CERT_BLOCKED denial) — out of scope by design, not built, nothing to verify. New test: src/tests/pages/permit/create/composables/useWizard.certificatePreflight.test.ts (4 tests) — blocks Next + names the worker on a missing cert, unblocks on a valid cert, never blocks on an unresolved lookup, and proves the staleness guard (a stale 'missing' resolving after a newer 'pass' does not flip Next back to blocked). ./init.sh: ALL GREEN — typecheck PASS, lint PASS, vitest 48 files / 450 tests PASS, live smoke 16/16 PASS against localhost:3000. node ../scripts/check-contract-sync.mjs: OK — openapi in sync, 25 backend error codes all declared, /api/v1 prefix present. bunx eslint / bunx vue-tsc --noEmit clean on every touched file."
+    },
+    {
+      "id": "CRT-005",
+      "type": "feature",
+      "name": "Certificate detail page",
+      "description": "A page at /certificates/:id showing one certificate, reachable by making CertificateCard navigable. Renders the server's `expired` verdict via the existing certificateStatus() helper, and the attachment as a link resolved through GET /file at click time.",
+      "acceptance": [
+        "/certificates/:id renders worker name, role, cert type, issued and expiry dates, and the status badge",
+        "The badge comes from certificateStatus()/ECertificateStatus — no second expiry calculation anywhere on the page",
+        "`expired` is read from the server's per-row flag; the client only layers the advisory expiring-soon window on top",
+        "CertificateCard becomes navigable to this page; it has no click handler or RouterLink today",
+        "A certificate WITH filePath shows a link that opens the file through GET /file with the path URL-encoded (storage keys contain slashes — GAPS row 21)",
+        "A certificate WITHOUT filePath keeps today's dashed 'No file attached' placeholder, with no broken link and no empty anchor",
+        "A directly-typed /certificates/:id belonging to another contractor is refused by the API and the page handles it — list scoping does not protect a typed URL",
+        "./init.sh green"
+      ],
+      "notes": "Blocked on wayfinder 056: GET /certificates/:id and the filePath column do not exist yet. Building against the unshipped shape is how the fileRef mismatch in docs/api/GAPS.md row 18 happened. Follow Permit.router.ts's `:id` path convention.",
+      "dependencies": [
+        "CRT-002",
+        "CRT-001"
+      ],
+      "status": "done",
+      "evidence": "2026-09-09. ./init.sh All checks passed — typecheck PASS, lint PASS (0 errors), vitest 66 files / 563 tests PASS, contrast PASS, icons PASS, live API smoke PASS against a running backend. Tests: src/tests/pages/certificate/{CertificateDetailPage,CertificateEditPage}.test.ts, 11 tests. The edit page's three attachment cases were mutation-checked — making buildPayload always send filePath turns 2 of them red, so 'absent means keep' is genuinely asserted rather than incidentally true."
+    },
+    {
+      "id": "CRT-006",
+      "type": "feature",
+      "name": "Certificate edit page",
+      "description": "A page at /certificates/:id/edit saving through PATCH /certificates/:id. Plain overwrite — certificates are reference data, deletedAt stays the retirement path, no field is locked.",
+      "acceptance": [
+        "/certificates/:id/edit saves through PATCH and returns to the detail page",
+        "Reuses AddCertificate.schema.ts rather than a second schema — identical fields, and two schemas for one shape drift apart",
+        "An empty file input means KEEP the existing attachment, never clear it; verified by reading the row back, not by trusting the form",
+        "Replacing the file uploads a new one and the detail page resolves the new path",
+        "Editing workerName or expiryDate is allowed — a mistyped expiry has no remedy today, and the submit gate re-runs server-side",
+        "certificate.form.attachmentNotStored is REMOVED from AddCertificateModal — after wayfinder 056 it falsely tells the user their saved file was discarded",
+        "No delete button — no endpoint exposes soft delete, and who may retire a certificate is not decided",
+        "./init.sh green"
+      ],
+      "notes": "Blocked on wayfinder 056 (PATCH /certificates/:id does not exist). certType stays free text here — giving it a vocabulary is wayfinder 050 and must not be smuggled in.",
+      "dependencies": [
+        "CRT-005",
+        "CRT-003"
+      ],
+      "status": "done",
+      "evidence": "2026-09-09. ./init.sh All checks passed — typecheck PASS, lint PASS (0 errors), vitest 66 files / 563 tests PASS, contrast PASS, icons PASS, live API smoke PASS against a running backend. Tests: src/tests/pages/certificate/{CertificateDetailPage,CertificateEditPage}.test.ts, 11 tests. The edit page's three attachment cases were mutation-checked — making buildPayload always send filePath turns 2 of them red, so 'absent means keep' is genuinely asserted rather than incidentally true."
     }
   ]
 }

@@ -20,6 +20,15 @@ export interface ICertificate {
    * field entry server-side with no override.
    */
   expired: boolean
+  /**
+   * Object-storage KEY for the scanned certificate, or null. Never a URL — resolve a download
+   * through `Upload.provider.getFileUrl()` at click time, because the presigned handle the
+   * upload returns expires 60 seconds later (REVIEW-2026-08-19 S4).
+   *
+   * Null on every certificate registered before the backend gained the column (wayfinder 056)
+   * and on any registered without an attachment. Both are normal; neither is an error.
+   */
+  filePath: string | null
   createdById?: string
   createdAt?: string
   updatedAt?: string

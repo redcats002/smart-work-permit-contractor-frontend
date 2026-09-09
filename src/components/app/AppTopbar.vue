@@ -20,7 +20,7 @@
         e
       </div>
       <div class="min-w-0 leading-[1.05]">
-        <div class="truncate text-sm font-bold tracking-[0.3px] text-white">
+        <div class="truncate text-sm font-semibold tracking-[0.3px] text-white">
           {{ t('platform.appName') }}
         </div>
         <div class="truncate font-mono text-[10px] text-(--color-text-tertiary)">
@@ -97,13 +97,20 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, type Ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import Icon from '@/components/base/AppIcon.vue'
-import { useDayjs } from '@/utils/Dayjs'
+
 import { toast } from '@/plugins/toast'
-import { useApiError } from '@/composables/useApiError'
+
 import { useNotificationStore } from '@/stores/Notification'
+
+import { useDayjs } from '@/utils/Dayjs'
+
+import Icon from '@/components/base/AppIcon.vue'
+
+import { useApiError } from '@/composables/useApiError'
+
 import { storeToRefs } from 'pinia'
+import { useI18n } from 'vue-i18n'
+
 import LocaleSwitcher from './LocaleSwitcher.vue'
 
 interface IEmits {

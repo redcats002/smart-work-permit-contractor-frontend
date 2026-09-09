@@ -18,6 +18,7 @@ function certificate (overrides: Partial<ICertificate> = {}): ICertificate {
     certType: 'Hot Work',
     issuedDate: '2026-01-01',
     expiryDate: '2027-01-01',
+    filePath: null,
     expired: false,
     ...overrides
   }

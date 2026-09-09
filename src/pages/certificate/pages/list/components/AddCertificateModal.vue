@@ -74,9 +74,6 @@
               type="file"
               @change="onFileChange($event)">
           </label>
-          <p class="mt-1 text-xs text-text-tertiary">
-            {{ t('certificate.form.field.fileNotStoredHint') }}
-          </p>
         </LabelField>
         <ConfirmButton
           id="add-certificate-button"
@@ -150,13 +147,9 @@ function onFileChange (event: Event): void {
  * resolves without throwing but still has no usable path (e.g. an upload response missing
  * `originalName`, which `useUpload` skips splicing) — that must abort too, not save silently
  * without the attachment the user asked for.
- *
- * Returns whether an attachment was picked, so the caller can tell the user the truth: the API
- * does not persist this field yet (docs/api/GAPS.md row G).
  */
-async function useCreate (values: TAddCertificateFormValues): Promise<boolean> {
+async function useCreate (values: TAddCertificateFormValues): Promise<void> {
   let filePath: string | undefined
-  const hasAttachment = Boolean(formData.value.file)
 
   if (formData.value.file) {
     const file = formData.value.file
@@ -179,8 +172,6 @@ async function useCreate (values: TAddCertificateFormValues): Promise<boolean> {
     expiryDate: values.expiryDate,
     filePath
   })
-
-  return hasAttachment
 }
 
 function onSubmit (event: FormSubmitEvent, close: () => void): void {
@@ -189,13 +180,10 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
     return
   }
   handleLoading(async (): Promise<void> => {
-    const hadAttachment = await useCreate(event.values as TAddCertificateFormValues)
+    await useCreate(event.values as TAddCertificateFormValues)
     emits('created')
     resetForm()
     close()
-    // Do not let the closing modal imply the file was kept: the API drops `filePath` today
-    // (docs/api/GAPS.md row G), so the certificate saves and the attachment does not.
-    if (hadAttachment) toast.warn(t('certificate.form.attachmentNotStored'))
   }, {}, (error: unknown): void => {
     toast.error(mapError(error).message)
   })

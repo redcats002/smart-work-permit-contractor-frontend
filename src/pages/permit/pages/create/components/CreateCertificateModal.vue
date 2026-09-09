@@ -74,9 +74,6 @@
               type="file"
               @change="onFileChange($event)">
           </label>
-          <p class="mt-1 text-xs text-text-tertiary">
-            {{ t('certificate.form.field.fileNotStoredHint') }}
-          </p>
         </LabelField>
 
         <!--
@@ -163,13 +160,11 @@ function onFileChange (event: Event): void {
 
 /**
  * Same shape as `AddCertificateModal.vue`'s `useCreate` — the attachment is sent as the storage
- * **path**, never the presigned `fileUrl` (dies 60s after upload), and `POST /certificates` does
- * not persist `filePath` yet (docs/api/GAPS.md row G), so a picked file still earns the
- * "not stored" caveat even on success.
+ * **path**, never the presigned `fileUrl`, which dies 60s after upload. The API persists it since
+ * wayfinder 056, so there is no "not stored" caveat any more.
  */
-async function useCreate (values: TAddCertificateFormValues): Promise<{ certificate: ICertificate, hadAttachment: boolean }> {
+async function useCreate (values: TAddCertificateFormValues): Promise<{ certificate: ICertificate }> {
   let filePath: string | undefined
-  const hasAttachment = Boolean(formData.value.file)
 
   if (formData.value.file) {
     const file = formData.value.file
@@ -193,7 +188,7 @@ async function useCreate (values: TAddCertificateFormValues): Promise<{ certific
     filePath
   })
 
-  return { certificate: response.data, hadAttachment: hasAttachment }
+  return { certificate: response.data }
 }
 
 function onSubmit (event: FormSubmitEvent, close: () => void): void {
@@ -203,7 +198,7 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
   }
   submitErrorMessage.value = undefined
   handleLoading(async (): Promise<void> => {
-    const { certificate, hadAttachment } = await useCreate(event.values as TAddCertificateFormValues)
+    const { certificate } = await useCreate(event.values as TAddCertificateFormValues)
     emits('created', certificate)
     resetForm()
     close()
@@ -211,8 +206,6 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
     // the new row is not visible anywhere on screen once the modal closes, unlike the certificate
     // list page, which just re-renders with it.
     toast.success(t('certificate.form.submit'))
-    // Do not let the closing modal imply the file was kept: the API drops `filePath` today.
-    if (hadAttachment) toast.warn(t('certificate.form.attachmentNotStored'))
   }, {}, (error: unknown): void => {
     // INLINE, never a toast — this covers the four upload refusal codes
     // (FILE_TYPE_NOT_ALLOWED / FILE_TOO_LARGE / UPLOAD_FOLDER_NOT_ALLOWED / STORAGE_UNAVAILABLE)

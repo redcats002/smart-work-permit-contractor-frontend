@@ -2,9 +2,8 @@ import type { ComponentOptions } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
 
 /**
- * NOT yet registered in src/router/index.ts — that file is owned by the
- * orchestrator during this wave (see HST-001 task notes). Wire this module in
- * there once available; also flip `AppDrawer`'s inert guard for this nav item.
+ * Registered in src/router/index.ts, and `AppDrawer` has a live nav entry for it. (The comment
+ * that used to sit here claimed neither was done, left over from the HST-001 wave — wayfinder 057.)
  */
 const prefix = '/history'
 

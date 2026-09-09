@@ -281,25 +281,30 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, type ComputedRef, type Ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import DeleteModal from '@/components/modal/DeleteModal.vue'
-import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
-import { WORKER_ROLES_BY_TYPE, type EWorkerRole, type TWorkerRole } from '@/enums/modules/permit/WorkerRole.enum'
+import { computed, type ComputedRef, onBeforeUnmount, onMounted, ref, type Ref } from 'vue'
+
 import type { ICertificate } from '@/models/modules/certificate/Certificate.model'
 import type { IPermitPhoto, IPermitWorker } from '@/models/modules/permit/Permit.model'
+
+import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
+import { type EWorkerRole, type TWorkerRole, WORKER_ROLES_BY_TYPE } from '@/enums/modules/permit/WorkerRole.enum'
+
+import { EVIDENCE_SLOTS, findPhoto, type IEvidenceSlot, upsertPhoto } from '../../constants/PhotoEvidence'
+import type { ISubmitCertificateFailure } from '../../constants/SubmitErrorRouting'
+import { requiresHealthCheck, workerHealthIssues, workerRoleSlug, workerRowComplete } from '../../constants/WorkerHealth'
+
+import DeleteModal from '@/components/modal/DeleteModal.vue'
+
 import AutoComplete from '@/volt/AutoComplete.vue'
-import PhotoSlot from '../PhotoSlot.vue'
-import CreateCertificateModal from '../CreateCertificateModal.vue'
-import WorkerCertificateSuggestionOption from '../WorkerCertificateSuggestionOption.vue'
-import { EVIDENCE_SLOTS, findPhoto, upsertPhoto, type IEvidenceSlot } from '../../constants/PhotoEvidence'
-import {
-  requiresHealthCheck, workerHealthIssues, workerRoleSlug, workerRowComplete
-} from '../../constants/WorkerHealth'
+
+import { useI18n } from 'vue-i18n'
+
 import type { ICertificateProblem } from '../../composables/useCertificatePreflight'
 import { useWorkerCertificateSuggestions } from '../../composables/useWorkerCertificateSuggestions'
-import type { ISubmitCertificateFailure } from '../../constants/SubmitErrorRouting'
 import type { IWizardStepEmits, IWizardStepProps } from '../../wizard/WizardSteps'
+import CreateCertificateModal from '../CreateCertificateModal.vue'
+import PhotoSlot from '../PhotoSlot.vue'
+import WorkerCertificateSuggestionOption from '../WorkerCertificateSuggestionOption.vue'
 
 /**
  * PMT-007 / CRT-004 — step 4, PPE / photo evidence / workers.
@@ -375,7 +380,7 @@ function onWorkerNameComplete (query: string): void {
  * `IPermitWorker` actually wants.
  */
 function onWorkerNameUpdate (index: number, value: string | ICertificate | null): void {
-  if (value === null) {
+  if (value === null || value === '') {
     patchWorker(index, { workerName: '' })
     return
   }
