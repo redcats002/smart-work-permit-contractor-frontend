@@ -107,6 +107,12 @@ export interface IJsaStep {
  */
 export interface IPermitWorker {
   id?: number
+  /**
+   * wayfinder 060 — the wire now carries `workerId` on permit worker rows. Optional here only
+   * because Step 4 still collects a typed name (wayfinder 063 migrates it); once it does, this
+   * becomes required and `workerName` becomes the display echo.
+   */
+  workerId?: number
   workerName: string
   roleOnPermit: TWorkerRole
   /** Confined Space only — pre-work BP + alcohol reading per Thai ministerial regulation. */

@@ -9,8 +9,8 @@
         <p class="truncate text-[15px] font-semibold text-text-primary">
           {{ certificate.workerName }}
         </p>
-        <p class="mt-0.5 truncate text-xs text-text-tertiary">
-          {{ certificate.role }}
+        <p class="mt-0.5 truncate font-mono text-[11px] text-text-tertiary">
+          {{ certificate.certType }}
         </p>
       </div>
       <span

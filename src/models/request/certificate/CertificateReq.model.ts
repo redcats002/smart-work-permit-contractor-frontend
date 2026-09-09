@@ -5,8 +5,8 @@ export interface IGetCertificateListQuery extends IBasePaginationRequest {}
 
 /** POST /certificates */
 export interface ICreateCertificatePayload {
-  workerName: string
-  role: string
+  /** wayfinder 060 — a worker is a record. `workerName`/`role` are no longer accepted here. */
+  workerId: number
   certType: string
   /** ISO date string (yyyy-mm-dd or full ISO timestamp). */
   issuedDate: string
@@ -26,8 +26,8 @@ export interface ICreateCertificatePayload {
 
 /** PATCH /certificates/:id */
 export interface IUpdateCertificatePayload {
-  workerName?: string
-  role?: string
+  /** Re-points the certificate at a different worker. Fixing a NAME is a Worker rename, not this. */
+  workerId?: number
   certType?: string
   /** ISO date string (yyyy-mm-dd or full ISO timestamp). */
   issuedDate?: string

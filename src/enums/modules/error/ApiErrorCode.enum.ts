@@ -24,6 +24,11 @@ export enum EApiErrorCode {
   CERT_MISSING = 'CERT_MISSING',
   CERT_EXPIRED = 'CERT_EXPIRED',
 
+  // Worker register (contractor) — wayfinder 060. Not a failure the user must recover from:
+  // the response carries `workerId`, so an inline "Create worker …" selects the existing
+  // worker instead of showing this at all. The string exists for the paths that cannot.
+  WORKER_ALREADY_EXISTS = 'WORKER_ALREADY_EXISTS',
+
   // Permit state machine (contractor)
   PERMIT_NOT_EDITABLE = 'PERMIT_NOT_EDITABLE',
   PERMIT_NOT_SUBMITTABLE = 'PERMIT_NOT_SUBMITTABLE',

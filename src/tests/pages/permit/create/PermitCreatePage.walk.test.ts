@@ -57,7 +57,7 @@ function draftWithoutJsa (): Record<string, unknown> {
     workTimeStart: '2026-08-20T01:00:00.000Z',
     workTimeEnd: '2026-08-20T09:00:00.000Z',
     safetyReading: { lel: 0, o2: 20.9 },
-    workers: [{ workerName: 'Somchai', roleOnPermit: 'Operator' }]
+    workers: [{ workerId: 761, workerName: 'Somchai', roleOnPermit: 'Operator' }]
   }
 }
 

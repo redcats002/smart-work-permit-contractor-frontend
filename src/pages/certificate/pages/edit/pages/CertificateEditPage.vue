@@ -30,18 +30,28 @@
         :resolver="resolver"
         class="grid max-w-2xl grid-cols-1 gap-4"
         @submit="onSubmit($event)">
+        <!-- Re-points the certificate at a DIFFERENT worker. Correcting a person's spelling is
+             a Worker rename, not an edit here (wayfinder 060) — which is why the name is a seed
+             for the picker rather than an editable field. -->
         <LabelField
-          v-model="formData.workerName"
+          v-slot="{ invalid }"
           :form="$form"
-          :label="t('certificate.form.field.workerName')"
-          name="workerName"
-          required />
-        <LabelField
-          v-model="formData.role"
-          :form="$form"
-          :label="t('certificate.form.field.role')"
-          name="role"
-          required />
+          :label="t('worker.picker.label')"
+          name="workerId"
+          tag="div"
+          required>
+          <WorkerPicker
+            v-model="formData.workerId"
+            :initial-name="formData.workerName"
+            :invalid="invalid" />
+          <!-- The Form tracks fields by registered input name, and WorkerPicker is a component,
+               not an <input>. Without this the resolver never sees workerId, the schema's
+               `z.number()` fails on undefined, and submit silently no-ops. -->
+          <input
+            :value="formData.workerId"
+            name="workerId"
+            type="hidden">
+        </LabelField>
         <LabelField
           v-model="formData.certType"
           :form="$form"
@@ -163,6 +173,8 @@ import Button from '@/volt/Button.vue'
 import Skeleton from 'primevue/skeleton'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import LabelField from '@/components/input/LabelField.vue'
+import WorkerPicker from '@/components/worker/WorkerPicker.vue'
+import { dayjs } from '@/plugins/dayjs.plugin'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
@@ -171,8 +183,7 @@ import useUpload from '@/composables/useUpload'
 import {
   AddCertificateSchema,
   useAddCertificateInitialValues,
-  type IAddCertificateFormState,
-  type TAddCertificateFormValues
+  type IAddCertificateFormState
 } from '@/pages/certificate/schema/AddCertificate.schema'
 import type { IUpdateCertificatePayload } from '@/models/request/certificate/CertificateReq.model'
 import CertificateProvider, { type ICertificateProvider } from '@/resources/provider/certificate/Certificate.provider'
@@ -220,13 +231,16 @@ function goBack (): void {
  * Sending `undefined` and omitting are the same on the wire, but building the key conditionally
  * says which case is intended at the point it is decided.
  */
-async function buildPayload (values: TAddCertificateFormValues): Promise<IUpdateCertificatePayload> {
+async function buildPayload (): Promise<IUpdateCertificatePayload> {
+  // Read from `formData`, not from the Form's emitted `values`. Every field here is v-model-bound,
+  // and workerId comes from a component rather than a registered input — mixing the two sources
+  // was how this silently sent `undefined` once the picker landed. Dates are converted here
+  // because the wire wants `YYYY-MM-DD` and the DatePicker binds a Date.
   const payload: IUpdateCertificatePayload = {
-    workerName: values.workerName,
-    role: values.role,
-    certType: values.certType,
-    issuedDate: values.issuedDate,
-    expiryDate: values.expiryDate
+    workerId: formData.value.workerId,
+    certType: formData.value.certType,
+    issuedDate: dayjs(formData.value.issuedDate).format('YYYY-MM-DD'),
+    expiryDate: dayjs(formData.value.expiryDate).format('YYYY-MM-DD')
   }
 
   if (formData.value.file) {
@@ -251,7 +265,7 @@ function onSubmit (event: FormSubmitEvent): void {
   }
   submitErrorMessage.value = undefined
   handleLoading(async (): Promise<void> => {
-    const payload = await buildPayload(event.values as TAddCertificateFormValues)
+    const payload = await buildPayload()
     await CertificateService.update(certificateId.value, payload)
     toast.success(t('certificate.edit.saved'))
     goBack()
@@ -269,8 +283,8 @@ async function fetchDetail (): Promise<void> {
     const response = await CertificateService.detail(certificateId.value)
     const certificate = response.data
     formData.value = {
+      workerId: certificate.workerId,
       workerName: certificate.workerName,
-      role: certificate.role,
       certType: certificate.certType,
       // The API returns full ISO timestamps; the DatePicker binds a Date.
       issuedDate: new Date(certificate.issuedDate),

@@ -14,6 +14,9 @@ const error = {
   CERT_MISSING: 'A registered worker has no certificate on file. Add it before submitting.',
   CERT_EXPIRED: 'A registered worker has an expired certificate. This cannot be overridden.',
 
+  // Worker register
+  WORKER_ALREADY_EXISTS: 'You have already registered a worker with this name.',
+
   // Permit state machine
   PERMIT_NOT_EDITABLE: 'This permit can no longer be edited — it has already left draft.',
   PERMIT_NOT_SUBMITTABLE: 'This permit cannot be submitted in its current state.',

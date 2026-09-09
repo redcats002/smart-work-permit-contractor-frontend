@@ -13,7 +13,7 @@
         <p
           v-if="certificate"
           class="mt-0.5 truncate text-sm text-text-secondary">
-          {{ certificate.role }}
+          {{ certificate.certType }}
         </p>
       </div>
       <Button
@@ -62,14 +62,6 @@
               </dt>
               <dd class="truncate font-medium text-text-primary">
                 {{ certificate.workerName }}
-              </dd>
-            </div>
-            <div class="mb-[5px] flex items-center justify-between gap-2">
-              <dt class="text-text-secondary">
-                {{ t('certificate.form.field.role') }}
-              </dt>
-              <dd class="truncate font-medium text-text-primary">
-                {{ certificate.role }}
               </dd>
             </div>
             <div class="mb-[5px] flex items-center justify-between gap-2">

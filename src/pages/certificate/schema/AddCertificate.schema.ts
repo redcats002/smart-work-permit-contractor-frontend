@@ -9,8 +9,11 @@ import { schema } from '@/utils/Schema'
  * the parsed object — never in a submit handler.
  */
 const BaseCertificateSchema = z.object({
-  workerName: z.string().min(1, i18n.global.t('certificate.form.validation.workerNameRequired')),
-  role: z.string().min(1, i18n.global.t('certificate.form.validation.roleRequired')),
+  // wayfinder 060 — identity is the Worker id. `workerName` and `role` are gone from the wire:
+  // the name is the server's display echo and the role describes the person, not the card.
+  // `z.number()` rather than a non-empty string is the whole point — an unresolved name can no
+  // longer reach the payload at all.
+  workerId: z.number({ message: i18n.global.t('worker.validation.required') }),
   certType: z.string().min(1, i18n.global.t('certificate.form.validation.certTypeRequired')),
   issuedDate: schema.date(i18n.global.t('certificate.form.field.issuedDate')),
   expiryDate: schema.date(i18n.global.t('certificate.form.field.expiryDate')),
@@ -45,8 +48,9 @@ export type TAddCertificateFormValues = z.infer<typeof AddCertificateSchema>
  * resolver only produces the ISO-string `TAddCertificateFormValues` shape once valid.
  */
 export interface IAddCertificateFormState {
+  workerId: number | undefined
+  /** Display seed for the picker when editing; never sent. */
   workerName: string
-  role: string
   certType: string
   issuedDate: Date | undefined
   expiryDate: Date | undefined
@@ -55,8 +59,8 @@ export interface IAddCertificateFormState {
 
 export function useAddCertificateInitialValues (): IAddCertificateFormState {
   return {
+    workerId: undefined,
     workerName: '',
-    role: '',
     certType: '',
     issuedDate: undefined,
     expiryDate: undefined,

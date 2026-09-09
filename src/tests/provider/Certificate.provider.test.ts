@@ -34,8 +34,7 @@ describe('CertificateProvider — wire contract (API-007)', () => {
   it('create POSTs the certificate payload', async () => {
     const post = vi.spyOn(transport(service), 'post').mockResolvedValue({ message: 'success', data: {} })
     const payload = {
-      workerName: 'Somchai Boonmee',
-      role: 'Operator',
+      workerId: 42,
       certType: 'Hot Work Safety',
       issuedDate: '2026-01-10',
       expiryDate: '2027-01-10'
@@ -46,12 +45,15 @@ describe('CertificateProvider — wire contract (API-007)', () => {
     expect(post).toHaveBeenCalledWith('/api/v1/certificates', payload, undefined)
   })
 
-  it('byWorker URL-encodes the name and reads one certificate or null', async () => {
+  it('byWorker keys on the worker id and reads one certificate or null', async () => {
     const get = vi.spyOn(transport(service), 'get').mockResolvedValue({ message: 'success', data: null })
 
-    const response = await service.byWorker('Somchai Boonmee')
+    // wayfinder 060 — was `/worker/{name}` with URL-encoding, which is why this test used to be
+    // about encoding a space. The route is keyed on the id now, and it is contractor-scoped
+    // server-side; the name-keyed version was an unscoped cross-tenant read.
+    const response = await service.byWorker(42)
 
-    expect(get).toHaveBeenCalledWith('/api/v1/certificates/worker/Somchai%20Boonmee', { params: undefined })
+    expect(get).toHaveBeenCalledWith('/api/v1/certificates/worker/42', { params: undefined })
     expect(response.data).toBeNull()
   })
 })

@@ -11,8 +11,8 @@ import type { ICertificate } from '@/models/modules/certificate/Certificate.mode
 function certificate (overrides: Partial<ICertificate> = {}): ICertificate {
   return {
     id: 1,
+    workerId: 1,
     workerName: 'Somchai',
-    role: 'Operator',
     certType: 'hot-work',
     issuedDate: '2026-01-01',
     expiryDate: '2027-01-01',

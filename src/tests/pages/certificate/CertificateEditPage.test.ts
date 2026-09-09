@@ -35,8 +35,8 @@ function mockMatchMedia (): void {
 function buildCertificate (overrides: Partial<ICertificate> = {}): ICertificate {
   return {
     id: 7,
+    workerId: 1,
     workerName: 'Somchai',
-    role: 'Welder',
     certType: 'Hot Work',
     issuedDate: '2026-01-01T00:00:00.000Z',
     expiryDate: '2030-01-01T00:00:00.000Z',
@@ -142,7 +142,7 @@ describe('CertificateEditPage — the three attachment cases', () => {
 })
 
 describe('CertificateEditPage — loading and saving', () => {
-  it('seeds the form from the certificate and sends the edited fields', async (): Promise<void> => {
+  it('seeds the worker picker with the current name and keeps its id when untouched', async (): Promise<void> => {
     const update = vi.spyOn(CertificateProvider.prototype, 'update').mockResolvedValue({
       message: 'success',
       data: buildCertificate()
@@ -150,16 +150,17 @@ describe('CertificateEditPage — loading and saving', () => {
 
     const wrapper = await mountPage(buildCertificate())
 
-    const workerName = wrapper.find('input[name="workerName"]')
-    expect((workerName.element as HTMLInputElement).value).toBe('Somchai')
+    // The name is a SEED for the picker, not an editable field. wayfinder 060 moved identity to
+    // the Worker record: correcting a person's spelling is a Worker rename, and re-pointing this
+    // certificate at a different person is what the picker is for. The old version of this test
+    // asserted that typing a new name here saved it, which is no longer true in either direction.
+    expect(wrapper.text()).toContain('Somchai')
+    expect(wrapper.find('input[name="workerName"]').exists()).toBe(false)
 
-    // workerName is editable on purpose (wayfinder 056): the permit gate keys off it, and a
-    // mistyped name has no other remedy. The gate re-runs server-side on every submit.
-    await workerName.setValue('Somchai Corrected')
     await submit(wrapper)
 
     const payload = update.mock.calls[0][1] as IUpdateCertificatePayload
-    expect(payload.workerName).toBe('Somchai Corrected')
+    expect(payload.workerId).toBe(1)
     expect(update.mock.calls[0][0]).toBe(7)
   })
 

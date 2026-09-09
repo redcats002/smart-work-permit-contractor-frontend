@@ -63,7 +63,7 @@ describe('useWizard — certificate pre-flight gate (CRT-004)', () => {
     wizard.next()
     expect(wizard.currentStep.value.key).toBe('ppeWorkers')
 
-    wizard.updateFormData({ workers: [{ workerName: 'Somchai', roleOnPermit: 'Operator' }] })
+    wizard.updateFormData({ workers: [{ workerId: 761, workerName: 'Somchai', roleOnPermit: 'Operator' }] })
     wizard.recheckCertificates()
     await flushMicrotasks()
 
@@ -79,7 +79,7 @@ describe('useWizard — certificate pre-flight gate (CRT-004)', () => {
     const wizard = useWizard(makeSteps())
     wizard.next()
 
-    wizard.updateFormData({ workers: [{ workerName: 'Somchai', roleOnPermit: 'Operator' }] })
+    wizard.updateFormData({ workers: [{ workerId: 761, workerName: 'Somchai', roleOnPermit: 'Operator' }] })
     wizard.recheckCertificates()
     await flushMicrotasks()
 
@@ -97,7 +97,7 @@ describe('useWizard — certificate pre-flight gate (CRT-004)', () => {
     const wizard = useWizard(makeSteps())
     wizard.next()
 
-    wizard.updateFormData({ workers: [{ workerName: 'Somchai', roleOnPermit: 'Operator' }] })
+    wizard.updateFormData({ workers: [{ workerId: 761, workerName: 'Somchai', roleOnPermit: 'Operator' }] })
     wizard.recheckCertificates()
     await flushMicrotasks()
 
@@ -127,11 +127,11 @@ describe('useWizard — certificate pre-flight gate (CRT-004)', () => {
     const wizard = useWizard(makeSteps())
     wizard.next()
 
-    wizard.updateFormData({ workers: [{ workerName: 'Somchai', roleOnPermit: 'Operator' }] })
+    wizard.updateFormData({ workers: [{ workerId: 761, workerName: 'Somchai', roleOnPermit: 'Operator' }] })
     wizard.recheckCertificates() // first check's byWorker call fires
     await flushMicrotasks()
 
-    wizard.updateFormData({ workers: [{ workerName: 'Malee', roleOnPermit: 'Operator' }] })
+    wizard.updateFormData({ workers: [{ workerId: 836, workerName: 'Malee', roleOnPermit: 'Operator' }] })
     wizard.recheckCertificates() // second (newer) check's byWorker call fires
     await flushMicrotasks()
 

@@ -7,8 +7,14 @@
  */
 export interface ICertificate {
   id: number
+  /**
+   * wayfinder 060 — identity. The certificate points at a Worker record; `workerName` below is
+   * the server's echo for display only. Never join on the name: that is the free-text join this
+   * FK replaced.
+   */
+  workerId: number
+  /** Display echo of the worker's name. Read-only — correcting a name is a Worker rename. */
   workerName: string
-  role: string
   certType: string
   /** Full ISO timestamp on the way out; sent as `YYYY-MM-DD`. */
   issuedDate: string

@@ -11,6 +11,12 @@
 // contractor with POST /api/v1/users while signed in as that officer (04-api-contract.md §2).
 //
 // Exits 0 and skips loudly when no API is reachable, so it is safe to run offline.
+//
+// SCOPE, and it matters: this script exercises READ paths only. It is not, and cannot be, evidence
+// that write paths still work. Wayfinder 060 made that concrete — a worker became an entity and
+// every write path moved to `workerId`, while responses kept echoing `workerName` for display, so
+// this whole script stayed green against an API the app could no longer POST to. If you are
+// verifying a contract change that touches request bodies, this gate does not cover you.
 
 const API_URL = process.env.API_URL ?? 'http://localhost:3000'
 const EMAIL = process.env.SMOKE_EMAIL ?? 'smoke.contractor@example.com'
@@ -118,8 +124,13 @@ async function main () {
     isEnvelope(certificates.body) && typeof certificates.body.totalPage === 'number'
     && (certificates.body.data.length === 0 || typeof certificates.body.data[0].expired === 'boolean'),
     certificates.body)
-  check('a certificate row uses workerName, not name',
-    certificates.body?.data?.length === 0 || certificates.body?.data?.[0]?.workerName !== undefined,
+  // wayfinder 060 — `workerName` is still echoed on the response for display, but identity is
+  // `workerId` now, and asserting only the name is what let this check stay green while every
+  // write path was broken. Both are required: the name because the UI renders it without joining,
+  // the id because that is what the app must send back.
+  check('a certificate row carries workerId (identity) and echoes workerName (display)',
+    certificates.body?.data?.length === 0
+    || (certificates.body?.data?.[0]?.workerId !== undefined && certificates.body?.data?.[0]?.workerName !== undefined),
     certificates.body?.data?.[0])
 
   const notifications = await call('GET', '/notifications')

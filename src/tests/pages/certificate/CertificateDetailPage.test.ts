@@ -17,8 +17,8 @@ vi.mock('@/plugins/toast', () => ({
 function buildCertificate (overrides: Partial<ICertificate> = {}): ICertificate {
   return {
     id: 7,
+    workerId: 1,
     workerName: 'Somchai',
-    role: 'Welder',
     certType: 'Hot Work',
     issuedDate: '2026-01-01T00:00:00.000Z',
     expiryDate: '2030-01-01T00:00:00.000Z',
@@ -70,7 +70,9 @@ describe('CertificateDetailPage', () => {
     const wrapper = await mountPage()
 
     expect(wrapper.text()).toContain('Somchai')
-    expect(wrapper.text()).toContain('Welder')
+    // `role` is deliberately absent — wayfinder 060 moved it onto the Worker record, because it
+    // describes the person and not the card. The page must not render a blank labelled row for it.
+    expect(wrapper.text()).not.toContain('Welder')
     expect(wrapper.text()).toContain('Hot Work')
     expect(wrapper.find('[data-test="certificate-status"]').text()).toContain('Valid')
   })

@@ -9,18 +9,28 @@
         :resolver="resolver"
         class="grid grid-cols-1 gap-4"
         @submit="onSubmit($event, close)">
+        <!-- wayfinder 060/061: a worker is a record, so this is a picker over GET /workers with
+             inline create, not two free-text fields. `role` is gone entirely - it describes the
+             person and lives on the Worker now. -->
         <LabelField
-          v-model="formData.workerName"
+          v-slot="{ invalid }"
           :form="$form"
-          :label="t('certificate.form.field.workerName')"
-          name="workerName"
-          required />
-        <LabelField
-          v-model="formData.role"
-          :form="$form"
-          :label="t('certificate.form.field.role')"
-          name="role"
-          required />
+          :label="t('worker.picker.label')"
+          name="workerId"
+          tag="div"
+          required>
+          <WorkerPicker
+            v-model="formData.workerId"
+            :initial-name="formData.workerName"
+            :invalid="invalid" />
+          <!-- The Form tracks fields by registered input name, and WorkerPicker is a component,
+               not an <input>. Without this the resolver never sees workerId, the schema's
+               `z.number()` fails on undefined, and submit silently no-ops. -->
+          <input
+            :value="formData.workerId"
+            name="workerId"
+            type="hidden">
+        </LabelField>
         <LabelField
           v-model="formData.certType"
           :form="$form"
@@ -110,6 +120,7 @@ import { useApiError } from '@/composables/useApiError'
 import useUpload from '@/composables/useUpload'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import LabelField from '@/components/input/LabelField.vue'
+import WorkerPicker from '@/components/worker/WorkerPicker.vue'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import type { ICertificate } from '@/models/modules/certificate/Certificate.model'
 import CertificateProvider, { type ICertificateProvider } from '@/resources/provider/certificate/Certificate.provider'
@@ -180,8 +191,7 @@ async function useCreate (values: TAddCertificateFormValues): Promise<{ certific
   }
 
   const response = await CertificateService.create({
-    workerName: values.workerName,
-    role: values.role,
+    workerId: formData.value.workerId as number,
     certType: values.certType,
     issuedDate: values.issuedDate,
     expiryDate: values.expiryDate,

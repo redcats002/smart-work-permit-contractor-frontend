@@ -35,6 +35,8 @@ export type TWorkerHealthIssue = 'BLOOD_PRESSURE' | 'ALCOHOL'
  */
 export interface TWorkerDraft {
   id?: number
+  /** wayfinder 060 — present once Step 4 collects a Worker record (wayfinder 063). */
+  workerId?: number
   workerName?: string
   roleOnPermit?: string
   bloodPressure?: string | null

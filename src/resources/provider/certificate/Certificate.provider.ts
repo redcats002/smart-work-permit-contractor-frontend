@@ -18,7 +18,7 @@ export interface ICertificateProvider {
   detail (id: number): Promise<TGetCertificateResponse>
   create (payload: ICreateCertificatePayload): Promise<TCreateCertificateResponse>
   update (id: number, payload: IUpdateCertificatePayload): Promise<TUpdateCertificateResponse>
-  byWorker (workerName: string): Promise<TGetCertificateByWorkerResponse>
+  byWorker (workerId: number): Promise<TGetCertificateByWorkerResponse>
 }
 
 class CertificateProvider extends HttpRequest implements ICertificateProvider {
@@ -49,9 +49,14 @@ class CertificateProvider extends HttpRequest implements ICertificateProvider {
     return response
   }
 
-  /** Answers ONE certificate or null — not an array. */
-  public async byWorker (workerName: string): Promise<TGetCertificateByWorkerResponse> {
-    const response = await this.get(`${this.urlPrefix}/worker/${encodeURIComponent(workerName)}`)
+  /**
+   * Answers ONE certificate or null — not an array.
+   *
+   * wayfinder 060: keyed by worker id, not name, and contractor-scoped server-side. The
+   * name-keyed version was not scoped, which was a cross-tenant read.
+   */
+  public async byWorker (workerId: number): Promise<TGetCertificateByWorkerResponse> {
+    const response = await this.get(`${this.urlPrefix}/worker/${workerId}`)
     return response
   }
 }

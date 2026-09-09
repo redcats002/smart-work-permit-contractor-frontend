@@ -114,7 +114,7 @@ deliberately, not marketing approximations, so a rule change in the API is a lan
 `CERT_MISSING`, `CERT_EXPIRED`, `PERMIT_NOT_EDITABLE`, `PERMIT_NOT_SUBMITTABLE`,
 `PERMIT_NOT_ACTIVE`, `PERMIT_NOT_PENDING`, `PERMIT_NOT_CLOSABLE`, `NOT_HOT_WORK`,
 `ENTRANTS_STILL_INSIDE`, `FIRE_WATCH_NOT_ELAPSED`, `INVALID_QR_TOKEN`, `RATE_LIMITED`,
-`UNAUTHENTICATED`, `FORBIDDEN_ROLE`, `USER_ALREADY_EXISTS`,
+`UNAUTHENTICATED`, `FORBIDDEN_ROLE`, `USER_ALREADY_EXISTS`, `WORKER_ALREADY_EXISTS`,
 `FILE_TYPE_NOT_ALLOWED`, `FILE_TOO_LARGE`, `UPLOAD_FOLDER_NOT_ALLOWED`, `STORAGE_UNAVAILABLE`,
 `ACCOUNT_DEACTIVATED`, `LAST_SAFETY_OFFICER`, `PERMIT_POSITION_REQUIRED`,
 `CLOSURE_REASON_REQUIRED`, `PERMIT_UPDATE_EMPTY`, `AREA_NOT_APPROVED`, `AREA_NOT_PENDING`,
@@ -135,6 +135,12 @@ deliberately, not marketing approximations, so a rule change in the API is a lan
 > `RATE_LIMITED` is unchanged but is now emitted by the four public auth routes as well as the QR
 > scan route.
 
+> `WORKER_ALREADY_EXISTS` was added 2026-09-09 with the Worker entity (wayfinder 059/060, see
+> section 3). It is a `409` carrying `workerId` — the id of the worker the caller already
+> registered under that name — because an inline "create worker" should select the existing one
+> rather than strand the user on an error they cannot act on. Only the contractor app can provoke
+> it; the safety app declares it so the shared envelope stays exhaustive.
+
 `CERT_BLOCKED` is an **audit action**, not an error code — an entry-denial answers `403 CERT_EXPIRED`
 or `403 CERT_MISSING` and *writes* a `CERT_BLOCKED` audit row.
 
@@ -148,6 +154,33 @@ vocabulary.
 ---
 
 ## 3. Business rules that must not drift
+
+### A worker is a record, not a name (wayfinder 059/060, 2026-09-09)
+
+Until 2026-09-09 a worker was a free-text `workerName` on three tables, joined by string. The same
+person could be entered under two spellings, and the two certificate gates — submit and entrant
+scan — matched that name with **no contractor scope**, so one contractor's certificate satisfied
+another's gate while their own suggestion list could never show it.
+
+`Worker` is now an entity, owned by the contractor **account** that registered them
+(`ContractorProfile.firmName` remains descriptive and is **not** a tenant key; this deployment is
+single-tenant). `Certificate`, `PermitWorker` and `EntrantEvent` all carry `workerId NOT NULL`;
+none of them has a `workerName` column any more.
+
+What each frontend must know:
+
+- **Identity is the id.** A permit worker row, a certificate and an entrant scan all send
+  `workerId`. Names are echoed in responses for display and are never accepted as identity.
+- **Uniqueness is per contractor, case- and whitespace-insensitive.** Enforced on a derived
+  `nameKey`, never on `name`. Clients never send `nameKey`.
+- **The worker's QR card encodes the `workerId`.** An offline scanner has nothing to resolve a
+  name against; this is why the identity moved onto the card.
+- **`Worker.role` is who a person is; `PermitWorker.roleOnPermit` is what they do on one permit.**
+  Different fields, different vocabularies, and `Certificate.role` was dropped — it only ever
+  copied the person's role onto every card.
+- **Retirement is `deletedAt`.** A worker referenced by a permit is never hard-deleted.
+- **Contractors read and write their own workers; safety officers and inspectors read all.** The
+  same branch `GET /certificates` already applies.
 
 These are stated once in `docs/main/dev-handoff/00-SHARED-CONTEXT.md` and enforced
 **server-side** — a frontend may mirror them for instant feedback, but the server response is

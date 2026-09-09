@@ -132,6 +132,28 @@
       ],
       "status": "done",
       "evidence": "2026-09-09. ./init.sh All checks passed — typecheck PASS, lint PASS (0 errors), vitest 66 files / 563 tests PASS, contrast PASS, icons PASS, live API smoke PASS against a running backend. Tests: src/tests/pages/certificate/{CertificateDetailPage,CertificateEditPage}.test.ts, 11 tests. The edit page's three attachment cases were mutation-checked — making buildPayload always send filePath turns 2 of them red, so 'absent means keep' is genuinely asserted rather than incidentally true."
+    },
+    {
+      "id": "CRT-007",
+      "type": "fix",
+      "name": "Repoint the certificate write paths at worker identity",
+      "description": "wayfinder 060 landed backend-first and broke every certificate WRITE path in this app. Repoints them at `workerId`: ICertificate (+workerId, −role), both payload models, Certificate.provider including byWorker → /worker/{workerId}, AddCertificate.schema, the three certificate forms, and the two display sites that rendered `certificate.role`. Adds the worker model, provider and a shared WorkerPicker. NOT wayfinder 061-063 — no worker directory, and Step 4 is untouched.",
+      "acceptance": [
+        "ICertificate carries workerId; `role` is gone (it describes the person and moved to Worker)",
+        "Create and update payloads send workerId; neither accepts workerName or role",
+        "byWorker takes a number and hits /certificates/worker/{workerId} — the name-keyed route was an unscoped cross-tenant read",
+        "src/components/worker/WorkerPicker.vue: search, select, inline create, and adopt the workerId carried by a 409 WORKER_ALREADY_EXISTS",
+        "All three certificate forms use the picker; none has a role field",
+        "useCertificatePreflight checks only rows that carry a workerId, and reports 'unknown' for the rest rather than claiming a pass",
+        "./init.sh green"
+      ],
+      "notes": "Two traps for whoever takes 063. (1) WorkerPicker is a component, not an <input>, so @primevue/forms never sees its value — the form needs a hidden input registering `workerId` or submit silently no-ops. (2) Build the payload from `formData`, not from the Form's emitted `values`: mixing the two sources is how this sent `undefined` after the picker landed. Reuse WorkerPicker rather than writing a second autocomplete; per the other session, 063 also needs inline-create-asking-role-only, which it already does.",
+      "dependencies": [
+        "CRT-005",
+        "CRT-006"
+      ],
+      "status": "done",
+      "evidence": "2026-09-09. ./init.sh All checks passed — typecheck PASS (0 errors, from 16), lint PASS, vitest 66 files / 563 tests PASS, contrast PASS, icons PASS, live API smoke PASS. The type system found the whole blast radius: 16 errors across 8 source files and 6 test files, which is exactly the surface enumerated before starting. Note the smoke gate passed BEFORE this fix too — it exercises read paths only and responses still echo workerName, so it was green while every write path was broken; the other session has since added a workerId assertion to it."
     }
   ]
 }

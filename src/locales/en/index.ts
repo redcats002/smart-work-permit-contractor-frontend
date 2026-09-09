@@ -5,6 +5,7 @@ import history from '@/locales/en/history'
 import permit from '@/locales/en/permit'
 import platform from '@/locales/en/platform'
 import profile from '@/locales/en/profile'
+import worker from '@/locales/en/worker'
 
 /**
  * English locale — the schema every other locale is typed against.
@@ -19,7 +20,8 @@ const en = {
   certificate,
   common,
   error,
-  profile
+  profile,
+  worker
 }
 
 export default en

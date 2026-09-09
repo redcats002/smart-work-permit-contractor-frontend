@@ -43,8 +43,8 @@ function stubMatchMedia (): void {
 function certificate (overrides: Partial<ICertificate> = {}): ICertificate {
   return {
     id: 1,
+    workerId: 1,
     workerName: 'Somchai',
-    role: 'Operator',
     certType: 'Hot Work',
     issuedDate: '2026-01-01',
     expiryDate: '2027-01-01',
@@ -57,7 +57,7 @@ function certificate (overrides: Partial<ICertificate> = {}): ICertificate {
 function baseFormData (): IUpdatePermitDraftPayload {
   return {
     type: 'hot',
-    workers: [{ workerName: '', roleOnPermit: 'Operator' } as IPermitWorker]
+    workers: [{ workerId: 100, workerName: '', roleOnPermit: 'Operator' } as IPermitWorker]
   }
 }
 
@@ -213,7 +213,7 @@ describe('Step4PpeWorkers — worker-name AutoComplete (wayfinder ticket 004)', 
     // The parent's write-back lands before the deferred commit runs, so it hashes the settled
     // name — which is why the blur and the select collapse into a single lookup, not two.
     await wrapper.setProps({
-      formData: { type: 'hot', workers: [{ workerName: 'Somchai', roleOnPermit: 'Operator' }] }
+      formData: { type: 'hot', workers: [{ workerId: 761, workerName: 'Somchai', roleOnPermit: 'Operator' }] }
     } as never)
     await vi.advanceTimersByTimeAsync(1)
     await flushPromises()

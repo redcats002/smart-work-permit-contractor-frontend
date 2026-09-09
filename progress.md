@@ -2940,3 +2940,41 @@ green. A gate never seen failing is not known to work.
 
 Verified: `./init.sh` All checks passed — typecheck, lint, 563 tests, contrast (29 pairs, 21 ΔE),
 icons, live API smoke.
+
+## 2026-09-09 — CRT-007: repoint the certificate write paths at worker identity
+
+wayfinder 060 landed backend-first in another session and broke every certificate **write** path
+here. This repoints them; it is not 061-063.
+
+`workerName` is gone from the wire as an input. A worker is a record now, so `ICertificate` carries
+`workerId`, and `role` is gone from the certificate entirely — it describes the person, not the
+card. `byWorker` takes an id and hits `/certificates/worker/{workerId}`; the name-keyed route it
+replaces was not contractor-scoped, which was a cross-tenant read.
+
+New: `Worker` model, `Worker.provider`, and `src/components/worker/WorkerPicker.vue` — search,
+select, inline create, and adopt the `workerId` a `409 WORKER_ALREADY_EXISTS` carries rather than
+showing a conflict. Deliberately standalone so wayfinder 063's Step 4 reuses it instead of building
+a second worker autocomplete.
+
+**`useCertificatePreflight` now checks only rows that carry a `workerId`.** Step 4 still collects a
+typed name (that is 063), and the name-keyed lookup no longer exists — so a name-only row is not
+checkable and reports `unknown`, which does not block. Guessing would be worse than not knowing,
+and this composable's existing rule is that an unknown answer is neither a pass nor a fail.
+
+Two things worth knowing before touching these forms again:
+
+- `WorkerPicker` is a component, not an `<input>`, so `@primevue/forms` never sees its value. The
+  form needs a hidden input registering `workerId` or **submit silently no-ops** — no error, no
+  request.
+- Build the payload from `formData`, not the Form's emitted `values`. Mixing the two sources is how
+  this sent `undefined` for every field once the picker landed.
+
+**The gate was green while the app was broken.** `scripts/smoke-api.mjs` passed against the live API
+before any of this, because it exercises read paths and responses still echo `workerName` — one of
+its assertions was literally "a certificate row uses workerName, not name". The other session has
+since added a `workerId` assertion. Treat a green smoke as evidence about reads only.
+
+The type system, by contrast, found the entire blast radius: 16 errors across 8 source and 6 test
+files, matching the surface enumerated before starting.
+
+Verified: `./init.sh` All checks passed — typecheck, lint, 563 tests, contrast, icons, live smoke.
