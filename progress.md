@@ -2978,3 +2978,22 @@ The type system, by contrast, found the entire blast radius: 16 errors across 8 
 files, matching the surface enumerated before starting.
 
 Verified: `./init.sh` All checks passed — typecheck, lint, 563 tests, contrast, icons, live smoke.
+
+## 2026-09-09 — PLT-014: split sign-in screen
+
+Form left, gradient brand panel right, on the owner's reference layout. The layout comes from the
+reference; the colour comes from this app's own brand ramp rather than the mockup's navy, because a
+navy sign-in on a red-branded app fights both the design system and the contrast gate.
+
+The mesh is four overlapping CSS radial gradients, not an image — this app is first-party only and
+runs inside an industrial facility, so a decorative background must not cost a fetch or a binary.
+Below `lg` the panel is dropped entirely; it is `aria-hidden` and non-interactive, so nothing is
+lost on a phone, and a squeezed two-column layout at 375px would be worse than one column.
+
+**The scrim is load-bearing, not decoration.** White clears AA against the panel base at 15:1 but
+sits at 3.44:1 over the lightest mesh stop, and a gradient has no single background colour for a
+contrast gate to check. The scrim gives the copy a known floor and the new gate row asserts that
+floor — the only version of this that can be verified rather than eyeballed. Remove the scrim and
+the row stops describing what renders; remove the row with it.
+
+Verified: `./init.sh` All checks passed — 563 tests, contrast 30 pairs, live API smoke.

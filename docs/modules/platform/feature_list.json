@@ -267,6 +267,26 @@
       ],
       "status": "done",
       "evidence": "2026-09-09. ./init.sh All checks passed — typecheck PASS, lint PASS, vitest 66 files / 563 tests PASS, contrast PASS (29 colour pairs, 21 ΔE pairs — up from 26), icons PASS, live API smoke PASS. Gate proven: pointing the new white-on-accent row at color-accent-500 (what the code rendered) failed at 3.05:1; retargeting to accent-700 after the token fix passes at 5.71:1. Favicons now differ — c4fd2a10… (contractor) vs 88e214e3… (safety), previously both 5ea97da3…."
+    },
+    {
+      "id": "PLT-014",
+      "type": "feature",
+      "name": "Split sign-in screen",
+      "description": "Rebuilds LoginPage on the owner's reference layout: form left, gradient brand panel right. Layout from the reference, colour from this app's own brand ramp — a navy sign-in on a red-branded app would fight the design system and the contrast gate.",
+      "acceptance": [
+        "Two-column at lg and above; below lg the panel is dropped and the form takes the full viewport",
+        "The panel is aria-hidden and non-interactive, so nothing is lost when it is hidden",
+        "The mesh is CSS radial-gradients, not an image — first-party only, no fetch, no binary",
+        "A scrim guarantees the copy's contrast instead of it depending on where the mesh is light",
+        "check-contrast.mjs asserts the scrim floor",
+        "./init.sh green"
+      ],
+      "notes": "The scrim is the load-bearing part, not styling. White is 15:1 on the panel base but 3.44:1 over the lightest mesh stop, and a gradient has no single background colour a contrast gate can check — so the assertion is against the scrim's floor. If the scrim is ever removed the gate row stops describing what renders and must be removed with it, or it becomes another check measuring something narrower than it appears to.",
+      "dependencies": [
+        "PLT-013"
+      ],
+      "status": "done",
+      "evidence": "2026-09-09. ./init.sh All checks passed — typecheck, lint, vitest 66 files / 563 tests, contrast 30 pairs (up from 29), icons, live API smoke. Commit ef0721fc."
     }
   ]
 }
