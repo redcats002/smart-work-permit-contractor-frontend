@@ -244,6 +244,29 @@
       ],
       "status": "done",
       "evidence": "2026-08-23: ./init.sh green — eslint 0 errors, vue-tsc 0 errors, vitest 49 files / 456 tests, live API contract smoke passed. src/tests/pages/profile/ProfileDetailPage.test.ts, 5 tests: renders /users/me, company record read-only, no role/activation control at all, payload carries only allow-listed fields with an empty phone omitted, and the error path renders the localized string while asserting the raw backend message is NOT rendered."
+    },
+    {
+      "id": "PLT-013",
+      "type": "feature",
+      "name": "App identity, and the contrast gate's white-on-brand blind spot",
+      "description": "wayfinder 058. Give this app an identity distinct from the Safety app — 'e-safework Contractor', a red favicon, and chrome painted in this app's own primary instead of --color-accent-500, which is literally the Safety app's brand primary. Fixes the WCAG AA failure found while doing it: white on --color-accent-500 is 3.05:1 across FireMonitorPanel, AuthHeader, both permit-detail modals and the detail-page CTA, and scripts/check-contrast.mjs never checked white-on-brand at all.",
+      "acceptance": [
+        "index.html <title> and the router's DEFAULT_TITLE both read 'e-safework Contractor'",
+        "platform.appName is 'e-safework Contractor' (en) / 'e-safework ผู้รับเหมา' (th), using the role word the app already ships",
+        "favicon.svg recoloured to #c81e2c and no longer byte-identical to the Safety app's",
+        "Topbar border, topbar logo square, sidebar active marker and AuthHeader use --color-primary-*, not --color-accent-*",
+        "The topbar square's text flips to white with the background — dark-on-red is 3.23:1 where dark-on-orange was 6.06:1",
+        "--color-accent / --color-accent-emphasis point at the 700/800; the 500 stays the decorative fill that carries DARK text",
+        "Fire Monitor stays orange — semantic, not decorative",
+        "check-contrast.mjs gains white-on-brand rows AND was seen failing at 3.05:1 before the fix",
+        "./init.sh green"
+      ],
+      "notes": "The gate being blind to its own brand colours is the third instance of this shape (wayfinder 026, 027, 058). When adding a colour that carries text, add its pair to check-contrast.mjs in the same change — and point the row at the shade the CODE uses, then watch it fail, before fixing. A row added straight at the correct value proves nothing.",
+      "dependencies": [
+        "PLT-002"
+      ],
+      "status": "done",
+      "evidence": "2026-09-09. ./init.sh All checks passed — typecheck PASS, lint PASS, vitest 66 files / 563 tests PASS, contrast PASS (29 colour pairs, 21 ΔE pairs — up from 26), icons PASS, live API smoke PASS. Gate proven: pointing the new white-on-accent row at color-accent-500 (what the code rendered) failed at 3.05:1; retargeting to accent-700 after the token fix passes at 5.71:1. Favicons now differ — c4fd2a10… (contractor) vs 88e214e3… (safety), previously both 5ea97da3…."
     }
   ]
 }
