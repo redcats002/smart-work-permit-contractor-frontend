@@ -2997,3 +2997,48 @@ floor — the only version of this that can be verified rather than eyeballed. R
 the row stops describing what renders; remove the row with it.
 
 Verified: `./init.sh` All checks passed — 563 tests, contrast 30 pairs, live API smoke.
+
+## 2026-09-10 — wayfinder 071: neither field-reported defect reproduces on `dev`
+
+Two reports, both traced to ground before touching anything (`/debug-mantra`). Neither needed a
+code change.
+
+**Defect A — "pinned it and it still said I didn't pin, can't submit."** The ticket named three
+candidates for `usePlanPosition.stateFor` returning `'fail'` against a visibly-drawn pin, and
+flagged the third — `renderedPlan` still `undefined` at click time, so `onFrameClick` emits
+`position.planId: undefined` while a pin renders anyway — as the one matching the report. It does
+not reproduce: `onFrameClick` guards on `!renderedPlan.value` and returns early, and the clickable
+frame (`v-else-if="imageUrl"`) does not exist in the DOM until `loadPlanImage` has already set
+`renderedPlan.value` (that assignment happens before the `imageUrl`-setting await, not after) — so
+a click is never physically possible while `renderedPlan` is still unset. Proved with a scratch
+repro first (frame absent while the image fetch is held open forever), then folded into
+`Step7Position.pin.test.ts`, which also falsifies the other two candidates: the build has emitted
+all three position fields since the step's first commit (`078e749a`), and `onAreaChange` only
+forwards a `position` key when the newly-picked area actually carries a default one, so picking one
+that doesn't never overwrites an existing pin. No commit fixed this because the guard has been
+correct since the feature was born — there is nothing to name.
+
+One real but unrelated latent bug found in the same read: `usePlanPosition.stateFor`'s
+`position.planId && …` is a truthiness check, not a `typeof === 'number'` one, so a plan with
+`id === 0` would wrongly read as unpinned. `FacilityPlan.id` is `@default(autoincrement())` in the
+API schema, so no plan can have id 0 — this cannot be the field report, and per PROMPT-LOG's
+scope-discipline rule it is recorded here rather than "fixed" for a defect it does not cause.
+
+**Defect B — "shows only 4 pins, more or less than it actually has."** Ticket's own leading
+candidate (`AreaPicker`'s server-page-size truncation) was already ruled out by the ticket's own
+math (4 ≠ 10) and confirmed absent in code: `AreaPicker.fetchApprovedAreas` has passed
+`limit: 9999` since the picker's first commit (`2cb1d995`), the provider forwards it verbatim
+(`HttpRequest.get`), and the response envelope unwraps to a plain array with no pagination wrapper
+surviving into `approvedAreas`. What the picker counts is APPROVED areas visible to the signed-in
+contractor (`AREA_VISIBILITY_SCOPED`, wayfinder 044) — a status-and-visibility filter, not a page
+size. "4" is very plausibly the true count of approved-and-visible areas for that account. This is
+the same read the round-3 fact-check already recorded in
+`docs/wayfinder/assets/field-report-2026-09-10.md`: a UI-clarity gap in an existing, correct design,
+not a client defect. No code change made.
+
+The pre-flight gate (`usePlanPosition`'s `'none'`/`'loading'` states) was not touched.
+
+New test: `src/tests/pages/permit/create/components/steps/Step7Position.pin.test.ts` (3 cases).
+
+Verified: `./init.sh` — typecheck PASS, lint PASS (2 pre-existing warnings, unrelated), **67 files /
+566 tests PASS**, contrast PASS (30 pairs), icons PASS, smoke SKIP (no local API running).
