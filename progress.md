@@ -3560,3 +3560,111 @@ on that repo; flagging rather than silently living with a failing check.
 `CertificateListPage.filters.test.ts`), contrast PASS, icons PASS, smoke 15/15 PASS against a live
 backend on `localhost:3000` (another agent's `bun run dev`, already running — not started by this
 session).
+
+## 2026-09-11 — wayfinder 115: licence number + description on all four certificate entry points, `Gas Testing` dropped
+
+**Asked:** the contractor halves of 095 (`licenceNo`/`description` + the one-of rule) and 096
+(drop `Gas Testing` from `ECertType`) — both API halves shipped the same day (`c06d810`), and this
+repo's `check-worker-vocabulary-sync.mjs` was left deliberately reporting `ECertType DRIFTED` as
+the propagation signal.
+
+**Built:**
+- `licenceNo`/`description` added to `ICertificate`, `ICreateCertificatePayload`,
+  `IUpdateCertificatePayload` (both optional; no `null` variant for either on the wire, unlike
+  `filePath` — confirmed against `docs/api/openapi.json`'s PATCH schema).
+- Both fields on all four entry points 086 established: the list's `AddCertificateModal.vue`, the
+  wizard's `CreateCertificateModal.vue`, worker detail's `AddWorkerCertificateModal.vue` (all three
+  CREATE, reading `formData` per 086's own fix), and `CertificateEditPage.vue` (EDIT). EN + TH via
+  new `certificate.form.field.{licenceNo,licenceNoPlaceholder,description,descriptionPlaceholder,
+  licenceOrAttachmentHint}` keys.
+- `ECertType` drops `GAS_TESTING`; `ROLE_ALLOWED_CERT_TYPES[GAS_TESTER]` narrowed to
+  `[CONFINED_SPACE_ENTRY]` (the array can no longer reference the removed member); the
+  `certificate.type['gas-testing']` locale key removed both languages.
+  `node scripts/check-worker-vocabulary-sync.mjs` (from the workspace root) now reports both
+  `ECertType` (3 values) and `EWorkerRole` (10 values) in sync.
+- **The "omit untouched fields" discipline** (045's `areaId` precedent, restated by this ticket for
+  `licenceNo`/`filePath`) is what `CertificateEditPage.vue`'s `buildPayload()` already did for
+  `filePath`; extended here to `licenceNo` and `description`, compared against
+  `existingLicenceNo`/`existingDescription` (trimmed once at hydrate, not per comparison) rather
+  than a fixed default — a key is sent only when the loaded value and the current form value
+  differ.
+
+**The one-of rule (`CERT_LICENCE_OR_ATTACHMENT_REQUIRED`) is mirrored, but NOT as a zod
+`.refine()`** — every earlier draft of this ticket's work used one, and it does not work, for a
+reason worth recording precisely because it silently does nothing rather than failing loudly:
+
+**A false claim in 061/086, found while building the mirror and confirmed against
+`@primevue/forms`'s own source.** Both tickets' comments read *"Without [the hidden `<input
+type="hidden" name="workerId">`] the resolver never sees workerId... submit silently no-ops"* —
+true of the FIRST half, false of the implication in the second. `node_modules/@primevue/forms/form/
+index.mjs` exposes `register` via `provide('$pcForm')`; only a PrimeVue form-aware component (a
+`Select`, `DatePicker`, `InputText` — anything using `useFormField`) ever calls it via `inject`. A
+bare native `<input type="hidden">` never does, with or without a `:value` binding. Traced through
+`node_modules/@primevue/forms/useform/index.mjs`: the resolver's `values` are built from
+`_states` (`Object.entries(_states).reduce(...)`), and `_states` only gains a `workerId` entry
+via `register()` — so `workerId` is ABSENT from every resolver call, `z.number()` fails the
+schema's base object parse every time regardless of what `formData.workerId` holds, and zod does
+not run `.refine()` chains past a failed base parse. `event.valid` is unaffected only because
+`valid = Object.values(_states).every(f => !f.invalid)` — and `workerId`, never having a `_states`
+entry, cannot drag that aggregate down either. Net effect: TWO defects that exactly cancel out and
+hide each other — `event.valid` reads `true` regardless of any schema-level violation, and nothing
+downstream of `workerId` in field declaration order (`expiryAfterIssued` included — also dead code,
+pre-existing, not introduced by this ticket) ever gets evaluated. Confirmed empirically: a
+temporary `console.error(JSON.stringify(event))` inside `AddCertificateModal.vue`'s `onSubmit`,
+run against the ALREADY-PASSING (unmodified) "no-op trap" test from 086, printed
+`{"valid":true,"errors":{"workerId":[...]}}` — a passing test asserting on the eventual
+`create()` payload (read from `formData`, never `event.values`/validated output — 086's own fix)
+had been masking this the whole time. **Not fixed here** — the blast radius (every WorkerPicker-
+based form across the app) is well outside 115's scope; recorded so the next session does not
+"fix" a schema refine back in believing it works.
+
+**The actual mirror**: an explicit `violatesLicenceOrAttachmentRule()` in each entry point's own
+`onSubmit`/`buildPayload`, independent of `event.valid`/the schema entirely — exactly the shape
+`CertificateEditPage.vue` already needed regardless (its version is condition-on-touched-fields;
+the three create forms' version is unconditional, since creation has no existing attachment to
+fall back on). Surfaced through whatever each file already used for its own API-failure path:
+`toast.error` in `AddCertificateModal.vue` (no inline paragraph there), `submitErrorMessage` in
+the other two — all three call `useApiError().mapError({ code: 400, errorCode:
+EApiErrorCode.CERT_LICENCE_OR_ATTACHMENT_REQUIRED })` so the client-mirrored copy is byte-identical
+to what a real 400 from the server would render.
+
+**Tests** (`src/tests/pages/certificate/{AddCertificateModal,CertificateEditPage}.test.ts`):
+- Creating with neither surfaces the localized error via `toast.error` and never calls
+  `CertificateService.create`; a licence number alone (no attachment) is enough to submit.
+- Editing a pre-095 certificate's (`licenceNo: null`, `filePath: null`) expiry date alone sends
+  neither `licenceNo` nor `filePath` nor `description`, and does not error.
+- Clearing the only licence number on a certificate with no attachment (a real "touches the gate"
+  case) surfaces the localized error and does not call `update`.
+- A licence number already on file is left alone (still omitted) by an unrelated edit.
+- One pre-existing test (`sends an explicit null once the attachment is marked for removal`) was
+  editing a fixture that, post-115, would legitimately violate the one-of rule (attachment-only,
+  no licence, both removed) — given a `licenceNo` in its fixture instead, since that test is about
+  `filePath`'s null semantics, not this rule.
+
+**A second, unrelated latent bug found and fixed in the same test file**: `AddCertificateModal.test.ts`
+mounts every test with `attachTo: document.body` and none had ever unmounted — harmless while the
+file had two tests (the first always closed its own dialog on a successful submit, and nothing ran
+after the second), but the moment a third test needed the DOM to be clean, `document.querySelector`/
+`body()` lookups started resolving to a PREVIOUS test's still-open dialog. Added `afterEach(() => {
+document.body.innerHTML = ''; vi.restoreAllMocks() })`.
+
+**Verified against a live API** (this session's own `bun run dev`, started and stopped by this
+session; no other `smart-work-permit-api` process was listening on `:3000` beforehand):
+
+```
+=== Verification Summary ===
+All checks passed.
+```
+typecheck PASS, lint PASS (2 pre-existing warnings, unrelated), 76 files / 623 tests PASS (up from
+618), contrast PASS, icons PASS, smoke 15/15 PASS against a live backend.
+
+`node scripts/check-worker-vocabulary-sync.mjs` (workspace root) — `ECertType in sync (3 values)`,
+`EWorkerRole in sync (10 values)`.
+
+Out of scope, left alone per the ticket: `Area`/`Worker.role`/the permit coordinate/`Gas Testing`
+on the safety/inspector app (ticket 096's other half already shipped, api-side); the `EWorkerRole`/
+`ROLE_ALLOWED_CERT_TYPES` role-filtering behaviour itself (103's job, not 115's); `CONTEXT.md`/
+`PROMPT-LOG.md` still list `CERT_LICENCE_OR_ATTACHMENT_REQUIRED` under "queued, not yet built" —
+correcting that requires editing the workspace-root copy and re-running the cross-repo copy loop,
+which is out of scope for a single-repo session and left for whoever closes the ticket.
+`src/pages/auth/pages/login/constants/DemoAccounts.ts` untouched per instruction.

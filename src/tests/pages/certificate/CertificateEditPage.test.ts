@@ -87,6 +87,62 @@ beforeEach((): void => {
   mockMatchMedia()
 })
 
+/**
+ * Wayfinder 095/115 — the trap the ticket names by name: the server only re-checks the one-of
+ * rule (`CERT_LICENCE_OR_ATTACHMENT_REQUIRED`) when the PATCH body touches `licenceNo` or
+ * `filePath`. A pre-095 certificate has neither, and is legal and editable today — a form that
+ * round-trips its whole model would trip that error on every one of them just by saving an
+ * unrelated field.
+ */
+describe('CertificateEditPage — the licence-or-attachment one-of rule (wayfinder 095/115)', () => {
+  it('editing the expiry date alone on a pre-095 certificate sends neither licenceNo nor filePath, and does not error', async (): Promise<void> => {
+    const update = vi.spyOn(CertificateProvider.prototype, 'update').mockResolvedValue({
+      message: 'success',
+      data: buildCertificate({ licenceNo: null, description: null, filePath: null })
+    })
+
+    const wrapper = await mountPage(buildCertificate({ licenceNo: null, description: null, filePath: null }))
+
+    await wrapper.find('input[name="expiryDate"]').setValue('2031-01-01')
+    await submit(wrapper)
+
+    expect(update).toHaveBeenCalledTimes(1)
+    const payload = update.mock.calls[0][1] as IUpdateCertificatePayload
+    expect('licenceNo' in payload).toBe(false)
+    expect('filePath' in payload).toBe(false)
+    expect('description' in payload).toBe(false)
+    expect(wrapper.text()).not.toContain('licence number or an attached image')
+  })
+
+  it('clearing the only licence number on a certificate with no attachment surfaces the localized error and does not call the API', async (): Promise<void> => {
+    // Unlike the "expiry alone" case above, this DOES touch licenceNo — the final state after
+    // this PATCH would leave the certificate with neither, which is exactly what the server
+    // re-checks for once the key is present at all.
+    const update = vi.spyOn(CertificateProvider.prototype, 'update')
+
+    const wrapper = await mountPage(buildCertificate({ licenceNo: 'LIC-9', description: null, filePath: null }))
+
+    await wrapper.find('input[name="licenceNo"]').setValue('')
+    await submit(wrapper)
+
+    expect(update).not.toHaveBeenCalled()
+    expect(wrapper.text()).toContain('A certificate needs either a licence number or an attached image — at least one.')
+  })
+
+  it('a licence number already on file is left alone by an unrelated edit (still omitted)', async (): Promise<void> => {
+    const update = vi.spyOn(CertificateProvider.prototype, 'update').mockResolvedValue({
+      message: 'success',
+      data: buildCertificate({ licenceNo: 'LIC-9', filePath: null })
+    })
+
+    const wrapper = await mountPage(buildCertificate({ licenceNo: 'LIC-9', filePath: null }))
+    await submit(wrapper)
+
+    const payload = update.mock.calls[0][1] as IUpdateCertificatePayload
+    expect('licenceNo' in payload).toBe(false)
+  })
+})
+
 describe('CertificateEditPage — the three attachment cases', () => {
   it('OMITS filePath when the file input was never touched, so the server keeps it', async (): Promise<void> => {
     // The single most damaging thing this page could get wrong: an edit to an unrelated field
@@ -110,7 +166,11 @@ describe('CertificateEditPage — the three attachment cases', () => {
       data: buildCertificate({ filePath: null })
     })
 
-    const wrapper = await mountPage(buildCertificate())
+    // wayfinder 095/115 — a licenceNo is on file already, so removing the sole attachment still
+    // leaves the one-of rule satisfied. Removing it with NEITHER present is covered separately,
+    // under "the licence-or-attachment one-of rule" above — this test is about filePath's null
+    // semantics, not that rule.
+    const wrapper = await mountPage(buildCertificate({ licenceNo: 'LIC-1' }))
     await wrapper.find('[data-test="toggle-remove-attachment"]').trigger('click')
     await submit(wrapper)
 

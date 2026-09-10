@@ -67,13 +67,13 @@ describe('buildCertTypeOptions — an existing certificate\'s stored value alway
   })
 
   it('a real ECertType value merely excluded by the role filter is appended, NOT flagged legacy', () => {
-    // An Entrant's card is normally Confined Space Entry; Gas Testing is a real vocabulary value
+    // An Entrant's card is normally Confined Space Entry; Hot Work is a real vocabulary value
     // but is not in ENTRANT's allowed set. It must still be selectable, just not lost.
-    const { options } = buildCertTypeOptions(EWorkerRole.ENTRANT, ECertType.GAS_TESTING)
+    const { options } = buildCertTypeOptions(EWorkerRole.ENTRANT, ECertType.HOT_WORK)
 
-    const gasTesting = options.find((option: ICertTypeOption): boolean => option.value === ECertType.GAS_TESTING)
-    expect(gasTesting).toBeDefined()
-    expect(gasTesting?.legacy).toBe(false)
+    const hotWork = options.find((option: ICertTypeOption): boolean => option.value === ECertType.HOT_WORK)
+    expect(hotWork).toBeDefined()
+    expect(hotWork?.legacy).toBe(false)
   })
 
   it('does not duplicate the current value when it is already in the filtered set', () => {

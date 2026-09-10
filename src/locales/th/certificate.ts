@@ -39,8 +39,7 @@ const certificate: typeof certificateEn = {
   type: {
     'hot-work': 'งานร้อน (Hot Work)',
     'confined-space-entry': 'ที่อับอากาศ (Confined Space Entry)',
-    'working-at-heights': 'ทำงานบนที่สูง (Working at Heights)',
-    'gas-testing': 'การตรวจวัดแก๊ส (Gas Testing)'
+    'working-at-heights': 'ทำงานบนที่สูง (Working at Heights)'
   },
   detail: {
     title: 'รายละเอียดใบรับรอง',
@@ -79,6 +78,11 @@ const certificate: typeof certificateEn = {
       certTypeLegacyLabel: '{value} (ไม่อยู่ในรายการมาตรฐาน)',
       issuedDate: 'วันที่ออก',
       expiryDate: 'วันหมดอายุ',
+      licenceNo: 'เลขที่ใบอนุญาต',
+      licenceNoPlaceholder: 'กรอกเลขที่ใบอนุญาต (ไม่บังคับ)',
+      description: 'รายละเอียด',
+      descriptionPlaceholder: 'รายละเอียดการอบรมหรือการทดสอบ (ไม่บังคับ)',
+      licenceOrAttachmentHint: 'ต้องมีเลขที่ใบอนุญาตหรือไฟล์แนบอย่างน้อยหนึ่งอย่าง',
       file: 'ไฟล์แนบ',
       filePlaceholder: 'แนบไฟล์ (ไม่บังคับ)'
     },

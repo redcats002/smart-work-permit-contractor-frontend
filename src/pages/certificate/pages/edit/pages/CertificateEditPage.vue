@@ -101,6 +101,36 @@
             fluid
             show-icon />
         </LabelField>
+        <!-- wayfinder 095/115 — a certificate needs a licence number OR an attachment, at least
+             one. The hint states the rule; the server only re-checks it when this PATCH touches
+             licenceNo or filePath (buildPayload/onSubmit mirror that, never beyond it), so an
+             edit that leaves both untouched cannot trip this on a pre-095 certificate. -->
+        <LabelField
+          v-slot="{ invalid }"
+          :description="t('certificate.form.field.licenceOrAttachmentHint')"
+          :form="$form"
+          :label="t('certificate.form.field.licenceNo')"
+          name="licenceNo"
+          tag="div">
+          <InputText
+            v-model="formData.licenceNo"
+            :invalid="invalid"
+            :placeholder="t('certificate.form.field.licenceNoPlaceholder')"
+            name="licenceNo"
+            fluid />
+        </LabelField>
+        <LabelField
+          :form="$form"
+          :label="t('certificate.form.field.description')"
+          name="description"
+          tag="div">
+          <Textarea
+            v-model="formData.description"
+            :placeholder="t('certificate.form.field.descriptionPlaceholder')"
+            name="description"
+            rows="3"
+            fluid />
+        </LabelField>
 
         <LabelField
           :form="$form"
@@ -202,6 +232,7 @@ import {
 } from '@/pages/certificate/schema/AddCertificate.schema'
 import type { IUpdateCertificatePayload } from '@/models/request/certificate/CertificateReq.model'
 import CertificateProvider, { type ICertificateProvider } from '@/resources/provider/certificate/Certificate.provider'
+import { EApiErrorCode } from '@/enums/modules/error/ApiErrorCode.enum'
 
 const CertificateService: ICertificateProvider = new CertificateProvider()
 
@@ -217,6 +248,11 @@ const removeFile = ref(false)
 const loading = ref(true)
 const loadFailed = ref(false)
 const submitErrorMessage = ref<string | undefined>(undefined)
+// wayfinder 095/115 — the licenceNo the certificate loaded with, so buildPayload can tell "the
+// user changed it" from "it arrived from hydrate and was never touched" (same discipline 045
+// established for areaId). Compared against formData.licenceNo, never re-derived from it.
+const existingLicenceNo = ref('')
+const existingDescription = ref('')
 // wayfinder 086 — filters CertTypeSelect's options; undefined (full vocabulary) until the user
 // re-picks the worker through WorkerPicker's suggestion list.
 const selectedWorkerRole = ref<string | undefined>(undefined)
@@ -228,7 +264,9 @@ function onWorkerSelected (worker: IWorker | undefined): void {
 const certificateId: ComputedRef<number> = computed((): number => Number(route.params.id))
 
 // The create form's schema, reused unchanged. The fields are identical, and a second schema for
-// one shape drifts — the two would disagree about the file allowlist first.
+// one shape drifts — the two would disagree about the file allowlist first. The one-of rule
+// (licenceNo or an attachment) is NOT expressed in this schema at all — see its own comment for
+// why — so there is nothing here that would need to differ between create and edit anyway.
 const resolver = zodResolver(AddCertificateSchema)
 
 function onFileChange (event: Event): void {
@@ -252,6 +290,14 @@ function goBack (): void {
  *
  * Sending `undefined` and omitting are the same on the wire, but building the key conditionally
  * says which case is intended at the point it is decided.
+ *
+ * wayfinder 095/115 — `licenceNo`/`description` get the same "omit when untouched" discipline,
+ * compared against `existingLicenceNo`/`existingDescription` (what the certificate loaded with),
+ * not against a fixed default. This is the whole fix for the trap this ticket names: the server
+ * only re-checks the one-of rule when the patch touches `licenceNo` or `filePath`, so a form that
+ * resent `licenceNo: ''` for a field nobody touched would trip `CERT_LICENCE_OR_ATTACHMENT_REQUIRED`
+ * on every pre-095 certificate. Unlike `filePath` there is no `null` variant for these two on the
+ * wire — clearing one means sending `''`, which still counts as "touched" here.
  */
 async function buildPayload (): Promise<IUpdateCertificatePayload> {
   // Read from `formData`, not from the Form's emitted `values`. Every field here is v-model-bound,
@@ -264,6 +310,12 @@ async function buildPayload (): Promise<IUpdateCertificatePayload> {
     issuedDate: dayjs(formData.value.issuedDate).format('YYYY-MM-DD'),
     expiryDate: dayjs(formData.value.expiryDate).format('YYYY-MM-DD')
   }
+
+  const licenceNo = formData.value.licenceNo.trim()
+  if (licenceNo !== existingLicenceNo.value) payload.licenceNo = licenceNo
+
+  const description = formData.value.description.trim()
+  if (description !== existingDescription.value) payload.description = description
 
   if (formData.value.file) {
     const file = formData.value.file
@@ -280,6 +332,22 @@ async function buildPayload (): Promise<IUpdateCertificatePayload> {
   return payload
 }
 
+/**
+ * wayfinder 095/115 — mirrors the server's one-of rule for feedback, never beyond it: only checked
+ * when the built payload actually touches `licenceNo` or `filePath` (exactly the condition under
+ * which the server re-checks it), using the FINAL state each would leave the certificate in. A
+ * payload that omits both keys always passes — that is the "expiry date alone" case this ticket's
+ * own required test covers.
+ */
+function violatesLicenceOrAttachmentRule (payload: IUpdateCertificatePayload): boolean {
+  const touchesGate = 'licenceNo' in payload || 'filePath' in payload
+  if (!touchesGate) return false
+
+  const finalLicenceNo = 'licenceNo' in payload ? payload.licenceNo : existingLicenceNo.value
+  const finalFilePath = 'filePath' in payload ? payload.filePath : existingFilePath.value
+  return !finalLicenceNo && !finalFilePath
+}
+
 function onSubmit (event: FormSubmitEvent): void {
   if (!event.valid) {
     scrollToFirstError(event.errors)
@@ -288,6 +356,10 @@ function onSubmit (event: FormSubmitEvent): void {
   submitErrorMessage.value = undefined
   handleLoading(async (): Promise<void> => {
     const payload = await buildPayload()
+    if (violatesLicenceOrAttachmentRule(payload)) {
+      submitErrorMessage.value = mapError({ code: 400, errorCode: EApiErrorCode.CERT_LICENCE_OR_ATTACHMENT_REQUIRED }).message
+      return
+    }
     await CertificateService.update(certificateId.value, payload)
     toast.success(t('certificate.edit.saved'))
     goBack()
@@ -304,6 +376,12 @@ async function fetchDetail (): Promise<void> {
   try {
     const response = await CertificateService.detail(certificateId.value)
     const certificate = response.data
+    // wayfinder 095/115 — normalize null to '' AND trim once, here, so formData/existing* stay
+    // comparable by simple string equality in buildPayload rather than each caller re-doing
+    // `(x ?? '').trim()`. Trimming the server's own value too: a padded stored value must not
+    // read as "touched" the moment the user's own (browser-trimmed) input is compared against it.
+    const licenceNo = (certificate.licenceNo ?? '').trim()
+    const description = (certificate.description ?? '').trim()
     formData.value = {
       workerId: certificate.workerId,
       workerName: certificate.workerName,
@@ -311,8 +389,12 @@ async function fetchDetail (): Promise<void> {
       // The API returns full ISO timestamps; the DatePicker binds a Date.
       issuedDate: new Date(certificate.issuedDate),
       expiryDate: new Date(certificate.expiryDate),
+      licenceNo,
+      description,
       file: undefined
     }
+    existingLicenceNo.value = licenceNo
+    existingDescription.value = description
     existingFilePath.value = certificate.filePath
   } catch {
     // 403 as well as 404 — the route is scoped server-side to the owning contractor.

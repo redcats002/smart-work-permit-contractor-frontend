@@ -28,6 +28,10 @@ export interface ICreateCertificatePayload {
    * the field was stripped silently and every uploaded file was orphaned in object storage.
    */
   filePath?: string
+  /** wayfinder 095/115 — a certificate needs `licenceNo` OR `filePath`, at least one; enforced
+   * server-side (`CERT_LICENCE_OR_ATTACHMENT_REQUIRED`), mirrored client-side for feedback. */
+  licenceNo?: string
+  description?: string
 }
 
 /** PATCH /certificates/:id */
@@ -46,4 +50,15 @@ export interface IUpdateCertificatePayload {
    * keep" is the whole contract of the edit form's empty file input.
    */
   filePath?: string | null
+  /**
+   * wayfinder 095/115. **Omit when untouched** — the same discipline 045 established for
+   * `areaId`: a value that merely arrived from hydrate is display state, not outgoing payload.
+   * The server only re-checks the one-of rule (`CERT_LICENCE_OR_ATTACHMENT_REQUIRED`) when the
+   * patch body touches `licenceNo` or `filePath`, so a form that round-trips its whole model
+   * would trip that error on every pre-095 certificate that has neither. Unlike `filePath` there
+   * is no `null` variant on the wire for these two (docs/api/openapi.json) — clearing one means
+   * sending an empty string, not `null`.
+   */
+  licenceNo?: string
+  description?: string
 }

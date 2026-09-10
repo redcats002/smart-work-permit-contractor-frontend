@@ -20,6 +20,16 @@ export interface ICertificate {
   issuedDate: string
   expiryDate: string
   /**
+   * wayfinder 095/115. A certificate needs a licence number OR an attachment — at least one.
+   * Required on the wire (docs/api/openapi.json), nullable — optional here only to match the
+   * existing looseness of `createdById`/`createdAt`/`updatedAt` below, not because it can be
+   * missing from a real response.
+   */
+  licenceNo?: string | null
+  /** wayfinder 095/115 — free text for training/examination detail. Same optionality note as
+   * `licenceNo` above. */
+  description?: string | null
+  /**
    * Computed by the backend on every row. This — not `expiryDate` — decides whether a
    * certificate has lapsed; the client only adds the advisory "expiring soon" window on top
    * (src/utils/CertificateStatus.ts). Never recompute expiry client-side: the same flag gates

@@ -38,8 +38,7 @@ const certificate = {
   type: {
     'hot-work': 'Hot Work',
     'confined-space-entry': 'Confined Space Entry',
-    'working-at-heights': 'Working at Heights',
-    'gas-testing': 'Gas Testing'
+    'working-at-heights': 'Working at Heights'
   },
   detail: {
     title: 'Certificate',
@@ -78,6 +77,13 @@ const certificate = {
       certTypeLegacyLabel: '{value} (not in the standard list)',
       issuedDate: 'Issued date',
       expiryDate: 'Expiry date',
+      licenceNo: 'Licence number',
+      licenceNoPlaceholder: 'Enter the licence number (optional)',
+      description: 'Description',
+      descriptionPlaceholder: 'Training or examination detail (optional)',
+      // wayfinder 095/115 — mirrors the server's one-of rule (CERT_LICENCE_OR_ATTACHMENT_REQUIRED)
+      // for instant feedback; the server's verdict stays authoritative.
+      licenceOrAttachmentHint: 'A licence number or an attached file is required — at least one.',
       file: 'Attachment',
       filePlaceholder: 'Attach file (optional)'
     },

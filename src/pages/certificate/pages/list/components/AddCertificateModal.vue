@@ -75,6 +75,37 @@
             fluid
             show-icon />
         </LabelField>
+        <!-- wayfinder 095/115 — a certificate needs a licence number OR an attachment, at least
+             one. The hint states the rule; `onSubmit` mirrors it explicitly before calling the
+             API (not a schema refine — see AddCertificate.schema.ts's own comment on why a
+             cross-field refine here would never run), and the server's verdict stays
+             authoritative regardless. -->
+        <LabelField
+          v-slot="{ invalid }"
+          :description="t('certificate.form.field.licenceOrAttachmentHint')"
+          :form="$form"
+          :label="t('certificate.form.field.licenceNo')"
+          name="licenceNo"
+          tag="div">
+          <InputText
+            v-model="formData.licenceNo"
+            :invalid="invalid"
+            :placeholder="t('certificate.form.field.licenceNoPlaceholder')"
+            name="licenceNo"
+            fluid />
+        </LabelField>
+        <LabelField
+          :form="$form"
+          :label="t('certificate.form.field.description')"
+          name="description"
+          tag="div">
+          <Textarea
+            v-model="formData.description"
+            :placeholder="t('certificate.form.field.descriptionPlaceholder')"
+            name="description"
+            rows="3"
+            fluid />
+        </LabelField>
         <LabelField
           :form="$form"
           :label="t('certificate.form.field.file')"
@@ -126,6 +157,7 @@ import {
   useAddCertificateInitialValues,
   type IAddCertificateFormState
 } from '@/pages/certificate/schema/AddCertificate.schema'
+import { EApiErrorCode } from '@/enums/modules/error/ApiErrorCode.enum'
 
 interface IEmits {
   created: []
@@ -206,13 +238,30 @@ async function useCreate (): Promise<void> {
     certType: formData.value.certType,
     issuedDate: dayjs(formData.value.issuedDate).format('YYYY-MM-DD'),
     expiryDate: dayjs(formData.value.expiryDate).format('YYYY-MM-DD'),
+    licenceNo: formData.value.licenceNo.trim() || undefined,
+    description: formData.value.description.trim() || undefined,
     filePath
   })
+}
+
+/**
+ * wayfinder 095/115 — mirrors the server's one-of rule for feedback, never beyond it: at creation
+ * there is no existing attachment to fall back on, so "a licence number, or a picked file" is the
+ * whole rule, unconditionally. Checked explicitly here rather than in the zod schema — see
+ * AddCertificate.schema.ts's own comment on why a cross-field `.refine()` on this schema never
+ * actually runs in any of these forms.
+ */
+function violatesLicenceOrAttachmentRule (): boolean {
+  return !formData.value.licenceNo.trim() && !formData.value.file
 }
 
 function onSubmit (event: FormSubmitEvent, close: () => void): void {
   if (!event.valid) {
     scrollToFirstError(event.errors)
+    return
+  }
+  if (violatesLicenceOrAttachmentRule()) {
+    toast.error(mapError({ code: 400, errorCode: EApiErrorCode.CERT_LICENCE_OR_ATTACHMENT_REQUIRED }).message)
     return
   }
   handleLoading(async (): Promise<void> => {
