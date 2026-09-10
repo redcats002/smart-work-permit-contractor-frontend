@@ -53,22 +53,26 @@ not symlinked:
 the four task docs, and `docs/main/SmartWorkPermit-v3.dc.html` (UX/copy reference — a spec, never
 code to port).
 
-### Terms queued by CR round 3 (2026-09-10) — decided, not yet built
+### Terms from CR round 3 (2026-09-10) — built
 
-`CONTEXT.md` is a glossary of what the system **is**, so these wait for the code, per the precedent
-wayfinder 034 set for `Area` ("a decided term, not a built one"). They are listed here so nobody
-invents a competing name in the meantime; the ruling for each is in `PROMPT-LOG.md` session 12, and
-the ticket that lands it is in `docs/wayfinder/map-permit-ux-and-inspector.md`.
+Shipped the same day they were decided. The ruling behind each is in `PROMPT-LOG.md` session 12; the
+ticket that landed it is in `docs/wayfinder/map-permit-ux-and-inspector.md`.
 
-| Term | What it will mean | Ticket |
+| Term | What it means | Ticket |
 |---|---|---|
-| work window | `startDate`/`endDate` + `dailyStart`/`dailyEnd` — a daily window repeating across a date range. Replaces the single-day `workDate` + `workTimeStart`/`workTimeEnd`. | 067 |
+| work window | `startDate`/`endDate` + `dailyStart`/`dailyEnd` — a daily window repeating across a date range. **Replaced** the single-day `workDate` + `workTimeStart`/`workTimeEnd`, which no longer exist. `dailyStart`/`dailyEnd` are `@db.Time`: a time-of-day with **no date part**, so a per-row date component cannot make `dailyStart <= other.dailyEnd` compare nonsense. **Clients must render them through a local-time conversion**, never as a UTC wall clock — the backfill preserved each permit's instant, and a UTC render shifts every migrated permit by the deployment's offset with nothing failing. | 067 |
 | schedule note | Free text for what the window cannot express ("not working Sat/Sun"). Nothing queries it. | 067 |
-| permit coordinate | `latitude`/`longitude`, parsed from a pasted map URL. Not a map, not a pin — the pin stays `planId/planX/planY`. | 068 |
-| area drawing | A plan raster attached to an `Area`, safety-uploaded. The pin resolves against it when present, the active site plan otherwise. | 069 |
-| `InspectorVisit` | One record per scan-started inspector run. Append-only. Does **not** own entrant events or gas logs — it references them. | 073 |
-| `noteType` | `GENERAL \| WARNING \| CORRECTIVE_ACTION \| EMERGENCY \| INCIDENT`. The last two notify a safety officer and change no permit state. | 073 |
-| gas interval | Server-owned config (2h) exposed on the permit payload as the next-reading-due instant. Clients render the verdict; they never recompute the threshold. | 073, 075 |
+| permit coordinate | `latitude`/`longitude`, parsed server-side from a pasted map URL or sent as an explicit pair. Not a map and not a pin — the pin stays `planId`/`planX`/`planY`. A `maps.app.goo.gl` shortener is **rejected, never followed**: an outbound request on user-supplied input is both a first-party violation and an SSRF shape. | 068 |
+| area drawing | A `FacilityPlan` row with `areaId` set — a plan version like any other, with `active` scoped **within its group**. The active-plan endpoint **falls back to the site plan**, so "a plan came back" and "this area has a drawing" are different facts: read scope from the response's own `areaId`, never from the response being non-empty. | 069, 081 |
+| `InspectorVisit` | One append-only record per scan-started inspector run, with its notes and photos. It **references** entrant events and gas logs rather than owning them, and it changes no `Permit` field — the inspector witnesses, the foreman closes. | 073, 074 |
+| `noteType` | `GENERAL \| WARNING \| CORRECTIVE_ACTION \| EMERGENCY \| INCIDENT`. The last two notify a safety officer on write and change no permit state. | 073 |
+| gas interval | `GAS_LOG_RETEST_INTERVAL_MINUTES` (120) + `GAS_LOG_RETEST_GRACE_MINUTES` (30), server-owned, exposed on the permit payload as `gasReadingStatus`. **Clients render that verdict and never recompute the threshold.** Both the gas-log `overdue` flag and the alert sweep read one shared computation. | 073, 075 |
+| certificate vocabulary | `ECertType` and `EWorkerRole` are **compiled-in constants, not Prisma enums and not admin tables** — real `workers.role` values include `Welder` and `ช่างซ่อมบำรุง`, matching no closed set, so the vocabulary is enforceable at the **gate** and not at the column until the data is cleaned. `CERT_TYPE_REQUIRED` is off by default; with it on, a permit type requires its matching `certType` at both the submit check and the entrant scan. | 050, 086 |
+
+**Still decided-but-not-built:** nothing from this round. Two capabilities the round proved missing
+are open questions rather than queued terms — whether a contractor may read inspector visits
+(wayfinder 083) and how a plan version is retired, since `activate` always leaves exactly one active
+per group (wayfinder 084, `docs/api/GAPS.md` row X1).
 
 ---
 
