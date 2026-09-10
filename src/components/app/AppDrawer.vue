@@ -33,16 +33,17 @@
       @click="close()">
       <template
         v-for="item in navItems"
-        :key="item.name">
+        :key="item.key">
         <!--
-          The four route names below are registered by other agents landing router modules
-          in this same wave — resolving an unregistered name throws in vue-router 5 (not just
-          a dev warning), so isRegistered() gates real navigation until the route exists and
-          falls back to an inert row with identical styling in the meantime.
+          isRegistered() gates real navigation until a route exists and falls back to an inert row
+          with identical styling in the meantime — see the "Router" section of AGENTS.md. Every
+          route this drawer links to is registered today, so this never actually falls through;
+          it is kept because the check costs nothing and the failure mode it guards (a thrown
+          navigation on vue-router 5) is not one to reintroduce by deleting it "because it's dead".
         -->
         <RouterLink
-          v-if="isRegistered(item.name)"
-          :class="isActive(item)
+          v-if="item.kind === 'link' && isRegistered(item.name)"
+          :class="isActive(item.matchPrefix)
             ? 'border-(--color-primary-500) bg-(--color-shell-sidebar-active) pl-[15px] text-white'
             : 'border-transparent pl-[18px] text-(--color-shell-sidebar-fg) hover:bg-(--color-shell-sidebar-hover)'"
           :to="{ name: item.name }"
@@ -54,7 +55,7 @@
           {{ t(item.labelKey) }}
         </RouterLink>
         <span
-          v-else
+          v-else-if="item.kind === 'link'"
           class="flex cursor-default items-center gap-[11px] border-l-[3px] border-transparent py-[11px] pl-[18px]
             pr-[18px] text-[13.5px] font-medium text-(--color-shell-sidebar-fg)">
           <span
@@ -62,6 +63,40 @@
             class="text-[15px]">{{ item.glyph }}</span>
           {{ t(item.labelKey) }}
         </span>
+
+        <!-- wayfinder 110 — "Personnel" is a non-navigable group header (no route of its own,
+             nobody asked for one); its children render exactly like a top-level link, just
+             indented, and carry the same isRegistered()/isActive() rules. -->
+        <template v-else>
+          <div
+            :class="isGroupActive(item) ? 'text-white' : 'text-(--color-shell-sidebar-fg)'"
+            class="flex items-center gap-[11px] py-[11px] pl-[18px] pr-[18px] text-[13.5px] font-semibold">
+            <span
+              aria-hidden="true"
+              class="text-[15px]">{{ item.glyph }}</span>
+            {{ t(item.labelKey) }}
+          </div>
+          <template
+            v-for="child in item.children"
+            :key="child.name">
+            <RouterLink
+              v-if="isRegistered(child.name)"
+              :class="isActive(child.matchPrefix)
+                ? 'border-(--color-primary-500) bg-(--color-shell-sidebar-active) pl-[33px] text-white'
+                : 'border-transparent pl-[36px] text-(--color-shell-sidebar-fg) hover:bg-(--color-shell-sidebar-hover)'"
+              :to="{ name: child.name }"
+              class="flex items-center gap-[11px] border-l-[3px] py-[9px] pr-[18px] text-[13px] font-medium
+                transition-colors">
+              {{ t(child.labelKey) }}
+            </RouterLink>
+            <span
+              v-else
+              class="flex cursor-default items-center gap-[11px] border-l-[3px] border-transparent py-[9px] pl-[36px]
+                pr-[18px] text-[13px] font-medium text-(--color-shell-sidebar-fg)">
+              {{ t(child.labelKey) }}
+            </span>
+          </template>
+        </template>
       </template>
     </nav>
 
@@ -110,20 +145,51 @@ import { useAppDrawer } from '@/composables/useAppDrawer'
 import useLogout from '@/pages/auth/composables/useLogout'
 import Icon from '@/components/base/AppIcon.vue'
 
-interface INavItem {
+interface IChildNavItem {
+  name: string
+  labelKey: string
+  matchPrefix: string
+}
+
+interface ILinkNavItem {
+  kind: 'link'
+  key: string
   name: string
   labelKey: string
   glyph: string
   matchPrefix: string
 }
 
+interface IGroupNavItem {
+  kind: 'group'
+  key: string
+  labelKey: string
+  glyph: string
+  children: IChildNavItem[]
+}
+
+type INavItem = ILinkNavItem | IGroupNavItem
+
+/**
+ * wayfinder 110 — the contractor menu shrinks: "Create permit" is cut (`PermitListPage` already
+ * has its own create button) and "History" is cut (folded into `PermitListPage` as a view mode).
+ * "Getting started" moves to the app bar (`AppTopbar.vue`). "Personnel" is a new group holding the
+ * two former top-level items Certificates and Workers.
+ */
 const navItems: INavItem[] = [
-  { name: 'PermitListPage', labelKey: 'platform.nav.permits', glyph: '▦', matchPrefix: '/permits' },
-  { name: 'PermitCreatePage', labelKey: 'platform.nav.newPermit', glyph: '＋', matchPrefix: '/permits/create' },
-  { name: 'HistoryListPage', labelKey: 'platform.nav.history', glyph: '◷', matchPrefix: '/history' },
-  { name: 'CertificateListPage', labelKey: 'platform.nav.certificates', glyph: '◎', matchPrefix: '/certificates' },
-  { name: 'WorkerListPage', labelKey: 'platform.nav.workers', glyph: '☺', matchPrefix: '/workers' },
-  { name: 'GettingStartedPage', labelKey: 'platform.nav.gettingStarted', glyph: '？', matchPrefix: '/getting-started' }
+  {
+    kind: 'link', key: 'permits', name: 'PermitListPage', labelKey: 'platform.nav.permits', glyph: '▦', matchPrefix: '/permits'
+  },
+  {
+    kind: 'group',
+    key: 'personnel',
+    labelKey: 'platform.nav.personnel',
+    glyph: '👥',
+    children: [
+      { name: 'CertificateListPage', labelKey: 'platform.nav.certificates', matchPrefix: '/certificates' },
+      { name: 'WorkerListPage', labelKey: 'platform.nav.workers', matchPrefix: '/workers' }
+    ]
+  }
 ]
 
 const { t } = useI18n()
@@ -133,12 +199,12 @@ const authStore = useAuthStore()
 const { isOpen, close } = useAppDrawer()
 const { logout } = useLogout()
 
-// "My Permits" owns every /permits/* path except the create wizard, which has its own nav entry.
-function isActive (item: INavItem): boolean {
-  if (item.name === 'PermitListPage') {
-    return route.path.startsWith('/permits') && !route.path.startsWith('/permits/create')
-  }
-  return route.path.startsWith(item.matchPrefix)
+function isActive (matchPrefix: string): boolean {
+  return route.path.startsWith(matchPrefix)
+}
+
+function isGroupActive (item: IGroupNavItem): boolean {
+  return item.children.some((child: IChildNavItem): boolean => isActive(child.matchPrefix))
 }
 
 function isRegistered (name: string): boolean {

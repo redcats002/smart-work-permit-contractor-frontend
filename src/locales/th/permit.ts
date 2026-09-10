@@ -50,6 +50,11 @@ const permit: typeof permitEn = {
     // not a truncation on our side.
     subtitle: 'ใบขออนุญาตทำงาน',
     newPermit: 'สร้างใหม่',
+    searchPlaceholder: 'ค้นหา ID, ชื่องาน, สถานที่',
+    viewMode: {
+      permits: 'ใบอนุญาต',
+      history: 'ประวัติ'
+    },
     filter: {
       all: 'ทั้งหมด'
     },

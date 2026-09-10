@@ -25,7 +25,7 @@
       "id": "CRT-002",
       "type": "feature",
       "name": "Certificate list",
-      "description": "The /certificates page: card grid of personnel certificates with validity badges.",
+      "description": "The /certificates page: card grid of personnel certificates with validity badges, server-side search, a worker filter, and real pagination (wayfinder 110).",
       "acceptance": [
         "src/router/modules/Certificate.router.ts with prefix '/certificates', lazy-loaded, meta.auth set; registered in src/router/index.ts and reflected in the AGENTS.md Modules table",
         "2-column card grid; card border tint, badge, and expiry-date color all derive from certificateStatus()",
@@ -33,14 +33,19 @@
         "Dashed attachment row per card",
         "Empty state when the contractor has no certificates",
         "Single column below md",
-        "./init.sh green"
+        "./init.sh green",
+        "wayfinder 110: search box drives GET /certificates' search param (fuzzy worker-name match server-side), debounced 400ms",
+        "wayfinder 110: a worker Select filters via the server-side workerId param — not a validity-status filter, because the endpoint has none (list.service.ts in the api takes only search/workerName/workerId)",
+        "wayfinder 110: the worker Select's own options are fetched with limit: 9999 (server default page size is 10 — see AreaPicker's identical note) so the dropdown is never silently truncated",
+        "wayfinder 110: real Paginate component (limit 10 default) replaces the old unpaginated limit: 50 fetch",
+        "moved under the drawer's new \"Personnel\" group (with Workers) — no route change, /certificates is unchanged"
       ],
-      "notes": "DONE. STUB ACTIVE: USE_STUB_DATA=true in Certificate.provider.ts; real HTTP already wired to /api/v1/certificates on every method. TO GO LIVE: flip that boolean and delete Certificate.mock.ts (nothing else imports it). Card border/badge/expiry-color/attachment-border all key off ONE STATUS_STYLE map — no new design token was needed, existing --color-status-active/pending/rejected-* matched the design exactly.",
+      "notes": "DONE. STUB ACTIVE: USE_STUB_DATA=true in Certificate.provider.ts; real HTTP already wired to /api/v1/certificates on every method. TO GO LIVE: flip that boolean and delete Certificate.mock.ts (nothing else imports it). Card border/badge/expiry-color/attachment-border all key off ONE STATUS_STYLE map — no new design token was needed, existing --color-status-active/pending/rejected-* matched the design exactly. || wayfinder 110 (2026-09-11): added search + workerId filter + real pagination (useCertificates.ts, CertificateListPage.vue). The USE_STUB_DATA/Certificate.mock.ts note above is stale history (feat-005 deleted both, 2026-08-17) — left here only because it long predates this session and this pass did not audit older notes beyond what wayfinder 110 touched.",
       "dependencies": [
         "CRT-001"
       ],
       "status": "done",
-      "evidence": "./init.sh — typecheck PASS, lint PASS, tests PASS (278 tests). Live Playwright probe: page renders with shell chrome, no pageerror, no horizontal overflow at 375/768/1280. /certificates renders 929 chars of card content."
+      "evidence": "./init.sh — typecheck PASS, lint PASS, tests PASS (278 tests). Live Playwright probe: page renders with shell chrome, no pageerror, no horizontal overflow at 375/768/1280. /certificates renders 929 chars of card content. || 2026-09-11 (wayfinder 110): ./init.sh green — typecheck PASS, lint PASS, vitest 76 files / 618 tests PASS (new: CertificateListPage.filters.test.ts), contrast PASS, icons PASS, smoke 15/15 PASS against a running backend."
     },
     {
       "id": "CRT-003",

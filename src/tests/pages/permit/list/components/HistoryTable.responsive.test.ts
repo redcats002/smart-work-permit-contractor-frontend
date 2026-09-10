@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 import i18n, { setLocale } from '@/plugins/I18n.plugin'
-import HistoryTable from '@/pages/history/pages/list/components/HistoryTable.vue'
+import HistoryTable from '@/pages/permit/pages/list/components/HistoryTable.vue'
 import type { IPermitListItem } from '@/models/response/permit/PermitRes.model'
 
 /**

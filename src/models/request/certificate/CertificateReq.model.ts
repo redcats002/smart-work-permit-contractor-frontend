@@ -1,7 +1,13 @@
 import type { IBasePaginationRequest } from '../Request.model'
 
-/** GET /certificates */
-export interface IGetCertificateListQuery extends IBasePaginationRequest {}
+/**
+ * GET /certificates. `search` is a fuzzy match on the worker's name (server-side — see
+ * `list.service.ts` in the api). `workerId` is the exact-match sibling: "this worker's
+ * certificates only", used by the list page's worker filter (wayfinder 110).
+ */
+export interface IGetCertificateListQuery extends IBasePaginationRequest {
+  workerId?: number
+}
 
 /** POST /certificates */
 export interface ICreateCertificatePayload {

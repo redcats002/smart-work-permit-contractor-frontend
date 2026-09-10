@@ -154,22 +154,21 @@ Each module owns parallel trees: routes (`src/router/modules/<Mod>.router.ts` or
 | Module | Prefix | Pages (`src/pages/<mod>/pages/`) | Providers | Harness | Built? |
 |---|---|---|---|---|---|
 | `platform` | `/auth` | `auth/login` ✅, `auth/reset-password` ✅, layout shell, i18n, API errors | `auth/public`, `auth/private`, `notification` | `docs/modules/platform/` | shell + i18n + errors + contractor auth/route guard (`PLT-005`) ✅ · notification polling `PLT-007` ✅ |
-| `permit` | `/permits` | `list` ✅, `create` (7-step wizard) ✅, `detail` ✅ | `permit`, `facility-plan` (read-only — `getActive`/`getById`, no upload/create/activate), `area` (list/getById/create — no approve/reject, safety-officer only) | `docs/modules/permit/` | provider + list ✅ · wizard complete, all seven steps real (`PMT-004`–`PMT-009`, `feat-023`) · detail built (`PMT-010`–`PMT-012`: banners, QR, audit timeline, closure modal, Fire Watch countdown) · area picker + propose-inline (wayfinder 037), read-only display of an area outside the contractor's scoped list (wayfinder 044) · wayfinder 070 (2026-09-10): "Where & when" (area + pin + geo coordinate + multi-day window + schedule note) is now step 3, ALWAYS rendered; Review is always last |
-| `history` | `/history` | `list` ✅ | `permit` (reused — no own provider dir) | `docs/modules/history/` | ✅ |
-| `certificate` | `/certificates` | `list` ✅, `detail` ✅, `edit` ✅ | `certificate`, `upload` (reused — `getFileUrl` for the attachment) | `docs/modules/certificate/` | ✅ list/add · detail + edit + real attachment display (`CRT-005`/`CRT-006`, wayfinder 057) · `certType` is now a `Select` (`CertTypeSelect.vue`) filtered by the selected worker's role, compiled-in vocabulary (`src/enums/modules/certificate/CertType.enum.ts`, mirrored from the api's `worker-vocabulary.const.ts` — a known interim copy, per 050's amendment, until the api exposes a route) across all four entry points (standalone add/edit, in-wizard modal, worker-detail modal) (wayfinder 086) |
+| `permit` | `/permits` | `list` ✅ (now two view modes, see below), `create` (7-step wizard) ✅, `detail` ✅ | `permit`, `facility-plan` (read-only — `getActive`/`getById`, no upload/create/activate), `area` (list/getById/create — no approve/reject, safety-officer only) | `docs/modules/permit/` | provider + list ✅ · wizard complete, all seven steps real (`PMT-004`–`PMT-009`, `feat-023`) · detail built (`PMT-010`–`PMT-012`: banners, QR, audit timeline, closure modal, Fire Watch countdown) · area picker + propose-inline (wayfinder 037), read-only display of an area outside the contractor's scoped list (wayfinder 044) · wayfinder 070 (2026-09-10): "Where & when" (area + pin + geo coordinate + multi-day window + schedule note) is now step 3, ALWAYS rendered; Review is always last · wayfinder 110 (2026-09-11): `list` gained real server-side pagination/search/filter (was an unpaginated `limit: 50` fetch with no search box) and a "History" view mode that absorbed the whole former `history` module — see below |
+| `certificate` | `/certificates` | `list` ✅, `detail` ✅, `edit` ✅ | `certificate`, `upload` (reused — `getFileUrl` for the attachment) | `docs/modules/certificate/` | ✅ list/add · detail + edit + real attachment display (`CRT-005`/`CRT-006`, wayfinder 057) · `certType` is now a `Select` (`CertTypeSelect.vue`) filtered by the selected worker's role, compiled-in vocabulary (`src/enums/modules/certificate/CertType.enum.ts`, mirrored from the api's `worker-vocabulary.const.ts` — a known interim copy, per 050's amendment, until the api exposes a route) across all four entry points (standalone add/edit, in-wizard modal, worker-detail modal) (wayfinder 086) · wayfinder 110: `list` gained real pagination, server-side search (worker-name fuzzy match), and a filter — by worker (`workerId`), not by validity status, because the endpoint has no status filter (`list.service.ts` in the api takes only `search`/`workerName`/`workerId`) |
 | `worker` | `/workers` | `list` ✅, `detail` ✅ | `worker` | none yet — wayfinder 062 | ✅ paginated/searchable list with certificate status + permit count, editable identity, certificates/permits sections, QR card (`worker.id` as the bare payload string) |
-| `guide` | `/getting-started` | `GettingStartedPage` ✅ (no `pages/list`/`detail` split — one static page) | none — no own provider, static content | none yet — wayfinder 077 | ✅ EN+TH, deep-linkable by route hash (`#area`, `#overview`, `#wizard`, …), linked from a new drawer entry and from `Step3WhereWhen.vue`'s area picker ("what is this for?") |
+| `guide` | `/getting-started` | `GettingStartedPage` ✅ (no `pages/list`/`detail` split — one static page) | none — no own provider, static content | none yet — wayfinder 077 | ✅ EN+TH, deep-linkable by route hash (`#area`, `#overview`, `#wizard`, …), linked from the app bar (moved out of the drawer, wayfinder 110) and from `Step3WhereWhen.vue`'s area picker ("what is this for?") |
 | `api-integration` | — (cross-cutting) | — | every provider + the transport | `docs/modules/api-integration/` | ✅ transport, auth, errors, permit/certificate/notification/upload |
 
-Registered in `src/router/index.ts`: `AuthRouter`, `PermitRouter`, `HistoryRouter`, `CertificateRouter`, `WorkerRouter`, `ProfileRouter`, `GuideRouter` — all six nav destinations plus profile now exist. `AppDrawer`'s `isRegistered()` guard is **still in the file** (`AppDrawer.vue:44`, `:136`) and now guards nothing; removing it is safe but nobody has, so do not describe it as gone. The drawer's `navItems` also gained a sixth entry, `GettingStartedPage` (wayfinder 077) — the account card at the bottom is still the only route to `/profile`.
+**`history` was folded into `permit` (wayfinder 110, 2026-09-11) — it is no longer a module with its own route.** `/history` (`src/router/modules/History.router.ts`) is now a bare redirect to `PermitListPage` with `?view=history`, so an old bookmark or external link still lands somewhere rather than 404ing. Its former pages/composables/tests moved under `src/pages/permit/pages/list/` (`components/PermitHistoryView.vue`, `HistoryTable.vue`, `HistoryDetailDrawer.vue`, `composables/useHistory.ts`) and `src/tests/pages/permit/list/`. `PermitListPage.vue` now renders a "Permits"/"History" tab toggle — "Permits" is the enhanced card-grid list (search/filter/pagination, feat-002's original scope); "History" is the former `HistoryListPage.vue`'s body verbatim (search, type/status/date filters, the archive-status table with its own mobile card layout, CSV export, the row detail drawer) with no header of its own — the shared page header supplies the title/subtitle/primary action per tab. The `history` locale namespace (`src/locales/{en,th}/history.ts`) is unchanged and still what the "History" tab reads from.
 
-`PermitListPage` (the app's real home page — `/` `router.replace`s through it) now also renders a per-user dismissible first-run checklist (`src/pages/permit/pages/list/components/OnboardingChecklist.vue` + `.../composables/useOnboardingChecklist.ts`, wayfinder 077) above the permit grid, ticked off real `WorkerProvider`/`CertificateProvider`/`PermitProvider` data — never a client-side flag alone.
+Registered in `src/router/index.ts`: `AuthRouter`, `PermitRouter`, `HistoryRouter` (redirect-only, see above), `CertificateRouter`, `WorkerRouter`, `ProfileRouter`, `GuideRouter`. `AppDrawer`'s `isRegistered()` guard is **still in the file** and now guards nothing; removing it is safe but nobody has, so do not describe it as gone. **The drawer's shape changed under wayfinder 110**: it now holds two top-level items — `PermitListPage` (link) and a non-navigable "Personnel" group header whose two children (`CertificateListPage`, `WorkerListPage`) render indented beneath it, same active/registered rules as a top-level link. `PermitCreatePage` and `HistoryListPage` have no drawer entry any more (the former was always reachable from `PermitListPage`'s own + button; the latter is the "History" tab described above). `GettingStartedPage` moved out of the drawer into `AppTopbar.vue` (a `?`-icon `RouterLink` next to the notification bell) — the account card at the bottom is still the only route to `/profile`.
+
+`PermitListPage` (the app's real home page — `/` `router.replace`s through it) now also renders a per-user dismissible first-run checklist (`src/pages/permit/pages/list/components/OnboardingChecklist.vue` + `.../composables/useOnboardingChecklist.ts`, wayfinder 077) above the permit grid, ticked off real `WorkerProvider`/`CertificateProvider`/`PermitProvider` data — never a client-side flag alone. It only fires on the "Permits" tab (lazily, the first time that tab is actually shown), never on "History".
 
 **Modules without a top-level router entry:**
 
 - `common` — `not-found`, `not-permitted`, `not-available` at `src/pages/common/pages/`. Routes declared inline in `src/router/index.ts`, all `meta.layout: 'blank'`.
-
-**Why `history` is its own module:** it owns a route prefix and a pages tree but reuses the `permit` provider. Split for context-budget reasons — its filters/CSV/table work is independent of the wizard.
 
 ### Main flow (permit lifecycle)
 
@@ -192,14 +191,15 @@ DRAFT ──submit──> PENDING ──reject──> REJECTED ──(revise)─
 Contractor-app journey across that machine:
 
 ```
-/permits (list)
+/permits (list — "Permits" tab: search/filter/pagination; "History" tab: the former /history)
   → /permits/create  (7-step wizard: Type → Basic Info → Where & When → Safety Checks → PPE & Workers → JSA → Review)
     → submit                                   [DRAFT → PENDING]
       → /permits/:id  (status banner, QR when ACTIVE/FIRE_MONITOR, audit timeline)
         → mark-complete (hot work)             [ACTIVE → FIRE_MONITOR]
         → closure checklist modal + e-signature [→ CLOSED]
-/history  → filters + CSV export → drill in to /permits/:id
-/certificates → cert validity gates permit submission
+  → "History" tab → filters + CSV export → row click opens an inline detail drawer (not /permits/:id)
+/history  → redirects to /permits?view=history (wayfinder 110 — no longer its own page)
+/certificates → cert validity gates permit submission; now searchable/filterable/paginated too
 ```
 
 Cross-cutting on this path: `stores/Auth.ts` (token), `stores/Notification.ts` (polling), `resources/Interceptors.ts` (401 → logout), the i18n locale store, and the safety-range constants. A change to any of those is a main-flow change — re-read this section and update it if the flow moved.
@@ -364,7 +364,7 @@ so a test written next to the page it covers silently never runs — put it unde
 Page-level tests mount the real page with `@vue/test-utils` and spy on the provider prototype
 (`vi.spyOn(PermitProvider.prototype, 'list')`); there is no mock gateway in this repo (deleted in
 `feat-005`). Three worked examples to copy: `src/tests/pages/auth/login/LoginPage.test.ts`,
-`src/tests/pages/history/list/HistoryListPage.test.ts`, `src/tests/pages/permit/detail/PermitDetailPage.test.ts`.
+`src/tests/pages/permit/list/PermitListPage.history.test.ts` (moved from `HistoryListPage.test.ts`, wayfinder 110), `src/tests/pages/permit/detail/PermitDetailPage.test.ts`.
 Three things bite every time:
 
 - **Mount `@/plugins/I18n.plugin` itself and call `setLocale('en')`** — not a fresh `createI18n`.

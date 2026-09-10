@@ -55,10 +55,13 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+
 import StepperHeader from '../components/StepperHeader.vue'
 import WizardFooter from '../components/WizardFooter.vue'
+
+import { useI18n } from 'vue-i18n'
+
 import { useWizard } from '../composables/useWizard'
 
 const { t } = useI18n()

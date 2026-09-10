@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { setLocale } from '@/plugins/I18n.plugin'
-import { formatDuration } from '@/pages/history/pages/list/composables/useHistory'
+import { formatDuration } from '@/pages/permit/pages/list/composables/useHistory'
 
 // `useApiError`/`formatDuration` localize through the app's i18n singleton (see
 // `src/plugins/I18n.plugin.ts`) — mount it via `setLocale`, not a fresh `createI18n`, or the

@@ -16,6 +16,10 @@ const certificate: typeof certificateEn = {
     // not a truncation on our side.
     subtitle: 'เชื่อมกับการส่งใบอนุญาต',
     addButton: 'เพิ่มบัตรรับรอง',
+    searchPlaceholder: 'ค้นหาด้วยชื่อผู้ปฏิบัติงาน',
+    filterByWorker: {
+      placeholder: 'ผู้ปฏิบัติงานทั้งหมด'
+    },
     empty: {
       title: 'ยังไม่มีใบรับรอง',
       description: 'ใบรับรองที่คุณเพิ่มให้พนักงานจะแสดงที่นี่'

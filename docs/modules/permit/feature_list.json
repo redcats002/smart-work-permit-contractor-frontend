@@ -46,21 +46,25 @@
       "id": "PMT-003",
       "type": "feature",
       "name": "My Permits list",
-      "description": "Permit list page: header with New Permit CTA, All/Active/Pending/Closed filter chips, 2-column permit card grid, empty state.",
+      "description": "Permit list page: header with New Permit CTA, All/Active/Pending/Closed filter chips, 2-column permit card grid, empty state, server-side search and real pagination, and a \"History\" view mode (wayfinder 110) absorbing the former `history` module (feat-003) in full.",
       "acceptance": [
         "Filter chips All / Active / Pending / Closed; active chip is visually distinct; filter drives the API query, not a client-side slice",
         "Card: 5px left border in the permit-type color, mono permit ID, status pill, title, location, footer row (type chip, date, time)",
         "Confined-space permits with entrants inside show a blinking red 'N inside' indicator",
         "Empty state renders when the filtered list is empty (reuse src/components/display/Empty.vue)",
         "Cards stack to 1 column below md; no horizontal body scroll at 375px",
-        "./init.sh green"
+        "./init.sh green",
+        "wayfinder 110: search box drives GET /permits' search param, debounced 400ms, same pattern as useWorkers/useHistory",
+        "wayfinder 110: real Paginate component (limit 10 default) replaces the old unpaginated limit: 50 fetch",
+        "wayfinder 110: a grouped filter chip (Active = ACTIVE+FIRE_MONITOR, Closed = CLOSED+REJECTED) sends the whole array server-side (feat-009) — no client-side narrowing of a server-paginated page, which would short the last page",
+        "wayfinder 110: a \"Permits\"/\"History\" tab toggle; \"History\" carries every capability the old standalone /history page had (search, type/status/date filters, the six-column table with its own mobile card layout, CSV export narrowed to the archive statuses, the row click detail drawer) — verified against HistoryListPage.test.ts's archive-narrowing and CSV assertions, now PermitListPage.history.test.ts"
       ],
-      "notes": "Design lines 109-143. || DONE. src/pages/permit/pages/list/ with PermitCard.vue + useMyPermits.ts composable. Filter chips drive the API query, not a client-side slice.",
+      "notes": "Design lines 109-143. || DONE. src/pages/permit/pages/list/ with PermitCard.vue + useMyPermits.ts composable. Filter chips drive the API query, not a client-side slice. || wayfinder 110 (2026-09-11): added search + real pagination to the Permits tab (useMyPermits.ts) and a History view mode reusing the former history module's code verbatim (moved to components/PermitHistoryView.vue, HistoryTable.vue, HistoryDetailDrawer.vue, composables/useHistory.ts). GET /permits' status filter now accepts an array (feat-009) — the grouped chips send it server-side instead of the old fetch-unfiltered-and-narrow-client-side workaround, which a real pager would have turned into a short last page.",
       "dependencies": [
         "PMT-002"
       ],
       "status": "done",
-      "evidence": "typecheck PASS, lint PASS on all permit files, Permit.provider tests pass (9). Verified by orchestrator after the agent died to a machine-sleep mid-verification; its work was complete."
+      "evidence": "typecheck PASS, lint PASS on all permit files, Permit.provider tests pass (9). Verified by orchestrator after the agent died to a machine-sleep mid-verification; its work was complete. || 2026-09-11 (wayfinder 110): ./init.sh green — typecheck PASS, lint PASS, vitest 76 files / 618 tests PASS (new: PermitListPage.permits.test.ts, PermitListPage.history.test.ts, AppDrawer.test.ts, CertificateListPage.filters.test.ts), contrast PASS, icons PASS, smoke 15/15 PASS against a running backend (node scripts/smoke-api.mjs)."
     },
     {
       "id": "PMT-004",

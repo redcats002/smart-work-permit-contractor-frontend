@@ -33,9 +33,20 @@
       </div>
     </div>
 
+    <!-- wayfinder 110 — "Getting started" moved out of the drawer into the app bar. -->
+    <RouterLink
+      :aria-label="t('platform.nav.gettingStarted')"
+      :to="{ name: 'GettingStartedPage' }"
+      class="ml-auto flex size-9 shrink-0 items-center justify-center rounded text-(--color-shell-sidebar-fg)
+        transition-colors hover:bg-(--color-shell-sidebar-hover)">
+      <Icon
+        class="size-5"
+        icon="mdi:help-circle-outline" />
+    </RouterLink>
+
     <div
       ref="panelRootRef"
-      class="relative ml-auto shrink-0">
+      class="relative shrink-0">
       <button
         :aria-label="t('platform.notifications.title')"
         class="relative flex size-9 items-center justify-center rounded text-(--color-shell-sidebar-fg)
@@ -101,6 +112,7 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, type Ref } from 'vue'
+import { RouterLink } from 'vue-router'
 
 import { toast } from '@/plugins/toast'
 

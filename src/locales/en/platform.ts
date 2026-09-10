@@ -5,8 +5,11 @@ const platform = {
   sidebarSection: 'CONTRACTOR',
   nav: {
     permits: 'My Permits',
+    // wayfinder 110 — no longer a drawer entry (folded into Permits as a view mode); kept because
+    // src/tests/plugins/I18n.plugin.test.ts asserts this value.
     newPermit: 'New Permit',
     history: 'History',
+    personnel: 'Personnel',
     certificates: 'Certificates',
     workers: 'Workers',
     gettingStarted: 'Getting started'

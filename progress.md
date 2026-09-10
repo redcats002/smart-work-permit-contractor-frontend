@@ -3466,3 +3466,97 @@ of the Safety app's HISTORY note, in a form that fails rather than being read.
 
 `./init.sh`: 72 files / 607 tests PASS (LocationZones.test.ts's 6 cases removed, 3 added),
 typecheck, lint, contrast, icons, smoke all PASS.
+
+## 2026-09-11 — wayfinder 110: the contractor menu shrinks — Personnel group, Permits gains real pagination/search/filter, History folds in as a view mode
+
+`docs/wayfinder/tickets/110-the-menus-shrink.md`'s contractor half only (the safety/inspector half
+is a different repo, a different agent). Verified every claim the ticket made about this repo
+before acting on it, per the workspace's own rule that a ticket's factual claims are load-bearing.
+
+**"Create permit already has a create button on PermitListPage" — true**, verified at
+`PermitListPage.vue`'s header (the `+ New Permit` button, unconditional, always rendered). Cutting
+its drawer entry (`PermitCreatePage`) leaves no dead end; the wizard is still one click away.
+
+**"History duplicates Permits" — false**, and worth stating plainly since the ticket's own word was
+"duplicates." Before this change `HistoryListPage` had six things `PermitListPage` did not: a
+search box wired to `GET /permits`' `search` param, a type filter, a status filter narrowed to the
+two terminal states (CLOSED/EXPIRED), a date-from/date-to range, a CSV export (re-querying every
+page at `limit: 9999`, narrowed to the archive set — the fix for a real 2026-08-19 defect,
+CT-HISTORY-009), and a table layout with a distinct mobile card fallback, opening a row into an
+inline read-only drawer instead of navigating to `/permits/:id`. `PermitListPage` itself had none
+of pagination, search, or a real pager — just four filter chips over an unpaginated `limit: 50`
+fetch. Neither page was a subset of the other; "duplicates" undersold what was actually being cut.
+Resolution: moved (not rebuilt) `HistoryListPage`'s body — `HistoryTable.vue`,
+`HistoryDetailDrawer.vue`, `composables/useHistory.ts` — under `src/pages/permit/pages/list/` as
+`components/PermitHistoryView.vue`, and gave `PermitListPage` a "Permits"/"History" tab toggle.
+Every one of the six capabilities above survives verbatim; `PermitListPage.history.test.ts`
+(renamed from `HistoryListPage.test.ts`) keeps the exact archive-narrowing and CSV-export
+assertions that caught CT-HISTORY-009, now asserting against the new mount. `/history` itself
+stays registered as a bare redirect to `/permits?view=history` rather than being deleted, so an old
+bookmark or an external link still lands somewhere.
+
+**"Certificates and Workers move under a new Personnel parent" — built as a non-navigable group
+header** (no `/personnel` route invented) with the two former top-level drawer links indented
+beneath it, same active/registered-route rules as before. `AppDrawer.vue`'s `navItems` is now a
+discriminated union (`kind: 'link' | 'group'`) rather than one flat array.
+
+**Permission check, recorded rather than assumed** (the ticket's own instruction): grepped
+`permitRole|permission|NotPermittedPage` across `src/`. This app has no per-item permission or role
+gate anywhere outside the login guard's plain `meta.auth` check — `NotPermittedPage` exists as a
+route but nothing routes to it, and `permitRole` only appears in the profile display and the
+`PATCH /users/me` privilege-boundary test. The contractor app is single-role. Moving Certificates
+and Workers under Personnel therefore cannot orphan either — there is no permission for the parent
+to fail to grant.
+
+**A defect this pass found and fixed while it was in the neighborhood, not asked for by the
+ticket but required by it**: `useMyPermits.ts`'s grouped filter chips ("Active" = ACTIVE +
+FIRE_MONITOR, "Closed" = CLOSED + REJECTED) fetched unfiltered and narrowed the page client-side,
+a comment explicitly blaming "the backend cannot express this in one call." That has been false
+since feat-009 (`GET /permits`'s `status` param now accepts an array — confirmed in
+`smart-work-permit-api/src/modules/permit/queries/list/list.model.ts` and already reflected in
+this repo's own `docs/api/openapi.json`). Under the OLD `limit: 50` no-visible-pager page this was
+invisible; adding a real `Paginate` component on top of client-side narrowing would have shipped a
+short last page — the same truncation-defect class this map has now hit three times (`AreaPicker`'s
+`limit: 9999` note). Fixed by sending the whole status array server-side instead, matching what
+`useHistory.ts` already did correctly for its own archive-status narrowing pattern. `useHistory.ts`
+itself keeps its `narrowToArchive()` client-side step — that one narrows to a hardcoded 2-value
+subset for the whole *unfiltered* result, not a variable-sized page, so it does not have the same
+failure mode and was left alone.
+
+**Certificates gained pagination, search and a filter** (`useCertificates.ts`,
+`CertificateListPage.vue`) — real `Paginate` (limit 10), `search` (server-side, fuzzy worker-name
+match, `list.service.ts`'s own `query.search` branch), and a worker filter via the exact-match
+`workerId` param, because the endpoint has no validity-status filter to build one against. The
+worker Select's own options are fetched with `limit: 9999` — the AreaPicker lesson, checked before
+writing the call rather than after: `/workers` defaults to a page size of 10
+(`CommonPaginationModel`) same as every other list endpoint on this map.
+
+**Getting started** moved out of the drawer into `AppTopbar.vue` — a `?`-icon `RouterLink` next to
+the notification bell, reusing the same route (`GettingStartedPage`) and label key
+(`platform.nav.gettingStarted`) the drawer entry used, so nothing about the page itself changed.
+
+Stale prose fixed in the same pass (the workspace's cross-repo-consistency obligation applied
+in-repo): `guide.ts`'s (en+th) "the drawer on the left has five destinations" intro, and the
+`newPermit`/`history`/`certificates`/`workers` module blurbs describing a flat six-item drawer that
+no longer exists. `AGENTS.md`'s Modules table, main-flow diagram, and test-examples line updated to
+match; `history`'s root/module `feature_list.json` entries now point at where the capability lives
+instead of describing a module that no longer has a route.
+
+**False ticket claim to flag**: none found in the contractor half of 110 itself — both listed
+verification items ("create button is the only path", "check what History actually shows") turned
+out to be correctly flagged as needing a check, and the check surfaced real, non-trivial findings
+(above) rather than confirming a lazy assumption either way.
+
+Out of scope, left alone: the notification badge (blocked on ticket 109's socket service, unbuilt)
+and the tab refactor (ticket 113). `src/pages/auth/pages/login/constants/DemoAccounts.ts` untouched
+per instruction. `docs/api/openapi.json` is currently diverged from the api repo's copy
+(`node scripts/check-contract-sync.mjs` from the workspace root reports 1 problem) — not this
+session's doing (git status on that file is clean) and not touched, since another agent is mid-flight
+on that repo; flagging rather than silently living with a failing check.
+
+`./init.sh`: typecheck PASS, lint PASS (0 errors, 2 pre-existing warnings unrelated to this change),
+76 files / 618 tests PASS (up from 73/608 — new: `AppDrawer.test.ts`,
+`PermitListPage.permits.test.ts`, `PermitListPage.history.test.ts`,
+`CertificateListPage.filters.test.ts`), contrast PASS, icons PASS, smoke 15/15 PASS against a live
+backend on `localhost:3000` (another agent's `bun run dev`, already running — not started by this
+session).

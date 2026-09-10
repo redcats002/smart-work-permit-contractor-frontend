@@ -9,6 +9,12 @@ const certificate = {
     title: 'Certificates & Personnel',
     subtitle: 'Expired or missing certs block permit submission. Linked to wizard validation.',
     addButton: '＋ Add Certificate',
+    searchPlaceholder: 'Search by worker name',
+    // wayfinder 110 — the server has no validity-status filter on this endpoint (see
+    // list.service.ts in the api), so the filter this list gained is by worker, not by status.
+    filterByWorker: {
+      placeholder: 'All workers'
+    },
     empty: {
       title: 'No certificates yet',
       description: 'Certificates you add for your workers will show up here.'

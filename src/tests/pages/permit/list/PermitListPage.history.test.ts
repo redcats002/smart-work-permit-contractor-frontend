@@ -8,7 +8,7 @@ import PrimeVue from 'primevue/config'
 import i18n, { setLocale } from '@/plugins/I18n.plugin'
 import { downloadCsv } from '@/utils/Csv'
 import PermitProvider from '@/resources/provider/permit/Permit.provider'
-import HistoryListPage from '@/pages/history/pages/list/pages/HistoryListPage.vue'
+import PermitListPage from '@/pages/permit/pages/list/pages/PermitListPage.vue'
 import type { TPermitStatus } from '@/enums/modules/permit/PermitStatus.enum'
 import type { IPermitListItem } from '@/models/response/permit/PermitRes.model'
 import type { TGetPermitListResponse } from '@/models/response/permit/PermitRes.model'
@@ -107,18 +107,24 @@ function buildRouter (): Router {
   return createRouter({
     history: createMemoryHistory(),
     routes: [
-      { path: '/history', name: 'HistoryListPage', component: HistoryListPage },
+      { path: '/permits', name: 'PermitListPage', component: PermitListPage },
+      { path: '/permits/create', name: 'PermitCreatePage', component: { template: '<div />' } },
       { path: '/permits/:id', name: 'PermitDetailPage', component: { template: '<div />' } }
     ]
   })
 }
 
+/**
+ * wayfinder 110 — "History" was cut as its own route; this is the "History" view mode on
+ * `PermitListPage` now, reached the same way the old `/history` deep link redirects (a
+ * `?view=history` query param — see `History.router.ts`).
+ */
 async function mountPage (): Promise<VueWrapper> {
   const router = buildRouter()
-  await router.push('/history')
+  await router.push('/permits?view=history')
   await router.isReady()
 
-  const wrapper = mount(HistoryListPage, {
+  const wrapper = mount(PermitListPage, {
     global: {
       plugins: [i18n, router, [PrimeVue, { unstyled: true }]]
     }
@@ -127,7 +133,7 @@ async function mountPage (): Promise<VueWrapper> {
   return wrapper
 }
 
-/** The one control in the page header — "Export CSV". */
+/** The one control in the History tab's toolbar — "Export CSV". */
 async function clickExport (wrapper: VueWrapper): Promise<void> {
   const button = wrapper.findAll('button').find((candidate: DOMWrapper<HTMLButtonElement>): boolean => candidate.text().includes('Export CSV'))
   expect(button).toBeDefined()
@@ -135,7 +141,7 @@ async function clickExport (wrapper: VueWrapper): Promise<void> {
   await flushPromises()
 }
 
-describe('HistoryListPage (HST-002 / HST-003)', () => {
+describe('PermitListPage — History view mode (wayfinder 110, was HistoryListPage HST-002/HST-003)', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     setLocale('en')
@@ -147,6 +153,17 @@ describe('HistoryListPage (HST-002 / HST-003)', () => {
     localStorage.clear()
     vi.mocked(downloadCsv).mockClear()
     vi.restoreAllMocks()
+  })
+
+  it('opens on the History tab when the route carries ?view=history', async () => {
+    vi.spyOn(PermitProvider.prototype, 'list').mockResolvedValue(paginated([]))
+
+    const wrapper = await mountPage()
+
+    const permitsTab = wrapper.findAll('button').find((candidate: DOMWrapper<HTMLButtonElement>): boolean => candidate.text() === 'Permits')
+    const historyTab = wrapper.findAll('button').find((candidate: DOMWrapper<HTMLButtonElement>): boolean => candidate.text() === 'History')
+    expect(historyTab?.classes()).toContain('text-text-primary')
+    expect(permitsTab?.classes()).not.toContain('text-text-primary')
   })
 
   it('renders only the archive statuses when the status filter is "All"', async () => {

@@ -102,11 +102,15 @@ export interface IClosePermitPayload {
  * GET /permits. A contractor is scoped to their own permits automatically — `contractorId` is
  * ignored for contractor accounts, so it is not modelled here.
  *
- * `status` takes ONE value. The "Active" filter chip covers ACTIVE + FIRE_MONITOR, which the
- * backend cannot express in one call — see useMyPermits for how that is narrowed client-side.
+ * `status` takes one value OR an array (feat-009 — repeated `?status=A&status=B`, matching
+ * `docs/api/openapi.json`'s `anyOf` for this param). The "Active" filter chip (ACTIVE +
+ * FIRE_MONITOR) and "Closed" (CLOSED + REJECTED) send the array and let the server filter and
+ * paginate the group — do NOT go back to fetching unfiltered and narrowing client-side; that
+ * narrowing predates feat-009 and, combined with a real pager, produces a short last page (a
+ * documented defect class on this map — see AreaPicker's `limit: 9999` note).
  */
 export interface IGetPermitListQuery extends IBasePaginationRequest {
-  status?: TPermitStatus
+  status?: TPermitStatus | TPermitStatus[]
   type?: TPermitType
   /** `YYYY-MM-DD`, filtered server-side on `startDate`. */
   dateFrom?: string

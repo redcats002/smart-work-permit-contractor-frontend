@@ -9,6 +9,7 @@ const platform: typeof platformEn = {
     permits: 'ใบอนุญาตของฉัน',
     newPermit: 'สร้างใหม่',
     history: 'ประวัติ',
+    personnel: 'บุคลากร',
     certificates: 'ใบรับรองการทำงาน',
     workers: 'ผู้ปฏิบัติงาน',
     gettingStarted: 'เริ่มต้นใช้งาน'

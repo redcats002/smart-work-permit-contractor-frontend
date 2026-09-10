@@ -45,6 +45,13 @@ const permit = {
     title: 'My Permits',
     subtitle: 'Track, draft and submit work permit requests',
     newPermit: 'New Permit',
+    searchPlaceholder: 'Search ID, title, location',
+    // wayfinder 110 — History was cut from the menu; its table/filters/CSV export now live here
+    // as the "History" view mode, so the same page answers both "what's live" and "what's closed".
+    viewMode: {
+      permits: 'Permits',
+      history: 'History'
+    },
     filter: {
       all: 'All'
     },

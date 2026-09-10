@@ -13,13 +13,17 @@ const guide = {
   },
   overview: {
     title: 'The modules',
-    intro: 'The drawer on the left has five destinations, plus your own profile from the account card at the bottom — this app has no header menu, so that card is the only route to it.',
+    // wayfinder 110 — "Create permit" and "History" were cut from the drawer (the New Permit
+    // wizard was always reachable from Permits' own + button; History became a view mode on that
+    // same page) and "Personnel" replaced the two top-level Certificates/Workers destinations.
+    // "Getting started" itself moved out of the drawer into the app bar the same round.
+    intro: 'The drawer on the left has two destinations — Permits, and Personnel, which opens into Certificates and Workers. Getting started lives in the app bar, and your own profile is one tap away from the account card at the bottom.',
     modules: {
       permits: { title: 'My Permits', desc: 'Every permit you own, in any status. Open one to see its detail, edit it, or duplicate it into a new draft.' },
-      newPermit: { title: 'New Permit', desc: 'The seven-step request wizard — see below.' },
-      history: { title: 'History', desc: 'Permits that have finished (Closed or Expired) — a read-only record with search, filters and a CSV export.' },
-      certificates: { title: 'Certificates', desc: 'The safety cards held by the workers you send. A card that has expired blocks that worker at step 5 of the wizard.' },
-      workers: { title: 'Workers', desc: 'The people you send — their certificate status and which permits they appear on, in one place.' }
+      newPermit: { title: 'New Permit', desc: 'The seven-step request wizard, reached from the + button on Permits — see below.' },
+      history: { title: 'History', desc: 'Permits that have finished (Closed or Expired) — a read-only record with search, filters and a CSV export, reached as the "History" tab on Permits.' },
+      certificates: { title: 'Certificates', desc: 'The safety cards held by the workers you send, under Personnel. A card that has expired blocks that worker at step 5 of the wizard.' },
+      workers: { title: 'Workers', desc: 'The people you send, under Personnel — their certificate status and which permits they appear on, in one place.' }
     }
   },
   wizard: {
