@@ -19,11 +19,20 @@
           name="workerId"
           type="hidden">
         <LabelField
-          v-model="formData.certType"
+          v-slot="{ invalid }"
           :form="$form"
           :label="t('certificate.form.field.certType')"
           name="certType"
-          required />
+          tag="div"
+          required>
+          <!-- wayfinder 086 — the worker is already known (this is THEIR detail page), so the
+               role is available immediately, unlike the other three entry points. -->
+          <CertTypeSelect
+            v-model="formData.certType"
+            :invalid="invalid"
+            :role="worker.role"
+            name="certType" />
+        </LabelField>
         <LabelField
           v-slot="{ invalid }"
           :form="$form"
@@ -102,13 +111,14 @@ import useUpload from '@/composables/useUpload'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
+import CertTypeSelect from '@/components/certificate/CertTypeSelect.vue'
+import { dayjs } from '@/plugins/dayjs.plugin'
 import type { IWorker } from '@/models/modules/worker/Worker.model'
 import CertificateProvider, { type ICertificateProvider } from '@/resources/provider/certificate/Certificate.provider'
 import {
   AddCertificateSchema,
   useAddCertificateInitialValues,
-  type IAddCertificateFormState,
-  type TAddCertificateFormValues
+  type IAddCertificateFormState
 } from '@/pages/certificate/schema/AddCertificate.schema'
 
 /**
@@ -157,7 +167,13 @@ function onFileChange (event: Event): void {
   input.value = ''
 }
 
-async function useCreate (values: TAddCertificateFormValues): Promise<{ id: number }> {
+/**
+ * wayfinder 086 — reads every field from `formData`, never the Form's emitted `event.values`.
+ * `CertTypeSelect` is now this form's only non-native (component-based, not `<input>`) field
+ * with a registered `name`, and per 061's recorded trap that alone is enough to make
+ * `event.values` come back `undefined` entirely.
+ */
+async function useCreate (): Promise<{ id: number }> {
   let filePath: string | undefined
 
   if (formData.value.file) {
@@ -169,9 +185,9 @@ async function useCreate (values: TAddCertificateFormValues): Promise<{ id: numb
 
   const response = await CertificateService.create({
     workerId: props.worker.id,
-    certType: values.certType,
-    issuedDate: values.issuedDate,
-    expiryDate: values.expiryDate,
+    certType: formData.value.certType,
+    issuedDate: dayjs(formData.value.issuedDate).format('YYYY-MM-DD'),
+    expiryDate: dayjs(formData.value.expiryDate).format('YYYY-MM-DD'),
     filePath
   })
   return { id: response.data.id }
@@ -184,7 +200,7 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
   }
   submitErrorMessage.value = undefined
   handleLoading(async (): Promise<void> => {
-    const certificate = await useCreate(event.values as TAddCertificateFormValues)
+    const certificate = await useCreate()
     emits('created', certificate)
     resetForm()
     close()

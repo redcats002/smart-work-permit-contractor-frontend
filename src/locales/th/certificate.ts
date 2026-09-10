@@ -32,6 +32,12 @@ const certificate: typeof certificateEn = {
     hasFile: 'มีไฟล์แนบ',
     viewHint: 'ดูรายละเอียด'
   },
+  type: {
+    'hot-work': 'งานร้อน (Hot Work)',
+    'confined-space-entry': 'ที่อับอากาศ (Confined Space Entry)',
+    'working-at-heights': 'ทำงานบนที่สูง (Working at Heights)',
+    'gas-testing': 'การตรวจวัดแก๊ส (Gas Testing)'
+  },
   detail: {
     title: 'รายละเอียดใบรับรอง',
     editButton: 'แก้ไขใบรับรอง',
@@ -64,6 +70,9 @@ const certificate: typeof certificateEn = {
       workerName: 'ชื่อพนักงาน',
       role: 'ตำแหน่ง',
       certType: 'ชนิดบัตร',
+      certTypePlaceholder: 'เลือกชนิดบัตร',
+      certTypeUnknownRoleNote: 'แสดงชนิดบัตรทั้งหมด เนื่องจากตำแหน่งของพนักงานคนนี้ไม่อยู่ในรายการที่กำหนด',
+      certTypeLegacyLabel: '{value} (ไม่อยู่ในรายการมาตรฐาน)',
       issuedDate: 'วันที่ออก',
       expiryDate: 'วันหมดอายุ',
       file: 'ไฟล์แนบ',
@@ -73,7 +82,7 @@ const certificate: typeof certificateEn = {
     validation: {
       workerNameRequired: 'กรุณากรอกชื่อพนักงาน',
       roleRequired: 'กรุณากรอกตำแหน่ง',
-      certTypeRequired: 'กรุณากรอกชนิดบัตร',
+      certTypeRequired: 'กรุณาเลือกชนิดบัตร',
       fileType: 'ไฟล์ต้องเป็นภาพ JPEG, PNG, WEBP, HEIC หรือไฟล์ PDF',
       expiryAfterIssued: 'วันหมดอายุต้องอยู่หลังวันที่ออก'
     }

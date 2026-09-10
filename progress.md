@@ -3328,3 +3328,73 @@ Verified: `./init.sh` — typecheck PASS, lint PASS (2 pre-existing warnings, un
 API). Workspace-level `node scripts/check-docs-i18n.mjs` — green (7/7 mirrored pages). Workspace-level
 `node scripts/check-contract-sync.mjs` — OK (unaffected by this change, run for completeness since
 this session touched `src/router/index.ts`).
+
+## 2026-09-10 — Wayfinder 086 (contractor half): certType becomes a role-filtered Select
+
+The field report complaint that started the certType thread: *"ตรงหน้าใบ cer. ช่องชนิดบัตรแอบงงว่า
+ต้องกรอกอะไร"* — the free-text `ชนิดบัตร` box asked a question it never explained. 050's amendment
+(ruling 7) kept `certType` rather than deleting it and moving to `Worker.role`, because `certType`
+is the only field able to say a card is specifically a *hot work* card; this ticket ships the form
+half of that ruling — a `Select` over a compiled-in `ECertType`, filtered by the selected worker's
+role.
+
+**New:**
+- `src/enums/modules/certificate/CertType.enum.ts` — `ECertType` (four values: Hot Work, Confined
+  Space Entry, Working at Heights, Gas Testing) and `ROLE_ALLOWED_CERT_TYPES`, mirrored verbatim
+  from the api's `src/libs/config/worker-vocabulary.const.ts` (read there, not edited — the api
+  owns `ECertType`; this repo's `EWorkerRole.enum.ts` is unchanged and confirmed to still be the
+  api's own mirror source, byte-for-byte, all ten values).
+- `src/utils/CertType.ts` — `buildCertTypeOptions(role, currentValue)`, the pure function deciding
+  what the Select offers: a recognised role narrows to its allowed types; an unrecognised role
+  (undefined, or a real-but-uncatalogued value like `Welder`/`ช่างซ่อมบำรุง` from 050's data audit)
+  falls back to the FULL vocabulary with a visible note, rather than an empty or gated Select — a
+  worker outside the vocabulary must stay certifiable. The certificate's current value is always
+  present in the result even when role-filtering would exclude it, flagged `legacy` only when it
+  matches no `ECertType` at all.
+- `src/components/certificate/CertTypeSelect.vue` — the shared control, reused across all four
+  `AddCertificate.schema.ts` entry points the same way `WorkerPicker.vue` is shared for `workerId`:
+  the standalone add modal, the standalone edit page, the in-wizard `CreateCertificateModal.vue`,
+  and the worker detail page's `AddWorkerCertificateModal.vue`.
+
+**A ticket claim checked against the code and found false.** 050/061 both describe the
+unrecognised-legacy-value requirement as "renders it as a disabled option". Verified against
+`node_modules/primevue/select/index.mjs`: `findSelectedOptionIndex` → `isValidSelectedOption` →
+`isValidOption` explicitly excludes a `option-disabled` item from ever being resolved as the
+current selection, so the Select's displayed label falls back to the placeholder — BLANK — for
+exactly the certificate this requirement exists to protect. That claim holds for a native
+`<option disabled>`, not for this component. Built instead: the legacy value stays a normal,
+selectable option, labelled with `certificate.form.field.certTypeLegacyLabel` ("{value} (not in
+the standard list)" / Thai twin) rather than disabled — same outcome (never blank, never silently
+dropped, visibly distinct), achieved the way that is actually true of the library in this repo.
+
+**A second, undocumented bug this ticket's own no-op-trap test caught.** `AddCertificateModal.vue`,
+`CreateCertificateModal.vue`, and `AddWorkerCertificateModal.vue` all built their create payload
+from the `<Form>`'s emitted `event.values`, not `formData` — unlike `CertificateEditPage.vue`,
+which 061 already fixed onto `formData` for exactly this reason. Once `CertTypeSelect` joined
+`WorkerPicker` as a second (or, for the worker-detail modal, first) non-native field with a
+registered `name`, `event.values` came back `undefined` ENTIRELY — the same failure 061 described
+for `WorkerPicker` alone, just never triggered here because nothing exercised these three forms'
+submit path with more than one such field until this ticket's test did. All three now read every
+field from `formData` (dates via `dayjs(...).format('YYYY-MM-DD')`, matching
+`CertificateEditPage.vue`'s established pattern) — this was a real, latent defect on the exact
+field this ticket touches, not scope creep.
+
+**Tests** (`src/tests/utils/CertType.test.ts`, `src/tests/pages/certificate/AddCertificateModal.test.ts`,
+additions to `src/tests/pages/certificate/CertificateEditPage.test.ts`): role filtering narrows the
+list; an unrecognised role (`Welder`, `ช่างซ่อมบำรุง`, undefined) falls back to the full vocabulary
+and stays certifiable; a legacy stored value (`hot-work`) is preserved on submit untouched unless a
+human changes it; a real `ECertType` merely excluded by role filtering is offered (not flagged
+legacy); and the no-op-trap regression — the Select's chosen value actually reaches
+`CertificateService.create`'s payload, driven through PrimeVue's real click-to-open,
+mousedown/mouseup/click-to-select overlay (teleported to `document.body`, queried via a
+`DOMWrapper` since `wrapper.find` cannot see teleported content), not a shortcut around it.
+
+**Not done, reported rather than silently skipped:** the `ชนิดบัตร` "hint that restates its own
+label" the ticket describes was not found in the current code (no `description`/hint prop is set
+on the certType `LabelField` in any of the four forms — only a validation message, now reworded to
+"Please select a certificate type" / "กรุณาเลือกชนิดบัตร"). Likely already fixed by 061's rewrite of
+these forms; nothing left to remove.
+
+Verified: `./init.sh` — typecheck PASS, lint PASS (2 pre-existing warnings, unrelated), **72 files /
+605 tests PASS**, contrast PASS, icons PASS, **smoke PASS** (14/14 contract checks against a live
+API — API was reachable this session).

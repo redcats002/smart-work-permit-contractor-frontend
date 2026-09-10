@@ -25,6 +25,16 @@ const certificate = {
     hasFile: 'Attachment',
     viewHint: 'View details'
   },
+  // wayfinder 086 — the closed set the certType Select offers, keyed the same way
+  // permit.create.steps.ppeWorkers.role slugs its own vocabulary. Mirrors the API's
+  // worker-vocabulary.const.ts ECertType; this frontend does not yet fetch it (050's known
+  // interim state).
+  type: {
+    'hot-work': 'Hot Work',
+    'confined-space-entry': 'Confined Space Entry',
+    'working-at-heights': 'Working at Heights',
+    'gas-testing': 'Gas Testing'
+  },
   detail: {
     title: 'Certificate',
     editButton: 'Edit certificate',
@@ -57,6 +67,9 @@ const certificate = {
       workerName: 'Worker name',
       role: 'Role',
       certType: 'Certificate type',
+      certTypePlaceholder: 'Select a certificate type',
+      certTypeUnknownRoleNote: 'Showing every certificate type — this worker\'s role isn\'t in our list.',
+      certTypeLegacyLabel: '{value} (not in the standard list)',
       issuedDate: 'Issued date',
       expiryDate: 'Expiry date',
       file: 'Attachment',
@@ -66,7 +79,7 @@ const certificate = {
     validation: {
       workerNameRequired: 'Please enter the worker name',
       roleRequired: 'Please enter the role',
-      certTypeRequired: 'Please enter the certificate type',
+      certTypeRequired: 'Please select a certificate type',
       fileType: 'File must be a JPEG, PNG, WEBP or HEIC image, or a PDF',
       expiryAfterIssued: 'Expiry date must be after the issued date'
     }

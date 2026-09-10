@@ -22,7 +22,8 @@
           <WorkerPicker
             v-model="formData.workerId"
             :initial-name="formData.workerName"
-            :invalid="invalid" />
+            :invalid="invalid"
+            @worker-selected="onWorkerSelected($event)" />
           <!-- The Form tracks fields by registered input name, and WorkerPicker is a component,
                not an <input>. Without this the resolver never sees workerId, the schema's
                `z.number()` fails on undefined, and submit silently no-ops. -->
@@ -32,11 +33,18 @@
             type="hidden">
         </LabelField>
         <LabelField
-          v-model="formData.certType"
+          v-slot="{ invalid }"
           :form="$form"
           :label="t('certificate.form.field.certType')"
           name="certType"
-          required />
+          tag="div"
+          required>
+          <CertTypeSelect
+            v-model="formData.certType"
+            :invalid="invalid"
+            :role="selectedWorkerRole"
+            name="certType" />
+        </LabelField>
         <LabelField
           v-slot="{ invalid }"
           :form="$form"
@@ -108,13 +116,15 @@ import useUpload from '@/composables/useUpload'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import WorkerPicker from '@/components/worker/WorkerPicker.vue'
+import CertTypeSelect from '@/components/certificate/CertTypeSelect.vue'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
+import { dayjs } from '@/plugins/dayjs.plugin'
+import type { IWorker } from '@/models/modules/worker/Worker.model'
 import CertificateProvider, { type ICertificateProvider } from '@/resources/provider/certificate/Certificate.provider'
 import {
   AddCertificateSchema,
   useAddCertificateInitialValues,
-  type IAddCertificateFormState,
-  type TAddCertificateFormValues
+  type IAddCertificateFormState
 } from '@/pages/certificate/schema/AddCertificate.schema'
 
 interface IEmits {
@@ -132,9 +142,17 @@ const CertificateService: ICertificateProvider = new CertificateProvider()
 const visible = defineModel<boolean>({ default: false })
 const resolver = zodResolver(AddCertificateSchema)
 const formData: Ref<IAddCertificateFormState> = ref(useAddCertificateInitialValues())
+// wayfinder 086 — filters CertTypeSelect's options. Undefined until a worker is actually picked,
+// which is the "unknown role" case CertTypeSelect already falls back to the full list for.
+const selectedWorkerRole: Ref<string | undefined> = ref(undefined)
 
 function resetForm (): void {
   formData.value = useAddCertificateInitialValues()
+  selectedWorkerRole.value = undefined
+}
+
+function onWorkerSelected (worker: IWorker | undefined): void {
+  selectedWorkerRole.value = worker?.role
 }
 
 function onFileChange (event: Event): void {
@@ -158,8 +176,16 @@ function onFileChange (event: Event): void {
  * resolves without throwing but still has no usable path (e.g. an upload response missing
  * `originalName`, which `useUpload` skips splicing) — that must abort too, not save silently
  * without the attachment the user asked for.
+ *
+ * wayfinder 086 — reads every field from `formData`, never the Form's emitted `event.values`.
+ * `certType` (now `CertTypeSelect`, a component rather than an `<input>`, same as `WorkerPicker`)
+ * joins `workerId` in tripping the exact trap 061 already recorded once for
+ * `CertificateEditPage.vue`: once a second non-native field sits in this `<Form>`, `event.values`
+ * comes back `undefined` ENTIRELY, not just for that field — this modal was silently vulnerable
+ * to the same failure the whole time `WorkerPicker` was its only such field, just never
+ * triggered, because nothing had exercised it until this ticket's own no-op-trap test did.
  */
-async function useCreate (values: TAddCertificateFormValues): Promise<void> {
+async function useCreate (): Promise<void> {
   let filePath: string | undefined
 
   if (formData.value.file) {
@@ -177,9 +203,9 @@ async function useCreate (values: TAddCertificateFormValues): Promise<void> {
 
   await CertificateService.create({
     workerId: formData.value.workerId as number,
-    certType: values.certType,
-    issuedDate: values.issuedDate,
-    expiryDate: values.expiryDate,
+    certType: formData.value.certType,
+    issuedDate: dayjs(formData.value.issuedDate).format('YYYY-MM-DD'),
+    expiryDate: dayjs(formData.value.expiryDate).format('YYYY-MM-DD'),
     filePath
   })
 }
@@ -190,7 +216,7 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
     return
   }
   handleLoading(async (): Promise<void> => {
-    await useCreate(event.values as TAddCertificateFormValues)
+    await useCreate()
     emits('created')
     resetForm()
     close()

@@ -179,3 +179,42 @@ describe('CertificateEditPage — loading and saving', () => {
     expect(wrapper.find('form').exists()).toBe(false)
   })
 })
+
+/**
+ * Wayfinder 086 — 050's second data-audit constraint, the reason the certType Select must not be
+ * a closed schema enum: an existing certificate can hold a value the Select does not offer (the
+ * real data has `hot-work`, and the ticket says to assume nothing beyond that). Silently dropping
+ * it on save would rewrite history — the exact shape 072 already found once for a normalizer that
+ * only knew the new field names.
+ */
+describe('CertificateEditPage — an unrecognised stored certType survives (050\'s data audit)', () => {
+  it('a legacy certType value not in the Select\'s vocabulary is preserved on submit, untouched', async (): Promise<void> => {
+    const update = vi.spyOn(CertificateProvider.prototype, 'update').mockResolvedValue({
+      message: 'success',
+      data: buildCertificate({ certType: 'hot-work' })
+    })
+
+    const wrapper = await mountPage(buildCertificate({ certType: 'hot-work' }))
+
+    // Never blank, never coerced to something the Select DOES recognise.
+    expect(wrapper.text()).toContain('hot-work')
+
+    await submit(wrapper)
+
+    const payload = update.mock.calls[0][1] as IUpdateCertificatePayload
+    expect(payload.certType).toBe('hot-work')
+  })
+
+  it('a recognised certType still round-trips unchanged', async (): Promise<void> => {
+    const update = vi.spyOn(CertificateProvider.prototype, 'update').mockResolvedValue({
+      message: 'success',
+      data: buildCertificate()
+    })
+
+    const wrapper = await mountPage(buildCertificate({ certType: 'Hot Work' }))
+    await submit(wrapper)
+
+    const payload = update.mock.calls[0][1] as IUpdateCertificatePayload
+    expect(payload.certType).toBe('Hot Work')
+  })
+})
