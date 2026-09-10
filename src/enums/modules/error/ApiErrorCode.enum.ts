@@ -24,6 +24,7 @@ export enum EApiErrorCode {
   CERT_MISSING = 'CERT_MISSING',
   CERT_EXPIRED = 'CERT_EXPIRED',
   CERT_LICENCE_OR_ATTACHMENT_REQUIRED = 'CERT_LICENCE_OR_ATTACHMENT_REQUIRED',
+  PPE_REQUIRED = 'PPE_REQUIRED',
 
   // Worker register (contractor) — wayfinder 060. Not a failure the user must recover from:
   // the response carries `workerId`, so an inline "Create worker …" selects the existing

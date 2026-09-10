@@ -14,6 +14,7 @@ const error = {
   CERT_MISSING: 'A registered worker has no certificate on file. Add it before submitting.',
   CERT_EXPIRED: 'A registered worker has an expired certificate. This cannot be overridden.',
   CERT_LICENCE_OR_ATTACHMENT_REQUIRED: 'A certificate needs either a licence number or an attached image — at least one.',
+  PPE_REQUIRED: 'This permit needs its PPE declared before it can be submitted.',
 
   // Worker register
   WORKER_ALREADY_EXISTS: 'You have already registered a worker with this name.',
