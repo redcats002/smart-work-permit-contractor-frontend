@@ -420,6 +420,21 @@ const permit: typeof permitEn = {
     back: 'ใบอนุญาตของฉัน',
     loadFailed: 'ไม่สามารถโหลดใบอนุญาตนี้ได้',
     notFound: 'ไม่พบใบอนุญาตนี้',
+    // wayfinder 113 / ruling 11 — แถบคงที่เหนือแท็บ จะไม่ปรากฏใน DOM เลยเมื่อไม่มีเรื่องเร่งด่วน
+    // ดู PermitUrgentSection.vue สำหรับรายการที่แสดงในแถบนี้
+    urgent: {
+      closeRequested: {
+        title: 'มีคำขอปิดงาน — รอเจ้าหน้าที่ความปลอดภัยดำเนินการ',
+        body: 'ขอโดย {who} เมื่อ {when}',
+        reasonPrefix: 'เหตุผล: ',
+        role: {
+          contractor: 'คุณ',
+          inspector: 'ผู้ตรวจสอบ',
+          safety_officer: 'เจ้าหน้าที่ความปลอดภัย (จป.)',
+          unknown: 'ผู้เกี่ยวข้องกับใบอนุญาตนี้'
+        }
+      }
+    },
     // PMT-013 — หกส่วนตาม docs/main/dev-handoff/05-permit-detail-sections.md §2 ตามลำดับ
     sections: {
       overview: {

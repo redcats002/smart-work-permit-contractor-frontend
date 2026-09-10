@@ -428,6 +428,21 @@ const permit = {
     back: 'My Permits',
     loadFailed: 'Could not load this permit',
     notFound: 'This permit is not available',
+    // wayfinder 113 / ruling 11 — the fixed strip above the tabs. Absent from the DOM entirely
+    // when nothing is urgent; see PermitUrgentSection.vue for what puts an entry here.
+    urgent: {
+      closeRequested: {
+        title: 'Closure requested — awaiting Safety Officer',
+        body: 'Requested by {who} on {when}.',
+        reasonPrefix: 'Reason: ',
+        role: {
+          contractor: 'you',
+          inspector: 'the inspector',
+          safety_officer: 'the Safety Officer',
+          unknown: 'someone on this permit'
+        }
+      }
+    },
     // PMT-013 — the six sections of docs/main/dev-handoff/05-permit-detail-sections.md §2, in order.
     sections: {
       overview: {

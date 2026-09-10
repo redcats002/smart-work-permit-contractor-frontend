@@ -60,6 +60,14 @@
       </PermitStatusBanner>
 
       <!--
+        wayfinder 113 / ruling 11 — urgent and notification-related state stays a FIXED section
+        above the tabs, reachable with zero interaction. Renders nothing (see
+        PermitUrgentSection.vue) when there is nothing urgent, so the common case is this page's
+        own status banner immediately followed by the clean tabbed layout below.
+      -->
+      <PermitUrgentSection :permit="permit" />
+
+      <!--
         268px right rail. `lg:flex-row` puts the rail beside the main column on wide screens and
         stacks it BELOW the main column at narrow widths (flex-col + the rail declared second).
       -->
@@ -87,54 +95,84 @@
           </p>
 
           <!--
-            The six sections of docs/main/dev-handoff/05-permit-detail-sections.md §2, stacked in
-            contract order. Stacked rather than tabbed on purpose: every section stays reachable and
-            printable in one pass, and an empty section still renders its own empty state.
+            wayfinder 113 — the six sections of docs/main/dev-handoff/05-permit-detail-sections.md
+            §2, now tabbed rather than stacked (narrows 052's convention). Each is already its own
+            component with its own props; this only changes how they are switched between. Volt
+            `TabPanel` keeps every panel mounted and toggles visibility with `v-show` unless the
+            parent sets `lazy` (see src/volt/TabPanel.vue) — deliberately not set, so switching
+            tabs never re-fetches or re-mounts a section. `show-navigators` stays off: the strip's
+            own `overflow-x-auto` (src/volt/TabList.vue) already keeps a 6-tab strip scrolling
+            inside itself at the 375px floor, and the prev/next buttons carry a `v-ripple` this
+            app never registers.
           -->
-          <PermitDetailSection
-            :title="t('permit.detail.sections.overview.title')"
-            name="overview">
-            <PermitInfoCard :permit="permit" />
-          </PermitDetailSection>
+          <Tabs v-model:value="activeTab">
+            <TabList>
+              <Tab
+                v-for="item in tabItems"
+                :key="item.value"
+                :value="item.value">
+                {{ item.label }}
+              </Tab>
+            </TabList>
+            <TabPanels>
+              <TabPanel value="overview">
+                <PermitDetailSection
+                  :title="t('permit.detail.sections.overview.title')"
+                  name="overview">
+                  <PermitInfoCard :permit="permit" />
+                </PermitDetailSection>
+              </TabPanel>
 
-          <!--
-            §2 owns its own empty state rather than delegating to the wrapper: the outdoor-work
-            bypass explanation and the server verdict must still render on a permit that has no
-            reading recorded yet, which is exactly the DRAFT case.
-          -->
-          <PermitDetailSection
-            :title="t('permit.detail.sections.safety.title')"
-            name="safety">
-            <PermitSafetySection :permit="permit" />
-          </PermitDetailSection>
+              <!--
+                §2 owns its own empty state rather than delegating to the wrapper: the
+                outdoor-work bypass explanation and the server verdict must still render on a
+                permit that has no reading recorded yet, which is exactly the DRAFT case.
+              -->
+              <TabPanel value="safety">
+                <PermitDetailSection
+                  :title="t('permit.detail.sections.safety.title')"
+                  name="safety">
+                  <PermitSafetySection :permit="permit" />
+                </PermitDetailSection>
+              </TabPanel>
 
-          <PermitDetailSection
-            :title="t('permit.detail.sections.workers.title')"
-            name="workers">
-            <PermitWorkersSection :permit="permit" />
-          </PermitDetailSection>
+              <TabPanel value="workers">
+                <PermitDetailSection
+                  :title="t('permit.detail.sections.workers.title')"
+                  name="workers">
+                  <PermitWorkersSection :permit="permit" />
+                </PermitDetailSection>
+              </TabPanel>
 
-          <PermitDetailSection
-            :empty="permit.jsaSteps.length === 0"
-            :empty-text="t('permit.detail.sections.jsa.empty')"
-            :title="t('permit.detail.sections.jsa.title')"
-            name="jsa">
-            <PermitJsaSection :steps="permit.jsaSteps" />
-          </PermitDetailSection>
+              <TabPanel value="jsa">
+                <PermitDetailSection
+                  :empty="permit.jsaSteps.length === 0"
+                  :empty-text="t('permit.detail.sections.jsa.empty')"
+                  :title="t('permit.detail.sections.jsa.title')"
+                  name="jsa">
+                  <PermitJsaSection :steps="permit.jsaSteps" />
+                </PermitDetailSection>
+              </TabPanel>
 
-          <PermitDetailSection
-            :title="closureSectionTitle"
-            name="closure">
-            <PermitClosureSection
-              :fire-watch-remaining="fireWatchRemaining"
-              :permit="permit" />
-          </PermitDetailSection>
+              <TabPanel value="closure">
+                <PermitDetailSection
+                  :title="closureSectionTitle"
+                  name="closure">
+                  <PermitClosureSection
+                    :fire-watch-remaining="fireWatchRemaining"
+                    :permit="permit" />
+                </PermitDetailSection>
+              </TabPanel>
 
-          <PermitDetailSection
-            :title="t('permit.detail.sections.audit.title')"
-            name="audit">
-            <PermitAuditTimeline :entries="audit" />
-          </PermitDetailSection>
+              <TabPanel value="audit">
+                <PermitDetailSection
+                  :title="t('permit.detail.sections.audit.title')"
+                  name="audit">
+                  <PermitAuditTimeline :entries="audit" />
+                </PermitDetailSection>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
         </div>
 
         <aside class="w-full shrink-0 lg:w-67">
@@ -164,7 +202,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, type ComputedRef, type Ref } from 'vue'
+import { computed, onMounted, ref, watch, type ComputedRef, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { permitAuthorName } from '@/models/modules/permit/Permit.model'
@@ -173,6 +211,7 @@ import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import type { IPermitAuditEntry, IPermitFireWatch } from '@/models/modules/permit/Permit.model'
 import type { IPermitDetail } from '@/models/response/permit/PermitRes.model'
 import PermitStatusGlyph from '@/components/chip/PermitStatusGlyph.vue'
+import useTabItems, { type ITabItemComponent, type IUseTabItems } from '@/composables/useTabItems'
 import ClosureChecklistModal from '@/pages/permit/pages/detail/components/ClosureChecklistModal.vue'
 import FireMonitorPanel from '@/pages/permit/pages/detail/components/FireMonitorPanel.vue'
 import MarkCompleteConfirmModal from '@/pages/permit/pages/detail/components/MarkCompleteConfirmModal.vue'
@@ -184,6 +223,7 @@ import PermitJsaSection from '@/pages/permit/pages/detail/components/PermitJsaSe
 import PermitQrPanel from '@/pages/permit/pages/detail/components/PermitQrPanel.vue'
 import PermitSafetySection from '@/pages/permit/pages/detail/components/PermitSafetySection.vue'
 import PermitStatusBanner from '@/pages/permit/pages/detail/components/PermitStatusBanner.vue'
+import PermitUrgentSection from '@/pages/permit/pages/detail/components/PermitUrgentSection.vue'
 import PermitWorkersSection from '@/pages/permit/pages/detail/components/PermitWorkersSection.vue'
 import useFireWatch from '@/pages/permit/pages/detail/composables/useFireWatch'
 import usePermitDetail from '@/pages/permit/pages/detail/composables/usePermitDetail'
@@ -241,6 +281,36 @@ const closureSectionTitle: ComputedRef<string> = computed((): string => (
 
 const statusClass: ComputedRef<{ bg: string, fg: string }> = computed(
   (): { bg: string, fg: string } => STATUS_CLASS[permit.value?.status ?? 'DRAFT'])
+
+/**
+ * wayfinder 113 — the tab list this page switches between, built with the composable the ticket
+ * names. `useTabItems` seeds the initial active tab from `?tab=` and never writes back on its
+ * own; the watcher below adds that, spreading the existing query rather than replacing it whole
+ * (the dead `src/components/base/BaseTab.vue`'s `router.replace({ query: { tab } })` drops every
+ * other param a page holds — e.g. this page's own `?submitted=1` — which is exactly what ticket
+ * 052 flagged and this composition avoids).
+ *
+ * `BaseTabWindow` is deliberately NOT used to render the active panel: it mounts only the ONE
+ * active tab's component (`src/composables/useTabItems.ts`'s `importComponent` wraps it in
+ * `defineAsyncComponent`), so switching tabs would defer a section's first fetch/render until its
+ * tab opens — a mount-timing change the "behaviour must not change" rule forbids. The panels
+ * above use Volt's `TabPanel` instead (src/volt/TabPanel.vue), which keeps every section mounted
+ * and toggles visibility with `v-show`.
+ */
+const tabDefs: ComputedRef<ITabItemComponent[]> = computed((): ITabItemComponent[] => [
+  { label: t('permit.detail.sections.overview.title'), value: 'overview' },
+  { label: t('permit.detail.sections.safety.title'), value: 'safety' },
+  { label: t('permit.detail.sections.workers.title'), value: 'workers' },
+  { label: t('permit.detail.sections.jsa.title'), value: 'jsa' },
+  { label: closureSectionTitle.value, value: 'closure' },
+  { label: t('permit.detail.sections.audit.title'), value: 'audit' }
+])
+
+const { tab: activeTab, tabItems }: IUseTabItems = useTabItems(tabDefs)
+
+watch(activeTab, (value: string): void => {
+  void router.replace({ query: { ...route.query, tab: value } })
+})
 
 /**
  * `?submitted=1` — set by whoever navigates here straight after a successful submit. It is a

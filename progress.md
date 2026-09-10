@@ -3668,3 +3668,121 @@ on the safety/inspector app (ticket 096's other half already shipped, api-side);
 correcting that requires editing the workspace-root copy and re-running the cross-repo copy loop,
 which is out of scope for a single-repo session and left for whoever closes the ticket.
 `src/pages/auth/pages/login/constants/DemoAccounts.ts` untouched per instruction.
+
+## 2026-09-11 — wayfinder 113 (contractor half): PermitDetailPage tabbed, ruling 11's urgent strip
+
+Absorbs 052/053 for this repo (not closed here — that is the tracker's job, not this repo's).
+Safety half shipped first (`7608c8a8`); its resolution said three of 113's body claims were false
+for that app, and the same rigor was applied here rather than assuming the ticket's premises hold.
+
+**Survey — `find src/pages -name "*.vue" | xargs wc -l` sorted** — only ONE page qualifies as a
+genuine multi-section detail page, matching 052's own scope note ("the contractor app's own permit
+detail" is the only contractor-app page it names):
+
+| Page | Lines | Verdict |
+|---|---|---|
+| `PermitDetailPage.vue` | 282 | **Qualifies** — 6 sections, all already extracted components |
+| `WorkerDetailPage.vue` | 264 | Excluded — 3 sections, one an inline (unextracted) identity form; not named by 052 |
+| `CertificateEditPage.vue` | 412 | Excluded — one `Form`, not a stacked-section detail page |
+| `CertificateDetailPage.vue` | 253 | Excluded — 2 small cards |
+| `ProfileDetailPage.vue` | 231 | Excluded — one `Form` spanning two `<section>`s, same submit |
+| `PermitCreatePage.vue` (wizard) | 124 (+step files) | Excluded — a stepper, not a detail page |
+| List pages (`PermitListPage`, `CertificateListPage`, `WorkerListPage`) | — | Excluded — lists |
+
+**Tab primitive.** No Volt Tab family existed in this repo (`ls src/volt \| grep -i tab` → only
+`DataTable.vue`) — built `src/volt/{Tabs,TabList,Tab,TabPanels,TabPanel}.vue`, PrimeVue's unstyled
+Tabs wrapped in PT (same shape as the safety app's, independently re-implemented with THIS repo's
+own design tokens — see below — never a shared file/import, per the ticket's own warning about
+093's dead-code mirror). `src/components/base/{BaseTab,BaseTabWindow}.vue` and
+`src/composables/useTabItems.ts` were, exactly like the safety app, dead lending-era code with zero
+importers — confirmed by reading them, not assumed from the ticket. `BaseTab.vue` is a styled
+`<div @click>` (no `role="tab"`, no keyboard support) whose handler does
+`router.replace({ query: { tab: value } })`, dropping every other query param a page holds
+(this page's own `?submitted=1` included) — the exact defect 052 names. `BaseTabWindow.vue` mounts
+only the active tab's component (`defineAsyncComponent` + a `v-else-if`), which would defer a
+section's first fetch until its tab opens — a mount-timing change "behaviour must not change"
+forbids. **Verified empirically, not assumed**: converted the whole page to Volt `TabPanel` (which
+keeps every panel mounted, `v-show` toggling — see `TabPanel.vue`'s comment) and ran the
+**unmodified** `PermitDetailPage.test.ts` / `PermitDetailSections.test.ts` / `FireWatch.test.ts` /
+`PermitClosureFireWatch.test.ts` suites — all 37 tests pass, including the zero-interaction
+assertion on the LAST tab (audit trail, `findAll('ol li')` length 3 with no click). `useTabItems`
+**is** used (for `tab`/`tabItems`, seeding `?tab=` and no more — not for rendering), so it is no
+longer dead code either; a `watch` writes the active tab back with `{ ...route.query, tab: value }`,
+never replacing the query object whole.
+
+**Deliberate token deviation.** The generic instruction to keep text `surface-800` or darker does
+not apply literally here: this repo defines no numeric `--color-surface-*` scale (only semantic
+`--color-surface-{app,subtle,muted,card}`), unlike the rest of `src/volt/` which references
+`bg-surface-800` etc. as inert, unmigrated lending-template scaffold that resolves to nothing.
+The new Tab family uses this repo's real tokens instead — `text-text-secondary`/`text-text-primary`/
+`border-border`/`primary`/`primary-emphasis` — the ones `scripts/check-contrast.mjs` already
+asserts pairs for. No new token was added.
+
+**Urgent strip (`PermitUrgentSection.vue`), ruling 11.** Decided from what this app can actually
+show, not the illustrative list verbatim:
+
+- **Rejection reason** — deliberately NOT duplicated into a new box. `PermitStatusBanner`'s
+  `rejected` variant already renders it unconditionally, above where the tabs sit — a second red
+  box repeating the same sentence is exactly the duplication this ticket exists to remove.
+- **Inspector `CORRECTIVE_ACTION`/`EMERGENCY`/`INCIDENT` note** — **not buildable from this repo**.
+  `GET /permits/:id/inspector-visits` is `auth: ['inspector', 'safety_officer']` in
+  `smart-work-permit-api/src/modules/permit/queries/inspector-visit-list/inspector-visit-list.http.controller.ts`,
+  and that controller's own comment says the contractor exclusion is deliberate. Wayfinder 083 (the
+  ticket deciding whether a contractor may read this) closed unresolved 2026-09-10. `PROMPT-LOG.md`
+  session 13 narrates the owner choosing full visibility, but the API itself was not updated to add
+  `contractor` to that auth array — this is a decided-but-not-yet-built gap, not a contradiction,
+  and it is out of scope to fix from this repo. Recommend a split-out ticket once the API opens the
+  route, the same shape as 116 on the safety side.
+- **Close request awaiting Safety** — buildable and built. `POST /permits/:id/close-request` is
+  already `auth: ['contractor', 'inspector']` (wayfinder 098, API built 2026-09-11), and the wire
+  Permit entity already carries `closeRequestedAt`/`closeRequestedById`/`closeRequestedBy`/
+  `closeRequestedRole`/`closeRequestReason` (`permit.model.ts`). Added the four rendered fields to
+  `IPermitListItem` as **optional** (`closureChecklist`'s existing pattern) — several fixture
+  builders across this test tree construct full `IPermitDetail` literals, so a required addition
+  would have broken files this change has no business touching. Gate is
+  `closeRequestedAt` set AND status is `ACTIVE`/`FIRE_MONITOR` — NOT `!== 'CLOSED'`, because the
+  flag is never cleared (even after the permit closes, per the API's own comment) and an EXPIRED
+  permit's request is equally moot. **Nothing in this app raises a close request yet** — that UI is
+  098's own frontend half, explicitly out of scope here (would mean changing
+  `ClosureChecklistModal`'s close→close-request behaviour, forbidden by "behaviour must not
+  change"). The state is real and reachable today regardless: an inspector can raise one from the
+  other app.
+
+**Test infra gap found and fixed, needed by the change itself (not a drive-by).** This repo had no
+shared jsdom test setup file. PrimeVue's unstyled `TabList` calls `ResizeObserver` unconditionally
+from `mounted()` (ink-bar sizing, regardless of the PT class that hides the ink bar) — jsdom has no
+`ResizeObserver`, so every test mounting `PermitDetailPage.vue` threw and corrupted later assertions
+in the same file with a cascading `Cannot read properties of null (reading '$')`. Added
+`src/tests/setup.ts` (one `ResizeObserver` stub, same fix the safety app's own
+`src/tests/setup.ts` already carries for its table pager) and wired it via `vitest.config.ts`'s new
+`setupFiles`. This is infrastructure the new Tab family requires to be testable at all, not a
+scope-creep refactor.
+
+**New tests** (`PermitDetailPage.test.ts`): the two pre-existing zero-interaction tests
+("fetches the permit…", "renders the audit timeline…") gained a `[role="tablist"]` assertion — on a
+now-tabbed page, "reachable without a click" is meaningless without proving tabs exist at all,
+exactly the strengthening the safety half made for the same reason. Three new tests: a REJECTED
+permit's reason is reachable with zero interaction alongside `role="tablist"`; the close-request
+strip renders with the requester/time/reason when `closeRequestedAt` is set on an ACTIVE permit;
+the strip is **absent from the DOM** (`.exists() === false`, not merely hidden) both on a plain
+ACTIVE permit and on a CLOSED permit whose (never-cleared) `closeRequestedAt` is still set.
+
+**Line counts, honest.** `PermitDetailPage.vue` 282 → 352 (+70) — tab scaffolding, the urgent
+section wiring, and the doc comments recording ruling 11 and the `BaseTabWindow` rejection. All six
+sections were already their own components (`PermitInfoCard`, `PermitSafetySection`,
+`PermitWorkersSection`, `PermitJsaSection`, `PermitClosureSection`, `PermitAuditTimeline`) before
+this session — there was no extraction left to do, so the page grew, matching the safety half's own
+honest result rather than manufacturing a smaller number. New: `PermitUrgentSection.vue` (88 lines),
+five Volt Tab files (205 lines total), `src/tests/setup.ts` (20 lines).
+
+**`./init.sh`**: typecheck PASS, lint PASS (2 pre-existing warnings, unrelated —
+`useNotificationPolling.test.ts`), tests PASS — 76 files / 626 tests, contrast PASS, icons PASS,
+smoke SKIP ("no API reachable at http://localhost:3000" — another agent holds the api repo this
+session, so this was not run against a live backend; the model change to `IPermitListItem` is
+therefore **unverified against the live wire shape** per AGENTS.md's own rule that a green vitest
+run alone only proves the app agrees with its own types).
+
+**Not done, and why**: 052/053 are NOT closed and `map.md`/`map-round-4-*.md` are NOT edited — the
+tracker's own rule, not this repo's call. `DemoAccounts.ts` untouched. `ClosureChecklistModal.vue`
+untouched — migrating contractor close→close-request is wayfinder 098's frontend half, a separate
+ticket. `WorkerDetailPage.vue` and every other excluded page in the survey table above untouched.

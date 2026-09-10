@@ -46,6 +46,19 @@ export interface IPermitListItem extends IPermitBase {
    * assume it is still approved.
    */
   areaId: number | null
+  /**
+   * wayfinder 098 (API built 2026-09-11; this app's read-only awareness lands with wayfinder 113).
+   * Set once by `POST /permits/:id/close-request` (inspector or the owning contractor) and **never
+   * cleared**, even after the permit actually closes — so "awaiting safety" is `closeRequestedAt`
+   * set AND the permit is still `ACTIVE`/`FIRE_MONITOR`, never just "is it set". Optional because
+   * every fixture in this module predates the field and constructs a full literal — see
+   * `closureChecklist` above for the same reason. Wire name is `closeRequestReason`, not
+   * `closeRequestedReason`.
+   */
+  closeRequestedAt?: string | null
+  closeRequestedBy?: IPermitAuthor | null
+  closeRequestedRole?: string | null
+  closeRequestReason?: string | null
 }
 
 /** GET /permits/:id — the entity plus its collections. */
