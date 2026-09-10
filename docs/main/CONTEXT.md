@@ -78,14 +78,18 @@ per group (wayfinder 084, `docs/api/GAPS.md` row X1).
 
 Approved 2026-09-11; tickets 094-114 are in flight. Listed so nobody invents a competing name while
 they land, and **so nobody keeps using the terms being removed**. Rulings: `PROMPT-LOG.md` session
-13. Map: `docs/wayfinder/map-round-4-pins-closure-and-the-inspector-menu.md`.
+13. Map: `docs/wayfinder/map-round-4-pins-closure-and-the-inspector-menu.md`. **098's and 099's API
+halves are the exception — built 2026-09-11**, marked below; both frontend halves and every other
+row in this table remain not-yet-built.
 
 | Term | What it will mean | Ticket |
 |---|---|---|
 | `Pin` | A named position on a `FacilityPlan`, **placed by safety**. Names editable, **positions frozen**, deactivated never deleted. The contractor selects one; they no longer place their own. | 104 |
 | `FacilityPlan` (revised) | A flat set of **named places** with **immutable images** — not a version chain. A new scan is a new plan; the old one is deactivated. | 104 |
 | `pinId` on `Permit` | Replaces `planId`/`planX`/`planY`. One reference instead of five columns; the pin knows its plan. | 105 |
-| requested-close | A permit whose closure has been **requested** by a contractor or inspector, awaiting safety. Safety may also close directly, with a reason. | 098 |
+| requested-close — **API built** | A permit whose closure has been **requested** by a contractor or inspector, awaiting safety. Safety may also close directly, with a reason. **Not a new `PermitStatus`** — a flag (`closeRequestedAt`/`By`/`Role`/`Reason`) on whatever status the permit already holds (ACTIVE or FIRE_MONITOR), decided and recorded in `close-request.service.ts`'s header comment; every status-keyed query (dashboard counts, area occupancy, expiry sweep) needed no change. `GET /permits?closeRequested=true` is the queue this flag doesn't get for free from a status filter. | 098 |
+| `'system'` scan provenance — **API built** | A third value beside [017](docs/wayfinder/tickets/017-audit-log-scan-provenance.md)'s `scan`/`manual`, written only by `close.service.ts`'s auto-checkout (below), never client-asserted. | 098 |
+| worker "not available" — **API built** | A worker on the permit who is **not on site** (didn't show, sent home, unfit, reassigned), with a required note. Lives on `PermitWorker` (`notAvailable`/`notAvailableNote`/`notAvailableAt`/`notAvailableById`/`notAvailableBy`), **not** an `EntrantEvent` — the entry log answers "who was inside", and a third `direction` value would invert that for every reader. `POST /permits/:id/entrants/not-available` (`inspector`, ACTIVE/FIRE_MONITOR only). A worker marked not-available can still check in later — `POST /permits/:id/entrants/scan` direction `IN` clears the flag. | 099 |
 | PPE vocabulary | Seven items, **one shared constant** across the API and both frontends. The contractor declares; the inspector checks the declared subset and may flag an undeclared gap. | 097 |
 | `CERT_LICENCE_OR_ATTACHMENT_REQUIRED` | New `errorCode` (400): a certificate create or update whose **final** state has neither a licence number nor an attachment. The server re-checks only when the patch touches `licenceNo` or `filePath`, so pre-095 rows with neither stay editable for unrelated fields. **A form that round-trips its whole model — sending `licenceNo: ''` or `filePath: null` for untouched fields — will trip this on every pre-095 certificate.** Omit untouched fields. | 095 |
 | `licenceNo` | A certificate's licence number. **A certificate needs a licence number OR an attachment** — at least one. | 095 |
@@ -248,10 +252,31 @@ always authoritative and the client must surface the server's verdict when the t
   (2026-08-31, `PROMPT-LOG.md` session 11). It is not an in-place edit — an officer must never be
   able to approve a version they did not read, so the permit leaves the review queue rather than
   mutating inside it, and the contractor resubmits.
+  **`requested-close` is not a machine state** (wayfinder 098, 2026-09-11): a contractor or
+  inspector asking for closure sets a flag (`closeRequestedAt`/`By`/`Role`/`Reason` on `Permit`)
+  without moving the permit off whatever status it already holds — ACTIVE or FIRE_MONITOR. See
+  §1's round-4 terms table for the decision and why a new status was rejected. Nothing above this
+  paragraph changes: the flag is orthogonal to every arrow in the diagram, including the backwards
+  one.
 - Safety ranges: LEL `0%` (hot, confined; skippable only when `outdoorWork: true`), O₂ `19.5–23.5%`
   (hot, confined), CO `≤ 50 ppm` (confined), wind `≤ 25 km/h` (heights). No override.
-- Closure blocked (`403`) while any Confined Space entrant is checked in, or while the Hot Work
-  30-minute Fire Watch is still running.
+- **Closure is `safety_officer`-only** (wayfinder 098, 2026-09-11 — reverses the prior "the
+  Foreman's act" ruling and round 3's own answer to the contrary). A `contractor` (own permit) or
+  `inspector` (any permit) instead *requests* closure (`POST /permits/:id/close-request`, no
+  status change); safety fulfils the request or closes directly via `POST /permits/:id/close`,
+  which now always requires `reason` (`403 CLOSURE_REASON_REQUIRED`, unconditionally — this
+  subsumes what used to be a narrower "officer-only" reason rule). `403 FIRE_WATCH_NOT_ELAPSED`
+  is unchanged, still with no override. The Confined Space entrant block is **retired**:
+  `ENTRANTS_STILL_INSIDE` is no longer emitted (dormant in §2's vocabulary — a declared-but-
+  unemitted code is legal per this section's own convention) — closing a permit with entrants
+  still checked in now **succeeds**, auto-checking every one of them out at the closure
+  timestamp inside the same transaction, with `'system'` provenance (a third value beside
+  wayfinder 017's `scan`/`manual`, written only here, never client-asserted). A `CLOSED` or
+  `EXPIRED` permit cannot be inspected or scanned — every field action (entrant scan, gas log,
+  marking a worker not-available, starting an inspector visit) refuses anything but
+  `ACTIVE`/`FIRE_MONITOR` with `403 PERMIT_NOT_ACTIVE`; `GET /qr/:token` is the one deliberate
+  exception, since it exists to show live status (including "this permit is closed") rather than
+  to perform an action.
 - Expired/missing certificate blocks submission **and** field entry. No field override.
 - **Facility plan + permit position** (`feat-023`, 2026-08-24). A **facility plan** is the
   uploaded, cropped floor-plan **raster image** (PNG/JPEG/WebP only — the map draws it with a plain
