@@ -7,7 +7,8 @@ const platform = {
     permits: 'My Permits',
     newPermit: 'New Permit',
     history: 'History',
-    certificates: 'Certificates'
+    certificates: 'Certificates',
+    workers: 'Workers'
   },
   localeSwitcher: {
     en: 'EN',

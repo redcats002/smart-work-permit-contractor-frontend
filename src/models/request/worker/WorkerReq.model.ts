@@ -15,3 +15,16 @@ export interface ICreateWorkerPayload {
   idCardNo?: string
   phone?: string
 }
+
+/**
+ * PATCH /workers/:id — wayfinder 062. Every field optional (only sent keys change); `idCardNo`/
+ * `phone` accept an explicit `null` to clear them, same three-state contract as
+ * `ICertificate`'s `filePath`. `restore` un-retires a soft-deleted worker.
+ */
+export interface IUpdateWorkerPayload {
+  name?: string
+  role?: string
+  idCardNo?: string | null
+  phone?: string | null
+  restore?: boolean
+}

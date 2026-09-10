@@ -35,6 +35,15 @@ describe('Step4PpeWorkersSchema', () => {
     }).success).toBe(false)
   })
 
+  // wayfinder 063 — `PermitWorker.workerId` is `NOT NULL`; a typed name with no Worker picked
+  // yet is a half-filled row, exactly like a missing role.
+  it('blocks Next on a row with a name and role but no workerId', () => {
+    expect(Step4PpeWorkersSchema.safeParse({
+      type: EPermitType.HOT,
+      workers: [{ workerName: 'Somchai', roleOnPermit: 'Operator' }]
+    }).success).toBe(false)
+  })
+
   it('blocks Next while any Confined Space worker fails the health check', () => {
     const result = Step4PpeWorkersSchema.safeParse({
       type: EPermitType.CONFINED,

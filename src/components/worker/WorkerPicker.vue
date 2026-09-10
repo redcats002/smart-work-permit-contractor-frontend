@@ -15,7 +15,14 @@
       <template #option="{ option }">
         <div class="flex min-w-0 flex-col">
           <span class="truncate text-sm text-text-primary">{{ option.name }}</span>
-          <span class="truncate text-xs text-text-tertiary">{{ option.role }}</span>
+          <span class="truncate text-xs text-text-tertiary">
+            {{ option.role }}
+            <template v-if="certificateBadge(option)">
+              · <span :class="CERTIFICATE_BADGE_CLASS[certificateBadge(option) as ECertificateStatus]">
+                {{ t(`certificate.status.${certificateBadge(option)}`) }}
+              </span>
+            </template>
+          </span>
         </div>
       </template>
       <template #empty>
@@ -80,8 +87,10 @@ import InputText from '@/volt/InputText.vue'
 import Button from '@/volt/Button.vue'
 import { useApiError } from '@/composables/useApiError'
 import { EApiErrorCode } from '@/enums/modules/error/ApiErrorCode.enum'
+import { ECertificateStatus } from '@/enums/modules/certificate/CertificateStatus.enum'
 import type { IWorker } from '@/models/modules/worker/Worker.model'
 import WorkerProvider, { type IWorkerProvider } from '@/resources/provider/worker/Worker.provider'
+import { certificateStatus } from '@/utils/CertificateStatus'
 
 /**
  * Picks a Worker record, or creates one inline (wayfinder 060/061).
@@ -105,7 +114,15 @@ interface IProps {
 }
 
 const props = defineProps<IProps>()
-const emit = defineEmits<{ 'update:modelValue': [value: number | undefined] }>()
+const emit = defineEmits<{
+  'update:modelValue': [value: number | undefined]
+  /**
+   * The full record alongside the id, undefined when cleared — wayfinder 063's Step 4 needs the
+   * NAME too (`IPermitWorker.workerName` is the display echo), which the plain id emit above
+   * cannot carry. Additive: every existing caller that only wants the id keeps ignoring this.
+   */
+  'worker-selected': [worker: IWorker | undefined]
+}>()
 
 const { t } = useI18n()
 const { mapError } = useApiError()
@@ -126,6 +143,23 @@ watch((): string | undefined => props.initialName, (name: string | undefined): v
 const selectedMatchesTyped: ComputedRef<boolean> = computed((): boolean =>
   selected.value !== null && selected.value.name === typed.value)
 
+/**
+ * wayfinder 063 — each suggestion shows the worker's role AND certificate status, so a
+ * contractor can see a certificate problem before ever selecting the worker, not just after
+ * (`useCertificatePreflight`'s post-selection check). `certificateCount === 0` (never registered
+ * one) renders no badge at all — there is nothing to have a status.
+ */
+const CERTIFICATE_BADGE_CLASS: Record<ECertificateStatus, string> = {
+  [ECertificateStatus.VALID]: 'text-status-active-fg',
+  [ECertificateStatus.EXPIRING_SOON]: 'text-status-pending-fg',
+  [ECertificateStatus.EXPIRED]: 'text-status-rejected-fg'
+}
+
+function certificateBadge (worker: IWorker): ECertificateStatus | undefined {
+  if (!worker.certificateCount || !worker.latestExpiryDate) return undefined
+  return certificateStatus(worker.latestExpiryDate, new Date())
+}
+
 async function onComplete (query: string): Promise<void> {
   const response = await WorkerService.list({ page: 1, limit: 20, search: query })
   suggestions.value = response.data
@@ -136,6 +170,7 @@ function onSelect (worker: IWorker): void {
   typed.value = worker.name
   showCreate.value = false
   emit('update:modelValue', worker.id)
+  emit('worker-selected', worker)
 }
 
 /**
@@ -149,6 +184,7 @@ function onTyped (value: string | IWorker): void {
   if (selected.value && selected.value.name !== value) {
     selected.value = null
     emit('update:modelValue', undefined)
+    emit('worker-selected', undefined)
   }
 }
 
@@ -168,6 +204,7 @@ async function onCreate (): Promise<void> {
       selected.value = { id: existingId, name: typed.value.trim(), role: newRole.value.trim() }
       showCreate.value = false
       emit('update:modelValue', existingId)
+      emit('worker-selected', selected.value)
       return
     }
     createError.value = mapped.message

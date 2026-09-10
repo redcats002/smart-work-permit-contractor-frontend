@@ -53,7 +53,7 @@ function rejectedPermit (): Record<string, unknown> {
     fireWatch: null,
     latestSafetyReading: { lel: null, o2: null, co: null, so2: null, wind: 12, height: null, recordedAt: '2026-08-09T01:00:00.000Z' },
     jsaSteps: [{ id: 9, phase: 'pre', step: 'Inspect harness', hazard: 'Fall', control: 'Wear harness', sortOrder: 0 }],
-    workers: [{ id: 5, workerName: 'Somchai', roleOnPermit: 'Worker', bloodPressure: null, alcoholReading: null }],
+    workers: [{ id: 5, workerId: 761, workerName: 'Somchai', roleOnPermit: 'Worker', bloodPressure: null, alcoholReading: null }],
     photos: [{ slotKey: 'site', fileRef: 'uploads/site.jpg' }]
   }
 }
@@ -114,7 +114,7 @@ describe('PermitDuplicatePage', () => {
     expect(updatePayload.jsaSteps).toEqual([{ phase: 'pre', step: 'Inspect harness', hazard: 'Fall', control: 'Wear harness', sortOrder: 0 }])
     // bloodPressure/alcoholReading are `string` on the wire, never `null` — the source worker's
     // null health fields (this fixture isn't Confined Space) must be omitted, not round-tripped.
-    expect(updatePayload.workers).toEqual([{ workerName: 'Somchai', roleOnPermit: 'Worker' }])
+    expect(updatePayload.workers).toEqual([{ workerId: 761, workerName: 'Somchai', roleOnPermit: 'Worker' }])
 
     expect(router.currentRoute.value.name).toBe('PermitEditPage')
     expect(router.currentRoute.value.params.id).toBe('WP-HT-20260823-009')

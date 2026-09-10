@@ -3042,3 +3042,103 @@ New test: `src/tests/pages/permit/create/components/steps/Step7Position.pin.test
 
 Verified: `./init.sh` — typecheck PASS, lint PASS (2 pre-existing warnings, unrelated), **67 files /
 566 tests PASS**, contrast PASS (30 pairs), icons PASS, smoke SKIP (no local API running).
+
+## 2026-09-10 — wayfinder 063 + 062: Step 4 picks a Worker and stops gating, and the worker directory
+
+Field report in the owner's words: "when add worker in permit already it doesn't show/add on
+permit detail and make inspector unable to find worker qr and id" — "it must have worker modules
+on contractor and permit to see the qr of that worker in that permit."
+
+**063 — Step 4 binds a Worker, and Next never gates on a certificate.**
+
+1. `Step4PpeWorkers.vue`'s worker column is now `WorkerPicker` (wayfinder 060/061's shared
+   component), not a free-text AutoComplete over the certificate list. Selecting/creating a worker
+   emits a new `worker-selected` event off `WorkerPicker` (additive — every existing caller that
+   only listens for `update:modelValue` is unaffected) carrying the full record, so the row can
+   write `workerId` **and** `workerName` in one patch. `IPermitWorker.workerId` and
+   `TWorkerDraft`'s are keyed off it; `workerRowComplete` now requires a `workerId`, not just a
+   name and role.
+2. `useWizard.ts`'s `isNextBlocked` no longer gates the PPE & Workers step on a confirmed
+   certificate `fail` — that was stricter than the server (059 ruling 5 / this ticket, reversing
+   003's 2026-08-31 amendment). `canSubmit` is untouched and still mirrors the server 1:1 by
+   staying `false` on a confirmed `fail`.
+
+**The wiring bug that was actually causing "doesn't show on permit detail".** `useWizard.
+toFormWorkers` (hydrate) and `useDuplicatePermit.toWireWorkers` both dropped `workerId` when
+building the wire payload from an already-hydrated permit. With `workerId` now required, that is
+not a silent trap any more — resuming a draft for edit, or duplicating a permit, would rebuild
+every worker row with no id and 422 on the next save. Both now carry `workerId` through. This is
+likely the actual mechanism behind the field report's first half: Step 4 used to collect a typed
+name only, so `PATCH /permits/:id` 422'd on `workers[].workerId` (`required` per the openapi
+contract) the moment a contractor tried to save a worker onto a permit — the workers never reached
+the server at all, hence "doesn't show/add on permit detail". `PermitWorkersSection.vue` (the
+detail page) already reads `permit.workers` correctly; there was nothing to fix there.
+
+**Verified false in the tickets, not just assumed:** 061/063's claim that Step 4 needs "a hidden
+input registering `workerId`" for `@primevue/forms` does not apply to `Step4PpeWorkers.vue` — that
+component was never wrapped in a `<Form>` (`isNextBlocked` gates off a plain `schema.safeParse`
+against `formData`, not a PrimeVue Form/resolver). The hidden-input trap is real and already fixed
+in `CreateCertificateModal.vue`/`AddCertificateModal.vue`, which do use `<Form>` — but restating it
+as a per-line trap for Step 4 specifically was incorrect, checked against
+`Step4PpeWorkers.vue`/`useWizard.ts` directly.
+
+**Deleted, not adjusted:** `useWorkerCertificateSuggestions.ts`, `WorkerCertificateSuggestionOption.
+vue`, and the entire `Step4PpeWorkers.workerAutocomplete.test.ts` file (only its "accepts free
+text" case was named in the ticket, but every other case in that file exercised the AutoComplete-
+over-certificates control this ticket removes wholesale — there was nothing left to adjust).
+Replaced by `Step4PpeWorkers.workerPicker.test.ts` (binds `workerId`+`workerName`, clears both
+together, triggers the pre-flight recheck, keeps 048's `min-w`) and a rewritten `useWizard.
+certificatePreflight.test.ts` (the four pinned cases now assert `isNextBlocked` stays `false`
+throughout, inverting their pre-063 assertions per the ticket).
+
+**062 — the worker directory, with the QR card.**
+
+New `/workers` module: `WorkerListPage` (paginated + debounced search, per-row certificate status
+reusing `CertificateStatus.ts`'s vocabulary — no second one — and permit count) and
+`WorkerDetailPage` (editable identity via `@primevue/forms`, certificates section linking to
+`CertificateDetailPage`, permits section linking to `PermitDetailPage`, and the QR card). Registered
+in `AppDrawer.vue`'s nav and `src/router/index.ts`.
+
+**The QR payload is the bare worker id as a string, nothing else** (`String(worker.id)`, no prefix,
+no JSON envelope) — `WorkerQrCard.vue` follows `PermitQrPanel.vue`'s exact approach (`QRCode.
+create()`'s raw module matrix rendered as `<rect>`s, since `toCanvas`/`toDataURL` need a canvas
+jsdom does not implement). `qrcode@1.5.4` was already a dependency; nothing new installed. The id
+is also printed as large monospace text next to the QR, per the ticket's "clearly enough that a
+field inspector can scan/read it off a phone screen" — a scan failure must not dead-end.
+
+`Worker.provider.ts` gained `getById`/`update`/`retire` (the delete method is named `retire`, not
+`delete` — `HttpRequest.delete`'s own signature is `(endPoint, ...)`, and there is no hard delete on
+the wire anyway). `GET /workers/:id` returns certificates/permits embedded, which is what
+`WorkerDetail`/`WorkerCertificatesSection`/`WorkerPermitsSection` consume — no separate
+`byWorker`/list-with-`workerId`-filter calls needed, even though the certificate list endpoint does
+also accept a `workerId` query param (`docs/api/openapi.json`); the embedded response is simpler
+and is what the endpoint's own description says it is for.
+
+"Add certificate" from the worker detail page is its own small `AddWorkerCertificateModal.vue`
+(worker page module) rather than importing `certificate`'s `AddCertificateModal.vue` — mirrors
+`CreateCertificateModal.vue`'s precedent of not crossing the parallel-tree module boundary for a
+page-level component, while still sharing `AddCertificate.schema.ts` (061's "one schema, three
+forms" — now four).
+
+Registering a worker from the list uses its own `RegisterWorkerModal.vue` (name + a `Select` over
+the full 10-value `EWorkerRole` set, per 059 ruling 6 — distinct from `roleOnPermit`'s
+type-filtered set) rather than `WorkerPicker`'s inline create, which only asks for role and has no
+id-card/phone fields.
+
+New tests: `WorkerListPage.test.ts` (valid / expiring-soon / no-certificate rows, empty state, row
+links) and `WorkerDetailPage.test.ts` (QR card + human-readable id present, certificates/permits
+render with status, empty states, load-failure state, retired-worker read-only state).
+
+**Deviation:** the ticket only asked to delete one named test case from
+`Step4PpeWorkers.workerAutocomplete.test.ts`; the whole file was deleted instead (see above) because
+the control under test no longer exists. Noted rather than silently deviating.
+
+**Not done, out of scope for this session:** wayfinder tickets 064 (safety app worker detail) and
+065 (entrant scan on worker id) live in the OTHER frontend repo. `certType`'s closed-set Select
+(050) is untouched.
+
+Verified: `./init.sh` — typecheck PASS, lint PASS (2 pre-existing warnings, unrelated),
+**67 files / 566 tests PASS**, contrast PASS (30 pairs), icons PASS, smoke SKIP (no local API
+running — another session owns the API repo this round; provider/model changes here are therefore
+unverified against a live backend per this repo's own "green vitest alone only proves the app
+agrees with its own types" caveat).

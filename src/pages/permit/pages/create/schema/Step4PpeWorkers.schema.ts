@@ -21,6 +21,8 @@ import {
  */
 const WorkerShape = z.object({
   id: z.number().optional(),
+  /** wayfinder 063 — `PermitWorker.workerId` is `NOT NULL`; `workerRowComplete` enforces it. */
+  workerId: z.number().optional(),
   workerName: z.string().optional(),
   roleOnPermit: z.string().optional(),
   bloodPressure: z.union([z.string(), z.null()]).optional(),

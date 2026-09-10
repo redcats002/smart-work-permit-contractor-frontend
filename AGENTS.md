@@ -131,9 +131,10 @@ Each module owns parallel trees: routes (`src/router/modules/<Mod>.router.ts` or
 | `permit` | `/permits` | `list` ✅, `create` (7-step wizard) ✅, `detail` ✅ | `permit`, `facility-plan` (read-only — `getActive`/`getById`, no upload/create/activate), `area` (list/getById/create — no approve/reject, safety-officer only) | `docs/modules/permit/` | provider + list ✅ · wizard complete, all seven steps real (`PMT-004`–`PMT-009`, `feat-023`) · detail built (`PMT-010`–`PMT-012`: banners, QR, audit timeline, closure modal, Fire Watch countdown) · area picker + propose-inline (wayfinder 037), read-only display of an area outside the contractor's scoped list (wayfinder 044) |
 | `history` | `/history` | `list` ✅ | `permit` (reused — no own provider dir) | `docs/modules/history/` | ✅ |
 | `certificate` | `/certificates` | `list` ✅, `detail` ✅, `edit` ✅ | `certificate`, `upload` (reused — `getFileUrl` for the attachment) | `docs/modules/certificate/` | ✅ list/add · detail + edit + real attachment display (`CRT-005`/`CRT-006`, wayfinder 057) |
+| `worker` | `/workers` | `list` ✅, `detail` ✅ | `worker` | none yet — wayfinder 062 | ✅ paginated/searchable list with certificate status + permit count, editable identity, certificates/permits sections, QR card (`worker.id` as the bare payload string) |
 | `api-integration` | — (cross-cutting) | — | every provider + the transport | `docs/modules/api-integration/` | ✅ transport, auth, errors, permit/certificate/notification/upload |
 
-Registered in `src/router/index.ts`: `AuthRouter`, `PermitRouter`, `HistoryRouter`, `CertificateRouter` — all four nav destinations now exist. `AppDrawer`'s `isRegistered()` guard is **still in the file** (`AppDrawer.vue:44`, `:136`) and now guards nothing; removing it is safe but nobody has, so do not describe it as gone.
+Registered in `src/router/index.ts`: `AuthRouter`, `PermitRouter`, `HistoryRouter`, `CertificateRouter`, `WorkerRouter` — all five nav destinations now exist. `AppDrawer`'s `isRegistered()` guard is **still in the file** (`AppDrawer.vue:44`, `:136`) and now guards nothing; removing it is safe but nobody has, so do not describe it as gone.
 
 **Modules without a top-level router entry:**
 

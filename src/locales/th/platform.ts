@@ -9,7 +9,8 @@ const platform: typeof platformEn = {
     permits: 'ใบอนุญาตของฉัน',
     newPermit: 'สร้างใหม่',
     history: 'ประวัติ',
-    certificates: 'ใบรับรองการทำงาน'
+    certificates: 'ใบรับรองการทำงาน',
+    workers: 'ผู้ปฏิบัติงาน'
   },
   localeSwitcher: {
     en: 'EN',

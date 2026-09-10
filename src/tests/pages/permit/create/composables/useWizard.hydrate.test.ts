@@ -125,7 +125,7 @@ describe('useWizard.hydrate', () => {
     const wizard = useWizard()
 
     const permit = basePermit({
-      workers: [{ workerName: 'Somchai', roleOnPermit: 'Worker' }],
+      workers: [{ workerId: 761, workerName: 'Somchai', roleOnPermit: 'Worker' }],
       jsaSteps: [{ phase: 'pre', step: 'Inspect harness', hazard: 'Fall', control: 'Wear harness', sortOrder: 0 }]
     })
 
@@ -141,16 +141,16 @@ describe('useWizard.hydrate', () => {
 
     const permit = basePermit({
       workers: [
-        { workerName: 'Somchai', roleOnPermit: 'Worker', bloodPressure: null, alcoholReading: null },
-        { workerName: 'Anan', roleOnPermit: 'Worker', bloodPressure: '120/80', alcoholReading: '0.00' }
+        { workerId: 761, workerName: 'Somchai', roleOnPermit: 'Worker', bloodPressure: null, alcoholReading: null },
+        { workerId: 762, workerName: 'Anan', roleOnPermit: 'Worker', bloodPressure: '120/80', alcoholReading: '0.00' }
       ]
     })
 
     wizard.hydrate(permit)
 
     expect(wizard.formData.value.workers).toEqual([
-      { workerName: 'Somchai', roleOnPermit: 'Worker' },
-      { workerName: 'Anan', roleOnPermit: 'Worker', bloodPressure: '120/80', alcoholReading: '0.00' }
+      { workerId: 761, workerName: 'Somchai', roleOnPermit: 'Worker' },
+      { workerId: 762, workerName: 'Anan', roleOnPermit: 'Worker', bloodPressure: '120/80', alcoholReading: '0.00' }
     ])
   })
 
@@ -164,7 +164,7 @@ describe('useWizard.hydrate', () => {
     vi.useFakeTimers()
     const wizard = useWizard()
     const permit = basePermit({
-      workers: [{ workerName: 'Somchai', roleOnPermit: 'Worker' }],
+      workers: [{ workerId: 761, workerName: 'Somchai', roleOnPermit: 'Worker' }],
       jsaSteps: [{ phase: 'pre', step: 'Inspect harness', hazard: 'Fall', control: 'Wear harness', sortOrder: 0 }]
     })
     wizard.hydrate(permit)

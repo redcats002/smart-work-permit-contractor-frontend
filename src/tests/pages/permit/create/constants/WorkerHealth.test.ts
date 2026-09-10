@@ -58,6 +58,12 @@ describe('health-check scope and row completeness', () => {
     expect(workerRowComplete({ workerId: 761, workerName: 'Somchai', roleOnPermit: '' })).toBe(false)
   })
 
+  // wayfinder 063 — `PermitWorker.workerId` is `NOT NULL`; a row with a name typed but no Worker
+  // picked yet (WorkerPicker hasn't resolved one) is incomplete, same as a missing role.
+  it('is incomplete with no workerId, even with a name and role filled', () => {
+    expect(workerRowComplete({ workerName: 'Somchai', roleOnPermit: 'Entrant' })).toBe(false)
+  })
+
   it('slugs a role into a safe locale key', () => {
     expect(workerRoleSlug('Fire Watcher')).toBe('fire-watcher')
     expect(workerRoleSlug('Supervisor')).toBe('supervisor')

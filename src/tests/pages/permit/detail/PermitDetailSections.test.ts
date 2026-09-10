@@ -193,8 +193,8 @@ describe('PermitDetailPage sections (PMT-013)', () => {
   it('shows the Confined Space worker health badge and lists why a worker failed', async () => {
     const wrapper = await mountPage(buildPermit({
       workers: [
-        { id: 1, workerName: 'Anan K.', roleOnPermit: 'Entrant' as TWorkerRole, bloodPressure: '120/80', alcoholReading: '0' },
-        { id: 2, workerName: 'Wichai T.', roleOnPermit: 'Attendant' as TWorkerRole, bloodPressure: '170/110', alcoholReading: '0' }
+        { id: 1, workerId: 1, workerName: 'Anan K.', roleOnPermit: 'Entrant' as TWorkerRole, bloodPressure: '120/80', alcoholReading: '0' },
+        { id: 2, workerId: 2, workerName: 'Wichai T.', roleOnPermit: 'Attendant' as TWorkerRole, bloodPressure: '170/110', alcoholReading: '0' }
       ]
     }))
 

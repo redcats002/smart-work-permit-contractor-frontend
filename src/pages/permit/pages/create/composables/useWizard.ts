@@ -220,9 +220,12 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
   const isLastStep: ComputedRef<boolean> = computed((): boolean => currentStepIndex.value === steps.value.length - 1)
   const isNextBlocked: ComputedRef<boolean> = computed((): boolean => {
     if (!currentStep.value.schema.safeParse(formData.value).success) return true
-    // Only the PPE & Workers step gates on certificates, and only on a CONFIRMED 'fail' — never
-    // on 'loading'/'unknown', which would make an unresolved lookup stricter than the server.
-    if (currentStep.value.key === 'ppeWorkers' && certificateState.value === 'fail') return true
+    // wayfinder 063 (reverses 059 ruling 5 / 003's 2026-08-31 amendment): the PPE & Workers step
+    // used to gate Next on a confirmed certificate 'fail', which is STRICTER than the server —
+    // submit is the only place the server itself gates on a certificate, and a contractor
+    // drafting Monday for Friday's work has no card to attach yet. Next is never blocked on
+    // certificate state; `certificateState`/`certificateProblems` still drive the row's loud,
+    // persistent warning and canSubmit below still mirrors the server exactly.
     // Same shape for the Position step: only a CONFIRMED 'fail' (an active plan exists and no
     // pin is set) blocks — 'loading'/'none' never do (../../../../../PROMPT-LOG.md "no
     // client-side rule that blocks what the server would accept").
@@ -388,6 +391,11 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
    */
   function toFormWorkers (workers: IPermitWorker[]): IPermitWorker[] {
     return workers.map((worker: IPermitWorker): IPermitWorker => ({
+      // wayfinder 063: `workerId` is NOT NULL on the wire and must survive hydration — dropping
+      // it here (as this used to) reconstructs the exact bug this ticket exists to fix, the
+      // moment an existing draft is reopened for edit: every row loses its Worker reference and
+      // the next wholesale `workers` PATCH would 422.
+      workerId: worker.workerId,
       workerName: worker.workerName,
       roleOnPermit: worker.roleOnPermit,
       bloodPressure: worker.bloodPressure ?? undefined,

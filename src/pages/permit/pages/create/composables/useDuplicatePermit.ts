@@ -59,6 +59,9 @@ function toWireJsaSteps (steps: IJsaStep[]): Omit<IJsaStep, 'id'>[] {
  */
 function toWireWorkers (workers: IPermitWorker[]): Omit<IPermitWorker, 'id'>[] {
   return workers.map((worker: IPermitWorker): Omit<IPermitWorker, 'id'> => ({
+    // wayfinder 063: `workerId` is NOT NULL on the wire — dropping it here would 422 the
+    // duplicate's first save, same failure mode as `useWizard.toFormWorkers`.
+    workerId: worker.workerId,
     workerName: worker.workerName,
     roleOnPermit: worker.roleOnPermit,
     bloodPressure: worker.bloodPressure ?? undefined,

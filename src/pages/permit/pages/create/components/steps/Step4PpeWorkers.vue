@@ -131,25 +131,11 @@
                   for it — PrimeVue sizes the overlay's `min-width` from the input's rendered
                   width, so a narrow input produced a narrow list.
                 -->
-                <AutoComplete
-                  :force-selection="false"
-                  :model-value="row.worker.workerName"
-                  :placeholder="t('permit.create.steps.ppeWorkers.placeholder.worker')"
-                  :suggestions="workerSuggestions"
-                  class="h-9 w-full min-w-[13.75rem]"
-                  option-label="workerName"
-                  fluid
-                  @blur="scheduleWorkerNameCommit()"
-                  @complete="onWorkerNameComplete($event.query)"
-                  @option-select="scheduleWorkerNameCommit()"
-                  @update:model-value="onWorkerNameUpdate(row.index, $event)">
-                  <template #option="{ option }">
-                    <WorkerCertificateSuggestionOption :certificate="option" />
-                  </template>
-                  <template #empty>
-                    {{ t('permit.create.steps.ppeWorkers.suggestion.empty') }}
-                  </template>
-                </AutoComplete>
+                <WorkerPicker
+                  :initial-name="row.worker.workerName"
+                  :model-value="row.worker.workerId"
+                  class="min-w-[13.75rem]"
+                  @worker-selected="onWorkerSelected(row.index, $event)" />
               </td>
               <td class="px-3 py-3">
                 <div class="flex flex-wrap gap-1.5">
@@ -276,15 +262,15 @@
 
     <CreateCertificateModal
       v-model="createCertificateOpen"
-      @created="onCertificateCreated($event)" />
+      @created="onCertificateCreated()" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, type ComputedRef, onBeforeUnmount, onMounted, ref, type Ref } from 'vue'
+import { computed, type ComputedRef, ref, type Ref } from 'vue'
 
-import type { ICertificate } from '@/models/modules/certificate/Certificate.model'
 import type { IPermitPhoto, IPermitWorker } from '@/models/modules/permit/Permit.model'
+import type { IWorker } from '@/models/modules/worker/Worker.model'
 
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import { type EWorkerRole, type TWorkerRole, WORKER_ROLES_BY_TYPE } from '@/enums/modules/permit/WorkerRole.enum'
@@ -294,17 +280,14 @@ import type { ISubmitCertificateFailure } from '../../constants/SubmitErrorRouti
 import { requiresHealthCheck, workerHealthIssues, workerRoleSlug, workerRowComplete } from '../../constants/WorkerHealth'
 
 import DeleteModal from '@/components/modal/DeleteModal.vue'
-
-import AutoComplete from '@/volt/AutoComplete.vue'
+import WorkerPicker from '@/components/worker/WorkerPicker.vue'
 
 import { useI18n } from 'vue-i18n'
 
 import type { ICertificateProblem } from '../../composables/useCertificatePreflight'
-import { useWorkerCertificateSuggestions } from '../../composables/useWorkerCertificateSuggestions'
 import type { IWizardStepEmits, IWizardStepProps } from '../../wizard/WizardSteps'
 import CreateCertificateModal from '../CreateCertificateModal.vue'
 import PhotoSlot from '../PhotoSlot.vue'
-import WorkerCertificateSuggestionOption from '../WorkerCertificateSuggestionOption.vue'
 
 /**
  * PMT-007 / CRT-004 — step 4, PPE / photo evidence / workers.
@@ -349,86 +332,19 @@ const pendingIndex: Ref<number | undefined> = ref(undefined)
 const createCertificateOpen: Ref<boolean> = ref(false)
 
 /**
- * wayfinder ticket 004 — worker-name AutoComplete suggestion source. Fetched once on mount and
- * filtered client-side (`GET /api/v1/certificates/` has no server-side search param, ticket 003).
- * `workerSuggestions` holds whatever the last `@complete` query matched; free text that matches
- * nothing stays a legal `workerName` regardless — `force-selection="false"` on the AutoComplete
- * below is what keeps that true.
+ * wayfinder 063 — the worker field binds a Worker record via the shared `WorkerPicker`
+ * (search over the contractor's own `GET /api/v1/workers`, inline "Create worker …" asking role
+ * only, `WORKER_ALREADY_EXISTS` 409-adopt). Selection is atomic — there is no keystroke-driven
+ * pre-flight to debounce any more, unlike the old free-text AutoComplete this replaces: the
+ * certificate check now fires once, right after a worker actually resolves to an id.
  */
-const {
-  filter: filterCertificates,
-  add: addSuggestedCertificate,
-  fetch: fetchCertificateSuggestions
-} = useWorkerCertificateSuggestions()
-const workerSuggestions: Ref<ICertificate[]> = ref([])
-/** Last worker-name list handed to the pre-flight — see `commitWorkerNames` below. */
-let lastCommittedNames = ''
-let commitTimer: ReturnType<typeof setTimeout> | undefined
-
-onMounted((): void => {
-  void fetchCertificateSuggestions()
-})
-
-function onWorkerNameComplete (query: string): void {
-  workerSuggestions.value = filterCertificates(query)
-}
-
-/**
- * Fires on every keystroke (a plain string) AND on selecting a suggestion — PrimeVue's
- * AutoComplete emits the whole selected option object in that case, not its label, so this is
- * the one place that normalizes either shape back down to the plain `workerName` string
- * `IPermitWorker` actually wants.
- */
-function onWorkerNameUpdate (index: number, value: string | ICertificate | null): void {
-  if (value === null || value === '') {
-    patchWorker(index, { workerName: '' })
-    return
-  }
-  patchWorker(index, { workerName: typeof value === 'string' ? value : value.workerName })
-}
-
-/**
- * The certificate pre-flight deliberately does NOT run while a name is being typed. Its verdict
- * mounts (and clears) the `certificateProblems` banner below this table, and that reflow closes
- * PrimeVue's open suggestion overlay — AutoComplete binds a scroll listener on its scrollable
- * ancestors (this table is `overflow-x-auto`) and a window resize listener whenever the overlay
- * is up, and both call `hide()`. So the check fires here instead, on the events that actually
- * settle a name: picking a suggestion, and leaving the field.
- *
- * Deferred by a macrotask, and that timing is load-bearing rather than incidental. Clicking a
- * suggestion blurs the input on `mousedown`, BEFORE the `click` that selects it. Running the
- * check synchronously there would clear `problems` (the pre-flight empties it before its first
- * await), unmount the banner, shorten the page, and hide the overlay out from under the click —
- * reinstating the reported bug at the exact moment the user is trying to pick a name. `nextTick`
- * would not help: it is a microtask, and drains before `mouseup`. A `setTimeout` lands after the
- * whole click sequence, so selection completes first — and by then the parent's `formData`
- * write-back has rendered, so the guard below hashes the settled list and the blur that follows a
- * selection is a no-op rather than a second lookup.
- */
-function commitWorkerNames (): void {
-  const names = workers.value.map((worker: IPermitWorker): string => worker.workerName.trim()).join('\u0000')
-  if (names === lastCommittedNames) return
-  lastCommittedNames = names
+function onWorkerSelected (index: number, worker: IWorker | undefined): void {
+  patchWorker(index, { workerId: worker?.id, workerName: worker?.name ?? '' })
   emit('recheck-certificates')
 }
 
-function scheduleWorkerNameCommit (): void {
-  if (commitTimer !== undefined) clearTimeout(commitTimer)
-  commitTimer = setTimeout((): void => {
-    commitTimer = undefined
-    commitWorkerNames()
-  }, 0)
-}
-
-// A pending commit must not emit into a torn-down parent — the user can leave the wizard within
-// the same tick as a blur (clicking the browser back button blurs the field first).
-onBeforeUnmount((): void => {
-  if (commitTimer !== undefined) clearTimeout(commitTimer)
-})
-
-/** wayfinder ticket 004 — a certificate created in-wizard suggests immediately, no refetch. */
-function onCertificateCreated (certificate: ICertificate): void {
-  addSuggestedCertificate(certificate)
+/** A certificate created in-wizard (for a worker already on this permit) invalidates the pre-flight. */
+function onCertificateCreated (): void {
   emit('recheck-certificates')
 }
 
@@ -523,7 +439,11 @@ function patchWorker (index: number, patch: Partial<IPermitWorker>): void {
 function addWorker (): void {
   emitWorkers([
     ...workers.value,
-    { workerName: '', roleOnPermit: (roleOptions.value[0] ?? '') as TWorkerRole }
+    // wayfinder 063: `IPermitWorker.workerId` is `NOT NULL` on the wire, but a freshly added row
+    // has no Worker picked yet — `WorkerPicker` resolves one via `onWorkerSelected`, and
+    // `workerRowComplete` (this step's schema + Next gate) blocks until it does. This placeholder
+    // is never sent to the wire as-is.
+    { workerId: undefined, workerName: '', roleOnPermit: (roleOptions.value[0] ?? '') as TWorkerRole } as unknown as IPermitWorker
   ])
 }
 
@@ -537,7 +457,6 @@ function confirmRemove (): void {
   if (index === undefined) return
   emitWorkers(workers.value.filter((_worker: IPermitWorker, position: number): boolean => position !== index))
   pendingIndex.value = undefined
-  lastCommittedNames = ''
   emit('recheck-certificates')
 }
 
