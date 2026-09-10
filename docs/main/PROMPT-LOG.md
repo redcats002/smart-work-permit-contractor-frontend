@@ -920,6 +920,92 @@ output distinguished a stale read from a fresh one**. Now every row carries `[re
 makes the run current. Same lesson as the four gates recorded on `map.md`: a limitation the output
 states beats a limitation the header states.
 
+## 2026-09-11 — Session 13: CR round 4 — pins replace areas, safety owns closure
+
+**Change requirement round 4**, approved by the owner on 2026-09-11 after a nineteen-question
+grilling. Map: `docs/wayfinder/map-round-4-pins-closure-and-the-inspector-menu.md`. Report and the
+full 33-item table: `docs/wayfinder/assets/field-report-2026-09-11.md`. Tickets 094-114.
+
+**Twelve items reverse a prior ruling, five of them shipped on 2026-09-10.** Those are recorded here
+because they are the ones a later agent would otherwise "fix" back.
+
+### Reverses a previous ruling
+
+- **`Area` is deleted; a named `Pin` on a named `FacilityPlan` replaces it.** Reverses 034, 036, 037,
+  044, 069 and half of 070. **This is a rename plus a simplification, not a lost capability** — the
+  contractor selects a pin safety placed instead of proposing an area and dropping their own. The
+  reason 034 argued for the entity, the overlap warning, **survives on `pinId`** and is more precise
+  than it was on an area. Do not read "remove Area" as "remove the ability to ask what else is
+  happening here". Blast radius when counted: ~70 api files, 43 contractor, 56 safety.
+- **Closure is the safety officer's, not the foreman's.** Reverses 020 — *"Closure is the Foreman's
+  act; the crew know when the work is done and the area is cold"* — under which the officer's close
+  was built as a deliberately-understated backstop. It also reverses **the owner's own answer from
+  the previous day** (round 3, Q2), which chose the foreman. Contractor and inspector now *request*
+  closure; safety approves, or closes directly. Closing with entrants still checked in is allowed
+  **with a reason**, auto-checking them out with system provenance, because a closed permit whose
+  register still shows people inside is a record that lies where it must not.
+- **The inspector gets an action menu, not a fixed spine.** Reverses round 3's ruling 3, chosen the
+  previous day precisely because *"a picker is a click that can be wrong, and picking wrong is how a
+  gas reading gets skipped"*. **This is only safe because the guarantee moved server-side**: 075's 2h
+  sweep notifies and escalates regardless of what any visit records. Only check-in/out blocks submit,
+  and it is satisfied by **reviewing** the entrant table, never by changing it — the alternative
+  teaches inspectors to check people out early so the app lets them finish.
+- **A visit may start from history within the window the scan bought** — the permit's work window,
+  capped at 12 hours. Narrows 010's *"every state-changing action requires a fresh scan"*, which 074
+  had made structural. The scan still proves presence; it now proves it for the day rather than for
+  one action. **The window is the whole safety argument** — it must not become configurable to
+  infinity or be dropped "for now".
+- **`Worker.role` is removed**, reversing 060. Made free by the item below: with `certType` 1:1 with
+  permit type, 086's role filter has nothing left to do.
+- **`certType` drops `Gas Testing`**, amending 049, 050 and 086. What remains is exactly
+  `GATING_CERT_TYPES` and 1:1 with `PermitType`.
+- **The permit's geo coordinate is removed**, reversing 068 — shipped the previous day. The URL
+  parser goes with it, including its shortener rejection.
+- **`planId`/`planX`/`planY` collapse into `pinId`.** Facility plans become a flat set of named places
+  with **immutable images**; a new scan is a new plan and the old one is deactivated. No version
+  chain, so the permit carries one reference instead of five columns.
+- **Tabs everywhere, except urgent and notification-related state**, which stays a fixed section above
+  them. Narrows 052's ruling that *all* safety-critical sections stay outside the tabs: round 4 pins
+  only what is alarming **right now**, so the normal case is a clean tabbed page.
+- **Contractors read the full inspector visit record on their own permits.** This resolves 083, closed
+  unresolved the previous night. The owner chose full visibility over a `noteType` filter, knowingly.
+  **Inspectors must be told their notes are contractor-visible** — it changes how people write, and
+  finding out afterwards is worse than knowing.
+
+### Declines nothing, adds these
+
+- **Nine existing permit positions are dropped, not migrated.** A pin exists only because safety
+  placed and named it; inventing nine pins would put objects nobody chose in front of the officer
+  curating the list. Those permits render as unplaced.
+- **Pins: names editable, positions frozen, deactivate never delete.** A position is a claim about
+  where work happened; a name is a label. Same rule as accounts and audit rows.
+- **"Not available" is about the worker, not the inspection** — an absence on the permit's worker row,
+  **not an `EntrantEvent`**, because the entry log answers "who was inside" and a third value would
+  force every such query to learn a state meaning the opposite.
+- **One PPE vocabulary** across the API and both frontends, gated like the certificate vocabulary. The
+  inspector checks what the contractor declared and can flag an **undeclared** gap as a
+  `CORRECTIVE_ACTION` — that flag is the point, since a JSA that forgot respiratory protection is
+  exactly what an inspection exists to catch.
+- **A real socket service** carrying badges and notifications, **with polling kept as the fallback**.
+  The API has no WebSocket server today and `useSocket.ts` is a shell. The fallback matters more than
+  the socket: an inspector on plant-floor signal drops constantly, and a badge that only works live is
+  wrong exactly when someone is walking the site.
+- **Offline survives.** The two inspector pages being cut are the **only** producers in the app, so
+  the visit's actions must enqueue or offline ends silently for the role that needs it.
+- **A permit report** — a visits view and a closure report, printable and downloadable via a print
+  stylesheet. No PDF dependency: the browser renders Thai correctly because it is the same engine.
+- **Pins are visible to every contractor; the grant table is deleted.** 044's own resolution called
+  per-contractor scoping dead weight for a single facility under 100 users.
+
+### Harness change made the same day
+
+`scripts/check-ticket-frontmatter.mjs` now runs in `./init.sh`. `docs/wayfinder/` sits inside a
+VitePress site built with `ignoreDeadLinks: false`, so a ticket whose front matter will not parse
+**breaks the docs build** — which had now happened twice, both times on a `source:` line quoting the
+owner, where YAML read an inner colon as a nested mapping. The first occurrence was already written
+up in ticket 089 and it happened again the next day, which is the argument for a check rather than a
+note. It caught a second bad ticket in the batch that prompted it.
+
 ---
 
 ## Owner updates

@@ -74,6 +74,31 @@ are open questions rather than queued terms — whether a contractor may read in
 (wayfinder 083) and how a plan version is retired, since `activate` always leaves exactly one active
 per group (wayfinder 084, `docs/api/GAPS.md` row X1).
 
+### Terms queued by CR round 4 (2026-09-11) — decided and approved, not yet built
+
+Approved 2026-09-11; tickets 094-114 are in flight. Listed so nobody invents a competing name while
+they land, and **so nobody keeps using the terms being removed**. Rulings: `PROMPT-LOG.md` session
+13. Map: `docs/wayfinder/map-round-4-pins-closure-and-the-inspector-menu.md`.
+
+| Term | What it will mean | Ticket |
+|---|---|---|
+| `Pin` | A named position on a `FacilityPlan`, **placed by safety**. Names editable, **positions frozen**, deactivated never deleted. The contractor selects one; they no longer place their own. | 104 |
+| `FacilityPlan` (revised) | A flat set of **named places** with **immutable images** — not a version chain. A new scan is a new plan; the old one is deactivated. | 104 |
+| `pinId` on `Permit` | Replaces `planId`/`planX`/`planY`. One reference instead of five columns; the pin knows its plan. | 105 |
+| requested-close | A permit whose closure has been **requested** by a contractor or inspector, awaiting safety. Safety may also close directly, with a reason. | 098 |
+| PPE vocabulary | Seven items, **one shared constant** across the API and both frontends. The contractor declares; the inspector checks the declared subset and may flag an undeclared gap. | 097 |
+| `licenceNo` | A certificate's licence number. **A certificate needs a licence number OR an attachment** — at least one. | 095 |
+
+**Being removed — stop writing new code against these:**
+
+| Term | Fate | Ticket |
+|---|---|---|
+| `Area`, `AreaGrant`, `AREA_VISIBILITY_SCOPED` | **Deleted.** `Pin` carries what it carried; the overlap warning re-keys to `pinId` and survives. | 106 |
+| area drawing (`FacilityPlan.areaId`) | Deleted with Area — subsumed by named plans. | 104, 106 |
+| permit coordinate (`latitude`/`longitude`) | **Deleted**, with its URL parser. | 105 |
+| `Worker.role` | **Deleted.** `PermitWorker.roleOnPermit` (template + free entry) is the surviving concept. | 103 |
+| `Gas Testing` (`ECertType`) | Dropped — `certType` becomes 1:1 with `PermitType`. | 096 |
+
 ---
 
 ## 2. The API contract is the glue
