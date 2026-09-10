@@ -151,8 +151,10 @@ deliberately, not marketing approximations, so a rule change in the API is a lan
 > `AREA_REQUIRED` were added 2026-09-01 with the Area entity (ticket 036, see section 3): a permit
 > may reference only an approved area, `AREA_NOT_PENDING` is the approve/reject race guard shared
 > with permits, and `AREA_REQUIRED` is the `PERMIT_AREA_REQUIRED`-flag submit gate. All are
-> declared with EN/TH strings in both apps — `check-contract-sync.mjs` reports **33 backend error
-> codes all declared in both frontends**.
+> declared with EN/TH strings in both apps. **Do not quote a count here.** This line said 33 while the
+> script reported 34, because the vocabulary grows and a number written into prose does not. Run
+> `node scripts/check-contract-sync.mjs` — it prints the current count and is the only trustworthy
+> answer.
 > `RATE_LIMITED` is unchanged but is now emitted by the four public auth routes as well as the QR
 > scan route.
 
@@ -209,7 +211,9 @@ always authoritative and the client must surface the server's verdict when the t
 
 - Status machine: `DRAFT → PENDING → REJECTED | ACTIVE → (hot only) FIRE_MONITOR → CLOSED`; `EXPIRED`
   from `PENDING`/`ACTIVE` when the work window lapses — except that an **ACTIVE Hot Work permit is
-  granted the Fire Watch duration as grace** past `workTimeEnd` before it expires, because a Fire
+  granted the Fire Watch duration as grace** past the **end of its work window** — `workWindowEndInstant()`,
+  which is `endDate`'s calendar day at `dailyEnd`'s clock time, not `endDate` alone and not `dailyEnd`
+  alone (wayfinder 067; this used to read `workTimeEnd`, a column that no longer exists) — because a Fire
   Watch is by definition the period *after* hot work stops, so a hot permit's safety obligation
   always outlives its work window (2026-08-31, `PROMPT-LOG.md` session 13). Expiry never *starts* a
   Fire Watch: a Fire Watch is a person, and the system must never record a control no human
@@ -283,11 +287,15 @@ always authoritative and the client must surface the server's verdict when the t
   up), so excluding it would tell a second crew an area is clear while someone is still standing
   watch over it. `DRAFT`/`REJECTED`/`CLOSED`/`EXPIRED` do not occupy — never submitted, dead,
   proven clear by closure's own guards, or past their (graced) window respectively. **Overlap is a
-  closed interval**: `a.workTimeStart <= b.workTimeEnd && a.workTimeEnd >= b.workTimeStart` — two
-  permits that only touch at a shared endpoint (one's `workTimeEnd` equals the other's
-  `workTimeStart`) DO count, the wider/safer reading being deliberate for an advisory-only check.
-  Served by one indexed query (`Permit @@index([areaId, workTimeStart, workTimeEnd])`), excluding
-  the permit itself and soft-deleted rows. **The safety frontend's consumption of this
+  closed interval on **two axes** since wayfinder 067 made the window multi-day: the **date ranges**
+  must intersect (`a.startDate <= b.endDate && a.endDate >= b.startDate`) **and** the **daily windows**
+  must intersect (`a.dailyStart <= b.dailyEnd && a.dailyEnd >= b.dailyStart`). Both are closed, so
+  two permits touching only at a shared endpoint DO count — the wider, safer reading, deliberate for
+  an advisory-only check. Two permits on the same area on overlapping dates but **disjoint daily
+  windows** (a day shift and a night shift) do **not** warn, which is the whole reason the second axis
+  exists. Served by `Permit @@index([areaId, startDate, endDate])` — the index covers the **date**
+  range and the daily-window comparison is a further `WHERE` the planner applies on its result set,
+  declared rather than left for a reader to infer. Excludes the permit itself and soft-deleted rows. **The safety frontend's consumption of this
   field is a separate, not-yet-landed half of ticket 038.**
 - **Per-contractor area visibility** (`smart-work-permit-api` ticket 044, 2026-09-08; API half
   only — reverses 034's "revisit only if someone asks", by owner ruling). A new `AreaGrant`
@@ -390,10 +398,13 @@ Full runbooks live per repo at `deploy/RUNBOOK.md`. Only what crosses a repo bou
 - **`check-contract-sync.mjs` is not in frontend CI.** It lives in this workspace root, which is a
   separate repo that gitignores the three app repos, so their pipelines cannot run it. It stays a
   local pre-push check — run it yourself before pushing a contract change.
-- **Offline is not deployed.** `13-safety-inspector-web-deployment.md` §6–§7 describe a service
-  worker, an IndexedDB queue and `POST /sync/batch`; `vite-plugin-pwa` is installed in neither
-  frontend and the endpoint does not exist. That doc describes an intended feature, not the
-  shipped app.
+- **Offline is not deployed — but the endpoint exists.** `13-safety-inspector-web-deployment.md`
+  §6–§7 describe a service worker, an IndexedDB queue and `POST /sync/batch`. **`POST /v1/sync/batch`
+  is real** (`src/modules/sync/sync.module.ts`, inspector-only) — this bullet claimed it did not
+  exist, which was wrong. What is missing is `vite-plugin-pwa`, installed in **neither** frontend, so
+  there is no service worker and no install prompt. The Inspector's own scan history and offline
+  queue are IndexedDB and do work; wayfinder 074's visit stepper deliberately ships **without**
+  offline queueing inside a run.
 - **Password-reset links have one destination.** `MANAGEMENT_URL` is a single value, so reset
   emails point at one app while both have a `/reset-password` route. Open product decision, not
   a deploy step — see the backend runbook §3.

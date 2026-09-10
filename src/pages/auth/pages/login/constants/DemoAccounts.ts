@@ -45,8 +45,8 @@ export const DEMO_ACCOUNTS: IDemoAccount[] = [
   {
     key: 'contractor',
     labelKey: 'platform.auth.demo.contractor',
-    email: 'REPLACE_ME@example.com',
-    password: 'REPLACE_ME'
+    email: 'contractor1@mail.com',
+    password: 'adminadmin'
   }
 ]
 
