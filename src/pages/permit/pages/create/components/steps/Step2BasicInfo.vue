@@ -40,65 +40,6 @@
         name="location"
         required />
     </Form>
-
-    <div class="flex flex-col gap-2">
-      <span class="text-xs font-semibold text-text-tertiary">
-        {{ t('permit.create.steps.basicInfo.map.title') }}
-      </span>
-
-      <div class="flex flex-wrap gap-2">
-        <button
-          v-for="zone in LOCATION_ZONES"
-          :key="zone.key"
-          :class="zone.key === activeZoneKey
-            ? 'border-accent bg-accent-50 text-accent-emphasis-alt'
-            : 'border-border-input bg-surface-card text-text-secondary'"
-          class="rounded-md border px-3 py-1.5 text-[12.5px] font-semibold"
-          type="button"
-          @click="selectZone(zone)">
-          {{ t(zone.labelKey) }}
-        </button>
-      </div>
-
-      <!--
-        Placeholder facility-plan background — the same treatment the Safety Officer's risk map
-        uses, for the same reason: there is no floor-plan asset in either repo and SFO-007's
-        acceptance forbids sourcing or fabricating one (../PROMPT-LOG.md, session 2). The pin's
-        position comes from the shared zone vocabulary in ../../constants/LocationZones.ts, so a
-        permit sits at the same spot in both apps.
-      -->
-      <div
-        class="relative aspect-[4/3] w-full max-w-md overflow-hidden rounded-lg border-2 border-dashed border-border bg-surface-muted"
-        data-test="location-plan">
-        <p class="pointer-events-none absolute inset-x-0 top-2 px-2 text-center text-[11px] text-text-tertiary">
-          {{ t('permit.create.steps.basicInfo.map.placeholderNote') }}
-        </p>
-
-        <p
-          v-if="!pinPosition"
-          class="absolute inset-0 flex items-center justify-center px-4 text-center text-[12.5px] text-text-secondary">
-          {{ t('permit.create.steps.basicInfo.map.empty') }}
-        </p>
-
-        <span
-          v-else
-          :style="{ left: `${pinPosition.x}%`, top: `${pinPosition.y}%` }"
-          :title="locationModel"
-          class="absolute flex size-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center
-            rounded-full border-2 border-surface-card bg-accent text-base shadow-md"
-          data-test="location-pin">
-          <span aria-hidden="true">📍</span>
-        </span>
-      </div>
-
-      <p
-        v-if="locationModel"
-        class="text-[11.5px] text-text-tertiary">
-        {{ activeZoneKey
-          ? t('permit.create.steps.basicInfo.map.matchedZone')
-          : t('permit.create.steps.basicInfo.map.customLocation') }}
-      </p>
-    </div>
   </div>
 </template>
 
@@ -109,9 +50,6 @@ import { Form } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { useAuthStore } from '@/stores/Auth'
 import LabelField from '@/components/input/LabelField.vue'
-import {
-  LOCATION_ZONES, findKnownZoneKey, mapLocationToPosition, type ILocationZone, type IMapPosition
-} from '../../constants/LocationZones'
 import { Step2BasicInfoFieldsSchema } from '../../schema/Step2BasicInfo.schema'
 import type { IWizardStepEmits, IWizardStepProps } from '../../wizard/WizardSteps'
 
@@ -155,21 +93,20 @@ const locationModel: WritableComputedRef<string> = computed<string>({
 })
 
 /**
- * The zone chips write the existing free-text `location` field — there is no geo field on the
- * wire and this adds none. Typing a location by hand stays fully supported: anything outside the
- * vocabulary simply falls back to the deterministic hash, exactly as the Safety risk map does.
+ * wayfinder 093 — `location` is a plain text note and nothing more.
+ *
+ * This step used to render a zone-chip row and a pin on a grey placeholder rectangle, positioned by
+ * hashing this very string. The Safety app deleted the identical mechanism on 2026-08-24 and left a
+ * HISTORY note in its `LocationPosition.ts` saying it must not come back: behind anything that looks
+ * like a plan, a pin the system cannot vouch for reads as a claim about where hot work physically
+ * is, and an officer could dispatch to the wrong part of the plant. The contractor half outlived it
+ * by three weeks.
+ *
+ * The real answer shipped as step 3, "Where & when" (wayfinder 070): an approved Area, a pin on an
+ * actual facility-plan raster, and a parsed map coordinate. `location` stays what wayfinder 034
+ * demoted it to — free-text detail nothing queries, for "north corner, near the loading dock".
+ * Do not give it a map again.
  */
-const activeZoneKey: ComputedRef<string | undefined> = computed(
-  (): string | undefined => (locationModel.value ? findKnownZoneKey(locationModel.value) : undefined)
-)
-
-const pinPosition: ComputedRef<IMapPosition | undefined> = computed(
-  (): IMapPosition | undefined => (locationModel.value.trim() ? mapLocationToPosition(locationModel.value) : undefined)
-)
-
-function selectZone (zone: ILocationZone): void {
-  locationModel.value = zone.value
-}
 </script>
 
 <style scoped>

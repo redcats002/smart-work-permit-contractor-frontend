@@ -94,23 +94,6 @@ const permit = {
           contractor: 'Contractor',
           foreman: 'Foreman',
           location: 'Location'
-        },
-        map: {
-          title: 'Location on map',
-          placeholderNote: 'Placeholder facility plan — no real floor-plan asset ships yet',
-          empty: 'Pick a zone or type a location to drop the pin',
-          matchedZone: 'Matches the zone the safety officer sees on the risk map',
-          customLocation: 'Location outside the zone list — the pin uses a stable position derived from the text',
-          zone: {
-            zone1: 'Zone 1',
-            zone2: 'Zone 2',
-            zone3: 'Zone 3',
-            building2: 'Building 2',
-            tankFarm: 'Tank Farm',
-            processArea: 'Process Area',
-            adminBuilding: 'Admin Building',
-            utilityYard: 'Utility Yard'
-          }
         }
       },
       // wayfinder 070 — "Where & when" (step 3): area, pin, geo coordinate, dates, schedule note.

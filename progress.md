@@ -3433,3 +3433,36 @@ stopped rendering, which is the new stricter filter doing its job.
 
 `./init.sh`: 73 files / 610 tests PASS, typecheck PASS, lint PASS, contrast PASS, icons PASS,
 smoke PASS.
+
+## 2026-09-10 — wayfinder 093: the fake location map on Step 2 is gone
+
+Removed from `Step2BasicInfo.vue`: the zone-chip row, the grey placeholder "facility plan"
+rectangle, and the pin positioned by `mapLocationToPosition()`. Deleted
+`constants/LocationZones.ts` and its test, and the orphaned `basicInfo.map.*` locale keys in EN
+and TH. **The `location` text field stays**, unchanged on the wire.
+
+The owner's report was *"always not show real floor plan and fill gray bg and random the pin
+everytime, also the chip … is no use at all in real case"*. All three are literal descriptions of
+what the code did: the background was a hardcoded placeholder, the chips only wrote the free-text
+`location`, and the "random" pin was `mapLocationToPosition()`'s deterministic hash — the fallback
+for any text outside an eight-zone vocabulary.
+
+**The Safety app deleted this exact mechanism on 2026-08-24** and left a HISTORY note in
+`LocationPosition.ts` saying it must not come back — *"behind a real facility plan the identical pin
+reads as a claim about where hot work is physically happening, and an officer could dispatch to the
+wrong part of the plant"*, per PROMPT-LOG session 8's *"never draw a pin in a position the system
+cannot vouch for"*. The contractor half outlived it by three weeks. `LocationZones.ts` even carried
+a ⚠ MIRROR warning that its percentages must stay byte-identical to that file — a warning protecting
+a counterpart that had already been deleted.
+
+It also competed with the real answer: wayfinder 070's step 3 has an approved Area, a pin on an
+actual plan raster, and a parsed map coordinate. Two "where" UIs in one wizard is the confusion the
+2026-09-10 field report opened with. `location` returns to what wayfinder 034 demoted it to — free
+text nothing queries, for "north corner, near the loading dock".
+
+New test `src/tests/pages/permit/create/components/Step2BasicInfo.location.test.ts` asserts the
+plan, the pin and the chips are absent and that `location` still round-trips — the contractor half
+of the Safety app's HISTORY note, in a form that fails rather than being read.
+
+`./init.sh`: 72 files / 607 tests PASS (LocationZones.test.ts's 6 cases removed, 3 added),
+typecheck, lint, contrast, icons, smoke all PASS.
