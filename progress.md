@@ -3398,3 +3398,38 @@ these forms; nothing left to remove.
 Verified: `./init.sh` — typecheck PASS, lint PASS (2 pre-existing warnings, unrelated), **72 files /
 605 tests PASS**, contrast PASS, icons PASS, **smoke PASS** (14/14 contract checks against a live
 API — API was reachable this session).
+
+## 2026-09-10 — wayfinder 088: certificate badges follow the worker id, not the name
+
+`Step4PpeWorkers.vue` held two display-only lookups matched on a worker's **name**, so two workers
+sharing one name got each other's certificate badge — on the screen where a contractor decides
+whether to add them. Display-only, so nothing wrong reached the wire; the submit gate has always run
+server-side on `workerId`. That is the worst arrangement of the two: the authoritative path was
+correct and the *displayed* one was not, so a reader had no reason to distrust the badge.
+
+Both are now keyed on `workerId`, and neither source needed an API change:
+
+- **`ICertificateProblem` gained `workerId`.** `useCertificatePreflight` already *had* it — it is
+  what `CertificateService.byWorker` is called with — and was throwing it away to store the name.
+- **`ISubmitCertificateFailure` gained `workerId`.** The server has always sent it alongside the
+  name (`submit.service.ts`'s `certFailures`); this repo's parser dropped it. So the fix was reading
+  a field that was already on the wire.
+
+A rejection arriving **without** a `workerId` is now dropped from the per-row highlight rather than
+name-matched as a guess. Attributing an unattributable rejection to a namesake is worse than not
+highlighting a row: the submit still fails server-side either way, so the contractor loses a wrong
+red badge and nothing else.
+
+New test: `src/tests/pages/permit/create/composables/certificateBadgeIdentity.test.ts` — **two
+workers, one name, different certificate status.** That fixture is the whole test. Every existing
+test had one worker per name, which is exactly why the defect survived: a single-worker case passes
+whether the lookup keys on the id or the name. **Mutation-checked** — reverting the rule to the
+name-keyed version turns it red, restoring it turns it green.
+
+Four existing fixtures needed `workerId` added (`SubmitErrorRouting.test.ts`,
+`PermitCreatePage.submit.test.ts`, `useWizard.certificatePreflight.test.ts`). Worth noting that the
+`PermitCreatePage.submit` fixture failing was itself informative: without ids the rejection banner
+stopped rendering, which is the new stricter filter doing its job.
+
+`./init.sh`: 73 files / 610 tests PASS, typecheck PASS, lint PASS, contrast PASS, icons PASS,
+smoke PASS.

@@ -31,9 +31,11 @@ describe('extractSubmitFailures', () => {
     const failures = extractSubmitFailures({
       code: 400,
       errorCode: EApiErrorCode.CERT_EXPIRED,
-      certificateFailures: [{ workerName: 'Somchai', errorCode: 'CERT_EXPIRED', message: 'expired' }]
+      // wayfinder 088: `workerId` is what the row highlight keys on now. The server has always
+      // sent it (submit.service.ts's certFailures); this parser used to drop it.
+      certificateFailures: [{ workerId: 7, workerName: 'Somchai', errorCode: 'CERT_EXPIRED', message: 'expired' }]
     })
-    expect(failures.certificates).toEqual([{ workerName: 'Somchai', errorCode: 'CERT_EXPIRED' }])
+    expect(failures.certificates).toEqual([{ workerId: 7, workerName: 'Somchai', errorCode: 'CERT_EXPIRED' }])
   })
 
   it('never carries the backend-authored per-item message through', () => {
@@ -84,12 +86,12 @@ describe('step routing', () => {
     // The envelope says CERT_EXPIRED, but readings also failed — readings is the earlier fix.
     expect(stepKeyForSubmitFailure('CERT_EXPIRED', {
       readings: [{ field: 'lel', errorCode: 'GAS_OUT_OF_RANGE' }],
-      certificates: [{ workerName: 'Somchai', errorCode: 'CERT_EXPIRED' }]
+      certificates: [{ workerId: 1, workerName: 'Somchai', errorCode: 'CERT_EXPIRED' }]
     })).toBe('safetyChecks')
 
     expect(stepKeyForSubmitFailure('PERMIT_NOT_SUBMITTABLE', {
       readings: [],
-      certificates: [{ workerName: 'Somchai', errorCode: 'CERT_MISSING' }]
+      certificates: [{ workerId: 1, workerName: 'Somchai', errorCode: 'CERT_MISSING' }]
     })).toBe('ppeWorkers')
 
     expect(stepKeyForSubmitFailure('GAS_OUT_OF_RANGE', EMPTY_SUBMIT_FAILURES)).toBe('safetyChecks')

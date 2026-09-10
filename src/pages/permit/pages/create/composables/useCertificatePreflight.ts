@@ -18,6 +18,13 @@ import CertificateProvider, { type ICertificateProvider } from '@/resources/prov
 export type TCertificatePreflightState = 'idle' | 'loading' | 'pass' | 'fail' | 'unknown'
 
 export interface ICertificateProblem {
+  /**
+   * wayfinder 088 — the identity, not the label. This composable already has `worker.workerId`
+   * (it is what `CertificateService.byWorker` is called with), and used to throw it away and key
+   * the problem on the name — so two workers sharing a name swapped certificate badges. The name
+   * stays for display only.
+   */
+  workerId: number
   workerName: string
   reason: 'MISSING' | 'EXPIRED'
 }
@@ -72,8 +79,9 @@ export function useCertificatePreflight (loadingUnit?: Ref<boolean>): IUseCertif
         for (const worker of named) {
           const { data } = await CertificateService.byWorker(worker.workerId as number)
           const certificate: ICertificate | null = data
-          if (!certificate) found.push({ workerName: worker.workerName, reason: 'MISSING' })
-          else if (certificate.expired) found.push({ workerName: worker.workerName, reason: 'EXPIRED' })
+          const workerId = worker.workerId as number
+          if (!certificate) found.push({ workerId, workerName: worker.workerName, reason: 'MISSING' })
+          else if (certificate.expired) found.push({ workerId, workerName: worker.workerName, reason: 'EXPIRED' })
         }
         return true
       }, { loadingUnit }, (error: unknown): void => {

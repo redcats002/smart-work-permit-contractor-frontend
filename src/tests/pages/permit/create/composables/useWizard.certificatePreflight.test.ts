@@ -69,7 +69,7 @@ describe('useWizard — certificate pre-flight never gates Next (wayfinder 063, 
     await flushMicrotasks()
 
     expect(wizard.certificateState.value).toBe('fail')
-    expect(wizard.certificateProblems.value).toEqual([{ workerName: 'Somchai', reason: 'MISSING' }])
+    expect(wizard.certificateProblems.value).toEqual([{ workerId: 761, workerName: 'Somchai', reason: 'MISSING' }])
     expect(wizard.isNextBlocked.value).toBe(false)
   })
 

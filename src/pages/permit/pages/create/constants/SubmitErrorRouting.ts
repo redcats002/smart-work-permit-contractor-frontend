@@ -26,6 +26,12 @@ export interface ISubmitReadingFailure {
 }
 
 export interface ISubmitCertificateFailure {
+  /**
+   * wayfinder 088 — the server has always sent this alongside the name
+   * (`submit.service.ts`'s `certFailures`), and this parser dropped it, leaving the wizard to
+   * match rejections by name. Two workers with one name got each other's rejection.
+   */
+  workerId: number
   workerName: string
   errorCode: string
 }
@@ -110,8 +116,14 @@ export function extractSubmitFailures (error: unknown): ISubmitFailures {
 
   const certificates: ISubmitCertificateFailure[] = Array.isArray(body.certificateFailures)
     ? body.certificateFailures
-      .filter((entry: unknown): boolean => isRecord(entry) && typeof entry.workerName === 'string')
+      // `workerId` is required here, not optional-with-a-fallback: a rejection that cannot be
+      // attributed to a specific worker must not be attributed to the wrong one. An entry without
+      // it is dropped from the per-row highlight rather than name-matched as a guess.
+      .filter((entry: unknown): boolean => isRecord(entry)
+        && typeof entry.workerName === 'string'
+        && typeof entry.workerId === 'number')
       .map((entry: unknown): ISubmitCertificateFailure => ({
+        workerId: (entry as Record<string, unknown>).workerId as number,
         workerName: (entry as Record<string, unknown>).workerName as string,
         errorCode: String((entry as Record<string, unknown>).errorCode ?? '')
       }))

@@ -378,9 +378,12 @@ const certificateProblems: ComputedRef<ICertificateProblem[]> = computed(
   (): ICertificateProblem[] => props.certificateProblems
 )
 
-function certificateProblemFor (workerName: string): ICertificateProblem['reason'] | undefined {
+// wayfinder 088: keyed on `workerId`, never the name. A row with no id yet (a freshly added,
+// unpicked row) has no problem to show rather than borrowing a same-named worker's.
+function certificateProblemFor (workerId: number | undefined): ICertificateProblem['reason'] | undefined {
+  if (typeof workerId !== 'number') return undefined
   return certificateProblems.value.find(
-    (problem: ICertificateProblem): boolean => problem.workerName === workerName
+    (problem: ICertificateProblem): boolean => problem.workerId === workerId
   )?.reason
 }
 
@@ -406,10 +409,10 @@ const workerRows: ComputedRef<IWorkerRow[]> = computed((): IWorkerRow[] =>
       healthPassed: issues.length === 0,
       bloodPressureFailed: issues.includes('BLOOD_PRESSURE'),
       alcoholFailed: issues.includes('ALCOHOL'),
-      certificateRejected: serverRejectedCertificates.value.some(
-        (failure: ISubmitCertificateFailure): boolean => failure.workerName === worker.workerName
+      certificateRejected: typeof worker.workerId === 'number' && serverRejectedCertificates.value.some(
+        (failure: ISubmitCertificateFailure): boolean => failure.workerId === worker.workerId
       ),
-      certificateProblem: certificateProblemFor(worker.workerName)
+      certificateProblem: certificateProblemFor(worker.workerId)
     }
   })
 )

@@ -237,9 +237,13 @@ describe('PermitCreatePage — submit (PMT-009)', () => {
       code: 400,
       message: 'certificate expired for Somchai; certificate missing for Krit',
       errorCode: EApiErrorCode.CERT_EXPIRED,
+      // wayfinder 088: `workerId` is required for a rejection to be attributed to a row — 761 is
+      // the worker this draft actually carries (see the fixture above), and 762 is a second worker
+      // the server named. A rejection without an id is deliberately dropped rather than matched by
+      // name, so this fixture would fail to render the banner without them.
       certificateFailures: [
-        { workerName: 'Somchai', errorCode: 'CERT_EXPIRED', message: 'certificate expired for Somchai' },
-        { workerName: 'Krit', errorCode: 'CERT_MISSING', message: 'certificate missing for Krit' }
+        { workerId: 761, workerName: 'Somchai', errorCode: 'CERT_EXPIRED', message: 'certificate expired for Somchai' },
+        { workerId: 762, workerName: 'Krit', errorCode: 'CERT_MISSING', message: 'certificate missing for Krit' }
       ]
     })
 
