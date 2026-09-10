@@ -37,9 +37,10 @@ function creatableDraft (): Record<string, unknown> {
     title: 'Warehouse repaint',
     location: 'Zone 3',
     foreman: 'Somchai',
-    workDate: '2026-08-20',
-    workTimeStart: '2026-08-20T01:00:00.000Z',
-    workTimeEnd: '2026-08-20T09:00:00.000Z'
+    startDate: '2026-08-20',
+    endDate: '2026-08-20',
+    dailyStart: '2026-08-20T01:00:00.000Z',
+    dailyEnd: '2026-08-20T09:00:00.000Z'
   }
 }
 
@@ -56,9 +57,13 @@ function hydratedPermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail 
     title: 'Roof repair',
     foreman: 'Somchai',
     location: 'Zone 3',
-    workDate: '2026-08-20T00:00:00.000Z',
-    workTimeStart: '2026-08-20T01:00:00.000Z',
-    workTimeEnd: '2026-08-20T09:00:00.000Z',
+    startDate: '2026-08-20T00:00:00.000Z',
+    endDate: '2026-08-20T00:00:00.000Z',
+    dailyStart: '2026-08-20T01:00:00.000Z',
+    dailyEnd: '2026-08-20T09:00:00.000Z',
+    scheduleNote: null,
+    latitude: null,
+    longitude: null,
     outdoorWork: false,
     createdById: 'u1',
     createdBy: null,
@@ -476,5 +481,122 @@ describe('useWizard — JSA row filtering at serialization (wayfinder ticket 001
       { phase: 'pre', step: 'First', hazard: 'H1', control: 'C1', sortOrder: 0 },
       { phase: 'pre', step: 'Third', hazard: 'H3', control: 'C3', sortOrder: 1 }
     ])
+  })
+})
+
+/**
+ * wayfinder 070 — "Where & when" moves to step 3, and picking an area pre-drops the pin
+ * (034 resolution, decision 4). `AreaPicker`'s `onSelectChange` already emits `{ areaId,
+ * position }` together in ONE `change` event, and `Step3WhereWhen.onAreaChange` forwards them as
+ * ONE `updateFormData` patch — this is what the ticket calls "mandatory rather than incidental":
+ * two SEPARATE patches racing would let a slower one land last and silently win. These cases pin
+ * the composable-level contract that makes that safe.
+ */
+describe('useWizard — area-drop pin and a later nudge (wayfinder 070)', () => {
+  beforeEach((): void => {
+    vi.useFakeTimers()
+  })
+
+  afterEach((): void => {
+    vi.useRealTimers()
+    vi.restoreAllMocks()
+  })
+
+  async function bootDraft (): Promise<{ wizard: ReturnType<typeof useWizard>, updateSpy: ReturnType<typeof vi.spyOn> }> {
+    vi.spyOn(PermitProvider.prototype, 'create')
+      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
+    const updateSpy = vi.spyOn(PermitProvider.prototype, 'update')
+      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
+
+    const wizard = useWizard(makeSteps())
+    wizard.updateFormData(creatableDraft())
+    await vi.advanceTimersByTimeAsync(1600) // POST /permits
+    return { wizard, updateSpy }
+  }
+
+  function lastPatchBody (updateSpy: ReturnType<typeof vi.spyOn>): Record<string, unknown> {
+    return (updateSpy.mock.calls.at(-1) as [string, Record<string, unknown>])[1]
+  }
+
+  it('picking an area with a default position drops the pin in the SAME patch as areaId', async () => {
+    const { wizard, updateSpy } = await bootDraft()
+
+    // Mirrors AreaPicker.onSelectChange's single `change` emit, forwarded by
+    // Step3WhereWhen.onAreaChange as one `updateFormData` call — never two.
+    wizard.updateFormData({ areaId: 12, position: { planId: 5, planX: 40, planY: 60 } })
+    await vi.advanceTimersByTimeAsync(1600)
+
+    expect(wizard.formData.value.position).toEqual({ planId: 5, planX: 40, planY: 60 })
+    const patch = lastPatchBody(updateSpy)
+    expect(patch.areaId).toBe(12)
+    expect(patch.position).toEqual({ planId: 5, planX: 40, planY: 60 })
+  })
+
+  it('a nudge made after the area-dropped pin survives autosave — the later write wins, nothing races it away', async () => {
+    const { wizard, updateSpy } = await bootDraft()
+
+    // The area drops the pin at its default position...
+    wizard.updateFormData({ areaId: 12, position: { planId: 5, planX: 40, planY: 60 } })
+    await vi.advanceTimersByTimeAsync(1600)
+    expect(lastPatchBody(updateSpy).position).toEqual({ planId: 5, planX: 40, planY: 60 })
+
+    // ...then the contractor nudges it on the plan image (a frame click, Step3WhereWhen's
+    // `onFrameClick`) — a SEPARATE, later patch that must win, not be overwritten by anything
+    // still in flight from the drop.
+    wizard.updateFormData({ position: { planId: 5, planX: 44, planY: 61 } })
+    await vi.advanceTimersByTimeAsync(1600)
+
+    expect(wizard.formData.value.position).toEqual({ planId: 5, planX: 44, planY: 61 })
+    const finalPatch = lastPatchBody(updateSpy)
+    expect(finalPatch.position).toEqual({ planId: 5, planX: 44, planY: 61 })
+    // areaId is still a user choice from the earlier patch — it must still ride along, unaffected
+    // by the nudge (045's invariant: it is tracked independently of which key last changed).
+    expect(finalPatch.areaId).toBe(12)
+  })
+})
+
+/**
+ * wayfinder 067/070 — the multi-day work window. `dailyStart`/`dailyEnd` are `1970-01-01`-anchored
+ * on the wire; only the UTC clock time survives a round trip. This proves a HYDRATED window comes
+ * back out through `buildCreatePayload`/`doPersist` unchanged when nothing touched it — the "067
+ * UTC trap" the ticket names: switching either leg of this round trip from local-time methods
+ * (`getHours`/`setHours`) to UTC ones would shift every migrated permit by the deployment's
+ * offset, silently, with no test failing UNLESS it asserts on the actual wire value like this one.
+ */
+describe('useWizard — multi-day window round-trips without a timezone shift (wayfinder 067)', () => {
+  beforeEach((): void => {
+    vi.useFakeTimers()
+  })
+
+  afterEach((): void => {
+    vi.useRealTimers()
+    vi.restoreAllMocks()
+  })
+
+  it('a hydrated multi-day window is unchanged after an unrelated autosave', async () => {
+    vi.spyOn(PermitProvider.prototype, 'update')
+      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
+
+    const wizard = useWizard(makeSteps())
+    wizard.hydrate(hydratedPermit({
+      startDate: '2026-08-20T00:00:00.000Z',
+      endDate: '2026-08-22T00:00:00.000Z',
+      dailyStart: '1970-01-01T01:00:00.000Z',
+      dailyEnd: '1970-01-01T09:00:00.000Z',
+      areaId: undefined
+    }))
+
+    expect(wizard.formData.value.startDate).toBe('2026-08-20')
+    expect(wizard.formData.value.endDate).toBe('2026-08-22')
+
+    // An unrelated edit forces an autosave that re-sends the whole accumulated formData, including
+    // the untouched daily window — this is what would drift under the UTC trap.
+    wizard.updateFormData({ title: 'Roof repair — revised' })
+    await vi.advanceTimersByTimeAsync(1600)
+
+    const updateSpy = vi.mocked(PermitProvider.prototype.update)
+    const lastCall = updateSpy.mock.calls.at(-1) as [string, Record<string, unknown>]
+    expect(lastCall[1].dailyStart).toBe('1970-01-01T01:00:00.000Z')
+    expect(lastCall[1].dailyEnd).toBe('1970-01-01T09:00:00.000Z')
   })
 })

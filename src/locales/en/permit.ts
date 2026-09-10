@@ -17,10 +17,10 @@ const permit = {
     step: {
       1: 'Select Permit Type',
       2: 'Basic Information',
-      3: 'Safety Checks',
-      4: 'PPE & Workers',
-      5: 'Job Safety Analysis',
-      6: 'Plan Position',
+      3: 'Where & When',
+      4: 'Safety Checks',
+      5: 'PPE & Workers',
+      6: 'Job Safety Analysis',
       7: 'Review & Submit'
     },
     stepOf: 'Step {current} of {total}',
@@ -84,9 +84,6 @@ const permit = {
           title: 'Project',
           contractor: 'Contractor',
           foreman: 'Foreman',
-          workDate: 'Date',
-          workTimeStart: 'Start Time',
-          workTimeEnd: 'End Time',
           location: 'Location'
         },
         map: {
@@ -105,9 +102,33 @@ const permit = {
             adminBuilding: 'Admin Building',
             utilityYard: 'Utility Yard'
           }
+        }
+      },
+      // wayfinder 070 — "Where & when" (step 3): area, pin, geo coordinate, dates, schedule note.
+      whereWhen: {
+        subtitle: 'Where this work happens, and when — picking an area drops the pin below immediately.',
+        field: {
+          startDate: 'Start Date',
+          endDate: 'End Date',
+          dailyStart: 'Daily Start Time',
+          dailyEnd: 'Daily End Time',
+          scheduleNote: 'Schedule / Location Note'
+        },
+        scheduleNote: {
+          placeholder: 'Exceptions the dates above cannot express — e.g. "Not working Sat/Sun"'
+        },
+        geo: {
+          label: 'Geo Coordinate',
+          placeholder: 'Paste a Google Maps / OpenStreetMap link, or type "latitude, longitude"',
+          hint: 'Stored as a coordinate, not a live map.',
+          parsed: 'Parsed: {latitude}, {longitude}',
+          validation: {
+            unparseable: 'Could not read a coordinate from this text. Paste a Google Maps or OpenStreetMap link, or a "latitude, longitude" pair.'
+          }
         },
         validation: {
-          endAfterStart: 'End time must be after start time'
+          endDateNotBeforeStart: 'End date cannot be before start date',
+          endAfterStart: 'Daily end time must be after daily start time'
         }
       },
       safetyChecks: {
@@ -372,9 +393,17 @@ const permit = {
         idPending: 'ID pending',
         field: {
           dateTime: 'Date / Time',
+          area: 'Work Area',
+          pin: 'Pin',
+          geo: 'Geo Coordinate',
+          scheduleNote: 'Schedule / Location Note',
           workers: 'Workers',
           jsaSteps: 'JSA Steps'
         },
+        pinSet: 'Placed',
+        pinNotSet: 'Not placed',
+        areaNotSet: 'Not set',
+        geoNotSet: 'Not set',
         workersCount: '{count} registered',
         jsaCount: '{count} defined',
         check: {
@@ -388,12 +417,6 @@ const permit = {
             pass: 'Worker certificates are valid and not expired',
             fail: 'Certificate missing or expired for: {workers}',
             unknown: 'Worker certificates could not be checked — the server decides at submit'
-          },
-          position: {
-            loading: 'Checking the facility plan…',
-            pass: 'Position set on the facility plan',
-            fail: 'No position set — go back to Plan Position',
-            none: 'No active facility plan — a position is not required'
           }
         }
       }

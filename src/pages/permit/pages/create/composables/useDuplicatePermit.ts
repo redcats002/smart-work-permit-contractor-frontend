@@ -99,12 +99,17 @@ export function useDuplicatePermit (): IUseDuplicatePermit {
         title: permit.title,
         location: permit.location,
         foreman: permit.foreman,
-        // `workDate` round-trips as a full ISO timestamp (see IPermitBase) but POST /permits wants
-        // `YYYY-MM-DD` — same Bangkok-tz-aware conversion useWizard.hydrate uses for the resume
-        // route, not a plain `dayjs(...).format()` (that ignores `dayjs.tz.setDefault`).
-        workDate: dayjs(permit.workDate).tz('Asia/Bangkok').format('YYYY-MM-DD'),
-        workTimeStart: permit.workTimeStart,
-        workTimeEnd: permit.workTimeEnd,
+        // `startDate`/`endDate` round-trip as full ISO timestamps (see IPermitBase) but POST
+        // /permits wants `YYYY-MM-DD` — same Bangkok-tz-aware conversion useWizard.hydrate uses
+        // for the resume route, not a plain `dayjs(...).format()` (that ignores
+        // `dayjs.tz.setDefault`). `dailyStart`/`dailyEnd` are copied verbatim — see IPermitBase's
+        // doc comment for why that full ISO string (not a re-derived one) is what preserves the
+        // instant.
+        startDate: dayjs(permit.startDate).tz('Asia/Bangkok').format('YYYY-MM-DD'),
+        endDate: dayjs(permit.endDate).tz('Asia/Bangkok').format('YYYY-MM-DD'),
+        dailyStart: permit.dailyStart,
+        dailyEnd: permit.dailyEnd,
+        scheduleNote: permit.scheduleNote ?? undefined,
         outdoorWork: permit.outdoorWork
       }
       const created = await PermitService.create(createPayload)

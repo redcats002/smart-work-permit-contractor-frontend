@@ -8,18 +8,18 @@ import type { ICertificateProblem, TCertificatePreflightState } from '../composa
 import type { TPositionPreflightState } from '../composables/usePlanPosition'
 import { Step1TypeSchema } from '../schema/Step1Type.schema'
 import { Step2BasicInfoSchema } from '../schema/Step2BasicInfo.schema'
+import { Step3WhereWhenSchema } from '../schema/Step3WhereWhen.schema'
 import { Step3SafetyChecksSchema } from '../schema/Step3SafetyChecks.schema'
 import { Step4PpeWorkersSchema } from '../schema/Step4PpeWorkers.schema'
 import { Step5JsaSchema } from '../schema/Step5Jsa.schema'
 import { Step6ReviewSchema } from '../schema/Step6Review.schema'
-import { Step7PositionSchema } from '../schema/Step7Position.schema'
 import Step1Type from '../components/steps/Step1Type.vue'
 import Step2BasicInfo from '../components/steps/Step2BasicInfo.vue'
+import Step3WhereWhen from '../components/steps/Step3WhereWhen.vue'
 import Step3SafetyChecks from '../components/steps/Step3SafetyChecks.vue'
 import Step4PpeWorkers from '../components/steps/Step4PpeWorkers.vue'
 import Step5Jsa from '../components/steps/Step5Jsa.vue'
 import Step6Review from '../components/steps/Step6Review.vue'
-import Step7Position from '../components/steps/Step7Position.vue'
 
 /**
  * The contract every step component (real or stub) is rendered with by
@@ -60,8 +60,9 @@ export interface IWizardStepProps {
   /**
    * feat-023. The wizard's single shared position pre-flight (`useWizard`, backed by
    * `usePlanPosition`) — mirrors `certificateState` exactly. `activePlan` is `null` while
-   * `positionState === 'loading'` or `'none'`; the Position step (only step that renders when
-   * `positionState !== 'none'`) and the Review row both read it, so they can never disagree.
+   * `positionState === 'loading'` or `'none'`. wayfinder 070: the `whereWhen` step's pin surface
+   * (not the step itself, which always renders now) and the Review row both read this, so they
+   * can never disagree.
    */
   positionState: TPositionPreflightState
   activePlan: IFacilityPlan | null
@@ -99,21 +100,22 @@ export interface IWizardStepDef {
  * and useWizard all derive their behavior from this array — adding a step's
  * real content later means editing its component + schema file, never this
  * list's consumers.
- */
-/**
- * The `position` entry is present here unconditionally — `useWizard` filters it OUT of the
- * array it actually exposes unless an active facility plan exists (feat-023). See
- * `usePlanPosition` / `useWizard`'s `steps` computed. Its `labelKey` is `step.6` and Review's
- * shifts to `step.7` to keep the on-screen numbering contiguous WHEN the step is shown; when it
- * is hidden, StepperHeader numbers off the array it actually renders, not these key names.
+ *
+ * wayfinder 070 — "Where & when" moves to position 3, unconditionally: `useWizard.steps` no
+ * longer filters ANY entry out of this array (it used to hide `position`, formerly step 7,
+ * whenever no facility plan was active — see `usePlanPosition`). Review is always last. The
+ * component/schema FILENAMES for the safety/PPE/JSA/review steps still carry their OLD numbers
+ * (`Step3SafetyChecks.vue` is step 4 here) — deliberately not renamed, since the ticket's scope
+ * is the order and content of the steps, not their filenames; `labelKey` below is what actually
+ * drives on-screen numbering.
  */
 export const WIZARD_STEPS: IWizardStepDef[] = [
   { key: 'type', labelKey: 'permit.wizard.step.1', component: Step1Type, schema: Step1TypeSchema },
   { key: 'basicInfo', labelKey: 'permit.wizard.step.2', component: Step2BasicInfo, schema: Step2BasicInfoSchema },
-  { key: 'safetyChecks', labelKey: 'permit.wizard.step.3', component: Step3SafetyChecks, schema: Step3SafetyChecksSchema },
-  { key: 'ppeWorkers', labelKey: 'permit.wizard.step.4', component: Step4PpeWorkers, schema: Step4PpeWorkersSchema },
-  { key: 'jsa', labelKey: 'permit.wizard.step.5', component: Step5Jsa, schema: Step5JsaSchema },
-  { key: 'position', labelKey: 'permit.wizard.step.6', component: Step7Position, schema: Step7PositionSchema },
+  { key: 'whereWhen', labelKey: 'permit.wizard.step.3', component: Step3WhereWhen, schema: Step3WhereWhenSchema },
+  { key: 'safetyChecks', labelKey: 'permit.wizard.step.4', component: Step3SafetyChecks, schema: Step3SafetyChecksSchema },
+  { key: 'ppeWorkers', labelKey: 'permit.wizard.step.5', component: Step4PpeWorkers, schema: Step4PpeWorkersSchema },
+  { key: 'jsa', labelKey: 'permit.wizard.step.6', component: Step5Jsa, schema: Step5JsaSchema },
   { key: 'review', labelKey: 'permit.wizard.step.7', component: Step6Review, schema: Step6ReviewSchema }
 ]
 

@@ -86,7 +86,7 @@ describe('I18n plugin', () => {
     expect(i18n.global.t('permit.type.hot')).toBe('งานที่มีความร้อน / ประกายไฟ')
 
     setLocale('en')
-    expect(i18n.global.t('permit.wizard.step.4')).toBe('PPE & Workers')
+    expect(i18n.global.t('permit.wizard.step.5')).toBe('PPE & Workers')
     expect(i18n.global.t('platform.nav.newPermit')).toBe('New Permit')
   })
 })

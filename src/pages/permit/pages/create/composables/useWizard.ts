@@ -1,5 +1,5 @@
 import type { ComputedRef, Ref } from 'vue'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { dayjs } from '@/plugins/dayjs.plugin'
 import i18n from '@/plugins/I18n.plugin'
 import { toast } from '@/plugins/toast'
@@ -27,11 +27,10 @@ const PermitService: IPermitProvider = new PermitProvider()
 
 export interface IUseWizard {
   /**
-   * feat-023. The `position` step is filtered OUT of this whenever no active facility plan
-   * exists — that is the current production state today, and it must keep working unchanged
-   * (see `usePlanPosition`). Reactive because the underlying `GET /facility-plans/active` lookup
-   * is async; StepperHeader/WizardFooter/PermitCreatePage all bind `:steps="steps"`, which
-   * auto-unwraps a computed in the template with no consumer-side change.
+   * wayfinder 070. Always `registry`, unfiltered — the `whereWhen` step (area, pin, geo, dates,
+   * note) renders regardless of whether a facility plan is active; only the pin surface inside
+   * it swaps for a "no plan active" line. Reactive for interface parity with the pre-070 shape;
+   * StepperHeader/WizardFooter/PermitCreatePage all bind `:steps="steps"` unchanged.
    */
   steps: ComputedRef<IWizardStepDef[]>
   currentStepIndex: Ref<number>
@@ -68,9 +67,9 @@ export interface IUseWizard {
    */
   recheckCertificates (): void
   /**
-   * feat-023. Mirrors `certificateState` exactly, for the Position step + Review row. `'none'`
-   * (no active plan — today's production default) and `'loading'` never block; only a confirmed
-   * `'fail'` (an active plan exists and `formData.position` is unset) does.
+   * feat-023. Mirrors `certificateState` exactly, for the Where & when step's pin + Review row.
+   * `'none'` (no active plan — today's production default) and `'loading'` never block; only a
+   * confirmed `'fail'` (an active plan exists and `formData.position` is unset) does.
    */
   positionState: ComputedRef<TPositionPreflightState>
   activePlan: Ref<IFacilityPlan | null>
@@ -106,11 +105,13 @@ export interface IUseWizard {
 }
 
 /**
- * POST /permits requires type, title, location, foreman, workDate, workTimeStart and
- * workTimeEnd — all of them, with `minLength: 1` on the strings (docs/api/openapi.json). The
- * wizard only has `type` when "meaningful input" first fires, so a draft cannot be created that
- * early: `title`, `location` and `foreman` come from step 2, and the create call must wait for
- * them. `hasCreatableDraft` below is that gate, and PMT-005 owns making step 2 satisfy it.
+ * POST /permits requires type, title, foreman, startDate, endDate, dailyStart and dailyEnd — all
+ * of them, with `minLength: 1` on the strings (docs/api/openapi.json). `location` is nullable on
+ * the wire since wayfinder 070's openapi refresh, but this wizard still asks for it on step 2 and
+ * still gates the create on it. The wizard only has `type` when "meaningful input" first fires,
+ * so a draft cannot be created that early: `title`, `location` and `foreman` come from step 2,
+ * and the date/time fields come from step 3 (`whereWhen`) since wayfinder 070 moved them there —
+ * `hasCreatableDraft` below is the gate that waits for all of it.
  *
  * There is no `project` and no `workDescription` on this API — those were assumptions.
  */
@@ -137,17 +138,26 @@ function buildCreatePayload (data: IUpdatePermitDraftPayload): ICreatePermitDraf
     title: data.title ?? '',
     location: data.location ?? '',
     foreman: data.foreman ?? '',
-    workDate: data.workDate ?? '',
-    workTimeStart: data.workTimeStart ?? '',
-    workTimeEnd: data.workTimeEnd ?? '',
-    outdoorWork: data.outdoorWork ?? false
+    startDate: data.startDate ?? '',
+    endDate: data.endDate ?? '',
+    dailyStart: data.dailyStart ?? '',
+    dailyEnd: data.dailyEnd ?? '',
+    scheduleNote: data.scheduleNote ?? undefined,
+    outdoorWork: data.outdoorWork ?? false,
+    mapUrl: data.mapUrl,
+    position: data.position,
+    areaId: data.areaId
   }
 }
 
-/** Every field POST /permits rejects as empty must be present before the first create fires. */
+/**
+ * Every field POST /permits rejects as empty must be present before the first create fires.
+ * `location` is deliberately still required HERE even though the wire made it nullable
+ * (wayfinder 070) — this app's own wizard UX keeps asking for it on step 2, unchanged.
+ */
 export function hasCreatableDraft (data: IUpdatePermitDraftPayload): boolean {
   return Boolean(data.type && data.title && data.location && data.foreman
-    && data.workDate && data.workTimeStart && data.workTimeEnd)
+    && data.startDate && data.endDate && data.dailyStart && data.dailyEnd)
 }
 
 /**
@@ -197,7 +207,31 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
   // unaffected; a real page always mounts inside `main.ts`'s Pinia-registered app.
   const { activePlan, required: positionRequired, fetchActive, stateFor: positionStateFor } = usePlanPosition()
   onMounted((): void => {
-    void fetchActive()
+    void fetchActive(formData.value.areaId ?? undefined)
+
+    /**
+     * wayfinder 069/070. "The pin surface is the area's own drawing when it has one, the active
+     * site plan otherwise" is resolved by RE-FETCHING `activePlan` scoped to the currently picked
+     * area, never by treating `IArea.planId` (a historical default-position snapshot, a DIFFERENT
+     * Prisma relation from the area's live drawing) as if it were the live drawing reference.
+     * Fires on every change to `formData.areaId` — a pick, a clear, or hydrate's wholesale
+     * reassignment — so `activePlan`/`positionState` and the pin surface in `Step3WhereWhen` are
+     * never stale against the area actually selected. Not gated by `areaIdIsUserChoice`: a
+     * hydrated permit's area must resolve its drawing too, even though that value never reaches
+     * the wire unchanged.
+     *
+     * Registered INSIDE `onMounted`, not at setup time, for the exact reason `onMounted` above is
+     * used instead of a bare call: a composable-level test driving `formData.areaId` with no
+     * mounted component (no active Pinia) would otherwise fire a real network call on every such
+     * test, whose failure trips this app's 401 interceptor into touching the auth store outside
+     * Pinia — the same failure mode this file's `useCertificatePreflight` comment already names.
+     * A `watch()` created inside `onMounted`'s callback is still tied to the component and still
+     * auto-cleaned on unmount; it simply never registers when `onMounted` itself is the
+     * documented no-op it is outside a mounted component.
+     */
+    watch((): number | null | undefined => formData.value.areaId, (areaId: number | null | undefined): void => {
+      void fetchActive(areaId ?? undefined)
+    })
   })
 
   const positionState: ComputedRef<TPositionPreflightState> = computed(
@@ -205,13 +239,15 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
   )
 
   /**
-   * The `position` step only appears once an active facility plan is confirmed — see the
-   * `IUseWizard.steps` doc. Every other step's `key` is a fixed member of `registry`; filtering
-   * never changes their relative order.
+   * wayfinder 070. `steps` is now just `registry`, unfiltered — the `whereWhen` step (formerly
+   * `Step7Position`, filtered out whenever no facility plan was active) ALWAYS renders: area,
+   * geo coordinate, dates and note are useful with no plan at all, and only the pin surface
+   * inside the step swaps for a "no plan active" line (see `Step3WhereWhen.vue`). This is what
+   * let ticket 045's invariant matter in the first place — `AreaPicker` no longer depends on
+   * `positionRequired` to mount, but the invariant below is kept exactly as it was: it must
+   * survive regardless of which steps mount, not only the one case that used to hide it.
    */
-  const steps: ComputedRef<IWizardStepDef[]> = computed(
-    (): IWizardStepDef[] => registry.filter((step: IWizardStepDef): boolean => step.key !== 'position' || positionRequired.value)
-  )
+  const steps: ComputedRef<IWizardStepDef[]> = computed((): IWizardStepDef[] => registry)
 
   const currentStep: ComputedRef<IWizardStepDef> = computed(
     (): IWizardStepDef => steps.value[currentStepIndex.value]
@@ -226,10 +262,10 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
     // drafting Monday for Friday's work has no card to attach yet. Next is never blocked on
     // certificate state; `certificateState`/`certificateProblems` still drive the row's loud,
     // persistent warning and canSubmit below still mirrors the server exactly.
-    // Same shape for the Position step: only a CONFIRMED 'fail' (an active plan exists and no
-    // pin is set) blocks — 'loading'/'none' never do (../../../../../PROMPT-LOG.md "no
+    // Same shape for the Where & when step's pin: only a CONFIRMED 'fail' (an active plan exists
+    // and no pin is set) blocks — 'loading'/'none' never do (../../../../../PROMPT-LOG.md "no
     // client-side rule that blocks what the server would accept").
-    if (currentStep.value.key === 'position' && positionState.value === 'fail') return true
+    if (currentStep.value.key === 'whereWhen' && positionState.value === 'fail') return true
     return false
   })
   const canSubmit: ComputedRef<boolean> = computed(
@@ -237,7 +273,7 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
       && !saving.value && !submitting.value && certificateState.value !== 'fail'
       // Guards the Review step specifically: Review's own schema can't see external plan state,
       // so a hydrated draft that lands there with no pin must still be blocked here, not just on
-      // the Position step itself (which the user may never have re-visited this session).
+      // the Where & when step itself (which the user may never have re-visited this session).
       && positionState.value !== 'fail'
   )
 
@@ -318,11 +354,13 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
     // the server reads as "leave the stored value alone".
     //
     // 045: this used to be `payload.areaId === undefined`, which was a proxy for "AreaPicker told
-    // us to strip it" — correct only while `AreaPicker` mounts. It lives inside `Step7Position`,
-    // which `steps` filters out entirely when no facility plan is active, and that is production
-    // today. A permit carrying a non-APPROVED `areaId` would then 400 on EVERY autosave, forever,
-    // with no UI able to clear it. The condition is now `areaIdIsUserChoice`, which no step has to
-    // mount to be right.
+    // us to strip it" — correct only while `AreaPicker` mounts. It used to live inside
+    // `Step7Position`, which `steps` filtered out entirely when no facility plan was active, and
+    // that was production. A permit carrying a non-APPROVED `areaId` would then 400 on EVERY
+    // autosave, forever, with no UI able to clear it. wayfinder 070 moved `AreaPicker` into
+    // `Step3WhereWhen`, which now always mounts — but the condition stays `areaIdIsUserChoice`,
+    // not the old presence proxy, because a step always mounting today is not a promise it always
+    // will, and the invariant costs nothing to keep.
     //
     // `null` still reaches the server — that is a user's deliberate clear, and it is destructive
     // on purpose. Do not collapse `undefined` and `null` here; they mean opposite things.
@@ -365,14 +403,14 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
   })
 
   /**
-   * `permit.workDate` is a full ISO timestamp on the wire (see IPermitBase); formData must hold
-   * `YYYY-MM-DD`, the shape everything downstream (Step2BasicInfo's picker, buildCreatePayload,
-   * the PATCH body) actually sends. Converts through Bangkok wall-clock time, not browser-local —
-   * a plain `dayjs(...).format()` ignores `dayjs.tz.setDefault` (see AGENTS.md's dayjs latent-bug
-   * note); `.tz('Asia/Bangkok')` is required.
+   * `permit.startDate`/`endDate` are full ISO timestamps on the wire (see IPermitBase); formData
+   * must hold `YYYY-MM-DD`, the shape everything downstream (Step3WhereWhen's picker,
+   * buildCreatePayload, the PATCH body) actually sends. Converts through Bangkok wall-clock time,
+   * not browser-local — a plain `dayjs(...).format()` ignores `dayjs.tz.setDefault` (see
+   * AGENTS.md's dayjs latent-bug note); `.tz('Asia/Bangkok')` is required.
    */
-  function toFormWorkDate (workDate: string): string {
-    return dayjs(workDate).tz('Asia/Bangkok').format('YYYY-MM-DD')
+  function toFormDate (date: string): string {
+    return dayjs(date).tz('Asia/Bangkok').format('YYYY-MM-DD')
   }
 
   /** First step whose schema rejects the given data, or the last step when every step passes. */
@@ -417,12 +455,20 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
     const hydrated: IUpdatePermitDraftPayload = {
       type: permit.type,
       title: permit.title,
-      location: permit.location,
+      location: permit.location ?? undefined,
       foreman: permit.foreman,
-      workDate: toFormWorkDate(permit.workDate),
-      workTimeStart: permit.workTimeStart,
-      workTimeEnd: permit.workTimeEnd,
+      startDate: toFormDate(permit.startDate),
+      endDate: toFormDate(permit.endDate),
+      dailyStart: permit.dailyStart,
+      dailyEnd: permit.dailyEnd,
+      scheduleNote: permit.scheduleNote ?? undefined,
       outdoorWork: permit.outdoorWork,
+      // wayfinder 068. `mapUrl` is never stored — GET only ever returns the already-parsed
+      // `latitude`/`longitude`. Seeded here purely as the display value for Step3WhereWhen's
+      // text field, formatted exactly as the bare "lat, lng" form the parser (both copies)
+      // accepts, so re-sending it unchanged on the next autosave re-parses to the same pair —
+      // idempotent, unlike `areaId`, so this needs no 045-style "user touched it" flag.
+      mapUrl: permit.latitude !== null && permit.longitude !== null ? `${permit.latitude}, ${permit.longitude}` : undefined,
       safetyReading: permit.latestSafetyReading ?? undefined,
       jsaSteps: permit.jsaSteps,
       workers: toFormWorkers(permit.workers),
@@ -471,10 +517,10 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
     // clearing a beat early is strictly better than a stuck red card.
     submitError.value = undefined
     submitFailures.value = EMPTY_SUBMIT_FAILURES
-    // A draft cannot be created from step 1 alone: POST /permits requires type, title, location,
-    // foreman, workDate, workTimeStart and workTimeEnd together, all non-empty (API-005). Before
-    // that the create would 400, so nothing is persisted; once the draft exists, every later edit
-    // PATCHes as usual.
+    // A draft cannot be created from step 1 alone: POST /permits requires type, title, foreman,
+    // startDate, endDate, dailyStart and dailyEnd together, all non-empty (API-005), and this
+    // wizard additionally waits for `location` (see `hasCreatableDraft`). Before that the create
+    // would 400, so nothing is persisted; once the draft exists, every later edit PATCHes as usual.
     if (!draftId.value && !hasCreatableDraft(formData.value)) return
     debouncedPersist()
   }

@@ -41,13 +41,11 @@ export const EMPTY_SUBMIT_FAILURES: ISubmitFailures = { readings: [], certificat
  * Every reading code lands on the Safety Checks step and both certificate codes on PPE &
  * Workers — not just the two named in PMT-009's acceptance, because `LEL_MISSING` and
  * `GAS_OUT_OF_RANGE` need the same fix in the same place. `PERMIT_POSITION_REQUIRED` (feat-023)
- * lands on the Position step.
+ * and `AREA_REQUIRED`/`AREA_NOT_APPROVED` (wayfinder 037) all land on `whereWhen` (wayfinder 070
+ * — the step formerly named `position`, now step 3, carrying area + pin + geo + dates + note).
  *
- * Keyed by `IWizardStepDef.key`, NOT a hardcoded index: the Position step only exists in
- * `useWizard`'s `steps` when an active facility plan is present, so a fixed index would be wrong
- * whenever that step is absent (every permit before the first plan is ever activated). The
- * caller (`useWizard.submitDraft`) resolves the key to an index against its OWN current `steps`
- * array via `findIndex` — see `usePlanPosition`.
+ * Keyed by `IWizardStepDef.key`, NOT a hardcoded index — `useWizard.submitDraft` resolves the key
+ * to an index against its OWN current `steps` array via `findIndex`.
  */
 export const SUBMIT_ERROR_STEP_KEY: Partial<Record<EApiErrorCode, string>> = {
   [EApiErrorCode.LEL_MISSING]: 'safetyChecks',
@@ -58,11 +56,12 @@ export const SUBMIT_ERROR_STEP_KEY: Partial<Record<EApiErrorCode, string>> = {
   [EApiErrorCode.WIND_OUT_OF_RANGE]: 'safetyChecks',
   [EApiErrorCode.CERT_MISSING]: 'ppeWorkers',
   [EApiErrorCode.CERT_EXPIRED]: 'ppeWorkers',
-  [EApiErrorCode.PERMIT_POSITION_REQUIRED]: 'position',
+  [EApiErrorCode.PERMIT_POSITION_REQUIRED]: 'whereWhen',
   // wayfinder ticket 037 — the `PERMIT_AREA_REQUIRED` deployment flag's submit gate, off by
   // default today. Lands on the same step as the position picker, which now also carries the
   // area picker (`AreaPicker.vue`).
-  [EApiErrorCode.AREA_REQUIRED]: 'position'
+  [EApiErrorCode.AREA_REQUIRED]: 'whereWhen',
+  [EApiErrorCode.AREA_NOT_APPROVED]: 'whereWhen'
 }
 
 /** `undefined` = stay on the review step; nothing earlier can fix this code. */

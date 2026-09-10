@@ -147,9 +147,9 @@ describe('useWizard — draft persistence', () => {
     vi.restoreAllMocks()
   })
 
-  // POST /permits requires type, title, location, foreman, workDate, workTimeStart and
-  // workTimeEnd together, all non-empty (API-005). Firing a create before that is a guaranteed
-  // 400 — the reason `hasCreatableDraft` gates persistence.
+  // POST /permits requires type, title, foreman, startDate, endDate, dailyStart and dailyEnd
+  // together, all non-empty (API-005); this wizard additionally waits for `location`. Firing a
+  // create before that is a guaranteed 400 — the reason `hasCreatableDraft` gates persistence.
   /** The minimum payload the backend will accept for a draft. */
   function creatableDraft (): Record<string, unknown> {
     return {
@@ -157,9 +157,10 @@ describe('useWizard — draft persistence', () => {
       title: 'Warehouse repaint',
       location: 'Zone 3',
       foreman: 'Somchai',
-      workDate: '2026-08-20',
-      workTimeStart: '2026-08-20T01:00:00.000Z',
-      workTimeEnd: '2026-08-20T09:00:00.000Z'
+      startDate: '2026-08-20',
+      endDate: '2026-08-20',
+      dailyStart: '2026-08-20T01:00:00.000Z',
+      dailyEnd: '2026-08-20T09:00:00.000Z'
     }
   }
 

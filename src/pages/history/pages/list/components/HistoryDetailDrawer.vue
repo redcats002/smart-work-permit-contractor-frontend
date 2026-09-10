@@ -81,13 +81,13 @@
             <div>
               <span class="text-text-secondary">{{ t('history.drawer.workDate') }}</span>
               <p class="mt-0.5 font-mono text-[11.5px]">
-                {{ $dayjs.formatDate(detail.workDate) }} · {{ detail.workTimeStart }}–{{ detail.workTimeEnd }}
+                {{ $dayjs.formatDate(detail.startDate) }} · {{ detail.dailyStart }}–{{ detail.dailyEnd }}
               </p>
             </div>
             <div>
               <span class="text-text-secondary">{{ t('history.drawer.duration') }}</span>
               <p class="mt-0.5 font-medium">
-                {{ formatDuration(detail.workTimeStart, detail.workTimeEnd) }}
+                {{ formatDuration(detail.dailyStart, detail.dailyEnd) }}
               </p>
             </div>
             <div>

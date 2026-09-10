@@ -30,9 +30,13 @@ function rejectedPermit (): Record<string, unknown> {
     title: 'Roof repair',
     foreman: 'Somchai',
     location: 'Zone 3',
-    workDate: '2026-08-10T00:00:00.000Z',
-    workTimeStart: '2026-08-10T01:00:00.000Z',
-    workTimeEnd: '2026-08-10T09:00:00.000Z',
+    startDate: '2026-08-10T00:00:00.000Z',
+    endDate: '2026-08-10T00:00:00.000Z',
+    dailyStart: '2026-08-10T01:00:00.000Z',
+    dailyEnd: '2026-08-10T09:00:00.000Z',
+    scheduleNote: null,
+    latitude: null,
+    longitude: null,
     outdoorWork: false,
     createdById: 'u1',
     createdBy: null,
@@ -105,7 +109,8 @@ describe('PermitDuplicatePage', () => {
     expect(createPayload).not.toHaveProperty('rejectedAt')
     expect(createPayload).not.toHaveProperty('approvedAt')
     expect(createPayload).not.toHaveProperty('closedAt')
-    expect(createPayload.workDate).toBe('2026-08-10')
+    expect(createPayload.startDate).toBe('2026-08-10')
+    expect(createPayload.endDate).toBe('2026-08-10')
 
     expect(updateSpy).toHaveBeenCalledTimes(1)
     const [updatedId, updatePayload] = updateSpy.mock.calls[0] as [string, Record<string, unknown>]

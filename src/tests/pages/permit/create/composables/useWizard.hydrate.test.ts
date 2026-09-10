@@ -23,9 +23,13 @@ function basePermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail {
     location: 'Zone 3',
     // Full ISO timestamp, exactly what GET /permits/:id returns — hydrate must convert this to
     // YYYY-MM-DD, never round-trip it as-is.
-    workDate: '2026-08-20T00:00:00.000Z',
-    workTimeStart: '2026-08-20T01:00:00.000Z',
-    workTimeEnd: '2026-08-20T09:00:00.000Z',
+    startDate: '2026-08-20T00:00:00.000Z',
+    endDate: '2026-08-20T00:00:00.000Z',
+    dailyStart: '2026-08-20T01:00:00.000Z',
+    dailyEnd: '2026-08-20T09:00:00.000Z',
+    scheduleNote: null,
+    latitude: null,
+    longitude: null,
     outdoorWork: false,
     createdById: 'u1',
     createdBy: null,
@@ -92,7 +96,7 @@ describe('useWizard.hydrate', () => {
     wizard.hydrate(permit)
 
     expect(wizard.draftId.value).toBe('WP-HT-20260820-001')
-    expect(wizard.formData.value.workDate).toBe('2026-08-20')
+    expect(wizard.formData.value.startDate).toBe('2026-08-20')
     expect(wizard.formData.value.safetyReading).toEqual({ wind: 10 })
     expect(wizard.formData.value.workers).toEqual([])
     expect(wizard.formData.value.jsaSteps).toEqual([])

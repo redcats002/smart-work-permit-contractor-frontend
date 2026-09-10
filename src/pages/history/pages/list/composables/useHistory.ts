@@ -209,9 +209,9 @@ export function useHistory (): IUseHistory {
       const rows = narrowToArchive(response.data).map((permit: IPermitListItem): string[] => [
         permit.id,
         t(`history.type.${permit.type}`),
-        `${permit.title} · ${permit.location}`,
+        `${permit.title} · ${permit.location ?? ''}`,
         permit.closedAt ? dayjs(permit.closedAt).tz('Asia/Bangkok').format('DD/MM/YYYY HH:mm') : '-',
-        formatDuration(permit.workTimeStart, permit.workTimeEnd),
+        formatDuration(permit.dailyStart, permit.dailyEnd),
         t(`history.status.${permit.status}`)
       ])
       const csv = toCsv([header, ...rows])

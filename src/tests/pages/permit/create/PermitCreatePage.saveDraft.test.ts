@@ -50,9 +50,10 @@ function creatableDraft (): Record<string, unknown> {
     title: 'Warehouse repaint',
     location: 'Zone 3',
     foreman: 'Somchai',
-    workDate: '2026-08-20',
-    workTimeStart: '2026-08-20T01:00:00.000Z',
-    workTimeEnd: '2026-08-20T09:00:00.000Z'
+    startDate: '2026-08-20',
+    endDate: '2026-08-20',
+    dailyStart: '2026-08-20T01:00:00.000Z',
+    dailyEnd: '2026-08-20T09:00:00.000Z'
   }
 }
 

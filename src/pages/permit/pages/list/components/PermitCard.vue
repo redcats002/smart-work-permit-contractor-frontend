@@ -29,7 +29,7 @@
         {{ t(`permit.type.${permit.type}`) }}
       </span>
       <span class="text-xs text-text-secondary">📅 {{ formattedDate }}</span>
-      <span class="text-xs text-text-secondary">🕗 {{ permit.workTimeStart }}–{{ permit.workTimeEnd }}</span>
+      <span class="text-xs text-text-secondary">🕗 {{ dailyClock }}</span>
     </div>
   </router-link>
 </template>
@@ -76,7 +76,20 @@ const typeBorderClass: ComputedRef<string> = computed((): string => `border bord
 const typeChipClass: ComputedRef<{ bg: string, fg: string }> = computed((): { bg: string, fg: string } => TYPE_CHIP_CLASS[props.permit.type])
 const statusClass: ComputedRef<{ bg: string, fg: string }> = computed((): { bg: string, fg: string } => STATUS_CLASS[props.permit.status])
 
-const formattedDate: ComputedRef<string> = computed((): string => d(new Date(props.permit.workDate), 'short'))
+const formattedDate: ComputedRef<string> = computed((): string => d(new Date(props.permit.startDate), 'short'))
+
+/**
+ * wayfinder 067 — `dailyStart`/`dailyEnd` are `1970-01-01`-anchored; only local wall-clock
+ * hours/minutes are meaningful (see `IPermitBase`'s doc comment). Reads the same way
+ * `Step3WhereWhen`'s `extractTimeOfDay` does — never `dayjs(...).format('HH:mm')` on the raw ISO
+ * string.
+ */
+function clock (iso: string): string {
+  const parsed = new Date(iso)
+  return `${String(parsed.getHours()).padStart(2, '0')}:${String(parsed.getMinutes()).padStart(2, '0')}`
+}
+
+const dailyClock: ComputedRef<string> = computed((): string => `${clock(props.permit.dailyStart)}–${clock(props.permit.dailyEnd)}`)
 
 // The "N inside" badge is gone (API-006): GET /permits carries no entrant count. Only the public
 // GET /permits/qr/:token reports one, and that needs an issued QR token this screen does not have.

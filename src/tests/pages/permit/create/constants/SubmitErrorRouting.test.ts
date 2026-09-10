@@ -60,14 +60,19 @@ describe('step routing', () => {
     expect(stepKeyForSubmitError('CERT_EXPIRED')).toBe('ppeWorkers')
   })
 
-  it('sends PERMIT_POSITION_REQUIRED to the Position step', () => {
-    expect(stepKeyForSubmitError('PERMIT_POSITION_REQUIRED')).toBe('position')
+  it('sends PERMIT_POSITION_REQUIRED to the Where & when step', () => {
+    expect(stepKeyForSubmitError('PERMIT_POSITION_REQUIRED')).toBe('whereWhen')
   })
 
   // wayfinder ticket 037 — the `PERMIT_AREA_REQUIRED` deployment flag's submit gate lands on the
   // same step as the position picker, which now also carries the area picker.
-  it('sends AREA_REQUIRED to the Position step', () => {
-    expect(stepKeyForSubmitError('AREA_REQUIRED')).toBe('position')
+  it('sends AREA_REQUIRED to the Where & when step', () => {
+    expect(stepKeyForSubmitError('AREA_REQUIRED')).toBe('whereWhen')
+  })
+
+  // wayfinder 070 — `AREA_NOT_APPROVED` lands here too now, since the area picker moved.
+  it('sends AREA_NOT_APPROVED to the Where & when step', () => {
+    expect(stepKeyForSubmitError('AREA_NOT_APPROVED')).toBe('whereWhen')
   })
 
   it('stays on Review for a code no earlier step can fix', () => {

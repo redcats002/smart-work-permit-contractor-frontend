@@ -3142,3 +3142,124 @@ Verified: `./init.sh` — typecheck PASS, lint PASS (2 pre-existing warnings, un
 running — another session owns the API repo this round; provider/model changes here are therefore
 unverified against a live backend per this repo's own "green vitest alone only proves the app
 agrees with its own types" caveat).
+
+---
+
+**wayfinder 070 — "Where & when" becomes one wizard step, at position 3 (2026-09-10).**
+
+The field report's headline complaint: *"how area and riskmap working together — I didn't see the
+relevance and operation between them"*, plus *"make it as in one of stepper in permit creation to
+reduce complicated process about area, riskmap"*. Order is now
+`1 Type → 2 Basic info → 3 Where & when → 4 Safety checks → 5 PPE & Workers → 6 JSA → 7 Review`.
+Review is always last — the old `Step7Position` sat AFTER Review, which is the whole reason the pin
+read as bolted on.
+
+**The pieces, in order, inside the new step:** area picker (`AreaPicker.vue`, reused verbatim) →
+the pin (copied from the retired `Step7Position.vue`, unchanged logic) → a geo coordinate (paste a
+map URL or type `lat, lng` — wayfinder 068) → dates (`startDate`/`endDate`/`dailyStart`/`dailyEnd` —
+wayfinder 067, replacing the single-day `workDate`/`workTimeStart`/`workTimeEnd`) → a schedule note.
+Selecting an area still drops the pin immediately in the SAME `updateFormData` patch as `areaId`
+(`onAreaChange` — unchanged from `Step7Position`), which is the entire answer to "I don't see the
+relevance": the two writes can never land as separate calls that race.
+
+**The step now ALWAYS renders.** `useWizard.steps` no longer filters `Step7Position`'s old
+`position` key out when no facility plan is active — `steps` is just `registry`, unfiltered. Only
+the pin SURFACE inside `Step3WhereWhen.vue` swaps for a "no plan active" line when
+`positionState === 'none'`; area, geo, dates and note are always there. Ticket 045's invariant
+(`areaIdIsUserChoice`, tracked in `updateFormData` where patches ARRIVE, not where the picker
+SPEAKS) is unchanged and still holds now that the picker always mounts — kept deliberately rather
+than relaxed, since a step always mounting today is not a promise it always will.
+
+**The 067 UTC trap, read before touching this again:** `dailyStart`/`dailyEnd` are `1970-01-01`
+`@db.Time`-anchored on the wire; only the UTC clock time survives. The migration backfill preserves
+every existing permit's instant only while the client renders these through the SAME local-time
+conversion the old `workTimeStart` used (`Date#getHours`/`Date#setHours`, copied verbatim from
+Step2BasicInfo into `Step3WhereWhen.vue`) — never `getUTCHours`/`setUTCHours`.
+
+**Geo coordinate (wayfinder 068).** No map library, no tiles, no third-party runtime request — a
+pasted URL or typed `lat, lng` is parsed client-side (`src/utils/ParseMapCoordinate.ts`, a
+regex-for-regex mirror of the api's `parse-map-coordinate.util.ts`, purely for instant feedback) and
+sent as the raw `mapUrl` string on the wire — the SERVER's parse is authoritative
+(`resolvePermitCoordinateInput`), never the client's. Unparseable input is a Step3WhereWhenSchema
+`.refine` failure — a form error, never a silent no-op. Clearing the field sends an explicit
+`{ latitude: null, longitude: null }` (`mapUrl` cannot represent "clear" — the wire requires
+`minLength: 1`).
+
+**Models updated end to end:** `IPermitBase`/`ICreatePermitDraftPayload`/`IUpdatePermitDraftPayload`
+now carry `startDate`/`endDate`/`dailyStart`/`dailyEnd`/`scheduleNote`/`latitude`/`longitude`/
+`mapUrl`; `location` is nullable on the wire (070's openapi refresh dropped it from POST's
+`required` list) but this wizard still requires it client-side, unchanged. Every consumer of the
+old field names was updated to compile AND render correctly against the live contract:
+`PermitCard.vue`, `PermitInfoCard.vue`, `HistoryTable.vue`, `HistoryDetailDrawer.vue`,
+`useHistory.ts`, `useDuplicatePermit.ts`.
+
+**Review (Step6Review.vue).** Shows all five Where & when groups (area, pin, geo, date/time,
+schedule note) as summary fields. The standalone "Position" preflight row is gone — submit gating
+is unaffected, `useWizard.canSubmit` still reads `positionState` directly.
+
+**A ticket claim verified false, reported rather than silently worked around:** none of 070's own
+claims were false on inspection — `AreaPicker.vue`'s pin-drop-on-select behaviour and
+`Step7Position.vue`'s pin logic were exactly as the ticket described, and both were reused
+unmodified inside the new step. What the ticket did NOT anticipate (found while implementing, not
+stated in the ticket) is the size of the model blast radius: `IPermitBase`'s old field names were
+still load-bearing across the detail page, history, and duplicate flow, none of which 070 named —
+all were updated in this same change to keep the app compiling and correct against the contract
+067/068 already shipped in the api.
+
+**Deviations / decisions not specified by the ticket:**
+- Component/schema FILENAMES for the safety/PPE/JSA/review steps keep their OLD numbers
+  (`Step3SafetyChecks.vue` is step 4 now) — not renamed, since the ticket's scope is the order and
+  content of the steps, not their filenames. `WizardSteps.ts`'s `labelKey` is what actually drives
+  on-screen numbering.
+- The area/pin i18n namespace stays `permit.create.steps.position.*` (unchanged) rather than being
+  renamed to `whereWhen.*` — `AreaPicker.vue`/`CreateAreaModal.vue` needed zero locale-key changes
+  this way. Only the genuinely new parts (dates, geo, note, the step's own subtitle) got a new
+  `permit.create.steps.whereWhen.*` namespace.
+- Review's "Area" row shows the raw `areaId` (a number), not a resolved area name — resolving the
+  name would need a second network call inside Review that the ticket did not ask for and 044/037
+  already gate area *identity* off the id, not the display name.
+- The Review "Geo Coordinate" row re-parses `formData.mapUrl` client-side purely for display —
+  never sent as a second source of truth back to the server.
+- `Textarea`'s `auto-resize` was deliberately NOT used on the schedule-note field — it requires
+  `ResizeObserver`, which jsdom does not implement, and no other screen in this repo uses it yet
+  (would have needed a fresh test-environment polyfill for one field).
+
+**Tests:** new `Step3WhereWhen.pin.test.ts` (renamed from `Step7Position.pin.test.ts`, wayfinder
+071's three falsified candidates, unchanged) plus three new describe blocks — the step renders in
+all three plan states (no plan / active site plan / an area's own drawing, wayfinder 069) and the
+daily window survives a no-op edit (067 UTC trap, symmetric get/set proof). New
+`Step3WhereWhen.schema.test.ts` (moved + expanded date-window cases, plus every geo-parse
+acceptance/rejection case). New `useWizard.persistence.test.ts` cases: area-drop-pin-rides-one-patch,
+a later nudge survives autosave, and a hydrated multi-day window is unchanged through an unrelated
+autosave. Every existing test that hardcoded the old 6-step order or the old field names was updated
+(`PermitCreatePage.{jsaSteps,saveDraft,submit,walk}.test.ts`, `PermitEditPage.test.ts`,
+`PermitDuplicatePage.test.ts`, `useWizard.test.ts`, `I18n.plugin.test.ts`, and the `IPermitDetail`/
+`IPermitListItem` fixtures in the detail-page test suite).
+
+**Pre-existing bug found, not fixed (out of scope):** `formatDuration()` (`useHistory.ts`) expects
+`'HH:mm'` strings but was already being called with full ISO datetimes (`workTimeStart`/
+`workTimeEnd`, now `dailyStart`/`dailyEnd`) both before and after this change — `"08:00:00.000Z".
+split(':')` was never a valid duration parse. Renamed the call site to the new field names only;
+did not fix the underlying format mismatch, which predates this ticket.
+
+**Correction made mid-implementation, worth recording.** The first pass resolved "the area's own
+drawing" by reusing `IArea.planId` (the area's historical DEFAULT POSITION, `AreaDefaultPlan`
+relation) as if it were the live drawing reference, and fetching it via `getById` when it differed
+from `activePlan`. Reading the api's own `prisma/models/area.prisma` comment caught this: the area's
+OWN drawing is a SEPARATE Prisma relation (`FacilityPlan.areaId`, "AreaDrawing"), and the correct
+resolution is `GET /facility-plans/active?areaId=<picked area>` — already shipped in the api
+(`active.service.ts`'s `FacilityPlanActiveService.execute`, which does the site-plan fallback
+SERVER-SIDE) and already in this repo's openapi copy. Fixed: `FacilityPlanProvider.getActive` now
+takes an optional `areaId`; `usePlanPosition.fetchActive` threads it through; `useWizard` watches
+`formData.areaId` (registered inside `onMounted`, not at setup time — a bare `watch()` fired a real
+network call from every composable-level test that touches `areaId`, tripping the 401 interceptor
+into a Pinia-outside-a-store error the same way `useCertificatePreflight`'s doc comment already
+warns about) and re-fetches `activePlan` scoped to the current area on every change — a pick, a
+clear, or hydrate. `Step3WhereWhen.vue` itself needed NO change for this: it only ever renders
+whatever `activePlan` prop it is handed, and the stale-pin/`getById` logic it already had (for a
+permit frozen against an older plan version) still does its own separate, correct job untouched.
+
+Verified: `./init.sh` — typecheck PASS, lint PASS (2 pre-existing warnings, unrelated), **69 files /
+589 tests PASS**, contrast PASS (30 pairs), icons PASS, **smoke PASS** (16/16 contract checks
+against a live API — the model/provider changes here ARE verified against the real backend, not
+only against this repo's own types).

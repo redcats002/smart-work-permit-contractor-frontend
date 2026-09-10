@@ -96,8 +96,8 @@ import CreateAreaModal from './CreateAreaModal.vue'
 
 /**
  * wayfinder ticket 037 — the permit wizard's area picker, over APPROVED areas only, plus
- * proposing a new one inline (`CreateAreaModal.vue`). Lives inside `Step7Position.vue`, next to
- * the pin picker — "which place" and "where exactly" are related but independent fields (034
+ * proposing a new one inline (`CreateAreaModal.vue`). Lives inside `Step3WhereWhen.vue` (wayfinder
+ * 070, formerly `Step7Position.vue`), next to the pin picker — "which place" and "where exactly" are related but independent fields (034
  * resolution, decision 4).
  *
  * Area is optional at submit and never gates Next/Submit (ticket 037's explicit constraint) —
@@ -202,9 +202,11 @@ async function fetchApprovedAreas (): Promise<void> {
  *
  * wayfinder ticket 045 — this strip is no longer what KEEPS such a permit saveable, and must not
  * be described as if it were. `useWizard.doPersist` omits any `areaId` that a human did not set
- * this session (`areaIdIsUserChoice`), because this component sits inside `Step7Position`, which
- * the wizard filters out whenever no facility plan is active — so on the deployment where it
- * matters most, nothing here runs at all. The emit stays because it keeps `formData` honest about
+ * this session (`areaIdIsUserChoice`). It used to sit inside `Step7Position`, which the wizard
+ * filtered out whenever no facility plan was active — so on the deployment where it mattered
+ * most, nothing ran at all. wayfinder 070 moved it into `Step3WhereWhen`, which always mounts,
+ * but the invariant stays exactly as strict: a step always mounting today is not a promise it
+ * always will. The emit stays because it keeps `formData` honest about
  * what the picker is actually showing.
  *
  * Stripping is right even for the still-APPROVED 044 case, where the PATCH would in fact be

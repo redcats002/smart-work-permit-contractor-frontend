@@ -40,9 +40,10 @@ describe('PermitProvider — wire contract (API-006)', () => {
       title: 'Weld repair',
       location: 'Zone 3',
       foreman: 'Somchai',
-      workDate: '2026-08-18',
-      workTimeStart: '2026-08-18T01:00:00.000Z',
-      workTimeEnd: '2026-08-18T09:00:00.000Z'
+      startDate: '2026-08-18',
+      endDate: '2026-08-18',
+      dailyStart: '2026-08-18T01:00:00.000Z',
+      dailyEnd: '2026-08-18T09:00:00.000Z'
     })
 
     expect(spies.post).toHaveBeenCalledWith('/api/v1/permits', expect.objectContaining({ title: 'Weld repair' }), undefined)

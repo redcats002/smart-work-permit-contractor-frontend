@@ -50,9 +50,10 @@ function completeDraft (): Record<string, unknown> {
     title: 'Warehouse repaint',
     location: 'Zone 3',
     foreman: 'Somchai',
-    workDate: '2026-08-20',
-    workTimeStart: '2026-08-20T01:00:00.000Z',
-    workTimeEnd: '2026-08-20T09:00:00.000Z',
+    startDate: '2026-08-20',
+    endDate: '2026-08-20',
+    dailyStart: '2026-08-20T01:00:00.000Z',
+    dailyEnd: '2026-08-20T09:00:00.000Z',
     safetyReading: { lel: 0, o2: 20.9 },
     workers: [{ workerId: 761, workerName: 'Somchai', roleOnPermit: 'Operator' }]
   }
@@ -83,8 +84,11 @@ async function mountToJsaStep (): Promise<{ wrapper: VueWrapper, router: Router 
   await vi.advanceTimersByTimeAsync(1600)
   await flushPromises()
 
+  // wayfinder 070 — order is now type -> basicInfo -> whereWhen -> safetyChecks -> ppeWorkers ->
+  // jsa -> review, so JSA sits at index 5, one step further than before 070 moved "Where & when"
+  // in ahead of it.
   const footer = wrapper.findComponent(WizardFooter)
-  for (let step = 0; step < 4; step++) {
+  for (let step = 0; step < 5; step++) {
     footer.vm.$emit('next')
     await flushPromises()
   }

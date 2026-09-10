@@ -21,9 +21,15 @@ export interface IUsePlanPosition {
   activePlan: Ref<IFacilityPlan | null>
   /** True once the active-plan lookup has settled (success OR failure) — used to gate step visibility. */
   loaded: Ref<boolean>
-  /** Whether the Position step should even be shown — an active plan exists. */
+  /** Whether a pin is owed at all — an active plan (site OR the current area's own drawing) exists. */
   required: ComputedRef<boolean>
-  fetchActive (): Promise<void>
+  /**
+   * wayfinder 069/070. Pass the wizard's current `formData.areaId` to resolve THAT area's own
+   * drawing when it has one, falling back server-side to the active SITE plan otherwise
+   * (`FacilityPlanActiveService.execute` does the fallback — never re-derived here). Omit it (or
+   * pass `undefined`) for the pre-069 site-plan-only lookup.
+   */
+  fetchActive (areaId?: number): Promise<void>
   /** The gate: given the wizard's current `formData.position`, is a pin still owed? */
   stateFor (position: IPermitPosition | null | undefined): TPositionPreflightState
 }
@@ -37,9 +43,9 @@ export function usePlanPosition (): IUsePlanPosition {
 
   const required: ComputedRef<boolean> = computed((): boolean => activePlan.value !== null)
 
-  async function fetchActive (): Promise<void> {
+  async function fetchActive (areaId?: number): Promise<void> {
     try {
-      const { data } = await FacilityPlanService.getActive()
+      const { data } = await FacilityPlanService.getActive(areaId)
       activePlan.value = data
     } catch (error: unknown) {
       // A failed lookup must never be stricter than "no plan" — see the doc comment above.

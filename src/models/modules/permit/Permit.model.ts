@@ -40,19 +40,41 @@ export interface IPermitPosition {
   planY: number
 }
 
+/**
+ * wayfinder 067. Replaces the single-day `workDate` + `workTimeStart`/`workTimeEnd` — a permit's
+ * work window is now a daily window (`dailyStart`/`dailyEnd`) repeating every day between
+ * `startDate` and `endDate`. `scheduleNote` is free text for what the window cannot express
+ * ("not working Sat/Sun") — nothing queries it.
+ *
+ * ⚠ THE 067 UTC TRAP. `dailyStart`/`dailyEnd` are Postgres `@db.Time` columns with no date part —
+ * on the wire they are full ISO datetimes anchored to `1970-01-01`, and only the UTC clock time
+ * is meaningful; the date part is discarded server-side. The migration backfill took each
+ * existing permit's `workTimeStart::time` (its UTC time-of-day) and `combineDateAndTime` reads it
+ * back in UTC, so a migrated permit keeps the exact instant it always had **only while the client
+ * renders these through the SAME local-time conversion `workTimeStart` used** — `Date#getHours`/
+ * `Date#setHours` (browser-local), never `getUTCHours`/`setUTCHours`. Render as a UTC wall clock
+ * and every migrated permit shifts by the deployment's offset with nothing failing. See
+ * `Step3WhereWhen.vue`'s `extractTimeOfDay`/`composeDateTime`, copied verbatim from the old
+ * Step2BasicInfo for this reason.
+ */
 export interface IPermitBase {
   id: string
   type: TPermitType
   status: TPermitStatus
   title: string
   foreman: string
-  location: string
-  /** Sent as `YYYY-MM-DD`, returned as a full ISO timestamp. Format for display; never round-trip. */
-  workDate: string
-  /** Full ISO datetimes in both directions — not `'HH:mm'`. */
-  workTimeStart: string
-  workTimeEnd: string
+  location: string | null
+  /** `YYYY-MM-DD` in both directions. */
+  startDate: string
+  endDate: string
+  /** Full ISO datetime, `1970-01-01` anchored on read — see the UTC-trap note above. */
+  dailyStart: string
+  dailyEnd: string
+  scheduleNote: string | null
   outdoorWork: boolean
+  /** wayfinder 068. A stored coordinate, not a map — render as an "open in maps" link. */
+  latitude: number | null
+  longitude: number | null
 }
 
 /**

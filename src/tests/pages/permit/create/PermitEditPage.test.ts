@@ -49,9 +49,13 @@ function draftPermit (): Record<string, unknown> {
     title: 'Roof repair',
     foreman: 'Somchai',
     location: 'Zone 3',
-    workDate: '2026-08-20T00:00:00.000Z',
-    workTimeStart: '2026-08-20T01:00:00.000Z',
-    workTimeEnd: '2026-08-20T09:00:00.000Z',
+    startDate: '2026-08-20T00:00:00.000Z',
+    endDate: '2026-08-20T00:00:00.000Z',
+    dailyStart: '2026-08-20T01:00:00.000Z',
+    dailyEnd: '2026-08-20T09:00:00.000Z',
+    scheduleNote: null,
+    latitude: null,
+    longitude: null,
     outdoorWork: false,
     createdById: 'u1',
     createdBy: null,
@@ -148,12 +152,13 @@ describe('PermitEditPage', () => {
     expect(updateSpy).not.toHaveBeenCalled()
   })
 
-  it('resuming a withdrawn PENDING permit (now DRAFT) re-includes the Position step once an active plan exists (wayfinder 012)', async () => {
+  it('resuming a withdrawn PENDING permit (now DRAFT) still shows the Where & when step regardless of plan state (wayfinder 012, updated by 070)', async () => {
     // The backend performs the PENDING -> DRAFT withdrawal atomically the moment the contractor's
     // FIRST real edit round-trips through `PATCH /permits/:id` (wayfinder 012). This test mounts
     // AFTER that has already happened — `GET /permits/:id` (wayfinder 022's `useResumePermit`)
-    // simply reads back a permit that is already DRAFT, with no position set — the exact
-    // server-side state the ticket calls out ("position becomes editable again").
+    // simply reads back a permit that is already DRAFT, with no position set. wayfinder 070: the
+    // `whereWhen` step is no longer filtered by plan state at all — it is ALWAYS present — so this
+    // now proves that an active plan does not change the step LIST, only the pin surface inside it.
     vi.spyOn(FacilityPlanProvider.prototype, 'getActive').mockResolvedValue({
       message: 'success',
       data: {
@@ -182,7 +187,8 @@ describe('PermitEditPage', () => {
 
     const stepper = wrapper.findComponent(StepperHeader)
     const stepKeys = (stepper.props('steps') as Array<{ key: string }>).map((step: { key: string }): string => step.key)
-    expect(stepKeys).toContain('position')
+    expect(stepKeys).toContain('whereWhen')
+    expect(stepKeys).toEqual(['type', 'basicInfo', 'whereWhen', 'safetyChecks', 'ppeWorkers', 'jsa', 'review'])
   })
 
   it('renders the server verdict (ownership/404) instead of a broken wizard', async () => {

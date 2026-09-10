@@ -5,18 +5,41 @@ import type { TPermitStatus } from '@/enums/modules/permit/PermitStatus.enum'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import type { IBasePaginationRequest } from '../Request.model'
 
-/** POST /permits — every field here is required by the backend. */
+/**
+ * POST /permits — `type`, `title`, `foreman`, `startDate`, `endDate`, `dailyStart`, `dailyEnd`
+ * are required by the backend; `location` is nullable on the wire (wayfinder 070's openapi
+ * refresh dropped it from POST's `required` list) but this app keeps it a required field of its
+ * OWN wizard UX regardless — see `Step2BasicInfo.schema.ts`. Nothing outside the wizard may
+ * assume `location` is always present.
+ */
 export interface ICreatePermitDraftPayload {
   type: TPermitType
   title: string
-  location: string
+  location?: string | null
   foreman: string
   /** `YYYY-MM-DD` */
-  workDate: string
-  /** Full ISO datetime */
-  workTimeStart: string
-  workTimeEnd: string
+  startDate: string
+  /** `YYYY-MM-DD` */
+  endDate: string
+  /**
+   * wayfinder 067. Full ISO datetime, `1970-01-01`-anchored — only the UTC clock time is read
+   * server-side. See `IPermitBase`'s doc comment for the local-time rendering trap this implies.
+   */
+  dailyStart: string
+  dailyEnd: string
+  /** Free text for what the window cannot express ("not working Sat/Sun"). Nothing queries it. */
+  scheduleNote?: string | null
   outdoorWork?: boolean
+  /**
+   * wayfinder 068. Parsed authoritatively server-side (`parse-map-coordinate.util.ts` in the
+   * api). Mutually exclusive with `latitude`/`longitude` — sending both is a 400. The client
+   * mirrors the same parser for instant feedback only; this is never a gate stricter than the
+   * server's own parse.
+   */
+  mapUrl?: string
+  /** Set together with `longitude`, or omitted. Never sent alongside `mapUrl`. */
+  latitude?: number
+  longitude?: number
   /**
    * feat-023. `null` clears a pin; omitted leaves it unchanged (PATCH semantics — this field is
    * NOT a collection, so omitting it never wipes an already-persisted pin). Required by the
@@ -43,8 +66,14 @@ export interface ICreatePermitDraftPayload {
  *   a partial list silently deletes the rest.
  * - `safetyReading` (singular) **APPENDS** a new reading row.
  * - `photos` **UPSERT per `slotKey`**.
+ *
+ * `latitude`/`longitude` are re-declared (not inherited via `Partial`) because PATCH additionally
+ * accepts an explicit `null` pair to CLEAR a previously stored coordinate — `Partial` alone would
+ * only ever give `number | undefined`.
  */
-export interface IUpdatePermitDraftPayload extends Partial<ICreatePermitDraftPayload> {
+export interface IUpdatePermitDraftPayload extends Omit<Partial<ICreatePermitDraftPayload>, 'latitude' | 'longitude'> {
+  latitude?: number | null
+  longitude?: number | null
   safetyReading?: IPermitSafetyReading
   jsaSteps?: IJsaStep[]
   workers?: IPermitWorker[]
@@ -79,7 +108,7 @@ export interface IClosePermitPayload {
 export interface IGetPermitListQuery extends IBasePaginationRequest {
   status?: TPermitStatus
   type?: TPermitType
-  /** `YYYY-MM-DD`, filtered server-side on `workDate`. */
+  /** `YYYY-MM-DD`, filtered server-side on `startDate`. */
   dateFrom?: string
   dateTo?: string
 }

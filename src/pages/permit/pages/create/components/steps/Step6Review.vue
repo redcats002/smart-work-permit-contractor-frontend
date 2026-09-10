@@ -63,6 +63,7 @@ import { dayjs } from '@/plugins/dayjs.plugin'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import type { IJsaStep, IPermitWorker } from '@/models/modules/permit/Permit.model'
 import { validateReadings, type IReadingFailure } from '@/utils/PermitSafety'
+import { parseMapCoordinate } from '@/utils/ParseMapCoordinate'
 import { allEvidenceAttached } from '../../constants/PhotoEvidence'
 import type { ICertificateProblem } from '../../composables/useCertificatePreflight'
 import type { IWizardStepEmits, IWizardStepProps } from '../../wizard/WizardSteps'
@@ -135,23 +136,62 @@ const typeChipClass: ComputedRef<{ bg: string, fg: string }> = computed(
   (): { bg: string, fg: string } => TYPE_CHIP_CLASS[permitType.value ?? 'hot']
 )
 
+/**
+ * wayfinder 067 — `dailyStart`/`dailyEnd` are `1970-01-01`-anchored on the wire; only their
+ * LOCAL wall-clock hours/minutes are meaningful, read through `Date#getHours`/`getMinutes`
+ * exactly like `Step3WhereWhen`'s `extractTimeOfDay` — never `dayjs(...).format('HH:mm')` on the
+ * raw ISO string, which would apply dayjs's configured timezone to a date part nobody set on
+ * purpose (see IPermitBase's doc comment for the trap this avoids).
+ */
+function formatClock (iso: string | undefined): string {
+  if (!iso) return ''
+  const parsed = new Date(iso)
+  if (Number.isNaN(parsed.getTime())) return ''
+  return `${String(parsed.getHours()).padStart(2, '0')}:${String(parsed.getMinutes()).padStart(2, '0')}`
+}
+
 const dateTime: ComputedRef<string> = computed((): string => {
-  const { workDate, workTimeStart, workTimeEnd } = props.formData
-  if (!workDate) return ''
-  const date = dayjs(workDate).format('DD MMM YYYY')
-  if (!workTimeStart || !workTimeEnd) return date
-  return `${date} · ${dayjs(workTimeStart).format('HH:mm')}–${dayjs(workTimeEnd).format('HH:mm')}`
+  const { startDate, endDate, dailyStart, dailyEnd } = props.formData
+  if (!startDate) return ''
+  const start = dayjs(startDate).format('DD MMM YYYY')
+  const end = endDate && endDate !== startDate ? ` – ${dayjs(endDate).format('DD MMM YYYY')}` : ''
+  const clock = dailyStart && dailyEnd ? ` · ${formatClock(dailyStart)}–${formatClock(dailyEnd)}` : ''
+  return `${start}${end}${clock}`
+})
+
+const areaSummary: ComputedRef<string> = computed(
+  (): string => (props.formData.areaId != null ? String(props.formData.areaId) : t('permit.create.steps.review.areaNotSet'))
+)
+
+const pinSummary: ComputedRef<string> = computed(
+  (): string => (props.formData.position ? t('permit.create.steps.review.pinSet') : t('permit.create.steps.review.pinNotSet'))
+)
+
+const geoSummary: ComputedRef<string> = computed((): string => {
+  const raw = props.formData.mapUrl
+  if (!raw) return t('permit.create.steps.review.geoNotSet')
+  const parsed = parseMapCoordinate(raw)
+  return parsed.ok ? `${parsed.latitude}, ${parsed.longitude}` : raw
 })
 
 /**
  * The design's "Project" cell shows the same value as the heading: the API has no separate
  * `project` field (docs/api/GAPS.md row F) and `title` is what step 2 labels "Project".
+ *
+ * wayfinder 070 — "Review shows all five groups" from the Where & when step: area, pin, geo
+ * coordinate, date/time, and the schedule note. The Position row that used to live in
+ * `preflightRows` below is gone; a hydrated draft with a REQUIRED, unset pin is still blocked by
+ * `useWizard.canSubmit`'s own `positionState !== 'fail'` check regardless of what is shown here.
  */
 const summaryFields: ComputedRef<ISummaryField[]> = computed((): ISummaryField[] => [
   { labelKey: 'permit.create.steps.basicInfo.field.title', value: props.formData.title ?? '' },
   { labelKey: 'permit.create.steps.basicInfo.field.foreman', value: props.formData.foreman ?? '' },
-  { labelKey: 'permit.create.steps.review.field.dateTime', value: dateTime.value },
   { labelKey: 'permit.create.steps.basicInfo.field.location', value: props.formData.location ?? '' },
+  { labelKey: 'permit.create.steps.review.field.dateTime', value: dateTime.value },
+  { labelKey: 'permit.create.steps.review.field.area', value: areaSummary.value },
+  { labelKey: 'permit.create.steps.review.field.pin', value: pinSummary.value },
+  { labelKey: 'permit.create.steps.review.field.geo', value: geoSummary.value },
+  { labelKey: 'permit.create.steps.review.field.scheduleNote', value: props.formData.scheduleNote ?? '' },
   {
     labelKey: 'permit.create.steps.review.field.workers',
     value: t('permit.create.steps.review.workersCount', { count: workers.value.length })
@@ -168,20 +208,13 @@ const readingFailures: ComputedRef<IReadingFailure[]> = computed((): IReadingFai
 })
 
 /**
- * feat-023. `positionState === 'none'` means no facility plan has ever been activated — the
- * position step does not even show in the stepper in that case, and this row is omitted too
- * rather than adding noise for what is still the common, unremarkable, production-default case.
+ * wayfinder 070 — the standalone "Position" preflight row is gone from here; the pin is now
+ * summarized inline in `summaryFields` above (`pinSummary`) alongside the rest of Where & when.
+ * Submit gating is unaffected: `useWizard.canSubmit` still reads `positionState` directly.
  */
-const POSITION_ROW_STATE: Partial<Record<string, TPreflightState>> = {
-  loading: 'loading',
-  ok: 'pass',
-  fail: 'fail'
-}
-
 const preflightRows: ComputedRef<IPreflightRow[]> = computed((): IPreflightRow[] => {
   const atmosphereBypassed = props.formData.outdoorWork === true
   const evidenceAttached = allEvidenceAttached(permitType.value, props.formData.photos)
-  const positionRowState = POSITION_ROW_STATE[props.positionState]
 
   return [
     {
@@ -209,14 +242,7 @@ const preflightRows: ComputedRef<IPreflightRow[]> = computed((): IPreflightRow[]
           .map((problem: ICertificateProblem): string => problem.workerName)
           .join(', ')
       }
-    },
-    ...(positionRowState
-      ? [{
-        key: 'position',
-        state: positionRowState,
-        labelKey: `permit.create.steps.review.check.position.${props.positionState}`
-      }]
-      : [])
+    }
   ]
 })
 </script>

@@ -9,16 +9,21 @@ import HttpRequest from '@/resources/HttpRequest'
  * while drafting (feat-023).
  */
 export interface IFacilityPlanProvider {
-  getActive (): Promise<TGetActiveFacilityPlanResponse>
+  getActive (areaId?: number): Promise<TGetActiveFacilityPlanResponse>
   getById (id: number): Promise<TGetFacilityPlanResponse>
 }
 
 class FacilityPlanProvider extends HttpRequest implements IFacilityPlanProvider {
   private urlPrefix: string = '/api/v1/facility-plans'
 
-  /** `null` when no plan has ever been activated — the current production state today. */
-  public async getActive (): Promise<TGetActiveFacilityPlanResponse> {
-    const response = await this.get(`${this.urlPrefix}/active`)
+  /**
+   * `null` when no plan has ever been activated. wayfinder 069: passing `areaId` resolves that
+   * area's own drawing when it has one, falling back server-side to the active SITE plan
+   * (`areaId: null`) otherwise (`FacilityPlanActiveService.execute` — the fallback is NOT
+   * something this client re-derives). Omitting `areaId` is exactly the pre-069 behavior.
+   */
+  public async getActive (areaId?: number): Promise<TGetActiveFacilityPlanResponse> {
+    const response = await this.get(`${this.urlPrefix}/active`, areaId === undefined ? undefined : { areaId })
     return response
   }
 

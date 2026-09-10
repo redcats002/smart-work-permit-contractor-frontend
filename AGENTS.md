@@ -86,6 +86,22 @@ Two sibling apps exist in **other repos** and are **out of scope here**: the Saf
 >
 > **The providers are live against the real backend** (`feat-005`, 2026-08-17). Every `USE_STUB_DATA` flag and both `*.mock.ts` files are gone; `VITE_APP_API_URL` points at the API and auth is a **better-auth session cookie**, not a bearer token.
 >
+> **Superseded 2026-09-10 (wayfinder 070):** the paragraph above describing the `position` step as
+> 7th, between JSA and Review, filtered out whenever no facility plan is active, is **no longer
+> current** — read it only as history. "Where & when" (area picker + pin + geo coordinate +
+> multi-day window + schedule note) is now step 3, and it **always renders**: `useWizard.steps` no
+> longer filters any step out. `Step7Position.vue`/`.schema.ts` were retired into
+> `Step3WhereWhen.vue`/`.schema.ts`; the pin/area logic inside is otherwise unchanged (`AreaPicker`
+> still pre-drops the pin on area selection, `usePlanPosition` still gates only a CONFIRMED
+> `'fail'`). The single-day `workDate`/`workTimeStart`/`workTimeEnd` model is gone from the wire —
+> replaced by `startDate`/`endDate`/`dailyStart`/`dailyEnd`/`scheduleNote` (wayfinder 067) — and
+> `latitude`/`longitude`, parsed from a pasted `mapUrl` or set directly, replace the old
+> map-placeholder location pin (wayfinder 068). `IPermitBase`'s doc comment carries the "067 UTC
+> trap" — `dailyStart`/`dailyEnd` are `1970-01-01`-anchored and must be read/written through the
+> SAME local-time (`getHours`/`setHours`) conversion the old `workTimeStart` handling used, never
+> `getUTCHours`/`setUTCHours`. Ticket 045's `areaIdIsUserChoice` invariant is unchanged by this move
+> and must keep holding regardless of which steps mount.
+>
 > Before changing anything under `src/resources/` or `src/models/`, read `docs/main/dev-handoff/04-api-contract.md` — and treat `docs/api/openapi.json` (generated from a live boot, never hand-edited) as the authority over it. `01-backend-elysia-tasks.md` is the older *plan*; where the two disagree, the contract wins.
 
 ## Commands
@@ -128,7 +144,7 @@ Each module owns parallel trees: routes (`src/router/modules/<Mod>.router.ts` or
 | Module | Prefix | Pages (`src/pages/<mod>/pages/`) | Providers | Harness | Built? |
 |---|---|---|---|---|---|
 | `platform` | `/auth` | `auth/login` ✅, `auth/reset-password` ✅, layout shell, i18n, API errors | `auth/public`, `auth/private`, `notification` | `docs/modules/platform/` | shell + i18n + errors + contractor auth/route guard (`PLT-005`) ✅ · notification polling `PLT-007` ✅ |
-| `permit` | `/permits` | `list` ✅, `create` (7-step wizard) ✅, `detail` ✅ | `permit`, `facility-plan` (read-only — `getActive`/`getById`, no upload/create/activate), `area` (list/getById/create — no approve/reject, safety-officer only) | `docs/modules/permit/` | provider + list ✅ · wizard complete, all seven steps real (`PMT-004`–`PMT-009`, `feat-023`) · detail built (`PMT-010`–`PMT-012`: banners, QR, audit timeline, closure modal, Fire Watch countdown) · area picker + propose-inline (wayfinder 037), read-only display of an area outside the contractor's scoped list (wayfinder 044) |
+| `permit` | `/permits` | `list` ✅, `create` (7-step wizard) ✅, `detail` ✅ | `permit`, `facility-plan` (read-only — `getActive`/`getById`, no upload/create/activate), `area` (list/getById/create — no approve/reject, safety-officer only) | `docs/modules/permit/` | provider + list ✅ · wizard complete, all seven steps real (`PMT-004`–`PMT-009`, `feat-023`) · detail built (`PMT-010`–`PMT-012`: banners, QR, audit timeline, closure modal, Fire Watch countdown) · area picker + propose-inline (wayfinder 037), read-only display of an area outside the contractor's scoped list (wayfinder 044) · wayfinder 070 (2026-09-10): "Where & when" (area + pin + geo coordinate + multi-day window + schedule note) is now step 3, ALWAYS rendered; Review is always last |
 | `history` | `/history` | `list` ✅ | `permit` (reused — no own provider dir) | `docs/modules/history/` | ✅ |
 | `certificate` | `/certificates` | `list` ✅, `detail` ✅, `edit` ✅ | `certificate`, `upload` (reused — `getFileUrl` for the attachment) | `docs/modules/certificate/` | ✅ list/add · detail + edit + real attachment display (`CRT-005`/`CRT-006`, wayfinder 057) |
 | `worker` | `/workers` | `list` ✅, `detail` ✅ | `worker` | none yet — wayfinder 062 | ✅ paginated/searchable list with certificate status + permit count, editable identity, certificates/permits sections, QR card (`worker.id` as the bare payload string) |
@@ -164,7 +180,7 @@ Contractor-app journey across that machine:
 
 ```
 /permits (list)
-  → /permits/create  (7-step wizard: Type → Basic Info → Safety Checks → PPE & Workers → JSA → Plan Position → Review)
+  → /permits/create  (7-step wizard: Type → Basic Info → Where & When → Safety Checks → PPE & Workers → JSA → Review)
     → submit                                   [DRAFT → PENDING]
       → /permits/:id  (status banner, QR when ACTIVE/FIRE_MONITOR, audit timeline)
         → mark-complete (hot work)             [ACTIVE → FIRE_MONITOR]
