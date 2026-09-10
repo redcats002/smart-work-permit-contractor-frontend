@@ -817,6 +817,109 @@ locks every contractor out of submitting.** The two halves ship together or not 
   no doc, because it is trusted. The checker catches divergence in four files; everything else is
   the author's responsibility.
 
+## 2026-09-10 — Session 12: CR round 3 — the where-and-when step, and the inspector stepper
+
+**Change requirement round 3.** Round 1 = the twelve issues of 2026-08-31. Round 2 = the five items
+of 2026-09-08. This is the third, and the first charted as its own map:
+`docs/wayfinder/map-permit-ux-and-inspector.md`. Verbatim report and fact-check:
+`docs/wayfinder/assets/field-report-2026-09-10.md`. Tickets 067-079.
+
+Twelve rulings came out of the grilling. The map holds all twelve with their reasoning; recorded
+here are the ones that **change or decline a previous ruling**, because those are the ones a later
+agent would otherwise "fix" back.
+
+### Amends a previous ruling
+
+- **`certType` survives, as an enum filtered by the worker's role.** The owner asked to delete
+  `ชนิดบัตร` from the form and the entity and gate on `Worker.role` instead. **Declined and
+  amended.** Deleting `certType` deletes the only field able to say a card is a *hot work* card, and
+  ticket 049's finding is what makes it matter: **today `certType` gates nothing** — both the submit
+  check and the entrant scan query certificates with no type filter, so a First Aid card satisfies a
+  hot work permit. The real complaint was a free-text box asking a question it never explained, so
+  the box becomes a closed-set picker filtered by that worker's role. **Ticket 050 is amended, not
+  superseded** — read its amendment before starting it. Relates to: 049, 050, 061.
+- **Role and `certType` are code enums in one constants file, not admin-managed tables.** The owner
+  asked for a "dynamic setting" for roles. Declined for this round: one facility, under 100 users, a
+  vocabulary that changes twice a year — that is a deploy, not a feature. Promoting either to a
+  table later is a data migration, not a redesign. The rejected version also adds a fresh way for an
+  admin to misconfigure the submit gate into locking out every contractor, which
+  `PERMIT_POSITION_REQUIRED` already did to this system once. Recorded as out of scope, with the
+  argument intact, so it can be reopened deliberately.
+- **"Where & when" is one wizard step at position 3, and Review is always last.** Supersedes the
+  step order ticket 015 shipped, in which the pin is step 7 — *after* Review — and is filtered out
+  of `useWizard.steps` entirely when no plan is active. **Ticket 045's invariant is unchanged and
+  must survive the move**: `areaId` reaches the wire only when a human set it this session, tracked
+  in `updateFormData` where patches arrive, not where the picker speaks. The four spellings
+  (`12` / `null` / `undefined` / key absent) stay distinct. Relates to: 015, 037, 045.
+- **A permit's work window becomes multi-day: `startDate`, `endDate`, `dailyStart`, `dailyEnd`.**
+  Supersedes the single-day `workDate` + `workTimeStart`/`workTimeEnd` model. The owner asked for
+  six fields (a window on the first day and another on the last); **declined** — six leave the
+  middle days of a multi-day permit undefined, and both the expiry sweep and the overlap query need
+  a window they can compute *per day*. Exceptions ("not working Sat/Sun") ride a free-text schedule
+  note. Structured weekday exclusion is out of scope and recorded as such. Relates to: 018, 019, 038.
+
+### Declines a request, with a substitute
+
+- **The facility plan stays safety-owned. Contractors do not upload site rasters.** The owner asked
+  for contractor-chosen plans. Declined: per-contractor rasters put two crews on the same physical
+  roof into unrelated coordinate spaces, so the overlap warning — the payoff that justified the Area
+  entity at all — cannot see the collision. The genuine need underneath ("the site drawing is too
+  coarse for my work") is met by **a drawing per Area**, safety-uploaded, with the permit's pin
+  resolving against the area's drawing when it has one. A contractor's own sketch attaches to the
+  permit as a **document with no coordinate system**, and must not acquire one. Relates to: 015,
+  034, 036, 038.
+- **Geo is a stored coordinate, not an interactive map.** The owner asked for a map picker, "open
+  source, free, easy to maintain". Declined as asked: an OSM/Leaflet map fetches tiles from a third
+  party on every pan, against the standing first-party rule, and self-hosting tiles is neither free
+  nor easy. Instead a pasted map URL is **parsed** to `lat,lng` and stored, rendered as an "open in
+  maps" link that leaves the app. Because the coordinate is what gets stored, an interactive picker
+  stays a later upgrade rather than a redesign. A URL that cannot be parsed is a **form error, never
+  a silent no-op**, and a `maps.app.goo.gl` shortener is rejected rather than followed server-side —
+  following a user-supplied URL outbound is both a first-party violation and an SSRF shape.
+
+### New rulings this round (no predecessor)
+
+- **The inspector's stepper is one site visit, not the permit's lifetime.** Scan starts a run; the
+  permit shows a timeline of runs. This follows from ticket 010's existing rule — a scan proves the
+  inspector is physically at the permit, and history is a read-only shortcut that never stands in
+  for being there.
+- **The inspector records; the foreman closes.** The final post-work review carries images and a
+  note and changes no permit state. Closure stays where ticket 020 put it. One role does not get
+  both "I witnessed it" and "I ended it" — that separation is what the audit chain is for.
+- **One fixed spine, no visit-type picker.** Confined space splices in a gas step, hot work a fire
+  watch step once `FIRE_MONITOR`, high work nothing. A picker is a click that can be wrong, and
+  picking wrong is how a gas reading gets skipped.
+- **`noteType` is `GENERAL | WARNING | CORRECTIVE_ACTION | EMERGENCY | INCIDENT`.** The last two
+  notify the safety officer immediately and change no permit state. `CORRECTIVE_ACTION` was added
+  because "I told them to fix X" is the commonest inspector note and had no home. Spelled `WARNING`,
+  not `WARN` (ticket 031). Inspector-triggered permit suspension was considered and ruled out of
+  scope: a real emergency is a radio call, and it would hand an inspector the power to halt a crew
+  by mis-tapping.
+- **The 2-hour gas interval is server-owned config, exposed on the permit payload.** The client
+  renders the server's verdict rather than recomputing the threshold — the standing "server's
+  verdict is authoritative" rule applied to the one number this round adds. Two implementations of
+  one safety threshold in two repos is the exact shape that let `certType` gate nothing while both
+  gates looked correct. An overdue reading notifies every inspector on duty and the safety officer,
+  then escalates to a banner for the officer **and the contractor foreman** — it is their crew
+  inside. Reuses the `fireWatchAlertedAt` once-only-alert pattern, whose re-notification bug is
+  already fixed.
+- **Getting started is a static page plus a first-run checklist, in each app. No guided tour.** A
+  spotlight tour anchors to DOM selectors and breaks silently the day someone reorders a step, with
+  no gate to catch it — this workspace has four recorded cases of a green gate covering a broken
+  thing.
+
+### Harness change made in the same session
+
+`scripts/check-deploy-lag.mjs` now **dates its own numbers**. Its header has always said "run
+`git fetch` first; a stale remote ref reports stale news" — and on 2026-09-09 it was read without
+fetching, reported the contractor app 10 commits undeployed (4 after a fetch), and that reading
+became a map's "~20-day backlog" framing days after the backlog was cleared. The knowledge was
+written down, at the point of use, and still did not protect the reader, because **nothing in the
+output distinguished a stale read from a fresh one**. Now every row carries `[refs Nm old]` or
+`[never fetched]`, an unfetched run prints a STALE READ banner *before* the numbers, and `--fetch`
+makes the run current. Same lesson as the four gates recorded on `map.md`: a limitation the output
+states beats a limitation the header states.
+
 ---
 
 ## Owner updates

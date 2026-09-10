@@ -53,6 +53,23 @@ not symlinked:
 the four task docs, and `docs/main/SmartWorkPermit-v3.dc.html` (UX/copy reference — a spec, never
 code to port).
 
+### Terms queued by CR round 3 (2026-09-10) — decided, not yet built
+
+`CONTEXT.md` is a glossary of what the system **is**, so these wait for the code, per the precedent
+wayfinder 034 set for `Area` ("a decided term, not a built one"). They are listed here so nobody
+invents a competing name in the meantime; the ruling for each is in `PROMPT-LOG.md` session 12, and
+the ticket that lands it is in `docs/wayfinder/map-permit-ux-and-inspector.md`.
+
+| Term | What it will mean | Ticket |
+|---|---|---|
+| work window | `startDate`/`endDate` + `dailyStart`/`dailyEnd` — a daily window repeating across a date range. Replaces the single-day `workDate` + `workTimeStart`/`workTimeEnd`. | 067 |
+| schedule note | Free text for what the window cannot express ("not working Sat/Sun"). Nothing queries it. | 067 |
+| permit coordinate | `latitude`/`longitude`, parsed from a pasted map URL. Not a map, not a pin — the pin stays `planId/planX/planY`. | 068 |
+| area drawing | A plan raster attached to an `Area`, safety-uploaded. The pin resolves against it when present, the active site plan otherwise. | 069 |
+| `InspectorVisit` | One record per scan-started inspector run. Append-only. Does **not** own entrant events or gas logs — it references them. | 073 |
+| `noteType` | `GENERAL \| WARNING \| CORRECTIVE_ACTION \| EMERGENCY \| INCIDENT`. The last two notify a safety officer and change no permit state. | 073 |
+| gas interval | Server-owned config (2h) exposed on the permit payload as the next-reading-due instant. Clients render the verdict; they never recompute the threshold. | 073, 075 |
+
 ---
 
 ## 2. The API contract is the glue
