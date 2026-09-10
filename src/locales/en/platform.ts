@@ -8,7 +8,8 @@ const platform = {
     newPermit: 'New Permit',
     history: 'History',
     certificates: 'Certificates',
-    workers: 'Workers'
+    workers: 'Workers',
+    gettingStarted: 'Getting started'
   },
   localeSwitcher: {
     en: 'EN',

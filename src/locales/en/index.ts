@@ -1,6 +1,7 @@
 import certificate from '@/locales/en/certificate'
 import common from '@/locales/en/common'
 import error from '@/locales/en/error'
+import guide from '@/locales/en/guide'
 import history from '@/locales/en/history'
 import permit from '@/locales/en/permit'
 import platform from '@/locales/en/platform'
@@ -21,7 +22,8 @@ const en = {
   common,
   error,
   profile,
-  worker
+  worker,
+  guide
 }
 
 export default en

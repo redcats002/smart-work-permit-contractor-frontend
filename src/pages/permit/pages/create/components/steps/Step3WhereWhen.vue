@@ -10,6 +10,15 @@
     </div>
 
     <!-- 1. Area picker — selecting an area drops the pin below immediately (034 resolution). -->
+    <!-- wayfinder 077 — deep-links into the "Getting started" page's #area section, the verbatim
+         field-report question ("what is the area for?") answered in one place. -->
+    <div class="flex justify-end">
+      <RouterLink
+        :to="{ name: 'GettingStartedPage', hash: '#area' }"
+        class="inline-flex items-center gap-1 text-xs font-medium text-accent hover:underline">
+        <span aria-hidden="true">ⓘ</span> {{ t('permit.create.steps.whereWhen.areaHelpLink') }}
+      </RouterLink>
+    </div>
     <AreaPicker
       :area-id="formData.areaId"
       @change="onAreaChange($event)" />

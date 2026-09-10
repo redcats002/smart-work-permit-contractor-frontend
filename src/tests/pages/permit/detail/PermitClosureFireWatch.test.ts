@@ -95,6 +95,7 @@ function buildRouter (): Router {
     routes: [
       { path: '/permits', name: 'PermitListPage', component: { template: '<div />' } },
       { path: '/permits/create', name: 'PermitCreatePage', component: { template: '<div />' } },
+      { path: '/getting-started', name: 'GettingStartedPage', component: { template: '<div />' } },
       { path: '/permits/:id/edit', name: 'PermitEditPage', component: { template: '<div />' } },
       { path: '/permits/:id/duplicate', name: 'PermitDuplicatePage', component: { template: '<div />' } },
       { path: '/permits/:id', name: 'PermitDetailPage', component: PermitDetailPage }

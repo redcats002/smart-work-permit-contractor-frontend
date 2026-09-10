@@ -81,13 +81,13 @@
             <div>
               <span class="text-text-secondary">{{ t('history.drawer.workDate') }}</span>
               <p class="mt-0.5 font-mono text-[11.5px]">
-                {{ $dayjs.formatDate(detail.startDate) }} · {{ detail.dailyStart }}–{{ detail.dailyEnd }}
+                {{ $dayjs.formatDate(detail.startDate) }} · {{ clock(detail.dailyStart) }}–{{ clock(detail.dailyEnd) }}
               </p>
             </div>
             <div>
               <span class="text-text-secondary">{{ t('history.drawer.duration') }}</span>
               <p class="mt-0.5 font-medium">
-                {{ formatDuration(detail.dailyStart, detail.dailyEnd) }}
+                {{ formatDuration(detail.dailyStart, detail.dailyEnd, detail.startDate, detail.endDate) }}
               </p>
             </div>
             <div>
@@ -158,6 +158,17 @@ const closedByName: ComputedRef<string> = computed((): string => {
   if (!closedBy) return '-'
   return permitAuthorName(closedBy)
 })
+
+/**
+ * wayfinder 082 — `dailyStart`/`dailyEnd` are `1970-01-01`-anchored ISO datetimes; the raw string
+ * printed directly here (e.g. `1970-01-01T06:00:00.000Z`), unformatted. Reads local wall-clock
+ * hours/minutes the same way `PermitCard.vue`'s `clock()` does — never `getUTCHours`/
+ * `getUTCMinutes` (see the "067 UTC trap" comment on `IPermitBase`).
+ */
+function clock (iso: string): string {
+  const parsed = new Date(iso)
+  return `${String(parsed.getHours()).padStart(2, '0')}:${String(parsed.getMinutes()).padStart(2, '0')}`
+}
 </script>
 
 <style scoped>

@@ -2,6 +2,7 @@ import type en from '@/locales/en'
 import certificate from '@/locales/th/certificate'
 import common from '@/locales/th/common'
 import error from '@/locales/th/error'
+import guide from '@/locales/th/guide'
 import history from '@/locales/th/history'
 import permit from '@/locales/th/permit'
 import platform from '@/locales/th/platform'
@@ -23,7 +24,8 @@ const th: typeof en = {
   common,
   error,
   profile,
-  worker
+  worker,
+  guide
 }
 
 export default th

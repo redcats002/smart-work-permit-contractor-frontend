@@ -57,6 +57,15 @@ const permit = {
     },
     error: {
       loadFailed: 'Could not load your permits. Please try again.'
+    },
+    // wayfinder 077 — the first-run checklist, per-user dismissible. Ticked state derives from
+    // real data (workers/certificates/permit list), never a client-side flag alone.
+    checklist: {
+      title: 'Getting started',
+      dismiss: 'Dismiss',
+      registerWorkers: 'Register your workers',
+      uploadCertificates: 'Upload their certificates',
+      createFirstPermit: 'Create your first permit'
     }
   },
   create: {
@@ -107,6 +116,8 @@ const permit = {
       // wayfinder 070 — "Where & when" (step 3): area, pin, geo coordinate, dates, schedule note.
       whereWhen: {
         subtitle: 'Where this work happens, and when — picking an area drops the pin below immediately.',
+        // wayfinder 077 — links into the "Getting started" page's #area deep-linked section.
+        areaHelpLink: 'What is this for?',
         field: {
           startDate: 'Start Date',
           endDate: 'End Date',

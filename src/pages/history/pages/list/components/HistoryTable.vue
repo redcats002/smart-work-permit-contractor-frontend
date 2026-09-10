@@ -56,7 +56,7 @@
           </span>
         </span>
 
-        <span class="text-[12px] text-text-secondary">{{ formatDuration(permit.dailyStart, permit.dailyEnd) }}</span>
+        <span class="text-[12px] text-text-secondary">{{ formatDuration(permit.dailyStart, permit.dailyEnd, permit.startDate, permit.endDate) }}</span>
 
         <span>
           <span
@@ -106,7 +106,7 @@
           {{ t(`history.type.${permit.type}`) }}
         </span>
         <span class="font-mono">{{ formatClosedDate(permit) }}<template v-if="permit.closedBy"> · {{ closedByName(permit) }}</template></span>
-        <span>{{ formatDuration(permit.dailyStart, permit.dailyEnd) }}</span>
+        <span>{{ formatDuration(permit.dailyStart, permit.dailyEnd, permit.startDate, permit.endDate) }}</span>
       </div>
     </button>
   </div>

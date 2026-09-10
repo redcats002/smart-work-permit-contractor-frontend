@@ -2,6 +2,7 @@ import type { ComputedRef, Ref } from 'vue'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { dayjs } from '@/plugins/dayjs.plugin'
+import i18n from '@/plugins/I18n.plugin'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
 import { useDebounce } from '@/utils/Debounce'
@@ -41,15 +42,35 @@ export const STATUS_CHIP_CLASS: Record<THistoryStatus, { bg: string, fg: string 
   EXPIRED: { bg: 'bg-status-expired-bg', fg: 'text-status-expired-fg' }
 }
 
-/** `HH:mm`-to-`HH:mm` duration, formatted `"6h"` / `"6h 30m"`. Handles an overnight wrap. */
-export function formatDuration (start: string, end: string): string {
-  const [startHour, startMinute] = start.split(':').map(Number)
-  const [endHour, endMinute] = end.split(':').map(Number)
-  let minutes = (endHour * 60 + endMinute) - (startHour * 60 + startMinute)
+/**
+ * wayfinder 067/082 — `dailyStart`/`dailyEnd` are `1970-01-01`-anchored ISO datetimes, not
+ * `HH:mm` strings (the previous `start.split(':')` parse always produced `NaN`, rendering the
+ * literal string `"NaNh NaNm"`). Reads local wall-clock hours/minutes the same way
+ * `PermitCard.vue`'s `clock()` does — never `getUTCHours`/`getUTCMinutes` (see the "067 UTC trap"
+ * comment on `IPermitBase`).
+ */
+function clockMinutes (iso: string): number {
+  const parsed = new Date(iso)
+  return parsed.getHours() * 60 + parsed.getMinutes()
+}
+
+/**
+ * `dailyStart`/`dailyEnd`-to-`dailyStart`/`dailyEnd` per-day duration, formatted `"6h"` /
+ * `"6h 30m"`. Handles an overnight wrap. A permit's window now repeats daily between `startDate`
+ * and `endDate` (wayfinder 067) — when the two dates differ, the day count rides along
+ * (`"6h 30m/day · 5 day(s)"`) so a multi-day permit is never understated to its per-day figure.
+ */
+export function formatDuration (dailyStart: string, dailyEnd: string, startDate: string, endDate: string): string {
+  let minutes = clockMinutes(dailyEnd) - clockMinutes(dailyStart)
   if (minutes < 0) minutes += 24 * 60
   const hours = Math.floor(minutes / 60)
   const remainder = minutes % 60
-  return remainder === 0 ? `${hours}h` : `${hours}h ${remainder}m`
+  const perDay = remainder === 0 ? `${hours}h` : `${hours}h ${remainder}m`
+
+  if (startDate === endDate) return perDay
+
+  const days = dayjs(endDate).diff(dayjs(startDate), 'day') + 1
+  return i18n.global.t('history.duration.perDay', { duration: perDay, count: days })
 }
 
 export interface IUseHistory {
@@ -211,7 +232,7 @@ export function useHistory (): IUseHistory {
         t(`history.type.${permit.type}`),
         `${permit.title} · ${permit.location ?? ''}`,
         permit.closedAt ? dayjs(permit.closedAt).tz('Asia/Bangkok').format('DD/MM/YYYY HH:mm') : '-',
-        formatDuration(permit.dailyStart, permit.dailyEnd),
+        formatDuration(permit.dailyStart, permit.dailyEnd, permit.startDate, permit.endDate),
         t(`history.status.${permit.status}`)
       ])
       const csv = toCsv([header, ...rows])

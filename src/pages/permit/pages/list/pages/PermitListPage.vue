@@ -19,6 +19,14 @@
       </button>
     </div>
 
+    <div
+      v-if="checklistVisible"
+      class="px-4 pt-4 md:px-8">
+      <OnboardingChecklist
+        :items="checklistItems"
+        @dismiss="dismissChecklist()" />
+    </div>
+
     <div class="flex flex-wrap gap-2 px-4 py-4 md:px-8">
       <button
         v-for="chip in filterChips"
@@ -67,7 +75,9 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import Empty from '@/components/display/Empty.vue'
 import { useMyPermits, type TPermitListFilter } from '../composables/useMyPermits'
+import { useOnboardingChecklist } from '../composables/useOnboardingChecklist'
 import PermitCard from '../components/PermitCard.vue'
+import OnboardingChecklist from '../components/OnboardingChecklist.vue'
 
 interface IFilterChip {
   value: TPermitListFilter
@@ -77,7 +87,8 @@ interface IFilterChip {
 const { t } = useI18n()
 const router = useRouter()
 
-const { items, loading, filter, isEmpty, setFilter, fetchPermits } = useMyPermits()
+const { items, loading, filter, pagination, isEmpty, setFilter, fetchPermits } = useMyPermits()
+const { items: checklistItems, visible: checklistVisible, dismiss: dismissChecklist, refresh: refreshChecklist } = useOnboardingChecklist()
 
 const filterChips: ComputedRef<IFilterChip[]> = computed((): IFilterChip[] => [
   { value: 'all', label: t('permit.list.filter.all') },
@@ -86,8 +97,12 @@ const filterChips: ComputedRef<IFilterChip[]> = computed((): IFilterChip[] => [
   { value: 'closed', label: t('permit.status.CLOSED') }
 ])
 
-onMounted((): void => {
-  void fetchPermits()
+onMounted(async (): Promise<void> => {
+  await fetchPermits()
+  // wayfinder 077 — the checklist's "created your first permit" row is wired off THIS same
+  // fetch (the default 'all' filter's unfiltered count), never a second, parallel query, so it
+  // can never drift from what the list below it shows.
+  void refreshChecklist(pagination.value.count > 0)
 })
 </script>
 

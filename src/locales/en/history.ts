@@ -29,6 +29,12 @@ const history = {
       status: 'STATUS'
     }
   },
+  // wayfinder 067/082 — a permit's window now repeats daily between `startDate`/`endDate`. When
+  // the two dates differ, the per-day duration alone understates a multi-day permit, so the day
+  // count rides along, e.g. "6h 30m/day · 5 day(s)".
+  duration: {
+    perDay: '{duration}/day · {count} day(s)'
+  },
   // Design (SmartWorkPermit-v3.dc.html) binds `histResultCount` without a static
   // copy string for it — this phrasing is ours, not transcribed from the design.
   resultCount: '{count} permits found',

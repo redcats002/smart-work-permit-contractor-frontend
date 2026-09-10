@@ -104,6 +104,16 @@ Two sibling apps exist in **other repos** and are **out of scope here**: the Saf
 >
 > Before changing anything under `src/resources/` or `src/models/`, read `docs/main/dev-handoff/04-api-contract.md` — and treat `docs/api/openapi.json` (generated from a live boot, never hand-edited) as the authority over it. `01-backend-elysia-tasks.md` is the older *plan*; where the two disagree, the contract wins.
 
+> **Built 2026-09-10 (wayfinder 082 + 077):** `formatDuration()` (`useHistory.ts`) was fixed — it
+> parsed `HH:mm` but has always received `dailyStart`/`dailyEnd`'s full ISO shape, rendering
+> `"NaNh NaNm"` for every permit; it now reads local wall-clock hours/minutes the same way
+> `PermitCard.vue`'s `clock()` does, and states the day count for a multi-day permit
+> (`"6h 30m/day · 5 day(s)"`). Also new: a static, deep-linkable "Getting started" page
+> (`/getting-started`, `guide` module — see the Modules table) reached from the drawer, and a
+> per-user dismissible first-run checklist at the top of `PermitListPage` (the app's real home
+> page), ticked off real worker/certificate/permit data. No guided tour — ruling 10 declined that
+> explicitly.
+
 ## Commands
 
 Package manager is **bun** — do not invoke `npm`/`yarn`/`pnpm`.
@@ -148,9 +158,12 @@ Each module owns parallel trees: routes (`src/router/modules/<Mod>.router.ts` or
 | `history` | `/history` | `list` ✅ | `permit` (reused — no own provider dir) | `docs/modules/history/` | ✅ |
 | `certificate` | `/certificates` | `list` ✅, `detail` ✅, `edit` ✅ | `certificate`, `upload` (reused — `getFileUrl` for the attachment) | `docs/modules/certificate/` | ✅ list/add · detail + edit + real attachment display (`CRT-005`/`CRT-006`, wayfinder 057) |
 | `worker` | `/workers` | `list` ✅, `detail` ✅ | `worker` | none yet — wayfinder 062 | ✅ paginated/searchable list with certificate status + permit count, editable identity, certificates/permits sections, QR card (`worker.id` as the bare payload string) |
+| `guide` | `/getting-started` | `GettingStartedPage` ✅ (no `pages/list`/`detail` split — one static page) | none — no own provider, static content | none yet — wayfinder 077 | ✅ EN+TH, deep-linkable by route hash (`#area`, `#overview`, `#wizard`, …), linked from a new drawer entry and from `Step3WhereWhen.vue`'s area picker ("what is this for?") |
 | `api-integration` | — (cross-cutting) | — | every provider + the transport | `docs/modules/api-integration/` | ✅ transport, auth, errors, permit/certificate/notification/upload |
 
-Registered in `src/router/index.ts`: `AuthRouter`, `PermitRouter`, `HistoryRouter`, `CertificateRouter`, `WorkerRouter` — all five nav destinations now exist. `AppDrawer`'s `isRegistered()` guard is **still in the file** (`AppDrawer.vue:44`, `:136`) and now guards nothing; removing it is safe but nobody has, so do not describe it as gone.
+Registered in `src/router/index.ts`: `AuthRouter`, `PermitRouter`, `HistoryRouter`, `CertificateRouter`, `WorkerRouter`, `ProfileRouter`, `GuideRouter` — all six nav destinations plus profile now exist. `AppDrawer`'s `isRegistered()` guard is **still in the file** (`AppDrawer.vue:44`, `:136`) and now guards nothing; removing it is safe but nobody has, so do not describe it as gone. The drawer's `navItems` also gained a sixth entry, `GettingStartedPage` (wayfinder 077) — the account card at the bottom is still the only route to `/profile`.
+
+`PermitListPage` (the app's real home page — `/` `router.replace`s through it) now also renders a per-user dismissible first-run checklist (`src/pages/permit/pages/list/components/OnboardingChecklist.vue` + `.../composables/useOnboardingChecklist.ts`, wayfinder 077) above the permit grid, ticked off real `WorkerProvider`/`CertificateProvider`/`PermitProvider` data — never a client-side flag alone.
 
 **Modules without a top-level router entry:**
 

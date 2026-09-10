@@ -3263,3 +3263,68 @@ Verified: `./init.sh` — typecheck PASS, lint PASS (2 pre-existing warnings, un
 589 tests PASS**, contrast PASS (30 pairs), icons PASS, **smoke PASS** (16/16 contract checks
 against a live API — the model/provider changes here ARE verified against the real backend, not
 only against this repo's own types).
+
+## 2026-09-10 — wayfinder 082 + 077: `formatDuration`'s never-matched shape, and Getting started
+
+**082.** `formatDuration()` (`src/pages/history/pages/list/composables/useHistory.ts`) parsed
+`start.split(':')` against a full ISO datetime (`dailyStart`/`dailyEnd`, `1970-01-01`-anchored per
+the "067 UTC trap") — confirmed by running the function verbatim: it has always rendered the
+literal string `"NaNh NaNm"`. Fixed by reading local wall-clock `getHours()`/`getMinutes()` off a
+`new Date(iso)`, the same conversion `PermitCard.vue`'s `clock()` uses — never `getUTCHours`.
+`formatDuration`'s signature grew two params (`startDate`, `endDate`) so it can also decide whether
+the permit is multi-day (wayfinder 067): same-day still returns the bare `"6h 30m"`; a multi-day
+permit now also states the day count, `"6h 30m/day · 5 day(s)"`, via a new
+`history.duration.perDay` locale key (EN + TH). Every call site updated together
+(`useHistory.exportCsv`, `HistoryTable.vue`'s two rows, `HistoryDetailDrawer.vue`'s duration row).
+Also fixed, same file, same defect class: `HistoryDetailDrawer.vue` printed
+`{{ detail.dailyStart }}–{{ detail.dailyEnd }}` as the raw ISO string with zero formatting — added
+a local `clock()` helper (duplicated from `PermitCard.vue` on purpose, matching that file's own
+established pattern, not extracted into a shared util). New test:
+`src/tests/pages/history/list/composables/useHistory.test.ts` — a same-day case that would have
+caught the historical `NaNh NaNm` bug, a multi-day case, and a TZ-stability case (the local-time
+conversion shifts both legs of the pair by the same offset, so the diff itself never moves).
+
+**077 (contractor half only).** No guided tour (ruling 10, declined). Built:
+
+- `docs/guide/using-contractor-app.md` + its Thai twin updated first, to the shipped reality:
+  seven-step order (`Type → Basic info → Where & when → Safety checks → PPE & Workers → JSA →
+  Review`), Review always last, no "position step is filtered out" caveat — Where & when always
+  renders, only its pin surface falls back to a "no plan active" line. Added the missing `Workers`
+  module row and a new "What is an area for?" subsection answering the field report's verbatim
+  question (034/070's existing ruling, restated — not a new design decision). Thai is a translation
+  of the reviewed English, per this doc's own stated trap about `check-docs-i18n.mjs`.
+- New in-app page, `GettingStartedPage` (`src/pages/guide/pages/GettingStartedPage.vue`), route
+  `/getting-started` (`src/router/modules/Guide.router.ts`), reached from a new drawer entry
+  (`AppDrawer.vue`). Content ported from (not transcluded from) the corrected guide doc, into a new
+  `guide` locale namespace (`src/locales/{en,th}/guide.ts`). Deep-linkable via route hash
+  (`#area`, `#overview`, `#wizard`, `#permit-detail`, `#history`, `#certificates`, `#workers`,
+  `#profile`) — every section carries a matching `id`, scrolled-to and briefly highlighted on
+  mount AND on an in-page hash change (a `watch(() => route.hash, …)`, since navigating between two
+  hashes on the same route name does not remount the page). `Step3WhereWhen.vue` gained a small
+  `RouterLink` ("what is this for?") next to the area picker, targeting `{ name:
+  'GettingStartedPage', hash: '#area' }`.
+- First-run checklist (`src/pages/permit/pages/list/composables/useOnboardingChecklist.ts` +
+  `.../components/OnboardingChecklist.vue`), rendered at the top of `PermitListPage` — the app's
+  real home page (`HomePage.vue` only ever `router.replace`s through it). Three rows: register
+  workers, upload certificates, create first permit. The permit row is wired off the SAME fetch
+  `useMyPermits` already runs (the default `'all'`-filter count, captured once right after the
+  page's own `fetchPermits()` resolves, not re-derived reactively off a later filter change — a
+  `'pending'` filter later returning zero rows must not read back as "no permits ever created").
+  Workers and certificates are genuinely separate, lightweight `limit: 1` count-only requests —
+  neither is otherwise fetched on this page. Dismissal is per-user, namespaced by
+  `useAuthStore().user.id` in `localStorage` (no existing per-user-dismissible-UI convention was
+  found to reuse; this mirrors `I18n.plugin.ts`'s own best-effort-never-throws `localStorage`
+  pattern, the closest precedent in the repo).
+
+**Test-harness fix, not a feature change.** Adding `Step3WhereWhen.vue`'s new `RouterLink` broke
+nine existing test files that mount the wizard or the permit detail page with their own local
+`createRouter` and did not know about the new `GettingStartedPage` route name (vue-router 5 throws
+on an unresolved route name inside a rendered `RouterLink`, per this repo's own documented trap).
+Registered the route (an inert `{ template: '<div />' }`) in each of those routers' route arrays —
+no test assertions changed.
+
+Verified: `./init.sh` — typecheck PASS, lint PASS (2 pre-existing warnings, unrelated), **70 files /
+592 tests PASS**, contrast PASS, icons PASS, **smoke PASS** (16/16 contract checks against a live
+API). Workspace-level `node scripts/check-docs-i18n.mjs` — green (7/7 mirrored pages). Workspace-level
+`node scripts/check-contract-sync.mjs` — OK (unaffected by this change, run for completeness since
+this session touched `src/router/index.ts`).

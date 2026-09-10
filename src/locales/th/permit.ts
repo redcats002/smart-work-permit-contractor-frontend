@@ -64,6 +64,13 @@ const permit: typeof permitEn = {
     },
     error: {
       loadFailed: 'ไม่สามารถโหลดรายการใบอนุญาตได้ กรุณาลองใหม่อีกครั้ง'
+    },
+    checklist: {
+      title: 'เริ่มต้นใช้งาน',
+      dismiss: 'ปิด',
+      registerWorkers: 'ลงทะเบียนผู้ปฏิบัติงาน',
+      uploadCertificates: 'อัปโหลดใบรับรองของพวกเขา',
+      createFirstPermit: 'สร้างใบอนุญาตใบแรกของคุณ'
     }
   },
   create: {
@@ -113,6 +120,7 @@ const permit: typeof permitEn = {
       },
       whereWhen: {
         subtitle: 'สถานที่และเวลาของงานนี้ — การเลือกพื้นที่จะวางหมุดด้านล่างให้ทันที',
+        areaHelpLink: 'ใช้ทำอะไร?',
         field: {
           startDate: 'วันที่เริ่ม',
           endDate: 'วันที่สิ้นสุด',

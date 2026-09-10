@@ -90,7 +90,8 @@ function buildRouter (): Router {
     history: createMemoryHistory(),
     routes: [
       { path: '/permits/:id', name: 'PermitDetailPage', component: { template: '<div />' } },
-      { path: '/permits/:id/edit', name: 'PermitEditPage', component: PermitEditPage }
+      { path: '/permits/:id/edit', name: 'PermitEditPage', component: PermitEditPage },
+      { path: '/getting-started', name: 'GettingStartedPage', component: { template: '<div />' } }
     ]
   })
 }

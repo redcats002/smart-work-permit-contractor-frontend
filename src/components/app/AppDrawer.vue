@@ -122,7 +122,8 @@ const navItems: INavItem[] = [
   { name: 'PermitCreatePage', labelKey: 'platform.nav.newPermit', glyph: '＋', matchPrefix: '/permits/create' },
   { name: 'HistoryListPage', labelKey: 'platform.nav.history', glyph: '◷', matchPrefix: '/history' },
   { name: 'CertificateListPage', labelKey: 'platform.nav.certificates', glyph: '◎', matchPrefix: '/certificates' },
-  { name: 'WorkerListPage', labelKey: 'platform.nav.workers', glyph: '☺', matchPrefix: '/workers' }
+  { name: 'WorkerListPage', labelKey: 'platform.nav.workers', glyph: '☺', matchPrefix: '/workers' },
+  { name: 'GettingStartedPage', labelKey: 'platform.nav.gettingStarted', glyph: '？', matchPrefix: '/getting-started' }
 ]
 
 const { t } = useI18n()

@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/Auth'
 import { updateFromRoute } from '@/utils/RouterHeader'
 import AuthRouter from './modules/Auth.router'
 import CertificateRouter from './modules/Certificate.router'
+import GuideRouter from './modules/Guide.router'
 import HistoryRouter from './modules/History.router'
 import PermitRouter from './modules/Permit.router'
 import ProfileRouter from './modules/Profile.router'
@@ -46,6 +47,7 @@ export const routes: RouteRecordRaw[] = [
   CertificateRouter,
   WorkerRouter,
   ProfileRouter,
+  GuideRouter,
   {
     // Catch-all route for 404
     path: '/:pathMatch(.*)*', // Matches any path
