@@ -452,8 +452,11 @@ Full runbooks live per repo at `deploy/RUNBOOK.md`. Only what crosses a repo bou
   is real** (`src/modules/sync/sync.module.ts`, inspector-only) — this bullet claimed it did not
   exist, which was wrong. What is missing is `vite-plugin-pwa`, installed in **neither** frontend, so
   there is no service worker and no install prompt. The Inspector's own scan history and offline
-  queue are IndexedDB and do work; wayfinder 074's visit stepper deliberately ships **without**
-  offline queueing inside a run.
+  queue are IndexedDB and do work. Since wayfinder 111 the visit's check-in/out enqueues
+  `ENTRANT_SCAN` and its gas action links to the gas-log page, which enqueues `GAS_LOG` — the only two
+  types `sync/batch` can replay. Not-available, the PPE checklist and the visit submit are **not**
+  queueable and say so. **Replays are stamped at sync time, not when they happened** — open as
+  wayfinder 126.
 - **Password-reset links have one destination.** `MANAGEMENT_URL` is a single value, so reset
   emails point at one app while both have a `/reset-password` route. Open product decision, not
   a deploy step — see the backend runbook §3.
