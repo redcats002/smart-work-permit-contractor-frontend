@@ -64,35 +64,35 @@ ticket that landed it is in `docs/wayfinder/map-permit-ux-and-inspector.md`.
 | schedule note | Free text for what the window cannot express ("not working Sat/Sun"). Nothing queries it. | 067 |
 | ~~permit coordinate~~ | **REMOVED by wayfinder 105.** `latitude`/`longitude` and the map-URL parser are deleted; a permit's place is `pinId` alone. Left listed rather than deleted because a reader who remembers it needs to learn it is gone. | 068, 105 |
 | ~~area drawing~~ | **REMOVED by wayfinder 104/106.** `FacilityPlan.areaId`, the group-scoped `active` and the `GET /facility-plans/active` fallback are all deleted — so "a plan came back" and "this area has a drawing" are no longer different facts, because there are no areas. A plan is a **named place**; its pins are `Pin` rows. | 069, 081, 104, 106 |
-| `InspectorVisit` | One append-only record per scan-started inspector run, with its notes and photos. It **references** entrant events and gas logs rather than owning them, and it changes no `Permit` field — the inspector witnesses, the foreman closes. | 073, 074 |
+| `InspectorVisit` | One append-only record per scan-started inspector run, with its notes and photos. It **references** entrant events and gas logs rather than owning them, and it changes no `Permit` field — the inspector witnesses and may **request** close; since round 4 (098) **safety closes**, not the foreman. | 073, 074 |
 | `noteType` | `GENERAL \| WARNING \| CORRECTIVE_ACTION \| EMERGENCY \| INCIDENT`. **Destinations differ and are explicit** (`NOTE_TYPE_ROUTING`, wayfinder 102): `EMERGENCY` and `INCIDENT` reach safety officers **and the permit's owner**; `CORRECTIVE_ACTION` reaches the owner only; `GENERAL` and `WARNING` push to nobody and are read in the timeline. **None of the five changes permit state** — the inspector witnesses, the foreman closes. | 073, 102 |
 | gas interval | `GAS_LOG_RETEST_INTERVAL_MINUTES` (120) + `GAS_LOG_RETEST_GRACE_MINUTES` (30), server-owned, exposed on the permit payload as `gasReadingStatus`. **Clients render that verdict and never recompute the threshold.** Both the gas-log `overdue` flag and the alert sweep read one shared computation. | 073, 075 |
 | certificate vocabulary | **`ECertType` is now 1:1 with `PermitType`** — `Gas Testing` was dropped by wayfinder 096, and with it the role→certType map, since the permit type alone decides which certificate is required. `ECertType` and `EWorkerRole` remain **compiled-in constants, not Prisma enums and not admin tables** — real `workers.role` values include `Welder` and `ช่างซ่อมบำรุง`, matching no closed set, so the vocabulary is enforceable at the **gate** and not at the column until the data is cleaned. `CERT_TYPE_REQUIRED` is off by default; with it on, a permit type requires its matching `certType` at both the submit check and the entrant scan. | 050, 086 |
 
-**Still decided-but-not-built:** nothing from this round. Two capabilities the round proved missing
-are open questions rather than queued terms — whether a contractor may read inspector visits
-(wayfinder 083) and how a plan version is retired, since `activate` always leaves exactly one active
-per group (wayfinder 084, `docs/api/GAPS.md` row X1).
+**Both round-3 open questions are resolved:** a contractor reads full inspector visits on their own
+permits (ruling 18, wayfinder 119; 083 resolved), and a plan is retired with
+`POST /facility-plans/:id/deactivate` (wayfinder 104; `docs/api/GAPS.md` row X1).
 
-### Terms queued by CR round 4 (2026-09-11) — decided and approved, not yet built
+### Terms from CR round 4 (2026-09-11)
 
-Approved 2026-09-11; tickets 094-114 are in flight. Listed so nobody invents a competing name while
-they land, and **so nobody keeps using the terms being removed**. Rulings: `PROMPT-LOG.md` session
-13. Map: `docs/wayfinder/map-round-4-pins-closure-and-the-inspector-menu.md`. **098's, 099's, 104's,
-105's and 106's API halves are the exception — built 2026-09-11**, marked below; both frontend
-halves and every other row in this table remain not-yet-built.
+Approved 2026-09-11 (tickets 094–127; rulings `PROMPT-LOG.md` session 13; map
+`docs/wayfinder/map-round-4-pins-closure-and-the-inspector-menu.md`). **Built in all three repos
+unless a row says otherwise** — the exception that matters is requested-close, whose frontend halves
+are owed (098, reopened).
 
-| Term | What it will mean | Ticket |
+| Term | What it means | Ticket |
 |---|---|---|
-| `Pin` — **API built** | A named position on a `FacilityPlan`, **placed by safety**. Names editable, **positions frozen**, deactivated never deleted. The contractor selects one; they no longer place their own. | 104 |
-| `FacilityPlan` (revised) — **API built** | A flat set of **named places** with **immutable images** — not a version chain. A new scan is a new plan; the old one is deactivated. | 104 |
-| `pinId` on `Permit` — **API built** | Replaces `planId`/`planX`/`planY`. One reference instead of five columns; the pin knows its plan. | 105 |
-| requested-close — **API built** | A permit whose closure has been **requested** by a contractor or inspector, awaiting safety. Safety may also close directly, with a reason. **Not a new `PermitStatus`** — a flag (`closeRequestedAt`/`By`/`Role`/`Reason`) on whatever status the permit already holds (ACTIVE or FIRE_MONITOR), decided and recorded in `close-request.service.ts`'s header comment; every status-keyed query (dashboard counts, area occupancy, expiry sweep) needed no change. `GET /permits?closeRequested=true` is the queue this flag doesn't get for free from a status filter. | 098 |
-| `'system'` scan provenance — **API built** | A third value beside [017](docs/wayfinder/tickets/017-audit-log-scan-provenance.md)'s `scan`/`manual`, written only by `close.service.ts`'s auto-checkout (below), never client-asserted. | 098 |
-| worker "not available" — **API built** | A worker on the permit who is **not on site** (didn't show, sent home, unfit, reassigned), with a required note. Lives on `PermitWorker` (`notAvailable`/`notAvailableNote`/`notAvailableAt`/`notAvailableById`/`notAvailableBy`), **not** an `EntrantEvent` — the entry log answers "who was inside", and a third `direction` value would invert that for every reader. `POST /permits/:id/entrants/not-available` (`inspector`, ACTIVE/FIRE_MONITOR only). A worker marked not-available can still check in later — `POST /permits/:id/entrants/scan` direction `IN` clears the flag. | 099 |
+| `Pin` | A named position on a `FacilityPlan`, **placed by safety**. Names editable, **positions frozen**, deactivated never deleted. The contractor selects one; they no longer place their own. | 104 |
+| `FacilityPlan` (revised) | A flat set of **named places** with **immutable images** — not a version chain. A new scan is a new plan; the old one is deactivated. | 104 |
+| `pinId` on `Permit` | Replaces `planId`/`planX`/`planY`. One reference instead of five columns; the pin knows its plan. | 105 |
+| requested-close — **API built; both frontend halves owed (098)** | A permit whose closure has been **requested** by a contractor or inspector, awaiting safety. Safety may also close directly, with a reason. **Not a new `PermitStatus`** — a flag (`closeRequestedAt`/`By`/`Role`/`Reason`) on whatever status the permit already holds (ACTIVE or FIRE_MONITOR), decided and recorded in `close-request.service.ts`'s header comment; every status-keyed query (dashboard counts, area occupancy, expiry sweep) needed no change. `GET /permits?closeRequested=true` is the queue this flag doesn't get for free from a status filter. | 098 |
+| `'system'` scan provenance | A third value beside [017](docs/wayfinder/tickets/017-audit-log-scan-provenance.md)'s `scan`/`manual`, written only by `close.service.ts`'s auto-checkout (below), never client-asserted. | 098 |
+| worker "not available" | A worker on the permit who is **not on site** (didn't show, sent home, unfit, reassigned), with a required note. Lives on `PermitWorker` (`notAvailable`/`notAvailableNote`/`notAvailableAt`/`notAvailableById`/`notAvailableBy`), **not** an `EntrantEvent` — the entry log answers "who was inside", and a third `direction` value would invert that for every reader. `POST /permits/:id/entrants/not-available` (`inspector`, ACTIVE/FIRE_MONITOR only). A worker marked not-available can still check in later — `POST /permits/:id/entrants/scan` direction `IN` clears the flag. | 099 |
 | PPE vocabulary | Seven items, **one shared constant** across the API and both frontends. The contractor declares; the inspector checks the declared subset and may flag an undeclared gap. | 097 |
 | `PPE_REQUIRED` | New `errorCode` (400, wayfinder 097): a permit submitted with no PPE declared, **only when the `PPE_REQUIRED` flag is on** — off by default, like `CERT_TYPE_REQUIRED`. `EPpeItem` is a **closed** wire enum (unlike `certType`, it has no legacy data to tolerate), so an unrecognised item is a 400 at the model layer, not a silent strip. | 097 |
 | `CERT_LICENCE_OR_ATTACHMENT_REQUIRED` | New `errorCode` (400): a certificate create or update whose **final** state has neither a licence number nor an attachment. The server re-checks only when the patch touches `licenceNo` or `filePath`, so pre-095 rows with neither stay editable for unrelated fields. **A form that round-trips its whole model — sending `licenceNo: ''` or `filePath: null` for untouched fields — will trip this on every pre-095 certificate.** Omit untouched fields. | 095 |
+| `PermitScan` | Append-only (inspector, permit, when), written on `GET /qr/:token` unless `?viaHistory=true`. What lets a visit start from history: within `min(scan + 12 h, workWindowEndInstant)` (ruling 15). The flag is client-asserted — the window bounds an honest client, like 017's `source`. | 101 |
+| `attention` | On `GET /permits` list items only: `{ gasOverdue, criticalNote, overlap }`, always present, server-computed — what marks a pin on the risk map. | 108 |
 | `licenceNo` | A certificate's licence number. **A certificate needs a licence number OR an attachment** — at least one. | 095 |
 
 **Being removed — stop writing new code against these:**
@@ -171,7 +171,8 @@ deliberately, not marketing approximations, so a rule change in the API is a lan
 `ACCOUNT_DEACTIVATED`, `LAST_SAFETY_OFFICER`, `PERMIT_POSITION_REQUIRED`,
 `CLOSURE_REASON_REQUIRED`, `PERMIT_UPDATE_EMPTY`, `AREA_NOT_APPROVED`, `AREA_NOT_PENDING`,
 `AREA_REQUIRED`, `PPE_ITEM_NOT_DECLARED`, `PPE_GAP_ALREADY_DECLARED`,
-`PPE_GAP_REQUIRES_CORRECTIVE_ACTION`, `PPE_CHECKLIST_EMPTY`, `SCAN_WINDOW_EXPIRED`.
+`PPE_GAP_REQUIRES_CORRECTIVE_ACTION`, `PPE_CHECKLIST_EMPTY`, `SCAN_WINDOW_EXPIRED`, `PPE_REQUIRED`,
+`CERT_LICENCE_OR_ATTACHMENT_REQUIRED`.
 
 > `SCAN_WINDOW_EXPIRED` (403) was added 2026-09-11 (wayfinder 101, ruling 15) on
 > `POST /permits/:id/inspector-visits` with `source: "history"`: this inspector has no server-recorded
@@ -369,8 +370,8 @@ always authoritative and the client must surface the server's verdict when the t
   axis exists. Served by `Permit @@index([pinId, startDate, endDate])` — the index covers the
   **date** range and the daily-window comparison is a further `WHERE` the planner applies on its
   result set, declared rather than left for a reader to infer. Excludes the permit itself and
-  soft-deleted rows. **The safety frontend's consumption of this field is a separate,
-  not-yet-landed half of ticket 038.**
+  soft-deleted rows. The safety app renders it on the review page's Overlap tab and in
+  the urgent strip.
 - Audit log is append-only with a server-signed hash chain. Never expose an edit or delete path.
 - Timestamps stored UTC; displayed `Asia/Bangkok`. Default UI locale is **Thai**; every string is
   translated EN + TH.
