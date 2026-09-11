@@ -45,9 +45,9 @@ function creatableDraft (): Record<string, unknown> {
 }
 
 /**
- * wayfinder ticket 045 — a permit as `GET /permits/:id` returns it, for the hydrate path. Only
- * `areaId` varies across the cases below; everything else is a valid, complete draft so
- * `hydrate`'s own conversions (workDate, workers, position) have real input to work on.
+ * wayfinder tickets 045/107 — a permit as `GET /permits/:id` returns it, for the hydrate path.
+ * Only `areaId`/`pinId` vary across the cases below; everything else is a valid, complete draft so
+ * `hydrate`'s own conversions (workDate, workers) have real input to work on.
  */
 function hydratedPermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail {
   return {
@@ -62,8 +62,6 @@ function hydratedPermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail 
     dailyStart: '2026-08-20T01:00:00.000Z',
     dailyEnd: '2026-08-20T09:00:00.000Z',
     scheduleNote: null,
-    latitude: null,
-    longitude: null,
     outdoorWork: false,
     createdById: 'u1',
     createdBy: null,
@@ -82,9 +80,7 @@ function hydratedPermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail 
     qrIssuedAt: null,
     entrantCount: 0,
     fireWatch: null,
-    planId: null,
-    planX: null,
-    planY: null,
+    pinId: null,
     areaId: null,
     jsaSteps: [],
     workers: [],
@@ -349,6 +345,140 @@ describe('useWizard — areaId omission on autosave (wayfinder tickets 037 + 044
   })
 })
 
+/**
+ * wayfinder ticket 107 — `pinId` inherits ticket 045's `areaId` invariant exactly, same three
+ * spellings, same reasoning: a reference reaches the wire only when a human set it this session.
+ * `PinPicker` mirrors `AreaPicker.resolveStaleArea`'s `{ pinId: undefined }` emit for a broken
+ * reference; `doPersist` is what actually guarantees a hydrated-but-untouched `pinId` never rides
+ * an unrelated autosave, regardless of which wizard steps mounted.
+ */
+describe('useWizard — pinId omission on autosave (wayfinder ticket 107)', () => {
+  beforeEach((): void => {
+    vi.useFakeTimers()
+  })
+
+  afterEach((): void => {
+    vi.useRealTimers()
+    vi.restoreAllMocks()
+  })
+
+  async function bootDraft (): Promise<{ wizard: ReturnType<typeof useWizard>, updateSpy: ReturnType<typeof vi.spyOn> }> {
+    vi.spyOn(PermitProvider.prototype, 'create')
+      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
+    const updateSpy = vi.spyOn(PermitProvider.prototype, 'update')
+      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
+
+    const wizard = useWizard(makeSteps())
+    wizard.updateFormData(creatableDraft())
+    await vi.advanceTimersByTimeAsync(1600) // POST /permits
+    return { wizard, updateSpy }
+  }
+
+  function lastPatchBody (updateSpy: ReturnType<typeof vi.spyOn>): Record<string, unknown> {
+    return (updateSpy.mock.calls.at(-1) as [string, Record<string, unknown>])[1]
+  }
+
+  it('HEADLINE — a permit whose pin could not be resolved still autosaves, with no pinId key at all', async () => {
+    vi.mocked(toast.error).mockClear()
+    const { wizard, updateSpy } = await bootDraft()
+
+    // PinPicker resolved 77 as broken (deleted, or otherwise unreachable) and stripped it.
+    // `undefined`, deliberately — see PinPicker.resolveReferencedPin's failure branch.
+    wizard.updateFormData({ pinId: 77 })
+    wizard.updateFormData({ pinId: undefined })
+    await vi.advanceTimersByTimeAsync(1600)
+
+    // The permit is still saveable: a PATCH really went out...
+    expect(updateSpy).toHaveBeenCalled()
+    // ...and it carries no `pinId` key whatsoever. `toEqual`/`toMatchObject` would pass here even
+    // if the key were present holding `undefined`, so assert on the key itself.
+    expect(Object.keys(lastPatchBody(updateSpy))).not.toContain('pinId')
+    expect(lastPatchBody(updateSpy)).not.toHaveProperty('pinId')
+    expect(toast.error).not.toHaveBeenCalled()
+
+    // Every later autosave stays clean too — the strip is not a one-shot that a subsequent edit
+    // re-dirties.
+    wizard.updateFormData({ title: 'Warehouse repaint — revised' })
+    await vi.advanceTimersByTimeAsync(1600)
+    expect(Object.keys(lastPatchBody(updateSpy))).not.toContain('pinId')
+  })
+
+  it('still sends pinId: null for a user’s deliberate clear — the strip must not swallow that', async () => {
+    const { wizard, updateSpy } = await bootDraft()
+
+    wizard.updateFormData({ pinId: 5 })
+    await vi.advanceTimersByTimeAsync(1600)
+    wizard.updateFormData({ pinId: null })
+    await vi.advanceTimersByTimeAsync(1600)
+
+    expect(lastPatchBody(updateSpy)).toHaveProperty('pinId', null)
+  })
+
+  it('sends a real pinId untouched — an active pin the contractor picked still saves', async () => {
+    const { wizard, updateSpy } = await bootDraft()
+
+    wizard.updateFormData({ pinId: 12 })
+    await vi.advanceTimersByTimeAsync(1600)
+
+    expect(lastPatchBody(updateSpy)).toHaveProperty('pinId', 12)
+  })
+
+  /**
+   * The headline case from the ticket itself: hydrate a permit carrying `pinId: 77` into a wizard
+   * whose registry never mounts `PinPicker` (the single-step `makeSteps()` fixture), make an
+   * unrelated edit, and assert the outgoing PATCH's key list does NOT contain `pinId` — not
+   * `toEqual`/`toMatchObject`, which ignore undefined-valued keys and would pass either way.
+   */
+  it('HEADLINE 107 — a hydrated pinId is never echoed back, even with no PinPicker in the wizard', async () => {
+    vi.mocked(toast.error).mockClear()
+    const updateSpy = vi.spyOn(PermitProvider.prototype, 'update')
+      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
+    const createSpy = vi.spyOn(PermitProvider.prototype, 'create')
+      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
+
+    const wizard = useWizard(makeSteps())
+    wizard.hydrate(hydratedPermit({ pinId: 77 }))
+
+    // Seeded for display — the picker, when it exists, needs it to resolve and show the pin.
+    expect(wizard.formData.value.pinId).toBe(77)
+
+    // An ordinary edit somewhere else in the wizard triggers the autosave.
+    wizard.updateFormData({ title: 'Roof repair — revised' })
+    await vi.advanceTimersByTimeAsync(1600)
+
+    expect(createSpy).not.toHaveBeenCalled()
+    expect(updateSpy).toHaveBeenCalled()
+    // Assert on the KEY LIST — see the HEADLINE 045 test's own comment for why this matters.
+    expect(Object.keys(lastPatchBody(updateSpy))).not.toContain('pinId')
+    expect(toast.error).not.toHaveBeenCalled()
+
+    // Still clean on every later autosave, not just the first.
+    wizard.updateFormData({ foreman: 'Wichai' })
+    await vi.advanceTimersByTimeAsync(1600)
+    expect(Object.keys(lastPatchBody(updateSpy))).not.toContain('pinId')
+  })
+
+  it('sends a user’s pick made AFTER a hydrate — seeding is not choosing, but choosing is', async () => {
+    vi.spyOn(PermitProvider.prototype, 'create')
+      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
+    const updateSpy = vi.spyOn(PermitProvider.prototype, 'update')
+      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
+
+    const wizard = useWizard(makeSteps())
+    wizard.hydrate(hydratedPermit({ pinId: 77 }))
+
+    wizard.updateFormData({ pinId: 91 })
+    await vi.advanceTimersByTimeAsync(1600)
+    expect(lastPatchBody(updateSpy)).toHaveProperty('pinId', 91)
+
+    // …and a deliberate clear after a hydrate still reaches the server as a real `null`, which is
+    // the case a blanket "always delete pinId" fix would silently destroy.
+    wizard.updateFormData({ pinId: null })
+    await vi.advanceTimersByTimeAsync(1600)
+    expect(lastPatchBody(updateSpy)).toHaveProperty('pinId', null)
+  })
+})
+
 describe('useWizard — step 3 checklist state', () => {
   it('keeps checklist answers out of formData entirely (no wire field — GAPS row J)', () => {
     const wizard = useWizard(makeSteps())
@@ -485,75 +615,14 @@ describe('useWizard — JSA row filtering at serialization (wayfinder ticket 001
 })
 
 /**
- * wayfinder 070 — "Where & when" moves to step 3, and picking an area pre-drops the pin
- * (034 resolution, decision 4). `AreaPicker`'s `onSelectChange` already emits `{ areaId,
- * position }` together in ONE `change` event, and `Step3WhereWhen.onAreaChange` forwards them as
- * ONE `updateFormData` patch — this is what the ticket calls "mandatory rather than incidental":
- * two SEPARATE patches racing would let a slower one land last and silently win. These cases pin
- * the composable-level contract that makes that safe.
+ * wayfinder 107 — 070's "area drops the pin, pin rides in the same patch" describe block used to
+ * live here. It tested the co-write of `Permit.position`, which 105 removed from the wire
+ * entirely: area and pin are now fully independent fields (ticket 107 note 3) — picking an area
+ * no longer touches `formData.pinId` at all (`Step3WhereWhen.onAreaChange` forwards only
+ * `{ areaId }`, ignoring whatever `position` `AreaPicker` still computes for its own unrelated
+ * default-position feature). There is nothing left here to race, so the block is gone rather than
+ * rewritten to test a field that no longer exists.
  */
-describe('useWizard — area-drop pin and a later nudge (wayfinder 070)', () => {
-  beforeEach((): void => {
-    vi.useFakeTimers()
-  })
-
-  afterEach((): void => {
-    vi.useRealTimers()
-    vi.restoreAllMocks()
-  })
-
-  async function bootDraft (): Promise<{ wizard: ReturnType<typeof useWizard>, updateSpy: ReturnType<typeof vi.spyOn> }> {
-    vi.spyOn(PermitProvider.prototype, 'create')
-      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
-    const updateSpy = vi.spyOn(PermitProvider.prototype, 'update')
-      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
-
-    const wizard = useWizard(makeSteps())
-    wizard.updateFormData(creatableDraft())
-    await vi.advanceTimersByTimeAsync(1600) // POST /permits
-    return { wizard, updateSpy }
-  }
-
-  function lastPatchBody (updateSpy: ReturnType<typeof vi.spyOn>): Record<string, unknown> {
-    return (updateSpy.mock.calls.at(-1) as [string, Record<string, unknown>])[1]
-  }
-
-  it('picking an area with a default position drops the pin in the SAME patch as areaId', async () => {
-    const { wizard, updateSpy } = await bootDraft()
-
-    // Mirrors AreaPicker.onSelectChange's single `change` emit, forwarded by
-    // Step3WhereWhen.onAreaChange as one `updateFormData` call — never two.
-    wizard.updateFormData({ areaId: 12, position: { planId: 5, planX: 40, planY: 60 } })
-    await vi.advanceTimersByTimeAsync(1600)
-
-    expect(wizard.formData.value.position).toEqual({ planId: 5, planX: 40, planY: 60 })
-    const patch = lastPatchBody(updateSpy)
-    expect(patch.areaId).toBe(12)
-    expect(patch.position).toEqual({ planId: 5, planX: 40, planY: 60 })
-  })
-
-  it('a nudge made after the area-dropped pin survives autosave — the later write wins, nothing races it away', async () => {
-    const { wizard, updateSpy } = await bootDraft()
-
-    // The area drops the pin at its default position...
-    wizard.updateFormData({ areaId: 12, position: { planId: 5, planX: 40, planY: 60 } })
-    await vi.advanceTimersByTimeAsync(1600)
-    expect(lastPatchBody(updateSpy).position).toEqual({ planId: 5, planX: 40, planY: 60 })
-
-    // ...then the contractor nudges it on the plan image (a frame click, Step3WhereWhen's
-    // `onFrameClick`) — a SEPARATE, later patch that must win, not be overwritten by anything
-    // still in flight from the drop.
-    wizard.updateFormData({ position: { planId: 5, planX: 44, planY: 61 } })
-    await vi.advanceTimersByTimeAsync(1600)
-
-    expect(wizard.formData.value.position).toEqual({ planId: 5, planX: 44, planY: 61 })
-    const finalPatch = lastPatchBody(updateSpy)
-    expect(finalPatch.position).toEqual({ planId: 5, planX: 44, planY: 61 })
-    // areaId is still a user choice from the earlier patch — it must still ride along, unaffected
-    // by the nudge (045's invariant: it is tracked independently of which key last changed).
-    expect(finalPatch.areaId).toBe(12)
-  })
-})
 
 /**
  * wayfinder 067/070 — the multi-day work window. `dailyStart`/`dailyEnd` are `1970-01-01`-anchored

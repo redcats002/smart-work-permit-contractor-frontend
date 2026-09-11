@@ -20,7 +20,6 @@
     <div class="w-full min-h-90 rounded-xl border border-border bg-surface-card p-5 md:p-7">
       <component
         :is="currentStep.component"
-        :active-plan="activePlan"
         :certificate-problems="certificateProblems"
         :certificate-state="certificateState"
         :checklist-answers="checklistAnswers"
@@ -81,7 +80,6 @@ const {
   certificateProblems,
   recheckCertificates,
   positionState,
-  activePlan,
   isFirstStep,
   isLastStep,
   isNextBlocked,

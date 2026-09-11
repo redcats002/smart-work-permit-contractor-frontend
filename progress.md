@@ -3958,3 +3958,173 @@ much larger blast radius.
 **`./init.sh` re-run clean after the hidden-input removal**: typecheck PASS, lint PASS (same 2
 pre-existing warnings), 79 files / 638 tests PASS, contrast PASS, icons PASS, smoke SKIP (no API
 reachable).
+
+## 2026-09-11 — wayfinder 107: the location section picks a pin, safety-placed; general info loses its location
+
+Contractor half of the ticket (blocked_by 105, API built as `9996a46`; the safety half is a
+separate session's work, not touched here). Two reversals landed in one pass: 070's click-to-place
+pin/nudge and 068's geo coordinate field are both gone, superseded by the api's own 104/105.
+
+**`Permit.location` is unchanged on the wire — confirmed, not assumed.** Verified against
+`smart-work-permit-api/docs/openapi.json` before touching anything: `location` is still `anyOf:
+[string, null]`, still nullable, on both POST and PATCH `/permits`. Step 3's new "location detail"
+field (`Step3WhereWhen.vue`) is that exact field under a new label ("Location Detail"/
+"รายละเอียดสถานที่") — moved verbatim from Step 2, same formData key, same wire field, not a
+second free-text column. Step 2 (`Step2BasicInfo.vue`/`.schema.ts`) is title + foreman only now.
+
+**Pin picking replaces pin placing.** New `PinPicker.vue`
+(`src/pages/permit/pages/create/components/`), modeled closely on `AreaPicker.vue`'s
+self-contained-fetch/own-local-state/emit-a-`change`-payload shape: fetches active facility plans
+(`FacilityPlanService.list({ active: true, limit: 9999 })`) for a plan `Select` (local-only —
+never sent to the wire), then active pins on the chosen plan
+(`PinService.list({ planId, active: true, limit: 9999 })`) for a pin `Select`. On mount, a
+`props.pinId` resolves via `PinService.getById` (any status) so a deactivated pin — or one on a
+deactivated plan — still resolves and displays (name + a read-only `data-testid="pin-current-
+retired"` panel + its marker on the image), while staying absent from the active pin `Select`'s
+own options (ruling 8). A `getById` failure shows a "could not be found" note and emits
+`{ pinId: undefined }`, mirroring `AreaPicker.resolveStaleArea`. The image renders a **read-only**
+marker only (`percentToPoint` from `@/utils/PlanPosition`, which is NOT deleted — still used) —
+no click handler, no cursor-crosshair, no placing, no nudging. Zero plans/zero pins renders a
+"no facility plans have been added yet" note, never throws.
+
+**`pinId` inherits ticket 045's invariant exactly.** `pinIdIsUserChoice` in `useWizard.ts`, set in
+`updateFormData` (`'pinId' in patch` → `patch.pinId !== undefined`), stripped in `doPersist`
+(`if (!pinIdIsUserChoice) delete payload.pinId`), never set by `hydrate` (seeds `pinId` for
+display only). Five new cases in `useWizard.persistence.test.ts` mirror the `areaId` block
+one-for-one, including the HEADLINE case: hydrate a permit carrying `pinId: 77` into a
+single-step registry (`PinPicker` provably never mounts), make an unrelated edit, assert
+`Object.keys(patch)` does NOT contain `'pinId'` — not `toEqual`/`toMatchObject`. Checked red by
+temporarily commenting out the strip line and re-running: `AssertionError: expected [ 'type',
+'title', 'location', …(11) ] to not include 'pinId'` — then restored and re-verified green.
+
+**Area and pin are now fully independent.** `Step3WhereWhen.onAreaChange` forwards only
+`{ areaId: payload.areaId }` — `Permit` has no `position` field left for an area's default
+position to drop into (105 removed it). `AreaPicker.vue` itself is **completely untouched**: it
+still computes/emits a `position` for its own unrelated feature (`IArea.planId`/`planX`/`planY`,
+a different Prisma relation, still live until wayfinder 106 removes `Area`); `onAreaChange` simply
+ignores that key now. This is the natural consequence of 105's removal, not a partial removal of
+Area — confirmed nothing else under `Area`/`AreaGrant`/`Worker.role`/`Gas Testing` was touched.
+
+**The position gate is decoupled from any one plan.** `usePlanPosition.ts` → renamed
+`usePinPreflight.ts` (old file `git rm`'d, not left dormant): drops `activePlan`/`fetchActive
+(areaId?)` and the `formData.areaId` watch in `useWizard.ts`'s `onMounted` entirely — nothing
+needs it now that the gate is "does an active pin on an active plan exist anywhere" (105's own
+framing), not "does the currently-picked-area's plan have one". Exposes `loaded`, `required`
+(from one `PinService.list({ page: 1, limit: 1, active: true })` probe, `required = count > 0`,
+called once via `fetchRequired()`), `stateFor(pinId)`. `activePlan` removed from `IUseWizard`,
+`IWizardStepProps` (`WizardSteps.ts`), and both bindings/destructures in `PermitCreatePage.vue`/
+`PermitEditPage.vue` — everything else in those two files is byte-identical.
+
+**Geo fully removed.** `src/utils/ParseMapCoordinate.ts` deleted (`git rm`; no dedicated test file
+existed for it — checked `src/tests/` first, per the ticket's own instruction, before concluding
+that). Every reference gone: `Step3WhereWhen.vue`'s whole geo block/script state, `Step3WhereWhen.
+schema.ts`'s `mapUrl` field (replaced by `location`+`pinId`), `Step6Review.vue`'s `geoSummary`/geo
+row/its import, `IPermitBase`'s `latitude`/`longitude`, `ICreatePermitDraftPayload`/
+`IUpdatePermitDraftPayload`'s `mapUrl`/`latitude`/`longitude`/`position` (the latter's `Omit<...,
+'latitude'|'longitude'>` override simplified away entirely), `IPermitListItem`'s `planId`/`planX`/
+`planY` → `pinId`. Post-change repo-wide grep for `ParseMapCoordinate`/`mapUrl`/`latitude`/
+`longitude`/`planX`/`planY`/`activePlan`/`usePlanPosition` turned up only doc-comment history and
+`IArea`'s own still-live `planId`/`planX`/`planY` (a different relation, out of scope) — nothing
+live left dangling.
+
+**`IPermitPosition` kept, doc comment rewritten** — it is `Area`'s own default-position shape now
+(`ICreateAreaPayload.position`, `AreaPicker.vue`), not a `Permit` field; 105 removed `Permit.
+position` entirely.
+
+**New models/provider, mirroring `Area`'s exact shape/style**: `src/models/modules/pin/Pin.model.
+ts` (`IPin`), `src/models/request/pin/PinReq.model.ts` (`IGetPinListQuery`), `src/models/response/
+pin/PinRes.model.ts`, `src/resources/provider/pin/Pin.provider.ts` (`IPinProvider` —
+`list`/`getById` only; place/rename/deactivate are safety_officer-only, same reasoning
+`IAreaProvider`'s own comment gives for omitting approve/reject). `FacilityPlan.model.ts` gained
+`name`/`deactivatedAt`, doc comment rewritten (flat named set, immutable images, no version chain,
+no area scoping). `FacilityPlanRes.model.ts`'s `TGetActiveFacilityPlanResponse` replaced by
+`TGetFacilityPlanListResponse` (paginated); new `FacilityPlanReq.model.ts`
+(`IGetFacilityPlanListQuery`). `FacilityPlanProvider.getActive(areaId?)` replaced by `list(query)`.
+
+**API schema differed from the ticket's paraphrase in one place worth recording**: the real
+`POST`/`PATCH /permits` bodies and detail response already carry `description`, `ppeDeclared`,
+`ppeNote` (wayfinder 097/098-adjacent fields) and the detail response also carries
+`gasReadingStatus` and `closeRequestedById` (vs. this repo's existing `closeRequestedBy` object) —
+none of that is wayfinder 107's concern and none of it was touched; recorded here only because the
+task explicitly asked to flag any place the real schema outran the ticket's own description.
+
+**Test files removed, not salvaged, because their premise is gone**: `Step3WhereWhen.pin.test.ts`
+(click-to-place — the whole surface it tested no longer exists), `PermitCreatePage.
+whereWhenPlan.test.ts` (proved `activePlan` re-scoped by `formData.areaId`, a mechanism this ticket
+deletes), `Step2BasicInfo.location.test.ts` (asserted Step 2 owns `location`; it no longer does).
+Replaced by `PinPicker.test.ts` (fetch contract, zero-plan/zero-pin rendering, the ruling-8
+deactivated-pin case, the getById-failure case) and `Step3WhereWhen.test.ts` (zero-plan/zero-pin
+rendering at the step level, `onAreaChange` no longer forwarding `position`, the 067 UTC-trap
+round-trip preserved verbatim from the deleted file). `useWizard.persistence.test.ts`'s own
+"area-drop pin and a later nudge (wayfinder 070)" block is gone the same way — it tested the
+co-write of a field (`formData.position`) that no longer exists; replaced by the pinId-invariant
+block described above. Fixture updates only (no behavior change) in every other `IPermitDetail`/
+`IPermitListItem` literal across `src/tests/pages/permit/{detail,list}/**` and
+`PermitCreatePage.{walk,saveDraft,jsaSteps,submit}.test.ts`/`PermitEditPage.test.ts` (`latitude`/
+`longitude`/`planId`/`planX`/`planY` removed, `pinId` added; `FacilityPlanProvider.getActive` mocks
+replaced by `PinProvider.list` mocks, since every mounted wizard now runs `usePinPreflight`'s probe
+instead of a plan lookup).
+
+**One genuine (desirable) behavior change surfaced by the refactor, not by design intent**:
+`PermitEditPage.test.ts`'s "hydrates the wizard and lands on the first step that does not
+validate" test expected `currentStepIndex === 2` under the old code. Root cause: its `draftPermit()`
+fixture never set the old `planId`/`planX`/`planY` fields, so pre-107 `hydrate.toFormPosition`'s
+`=== null` check missed `undefined`, and `formData.position` was seeded as `{ planId: undefined,
+planX: undefined, planY: undefined }` — an object that matched NEITHER branch of the old schema's
+`position` union, spuriously failing `whereWhen` (index 2) instead of the intended failure at
+`safetyChecks` (index 3, missing wind for `heights`). `pinId: undefined` has no such quirk
+(`z.number().optional()` accepts it cleanly), so `whereWhen` now passes and the real failure
+surfaces one step later, as the test's own comment already claimed it should. Updated the
+assertion to `3` and documented the root cause inline so the next reader does not "fix" it back.
+
+**Docs**: `docs/api/openapi.json` copied verbatim from `smart-work-permit-api/docs/openapi.json`
+(md5 now matches; the safety app's copy is still divergent — confirmed pre-existing, not this
+ticket's). `docs/main/dev-handoff/04-api-contract.md` gained a `pinId` PATCH-body note and a new
+"Facility Plans & Pins" route table (flagged, in the same edit, that the surrounding `workDate`/
+`workTimeStart`/`workTimeEnd` example predates wayfinder 067 and was not otherwise touched — a
+separate staleness, not this ticket's to fix). `docs/api/GAPS.md`'s feat-023 "Facility plan +
+permit position" entry got an appended `Superseded 2026-09-11` paragraph (not rewritten, per this
+repo's own convention). This repo's `AGENTS.md` gained a `Superseded 2026-09-11 (wayfinder 107)`
+paragraph after 070's block, and its permit module row's provider list and Built column were
+updated (`facility-plan` now `list`/`getById` not `getActive`/`getById`; new `pin` provider).
+`docs/modules/permit/feature_list.json` is the older `PMT-XXX`-numbered registry and has no clean
+match for this ticket — checked, left alone rather than forcing one, per the harness note.
+
+Not touched, confirmed by grep before finishing: `Area`/`AreaGrant`/`AREA_VISIBILITY_SCOPED`
+beyond the two named points (`onAreaChange` no longer forwarding `position`; `AreaPicker.vue`
+itself untouched), `Worker.role`, `Gas Testing`, `src/pages/auth/pages/login/constants/
+DemoAccounts.ts`, any ticket file's `status`/`Resolution`, any `map*.md`. Ticket 107 itself is left
+`status: open` per this session's own instruction — closing it, if warranted, is for whoever
+reviews this.
+
+**Verification**: `./init.sh` — typecheck PASS, lint PASS (2 pre-existing `vue/one-component-per-
+file` warnings, unrelated), **78 files / 637 tests PASS**, contrast PASS, icons PASS, smoke SKIP
+(no API reachable on this machine). `node scripts/check-contract-sync.mjs` before this session:
+2 problems (all three `openapi.json` copies diverged; safety app missing `PPE_REQUIRED`). After:
+1 problem remains — the safety app's `openapi.json` copy and its missing `PPE_REQUIRED` are both
+confirmed pre-existing and out of scope for this ticket; this repo's copy now byte-matches the
+api's. This machine showed transient memory-pressure flakiness once during this session (a
+`Step3WhereWhen.test.ts` timeout inside the full suite that passed cleanly both in isolation and
+on a full-suite re-run) — the exact pattern `CONTEXT.md`'s "Running the test suites" section
+already documents; re-run rather than trusted on the first red.
+
+**Post-review fix (same day)**: a self-review caught that `PinPicker.vue`'s `markerPoint` computed
+read `frameRef.value.getBoundingClientRect()` directly inside the computed — not a reactive
+dependency, so the marker was only ever positioned against whatever ~0x0 rect existed the instant
+the frame `<div>` mounted, *before* the `<img>` had painted, and then never updated once the image
+actually loaded and took on its real rendered size. The old click-to-place code happened to avoid
+this because `onFrameClick` recomputed the rect fresh on every click, after layout — a coincidence
+of the deleted code, not a property of the computed itself, and the fetch-driven picker has no such
+event to lean on. Fixed by capturing `{width, height}` into a new `frameRect` ref on the image's
+own `@load` event (reset on plan change / image reload) and reading that ref from `markerPoint`
+instead of calling `getBoundingClientRect()` inline. Added an assertion to `PinPicker.test.ts`'s
+ruling-8 case that the marker span is absent before `load` fires and present after — jsdom's
+`getBoundingClientRect()` is always 0x0, so exact pixel placement (a non-trivial x/y landing in the
+correct quadrant of the image) could not be asserted in this suite and was checked by hand in a
+real browser instead. Re-ran full suite after the fix: 78 files / 637 tests PASS.
+
+One deliberate loose end, noted rather than fixed: `onPlanChange` clears `pins`/`imageUrl`/
+`frameRect` but leaves `referencedPin`/`pinResolveFailed` alone, so browsing to a different plan
+than the permit's currently-referenced pin can leave the "current pin, retired" panel visible while
+looking at an unrelated plan's image. Defensible — the panel is still describing what the permit
+actually references, not stale data — but flagged here rather than silently decided.

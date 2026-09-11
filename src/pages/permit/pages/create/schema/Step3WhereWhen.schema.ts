@@ -1,39 +1,26 @@
 import { z } from 'zod'
 import i18n from '@/plugins/I18n.plugin'
-import { parseMapCoordinate } from '@/utils/ParseMapCoordinate'
 
 /**
- * wayfinder 070 — "Where & when" becomes step 3. Runs against the whole accumulated wizard
+ * wayfinder 070/107 — "Where & when" is step 3. Runs against the whole accumulated wizard
  * formData (see useWizard.next()), so this only asserts this step's own keys.
  *
- * `area`/`position` are deliberately NOT required here, mirroring the pre-070 schemas they came
+ * `areaId`/`pinId` are deliberately NOT required here, mirroring the pre-107 schemas they came
  * from: area never gates Next/Submit (wayfinder 037's explicit constraint), and whether a pin is
- * REQUIRED depends on async external state (whether a facility plan is active) that a zod schema
- * can't see — that gate stays in `usePlanPosition`/`useWizard.isNextBlocked`, unchanged by this
- * ticket. This schema only shape-checks `position` when it IS present.
+ * REQUIRED depends on async external state (whether an active pin on an active plan exists) that
+ * a zod schema can't see — that gate stays in `usePinPreflight`/`useWizard.isNextBlocked`,
+ * unchanged by this ticket.
  *
- * `mapUrl` is likewise optional at the wizard level (068's ruling: geo is optional at submit) —
- * but wayfinder 070's rule is explicit: "unparseable input is a form error, never a silent
- * no-op". So when it IS present, it must parse — mirroring the api's own parser client-side for
- * instant feedback, never a stricter gate than the server's authoritative re-parse.
+ * `location` is `Permit.location` moved verbatim from `Step2BasicInfo.schema.ts` — same wire
+ * field, still required at this app's own wizard-UX level even though it is nullable on the wire
+ * (wayfinder 034/070).
  */
 const requiredText = (label: string): z.ZodString => z.string().min(1, i18n.global.t('common.validation.requiredField', { label }))
 
 export const Step3WhereWhenFieldsSchema = z.object({
   areaId: z.number().nullable().optional(),
-  position: z.union([
-    z.object({
-      planId: z.number(),
-      planX: z.number().min(0).max(100),
-      planY: z.number().min(0).max(100)
-    }),
-    z.null()
-  ]).optional(),
-  mapUrl: z.string()
-    .refine(
-      (value: string): boolean => parseMapCoordinate(value).ok, { message: i18n.global.t('permit.create.steps.whereWhen.geo.validation.unparseable') }
-    )
-    .optional(),
+  pinId: z.number().nullable().optional(),
+  location: requiredText(i18n.global.t('permit.create.steps.whereWhen.field.locationDetail')),
   /** `YYYY-MM-DD` */
   startDate: requiredText(i18n.global.t('permit.create.steps.whereWhen.field.startDate')),
   /** `YYYY-MM-DD` */

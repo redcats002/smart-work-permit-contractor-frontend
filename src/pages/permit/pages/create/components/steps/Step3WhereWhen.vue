@@ -9,7 +9,7 @@
       </p>
     </div>
 
-    <!-- 1. Area picker — selecting an area drops the pin below immediately (034 resolution). -->
+    <!-- 1. Area picker — an identity, independent of the pin (wayfinder ticket 107 note 3). -->
     <!-- wayfinder 077 — deep-links into the "Getting started" page's #area section, the verbatim
          field-report question ("what is the area for?") answered in one place. -->
     <div class="flex justify-end">
@@ -23,90 +23,29 @@
       :area-id="formData.areaId"
       @change="onAreaChange($event)" />
 
-    <!-- 2. The pin, on the area's own drawing when it has one, the active site plan otherwise. -->
+    <!-- 2. The pin — safety places it, the contractor only ever selects one (wayfinder 107). -->
+    <PinPicker
+      :pin-id="formData.pinId"
+      @change="onPinChange($event)" />
     <p
-      v-if="positionState === 'loading'"
-      class="text-sm text-text-tertiary">
-      {{ t('permit.create.steps.position.loading') }}
+      v-if="positionState === 'fail'"
+      class="rounded-lg border border-status-rejected-border bg-status-rejected-bg px-4 py-3 text-[13px] font-semibold text-status-rejected-fg-emphasis"
+      role="alert">
+      <span aria-hidden="true">⛔</span> {{ t('permit.create.steps.whereWhen.pin.required') }}
     </p>
 
-    <p
-      v-else-if="positionState === 'none' || !activePlan"
-      class="rounded-lg border border-border bg-surface-subtle px-4 py-3 text-sm text-text-secondary">
-      {{ t('permit.create.steps.position.noActivePlan') }}
-    </p>
-
-    <template v-else>
-      <p
-        v-if="isOlderVersion"
-        class="rounded-lg border border-status-pending-border bg-status-pending-bg px-4 py-3 text-[13px] font-medium text-status-pending-fg"
-        role="status">
-        <span aria-hidden="true">ⓘ</span> {{ t('permit.create.steps.position.olderVersion') }}
-      </p>
-
-      <p
-        v-if="imageFailed"
-        class="rounded-lg border border-status-rejected-border bg-status-rejected-bg px-4 py-3 text-[13px] font-medium text-status-rejected-fg"
-        role="alert">
-        <span aria-hidden="true">⛔</span> {{ t('permit.create.steps.position.imageLoadFailed') }}
-        <button
-          class="ms-2 cursor-pointer border-none bg-transparent p-0 text-[13px] font-semibold text-primary underline"
-          type="button"
-          @click="loadPlanImage()">
-          {{ t('permit.create.steps.position.retry') }}
-        </button>
-      </p>
-
-      <div
-        v-else-if="imageUrl"
-        ref="frameRef"
-        class="relative w-full cursor-crosshair overflow-hidden rounded-xl border border-border select-none"
-        @click="onFrameClick($event)">
-        <img
-          :alt="t('permit.create.steps.position.subtitle')"
-          :src="imageUrl"
-          class="block w-full"
-          draggable="false"
-          @error="onImageError()">
-        <span
-          v-if="pin"
-          :style="{ left: `${pin.left}px`, top: `${pin.top}px` }"
-          aria-hidden="true"
-          class="absolute -translate-x-1/2 -translate-y-full text-2xl text-primary drop-shadow">
-          📍
-        </span>
-      </div>
-
-      <p class="text-[13px] font-medium text-text-secondary">
-        {{ formData.position ? t('permit.create.steps.position.pinSet') : t('permit.create.steps.position.instruction') }}
-      </p>
-
-      <p
-        v-if="positionState === 'fail'"
-        class="rounded-lg border border-status-rejected-border bg-status-rejected-bg px-4 py-3 text-[13px] font-semibold text-status-rejected-fg-emphasis"
-        role="alert">
-        <span aria-hidden="true">⛔</span> {{ t('permit.create.steps.position.required') }}
-      </p>
-    </template>
-
-    <!-- 3. Geo coordinate — a stored coordinate, not a live map (ruling 5). -->
+    <!-- 3. Location detail — Permit.location under a new label, moved verbatim from step 2. -->
     <Form
       v-slot="$form"
-      :initial-values="geoInitialValues"
-      :resolver="geoResolver"
+      :initial-values="locationInitialValues"
+      :resolver="locationResolver"
       class="flex flex-col gap-1.5">
       <LabelField
-        v-model="mapUrlModel"
-        :description="t('permit.create.steps.whereWhen.geo.hint')"
+        v-model="locationModel"
         :form="$form"
-        :label="t('permit.create.steps.whereWhen.geo.label')"
-        :placeholder="t('permit.create.steps.whereWhen.geo.placeholder')"
-        name="mapUrl" />
-      <p
-        v-if="parsedCoordinate"
-        class="text-[12px] text-text-tertiary">
-        {{ t('permit.create.steps.whereWhen.geo.parsed', parsedCoordinate) }}
-      </p>
+        :label="t('permit.create.steps.whereWhen.field.locationDetail')"
+        name="location"
+        required />
     </Form>
 
     <!-- 4. Dates — a daily window repeating across a date range (wayfinder 067). -->
@@ -167,7 +106,7 @@
       {{ t('permit.create.steps.whereWhen.validation.endDateNotBeforeStart') }}
     </p>
 
-    <!-- 5. Schedule / location note — free text for what the dates above cannot express. -->
+    <!-- 5. Schedule note — free text for what the dates above cannot express. -->
     <LabelField
       :label="t('permit.create.steps.whereWhen.field.scheduleNote')"
       tag="div">
@@ -182,158 +121,71 @@
 
 <script setup lang="ts">
 import {
-  computed, ref, watch, type ComputedRef, type Ref, type WritableComputedRef
+  computed, type ComputedRef, type WritableComputedRef
 } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Form } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { dayjs } from '@/plugins/dayjs.plugin'
-import { useApiError } from '@/composables/useApiError'
-import type { IFacilityPlan } from '@/models/modules/facility-plan/FacilityPlan.model'
 import type { IPermitPosition } from '@/models/modules/permit/Permit.model'
-import { parseMapCoordinate, type TParseMapCoordinateResult } from '@/utils/ParseMapCoordinate'
-import { percentToPoint, pointToPercent } from '@/utils/PlanPosition'
-import FacilityPlanProvider, { type IFacilityPlanProvider } from '@/resources/provider/facility-plan/FacilityPlan.provider'
-import UploadProvider, { type IUploadProvider } from '@/resources/provider/Upload.provider'
 import LabelField from '@/components/input/LabelField.vue'
 import { Step3WhereWhenFieldsSchema } from '../../schema/Step3WhereWhen.schema'
 import AreaPicker from '../AreaPicker.vue'
+import PinPicker from '../PinPicker.vue'
 import type { IWizardStepEmits, IWizardStepProps } from '../../wizard/WizardSteps'
 
 /**
- * wayfinder 070 — step 3, "Where & when". Replaces the old step-7 `Step7Position` (the pin,
- * bolted on after Review) AND step 2's date/time fields, in ONE step whose order makes the
- * relationship between area and pin visible: picking an area drops the pin immediately, right
- * below it, on the same screen — see `onAreaChange`.
+ * wayfinder 070/107 — step 3, "Where & when". Area (identity) + pin (safety-placed position) +
+ * location detail + the multi-day work window + a schedule note, in one step.
  *
- * This step ALWAYS renders (`useWizard.steps` no longer filters it), unlike the old
- * `Step7Position`: area, geo, dates and note are useful with no facility plan at all — only the
- * pin surface (image + click target) swaps for the "no plan active" line when
- * `positionState === 'none'`. Ticket 045's invariant (`areaIdIsUserChoice` in `useWizard`) is
- * unchanged by this — it must survive regardless of which steps mount, not only the one case
- * that used to hide `AreaPicker`.
+ * wayfinder 107 reverses two pieces of 070: the contractor no longer places or nudges a pin on a
+ * raster (see `PinPicker.vue` — read-only marker, no click handler), and there is no geo
+ * coordinate field any more (068, reversed by the api's own 105). The "location detail" field is
+ * `Permit.location` moved verbatim from Step 2 under a new label — same formData key, same wire
+ * field, not a second free-text column that means the same thing.
+ *
+ * This step ALWAYS renders (`useWizard.steps` no longer filters it) — area, the pin picker, the
+ * location detail, dates and note are useful with no active plan/pin at all; `PinPicker` renders
+ * its own "no plans yet" line when there is nothing to pick from. Ticket 045's invariant
+ * (`areaIdIsUserChoice` in `useWizard`) — and `pinId`'s own mirror of it — are unchanged by this:
+ * they must survive regardless of which steps mount.
  */
 const props = defineProps<IWizardStepProps>()
 const emit = defineEmits<IWizardStepEmits>()
 
 const { t } = useI18n()
-const { mapError } = useApiError()
-const FacilityPlanService: IFacilityPlanProvider = new FacilityPlanProvider()
-const UploadService: IUploadProvider = new UploadProvider()
-
-// ---- Pin (copied from the retired Step7Position.vue, unchanged logic) --------------------
-
-const frameRef: Ref<HTMLDivElement | undefined> = ref(undefined)
-const imageUrl: Ref<string | undefined> = ref(undefined)
-const imageFailed: Ref<boolean> = ref(false)
-const renderedPlan: Ref<IFacilityPlan | undefined> = ref(undefined)
-
-const isOlderVersion: ComputedRef<boolean> = computed(
-  (): boolean => Boolean(renderedPlan.value && props.activePlan && renderedPlan.value.id !== props.activePlan.id)
-)
-
-const pin: ComputedRef<{ left: number, top: number } | undefined> = computed(
-  (): { left: number, top: number } | undefined => {
-    const position = props.formData.position
-    if (!position || !frameRef.value) return undefined
-    return percentToPoint({ x: position.planX, y: position.planY }, frameRef.value.getBoundingClientRect())
-  }
-)
 
 /**
- * wayfinder 069. The permit's pin resolves against the area's OWN drawing when it has one (an
- * area drawing is a plan version like any other, `FacilityPlan.areaId`), the active site plan
- * otherwise. `props.formData.position.planId` already names which version the pin was placed
- * on — a stale pin still plots against ITS version, with the "older version" note above, never
- * silently re-projected onto whichever plan happens to be current now.
- */
-async function loadPlanImage (): Promise<void> {
-  imageFailed.value = false
-  imageUrl.value = undefined
-  if (!props.activePlan) return
-
-  const existingPlanId = props.formData.position?.planId
-  try {
-    const plan = existingPlanId && existingPlanId !== props.activePlan.id
-      ? (await FacilityPlanService.getById(existingPlanId)).data
-      : props.activePlan
-    renderedPlan.value = plan
-
-    const { data } = await UploadService.getFileUrl(plan.fileRef)
-    imageUrl.value = data.url
-  } catch (error: unknown) {
-    console.error('[Step3WhereWhen] plan resolution failed', mapError(error).code)
-    imageFailed.value = true
-  }
-}
-
-function onImageError (): void {
-  imageFailed.value = true
-}
-
-/**
- * wayfinder 037/070. `AreaPicker` owns its own fetch/propose/stale-reference state; this step
- * only translates its verdict into a `formData` patch. `position` rides along in the SAME patch
- * as `areaId` when the picked area carries a default one (034 resolution: "an area drops the
- * pin"), so the two writes can never land as separate `updateFormData` calls that race — the
- * second write would otherwise silently win over the first.
+ * wayfinder 037/070/107. `AreaPicker` owns its own fetch/propose/stale-reference state; this step
+ * only translates its verdict into a `formData` patch. `AreaPicker` itself is untouched by 107 and
+ * still computes/emits a `position` alongside `areaId` (an area's own optional default position,
+ * `IArea.planId`/`planX`/`planY` — a different, still-live Prisma relation) — it is simply ignored
+ * now that `Permit` has no `position` field for it to drop into. This is the natural consequence
+ * of 105 removing `Permit.position`, not a partial removal of Area.
  */
 function onAreaChange (payload: { areaId: number | null | undefined, position?: IPermitPosition }): void {
-  emit('update:formData', payload.position !== undefined
-    ? { areaId: payload.areaId, position: payload.position }
-    : { areaId: payload.areaId })
+  emit('update:formData', { areaId: payload.areaId })
 }
 
-function onFrameClick (event: MouseEvent): void {
-  if (!frameRef.value || !renderedPlan.value) return
-  const rect = frameRef.value.getBoundingClientRect()
-  const { x, y } = pointToPercent(event.clientX, event.clientY, rect)
-  const position: IPermitPosition = { planId: renderedPlan.value.id, planX: x, planY: y }
-  emit('update:formData', { position })
+function onPinChange (payload: { pinId: number | null | undefined }): void {
+  emit('update:formData', { pinId: payload.pinId })
 }
 
-watch((): IFacilityPlan | null => props.activePlan, (): void => {
-  if (props.activePlan) void loadPlanImage()
-}, { immediate: true })
+// ---- Location detail (wayfinder 107 — moved verbatim from Step2BasicInfo) ------------------
 
-// ---- Geo coordinate (wayfinder 068) -------------------------------------------------------
-
-interface IGeoFormValues {
-  mapUrl: string
+interface ILocationFormValues {
+  location: string
 }
 
-/**
- * `mapUrl` is a plain formData field (see PermitReq.model.ts) — the raw text the user pasted or
- * typed. The client parses it ONLY for instant feedback (`parsedCoordinate` below); the server's
- * own re-parse of the SAME string is what is actually authoritative (068 resolution), so this
- * never sends a separately-computed `latitude`/`longitude` pair for text the user is still
- * editing. Clearing the field sends an explicit `{ latitude: null, longitude: null }` — `mapUrl`
- * itself cannot represent "clear" (the wire requires `minLength: 1`).
- */
-const geoResolver = zodResolver(Step3WhereWhenFieldsSchema.pick({ mapUrl: true }))
-const geoInitialValues: ComputedRef<IGeoFormValues> = computed((): IGeoFormValues => ({
-  mapUrl: props.formData.mapUrl ?? ''
+const locationResolver = zodResolver(Step3WhereWhenFieldsSchema.pick({ location: true }))
+const locationInitialValues: ComputedRef<ILocationFormValues> = computed((): ILocationFormValues => ({
+  location: props.formData.location ?? ''
 }))
 
-const mapUrlModel: WritableComputedRef<string> = computed<string>({
-  get: (): string => props.formData.mapUrl ?? '',
-  set: (value: string): void => {
-    if (value.trim().length === 0) {
-      emit('update:formData', { mapUrl: undefined, latitude: null, longitude: null })
-      return
-    }
-    emit('update:formData', { mapUrl: value })
-  }
+const locationModel: WritableComputedRef<string> = computed<string>({
+  get: (): string => props.formData.location ?? '',
+  set: (value: string): void => emit('update:formData', { location: value })
 })
-
-const parsedCoordinate: ComputedRef<{ latitude: number, longitude: number } | undefined> = computed(
-  (): { latitude: number, longitude: number } | undefined => {
-    const raw = props.formData.mapUrl
-    if (!raw) return undefined
-    const result: TParseMapCoordinateResult = parseMapCoordinate(raw)
-    return result.ok ? { latitude: result.latitude, longitude: result.longitude } : undefined
-  }
-)
 
 // ---- Dates (wayfinder 067) ------------------------------------------------------------------
 

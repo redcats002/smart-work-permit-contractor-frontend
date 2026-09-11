@@ -159,6 +159,25 @@ rather than exceptional**:
   If a permit ever becomes unsaveable because this flag was switched on, that is a bug, not the
   design.
 
+### Facility Plans & Pins — `/api/v1/facility-plans`, `/api/v1/pins` (wayfinder 104/107)
+
+Replaces the old `GET /facility-plans/active?areaId=` (feat-023/069) — plans are now a **flat set
+of named places** with immutable images, no group, no area scoping. A `Pin` is a named position on
+a plan, placed by safety; the contractor only ever selects one via `Permit.pinId`.
+
+| Method | Path | Contractor | Notes |
+|---|---|---|---|
+| GET | `/facility-plans/` | \* | Paginated; `?active=true\|false` filter, omit for everything |
+| GET | `/facility-plans/:id` | \* | One plan, any status — never scoped, so a pin on a retired plan still resolves its image |
+| POST/POST(activate)/POST(deactivate) | `/facility-plans/…` | ⛔ | safety_officer |
+| GET | `/pins/` | \* | Paginated; `?planId=` and/or `?active=`. `?active=true` is the contractor's picker: only pins that are themselves active AND on a currently-active plan |
+| GET | `/pins/:id` | \* | One pin, any status — resolves a retired pin so a permit that already references it still displays |
+| POST/PATCH/POST(deactivate) | `/pins/…` | ⛔ | safety_officer — place/rename/deactivate |
+
+`Permit.pinId` is nullable; `null` clears it, omitted leaves it unchanged. `PERMIT_POSITION_REQUIRED`
+gates submit once an active pin on an active plan exists anywhere (a global fact, not scoped to the
+permit's own area) — grandfathered permits from before the first pin was ever placed submit unpinned.
+
 ### Everything else
 
 | Method | Path | Contractor | Notes |
@@ -186,6 +205,13 @@ One endpoint backs every step. All fields optional; send only what the step chan
   "workTimeEnd": "2026-08-18T09:00:00.000Z",
   "outdoorWork": false,
 
+  // wayfinder 105/107 — `null` clears a pin; omitted leaves it unchanged. Replaces the old
+  // `position`/`planId`/`planX`/`planY` (feat-023) AND the old `mapUrl`/`latitude`/`longitude`
+  // (wayfinder 068, reversed) — the pin knows its own plan, so this is the only position field
+  // `PATCH`/`POST /permits` accept now. `areaId` is unaffected and rides alongside it, independently.
+  "pinId": 12,
+  "areaId": 5,
+
   // REPLACED WHOLESALE — send the full list every time, not a delta
   "jsaSteps": [{ "phase": "pre", "step": "…", "hazard": "…", "control": "…", "sortOrder": 0 }],
   "workers":  [{ "workerName": "…", "roleOnPermit": "…", "bloodPressure": "…", "alcoholReading": "…" }],
@@ -197,6 +223,12 @@ One endpoint backs every step. All fields optional; send only what the step chan
   "photos": [{ "slotKey": "before", "fileRef": "permits/abc.jpg", "originalName": "…", "fileType": "image/jpeg" }]
 }
 ```
+
+> **`workDate`/`workTimeStart`/`workTimeEnd` above predate wayfinder 067** (replaced on the wire by
+> `startDate`/`endDate`/`dailyStart`/`dailyEnd`/`scheduleNote`) and this snippet was not updated
+> for that change before now — flagged here rather than silently left wrong, but a full rewrite of
+> this doc's date fields is a separate piece of work from wayfinder 107 (`docs/api/openapi.json`
+> is the authority in the meantime, per this file's own preface).
 
 Allowed while the permit is `DRAFT`, `REJECTED`, or (since 2026-08-31, wayfinder 012) your own
 `PENDING` permit — editing a `PENDING` permit atomically returns it to `DRAFT` in the same request,
@@ -220,6 +252,9 @@ The permit detail response shape (what you render):
 
   "entrantCount": 0,            // live: workers whose latest entrant event is IN
   "fireWatch": null,            // live: null unless status === 'FIRE_MONITOR' — see below
+
+  "pinId": null,                // wayfinder 105/107. null until safety-placed pin is picked
+  "areaId": null,                // wayfinder 037. null, or an APPROVED area's id
 
   "jsaSteps": [ … ],            // FLAT, each with a `phase` — group client-side
   "workers":  [ … ],            // `workerName`, not `name`

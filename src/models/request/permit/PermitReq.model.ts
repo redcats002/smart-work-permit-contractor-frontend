@@ -1,5 +1,5 @@
 import type {
-  IJsaStep, IPermitPhoto, IPermitPosition, IPermitSafetyReading, IPermitWorker
+  IJsaStep, IPermitPhoto, IPermitSafetyReading, IPermitWorker
 } from '@/models/modules/permit/Permit.model'
 import type { TPermitStatus } from '@/enums/modules/permit/PermitStatus.enum'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
@@ -31,28 +31,20 @@ export interface ICreatePermitDraftPayload {
   scheduleNote?: string | null
   outdoorWork?: boolean
   /**
-   * wayfinder 068. Parsed authoritatively server-side (`parse-map-coordinate.util.ts` in the
-   * api). Mutually exclusive with `latitude`/`longitude` — sending both is a 400. The client
-   * mirrors the same parser for instant feedback only; this is never a gate stricter than the
-   * server's own parse.
+   * wayfinder 105/107. Replaces the old `mapUrl`/`latitude`/`longitude` (068, reversed) and the
+   * old `position`/`planId`/`planX`/`planY` (feat-023, collapsed into this one reference — the
+   * pin knows its own plan). `null` clears a pin; omitted leaves it unchanged (PATCH semantics —
+   * this field is NOT a collection, so omitting it never wipes an already-persisted pin).
+   * Required by the wizard's own client-side gate before submit only once an active pin on an
+   * active plan exists — see `usePinPreflight`; the server is authoritative and answers
+   * `PERMIT_POSITION_REQUIRED` regardless of what the client thinks.
    */
-  mapUrl?: string
-  /** Set together with `longitude`, or omitted. Never sent alongside `mapUrl`. */
-  latitude?: number
-  longitude?: number
-  /**
-   * feat-023. `null` clears a pin; omitted leaves it unchanged (PATCH semantics — this field is
-   * NOT a collection, so omitting it never wipes an already-persisted pin). Required by the
-   * wizard's own client-side gate before submit only once an active plan exists — see
-   * `usePlanPosition`; the server is authoritative and answers `PERMIT_POSITION_REQUIRED`
-   * regardless of what the client thinks.
-   */
-  position?: IPermitPosition | null
+  pinId?: number | null
   /**
    * wayfinder ticket 037. `null` clears a reference; omitted leaves it unchanged (same PATCH
-   * semantics as `position`). Only an `APPROVED` area may be referenced — the server enforces
+   * semantics as `pinId`). Only an `APPROVED` area may be referenced — the server enforces
    * this at write time (`400 AREA_NOT_APPROVED`), not this type. Optional at submit until a
-   * deployment flag says otherwise (`400 AREA_REQUIRED`) — see `usePlanPosition`'s sibling
+   * deployment flag says otherwise (`400 AREA_REQUIRED`) — see `usePinPreflight`'s sibling
    * reasoning; there is no client-side gate on this field.
    */
   areaId?: number | null
@@ -67,13 +59,12 @@ export interface ICreatePermitDraftPayload {
  * - `safetyReading` (singular) **APPENDS** a new reading row.
  * - `photos` **UPSERT per `slotKey`**.
  *
- * `latitude`/`longitude` are re-declared (not inherited via `Partial`) because PATCH additionally
- * accepts an explicit `null` pair to CLEAR a previously stored coordinate — `Partial` alone would
- * only ever give `number | undefined`.
+ * wayfinder 105/107 — the `Omit<..., 'latitude' | 'longitude'>` override this interface used to
+ * need is gone with those fields: `pinId` is a plain scalar reference (like `areaId`), so
+ * `Partial<ICreatePermitDraftPayload>` already gives it the right `number | null | undefined`
+ * shape with no re-declaration required.
  */
-export interface IUpdatePermitDraftPayload extends Omit<Partial<ICreatePermitDraftPayload>, 'latitude' | 'longitude'> {
-  latitude?: number | null
-  longitude?: number | null
+export interface IUpdatePermitDraftPayload extends Partial<ICreatePermitDraftPayload> {
   safetyReading?: IPermitSafetyReading
   jsaSteps?: IJsaStep[]
   workers?: IPermitWorker[]

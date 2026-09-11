@@ -1,5 +1,5 @@
 import type { ComputedRef, Ref } from 'vue'
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { dayjs } from '@/plugins/dayjs.plugin'
 import i18n from '@/plugins/I18n.plugin'
 import { toast } from '@/plugins/toast'
@@ -8,8 +8,7 @@ import { useDebounce } from '@/utils/Debounce'
 import { useApiError, type IApiErrorResult } from '@/composables/useApiError'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import type { ICreatePermitDraftPayload, IUpdatePermitDraftPayload } from '@/models/request/permit/PermitReq.model'
-import type { IFacilityPlan } from '@/models/modules/facility-plan/FacilityPlan.model'
-import type { IPermitPosition, IPermitSafetyReading, IPermitWorker } from '@/models/modules/permit/Permit.model'
+import type { IPermitSafetyReading, IPermitWorker } from '@/models/modules/permit/Permit.model'
 import type { IPermitDetail } from '@/models/response/permit/PermitRes.model'
 import type { TChecklistAnswer } from '../constants/SafetyChecklist'
 import {
@@ -19,7 +18,7 @@ import { hasPartialJsaRow, toSubmittableJsaSteps } from '../schema/Step5Jsa.sche
 import {
   useCertificatePreflight, type ICertificateProblem, type TCertificatePreflightState
 } from './useCertificatePreflight'
-import { usePlanPosition, type TPositionPreflightState } from './usePlanPosition'
+import { usePinPreflight, type TPositionPreflightState } from './usePinPreflight'
 import PermitProvider, { type IPermitProvider } from '@/resources/provider/permit/Permit.provider'
 import { WIZARD_STEPS, type IWizardStepDef } from '../wizard/WizardSteps'
 
@@ -67,12 +66,12 @@ export interface IUseWizard {
    */
   recheckCertificates (): void
   /**
-   * feat-023. Mirrors `certificateState` exactly, for the Where & when step's pin + Review row.
-   * `'none'` (no active plan — today's production default) and `'loading'` never block; only a
-   * confirmed `'fail'` (an active plan exists and `formData.position` is unset) does.
+   * wayfinder 107 (feat-023's original gate, reframed by 105). Mirrors `certificateState`
+   * exactly, for the Where & when step's pin picker + Review row. `'none'` (no active pin on an
+   * active plan exists anywhere yet) and `'loading'` never block; only a confirmed `'fail'` (one
+   * exists and `formData.pinId` is unset) does.
    */
   positionState: ComputedRef<TPositionPreflightState>
-  activePlan: Ref<IFacilityPlan | null>
   isFirstStep: ComputedRef<boolean>
   isLastStep: ComputedRef<boolean>
   isNextBlocked: ComputedRef<boolean>
@@ -107,11 +106,12 @@ export interface IUseWizard {
 /**
  * POST /permits requires type, title, foreman, startDate, endDate, dailyStart and dailyEnd — all
  * of them, with `minLength: 1` on the strings (docs/api/openapi.json). `location` is nullable on
- * the wire since wayfinder 070's openapi refresh, but this wizard still asks for it on step 2 and
- * still gates the create on it. The wizard only has `type` when "meaningful input" first fires,
- * so a draft cannot be created that early: `title`, `location` and `foreman` come from step 2,
- * and the date/time fields come from step 3 (`whereWhen`) since wayfinder 070 moved them there —
- * `hasCreatableDraft` below is the gate that waits for all of it.
+ * the wire since wayfinder 070's openapi refresh, but this wizard still asks for it and still
+ * gates the create on it — wayfinder 107 moved the field itself from step 2 to step 3
+ * (`whereWhen`, the "location detail" alongside the pin picker), same formData key, same wire
+ * field. The wizard only has `type` when "meaningful input" first fires, so a draft cannot be
+ * created that early: `title`/`foreman` come from step 2, and `location` + the date/time fields
+ * all come from step 3 — `hasCreatableDraft` below is the gate that waits for all of it.
  *
  * There is no `project` and no `workDescription` on this API — those were assumptions.
  */
@@ -144,8 +144,7 @@ function buildCreatePayload (data: IUpdatePermitDraftPayload): ICreatePermitDraf
     dailyEnd: data.dailyEnd ?? '',
     scheduleNote: data.scheduleNote ?? undefined,
     outdoorWork: data.outdoorWork ?? false,
-    mapUrl: data.mapUrl,
-    position: data.position,
+    pinId: data.pinId,
     areaId: data.areaId
   }
 }
@@ -153,7 +152,7 @@ function buildCreatePayload (data: IUpdatePermitDraftPayload): ICreatePermitDraf
 /**
  * Every field POST /permits rejects as empty must be present before the first create fires.
  * `location` is deliberately still required HERE even though the wire made it nullable
- * (wayfinder 070) — this app's own wizard UX keeps asking for it on step 2, unchanged.
+ * (wayfinder 070) — this app's own wizard UX keeps asking for it, now on step 3 (wayfinder 107).
  */
 export function hasCreatableDraft (data: IUpdatePermitDraftPayload): boolean {
   return Boolean(data.type && data.title && data.location && data.foreman
@@ -195,56 +194,37 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
     check: checkCertificates
   } = useCertificatePreflight(certificateChecking)
 
-  // feat-023. ONE shared position pre-flight instance, mirroring the certificate one above —
-  // the Position step's gate and the Review row can never disagree about whether a pin is owed.
-  // Fetched on mount (not, say, debounced off an input like the certificate check) so it has
-  // resolved long before a real user, walking the wizard by hand, reaches the step it gates.
-  // `onMounted`, not a bare call at setup time: a composable-level test that calls `useWizard()`
-  // directly (no component tree — see src/tests/composables/useWizard.test.ts) has no active
-  // Pinia, and this app's 401 interceptor branch touches the auth store — exactly the failure
-  // mode `useCertificatePreflight` avoids by never firing unless there is a named worker to look
-  // up. Outside a mounted component `onMounted` is a documented no-op, so those tests are
-  // unaffected; a real page always mounts inside `main.ts`'s Pinia-registered app.
-  const { activePlan, required: positionRequired, fetchActive, stateFor: positionStateFor } = usePlanPosition()
+  // wayfinder 107 (feat-023's original gate, reframed by 105's resolution). ONE shared position
+  // pre-flight instance, mirroring the certificate one above — the Where & when step's gate and
+  // the Review row can never disagree about whether a pin is owed. Fetched once on mount (not,
+  // say, debounced off an input like the certificate check) so it has resolved long before a real
+  // user, walking the wizard by hand, reaches the step it gates. `onMounted`, not a bare call at
+  // setup time: a composable-level test that calls `useWizard()` directly (no component tree —
+  // see src/tests/composables/useWizard.test.ts) has no active Pinia, and this app's 401
+  // interceptor branch touches the auth store — exactly the failure mode
+  // `useCertificatePreflight` avoids by never firing unless there is a named worker to look up.
+  // Outside a mounted component `onMounted` is a documented no-op, so those tests are unaffected;
+  // a real page always mounts inside `main.ts`'s Pinia-registered app.
+  //
+  // Unlike the old `usePlanPosition`, there is no `formData.areaId` watch here any more: the gate
+  // is now "does an active pin on an active plan exist anywhere" — a global fact `PinPicker.vue`
+  // resolves independently for its own display, not one this composable re-fetches per area.
+  const { required: positionRequired, fetchRequired, stateFor: positionStateFor } = usePinPreflight()
   onMounted((): void => {
-    void fetchActive(formData.value.areaId ?? undefined)
-
-    /**
-     * wayfinder 069/070. "The pin surface is the area's own drawing when it has one, the active
-     * site plan otherwise" is resolved by RE-FETCHING `activePlan` scoped to the currently picked
-     * area, never by treating `IArea.planId` (a historical default-position snapshot, a DIFFERENT
-     * Prisma relation from the area's live drawing) as if it were the live drawing reference.
-     * Fires on every change to `formData.areaId` — a pick, a clear, or hydrate's wholesale
-     * reassignment — so `activePlan`/`positionState` and the pin surface in `Step3WhereWhen` are
-     * never stale against the area actually selected. Not gated by `areaIdIsUserChoice`: a
-     * hydrated permit's area must resolve its drawing too, even though that value never reaches
-     * the wire unchanged.
-     *
-     * Registered INSIDE `onMounted`, not at setup time, for the exact reason `onMounted` above is
-     * used instead of a bare call: a composable-level test driving `formData.areaId` with no
-     * mounted component (no active Pinia) would otherwise fire a real network call on every such
-     * test, whose failure trips this app's 401 interceptor into touching the auth store outside
-     * Pinia — the same failure mode this file's `useCertificatePreflight` comment already names.
-     * A `watch()` created inside `onMounted`'s callback is still tied to the component and still
-     * auto-cleaned on unmount; it simply never registers when `onMounted` itself is the
-     * documented no-op it is outside a mounted component.
-     */
-    watch((): number | null | undefined => formData.value.areaId, (areaId: number | null | undefined): void => {
-      void fetchActive(areaId ?? undefined)
-    })
+    void fetchRequired()
   })
 
   const positionState: ComputedRef<TPositionPreflightState> = computed(
-    (): TPositionPreflightState => positionStateFor(formData.value.position)
+    (): TPositionPreflightState => positionStateFor(formData.value.pinId)
   )
 
   /**
    * wayfinder 070. `steps` is now just `registry`, unfiltered — the `whereWhen` step (formerly
    * `Step7Position`, filtered out whenever no facility plan was active) ALWAYS renders: area,
-   * geo coordinate, dates and note are useful with no plan at all, and only the pin surface
-   * inside the step swaps for a "no plan active" line (see `Step3WhereWhen.vue`). This is what
-   * let ticket 045's invariant matter in the first place — `AreaPicker` no longer depends on
-   * `positionRequired` to mount, but the invariant below is kept exactly as it was: it must
+   * the pin picker, the location detail, dates and note are useful with no plan at all, and
+   * `PinPicker.vue` renders its own "no plans yet" line when there is nothing to pick from. This
+   * is what let ticket 045's invariant matter in the first place — `AreaPicker` no longer depends
+   * on `positionRequired` to mount, but the invariant below is kept exactly as it was: it must
    * survive regardless of which steps mount, not only the one case that used to hide it.
    */
   const steps: ComputedRef<IWizardStepDef[]> = computed((): IWizardStepDef[] => registry)
@@ -321,6 +301,18 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
    */
   let areaIdIsUserChoice = false
 
+  /**
+   * wayfinder ticket 107. `pinId` inherits ticket 045's `areaId` invariant exactly, same three
+   * spellings, same reasoning: true only while `formData.pinId` holds a value a HUMAN chose in
+   * this session. `hydrate` seeds the permit's stored `pinId` purely so `PinPicker` can resolve
+   * and display it — echoing that back on every autosave would be no different from `areaId`'s
+   * own hole, just against `PERMIT_POSITION_REQUIRED`/a retired pin instead of
+   * `AREA_NOT_APPROVED`. Set from `updateFormData`, so it holds regardless of which wizard steps
+   * mounted. Cleared by an explicit `pinId: undefined`, mirroring `AreaPicker.resolveStaleArea`'s
+   * "I stripped this, do not send it".
+   */
+  let pinIdIsUserChoice = false
+
   async function doPersist (): Promise<void> {
     if (formData.value.type === undefined) return
 
@@ -365,6 +357,9 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
     // `null` still reaches the server — that is a user's deliberate clear, and it is destructive
     // on purpose. Do not collapse `undefined` and `null` here; they mean opposite things.
     if (!areaIdIsUserChoice) delete payload.areaId
+    // wayfinder ticket 107 — `pinId` inherits 045's invariant exactly. See `pinIdIsUserChoice`'s
+    // own doc comment above for why: `hydrate` seeds `pinId` for display only, never a choice.
+    if (!pinIdIsUserChoice) delete payload.pinId
     const wireReading = safetyReading === undefined ? undefined : toWireReading(safetyReading)
     const serialized = wireReading === undefined ? undefined : JSON.stringify(wireReading)
     const shouldAppendReading = serialized !== undefined && serialized !== lastPersistedReading
@@ -441,16 +436,6 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
     }))
   }
 
-  /**
-   * feat-023. GET returns the pin flattened (`planId`/`planX`/`planY`); the wizard's own
-   * `formData.position` shape is the nested one PATCH/POST accept — see `IPermitPosition`. `null`
-   * when the permit was never pinned (every permit before the first plan was ever activated).
-   */
-  function toFormPosition (permit: IPermitDetail): IPermitPosition | null {
-    if (permit.planId === null || permit.planX === null || permit.planY === null) return null
-    return { planId: permit.planId, planX: permit.planX, planY: permit.planY }
-  }
-
   function hydrate (permit: IPermitDetail): void {
     const hydrated: IUpdatePermitDraftPayload = {
       type: permit.type,
@@ -463,17 +448,18 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
       dailyEnd: permit.dailyEnd,
       scheduleNote: permit.scheduleNote ?? undefined,
       outdoorWork: permit.outdoorWork,
-      // wayfinder 068. `mapUrl` is never stored — GET only ever returns the already-parsed
-      // `latitude`/`longitude`. Seeded here purely as the display value for Step3WhereWhen's
-      // text field, formatted exactly as the bare "lat, lng" form the parser (both copies)
-      // accepts, so re-sending it unchanged on the next autosave re-parses to the same pair —
-      // idempotent, unlike `areaId`, so this needs no 045-style "user touched it" flag.
-      mapUrl: permit.latitude !== null && permit.longitude !== null ? `${permit.latitude}, ${permit.longitude}` : undefined,
       safetyReading: permit.latestSafetyReading ?? undefined,
       jsaSteps: permit.jsaSteps,
       workers: toFormWorkers(permit.workers),
       photos: permit.photos,
-      position: toFormPosition(permit),
+      // wayfinder ticket 107. Seeded as-is purely so `PinPicker` can DISPLAY it — the picker
+      // resolves it via `PinService.getById` regardless of active status (ruling 8: deactivate
+      // never delete, so this always resolves unless the reference is genuinely broken). Nothing
+      // here may assume a seeded `pinId` is still selectable in the active pin list.
+      //
+      // `pinIdIsUserChoice` stays false below, so this value is never echoed back on an autosave
+      // no matter which steps mount — same invariant as `areaId` (045), same reason.
+      pinId: permit.pinId ?? undefined,
       // wayfinder tickets 037 + 044 + 045. Seeded as-is, whatever it is, purely so `AreaPicker`
       // can DISPLAY it — the picker resolves whether the area is in the list this contractor can
       // actually see, and since 044 "it is not" is the ordinary case, not a rare one. Nothing
@@ -487,6 +473,7 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
 
     formData.value = hydrated
     areaIdIsUserChoice = false
+    pinIdIsUserChoice = false
     draftId.value = permit.id
     submitError.value = undefined
     submitFailures.value = EMPTY_SUBMIT_FAILURES
@@ -510,6 +497,8 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
     // explicit `undefined` counts the other way: that is the picker stripping a reference the
     // user never asked about, not choosing one.
     if ('areaId' in patch) areaIdIsUserChoice = patch.areaId !== undefined
+    // wayfinder ticket 107 — see `pinIdIsUserChoice`. Same rule, same reason, applied to `pinId`.
+    if ('pinId' in patch) pinIdIsUserChoice = patch.pinId !== undefined
     // Any edit makes the last server verdict stale, so drop it: otherwise a reading the server
     // rejected stays red — and its banner stays up — even after the user has corrected the value,
     // until they press Submit again. Cleared on ANY field edit rather than only the rejected one:
@@ -614,13 +603,12 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
         submitError.value = mapped
         submitFailures.value = extractSubmitFailures(error)
         toast.error(mapped.message)
-        // feat-023. The server can disagree with the client's plan-activation belief (a plan was
-        // activated moments ago, after this session's own lookup) — re-fetch so the Position
-        // step actually exists to jump to below, instead of staying permanently hidden for the
-        // rest of the session on a stale 'none' verdict.
-        if (mapped.code === 'PERMIT_POSITION_REQUIRED' && !positionRequired.value) void fetchActive()
-        // Resolved against the CURRENT steps array, not a fixed index: the Position step may or
-        // may not exist in it depending on `positionRequired`. Assigned directly rather than via
+        // wayfinder 107 (feat-023's original note). The server can disagree with the client's
+        // pin-preflight belief (a pin was placed moments ago, after this session's own lookup) —
+        // re-probe so `positionState` reflects it, instead of staying permanently on a stale
+        // 'none' verdict for the rest of the session.
+        if (mapped.code === 'PERMIT_POSITION_REQUIRED' && !positionRequired.value) void fetchRequired()
+        // Resolved against the CURRENT steps array, not a fixed index. Assigned directly rather than via
         // goToStep(): goToStep refuses the jump when any EARLIER step fails its own schema, and
         // the whole point of this branch is that the server disagreed with a client-side gate
         // that passed. The user must always land on the step that can fix it, never be stranded
@@ -652,7 +640,6 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
     certificateProblems,
     recheckCertificates,
     positionState,
-    activePlan,
     isFirstStep,
     isLastStep,
     isNextBlocked,

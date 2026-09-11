@@ -5,8 +5,8 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import PrimeVue from 'primevue/config'
 import i18n, { setLocale } from '@/plugins/I18n.plugin'
-import FacilityPlanProvider from '@/resources/provider/facility-plan/FacilityPlan.provider'
 import PermitProvider from '@/resources/provider/permit/Permit.provider'
+import PinProvider from '@/resources/provider/pin/Pin.provider'
 import PermitEditPage from '@/pages/permit/pages/create/pages/PermitEditPage.vue'
 import StepperHeader from '@/pages/permit/pages/create/components/StepperHeader.vue'
 
@@ -54,8 +54,6 @@ function draftPermit (): Record<string, unknown> {
     dailyStart: '2026-08-20T01:00:00.000Z',
     dailyEnd: '2026-08-20T09:00:00.000Z',
     scheduleNote: null,
-    latitude: null,
-    longitude: null,
     outdoorWork: false,
     createdById: 'u1',
     createdBy: null,
@@ -101,10 +99,13 @@ describe('PermitEditPage', () => {
     stubMatchMedia()
     setActivePinia(createPinia())
     setLocale('en')
-    // feat-023. No facility plan mounted in this suite — every wizard mount now fetches
-    // GET /facility-plans/active on mount (useWizard), and this repo's convention is to mock
-    // every provider a mounted page touches rather than let it hit a live/absent server.
-    vi.spyOn(FacilityPlanProvider.prototype, 'getActive').mockResolvedValue({ message: 'success', data: null } as never)
+    // wayfinder 107 (feat-023's original note). No active pin mounted in this suite — every
+    // wizard mount now runs `usePinPreflight`'s existence probe (`GET /pins?limit=1&active=true`),
+    // and this repo's convention is to mock every provider a mounted page touches rather than let
+    // it hit a live/absent server.
+    vi.spyOn(PinProvider.prototype, 'list').mockResolvedValue({
+      message: 'success', data: [], page: 1, limit: 1, totalPage: 0, count: 0
+    } as never)
   })
 
   afterEach((): void => {
@@ -127,9 +128,16 @@ describe('PermitEditPage', () => {
 
     expect(wrapper.find('[data-test="edit-not-editable"]').exists()).toBe(false)
     const stepper = wrapper.findComponent(StepperHeader)
-    // Step 3 (index 2) — safety checks — is the first to fail: no reading was ever recorded.
-    expect(stepper.props('currentStepIndex')).toBe(2)
-    expect(stepper.props('maxUnlockedStepIndex')).toBe(2)
+    // Safety checks (index 3) is the first to fail: no reading was ever recorded, and `heights`
+    // requires wind. wayfinder 107 note: this index moved from 2 to 3 here — `draftPermit()`
+    // below never set the old `planId`/`planX`/`planY` fields, so pre-107 `hydrate.toFormPosition`
+    // seeded `formData.position` as `{ planId: undefined, planX: undefined, planY: undefined }`
+    // (its own `=== null` check does not catch `undefined`), which matched NEITHER branch of the
+    // old schema's `position` union and made `whereWhen` (index 2) fail spuriously. `pinId` has no
+    // such quirk (`permit.pinId ?? undefined` is a plain `undefined`, which `z.number().optional()`
+    // accepts cleanly), so `whereWhen` now passes and the real failure surfaces one step later.
+    expect(stepper.props('currentStepIndex')).toBe(3)
+    expect(stepper.props('maxUnlockedStepIndex')).toBe(3)
     // wayfinder 022 — mounting the edit page must perform no write of any kind.
     expect(updateSpy).not.toHaveBeenCalled()
   })
@@ -153,28 +161,18 @@ describe('PermitEditPage', () => {
     expect(updateSpy).not.toHaveBeenCalled()
   })
 
-  it('resuming a withdrawn PENDING permit (now DRAFT) still shows the Where & when step regardless of plan state (wayfinder 012, updated by 070)', async () => {
+  it('resuming a withdrawn PENDING permit (now DRAFT) still shows the Where & when step regardless of plan state (wayfinder 012, updated by 070/107)', async () => {
     // The backend performs the PENDING -> DRAFT withdrawal atomically the moment the contractor's
     // FIRST real edit round-trips through `PATCH /permits/:id` (wayfinder 012). This test mounts
     // AFTER that has already happened — `GET /permits/:id` (wayfinder 022's `useResumePermit`)
-    // simply reads back a permit that is already DRAFT, with no position set. wayfinder 070: the
-    // `whereWhen` step is no longer filtered by plan state at all — it is ALWAYS present — so this
-    // now proves that an active plan does not change the step LIST, only the pin surface inside it.
-    vi.spyOn(FacilityPlanProvider.prototype, 'getActive').mockResolvedValue({
-      message: 'success',
-      data: {
-        id: 7,
-        fileRef: 'facility-plans/v1.png',
-        uploadedById: 'u-9',
-        uploadedBy: null,
-        createdAt: '2026-08-01T00:00:00.000Z',
-        activatedAt: '2026-08-01T00:00:00.000Z',
-        active: true
-      }
-    } as never)
+    // simply reads back a permit that is already DRAFT, with no pin set. wayfinder 070: the
+    // `whereWhen` step is no longer filtered by plan state at all — it is ALWAYS present. wayfinder
+    // 107 removed the `FacilityPlanProvider.getActive`/`activePlan` wiring this test used to mock
+    // entirely — the pin preflight (`usePinPreflight`) is a plain existence probe now, not a plan
+    // lookup keyed by area, so there is nothing left to stub here.
     vi.spyOn(PermitProvider.prototype, 'detail').mockResolvedValue({
       message: 'success',
-      data: { ...draftPermit(), status: 'DRAFT', planId: null, planX: null, planY: null }
+      data: { ...draftPermit(), status: 'DRAFT', pinId: null }
     } as never)
 
     const router = buildRouter()

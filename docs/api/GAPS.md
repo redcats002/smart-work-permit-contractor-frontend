@@ -105,6 +105,20 @@ uploaded a plan yet.
 a pin-drop step against `GET /v1/facility-plans/active` while DRAFT, and the create/update forms
 must be ready for `400 PERMIT_POSITION_REQUIRED` on submit once a plan exists.
 
+**Superseded 2026-09-11 (wayfinder 104/105/107).** Everything above this line describes the
+feat-023 shape — `GET /v1/facility-plans/active`, `Permit.planId`/`planX`/`planY`, and
+`position: { planId, planX, planY } | null` on `POST`/`PATCH /permits`. None of that exists on
+the wire any more. Wayfinder 104 replaced `GET /v1/facility-plans/active` with a flat, paginated
+`GET /v1/facility-plans/` (`?active=`) and introduced `Pin` (`GET /v1/pins/`, `GET /v1/pins/:id`,
+all safety-officer-only to write) — named positions, placed by safety, on a plan; wayfinder 105
+collapsed the permit's five position columns into one reference, `Permit.pinId`, and removed
+`position`/`planId`/`planX`/`planY` from `Permit` entirely. Wayfinder 107 is the contractor-app
+half: the wizard's click-to-place pin surface is gone, replaced by a read-only picker
+(`PinPicker.vue`) over safety-placed pins — see this repo's `progress.md` and
+`04-api-contract.md`'s "Facility Plans & Pins" section for the current shape. `PERMIT_POSITION_REQUIRED`
+is unchanged as an `errorCode` but now keys on "an active pin on an active plan exists", not "an
+active plan exists".
+
 ## Closed by a product ruling on 2026-08-23 (feat-022)
 
 | Row | Was | Resolution |

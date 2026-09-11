@@ -1,11 +1,10 @@
 import type { Component } from 'vue'
 import type { z } from 'zod'
 import type { IUpdatePermitDraftPayload } from '@/models/request/permit/PermitReq.model'
-import type { IFacilityPlan } from '@/models/modules/facility-plan/FacilityPlan.model'
 import type { TChecklistAnswer } from '../constants/SafetyChecklist'
 import type { ISubmitFailures } from '../constants/SubmitErrorRouting'
 import type { ICertificateProblem, TCertificatePreflightState } from '../composables/useCertificatePreflight'
-import type { TPositionPreflightState } from '../composables/usePlanPosition'
+import type { TPositionPreflightState } from '../composables/usePinPreflight'
 import { Step1TypeSchema } from '../schema/Step1Type.schema'
 import { Step2BasicInfoSchema } from '../schema/Step2BasicInfo.schema'
 import { Step3WhereWhenSchema } from '../schema/Step3WhereWhen.schema'
@@ -58,14 +57,11 @@ export interface IWizardStepProps {
   certificateState: TCertificatePreflightState
   certificateProblems: ICertificateProblem[]
   /**
-   * feat-023. The wizard's single shared position pre-flight (`useWizard`, backed by
-   * `usePlanPosition`) — mirrors `certificateState` exactly. `activePlan` is `null` while
-   * `positionState === 'loading'` or `'none'`. wayfinder 070: the `whereWhen` step's pin surface
-   * (not the step itself, which always renders now) and the Review row both read this, so they
-   * can never disagree.
+   * wayfinder 107 (feat-023's original gate). The wizard's single shared position pre-flight
+   * (`useWizard`, backed by `usePinPreflight`) — mirrors `certificateState` exactly. `whereWhen`'s
+   * `PinPicker` and the Review row both read this, so they can never disagree.
    */
   positionState: TPositionPreflightState
-  activePlan: IFacilityPlan | null
 }
 
 export interface IWizardStepEmits {
@@ -103,7 +99,8 @@ export interface IWizardStepDef {
  *
  * wayfinder 070 — "Where & when" moves to position 3, unconditionally: `useWizard.steps` no
  * longer filters ANY entry out of this array (it used to hide `position`, formerly step 7,
- * whenever no facility plan was active — see `usePlanPosition`). Review is always last. The
+ * whenever no facility plan was active — see `usePinPreflight`, wayfinder 107's rename of
+ * `usePlanPosition`). Review is always last. The
  * component/schema FILENAMES for the safety/PPE/JSA/review steps still carry their OLD numbers
  * (`Step3SafetyChecks.vue` is step 4 here) — deliberately not renamed, since the ticket's scope
  * is the order and content of the steps, not their filenames; `labelKey` below is what actually

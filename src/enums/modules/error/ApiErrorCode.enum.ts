@@ -39,8 +39,9 @@ export enum EApiErrorCode {
   // wayfinder 022 — PATCH /permits/:id refuses a body with no editable field at all, so an
   // empty-body PATCH can never withdraw a PENDING permit by accident (e.g. an editability probe).
   PERMIT_UPDATE_EMPTY = 'PERMIT_UPDATE_EMPTY',
-  // feat-023 — position on the facility plan. Submit refuses with this once an active plan
-  // exists and the permit has no planId/planX/planY set.
+  // feat-023 — a pin on a facility plan. Submit refuses with this once an active pin on an
+  // active plan exists and the permit has no `pinId` set (re-keyed from `planId`/`planX`/`planY`
+  // by wayfinder 105 — the pin knows its own plan now).
   PERMIT_POSITION_REQUIRED = 'PERMIT_POSITION_REQUIRED',
 
   // Closure guards — safety-officer actions, surfaced here because a contractor watching a permit

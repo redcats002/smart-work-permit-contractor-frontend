@@ -99,13 +99,14 @@ const permit = {
         field: {
           title: 'Project',
           contractor: 'Contractor',
-          foreman: 'Foreman',
-          location: 'Location'
+          foreman: 'Foreman'
         }
       },
-      // wayfinder 070 — "Where & when" (step 3): area, pin, geo coordinate, dates, schedule note.
+      // wayfinder 107 — "Where & when" (step 3): area, the safety-placed pin, the location
+      // detail (moved from Basic Info), dates, schedule note. Geo coordinate (070) is gone —
+      // 105 removed Permit.latitude/longitude from the wire.
       whereWhen: {
-        subtitle: 'Where this work happens, and when — picking an area drops the pin below immediately.',
+        subtitle: 'Where this work happens, and when — select an approved area, then the pin safety placed for it.',
         // wayfinder 077 — links into the "Getting started" page's #area deep-linked section.
         areaHelpLink: 'What is this for?',
         field: {
@@ -113,19 +114,26 @@ const permit = {
           endDate: 'End Date',
           dailyStart: 'Daily Start Time',
           dailyEnd: 'Daily End Time',
+          locationDetail: 'Location Detail',
           scheduleNote: 'Schedule / Location Note'
         },
         scheduleNote: {
           placeholder: 'Exceptions the dates above cannot express — e.g. "Not working Sat/Sun"'
         },
-        geo: {
-          label: 'Geo Coordinate',
-          placeholder: 'Paste a Google Maps / OpenStreetMap link, or type "latitude, longitude"',
-          hint: 'Stored as a coordinate, not a live map.',
-          parsed: 'Parsed: {latitude}, {longitude}',
-          validation: {
-            unparseable: 'Could not read a coordinate from this text. Paste a Google Maps or OpenStreetMap link, or a "latitude, longitude" pair.'
-          }
+        pin: {
+          planLabel: 'Facility Plan',
+          planPlaceholder: 'Select a facility plan',
+          noPlans: 'No facility plans have been added yet.',
+          pinLabel: 'Pin',
+          pinPlaceholder: 'Select a pin safety has placed',
+          noPins: 'No active pins on this plan yet.',
+          retiredLabel: 'Current pin (retired)',
+          retiredNote: 'This permit already uses this pin. It is no longer active, or its plan has been retired, so it is not in the selectable list.',
+          missingNote: 'This permit referenced a pin that could not be found.',
+          imageLoadFailed: 'The facility plan image could not be loaded. Try again in a moment.',
+          retry: 'Retry',
+          alt: 'Facility plan with the selected pin marked',
+          required: 'A pin is required before this permit can be submitted.'
         },
         validation: {
           endDateNotBeforeStart: 'End date cannot be before start date',
@@ -353,16 +361,9 @@ const permit = {
           confirm: 'Yes, remove'
         }
       },
+      // wayfinder 107 — the click-to-place pin surface that used to live under this key is gone
+      // (see whereWhen.pin above); only AreaPicker's own copy still lives here.
       position: {
-        subtitle: 'Tap the plan where this work is happening.',
-        loading: 'Checking for an active facility plan…',
-        noActivePlan: 'No facility plan has been activated yet — this step does not apply to your permit.',
-        olderVersion: 'This permit was placed on an earlier plan version. The plan has since been updated, but the pin stays where it was set.',
-        instruction: 'Tap or click the plan to place your pin.',
-        pinSet: 'Pin placed. Tap the plan again to move it.',
-        required: 'A position is required before this permit can be submitted.',
-        imageLoadFailed: 'The facility plan image could not be loaded. Try again in a moment.',
-        retry: 'Retry',
         area: {
           label: 'Work Area',
           placeholder: 'Select an approved area (optional)',
@@ -396,15 +397,12 @@ const permit = {
           dateTime: 'Date / Time',
           area: 'Work Area',
           pin: 'Pin',
-          geo: 'Geo Coordinate',
           scheduleNote: 'Schedule / Location Note',
           workers: 'Workers',
           jsaSteps: 'JSA Steps'
         },
-        pinSet: 'Placed',
-        pinNotSet: 'Not placed',
+        pinNotSet: 'Not selected',
         areaNotSet: 'Not set',
-        geoNotSet: 'Not set',
         workersCount: '{count} registered',
         jsaCount: '{count} defined',
         check: {

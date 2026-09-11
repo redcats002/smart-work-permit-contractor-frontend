@@ -1,36 +1,35 @@
-import type { TGetActiveFacilityPlanResponse, TGetFacilityPlanResponse } from '@/models/response/facility-plan/FacilityPlanRes.model'
+import type { IGetFacilityPlanListQuery } from '@/models/request/facility-plan/FacilityPlanReq.model'
+import type { TGetFacilityPlanListResponse, TGetFacilityPlanResponse } from '@/models/response/facility-plan/FacilityPlanRes.model'
 import HttpRequest from '@/resources/HttpRequest'
 
 /**
- * Read-only against `/api/v1/facility-plans` — this app never uploads, creates or activates a
- * plan version (that is a Safety Officer action in the sibling repo; `facility-plans` is a
+ * Read-only against `/api/v1/facility-plans` — this app never uploads, creates, activates or
+ * deactivates a plan (that is a Safety Officer action in the sibling repo; `facility-plans` is a
  * server-owned upload prefix, see ../PROMPT-LOG.md "the facility plan is not an ordinary
- * upload"). `getActive`/`getById` are open to every role, including a contractor placing a pin
- * while drafting (feat-023).
+ * upload"). `list`/`getById` are open to every role, including a contractor picking a pin while
+ * drafting (wayfinder 107).
+ *
+ * wayfinder 104/107 — `getActive(areaId?)` is gone. Plans are a flat named set with no group and
+ * no area scoping any more; `list()` replaces it with the real paginated route the API now serves.
  */
 export interface IFacilityPlanProvider {
-  getActive (areaId?: number): Promise<TGetActiveFacilityPlanResponse>
+  list (query: IGetFacilityPlanListQuery): Promise<TGetFacilityPlanListResponse>
   getById (id: number): Promise<TGetFacilityPlanResponse>
 }
 
 class FacilityPlanProvider extends HttpRequest implements IFacilityPlanProvider {
   private urlPrefix: string = '/api/v1/facility-plans'
 
-  /**
-   * `null` when no plan has ever been activated. wayfinder 069: passing `areaId` resolves that
-   * area's own drawing when it has one, falling back server-side to the active SITE plan
-   * (`areaId: null`) otherwise (`FacilityPlanActiveService.execute` — the fallback is NOT
-   * something this client re-derives). Omitting `areaId` is exactly the pre-069 behavior.
-   */
-  public async getActive (areaId?: number): Promise<TGetActiveFacilityPlanResponse> {
-    const response = await this.get(`${this.urlPrefix}/active`, areaId === undefined ? undefined : { areaId })
+  /** Every role may read this. Callers wanting the full active set must pass an explicit `limit`. */
+  public async list (query: IGetFacilityPlanListQuery): Promise<TGetFacilityPlanListResponse> {
+    const response = await this.get(this.urlPrefix, query)
     return response
   }
 
   /**
-   * Resolves ANY version by id, active or not — required so a permit frozen against an older
-   * plan can still render the version it was actually placed on (plan versions are immutable
-   * and retained forever; the active endpoint alone cannot answer this).
+   * Resolves ANY plan by id, active or not — required so a pin placed on a since-deactivated
+   * plan can still render the image it was actually placed against (plans are retained forever;
+   * the active list alone cannot answer this).
    */
   public async getById (id: number): Promise<TGetFacilityPlanResponse> {
     const response = await this.get(`${this.urlPrefix}/${id}`)

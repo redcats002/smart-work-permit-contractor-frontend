@@ -24,7 +24,7 @@ const error = {
   PERMIT_NOT_SUBMITTABLE: 'This permit cannot be submitted in its current state.',
   PERMIT_NOT_ACTIVE: 'This action is only available while the permit is active.',
   NOT_HOT_WORK: 'Fire Watch applies to Hot Work permits only.',
-  PERMIT_POSITION_REQUIRED: 'Set a position on the facility plan before submitting this permit.',
+  PERMIT_POSITION_REQUIRED: 'Select a pin on the facility plan before submitting this permit.',
   PERMIT_UPDATE_EMPTY: 'No changes were made to this permit.',
 
   // Closure guards

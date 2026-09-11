@@ -35,8 +35,6 @@ function rejectedPermit (): Record<string, unknown> {
     dailyStart: '2026-08-10T01:00:00.000Z',
     dailyEnd: '2026-08-10T09:00:00.000Z',
     scheduleNote: null,
-    latitude: null,
-    longitude: null,
     outdoorWork: false,
     createdById: 'u1',
     createdBy: null,

@@ -31,14 +31,6 @@
         :label="t('permit.create.steps.basicInfo.field.foreman')"
         name="foreman"
         required />
-
-      <LabelField
-        v-model="locationModel"
-        :form="$form"
-        :label="t('permit.create.steps.basicInfo.field.location')"
-        class="md:col-span-2"
-        name="location"
-        required />
     </Form>
   </div>
 </template>
@@ -56,7 +48,6 @@ import type { IWizardStepEmits, IWizardStepProps } from '../../wizard/WizardStep
 interface ITextFormValues {
   title: string
   foreman: string
-  location: string
 }
 
 const props = defineProps<IWizardStepProps>()
@@ -75,8 +66,7 @@ const contractorName: ComputedRef<string> = computed((): string => authStore.use
 const textResolver = zodResolver(Step2BasicInfoFieldsSchema)
 const textInitialValues: ComputedRef<ITextFormValues> = computed((): ITextFormValues => ({
   title: props.formData.title ?? '',
-  foreman: props.formData.foreman ?? '',
-  location: props.formData.location ?? ''
+  foreman: props.formData.foreman ?? ''
 }))
 
 const titleModel: WritableComputedRef<string> = computed<string>({
@@ -87,25 +77,19 @@ const foremanModel: WritableComputedRef<string> = computed<string>({
   get: (): string => props.formData.foreman ?? '',
   set: (value: string): void => emit('update:formData', { foreman: value })
 })
-const locationModel: WritableComputedRef<string> = computed<string>({
-  get: (): string => props.formData.location ?? '',
-  set: (value: string): void => emit('update:formData', { location: value })
-})
 
 /**
- * wayfinder 093 — `location` is a plain text note and nothing more.
+ * wayfinder ticket 107 — `location` moved off this step entirely, onto step 3 ("Where & when") as
+ * the "location detail" field alongside the pin picker (same formData key, same wire field, under
+ * a new label — see `Step3WhereWhen.vue`). This step is title + foreman only now.
  *
- * This step used to render a zone-chip row and a pin on a grey placeholder rectangle, positioned by
- * hashing this very string. The Safety app deleted the identical mechanism on 2026-08-24 and left a
- * HISTORY note in its `LocationPosition.ts` saying it must not come back: behind anything that looks
- * like a plan, a pin the system cannot vouch for reads as a claim about where hot work physically
- * is, and an officer could dispatch to the wrong part of the plant. The contractor half outlived it
- * by three weeks.
- *
- * The real answer shipped as step 3, "Where & when" (wayfinder 070): an approved Area, a pin on an
- * actual facility-plan raster, and a parsed map coordinate. `location` stays what wayfinder 034
- * demoted it to — free-text detail nothing queries, for "north corner, near the loading dock".
- * Do not give it a map again.
+ * History, so nobody re-adds a map here: this step used to render a zone-chip row and a pin on a
+ * grey placeholder rectangle, positioned by hashing the location string (wayfinder 093 tore that
+ * out). The Safety app deleted the identical mechanism on 2026-08-24 and left a HISTORY note in
+ * its `LocationPosition.ts` saying it must not come back: behind anything that looks like a plan,
+ * a pin the system cannot vouch for reads as a claim about where hot work physically is, and an
+ * officer could dispatch to the wrong part of the plant. The real answer is the safety-placed
+ * `Pin` picker on step 3 — do not give this step a map again.
  */
 </script>
 

@@ -36,11 +36,11 @@ const guide = {
       },
       basicInfo: {
         title: '2. Basic info',
-        desc: 'Title, foreman, and location.'
+        desc: 'Title and foreman.'
       },
       whereWhen: {
         title: '3. Where & when',
-        desc: 'The area, the pin, the work window, and any schedule exceptions. Always renders.'
+        desc: 'The area, the pin safety placed for you to select, a location detail, the work window, and any schedule exceptions. Always renders.'
       },
       safetyChecks: {
         title: '4. Safety checks',
@@ -63,7 +63,10 @@ const guide = {
   area: {
     title: 'What is an area for?',
     p1: 'An area is the identity the system reasons about. It is what overlap warnings check against, what audit search filters on, and what a contractor is scoped to — two crews with permits on the same area are the collision this whole feature exists to catch.',
-    p2: 'The pin is a different thing: it is only where that area\'s work happens to sit on the drawing. Picking an area drops the pin at that area\'s default position immediately, visibly, on the map right below the picker — you can nudge it from there, but you cannot place a pin without an area under it.',
+    // wayfinder 107 (superseding the 070-era description of area pre-dropping a pin you could
+    // then nudge — that mechanism is gone; `Permit` has no `position` field for an area to drop
+    // into any more, and the contractor never places or moves a pin).
+    p2: 'The pin is a different thing: it is a position safety has already placed and named on a facility plan. You select an existing pin from the list — safety places, names and retires them, and you never place or move one yourself.',
     p3: 'The facility drawing itself stays safety-owned; a contractor does not upload their own site raster. If the shared drawing is too coarse for your work, raise it with the safety officer rather than attaching your own sketch as a workaround — a sketch attaches to the permit as a plain document, with no coordinate system.'
   },
   permitDetail: {

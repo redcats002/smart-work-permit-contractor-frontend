@@ -28,11 +28,16 @@ export function permitAuthorName (author?: IPermitAuthor | null): string {
 }
 
 /**
- * feat-023 — the contractor's pin on the active facility plan. `planX`/`planY` are 0-100,
- * PERCENTAGES of the rendered plan frame — NOT pixels (docs/main/PROMPT-LOG.md session 11).
- * Sent on PATCH/POST as `position: IPermitPosition | null`; read back flattened as
- * `planId`/`planX`/`planY` on the permit entity (see IPermitListItem) — two different shapes for
- * the same data because that is what the two directions of the wire contract actually declare.
+ * `Area`'s own OPTIONAL default position — `planX`/`planY` are 0-100, PERCENTAGES of the
+ * rendered plan frame, not pixels (docs/main/PROMPT-LOG.md session 11).
+ *
+ * wayfinder ticket 107 — this no longer describes an outgoing `Permit` field. Ticket 105 removed
+ * `Permit.position`/`planId`/`planX`/`planY` from the wire entirely; a permit now points at a
+ * `Pin` by `pinId` (see `IPermitBase`/`IPermitListItem`), and a `Pin`'s own `x`/`y` are frozen at
+ * placement (ruling 8) — they never round-trip through this shape. `IPermitPosition` survives
+ * solely as `IArea`'s own default-position shape (`IArea.planId`/`planX`/`planY`,
+ * `ICreateAreaPayload.position`, `AreaPicker.vue`) — a different, still-live Prisma relation, an
+ * area's best-guess default pin location, unrelated to `Permit.pinId`.
  */
 export interface IPermitPosition {
   planId: number
@@ -72,9 +77,6 @@ export interface IPermitBase {
   dailyEnd: string
   scheduleNote: string | null
   outdoorWork: boolean
-  /** wayfinder 068. A stored coordinate, not a map — render as an "open in maps" link. */
-  latitude: number | null
-  longitude: number | null
 }
 
 /**

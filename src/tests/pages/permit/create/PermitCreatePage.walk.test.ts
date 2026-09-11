@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import PrimeVue from 'primevue/config'
 import i18n, { setLocale } from '@/plugins/I18n.plugin'
 import CertificateProvider from '@/resources/provider/certificate/Certificate.provider'
-import FacilityPlanProvider from '@/resources/provider/facility-plan/FacilityPlan.provider'
+import PinProvider from '@/resources/provider/pin/Pin.provider'
 import PermitProvider from '@/resources/provider/permit/Permit.provider'
 import PermitCreatePage from '@/pages/permit/pages/create/pages/PermitCreatePage.vue'
 import WizardFooter from '@/pages/permit/pages/create/components/WizardFooter.vue'
@@ -86,7 +86,9 @@ describe('PermitCreatePage — the wizard can always be continued', () => {
       .mockResolvedValue({ message: 'success', data: { id: 'WP-HOT-20260820-001' } } as never)
     // feat-023. No facility plan mounted in this suite — useWizard now fetches
     // GET /facility-plans/active on mount.
-    vi.spyOn(FacilityPlanProvider.prototype, 'getActive').mockResolvedValue({ message: 'success', data: null } as never)
+    vi.spyOn(PinProvider.prototype, 'list').mockResolvedValue({
+      message: 'success', data: [], page: 1, limit: 1, totalPage: 0, count: 0
+    } as never)
     vi.spyOn(CertificateProvider.prototype, 'byWorker').mockResolvedValue({
       message: 'success',
       data: {

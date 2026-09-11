@@ -24,8 +24,6 @@ function permit (): IPermitListItem {
     dailyStart: '1970-01-01T08:00:00.000Z',
     dailyEnd: '1970-01-01T17:00:00.000Z',
     scheduleNote: null,
-    latitude: null,
-    longitude: null,
     outdoorWork: false,
     createdById: 'u-1',
     createdBy: null,
@@ -44,9 +42,7 @@ function permit (): IPermitListItem {
     qrIssuedAt: null,
     entrantCount: 0,
     fireWatch: null,
-    planId: null,
-    planX: null,
-    planY: null,
+    pinId: null,
     areaId: null
   }
 }
