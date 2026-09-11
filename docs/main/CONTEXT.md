@@ -204,10 +204,10 @@ deliberately, not marketing approximations, so a rule change in the API is a lan
 > no `CORRECTIVE_ACTION`-or-more-severe note to carry it through the existing `CORRECTIVE_ACTION`
 > routing, and a `ppeChecklist` present but carrying none of `worn`/`undeclaredGaps`/`note` — the
 > shape a pre-120 client's now-unrecognised flat body strips down to, which would otherwise record
-> a silent "nothing checked" success. **Not yet propagated to the contractor or safety/inspector
-> app** — this is the api-only half of a three-repo ticket; see progress.md for the propagation
-> this leaves for the frontends, and for the deploy-ordering note `PPE_CHECKLIST_EMPTY` exists to
-> make loud rather than silent.
+> a silent "nothing checked" success. Localized in both frontends (contractor
+> `3458303a`, safety `2ae6d605`). **Deploy ordering:** the api must not ship ahead of the safety
+> app's checklist — `PPE_CHECKLIST_EMPTY` makes that loud rather than silent, but it is still a
+> field outage.
 
 > `WORKER_ALREADY_EXISTS` was added 2026-09-09 with the Worker entity (wayfinder 059/060, see
 > section 3). It is a `409` carrying `workerId` — the id of the worker the caller already
