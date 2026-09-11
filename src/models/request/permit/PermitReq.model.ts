@@ -40,14 +40,6 @@ export interface ICreatePermitDraftPayload {
    * `PERMIT_POSITION_REQUIRED` regardless of what the client thinks.
    */
   pinId?: number | null
-  /**
-   * wayfinder ticket 037. `null` clears a reference; omitted leaves it unchanged (same PATCH
-   * semantics as `pinId`). Only an `APPROVED` area may be referenced — the server enforces
-   * this at write time (`400 AREA_NOT_APPROVED`), not this type. Optional at submit until a
-   * deployment flag says otherwise (`400 AREA_REQUIRED`) — see `usePinPreflight`'s sibling
-   * reasoning; there is no client-side gate on this field.
-   */
-  areaId?: number | null
 }
 
 /**
@@ -60,7 +52,7 @@ export interface ICreatePermitDraftPayload {
  * - `photos` **UPSERT per `slotKey`**.
  *
  * wayfinder 105/107 — the `Omit<..., 'latitude' | 'longitude'>` override this interface used to
- * need is gone with those fields: `pinId` is a plain scalar reference (like `areaId`), so
+ * need is gone with those fields: `pinId` is a plain scalar reference, so
  * `Partial<ICreatePermitDraftPayload>` already gives it the right `number | null | undefined`
  * shape with no re-declaration required.
  */
@@ -97,8 +89,9 @@ export interface IClosePermitPayload {
  * `docs/api/openapi.json`'s `anyOf` for this param). The "Active" filter chip (ACTIVE +
  * FIRE_MONITOR) and "Closed" (CLOSED + REJECTED) send the array and let the server filter and
  * paginate the group — do NOT go back to fetching unfiltered and narrowing client-side; that
- * narrowing predates feat-009 and, combined with a real pager, produces a short last page (a
- * documented defect class on this map — see AreaPicker's `limit: 9999` note).
+ * narrowing predates feat-009 and, combined with a real pager, produces a short last page (the
+ * same silent-truncation defect an explicit `limit: 9999` guards against elsewhere in this app —
+ * see `useCertificates.ts`'s `fetchWorkers`).
  */
 export interface IGetPermitListQuery extends IBasePaginationRequest {
   status?: TPermitStatus | TPermitStatus[]

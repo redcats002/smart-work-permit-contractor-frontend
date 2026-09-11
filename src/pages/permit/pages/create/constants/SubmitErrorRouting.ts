@@ -50,7 +50,11 @@ export const EMPTY_SUBMIT_FAILURES: ISubmitFailures = { readings: [], certificat
  * re-keyed to `pinId` by wayfinder 105) and `AREA_REQUIRED`/`AREA_NOT_APPROVED` (wayfinder 037)
  * all land on `whereWhen` (wayfinder 070 — the step formerly named `position`, now step 3;
  * wayfinder 107 replaced its click-to-place pin + geo coordinate with a pin picker + a location
- * detail field, area + dates + note otherwise unchanged).
+ * detail field). `AREA_REQUIRED`/`AREA_NOT_APPROVED` are declared-but-dormant since wayfinder 121
+ * removed `Area` (and the picker that could provoke them) from this app entirely — kept routed
+ * here rather than deleted, the same "declared-but-unemitted code is legal" convention
+ * `ENTRANTS_STILL_INSIDE` already established, so the routing table stays truthful if either code
+ * is ever revived rather than silently going stale.
  *
  * Keyed by `IWizardStepDef.key`, NOT a hardcoded index — `useWizard.submitDraft` resolves the key
  * to an index against its OWN current `steps` array via `findIndex`.
@@ -65,9 +69,8 @@ export const SUBMIT_ERROR_STEP_KEY: Partial<Record<EApiErrorCode, string>> = {
   [EApiErrorCode.CERT_MISSING]: 'ppeWorkers',
   [EApiErrorCode.CERT_EXPIRED]: 'ppeWorkers',
   [EApiErrorCode.PERMIT_POSITION_REQUIRED]: 'whereWhen',
-  // wayfinder ticket 037 — the `PERMIT_AREA_REQUIRED` deployment flag's submit gate, off by
-  // default today. Lands on the same step as the pin picker, which also carries the area picker
-  // (`AreaPicker.vue`).
+  // wayfinder ticket 037 — the `PERMIT_AREA_REQUIRED` deployment flag's submit gate, dormant since
+  // wayfinder 121 removed `Area` (and the picker that lived on this same step) from this app.
   [EApiErrorCode.AREA_REQUIRED]: 'whereWhen',
   [EApiErrorCode.AREA_NOT_APPROVED]: 'whereWhen'
 }

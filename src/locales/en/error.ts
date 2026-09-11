@@ -53,7 +53,8 @@ const error = {
   ACCOUNT_DEACTIVATED: 'This account has been deactivated. Contact your safety officer to have it reactivated.',
   LAST_SAFETY_OFFICER: 'This is the last active safety officer. Add or reactivate another one before changing this account.',
 
-  // Area (wayfinder 034/036)
+  // Area (wayfinder 034/036) — declared-but-dormant since wayfinder 106/121 deleted `Area`; kept
+  // for the same reason `ENTRANTS_STILL_INSIDE` is kept (see ApiErrorCode.enum.ts).
   AREA_NOT_APPROVED: 'This area has not been approved yet. Choose an approved area or wait for a safety officer to review it.',
   AREA_NOT_PENDING: 'This area is no longer awaiting review.',
   AREA_REQUIRED: 'Please choose an approved area before submitting this permit.',

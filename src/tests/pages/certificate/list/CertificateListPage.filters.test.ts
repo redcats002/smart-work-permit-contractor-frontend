@@ -108,7 +108,8 @@ describe('CertificateListPage — pagination, search and worker filter (wayfinde
 
   // The worker-Select options must be fetched unpaginated — the server defaults to a page size
   // of 10 (CommonPaginationModel), which would silently truncate the filter to the first 10
-  // workers otherwise (the same defect class AreaPicker's `limit: 9999` note guards against).
+  // workers otherwise (the same silent-truncation defect an explicit `limit: 9999` guards
+  // against elsewhere in this app).
   it('fetches every worker for the filter dropdown, not just the first page', async () => {
     vi.spyOn(CertificateProvider.prototype, 'list').mockResolvedValue(emptyCertificates())
     const workerSpy = vi.spyOn(WorkerProvider.prototype, 'list').mockResolvedValue({

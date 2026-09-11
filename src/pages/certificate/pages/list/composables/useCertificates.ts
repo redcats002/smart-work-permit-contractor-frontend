@@ -60,7 +60,7 @@ export function useCertificates (): IUseCertificates {
   /**
    * Populates the worker filter's options. Explicit `limit: 9999` — the server defaults to a
    * page size of 10 (`CommonPaginationModel`), which would silently truncate this dropdown to
-   * the first page of workers (the AreaPicker lesson — docs/api CommonPaginationModel).
+   * the first page of workers (docs/api CommonPaginationModel).
    */
   async function fetchWorkers (): Promise<void> {
     try {

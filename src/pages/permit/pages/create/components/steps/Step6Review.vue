@@ -158,15 +158,10 @@ const dateTime: ComputedRef<string> = computed((): string => {
   return `${start}${end}${clock}`
 })
 
-const areaSummary: ComputedRef<string> = computed(
-  (): string => (props.formData.areaId != null ? String(props.formData.areaId) : t('permit.create.steps.review.areaNotSet'))
-)
-
 /**
- * wayfinder ticket 107 — shows the referenced pin's raw id, not its resolved name, same
- * convention `areaSummary` above already settled on (070's resolution: "no second network call").
- * The officer's own review screen (a different repo, safety half of this same ticket) is where
- * the pin's name/plan resolve for real.
+ * wayfinder ticket 107 — shows the referenced pin's raw id, not its resolved name (070's
+ * resolution: "no second network call"). The officer's own review screen (a different repo,
+ * safety half of this same ticket) is where the pin's name/plan resolve for real.
  */
 const pinSummary: ComputedRef<string> = computed(
   (): string => (props.formData.pinId != null ? String(props.formData.pinId) : t('permit.create.steps.review.pinNotSet'))
@@ -176,9 +171,10 @@ const pinSummary: ComputedRef<string> = computed(
  * The design's "Project" cell shows the same value as the heading: the API has no separate
  * `project` field (docs/api/GAPS.md row F) and `title` is what step 2 labels "Project".
  *
- * wayfinder 107 — "Review shows all four groups" from the Where & when step: area, pin, the
- * location detail, date/time, and the schedule note (the geo coordinate row from 070 is gone —
- * 105 removed `Permit.latitude`/`longitude` from the wire). The Position row that used to live in
+ * wayfinder 107/121 — "Review shows all groups" from the Where & when step: pin, the location
+ * detail, date/time, and the schedule note (the geo coordinate row from 070 is gone — 105 removed
+ * `Permit.latitude`/`longitude` from the wire; the area row is gone — 121 removed `Area` from this
+ * app entirely). The Position row that used to live in
  * `preflightRows` below is gone; a hydrated draft with a REQUIRED, unset pin is still blocked by
  * `useWizard.canSubmit`'s own `positionState !== 'fail'` check regardless of what is shown here.
  */
@@ -187,7 +183,6 @@ const summaryFields: ComputedRef<ISummaryField[]> = computed((): ISummaryField[]
   { labelKey: 'permit.create.steps.basicInfo.field.foreman', value: props.formData.foreman ?? '' },
   { labelKey: 'permit.create.steps.whereWhen.field.locationDetail', value: props.formData.location ?? '' },
   { labelKey: 'permit.create.steps.review.field.dateTime', value: dateTime.value },
-  { labelKey: 'permit.create.steps.review.field.area', value: areaSummary.value },
   { labelKey: 'permit.create.steps.review.field.pin', value: pinSummary.value },
   { labelKey: 'permit.create.steps.review.field.scheduleNote', value: props.formData.scheduleNote ?? '' },
   {

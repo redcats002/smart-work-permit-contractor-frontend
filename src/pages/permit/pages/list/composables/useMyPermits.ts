@@ -24,7 +24,8 @@ export const PERMIT_LIST_FILTERS: TPermitListFilter[] = ['all', 'active', 'pendi
  * the server filters AND paginates on it, so `count`/`totalPage` describe the group correctly.
  * The previous approach (fetch unfiltered, narrow the page client-side) predates feat-009 and,
  * once this page gained a real pager, would render a short last page — the same truncation defect
- * class `AreaPicker`'s `limit: 9999` note warns about, just from the other direction.
+ * class an explicit `limit: 9999` warns about elsewhere in this app, just from the other
+ * direction.
  */
 const FILTER_STATUS_MAP: Record<TPermitListFilter, TPermitStatus[] | undefined> = {
   all: undefined,

@@ -1,6 +1,6 @@
 /**
  * wayfinder 077 — the "Getting started" page. Ported from and kept in step with
- * ../../../docs/guide/using-contractor-app.md, not a second, drifting copy of it (that source
+ * ../../../../docs/guide/using-contractor-app.md, not a second, drifting copy of it (that source
  * doc is the one to update first — this file follows).
  */
 const guide = {
@@ -40,7 +40,7 @@ const guide = {
       },
       whereWhen: {
         title: '3. Where & when',
-        desc: 'The area, the pin safety placed for you to select, a location detail, the work window, and any schedule exceptions. Always renders.'
+        desc: 'The pin safety placed for you to select, a location detail, the work window, and any schedule exceptions. Always renders.'
       },
       safetyChecks: {
         title: '4. Safety checks',
@@ -59,15 +59,6 @@ const guide = {
         desc: 'Everything on one screen before it leaves your hands. Saving keeps it a Draft; submitting moves it to Pending, in the safety officer\'s queue.'
       }
     }
-  },
-  area: {
-    title: 'What is an area for?',
-    p1: 'An area is the identity the system reasons about. It is what overlap warnings check against, what audit search filters on, and what a contractor is scoped to — two crews with permits on the same area are the collision this whole feature exists to catch.',
-    // wayfinder 107 (superseding the 070-era description of area pre-dropping a pin you could
-    // then nudge — that mechanism is gone; `Permit` has no `position` field for an area to drop
-    // into any more, and the contractor never places or moves a pin).
-    p2: 'The pin is a different thing: it is a position safety has already placed and named on a facility plan. You select an existing pin from the list — safety places, names and retires them, and you never place or move one yourself.',
-    p3: 'The facility drawing itself stays safety-owned; a contractor does not upload their own site raster. If the shared drawing is too coarse for your work, raise it with the safety officer rather than attaching your own sketch as a workaround — a sketch attaches to the permit as a plain document, with no coordinate system.'
   },
   permitDetail: {
     title: 'Permit detail, and closing the work',

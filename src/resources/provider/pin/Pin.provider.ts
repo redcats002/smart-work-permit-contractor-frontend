@@ -5,9 +5,8 @@ import HttpRequest from '@/resources/HttpRequest'
 /**
  * wayfinder ticket 107 (backend: 104/105). `create`/`update`/`deactivate` are deliberately
  * absent — placing, renaming and deactivating a pin are all `safety_officer`-only and answer
- * `403 FORBIDDEN_ROLE` for a contractor account, same reasoning `IAreaProvider` already gives for
- * omitting `approve`/`reject`. The contractor is read-only against this resource, same posture as
- * `IFacilityPlanProvider`.
+ * `403 FORBIDDEN_ROLE` for a contractor account. The contractor is read-only against this
+ * resource, same posture as `IFacilityPlanProvider`.
  */
 export interface IPinProvider {
   list (query: IGetPinListQuery): Promise<TGetPinListResponse>

@@ -59,7 +59,7 @@ describe('Step3WhereWhenSchema', () => {
   // wayfinder 107 — pinId is never required here: whether a pin is OWED depends on async
   // external state (whether an active pin on an active plan exists) that a zod schema can't see.
   // That gate stays in usePinPreflight/useWizard.isNextBlocked, unchanged by this schema.
-  it('areaId/pinId/scheduleNote are all optional', () => {
+  it('pinId/scheduleNote are all optional', () => {
     expect(Step3WhereWhenSchema.safeParse(validDraft()).success).toBe(true)
   })
 

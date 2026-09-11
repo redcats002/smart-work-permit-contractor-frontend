@@ -102,13 +102,11 @@ const permit = {
           foreman: 'Foreman'
         }
       },
-      // wayfinder 107 — "Where & when" (step 3): area, the safety-placed pin, the location
-      // detail (moved from Basic Info), dates, schedule note. Geo coordinate (070) is gone —
-      // 105 removed Permit.latitude/longitude from the wire.
+      // wayfinder 107/121 — "Where & when" (step 3): the safety-placed pin, the location detail
+      // (moved from Basic Info), dates, schedule note. Geo coordinate (070) is gone — 105 removed
+      // Permit.latitude/longitude from the wire; the area picker is gone — 121 removed Area.
       whereWhen: {
-        subtitle: 'Where this work happens, and when — select an approved area, then the pin safety placed for it.',
-        // wayfinder 077 — links into the "Getting started" page's #area deep-linked section.
-        areaHelpLink: 'What is this for?',
+        subtitle: 'Where this work happens, and when — select the pin safety placed for it.',
         field: {
           startDate: 'Start Date',
           endDate: 'End Date',
@@ -361,48 +359,17 @@ const permit = {
           confirm: 'Yes, remove'
         }
       },
-      // wayfinder 107 — the click-to-place pin surface that used to live under this key is gone
-      // (see whereWhen.pin above); only AreaPicker's own copy still lives here.
-      position: {
-        area: {
-          label: 'Work Area',
-          placeholder: 'Select an approved area (optional)',
-          empty: 'No approved areas yet — propose one below.',
-          propose: 'Propose new area',
-          proposedNote: 'Awaiting approval',
-          // wayfinder 044. Shown when the permit's area is still APPROVED but outside the list
-          // this contractor can pick from. Deliberately NOT phrased as a problem — nothing is
-          // wrong with the permit, and `staleNote` below (which tells them to choose another
-          // one) would be wrong advice here.
-          currentLabel: 'Current area',
-          currentNote: 'This permit already uses this area. It is not in your selectable list, and it stays as it is unless you choose another one.',
-          staleNote: '“{name}” is no longer an approved area. Choose another one.',
-          missingNote: 'This permit referenced an area that could not be found. Choose another one.',
-          proposeModal: {
-            title: 'Propose Area',
-            field: {
-              name: 'Area name'
-            },
-            submit: 'Submit for approval',
-            validation: {
-              nameRequired: 'Please enter the area name'
-            }
-          }
-        }
-      },
       review: {
         subtitle: 'Confirm every detail. Submitting notifies the Safety Officer for review.',
         idPending: 'ID pending',
         field: {
           dateTime: 'Date / Time',
-          area: 'Work Area',
           pin: 'Pin',
           scheduleNote: 'Schedule / Location Note',
           workers: 'Workers',
           jsaSteps: 'JSA Steps'
         },
         pinNotSet: 'Not selected',
-        areaNotSet: 'Not set',
         workersCount: '{count} registered',
         jsaCount: '{count} defined',
         check: {

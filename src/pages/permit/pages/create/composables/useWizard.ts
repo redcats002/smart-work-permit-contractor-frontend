@@ -26,9 +26,9 @@ const PermitService: IPermitProvider = new PermitProvider()
 
 export interface IUseWizard {
   /**
-   * wayfinder 070. Always `registry`, unfiltered — the `whereWhen` step (area, pin, geo, dates,
-   * note) renders regardless of whether a facility plan is active; only the pin surface inside
-   * it swaps for a "no plan active" line. Reactive for interface parity with the pre-070 shape;
+   * wayfinder 070. Always `registry`, unfiltered — the `whereWhen` step (pin, location detail,
+   * dates, note) renders regardless of whether a facility plan is active; only the pin surface
+   * inside it swaps for a "no plan active" line. Reactive for interface parity with the pre-070 shape;
    * StepperHeader/WizardFooter/PermitCreatePage all bind `:steps="steps"` unchanged.
    */
   steps: ComputedRef<IWizardStepDef[]>
@@ -144,8 +144,7 @@ function buildCreatePayload (data: IUpdatePermitDraftPayload): ICreatePermitDraf
     dailyEnd: data.dailyEnd ?? '',
     scheduleNote: data.scheduleNote ?? undefined,
     outdoorWork: data.outdoorWork ?? false,
-    pinId: data.pinId,
-    areaId: data.areaId
+    pinId: data.pinId
   }
 }
 
@@ -206,9 +205,9 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
   // Outside a mounted component `onMounted` is a documented no-op, so those tests are unaffected;
   // a real page always mounts inside `main.ts`'s Pinia-registered app.
   //
-  // Unlike the old `usePlanPosition`, there is no `formData.areaId` watch here any more: the gate
-  // is now "does an active pin on an active plan exist anywhere" — a global fact `PinPicker.vue`
-  // resolves independently for its own display, not one this composable re-fetches per area.
+  // Unlike the old `usePlanPosition`, there is no per-selection watch here any more: the gate is
+  // now "does an active pin on an active plan exist anywhere" — a global fact `PinPicker.vue`
+  // resolves independently for its own display, not one this composable re-fetches per pick.
   const { required: positionRequired, fetchRequired, stateFor: positionStateFor } = usePinPreflight()
   onMounted((): void => {
     void fetchRequired()
@@ -220,12 +219,14 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
 
   /**
    * wayfinder 070. `steps` is now just `registry`, unfiltered — the `whereWhen` step (formerly
-   * `Step7Position`, filtered out whenever no facility plan was active) ALWAYS renders: area,
-   * the pin picker, the location detail, dates and note are useful with no plan at all, and
+   * `Step7Position`, filtered out whenever no facility plan was active) ALWAYS renders: the pin
+   * picker, the location detail, dates and note are useful with no plan at all, and
    * `PinPicker.vue` renders its own "no plans yet" line when there is nothing to pick from. This
-   * is what let ticket 045's invariant matter in the first place — `AreaPicker` no longer depends
-   * on `positionRequired` to mount, but the invariant below is kept exactly as it was: it must
-   * survive regardless of which steps mount, not only the one case that used to hide it.
+   * is what let ticket 045's invariant matter in the first place — `PinPicker` (wayfinder 121
+   * removed its `AreaPicker` neighbour, which this invariant was originally written for) no
+   * longer depends on `positionRequired` to mount, but the invariant below is kept exactly as it
+   * was: it must survive regardless of which steps mount, not only the one case that used to hide
+   * it.
    */
   const steps: ComputedRef<IWizardStepDef[]> = computed((): IWizardStepDef[] => registry)
 
@@ -289,27 +290,15 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
   let lastPersistedReading: string | undefined
 
   /**
-   * wayfinder ticket 045. True only while `formData.areaId` holds a value a HUMAN chose in this
-   * session — picking an area, or clearing one. It is deliberately NOT "formData has an areaId":
-   * `hydrate` seeds the permit's stored `areaId` for display, and echoing that back on every
-   * autosave is what makes a permit referencing a non-APPROVED area unsaveable forever.
-   *
-   * Set from `updateFormData`, so it holds regardless of which wizard steps mounted — the whole
-   * point of 045, since `AreaPicker` lives on a step that production never renders. Cleared by an
-   * explicit `areaId: undefined`, which is `AreaPicker.resolveStaleArea`'s "I stripped this, do
-   * not send it" and the one spelling that is not a user choice.
-   */
-  let areaIdIsUserChoice = false
-
-  /**
-   * wayfinder ticket 107. `pinId` inherits ticket 045's `areaId` invariant exactly, same three
-   * spellings, same reasoning: true only while `formData.pinId` holds a value a HUMAN chose in
-   * this session. `hydrate` seeds the permit's stored `pinId` purely so `PinPicker` can resolve
-   * and display it — echoing that back on every autosave would be no different from `areaId`'s
-   * own hole, just against `PERMIT_POSITION_REQUIRED`/a retired pin instead of
-   * `AREA_NOT_APPROVED`. Set from `updateFormData`, so it holds regardless of which wizard steps
-   * mounted. Cleared by an explicit `pinId: undefined`, mirroring `AreaPicker.resolveStaleArea`'s
-   * "I stripped this, do not send it".
+   * wayfinder ticket 045, originally written for `areaId` (removed by wayfinder 121 along with
+   * the rest of `Area` — see `AreaPicker.vue`'s deletion). `pinId` inherited this invariant
+   * unchanged under ticket 107 and is now its only holder: true only while `formData.pinId` holds
+   * a value a HUMAN chose in this session. `hydrate` seeds the permit's stored `pinId` purely so
+   * `PinPicker` can resolve and display it — echoing that back on every autosave would 400 every
+   * one against `PERMIT_POSITION_REQUIRED`/a retired pin the moment the reference stops resolving.
+   * Set from `updateFormData`, so it holds regardless of which wizard steps mounted. Cleared by an
+   * explicit `pinId: undefined`, which is `PinPicker`'s own "I stripped this, do not send it" and
+   * the one spelling that is not a user choice.
    */
   let pinIdIsUserChoice = false
 
@@ -339,26 +328,17 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
         payload.jsaSteps = toSubmittableJsaSteps(payload.jsaSteps)
       }
     }
-    // wayfinder tickets 037 + 044 + 045. The invariant: `areaId` goes on the wire ONLY when a
-    // human set it in this session. A value that merely arrived from `hydrate` is display state,
-    // never outgoing payload, so it is deleted here — the server's `AREA_NOT_APPROVED` guard
-    // fires on the key's PRESENCE, not on whether the value changed, and omitting the key is what
-    // the server reads as "leave the stored value alone".
-    //
-    // 045: this used to be `payload.areaId === undefined`, which was a proxy for "AreaPicker told
-    // us to strip it" — correct only while `AreaPicker` mounts. It used to live inside
-    // `Step7Position`, which `steps` filtered out entirely when no facility plan was active, and
-    // that was production. A permit carrying a non-APPROVED `areaId` would then 400 on EVERY
-    // autosave, forever, with no UI able to clear it. wayfinder 070 moved `AreaPicker` into
-    // `Step3WhereWhen`, which now always mounts — but the condition stays `areaIdIsUserChoice`,
-    // not the old presence proxy, because a step always mounting today is not a promise it always
-    // will, and the invariant costs nothing to keep.
+    // wayfinder tickets 045 + 107 (121 removed the `areaId` copy of this invariant along with
+    // `Area` itself). The invariant: `pinId` goes on the wire ONLY when a human set it in this
+    // session. A value that merely arrived from `hydrate` is display state, never outgoing
+    // payload, so it is deleted here — the server's `PERMIT_POSITION_REQUIRED` guard (and a
+    // retired-pin reference generally) fires on the key's PRESENCE, not on whether the value
+    // changed, and omitting the key is what the server reads as "leave the stored value alone".
+    // See `pinIdIsUserChoice`'s own doc comment above for why the flag, not a presence proxy, is
+    // what gates this.
     //
     // `null` still reaches the server — that is a user's deliberate clear, and it is destructive
     // on purpose. Do not collapse `undefined` and `null` here; they mean opposite things.
-    if (!areaIdIsUserChoice) delete payload.areaId
-    // wayfinder ticket 107 — `pinId` inherits 045's invariant exactly. See `pinIdIsUserChoice`'s
-    // own doc comment above for why: `hydrate` seeds `pinId` for display only, never a choice.
     if (!pinIdIsUserChoice) delete payload.pinId
     const wireReading = safetyReading === undefined ? undefined : toWireReading(safetyReading)
     const serialized = wireReading === undefined ? undefined : JSON.stringify(wireReading)
@@ -452,27 +432,18 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
       jsaSteps: permit.jsaSteps,
       workers: toFormWorkers(permit.workers),
       photos: permit.photos,
-      // wayfinder ticket 107. Seeded as-is purely so `PinPicker` can DISPLAY it — the picker
-      // resolves it via `PinService.getById` regardless of active status (ruling 8: deactivate
-      // never delete, so this always resolves unless the reference is genuinely broken). Nothing
-      // here may assume a seeded `pinId` is still selectable in the active pin list.
+      // wayfinder ticket 107 (inheriting 045's invariant — see `pinIdIsUserChoice`). Seeded as-is
+      // purely so `PinPicker` can DISPLAY it — the picker resolves it via `PinService.getById`
+      // regardless of active status (ruling 8: deactivate never delete, so this always resolves
+      // unless the reference is genuinely broken). Nothing here may assume a seeded `pinId` is
+      // still selectable in the active pin list.
       //
       // `pinIdIsUserChoice` stays false below, so this value is never echoed back on an autosave
-      // no matter which steps mount — same invariant as `areaId` (045), same reason.
-      pinId: permit.pinId ?? undefined,
-      // wayfinder tickets 037 + 044 + 045. Seeded as-is, whatever it is, purely so `AreaPicker`
-      // can DISPLAY it — the picker resolves whether the area is in the list this contractor can
-      // actually see, and since 044 "it is not" is the ordinary case, not a rare one. Nothing
-      // here may assume a seeded `areaId` is selectable, or even approved.
-      //
-      // 045: seeding is not choosing. `areaIdIsUserChoice` stays false below, so this value is
-      // never echoed back on an autosave no matter which steps mount — the permit stays saveable
-      // even when the picker that used to strip it is filtered out of the wizard entirely.
-      areaId: permit.areaId ?? undefined
+      // no matter which steps mount.
+      pinId: permit.pinId ?? undefined
     }
 
     formData.value = hydrated
-    areaIdIsUserChoice = false
     pinIdIsUserChoice = false
     draftId.value = permit.id
     submitError.value = undefined
@@ -493,11 +464,9 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
 
   function updateFormData (patch: Partial<IUpdatePermitDraftPayload>): void {
     formData.value = { ...formData.value, ...patch }
-    // wayfinder ticket 045 — see `areaIdIsUserChoice`. Only an explicit key counts, and an
+    // wayfinder ticket 045/107 — see `pinIdIsUserChoice`. Only an explicit key counts, and an
     // explicit `undefined` counts the other way: that is the picker stripping a reference the
     // user never asked about, not choosing one.
-    if ('areaId' in patch) areaIdIsUserChoice = patch.areaId !== undefined
-    // wayfinder ticket 107 — see `pinIdIsUserChoice`. Same rule, same reason, applied to `pinId`.
     if ('pinId' in patch) pinIdIsUserChoice = patch.pinId !== undefined
     // Any edit makes the last server verdict stale, so drop it: otherwise a reading the server
     // rejected stays red — and its banner stays up — even after the user has corrected the value,

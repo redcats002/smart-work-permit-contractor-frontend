@@ -9,21 +9,7 @@
       </p>
     </div>
 
-    <!-- 1. Area picker — an identity, independent of the pin (wayfinder ticket 107 note 3). -->
-    <!-- wayfinder 077 — deep-links into the "Getting started" page's #area section, the verbatim
-         field-report question ("what is the area for?") answered in one place. -->
-    <div class="flex justify-end">
-      <RouterLink
-        :to="{ name: 'GettingStartedPage', hash: '#area' }"
-        class="inline-flex items-center gap-1 text-xs font-medium text-accent hover:underline">
-        <span aria-hidden="true">ⓘ</span> {{ t('permit.create.steps.whereWhen.areaHelpLink') }}
-      </RouterLink>
-    </div>
-    <AreaPicker
-      :area-id="formData.areaId"
-      @change="onAreaChange($event)" />
-
-    <!-- 2. The pin — safety places it, the contractor only ever selects one (wayfinder 107). -->
+    <!-- 1. The pin — safety places it, the contractor only ever selects one (wayfinder 107). -->
     <PinPicker
       :pin-id="formData.pinId"
       @change="onPinChange($event)" />
@@ -34,7 +20,7 @@
       <span aria-hidden="true">⛔</span> {{ t('permit.create.steps.whereWhen.pin.required') }}
     </p>
 
-    <!-- 3. Location detail — Permit.location under a new label, moved verbatim from step 2. -->
+    <!-- 2. Location detail — Permit.location under a new label, moved verbatim from step 2. -->
     <Form
       v-slot="$form"
       :initial-values="locationInitialValues"
@@ -48,7 +34,7 @@
         required />
     </Form>
 
-    <!-- 4. Dates — a daily window repeating across a date range (wayfinder 067). -->
+    <!-- 3. Dates — a daily window repeating across a date range (wayfinder 067). -->
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
       <LabelField
         :label="t('permit.create.steps.whereWhen.field.startDate')"
@@ -106,7 +92,7 @@
       {{ t('permit.create.steps.whereWhen.validation.endDateNotBeforeStart') }}
     </p>
 
-    <!-- 5. Schedule note — free text for what the dates above cannot express. -->
+    <!-- 4. Schedule note — free text for what the dates above cannot express. -->
     <LabelField
       :label="t('permit.create.steps.whereWhen.field.scheduleNote')"
       tag="div">
@@ -127,16 +113,14 @@ import { useI18n } from 'vue-i18n'
 import { Form } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { dayjs } from '@/plugins/dayjs.plugin'
-import type { IPermitPosition } from '@/models/modules/permit/Permit.model'
 import LabelField from '@/components/input/LabelField.vue'
 import { Step3WhereWhenFieldsSchema } from '../../schema/Step3WhereWhen.schema'
-import AreaPicker from '../AreaPicker.vue'
 import PinPicker from '../PinPicker.vue'
 import type { IWizardStepEmits, IWizardStepProps } from '../../wizard/WizardSteps'
 
 /**
- * wayfinder 070/107 — step 3, "Where & when". Area (identity) + pin (safety-placed position) +
- * location detail + the multi-day work window + a schedule note, in one step.
+ * wayfinder 070/107/121 — step 3, "Where & when". Pin (safety-placed position) + location detail
+ * + the multi-day work window + a schedule note, in one step.
  *
  * wayfinder 107 reverses two pieces of 070: the contractor no longer places or nudges a pin on a
  * raster (see `PinPicker.vue` — read-only marker, no click handler), and there is no geo
@@ -144,28 +128,21 @@ import type { IWizardStepEmits, IWizardStepProps } from '../../wizard/WizardStep
  * `Permit.location` moved verbatim from Step 2 under a new label — same formData key, same wire
  * field, not a second free-text column that means the same thing.
  *
- * This step ALWAYS renders (`useWizard.steps` no longer filters it) — area, the pin picker, the
+ * wayfinder 121 removes the area picker this step carried alongside the pin (037/070/107):
+ * `AreaPicker.vue`/`CreateAreaModal.vue` and `areaId` are gone from this app entirely, the api
+ * already having dropped `Area`/`Permit.areaId` in 106. `pinId` never depended on `areaId` — 107
+ * already made them fully independent fields — so nothing here replaces the removed picker.
+ *
+ * This step ALWAYS renders (`useWizard.steps` no longer filters it) — the pin picker, the
  * location detail, dates and note are useful with no active plan/pin at all; `PinPicker` renders
- * its own "no plans yet" line when there is nothing to pick from. Ticket 045's invariant
- * (`areaIdIsUserChoice` in `useWizard`) — and `pinId`'s own mirror of it — are unchanged by this:
- * they must survive regardless of which steps mount.
+ * its own "no plans yet" line when there is nothing to pick from. Ticket 045's invariant, inherited
+ * by `pinId` (`pinIdIsUserChoice` in `useWizard`), is unchanged by this: it must survive regardless
+ * of which steps mount.
  */
 const props = defineProps<IWizardStepProps>()
 const emit = defineEmits<IWizardStepEmits>()
 
 const { t } = useI18n()
-
-/**
- * wayfinder 037/070/107. `AreaPicker` owns its own fetch/propose/stale-reference state; this step
- * only translates its verdict into a `formData` patch. `AreaPicker` itself is untouched by 107 and
- * still computes/emits a `position` alongside `areaId` (an area's own optional default position,
- * `IArea.planId`/`planX`/`planY` — a different, still-live Prisma relation) — it is simply ignored
- * now that `Permit` has no `position` field for it to drop into. This is the natural consequence
- * of 105 removing `Permit.position`, not a partial removal of Area.
- */
-function onAreaChange (payload: { areaId: number | null | undefined, position?: IPermitPosition }): void {
-  emit('update:formData', { areaId: payload.areaId })
-}
 
 function onPinChange (payload: { pinId: number | null | undefined }): void {
   emit('update:formData', { pinId: payload.pinId })

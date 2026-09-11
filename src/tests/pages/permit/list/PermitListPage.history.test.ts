@@ -75,8 +75,7 @@ function buildPermit (id: string, status: TPermitStatus): IPermitListItem {
     // (docs/api/GAPS.md row A). This screen does not read them yet.
     entrantCount: 0,
     fireWatch: null,
-    pinId: null,
-    areaId: null
+    pinId: null
   }
 }
 

@@ -38,13 +38,6 @@ export interface IPermitListItem extends IPermitBase {
    */
   pinId: number | null
   /**
-   * wayfinder ticket 037. The structured place this permit's work is in — nullable, and not
-   * necessarily `APPROVED` any more by the time this is read back (an area's approval can be
-   * revoked after a permit already references it). Render whatever this resolves to; never
-   * assume it is still approved.
-   */
-  areaId: number | null
-  /**
    * wayfinder 098 (API built 2026-09-11; this app's read-only awareness lands with wayfinder 113).
    * Set once by `POST /permits/:id/close-request` (inspector or the owning contractor) and **never
    * cleared**, even after the permit actually closes — so "awaiting safety" is `closeRequestedAt`

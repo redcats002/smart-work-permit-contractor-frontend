@@ -47,7 +47,6 @@ function basePermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail {
     entrantCount: 0,
     fireWatch: null,
     pinId: null,
-    areaId: null,
     jsaSteps: [],
     workers: [],
     photos: [],
@@ -100,24 +99,6 @@ describe('useWizard.hydrate', () => {
 
     expect(wizard.currentStepIndex.value).toBe(1)
     expect(wizard.maxUnlockedStepIndex.value).toBe(1)
-  })
-
-  // wayfinder ticket 037 — the resume/edit surface must seed the permit's existing area
-  // reference, or a resumed permit that HAS one renders an empty picker (looks like data loss).
-  it('seeds formData.areaId from the permit (wayfinder ticket 037)', () => {
-    setLocale('en')
-    const wizard = useWizard()
-
-    wizard.hydrate(basePermit({ areaId: 7 }))
-    expect(wizard.formData.value.areaId).toBe(7)
-  })
-
-  it('seeds formData.areaId as undefined, never null, for an unplaced permit', () => {
-    setLocale('en')
-    const wizard = useWizard()
-
-    wizard.hydrate(basePermit({ areaId: null }))
-    expect(wizard.formData.value.areaId).toBeUndefined()
   })
 
   it('lands on the last step (Review) when every step already validates', () => {

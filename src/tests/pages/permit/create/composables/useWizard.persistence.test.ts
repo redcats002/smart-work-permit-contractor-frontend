@@ -46,7 +46,7 @@ function creatableDraft (): Record<string, unknown> {
 
 /**
  * wayfinder tickets 045/107 — a permit as `GET /permits/:id` returns it, for the hydrate path.
- * Only `areaId`/`pinId` vary across the cases below; everything else is a valid, complete draft so
+ * Only `pinId` varies across the cases below; everything else is a valid, complete draft so
  * `hydrate`'s own conversions (workDate, workers) have real input to work on.
  */
 function hydratedPermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail {
@@ -81,7 +81,6 @@ function hydratedPermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail 
     entrantCount: 0,
     fireWatch: null,
     pinId: null,
-    areaId: null,
     jsaSteps: [],
     workers: [],
     photos: [],
@@ -195,153 +194,6 @@ describe('useWizard — safetyReading append guard', () => {
     await vi.advanceTimersByTimeAsync(1600) // second PATCH — must still carry the reading
 
     expect(readingsSent(updateSpy).filter(Boolean).length).toBeGreaterThanOrEqual(1)
-  })
-})
-
-/**
- * wayfinder ticket 044 (building on 037) — "a permit that already references an area must never
- * become unsaveable because a visibility flag was switched on."
- *
- * Once the deployment sets `AREA_VISIBILITY_SCOPED=TRUE`, `GET /v1/areas` stops listing areas this
- * contractor neither proposed nor was granted. `AreaPicker` answers by emitting
- * `{ areaId: undefined }`, and `updateFormData`'s spread copies that key rather than removing it —
- * so `doPersist` is the only place that can guarantee it never reaches the wire. The server's
- * `AREA_NOT_APPROVED` guard fires on the key's PRESENCE, so one leaked key would 400 every
- * autosave for the rest of the session; `null`, meanwhile, is a real destructive clear and must
- * still get through when a human actually asked for it. Both spellings are pinned here.
- */
-describe('useWizard — areaId omission on autosave (wayfinder tickets 037 + 044 + 045)', () => {
-  beforeEach((): void => {
-    vi.useFakeTimers()
-  })
-
-  afterEach((): void => {
-    vi.useRealTimers()
-    vi.restoreAllMocks()
-  })
-
-  async function bootDraft (): Promise<{ wizard: ReturnType<typeof useWizard>, updateSpy: ReturnType<typeof vi.spyOn> }> {
-    vi.spyOn(PermitProvider.prototype, 'create')
-      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
-    const updateSpy = vi.spyOn(PermitProvider.prototype, 'update')
-      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
-
-    const wizard = useWizard(makeSteps())
-    wizard.updateFormData(creatableDraft())
-    await vi.advanceTimersByTimeAsync(1600) // POST /permits
-    return { wizard, updateSpy }
-  }
-
-  function lastPatchBody (updateSpy: ReturnType<typeof vi.spyOn>): Record<string, unknown> {
-    return (updateSpy.mock.calls.at(-1) as [string, Record<string, unknown>])[1]
-  }
-
-  it('HEADLINE — a permit whose area is scoped out of the list still autosaves, with no areaId key at all', async () => {
-    vi.mocked(toast.error).mockClear()
-    const { wizard, updateSpy } = await bootDraft()
-
-    // The permit was hydrated against area 77; AreaPicker could not find 77 in the scoped list and
-    // stripped it. `undefined`, deliberately — see AreaPicker.resolveStaleArea.
-    wizard.updateFormData({ areaId: 77 })
-    wizard.updateFormData({ areaId: undefined })
-    await vi.advanceTimersByTimeAsync(1600)
-
-    // The permit is still saveable: a PATCH really went out...
-    expect(updateSpy).toHaveBeenCalled()
-    // ...and it carries no `areaId` key whatsoever. `toEqual`/`toMatchObject` would pass here even
-    // if the key were present holding `undefined`, so assert on the key itself — that presence is
-    // exactly what the server's guard tests.
-    expect(Object.keys(lastPatchBody(updateSpy))).not.toContain('areaId')
-    expect(lastPatchBody(updateSpy)).not.toHaveProperty('areaId')
-    expect(toast.error).not.toHaveBeenCalled()
-
-    // Every later autosave stays clean too — the strip is not a one-shot that a subsequent edit
-    // re-dirties.
-    wizard.updateFormData({ title: 'Warehouse repaint — revised' })
-    await vi.advanceTimersByTimeAsync(1600)
-    expect(Object.keys(lastPatchBody(updateSpy))).not.toContain('areaId')
-  })
-
-  it('still sends areaId: null for a user’s deliberate clear — the strip must not swallow that', async () => {
-    const { wizard, updateSpy } = await bootDraft()
-
-    wizard.updateFormData({ areaId: 5 })
-    await vi.advanceTimersByTimeAsync(1600)
-    wizard.updateFormData({ areaId: null })
-    await vi.advanceTimersByTimeAsync(1600)
-
-    expect(lastPatchBody(updateSpy)).toHaveProperty('areaId', null)
-  })
-
-  it('sends a real areaId untouched — an approved area the contractor CAN see still saves', async () => {
-    const { wizard, updateSpy } = await bootDraft()
-
-    wizard.updateFormData({ areaId: 12 })
-    await vi.advanceTimersByTimeAsync(1600)
-
-    expect(lastPatchBody(updateSpy)).toHaveProperty('areaId', 12)
-  })
-
-  /**
-   * wayfinder ticket 045 — the hole 044's fix left. Its strip only ran when `AreaPicker` emitted
-   * `areaId: undefined`, which needs `AreaPicker` to MOUNT. It lives inside `Step7Position`, and
-   * `steps` filters that step out entirely when no facility plan is active — which is production
-   * today (ticket 014: no plan version was ever activated).
-   *
-   * So a hydrated permit whose `areaId` names a genuinely non-APPROVED area re-sent that id on
-   * every autosave, the server's presence-based `AREA_NOT_APPROVED` guard 400'd every one, and no
-   * UI existed that could clear it. This is that permit, saving with no picker anywhere: the
-   * wizard is built on a single-step registry, so `Step7Position` provably never mounts.
-   */
-  it('HEADLINE 045 — a hydrated areaId is never echoed back, even with no AreaPicker in the wizard', async () => {
-    vi.mocked(toast.error).mockClear()
-    const updateSpy = vi.spyOn(PermitProvider.prototype, 'update')
-      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
-    const createSpy = vi.spyOn(PermitProvider.prototype, 'create')
-      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
-
-    const wizard = useWizard(makeSteps())
-    wizard.hydrate(hydratedPermit({ areaId: 77 }))
-
-    // Seeded for display — the picker, when it exists, needs it to resolve and show the area.
-    expect(wizard.formData.value.areaId).toBe(77)
-
-    // An ordinary edit somewhere else in the wizard triggers the autosave.
-    wizard.updateFormData({ title: 'Roof repair — revised' })
-    await vi.advanceTimersByTimeAsync(1600)
-
-    expect(createSpy).not.toHaveBeenCalled()
-    expect(updateSpy).toHaveBeenCalled()
-    // Assert on the KEY LIST. `toEqual` and `toMatchObject` both ignore undefined-valued
-    // properties, so either would pass whether or not the key was stripped — 044 hit exactly
-    // that trap, and the server's guard tests presence, not value.
-    expect(Object.keys(lastPatchBody(updateSpy))).not.toContain('areaId')
-    expect(toast.error).not.toHaveBeenCalled()
-
-    // Still clean on every later autosave, not just the first.
-    wizard.updateFormData({ foreman: 'Wichai' })
-    await vi.advanceTimersByTimeAsync(1600)
-    expect(Object.keys(lastPatchBody(updateSpy))).not.toContain('areaId')
-  })
-
-  it('sends a user’s pick made AFTER a hydrate — seeding is not choosing, but choosing is', async () => {
-    vi.spyOn(PermitProvider.prototype, 'create')
-      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
-    const updateSpy = vi.spyOn(PermitProvider.prototype, 'update')
-      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
-
-    const wizard = useWizard(makeSteps())
-    wizard.hydrate(hydratedPermit({ areaId: 77 }))
-
-    wizard.updateFormData({ areaId: 91 })
-    await vi.advanceTimersByTimeAsync(1600)
-    expect(lastPatchBody(updateSpy)).toHaveProperty('areaId', 91)
-
-    // …and a deliberate clear after a hydrate still reaches the server as a real `null`, which is
-    // the case a blanket "always delete areaId" fix would silently destroy.
-    wizard.updateFormData({ areaId: null })
-    await vi.advanceTimersByTimeAsync(1600)
-    expect(lastPatchBody(updateSpy)).toHaveProperty('areaId', null)
   })
 })
 
@@ -617,11 +469,11 @@ describe('useWizard — JSA row filtering at serialization (wayfinder ticket 001
 /**
  * wayfinder 107 — 070's "area drops the pin, pin rides in the same patch" describe block used to
  * live here. It tested the co-write of `Permit.position`, which 105 removed from the wire
- * entirely: area and pin are now fully independent fields (ticket 107 note 3) — picking an area
- * no longer touches `formData.pinId` at all (`Step3WhereWhen.onAreaChange` forwards only
- * `{ areaId }`, ignoring whatever `position` `AreaPicker` still computes for its own unrelated
- * default-position feature). There is nothing left here to race, so the block is gone rather than
- * rewritten to test a field that no longer exists.
+ * entirely: area and pin became fully independent fields (ticket 107 note 3) — picking an area no
+ * longer touched `formData.pinId` at all. There was nothing left here to race, so the block was
+ * removed rather than rewritten to test a field that no longer existed. Wayfinder 121 has since
+ * removed `Area`/`AreaPicker`/`areaId` from this app entirely, so the comparison itself is now
+ * purely historical.
  */
 
 /**
@@ -651,8 +503,7 @@ describe('useWizard — multi-day window round-trips without a timezone shift (w
       startDate: '2026-08-20T00:00:00.000Z',
       endDate: '2026-08-22T00:00:00.000Z',
       dailyStart: '1970-01-01T01:00:00.000Z',
-      dailyEnd: '1970-01-01T09:00:00.000Z',
-      areaId: undefined
+      dailyEnd: '1970-01-01T09:00:00.000Z'
     }))
 
     expect(wizard.formData.value.startDate).toBe('2026-08-20')

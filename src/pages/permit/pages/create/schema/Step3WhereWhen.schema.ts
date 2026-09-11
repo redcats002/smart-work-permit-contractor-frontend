@@ -5,11 +5,11 @@ import i18n from '@/plugins/I18n.plugin'
  * wayfinder 070/107 — "Where & when" is step 3. Runs against the whole accumulated wizard
  * formData (see useWizard.next()), so this only asserts this step's own keys.
  *
- * `areaId`/`pinId` are deliberately NOT required here, mirroring the pre-107 schemas they came
- * from: area never gates Next/Submit (wayfinder 037's explicit constraint), and whether a pin is
- * REQUIRED depends on async external state (whether an active pin on an active plan exists) that
- * a zod schema can't see — that gate stays in `usePinPreflight`/`useWizard.isNextBlocked`,
- * unchanged by this ticket.
+ * `pinId` is deliberately NOT required here, mirroring the pre-107 schema it came from: whether a
+ * pin is REQUIRED depends on async external state (whether an active pin on an active plan
+ * exists) that a zod schema can't see — that gate stays in
+ * `usePinPreflight`/`useWizard.isNextBlocked`, unchanged by this ticket. `areaId` sat alongside it
+ * here until wayfinder 121 removed `Area` from this app entirely.
  *
  * `location` is `Permit.location` moved verbatim from `Step2BasicInfo.schema.ts` — same wire
  * field, still required at this app's own wizard-UX level even though it is nullable on the wire
@@ -18,7 +18,6 @@ import i18n from '@/plugins/I18n.plugin'
 const requiredText = (label: string): z.ZodString => z.string().min(1, i18n.global.t('common.validation.requiredField', { label }))
 
 export const Step3WhereWhenFieldsSchema = z.object({
-  areaId: z.number().nullable().optional(),
   pinId: z.number().nullable().optional(),
   location: requiredText(i18n.global.t('permit.create.steps.whereWhen.field.locationDetail')),
   /** `YYYY-MM-DD` */

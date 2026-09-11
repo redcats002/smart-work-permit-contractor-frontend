@@ -47,6 +47,8 @@ const error: typeof errorEn = {
   ACCOUNT_DEACTIVATED: 'บัญชีนี้ถูกปิดใช้งานแล้ว กรุณาติดต่อเจ้าหน้าที่ความปลอดภัยเพื่อเปิดใช้งานอีกครั้ง',
   LAST_SAFETY_OFFICER: 'นี่คือเจ้าหน้าที่ความปลอดภัยที่ยังใช้งานอยู่คนสุดท้าย กรุณาเพิ่มหรือเปิดใช้งานอีกบัญชีก่อนแก้ไขบัญชีนี้',
 
+  // Area (wayfinder 034/036) — declared-but-dormant since wayfinder 106/121 deleted `Area`; kept
+  // for the same reason `ENTRANTS_STILL_INSIDE` is kept (see ApiErrorCode.enum.ts).
   AREA_NOT_APPROVED: 'พื้นที่นี้ยังไม่ได้รับการอนุมัติ กรุณาเลือกพื้นที่ที่อนุมัติแล้ว หรือรอเจ้าหน้าที่ความปลอดภัยตรวจสอบ',
   AREA_NOT_PENDING: 'พื้นที่นี้ไม่ได้อยู่ระหว่างรอการตรวจสอบแล้ว',
   AREA_REQUIRED: 'กรุณาเลือกพื้นที่ที่อนุมัติแล้วก่อนส่งใบอนุญาตนี้',

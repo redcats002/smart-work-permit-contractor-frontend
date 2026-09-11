@@ -13,8 +13,9 @@
 
     <div class="flex flex-col gap-5 px-4 py-6 md:px-8">
       <!-- wayfinder 077 — every <section>/inner block below carries an `id` a route hash can
-           target (see `scrollToHash`). Keep every new id in sync with the anchors this page's
-           own content, and any in-app link into it (Step3WhereWhen's "what is this for?"), use. -->
+           target (see `scrollToHash`). Keep every new id in sync with any in-app link into it.
+           (wayfinder 121 removed the `#area` block that used to sit inside "wizard" and the
+           Step3WhereWhen link that pointed at it, along with `Area` itself.) -->
       <section
         id="overview"
         :class="sectionClass('overview')"
@@ -63,26 +64,6 @@
             </p>
           </li>
         </ol>
-
-        <!-- wayfinder 077 — the "what is an area for?" answer, linked from Step3WhereWhen's area
-             picker (034/070's shipped area/pin semantics, restated here, not redesigned). -->
-        <div
-          id="area"
-          :class="sectionClass('area')"
-          class="rounded-lg border border-accent/30 bg-accent-50 p-4 transition-shadow">
-          <h3 class="text-sm font-bold text-text-primary">
-            {{ t('guide.area.title') }}
-          </h3>
-          <p class="mt-2 text-sm text-text-secondary">
-            {{ t('guide.area.p1') }}
-          </p>
-          <p class="mt-2 text-sm text-text-secondary">
-            {{ t('guide.area.p2') }}
-          </p>
-          <p class="mt-2 text-sm text-text-secondary">
-            {{ t('guide.area.p3') }}
-          </p>
-        </div>
       </section>
 
       <section

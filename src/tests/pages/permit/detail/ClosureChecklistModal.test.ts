@@ -49,7 +49,6 @@ function buildPermit (type: TPermitType = 'confined', overrides: Partial<IPermit
     entrantCount: 0,
     fireWatch: null,
     pinId: null,
-    areaId: null,
     jsaSteps: [],
     workers: [],
     photos: [],

@@ -72,7 +72,6 @@ function draftPermit (): Record<string, unknown> {
     qrIssuedAt: null,
     entrantCount: 0,
     fireWatch: null,
-    areaId: null,
     // title/foreman/location/date/times all present, but the worker table is empty and workers
     // have no minimum count — so the deterministic first-invalid step is step 3 (safety checks,
     // index 2): heights requires a wind reading and none was ever recorded.

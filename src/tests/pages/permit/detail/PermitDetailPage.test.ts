@@ -53,7 +53,6 @@ function buildPermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail {
     entrantCount: 0,
     fireWatch: null,
     pinId: null,
-    areaId: null,
     jsaSteps: [],
     workers: [],
     photos: [],

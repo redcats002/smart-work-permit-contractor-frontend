@@ -42,8 +42,7 @@ function permit (): IPermitListItem {
     qrIssuedAt: null,
     entrantCount: 0,
     fireWatch: null,
-    pinId: null,
-    areaId: null
+    pinId: null
   }
 }
 

@@ -4128,3 +4128,72 @@ One deliberate loose end, noted rather than fixed: `onPlanChange` clears `pins`/
 than the permit's currently-referenced pin can leave the "current pin, retired" panel visible while
 looking at an unrelated plan's image. Defensible — the panel is still describing what the permit
 actually references, not stale data — but flagged here rather than silently decided.
+
+## 2026-09-11 — wayfinder 121: remove Area from the contractor app
+
+The api half shipped alone in wayfinder 106 (`abea5dd`) — `Area`, `AreaGrant`, `Permit.areaId` and
+every area route are gone server-side. This is the deferred contractor half, deliberately split out
+so `AreaPicker.vue`'s removal (left byte-identical by 107) would be one act rather than a side
+effect of another ticket.
+
+**Deleted outright**: `AreaPicker.vue`, `CreateAreaModal.vue`, `CreateArea.schema.ts`, the `area`
+provider/models/enum (`Area.provider.ts`, `Area.model.ts`, `AreaReq.model.ts`, `AreaRes.model.ts`,
+`AreaStatus.enum.ts`), and `AreaPicker.test.ts`. `IPermitPosition` (`Permit.model.ts`) went with
+them — it existed solely as `IArea`'s own optional default-position shape (`IArea.planId`/`planX`/
+`planY`, `ICreateAreaPayload.position`), unrelated to `Permit.pinId`, and had no other caller.
+
+**In one direction, per the ticket's own constraint**: `areaId` is gone from
+`ICreatePermitDraftPayload`, `IUpdatePermitDraftPayload` (inherits it via `Partial<>`) and
+`IPermitListItem` — the api dropped `Permit.areaId` from the wire in 106, so this response field was
+already describing a column that no longer exists. `useWizard`'s `areaIdIsUserChoice` (045's
+invariant, written for `areaId`) is deleted along with `buildCreatePayload`'s `areaId` key and
+`doPersist`'s `if (!areaIdIsUserChoice) delete payload.areaId` strip. **`pinId`'s own copy of the
+same invariant (`pinIdIsUserChoice`) is untouched** and its
+`useWizard.persistence.test.ts` describe block, including the HEADLINE 107 case (a hydrated `pinId`
+in a wizard whose single-step registry provably never mounts `PinPicker`, asserted on the outgoing
+PATCH's key list, not `toEqual`/`toMatchObject`), still passes — 5/5 tests green, unchanged by this
+diff.
+
+`Step3WhereWhen.vue` lost the area picker block, its "what is this for?" link into the guide page,
+and `onAreaChange`; `PinPicker` and the pin-required banner are otherwise unchanged. `Step6Review.vue`
+lost `areaSummary` and its review row. `Step3WhereWhen.schema.ts` lost `areaId` from
+`Step3WhereWhenFieldsSchema` (it was never required — area never gated Next/Submit — so this is a
+pure deletion, no gating logic to preserve). Locale keys removed: `permit.create.steps.position.area.*`
+(the whole `position` key, which existed only for this), `whereWhen.areaHelpLink`,
+`review.field.area`, `review.areaNotSet`, and the guide page's `guide.area.*` block plus its `#area`
+`<section>` in `GettingStartedPage.vue` — EN and TH both.
+
+**Kept, by explicit instruction**: `AREA_NOT_APPROVED`, `AREA_NOT_PENDING`, `AREA_REQUIRED` stay
+declared in `ApiErrorCode.enum.ts` and both `error.ts` locale files, and routed in
+`SubmitErrorRouting.ts`'s `SUBMIT_ERROR_STEP_KEY` — same declared-but-dormant convention
+`ENTRANTS_STILL_INSIDE` already uses. Added a comment at each site saying so, since a reader
+scanning the diff would otherwise reasonably read them as dead code that should have gone with the
+rest.
+
+**Comment hygiene, not scope creep**: several doc comments elsewhere in this app cited `AreaPicker`
+as the origin of the `limit: 9999` unpaginated-fetch convention (`useMyPermits.ts`,
+`useCertificates.ts`, `PinReq.model.ts`, `FacilityPlanReq.model.ts`,
+`CertificateListPage.filters.test.ts`) or `IAreaProvider` as a design precedent (`Pin.provider.ts`).
+Those citations pointed at files this same change deletes, so they were reworded to describe the
+convention directly rather than name a component that no longer exists — this is fixing a reference
+this diff itself broke, not an unrelated cleanup.
+
+**False/stale claims found, not fixed** (out of scope — noted per the parent task's instruction):
+`src/locales/en/guide.ts`'s header comment says the "Getting started" page is "ported from and kept
+in step with `../../../docs/guide/using-contractor-app.md`" — that file does not exist anywhere in
+this repo (`find docs -iname "*using-contractor*"` — no match). Unrelated to this ticket's own
+claims, which all checked out: 106's resolution ("API half shipped in `abea5dd`") is confirmed —
+`docs/api/openapi.json` has zero occurrences of `areaId` or `/areas`; 107's resolution ("AreaPicker
+left byte-identical") is confirmed by `git log` on the file between the two tickets' commits.
+
+**Verification**: `./init.sh` — typecheck PASS, lint PASS (2 pre-existing `vue/one-component-per-
+file` warnings in `useNotificationPolling.test.ts`, unrelated to this change), **77 files / 620
+tests PASS**, contrast PASS, icons PASS, smoke SKIP (no API reachable on this machine — stated
+plainly, not implied as passing). `node scripts/check-contract-sync.mjs` (workspace root): OK — 32
+backend error codes all declared in both frontends.
+
+Root `AGENTS.md`/`CLAUDE.md` (symlinked) updated: the `permit` module row's provider list drops
+`area`, gains a wayfinder-121 note; the `guide` module row's Built column notes the `#area` section
+and its in-wizard link are gone; a new `Removed 2026-09-11 (wayfinder 121)` paragraph follows the
+"State of the codebase" narrative, per this repo's own convention of marking history rather than
+silently deleting it.
