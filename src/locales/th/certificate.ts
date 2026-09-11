@@ -91,8 +91,7 @@ const certificate: typeof certificateEn = {
       workerNameRequired: 'กรุณากรอกชื่อพนักงาน',
       roleRequired: 'กรุณากรอกตำแหน่ง',
       certTypeRequired: 'กรุณาเลือกชนิดบัตร',
-      fileType: 'ไฟล์ต้องเป็นภาพ JPEG, PNG, WEBP, HEIC หรือไฟล์ PDF',
-      expiryAfterIssued: 'วันหมดอายุต้องอยู่หลังวันที่ออก'
+      fileType: 'ไฟล์ต้องเป็นภาพ JPEG, PNG, WEBP, HEIC หรือไฟล์ PDF'
     }
   }
 }

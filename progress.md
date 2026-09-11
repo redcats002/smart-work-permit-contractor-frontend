@@ -3786,3 +3786,175 @@ run alone only proves the app agrees with its own types).
 tracker's own rule, not this repo's call. `DemoAccounts.ts` untouched. `ClosureChecklistModal.vue`
 untouched — migrating contractor close→close-request is wayfinder 098's frontend half, a separate
 ticket. `WorkerDetailPage.vue` and every other excluded page in the survey table above untouched.
+
+## 2026-09-11 — wayfinder 117: workerId never reached the certificate forms' resolvers, and the audit that fix forces
+
+**Asked:** fix `workerId`'s registration in all four certificate entry points, then audit — in one
+deliberate pass — every cross-field `.refine()` that starts firing once it does, prove each one
+correct or remove it, and correct the false comment 061/086 left behind. Split out of
+[115](docs/wayfinder/tickets/115-the-certificate-form-gains-licence-number-and-detail.md), whose
+own resolution traced the root cause and deliberately did not fix it there.
+
+**Verified the trace myself before touching anything** (the ticket's own instruction), against
+`node_modules/@primevue/core/baseeditableholder/index.mjs` and
+`node_modules/@primevue/forms/{form,useform}/index.mjs`: a component extending `BaseEditableHolder`
+(`InputText`, `Select`, `DatePicker`, …) self-registers via an `immediate` watcher that calls
+`this.$pcForm.register(name, formControl)` itself. A bare native `<input>` never runs that watcher
+and never calls `register()` — so 061's `<input type="hidden" name="workerId">` (and 086's copies
+of it) did not do what its own comment claimed. `workerId` was absent from the Form's `_states`
+(and the resolver's `values`) both before and after that hidden input existed; `z.number()` failed
+the schema's base object parse on every submit; `event.valid` read `true` regardless, because it
+is computed only over registered `_states` entries. 115 was right about all of this — confirmed,
+not just repeated.
+
+**Enumerated every rule that comes alive: exactly one.** `AddCertificate.schema.ts` had a single
+cross-field `.refine()` chained onto the base object — `expiryAfterIssued`. The other apparent
+"rule" (`licenceNo` OR an attachment) was never a schema `.refine()` at all (115 deliberately kept
+it as a plain JS check, for an unrelated reason — `file`'s own `<input type="file">` is equally
+unregistered, and a refine would only ever see it as `undefined`), so fixing `workerId` does not
+revive it; nothing to audit there.
+
+**`expiryAfterIssued` — removed, not revived.** Checked against the api
+(`smart-work-permit-api/src/modules/certificate/commands/{create,update}/{create,update}.model.ts`
+and `.service.ts`): there is no ordering check on `issuedDate`/`expiryDate` server-side, in either
+direction. Reviving this as a submission-blocking `.refine()` would refuse a PATCH/POST the server
+accepts outright — the exact shape the standing invariant forbids ("the server's verdict stays
+authoritative... never gate beyond it"). Reported as a finding rather than shipped: if this
+ordering should be enforced, it belongs in the api first. Its now-orphaned locale key
+(`certificate.form.validation.expiryAfterIssued`, both languages) was removed with it.
+
+**The fix, in all four entry points** (`AddCertificateModal.vue`, `CertificateEditPage.vue`,
+`CreateCertificateModal.vue`, `AddWorkerCertificateModal.vue`): `WorkerPicker` is a plain Vue
+component, not a `BaseEditableHolder`-based one, so nothing calls `register()` on its behalf.
+Fixed by calling the `<Form ref>` instance's own public `register('workerId')` once (a
+`watch(formRef, …, { immediate: true })`, matching how a conditionally-mounted template ref is
+meant to be observed) and keeping it in sync via the same instance's `setFieldValue('workerId', …)`
+on every `formData.workerId` change — both are part of the real, exposed `FormInstance` API
+(verified in `node_modules/@primevue/forms/form/index.mjs`'s own `setup()` return), not a native
+DOM event, which could only ever hand the resolver a string. `register` itself is missing from the
+library's own `.d.ts` despite being exposed at runtime — added `IFormInstanceWithRegister` to
+`src/models/Form.model.ts` (same precedent as the file's pre-existing `IFormType`) rather than
+`as any`-casting it. The old hidden `<input type="hidden">` stays in the DOM in all four files,
+now carrying no data at all — kept only as a `[name="workerId"]` anchor for
+`scrollToFirstError`'s `document.querySelector`, since a validation error on `workerId` is no
+longer silently impossible.
+
+**The false comment, corrected in all four `.vue` files plus the schema.** 061/086's copy-pasted
+line — *"Without this the resolver never sees workerId... submit silently no-ops"* — is replaced
+with the real explanation and a pointer at `AddCertificate.schema.ts`'s own (also rewritten) top
+comment, which carries the full trace once rather than four half-copies of it.
+
+**A genuine, if minor, UX bug fixed as a side effect**: `workerId`'s `LabelField` has always read
+`$form.workerId?.invalid` to decide whether to show an inline error — but `$form.workerId` never
+existed, so a submit with no worker picked showed no inline error under the field at all (only
+`event.valid` staying permanently `true` masked this further). Registration now makes that
+red/inline-error state real.
+
+**Tests** (the ticket's own required evidence — resolver `values`, not payload correctness, which
+proves nothing about this specific defect since every entry point already builds its payload from
+`formData` and would look correct regardless):
+- `src/tests/pages/certificate/schema/AddCertificate.schema.test.ts` (new) — `AddCertificateSchema`
+  parses when `workerId` is a real number; still fails its base parse when `workerId` is missing OR
+  a string; does NOT reject an expiry date before (or equal to) the issued date, proving
+  `expiryAfterIssued`'s removal took effect at the schema level.
+- `AddCertificateModal.test.ts` (extended) — the picked `workerId` is present in the Form's own
+  `validate()` output as a number, once every other required field is also valid (the resolver
+  collapses `values` to `undefined` for the WHOLE object on any base-parse failure — a test that
+  leaves other fields empty "passes" for the wrong reason); clearing the picked worker back out
+  surfaces a `workerId`-specific error from `validate()`, not a generic whole-object failure.
+- `CertificateEditPage.test.ts` (extended) — the same proof for the async-hydrated path: the
+  `<Form v-else>` only mounts once `fetchDetail()` resolves, and `watch(formRef, …)` (not
+  `onMounted`, which would run too early) is what catches that.
+- `CreateCertificateModal.test.ts` (new) and `AddWorkerCertificateModal.test.ts` (new) — the same
+  resolver-level proof for the two entry points that had no test coverage at all before this
+  ticket, checked independently rather than assumed from the other two's identical fix. Writing
+  `AddWorkerCertificateModal`'s test surfaced a real lifecycle detail worth recording: its
+  `resetForm()` (the only place `workerId` gets seeded) runs off a `watch(visible, …)` that only
+  fires on a **false→true transition** — mounting a test wrapper already `modelValue: true` skips
+  it entirely and is a test artifact, not a modal bug; `WorkerDetailPage.vue` always opens this
+  modal from closed, so production is unaffected.
+
+**`./init.sh`**, run twice (machine was not under load; both runs agreed):
+```
+=== Verification Summary ===
+All checks passed.
+```
+typecheck PASS, lint PASS (2 pre-existing warnings, unrelated — `useNotificationPolling.test.ts`),
+**79 files / 638 tests PASS** (up from 76/623), contrast PASS, icons PASS, smoke SKIP ("no API
+reachable at http://localhost:3000" — another agent holds the api repo this session, so this is
+**not verified against a live backend**; nothing here touches a provider, model, or the wire shape
+of any request, only client-side form registration and a client-only schema rule, so the risk that
+carries is low, but it is still unverified per AGENTS.md's own rule).
+
+**Ticket claims checked against the code, one found imprecise**: 117 itself says *"in all four
+certificate entry points"* — confirmed by grep, exactly four files import `AddCertificateSchema`.
+115's resolution quotes the false 061/086 comment verbatim and traces it correctly. No false claim
+found in either ticket beyond the comment they were already both flagging as wrong on purpose.
+
+**Checked `Step4PpeWorkers.schema.ts` before writing this session off as "one rule, one schema"
+rather than assuming it** — it also has a `WorkerPicker`, a `.superRefine()`, and a `workerId`
+field, so it looked like the exact same shape at first glance. It is not: `useWizard.ts` gates
+every step via a raw `schema.safeParse(formData.value)` (`useWizard.ts:258,418,566`), never
+`<Form>` + `zodResolver` + per-field `register()` at all — so its `workerId` (also `.optional()`
+there, unlike this schema's required `z.number()`) was never subject to 117's defect class in the
+first place; there was nothing dead to revive. Confirmed rather than left as "presumably fine."
+
+**Also re-read every file `grep -l issuedDate` in the api returned**, including
+`certificate/lib/certificate.model.ts` (the response entity — not previously opened this session),
+`create.service.ts` and `update.service.ts` in full (not just the grepped lines): no ordering
+check on `issuedDate`/`expiryDate` anywhere in the certificate module, which is the one fact
+`expiryAfterIssued`'s removal rests on.
+
+**Docs cross-check, one real hit.** `grep -rn "after issued\|หลังวันที่ออก"` across both `docs/`
+trees found no VitePress guide asserting this rule (061's own "both guides updated" claim holds).
+It DID find `docs/testing/suites/CT-CERTS.md` (CT-CERTS-007) asserting, as an *expected* manual-QA
+result, that "Step 4 and step 5 both fail — expiry must be strictly after issued" — directly
+falsified by this change. Corrected that one line (and the "steps 2–6 block" summary above it) to
+state the new, correct expectation (steps 4/5 now submit successfully, matching the server) with
+the wayfinder 117 citation. Did not touch the rest of that test case or file, which is independently
+stale for unrelated pre-existing reasons (still lists `workerName`/`role` as form fields, gone
+since 060/061; still lists GIF as an accepted file type, dropped by 050/061's own file allowlist) —
+a separate, larger audit outside this ticket's scope.
+
+**Removed the four `<input name="workerId" tabindex="-1" type="hidden">` "DOM anchor" elements**
+added in an earlier pass of this same session, after review caught that the anchor comment was
+itself wrong: a `type="hidden"` input has no layout box, so `scrollIntoView()`/`.focus()` are both
+no-ops on it, and worse — `scrollToFirstError`'s `document.querySelector('[name="a"],[name="b"]')`
+returns the FIRST DOM match, so this inert element (sitting above `certType`/the date fields in
+markup order) would have silently swallowed a real scroll+focus that should have landed on a
+different, actually-focusable field whenever both errored together. Shipping a new comment that
+overstated what an inert element does, in the same four files whose false comment is this ticket's
+subject, would have been exactly the failure mode this ticket exists to stop. No test queried
+`[name="workerId"]` (checked before removing), and `LabelField` already renders workerId's inline
+error for real now that it is registered — nothing relied on the anchor.
+
+**Verified `worker.validation.required` (the message on `workerId`'s `z.number()`, now reachable
+for the first time — before this fix `event.valid` could never go `false`, and `$form.workerId`
+never existed for `LabelField` to render) exists EN + TH**: `src/locales/{en,th}/worker.ts`,
+`picker.validation.required`, and the TH file is typed `typeof workerEn` so a missing key there is
+already a compile error, not just a locale gap. No action needed; recorded as checked.
+
+**A finding worth flagging even though it is out of scope to fix**:
+`.agents/skills/project-conventions/reference/form-patterns.md` states *"No `name` attribute is
+required on inner inputs (selection/date components) — the resolver validates via reactive
+`initial-values`."* That is false against the exact source this ticket traced —
+`node_modules/@primevue/forms/useform/index.mjs`'s `_states` (what the resolver actually reads) is
+populated only by `register()`, and `initialValues` is read once, at registration time, to seed a
+field that already exists in `_states`; it is never a live source the resolver re-reads. This is
+the documented belief that produced 117's whole defect. Not edited (skill-file changes are outside
+this ticket), but recorded here so the next session does not trust it either.
+
+Out of scope, left alone per the ticket: `Area`, the permit coordinate, `Worker.role`, `Gas
+Testing` — no new code written against any of them (`WorkerPicker.vue`'s existing display of
+`option.role` and `CertTypeSelect.vue`'s existing `role`-filtering are untouched, pre-existing
+code, not touched by this ticket). `WorkerPicker.vue` and `Step4PpeWorkers.vue` (the other
+`WorkerPicker` consumer, on a different schema, and NOT subject to this defect class — see above)
+untouched — 117's own scope is the four `AddCertificate.schema.ts` entry points, not "every
+WorkerPicker-based form" the ticket's own "do not fix it inside another ticket" section warns is a
+much larger blast radius.
+`src/pages/auth/pages/login/constants/DemoAccounts.ts` untouched. Wayfinder tickets not closed and
+`map*.md` not edited, per the tracker's own rule.
+
+**`./init.sh` re-run clean after the hidden-input removal**: typecheck PASS, lint PASS (same 2
+pre-existing warnings), 79 files / 638 tests PASS, contrast PASS, icons PASS, smoke SKIP (no API
+reachable).

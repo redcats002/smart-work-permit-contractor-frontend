@@ -4,6 +4,7 @@
     :label="t('certificate.form.title')">
     <template #default="{ close }">
       <Form
+        ref="formRef"
         v-slot="$form"
         :initial-values="formData"
         :resolver="resolver"
@@ -24,13 +25,6 @@
             :initial-name="formData.workerName"
             :invalid="invalid"
             @worker-selected="onWorkerSelected($event)" />
-          <!-- The Form tracks fields by registered input name, and WorkerPicker is a component,
-               not an <input>. Without this the resolver never sees workerId, the schema's
-               `z.number()` fails on undefined, and submit silently no-ops. -->
-          <input
-            :value="formData.workerId"
-            name="workerId"
-            type="hidden">
         </LabelField>
         <LabelField
           v-slot="{ invalid }"
@@ -148,7 +142,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, type Ref } from 'vue'
+import { ref, useTemplateRef, watch, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
@@ -165,6 +159,7 @@ import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import { dayjs } from '@/plugins/dayjs.plugin'
 import type { ICertificate } from '@/models/modules/certificate/Certificate.model'
 import type { IWorker } from '@/models/modules/worker/Worker.model'
+import type { IFormInstanceWithRegister } from '@/models/Form.model'
 import CertificateProvider, { type ICertificateProvider } from '@/resources/provider/certificate/Certificate.provider'
 import {
   AddCertificateSchema,
@@ -201,6 +196,25 @@ const formData: Ref<IAddCertificateFormState> = ref(useAddCertificateInitialValu
 const submitErrorMessage: Ref<string | undefined> = ref(undefined)
 // wayfinder 086 — filters CertTypeSelect's options; undefined (full vocabulary) until picked.
 const selectedWorkerRole: Ref<string | undefined> = ref(undefined)
+
+/**
+ * wayfinder 117 — see `AddCertificateModal.vue`'s identical pair of watchers for the full
+ * explanation: `WorkerPicker` is a plain Vue component, so nothing calls `$pcForm.register()`
+ * for it, and only the `<Form>` instance's own public `register`/`setFieldValue` (typed as
+ * `IFormInstanceWithRegister` from `@/models/Form.model` — `register` is not on the library's
+ * own declared `FormInstance` even though the runtime exposes it) can get `workerId` into the
+ * resolver's values.
+ */
+const formRef = useTemplateRef<IFormInstanceWithRegister | null>('formRef')
+
+watch(formRef, (instance: IFormInstanceWithRegister | null): void => {
+  if (!instance) return
+  instance.register('workerId')
+}, { immediate: true })
+
+watch((): number | undefined => formData.value.workerId, (workerId: number | undefined): void => {
+  formRef.value?.setFieldValue('workerId', workerId)
+})
 
 function resetForm (): void {
   formData.value = useAddCertificateInitialValues()

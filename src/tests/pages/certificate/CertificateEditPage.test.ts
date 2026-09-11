@@ -4,6 +4,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import PrimeVue from 'primevue/config'
+import { Form } from '@primevue/forms'
 import i18n, { setLocale } from '@/plugins/I18n.plugin'
 import CertificateProvider from '@/resources/provider/certificate/Certificate.provider'
 import CertificateEditPage from '@/pages/certificate/pages/edit/pages/CertificateEditPage.vue'
@@ -276,5 +277,28 @@ describe('CertificateEditPage — an unrecognised stored certType survives (050\
 
     const payload = update.mock.calls[0][1] as IUpdateCertificatePayload
     expect(payload.certType).toBe('Hot Work')
+  })
+})
+
+/**
+ * Wayfinder 117 — the ticket's own required test, for the edit form specifically: unlike the
+ * create modals, `formData.workerId` here is seeded asynchronously from `fetchDetail()` (the
+ * `<Form v-else>` only mounts once that resolves), so registration timing is exactly what this
+ * page could get wrong that the others could not. `validate()` (part of `FormInstance`,
+ * `node_modules/@primevue/forms/form/index.d.ts`) proves `workerId` reaches the resolver's
+ * `values` as a real number, not just that `buildPayload()`'s own `formData` read (already
+ * covered above) happens to look right regardless.
+ */
+describe('CertificateEditPage — workerId reaches the resolver (wayfinder 117)', () => {
+  it('the fetched workerId is present in the Form\'s resolved values, as a number', async (): Promise<void> => {
+    const wrapper = await mountPage(buildCertificate())
+
+    const form = wrapper.findComponent(Form).vm as unknown as {
+      validate: () => Promise<{ values?: Record<string, unknown> }>
+    }
+    const result = await form.validate()
+
+    expect(result.values?.workerId).toBe(1)
+    expect(typeof result.values?.workerId).toBe('number')
   })
 })

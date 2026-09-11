@@ -2,6 +2,7 @@ import { DOMWrapper, flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import PrimeVue from 'primevue/config'
+import { Form } from '@primevue/forms'
 import i18n, { setLocale } from '@/plugins/I18n.plugin'
 import CertificateProvider from '@/resources/provider/certificate/Certificate.provider'
 import WorkerPicker from '@/components/worker/WorkerPicker.vue'
@@ -230,5 +231,73 @@ describe('AddCertificateModal — the one-of rule (licence number or attachment)
     const payload = create.mock.calls[0][0] as ICreateCertificatePayload
     expect(payload.licenceNo).toBe('LIC-001')
     expect(payload.filePath).toBeUndefined()
+  })
+})
+
+/**
+ * Wayfinder 117 — the ticket's own required test: `workerId` must actually reach the resolver's
+ * `values`, not just the outgoing payload (which every one of these forms builds from `formData`
+ * directly and would look correct even while the resolver silently never saw `workerId` at all —
+ * exactly the bug this ticket found). Calling the mounted `<Form>`'s own `validate()` (part of
+ * the public `FormInstance` API, `node_modules/@primevue/forms/form/index.d.ts`) is what proves
+ * this at the layer where the original defect actually lived, rather than only observing its
+ * absence of consequence downstream.
+ */
+describe('AddCertificateModal — workerId reaches the resolver (wayfinder 117)', () => {
+  it('the picked workerId is present in the Form\'s resolved values, as a number', async (): Promise<void> => {
+    const wrapper = await mountModal()
+
+    const picker = wrapper.findComponent(WorkerPicker)
+    picker.vm.$emit('update:modelValue', 761)
+    picker.vm.$emit('worker-selected', { id: 761, name: 'Somchai', role: 'Entrant' })
+    await flushPromises()
+
+    await pickCertType('Confined Space Entry')
+    await body().find('input[name="issuedDate"]').setValue('2026-01-01')
+    await body().find('input[name="expiryDate"]').setValue('2030-01-01')
+    await body().find('input[name="licenceNo"]').setValue('LIC-001')
+    await flushPromises()
+
+    const form = wrapper.findComponent(Form).vm as unknown as {
+      validate: () => Promise<{ values?: Record<string, unknown> }>
+    }
+    const result = await form.validate()
+
+    expect(result.values?.workerId).toBe(761)
+    expect(typeof result.values?.workerId).toBe('number')
+  })
+
+  /**
+   * The other half of the same proof: `event.valid` used to stay `true` regardless of `workerId`
+   * because it is computed only over the Form's own registered `_states`, and `workerId` was
+   * never one of them. With every OTHER required field filled in validly, clearing only `workerId`
+   * must now surface a `workerId`-specific error from the resolver — not silently pass, and not
+   * (the trivial, uninformative failure mode) fail the whole object for reasons unrelated to
+   * `workerId` at all.
+   */
+  it('clearing the picked worker surfaces a workerId-specific validation error', async (): Promise<void> => {
+    const wrapper = await mountModal()
+
+    const picker = wrapper.findComponent(WorkerPicker)
+    picker.vm.$emit('update:modelValue', 761)
+    picker.vm.$emit('worker-selected', { id: 761, name: 'Somchai', role: 'Entrant' })
+    await flushPromises()
+
+    await pickCertType('Confined Space Entry')
+    await body().find('input[name="issuedDate"]').setValue('2026-01-01')
+    await body().find('input[name="expiryDate"]').setValue('2030-01-01')
+    await body().find('input[name="licenceNo"]').setValue('LIC-001')
+    await flushPromises()
+
+    picker.vm.$emit('update:modelValue', undefined)
+    picker.vm.$emit('worker-selected', undefined)
+    await flushPromises()
+
+    const form = wrapper.findComponent(Form).vm as unknown as {
+      validate: () => Promise<{ errors?: Record<string, Array<{ message?: string }>> }>
+    }
+    const result = await form.validate()
+
+    expect(result.errors?.workerId?.length ?? 0).toBeGreaterThan(0)
   })
 })

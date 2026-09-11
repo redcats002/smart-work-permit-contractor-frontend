@@ -92,8 +92,7 @@ const certificate = {
       workerNameRequired: 'Please enter the worker name',
       roleRequired: 'Please enter the role',
       certTypeRequired: 'Please select a certificate type',
-      fileType: 'File must be a JPEG, PNG, WEBP or HEIC image, or a PDF',
-      expiryAfterIssued: 'Expiry date must be after the issued date'
+      fileType: 'File must be a JPEG, PNG, WEBP or HEIC image, or a PDF'
     }
   }
 }

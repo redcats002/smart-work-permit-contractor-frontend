@@ -4,20 +4,19 @@
     :label="t('certificate.form.title')">
     <template #default="{ close }">
       <Form
+        ref="formRef"
         v-slot="$form"
         :initial-values="formData"
         :resolver="resolver"
         class="grid grid-cols-1 gap-4"
         @submit="onSubmit($event, close)">
-        <!-- The worker is already known (this is THEIR detail page) — no picker, just the same
-             shared schema/name-registration the other two forms use (wayfinder 061). -->
+        <!-- The worker is already known (this is THEIR detail page) — no picker, just the
+             worker's id seeded straight into formData and registered with the Form by the
+             watchers below (wayfinder 117 — see AddCertificate.schema.ts's top comment for why a
+             hidden `<input>` never did this, despite 061/086's comment saying it did). -->
         <p class="rounded-lg bg-surface-app px-3.5 py-2.5 text-sm text-text-secondary">
           {{ worker.name }}
         </p>
-        <input
-          :value="formData.workerId"
-          name="workerId"
-          type="hidden">
         <LabelField
           v-slot="{ invalid }"
           :form="$form"
@@ -131,7 +130,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, type Ref } from 'vue'
+import { ref, useTemplateRef, watch, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
@@ -145,6 +144,7 @@ import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import CertTypeSelect from '@/components/certificate/CertTypeSelect.vue'
 import { dayjs } from '@/plugins/dayjs.plugin'
 import type { IWorker } from '@/models/modules/worker/Worker.model'
+import type { IFormInstanceWithRegister } from '@/models/Form.model'
 import CertificateProvider, { type ICertificateProvider } from '@/resources/provider/certificate/Certificate.provider'
 import {
   AddCertificateSchema,
@@ -181,6 +181,23 @@ const visible = defineModel<boolean>({ default: false })
 const resolver = zodResolver(AddCertificateSchema)
 const formData: Ref<IAddCertificateFormState> = ref(useAddCertificateInitialValues())
 const submitErrorMessage: Ref<string | undefined> = ref(undefined)
+
+/**
+ * wayfinder 117 — see `AddCertificateModal.vue`'s identical pair of watchers for the full
+ * explanation. There is no `WorkerPicker` here (the worker is already known), but `workerId`
+ * still reaches the Form only through a plain `formData.workerId` assignment, not a form-aware
+ * component — the same gap, seeded from `resetForm()` instead of a picker's `update:modelValue`.
+ */
+const formRef = useTemplateRef<IFormInstanceWithRegister | null>('formRef')
+
+watch(formRef, (instance: IFormInstanceWithRegister | null): void => {
+  if (!instance) return
+  instance.register('workerId')
+}, { immediate: true })
+
+watch((): number | undefined => formData.value.workerId, (workerId: number | undefined): void => {
+  formRef.value?.setFieldValue('workerId', workerId)
+})
 
 function resetForm (): void {
   formData.value = { ...useAddCertificateInitialValues(), workerId: props.worker.id, workerName: props.worker.name }

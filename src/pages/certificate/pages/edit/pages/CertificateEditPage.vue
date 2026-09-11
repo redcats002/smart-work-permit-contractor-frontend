@@ -25,6 +25,7 @@
 
       <Form
         v-else
+        ref="formRef"
         v-slot="$form"
         :initial-values="formData"
         :resolver="resolver"
@@ -45,13 +46,6 @@
             :initial-name="formData.workerName"
             :invalid="invalid"
             @worker-selected="onWorkerSelected($event)" />
-          <!-- The Form tracks fields by registered input name, and WorkerPicker is a component,
-               not an <input>. Without this the resolver never sees workerId, the schema's
-               `z.number()` fails on undefined, and submit silently no-ops. -->
-          <input
-            :value="formData.workerId"
-            name="workerId"
-            type="hidden">
         </LabelField>
         <LabelField
           v-slot="{ invalid }"
@@ -206,7 +200,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, type ComputedRef, type Ref } from 'vue'
+import { computed, onMounted, ref, useTemplateRef, watch, type ComputedRef, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
@@ -219,6 +213,7 @@ import LabelField from '@/components/input/LabelField.vue'
 import WorkerPicker from '@/components/worker/WorkerPicker.vue'
 import CertTypeSelect from '@/components/certificate/CertTypeSelect.vue'
 import type { IWorker } from '@/models/modules/worker/Worker.model'
+import type { IFormInstanceWithRegister } from '@/models/Form.model'
 import { dayjs } from '@/plugins/dayjs.plugin'
 import { toast } from '@/plugins/toast'
 import { handleLoading } from '@/utils/HandleLoading'
@@ -260,6 +255,28 @@ const selectedWorkerRole = ref<string | undefined>(undefined)
 function onWorkerSelected (worker: IWorker | undefined): void {
   selectedWorkerRole.value = worker?.role
 }
+
+/**
+ * wayfinder 117 — see `AddCertificateModal.vue`'s identical pair of watchers for the full
+ * explanation: `WorkerPicker` is a plain Vue component, so nothing calls `$pcForm.register()`
+ * for it, and only the `<Form>` instance's own public `register`/`setFieldValue` (typed as
+ * `IFormInstanceWithRegister` from `@/models/Form.model` — `register` is not on the library's
+ * own declared `FormInstance` even though the runtime exposes it) can get `workerId` into the
+ * resolver's values.
+ * The `<Form v-else>` only mounts once `fetchDetail()` resolves, which is exactly when
+ * `formData.value.workerId` is already the real, fetched id — `watch(formRef, …)` fires the
+ * moment that happens rather than needing `onMounted`, which would run too early here.
+ */
+const formRef = useTemplateRef<IFormInstanceWithRegister | null>('formRef')
+
+watch(formRef, (instance: IFormInstanceWithRegister | null): void => {
+  if (!instance) return
+  instance.register('workerId')
+}, { immediate: true })
+
+watch((): number | undefined => formData.value.workerId, (workerId: number | undefined): void => {
+  formRef.value?.setFieldValue('workerId', workerId)
+})
 
 const certificateId: ComputedRef<number> = computed((): number => Number(route.params.id))
 

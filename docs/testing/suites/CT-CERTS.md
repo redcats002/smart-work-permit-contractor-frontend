@@ -177,9 +177,18 @@ Preconditions: logged in as the F0 contractor
 Expected:
 - The modal has: worker name, role, certificate type, issued date, expiry date, an optional file picker,
   and a submit button. The first five are marked required.
-- Steps 2–6 all block **client-side**: inline localized messages render, the view scrolls to the first
+- Steps 2, 3 and 6 block **client-side**: inline localized messages render, the view scrolls to the first
   error, and **no request fires**.
-- Step 4 and step 5 both fail — expiry must be **strictly after** issued.
+- **Steps 4 and 5 do NOT block (wayfinder 117, 2026-09-11) — this reverses the line this suite used to
+  state.** An expiry-before-issued (or same-date) client check existed in `AddCertificate.schema.ts` but
+  had never actually run since this schema's `workerId` field existed — tracing `@primevue/forms`'s
+  source found that a hidden `<input>` never registers with the Form, so the schema's base object parse
+  always failed and no cross-field `.refine()` chained after it ever executed, in either direction. Fixing
+  that registration would have made the rule start firing for the first time; checked instead against the
+  api (`certificate/commands/{create,update}/*.model.ts` and `.service.ts`) and found **no ordering check
+  on these two dates server-side at all**. Reviving the rule client-side would therefore refuse a
+  PATCH/POST the server accepts — the standing "never gate beyond the server" invariant — so it was
+  removed rather than fixed. Steps 4 and 5 now both fire `POST /certificates` and succeed, same as step 7.
 - Step 6 rejects the file type; only PNG, JPEG, GIF and PDF are accepted.
 - Step 7 fires exactly one `POST /api/v1/certificates`, the modal closes, the list refetches
   (`GET /certificates`), and the new certificate appears with the correct badge.

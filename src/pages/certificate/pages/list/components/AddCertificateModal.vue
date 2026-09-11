@@ -4,6 +4,7 @@
     :label="t('certificate.form.title')">
     <template #default="{ close }">
       <Form
+        ref="formRef"
         v-slot="$form"
         :initial-values="formData"
         :resolver="resolver"
@@ -24,13 +25,6 @@
             :initial-name="formData.workerName"
             :invalid="invalid"
             @worker-selected="onWorkerSelected($event)" />
-          <!-- The Form tracks fields by registered input name, and WorkerPicker is a component,
-               not an <input>. Without this the resolver never sees workerId, the schema's
-               `z.number()` fails on undefined, and submit silently no-ops. -->
-          <input
-            :value="formData.workerId"
-            name="workerId"
-            type="hidden">
         </LabelField>
         <LabelField
           v-slot="{ invalid }"
@@ -135,7 +129,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, type Ref } from 'vue'
+import { ref, useTemplateRef, watch, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
@@ -151,6 +145,7 @@ import CertTypeSelect from '@/components/certificate/CertTypeSelect.vue'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import { dayjs } from '@/plugins/dayjs.plugin'
 import type { IWorker } from '@/models/modules/worker/Worker.model'
+import type { IFormInstanceWithRegister } from '@/models/Form.model'
 import CertificateProvider, { type ICertificateProvider } from '@/resources/provider/certificate/Certificate.provider'
 import {
   AddCertificateSchema,
@@ -177,6 +172,31 @@ const formData: Ref<IAddCertificateFormState> = ref(useAddCertificateInitialValu
 // wayfinder 086 — filters CertTypeSelect's options. Undefined until a worker is actually picked,
 // which is the "unknown role" case CertTypeSelect already falls back to the full list for.
 const selectedWorkerRole: Ref<string | undefined> = ref(undefined)
+
+/**
+ * wayfinder 117 — `WorkerPicker` is a plain Vue component, not a component that extends
+ * `@primevue/core`'s `BaseEditableHolder`, so nothing calls `$pcForm.register()` on its behalf
+ * the way it does automatically for `InputText`/`Select`/`DatePicker` (checked against
+ * `node_modules/@primevue/core/baseeditableholder/index.mjs`). Registering it explicitly through
+ * the `<Form>` instance's own public API (`register`/`setFieldValue` — see `IFormInstanceWithRegister`
+ * in `@/models/Form.model` for why `register` needs its own type: it is not on the library's
+ * declared `FormInstance` even though the runtime exposes it) is what actually gets `workerId`
+ * into the resolver's `values`; a native `<input type="hidden">` bound to
+ * `:value="formData.workerId"` (061's original attempt) never did, because `register()`'s own
+ * `onChange` handler expects a `{ value }`-shaped payload (mirroring how `BaseEditableHolder`'s
+ * `writeValue()` calls it), not a raw DOM event whose `event.target.value` would only ever be a
+ * string — wrong shape for this schema's `z.number()` regardless.
+ */
+const formRef = useTemplateRef<IFormInstanceWithRegister | null>('formRef')
+
+watch(formRef, (instance: IFormInstanceWithRegister | null): void => {
+  if (!instance) return
+  instance.register('workerId')
+}, { immediate: true })
+
+watch((): number | undefined => formData.value.workerId, (workerId: number | undefined): void => {
+  formRef.value?.setFieldValue('workerId', workerId)
+})
 
 function resetForm (): void {
   formData.value = useAddCertificateInitialValues()
