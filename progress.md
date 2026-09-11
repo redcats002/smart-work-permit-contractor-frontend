@@ -4608,3 +4608,23 @@ user out with no reconnect attempt.
 tests PASS**, contrast PASS, icons PASS, smoke PASS (ran against a live
 `cd ../smart-work-permit-api && bun run dev`, all contract checks passed, including the pre-existing
 `GET /notifications` pagination check).
+
+---
+
+## 2026-09-11 — PAUSED by the owner. Where the contractor app stands, and what is left
+
+Round 4 paused at the owner's request; resume from
+`../docs/wayfinder/map-round-4-pins-closure-and-the-inspector-menu.md` → "Paused here".
+
+**Shipped on `dev` this round** (not deployed): pin picker (107), Area removed (121), certificate
+licence/description (115), form resolvers see `workerId` (117), tabs (113), menus (110 contractor
+half), PPE declared on the permit (097), worker is a name + role per permit (103), the permit
+report tab (112), **request close replaces the broken close** (098), live notifications with
+polling fallback (109). `./init.sh` 671 pass at `e2c50975`.
+
+**Open items for this app:**
+- **127** — in-app text still describing round 3: `guide.ts` beyond the closure paragraph,
+  `docs/api/GAPS.md` other rows; landing copy (separate repo) says the contractor closes.
+- **Owner questions**: "final PPE" on the report shows *declared*, not *observed* (112); the old
+  closure checklist's e-signature is gone and the api has no field for one (098).
+- The six round-4 Thai strings and guide pages still want a native read.
