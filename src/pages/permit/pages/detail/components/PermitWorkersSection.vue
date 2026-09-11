@@ -90,6 +90,36 @@
     </div>
 
     <p class="mt-5 mb-2.5 text-[12px] font-semibold text-text-secondary">
+      {{ t('permit.detail.sections.workers.ppeTitle') }}
+    </p>
+
+    <p
+      v-if="!permit.ppeDeclared.length"
+      class="rounded-[9px] border border-dashed border-border-input bg-surface-app px-4 py-5 text-center text-[12.5px] text-text-secondary"
+      data-test="ppe-empty">
+      {{ t('permit.detail.sections.workers.ppeEmpty') }}
+    </p>
+
+    <div
+      v-else
+      class="flex flex-wrap gap-1.5"
+      data-test="ppe-declared">
+      <span
+        v-for="item in permit.ppeDeclared"
+        :key="item"
+        class="inline-block rounded-full bg-surface-subtle px-2.5 py-1 text-[11px] font-semibold text-text-secondary">
+        {{ ppeItemLabel(item) }}
+      </span>
+    </div>
+
+    <p
+      v-if="permit.ppeNote"
+      class="mt-2 text-[12.5px] text-text-secondary"
+      data-test="ppe-note">
+      {{ permit.ppeNote }}
+    </p>
+
+    <p class="mt-5 mb-2.5 text-[12px] font-semibold text-text-secondary">
       {{ t('permit.detail.sections.workers.photosTitle') }}
     </p>
 
@@ -144,6 +174,8 @@ import { toast } from '@/plugins/toast'
 import { useApiError } from '@/composables/useApiError'
 import { EVIDENCE_SLOTS, findPhoto, type IEvidenceSlot } from '@/pages/permit/pages/create/constants/PhotoEvidence'
 import { requiresHealthCheck, workerHealthIssues, workerRoleSlug, type TWorkerHealthIssue } from '@/pages/permit/pages/create/constants/WorkerHealth'
+import { ppeItemSlug } from '@/enums/modules/permit/PpeItem.enum'
+import type { EPpeItem } from '@/enums/modules/permit/PpeItem.enum'
 import type { IPermitPhoto, IPermitWorker } from '@/models/modules/permit/Permit.model'
 import type { IPermitDetail } from '@/models/response/permit/PermitRes.model'
 import UploadProvider, { type IUploadProvider } from '@/resources/provider/Upload.provider'
@@ -218,6 +250,13 @@ function roleLabel (role: string): string {
   const key = `permit.create.steps.ppeWorkers.role.${workerRoleSlug(role)}`
   const label = t(key)
   return label === key ? role : label
+}
+
+/** Wayfinder 097 — reuses the wizard step's own item labels so the two screens never disagree. */
+function ppeItemLabel (item: EPpeItem): string {
+  const key = `permit.create.steps.ppeWorkers.ppe.item.${ppeItemSlug(item)}`
+  const label = t(key)
+  return label === key ? item : label
 }
 
 function issueLabel (issue: TWorkerHealthIssue): string {

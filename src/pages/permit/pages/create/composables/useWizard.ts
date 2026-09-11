@@ -144,7 +144,9 @@ function buildCreatePayload (data: IUpdatePermitDraftPayload): ICreatePermitDraf
     dailyEnd: data.dailyEnd ?? '',
     scheduleNote: data.scheduleNote ?? undefined,
     outdoorWork: data.outdoorWork ?? false,
-    pinId: data.pinId
+    pinId: data.pinId,
+    ppeDeclared: data.ppeDeclared,
+    ppeNote: data.ppeNote ?? undefined
   }
 }
 
@@ -432,6 +434,12 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
       jsaSteps: permit.jsaSteps,
       workers: toFormWorkers(permit.workers),
       photos: permit.photos,
+      // wayfinder 097 — always present on GET (see IPermitBase); hydrated as-is so a resumed
+      // edit's PATCH round-trips the same checklist rather than a plain-field edit silently
+      // wiping it (the existing plain-field spread in doPersist already covers the outgoing
+      // side once these two are seeded here — no special-casing needed).
+      ppeDeclared: permit.ppeDeclared,
+      ppeNote: permit.ppeNote ?? undefined,
       // wayfinder ticket 107 (inheriting 045's invariant — see `pinIdIsUserChoice`). Seeded as-is
       // purely so `PinPicker` can DISPLAY it — the picker resolves it via `PinService.getById`
       // regardless of active status (ruling 8: deactivate never delete, so this always resolves

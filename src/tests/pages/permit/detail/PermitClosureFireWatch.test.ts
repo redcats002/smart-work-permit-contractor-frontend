@@ -36,6 +36,8 @@ function buildPermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail {
     dailyEnd: '2026-08-10T10:00:00.000Z',
     scheduleNote: null,
     outdoorWork: false,
+    ppeDeclared: [],
+    ppeNote: null,
     createdById: 'u-1',
     createdBy: null,
     createdAt: '2026-08-09T01:00:00.000Z',

@@ -259,6 +259,23 @@ const permit = {
           'anemometer': 'Anemometer display',
           'worksite': 'Worksite overview'
         },
+        // wayfinder 097 — the PPE checklist + note. Optional to submit (no client gate beyond
+        // the server's own `PPE_REQUIRED` flag, off by default and not modelled by this app).
+        ppe: {
+          title: 'PPE Worn',
+          optionalHint: 'Optional — check off what will be worn on this job. The server may require this if the facility turns on mandatory PPE declaration.',
+          item: {
+            'safety-glasses': 'Safety Glasses',
+            'hardhat': 'Hardhat',
+            'respiratory-protection': 'Respiratory Protection',
+            'earmuffs': 'Earmuffs',
+            'construction-vest': 'Construction Vest',
+            'gloves': 'Gloves',
+            'protective-boots': 'Protective Boots'
+          },
+          noteLabel: 'Note (optional)',
+          notePlaceholder: 'Anything else about the PPE for this job'
+        },
         regulation: {
           title: 'Pre-Work Health Check (Required)',
           body: 'ตามกฎกระทรวงการบริหาร จัดการ และดำเนินการด้านความปลอดภัย อาชีวอนามัย และสภาพแวดล้อมในการทำงานเกี่ยวกับปัจจัยเสี่ยง กำหนดให้ตรวจวัดความดันโลหิตและระดับแอลกอฮอล์ในเลือดก่อนอนุญาตเข้าปฏิบัติงานทุกครั้ง — ห้ามผู้มีระดับแอลกอฮอล์เกิน 0 มก.% หรือความดันผิดปกติเข้าปฏิบัติงาน'
@@ -451,6 +468,9 @@ const permit = {
         healthFail: '✗ Fail',
         healthIssueBloodPressure: 'Blood pressure outside the safe range',
         healthIssueAlcohol: 'Alcohol reading missing or above 0 mg%',
+        // wayfinder 097 — declared PPE, rendered next to the roster it belongs with.
+        ppeTitle: 'PPE declared',
+        ppeEmpty: 'No PPE has been declared on this permit.',
         photosTitle: 'Photo evidence',
         photosEmpty: 'No photo evidence has been attached to this permit.',
         photoMissing: 'Required — not attached',

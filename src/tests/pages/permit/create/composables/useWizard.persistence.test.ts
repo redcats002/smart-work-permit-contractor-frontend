@@ -63,6 +63,8 @@ function hydratedPermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail 
     dailyEnd: '2026-08-20T09:00:00.000Z',
     scheduleNote: null,
     outdoorWork: false,
+    ppeDeclared: [],
+    ppeNote: null,
     createdById: 'u1',
     createdBy: null,
     createdAt: '2026-08-19T00:00:00.000Z',

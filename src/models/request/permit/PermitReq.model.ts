@@ -1,6 +1,7 @@
 import type {
   IJsaStep, IPermitPhoto, IPermitSafetyReading, IPermitWorker
 } from '@/models/modules/permit/Permit.model'
+import type { EPpeItem } from '@/enums/modules/permit/PpeItem.enum'
 import type { TPermitStatus } from '@/enums/modules/permit/PermitStatus.enum'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import type { IBasePaginationRequest } from '../Request.model'
@@ -40,6 +41,16 @@ export interface ICreatePermitDraftPayload {
    * `PERMIT_POSITION_REQUIRED` regardless of what the client thinks.
    */
   pinId?: number | null
+  /**
+   * Wayfinder 097. Optional to submit (ruling: no client gate beyond the server's — the server
+   * only requires it when `PPE_REQUIRED` is on, an api-side deployment flag this app has no
+   * control over and does not model). Whole-value replace on PATCH, like `location`/`title` —
+   * NOT a collection like `workers`/`jsaSteps`: omitted leaves the stored checklist unchanged,
+   * an explicit `[]` clears it. `IUpdatePermitDraftPayload` inherits both fields unchanged via
+   * `Partial<>` below; do not re-declare them there.
+   */
+  ppeDeclared?: EPpeItem[]
+  ppeNote?: string | null
 }
 
 /**

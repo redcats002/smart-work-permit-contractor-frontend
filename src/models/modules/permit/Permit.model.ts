@@ -1,4 +1,5 @@
 import type { TJsaPhase } from '@/enums/modules/permit/JsaPhase.enum'
+import type { EPpeItem } from '@/enums/modules/permit/PpeItem.enum'
 import type { TPermitStatus } from '@/enums/modules/permit/PermitStatus.enum'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import type { TWorkerRole } from '@/enums/modules/permit/WorkerRole.enum'
@@ -59,6 +60,13 @@ export interface IPermitBase {
   dailyEnd: string
   scheduleNote: string | null
   outdoorWork: boolean
+  /**
+   * Wayfinder 097. Always present on GET — `[]`/`null`, never `undefined` — the api's `Permit`
+   * model declares both as required (`t.Array`/`t.Nullable`, not `t.Optional`). `create`/`update`
+   * bodies keep them optional (see `ICreatePermitDraftPayload`); only the read side is guaranteed.
+   */
+  ppeDeclared: EPpeItem[]
+  ppeNote: string | null
 }
 
 /**

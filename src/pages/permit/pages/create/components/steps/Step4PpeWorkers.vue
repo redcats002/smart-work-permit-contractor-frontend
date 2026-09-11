@@ -32,6 +32,38 @@
       </div>
     </section>
 
+    <section class="flex flex-col gap-2.5">
+      <div class="flex flex-col gap-1">
+        <h3 class="text-[13px] font-semibold text-text-primary">
+          {{ t('permit.create.steps.ppeWorkers.ppe.title') }}
+        </h3>
+        <p class="text-xs text-text-tertiary">
+          {{ t('permit.create.steps.ppeWorkers.ppe.optionalHint') }}
+        </p>
+      </div>
+      <div class="grid grid-cols-2 gap-x-4 gap-y-2.5 sm:grid-cols-3 lg:grid-cols-4">
+        <label
+          v-for="item in PPE_ITEMS"
+          :key="item"
+          class="flex cursor-pointer items-center gap-2 text-[13px] text-text-primary">
+          <Checkbox
+            v-model="ppeDeclaredModel"
+            :value="item" />
+          {{ t(`permit.create.steps.ppeWorkers.ppe.item.${ppeItemSlug(item)}`) }}
+        </label>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-[12px] font-medium text-text-secondary">
+          {{ t('permit.create.steps.ppeWorkers.ppe.noteLabel') }}
+        </label>
+        <Textarea
+          v-model="ppeNoteModel"
+          :placeholder="t('permit.create.steps.ppeWorkers.ppe.notePlaceholder')"
+          rows="2"
+          fluid />
+      </div>
+    </section>
+
     <section class="rounded-lg border border-status-pending-border bg-status-pending-bg px-3.5 py-3">
       <p class="text-[12.5px] font-bold text-status-pending-fg">
         <span aria-hidden="true">⚕</span> {{ t('permit.create.steps.ppeWorkers.regulation.title') }}
@@ -267,11 +299,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, type ComputedRef, ref, type Ref } from 'vue'
+import {
+  computed, type ComputedRef, ref, type Ref, type WritableComputedRef
+} from 'vue'
 
 import type { IPermitPhoto, IPermitWorker } from '@/models/modules/permit/Permit.model'
 import type { IWorker } from '@/models/modules/worker/Worker.model'
 
+import { PPE_ITEMS, ppeItemSlug } from '@/enums/modules/permit/PpeItem.enum'
+import type { EPpeItem } from '@/enums/modules/permit/PpeItem.enum'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import { type EWorkerRole, type TWorkerRole, WORKER_ROLES_BY_TYPE } from '@/enums/modules/permit/WorkerRole.enum'
 
@@ -353,6 +389,24 @@ const permitType: ComputedRef<TPermitType | undefined> = computed(
 )
 const workers: ComputedRef<IPermitWorker[]> = computed((): IPermitWorker[] => props.formData.workers ?? [])
 const healthRequired: ComputedRef<boolean> = computed((): boolean => requiresHealthCheck(permitType.value))
+
+/**
+ * Wayfinder 097. Bound directly to `formData` and emitted the same way every other field on this
+ * step is (`patchWorker`/`emitWorkers` above) — this step has no `<Form>`/zodResolver at all (see
+ * `Step4PpeWorkersSchema`, which validates the whole slice via `safeParse`, not a registered
+ * field), so there is no "bare native input the resolver can't see" trap here; a Volt `Checkbox`
+ * bound to a `WritableComputedRef` array is the same live-state pattern `Step3WhereWhen`'s
+ * `scheduleNoteModel` uses for its own free-text field. Optional to submit — no client gate.
+ */
+const ppeDeclaredModel: WritableComputedRef<EPpeItem[]> = computed<EPpeItem[]>({
+  get: (): EPpeItem[] => props.formData.ppeDeclared ?? [],
+  set: (value: EPpeItem[]): void => emit('update:formData', { ppeDeclared: value })
+})
+
+const ppeNoteModel: WritableComputedRef<string> = computed<string>({
+  get: (): string => props.formData.ppeNote ?? '',
+  set: (value: string): void => emit('update:formData', { ppeNote: value || undefined })
+})
 
 const evidenceSlots: ComputedRef<IEvidenceSlot[]> = computed(
   (): IEvidenceSlot[] => (permitType.value ? EVIDENCE_SLOTS[permitType.value] ?? [] : [])

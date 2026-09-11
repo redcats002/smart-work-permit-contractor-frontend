@@ -4205,3 +4205,92 @@ silently deleting it.
 which this app never calls — declared so the errorCode set stays closed across both frontends
 (contract-sync). openapi + CONTEXT.md copies taken current to api `cde78be`. `EPpeItem` here was
 already the api's seven; nothing else changes on this side.
+
+## 2026-09-11 — wayfinder 097, the deferred contractor half: PPE declaration on the permit
+
+That progress note above was wrong on one point: `EPpeItem` was **not** already on this side —
+`PPE_REQUIRED` (the errorCode) existed, but no `EPpeItem` enum, no `ppeDeclared`/`ppeNote` field
+anywhere, and no PPE UI. Ticket 097's own "Correction (2026-09-11)" section explains why: the
+ticket was closed in a commit message and a map, never in the ticket file itself, so the frontier
+never re-surfaced the owed contractor half. This item is that half.
+
+Built:
+- `src/enums/modules/permit/PpeItem.enum.ts` — `EPpeItem`, mirrored verbatim from the api's
+  `ppe-vocabulary.const.ts`, same provisional-list caveat carried over (the report's `image.png`
+  was never read against the transcribed seven items). `check-worker-vocabulary-sync.mjs` already
+  expected this exact path/name (it has printed `EPpeItem NOT FOUND in the contractor app` since
+  `b03d5de` per the ticket's correction) — no changes needed to the script itself; it now reports
+  `EPpeItem in sync (7 values)` and `EPpeItem in sync with the safety app (7 values)`.
+- `IPermitBase.ppeDeclared`/`ppeNote` (`Permit.model.ts`) — always-present on GET, typed
+  non-optional to match the api. `ICreatePermitDraftPayload.ppeDeclared?`/`ppeNote?`
+  (`PermitReq.model.ts`) — optional, whole-value replace on PATCH like `location`/`title`, not a
+  collection; `IUpdatePermitDraftPayload` inherits both via `Partial<>` with no re-declaration.
+- `Step4PpeWorkers.vue` (the `ppeWorkers` wizard step — confirmed the correct home: it is
+  literally titled "PPE & Workers" and had zero PPE content before this) gained a "PPE Worn"
+  section between the photo-evidence grid and the health-check regulation banner: the seven items
+  as Volt `Checkbox`es bound to a `WritableComputedRef<EPpeItem[]>` array, plus an optional
+  `Textarea` note — both wired the same way every other field on this step already is
+  (`emit('update:formData', patch)`, mirroring `Step3WhereWhen`'s own `scheduleNoteModel`
+  get/set pattern). This step has no `<Form>`/zodResolver at all — its schema validates the whole
+  `formData` slice via `safeParse`, not a registered field — so `form-patterns.md`'s "bare native
+  input the resolver can't see" trap (wayfinder 117) does not apply here; the correction's
+  instruction to wire PPE "the same way every other field in this wizard is wired" is satisfied by
+  the same live-`formData`-plus-emit pattern the rest of this step already uses. No client
+  `.min(1)` gate was added — optional to submit, per the ticket's own ruling.
+- `useWizard.ts` — `buildCreatePayload` now forwards `ppeDeclared`/`ppeNote` into the first
+  `POST /permits`; the PATCH leg needed no change at all, since `doPersist`'s existing
+  `{ ...rest }` spread of `formData` already carries any field once it exists on
+  `IUpdatePermitDraftPayload` (no special-casing, exactly as scoped). `hydrate` seeds both fields
+  from the fetched permit into `formData` for the resume/duplicate routes' first render.
+- `SubmitErrorRouting.ts` — `PPE_REQUIRED` routes to `'ppeWorkers'` in `SUBMIT_ERROR_STEP_KEY`,
+  next to the two certificate codes it now shares a step with.
+- `PermitWorkersSection.vue` (the detail page's "3. Workers & PPE" section — its title already
+  named this ticket's home, settling the "workers vs safety section" question without needing to
+  read `PermitSafetySection.vue` at all) gained a "PPE declared" block between the worker roster
+  and the photo-evidence grid: every declared item by its localized label as a pill, the note text
+  below when present, and a "none declared" empty state matching the voice of the sibling
+  `workers.empty`/`photosEmpty` messages already on this page.
+- EN + TH locale keys under `permit.create.steps.ppeWorkers.ppe.*` (title, optional hint, the
+  seven item labels, note label/placeholder) and `permit.detail.sections.workers.ppeTitle`/
+  `ppeEmpty`.
+
+Tests added: `useWizard.ppe.test.ts` (create payload carries exact `EPpeItem` strings; a later
+PATCH does too; `hydrate` restores both fields, including the empty-declaration/no-note case as
+`[]`/`undefined` rather than a stray truthy default), a `PPE_REQUIRED` case in
+`SubmitErrorRouting.test.ts`, and `PermitWorkersSection.test.ts` (declared items render by label,
+the note renders, the empty state renders, no note element when `ppeNote` is `null`). Making
+`ppeDeclared`/`ppeNote` non-optional on `IPermitDetail` broke 9 existing test fixtures that build a
+full `IPermitDetail`/`IPermitListItem` literal (`useWizard.hydrate.test.ts`,
+`useWizard.persistence.test.ts`, `ClosureChecklistModal.test.ts`, `FireWatch.test.ts`,
+`PermitClosureFireWatch.test.ts`, `PermitDetailPage.test.ts`, `PermitDetailSections.test.ts`,
+`HistoryTable.responsive.test.ts`, `PermitListPage.history.test.ts`) — each gained
+`ppeDeclared: []`/`ppeNote: null` alongside their existing `outdoorWork: false` line, no other
+change.
+
+**Verification**: `bunx eslint` on every touched file — clean. `bunx vue-tsc --noEmit` — clean.
+`bunx vitest run` — **79 files / 628 tests PASS** (one run surfaced an unrelated flaky
+`HTMLElement is not defined` PrimeVue Tablist teardown error inside
+`PermitDetailSections.test.ts`'s environment teardown, the same class of floating-promise-after-
+teardown flake `useWizard.hydrate.test.ts`'s own header comment documents; a second full run was
+clean with zero unhandled errors). `./init.sh`: typecheck PASS, lint PASS, tests 79/628 PASS,
+contrast PASS, icons PASS, smoke SKIP (no API reachable on this machine). Live API smoke was not
+run — no local backend was up this session, so the new `ppeDeclared`/`ppeNote` wire fields on
+`create`/`update` are unverified against a live server, only against this app's own types (see
+AGENTS.md's own caveat on this).
+
+**Deviation, not caused by this change**: `node ../scripts/check-contract-sync.mjs` (workspace
+root) is currently RED — `openapi.json` and `CONTEXT.md` have diverged between this repo/the api
+and the safety app/workspace root respectively. Confirmed pre-existing: it was already red before
+this session touched anything (the sibling safety-app agent working concurrently in
+`../smart-work-permit-frontend`, per this task's own instructions, is the likely source — this
+session did not touch that repo or the workspace-root glue docs). Not fixed here: fixing it would
+mean editing files this session was told not to touch (the safety app) or files with no way to
+tell which concurrent agent's version is current (`CONTEXT.md`).
+
+**Not done, out of this ticket's scope**: `useDuplicatePermit.ts`'s client-side clone does not copy
+`ppeDeclared`/`ppeNote` onto the new draft — the spec's task list did not mention the duplicate
+flow, and PPE is optional to submit either way, so a duplicated permit simply starts with an empty
+declaration like every other new draft. No module harness item existed for wayfinder 097 in
+`docs/modules/permit/feature_list.json` to update (it is a cross-cutting wayfinder ticket, not a
+numbered `PMT-*` item), so none was invented, per this session's own instruction not to invent a
+harness item structure from scratch.

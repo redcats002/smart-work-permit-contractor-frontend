@@ -66,6 +66,12 @@ describe('step routing', () => {
     expect(stepKeyForSubmitError('PERMIT_POSITION_REQUIRED')).toBe('whereWhen')
   })
 
+  // wayfinder 097 — the api's `PPE_REQUIRED` deployment flag routes to the same step as the
+  // certificate codes, since that step now also carries the PPE checklist.
+  it('sends PPE_REQUIRED to the PPE & Workers step', () => {
+    expect(stepKeyForSubmitError('PPE_REQUIRED')).toBe('ppeWorkers')
+  })
+
   // wayfinder ticket 037 — the `PERMIT_AREA_REQUIRED` deployment flag's submit gate lands on the
   // same step as the position picker, which now also carries the area picker.
   it('sends AREA_REQUIRED to the Where & when step', () => {

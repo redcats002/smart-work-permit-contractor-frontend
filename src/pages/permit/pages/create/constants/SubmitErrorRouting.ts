@@ -68,6 +68,9 @@ export const SUBMIT_ERROR_STEP_KEY: Partial<Record<EApiErrorCode, string>> = {
   [EApiErrorCode.WIND_OUT_OF_RANGE]: 'safetyChecks',
   [EApiErrorCode.CERT_MISSING]: 'ppeWorkers',
   [EApiErrorCode.CERT_EXPIRED]: 'ppeWorkers',
+  // wayfinder 097 — the api-side `PPE_REQUIRED` deployment flag's submit gate (off by default,
+  // like `CERT_TYPE_REQUIRED`) lands on the same step that now carries the PPE checklist.
+  [EApiErrorCode.PPE_REQUIRED]: 'ppeWorkers',
   [EApiErrorCode.PERMIT_POSITION_REQUIRED]: 'whereWhen',
   // wayfinder ticket 037 — the `PERMIT_AREA_REQUIRED` deployment flag's submit gate, dormant since
   // wayfinder 121 removed `Area` (and the picker that lived on this same step) from this app.
