@@ -4402,3 +4402,64 @@ showed "Showing every certificate type — this worker's role isn't in our list"
 about every worker. And the rewritten `AddCertificateModal` test **asserted that note appears**,
 enshrining it. Removed the prop, the filter, the map (the api dropped its copy in 096) and the
 locale key; the test now asserts the note is absent and fails against the old component.
+
+## 2026-09-11 — wayfinder 112: the permit report (visits, gaps, closure, printable)
+
+Resolves ticket 083 (via map ruling 18, unblocked by the api's wayfinder-119 auth fix, `GET
+/permits/:id/inspector-visits` now open to the owning contractor). Added a seventh detail-page tab,
+"Report" — `PermitReportSection.vue`, self-contained: fetches its own data through a new
+`usePermitReport.ts` composable and three new read-only providers (`inspector-visit`, `entrant`,
+`gas-log`, all mirroring the safety app's class/interface/method names for parity — ruling 18 has
+the safety app building a near-identical copy next), taking `permit`/`audit` as props rather than
+re-fetching either (`audit` is already fetched by the page's own `usePermitDetail`).
+
+**A — visits view**: per visit — who (`permitAuthorName(visit.inspector)`), when (`startedAt`/
+`submittedAt`, `d()`), entrant activity and gas readings correlated to the visit's own window
+(read-time association, no stored join — same convention the api's own doc comment describes),
+PPE (all three shapes: none/new/legacy, via a ported `src/utils/InspectorVisitPpe.ts`, unit-tested
+17/17 including a legacy row rendering honestly as "recorded on an earlier checklist" without
+crashing), notes with `noteType` (color-coded, full content — ruling 18's substance), photos (reuses
+the existing `FileAttachment.vue`/`Upload.provider` pattern). Two gaps, both derived purely
+client-side in `src/utils/PermitReportGaps.ts` (13 unit tests, positive+negative for each): a
+calendar day (Asia/Bangkok) with zero visits, and a gas-log entry whose server-given `dueAt` passed
+with no reading after it.
+
+**B — closure summary**: rendered only once `permit.status === 'CLOSED'` — terms, who closed + why
+(`PERMIT_CLOSED`'s `payload.reason`), final entrant state (the closure's own auto-checkout audit
+rows, `payload.closedPermit === true`), final PPE state.
+
+**Print**: a Print button (`window.print()`) plus a global `@media print` rule in `main.css` (hides
+`[role="tablist"]` and every `button`) and `print:hidden` on `AppTopbar`/`AppDrawer` in
+`DefaultLayout.vue` — no PDF library, per the standing first-party rule.
+
+**Deviations, flagged rather than silently decided:**
+- The ticket's spec text says "entrants in/out"; `GET /permits/:id/entrants` actually returns only
+  CURRENTLY-INSIDE workers (`getCurrentlyInsideWorkers`), never a history. The report derives the
+  actual in/out history from the audit trail (`ENTRANT_CHECKED_IN`/`ENTRANT_CHECKED_OUT`) instead,
+  and uses the entrants endpoint only for "who is inside right now" — verified against the live api
+  source, not assumed.
+- "Final PPE state" (closure summary) is sourced from the permit's own `ppeDeclared`/`ppeNote`
+  rather than the most recent inspector visit's `ppeChecklist` — the spec left this as a judgement
+  call; the label in the UI says which source it is.
+- Ticket 119 names an "inspector-facing notice that notes are contractor-visible" as also carried
+  by 112. That notice belongs on the inspector's getting-started page and beside the note field —
+  both live in the safety app, out of scope for this repo. Not built here.
+- The safety app's actual `payload.autoCheckedOutWorkerIds` shape named in the ticket text does not
+  match the live api (`close.service.ts` writes one `ENTRANT_CHECKED_OUT` audit row per worker with
+  `payload.closedPermit: true`, not one row with an array) — implemented against the real code.
+
+New files: `src/enums/modules/inspector-visit/InspectorVisitNoteType.enum.ts`,
+`src/models/response/{inspector-visit,entrant,gas-log}/*.model.ts`,
+`src/resources/provider/{inspector-visit,entrant,gas-log}/*.provider.ts`,
+`src/utils/{InspectorVisitPpe,PermitReportGaps}.ts`,
+`src/pages/permit/pages/detail/composables/usePermitReport.ts`,
+`src/pages/permit/pages/detail/components/PermitReport{Section,GapList,VisitCard,ClosureSummary}.vue`.
+Edited: `PermitDetailPage.vue` (7th tab), `src/locales/{en,th}/permit.ts`, `DefaultLayout.vue`,
+`src/assets/css/main.css`, plus the existing `PermitDetailSections.test.ts` (six sections → seven)
+and `PermitDetailPage.test.ts` (extended the existing 403 test to prove the report's own fetches
+never fire on a foreign permit).
+
+**Verification**: `bunx eslint` on every touched file — clean. `bunx vue-tsc --noEmit` — clean.
+`./init.sh`: typecheck PASS, lint PASS, **tests 84 files / 666 PASS**, contrast PASS, icons PASS,
+smoke SKIP (no API reachable on this machine — the three new providers are therefore unverified
+against a live backend, only against this app's own types and the api's read source directly).

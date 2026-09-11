@@ -510,6 +510,11 @@ const permit = {
       },
       audit: {
         title: '6. Audit trail'
+      },
+      // wayfinder 112 — the seventh tab. Map ruling 18: a contractor reads the FULL content on
+      // their own permits, inspector notes included.
+      report: {
+        title: '7. Report'
       }
     },
     banner: {
@@ -643,6 +648,68 @@ const permit = {
       pending: {
         title: 'QR pending approval',
         description: 'Your QR code is generated automatically once the Safety Officer approves this permit.'
+      }
+    },
+    // wayfinder 112 — the permit report tab. Full content, notes included, per map ruling 18.
+    report: {
+      printHint: 'Downloadable — use your browser\'s print dialog and choose "Save as PDF".',
+      printButton: 'Print / Save as PDF',
+      gapsTitle: 'Gaps',
+      gaps: {
+        none: 'No gaps found — every day has a visit and every reading was retested on time.',
+        noVisitTitle: 'Day(s) with no inspector visit ({count})',
+        overdueTitle: 'Overdue gas reading(s) — nobody took a retest in time ({count})',
+        overdueRow: 'A retest was due by {dueAt} and none was recorded before the next reading (or before now).'
+      },
+      currentlyInside: 'Currently inside (live count): {count}',
+      visitsTitle: 'Inspector visits',
+      loading: 'Loading the report…',
+      visitsEmpty: 'No inspector visits have been recorded for this permit yet.',
+      visit: {
+        started: 'Started {when}',
+        submitted: 'submitted {when}',
+        notSubmitted: 'not yet submitted',
+        entrantsTitle: 'Entrant activity during this visit',
+        ppeTitle: 'PPE',
+        gasTitle: 'Gas readings during this visit',
+        notesTitle: 'Notes',
+        photosTitle: 'Photos'
+      },
+      source: {
+        scan: 'Scan',
+        manual: 'Manual',
+        system: 'System'
+      },
+      entrant: {
+        IN: '{who} checked in — {when}',
+        OUT: '{who} checked out — {when}'
+      },
+      ppe: {
+        none: 'No PPE was recorded on this visit.',
+        gapsTitle: 'Undeclared gap flagged:',
+        legacy: 'Recorded on an earlier checklist — shown as originally written, not mapped onto this app\'s PPE list.'
+      },
+      // Matches src/enums/modules/inspector-visit/InspectorVisitNoteType.enum.ts exactly.
+      noteType: {
+        GENERAL: 'General',
+        WARNING: 'Warning',
+        CORRECTIVE_ACTION: 'Corrective action',
+        EMERGENCY: 'Emergency',
+        INCIDENT: 'Incident'
+      },
+      closure: {
+        title: 'Closure report',
+        type: 'Type',
+        window: 'Work window',
+        location: 'Location',
+        reasonTitle: 'Reason for closure',
+        noReason: 'No reason was recorded.',
+        entrantsTitle: 'Final entrant state',
+        entrantsClear: 'No workers were auto-checked-out at closure.',
+        autoCheckedOutRow: '{who} was auto-checked-out at closure — {when}',
+        // Judgement call, documented in the implementation report: sourced from the permit's own
+        // declared PPE rather than the most recent inspector visit's checklist.
+        ppeTitle: 'Final PPE state (as declared on the permit)'
       }
     }
   },

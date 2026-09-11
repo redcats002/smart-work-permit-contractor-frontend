@@ -116,7 +116,7 @@ describe('PermitDetailPage sections (PMT-013)', () => {
     vi.restoreAllMocks()
   })
 
-  it('renders all six sections in contract order', async () => {
+  it('renders all seven sections in contract order (wayfinder 112 added the report tab as the 7th)', async () => {
     const wrapper = await mountPage(buildPermit())
 
     const order = wrapper.findAll('[data-test^="section-"]')
@@ -129,7 +129,8 @@ describe('PermitDetailPage sections (PMT-013)', () => {
       'section-workers',
       'section-jsa',
       'section-closure',
-      'section-audit'
+      'section-audit',
+      'section-report'
     ])
   })
 

@@ -6,6 +6,9 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import PrimeVue from 'primevue/config'
 import i18n, { setLocale } from '@/plugins/I18n.plugin'
+import EntrantProvider from '@/resources/provider/entrant/Entrant.provider'
+import GasLogProvider from '@/resources/provider/gas-log/GasLog.provider'
+import InspectorVisitProvider from '@/resources/provider/inspector-visit/InspectorVisit.provider'
 import PermitProvider from '@/resources/provider/permit/Permit.provider'
 import PermitDetailPage from '@/pages/permit/pages/detail/pages/PermitDetailPage.vue'
 import type { TPermitStatus } from '@/enums/modules/permit/PermitStatus.enum'
@@ -362,5 +365,26 @@ describe('PermitDetailPage (PMT-010)', () => {
     expect(wrapper.text()).toContain('This permit is not available')
     // The audit call is only made once the permit itself resolved — a failed detail short-circuits it.
     expect(auditSpy).not.toHaveBeenCalled()
+  })
+
+  // wayfinder 112 — the Report tab's own sub-fetches (inspector-visits/entrants/gas-log) must
+  // never fire on a foreign permit either. The existing inline "not available" block above IS the
+  // app's forbidden state for this page; the Report tab does not get a second one, because it can
+  // never mount without a resolved `permit` — see PermitReportSection.vue's props.
+  it('never fetches the report data on a foreign permit — the same forbidden state covers the report tab', async () => {
+    vi.spyOn(PermitProvider.prototype, 'detail').mockRejectedValue({
+      code: 403,
+      message: 'Forbidden: permit belongs to another contractor'
+    })
+    const visitsSpy = vi.spyOn(InspectorVisitProvider.prototype, 'list')
+    const entrantsSpy = vi.spyOn(EntrantProvider.prototype, 'list')
+    const gasLogSpy = vi.spyOn(GasLogProvider.prototype, 'list')
+
+    const wrapper = await mountPage()
+
+    expect(wrapper.find('[data-test="detail-error"]').exists()).toBe(true)
+    expect(visitsSpy).not.toHaveBeenCalled()
+    expect(entrantsSpy).not.toHaveBeenCalled()
+    expect(gasLogSpy).not.toHaveBeenCalled()
   })
 })

@@ -171,6 +171,17 @@
                   <PermitAuditTimeline :entries="audit" />
                 </PermitDetailSection>
               </TabPanel>
+
+              <!-- wayfinder 112 — the seventh tab. Self-contained: fetches its own report data, reads `audit` as a prop. -->
+              <TabPanel value="report">
+                <PermitDetailSection
+                  :title="t('permit.detail.sections.report.title')"
+                  name="report">
+                  <PermitReportSection
+                    :audit="audit"
+                    :permit="permit" />
+                </PermitDetailSection>
+              </TabPanel>
             </TabPanels>
           </Tabs>
         </div>
@@ -221,6 +232,7 @@ import PermitDetailSection from '@/pages/permit/pages/detail/components/PermitDe
 import PermitInfoCard from '@/pages/permit/pages/detail/components/PermitInfoCard.vue'
 import PermitJsaSection from '@/pages/permit/pages/detail/components/PermitJsaSection.vue'
 import PermitQrPanel from '@/pages/permit/pages/detail/components/PermitQrPanel.vue'
+import PermitReportSection from '@/pages/permit/pages/detail/components/PermitReportSection.vue'
 import PermitSafetySection from '@/pages/permit/pages/detail/components/PermitSafetySection.vue'
 import PermitStatusBanner from '@/pages/permit/pages/detail/components/PermitStatusBanner.vue'
 import PermitUrgentSection from '@/pages/permit/pages/detail/components/PermitUrgentSection.vue'
@@ -303,7 +315,8 @@ const tabDefs: ComputedRef<ITabItemComponent[]> = computed((): ITabItemComponent
   { label: t('permit.detail.sections.workers.title'), value: 'workers' },
   { label: t('permit.detail.sections.jsa.title'), value: 'jsa' },
   { label: closureSectionTitle.value, value: 'closure' },
-  { label: t('permit.detail.sections.audit.title'), value: 'audit' }
+  { label: t('permit.detail.sections.audit.title'), value: 'audit' },
+  { label: t('permit.detail.sections.report.title'), value: 'report' }
 ])
 
 const { tab: activeTab, tabItems }: IUseTabItems = useTabItems(tabDefs)

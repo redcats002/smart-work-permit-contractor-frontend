@@ -2,17 +2,24 @@
   <div
     id="app"
     class="flex h-screen flex-col overflow-hidden">
-    <AppTopbar @toggle-menu="toggle()" />
+    <!--
+      wayfinder 112 — the permit report's print stylesheet hides app chrome so a printed/saved-as-PDF
+      report shows only the active report content. `print:hidden` is scoped to the chrome elements
+      themselves rather than a page-specific override, so every page prints clean, not only the report.
+    -->
+    <AppTopbar
+      class="print:hidden"
+      @toggle-menu="toggle()" />
 
     <div class="flex flex-1 overflow-hidden">
       <!-- ── Sidebar ─────────────────────────────────────────────── -->
-      <AppDrawer />
+      <AppDrawer class="print:hidden" />
 
       <!-- ── Backdrop (mobile only) ──────────────────────────────── -->
       <Transition name="drawer-backdrop">
         <div
           v-if="isOpen"
-          class="fixed inset-0 z-40 bg-black/40 min-[900px]:hidden"
+          class="fixed inset-0 z-40 bg-black/40 min-[900px]:hidden print:hidden"
           @click="close()" />
       </Transition>
 

@@ -11,3 +11,20 @@
 /* [data-p-sortable-column='true'][data-p-sorted='true'] {
 	background-color: var(--color-primary-50);
 } */
+
+/*
+ * wayfinder 112 — the permit report's print stylesheet. App chrome (topbar/drawer) is hidden via
+ * `print:hidden` at the component call sites in DefaultLayout.vue; this global rule covers the two
+ * pieces that have no single component to target — the tab strip itself (Volt `Tabs`, ARIA
+ * `role="tablist"`) and every interactive button on the page — so a printed/saved-as-PDF page shows
+ * only the active report content, on every page this applies to, not only the report tab.
+ */
+@media print {
+	[role='tablist'] {
+		display: none !important;
+	}
+
+	button {
+		display: none !important;
+	}
+}
