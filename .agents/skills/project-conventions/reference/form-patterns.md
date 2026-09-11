@@ -84,7 +84,24 @@ Template:
 
 - Fields bound to `v-model="formData.fieldName"` — the `formData` ref is the live form state used by the resolver
 - `LabelField :form="$form" name="fieldName"` — reads `$form.fieldName.invalid` to show validation errors automatically
-- No `name` attribute is required on inner inputs (selection/date components) — the resolver validates via reactive `initial-values`
+- **A field the resolver can see must be registered by a form-aware component.** `@primevue/core`'s
+  `BaseEditableHolder` — what `InputText`, `Select` and `DatePicker` extend — self-registers through
+  an `immediate` watcher calling `$pcForm.register(name, control)`. **A bare native `<input>`, hidden
+  or not, never runs that watcher**, so its value never reaches the resolver's `values`.
+  `initial-values` only *seeds* a field once at `register()` time; it is **not** a live source the
+  resolver re-reads.
+
+  > **This bullet used to say the opposite** — *"no `name` attribute is required on inner inputs; the
+  > resolver validates via reactive `initial-values`"* — and that belief produced wayfinder **117**:
+  > four certificate forms registered `workerId` with a hidden `<input>`, so `z.number()` failed the
+  > base parse on **every** submit and **no cross-field `.refine()` on those schemas ever ran**, for
+  > months. `event.valid` stayed `true` throughout, because it is computed only over *registered*
+  > fields. Nothing broke visibly only because the payloads were built from `formData` directly,
+  > bypassing the validated output entirely.
+  >
+  > If you need a value in the resolver, register it through the `<Form>` instance's `register()`, or
+  > bind it to a form-aware component. If you only need it in the payload, read `formData` and do not
+  > pretend the schema is checking it.
 - `@submit="onSubmit($event)"` — ESLint-compliant handler syntax (method call with `$event`, not bare reference)
 
 ## Child Form Component Pattern
