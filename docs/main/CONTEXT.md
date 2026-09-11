@@ -102,7 +102,7 @@ halves and every other row in this table remain not-yet-built.
 | `Area`, `AreaGrant`, `AREA_VISIBILITY_SCOPED` | **Deleted from the API** (2026-09-11). `Pin` carries what it carried; the overlap warning re-keys to `pinId` and survives — proven with a test both before and after removal. `PERMIT_AREA_REQUIRED` and its `AREA_REQUIRED` gate are deleted with it. Both frontends still reference `Area` — that removal is a later ticket. | 106 |
 | area drawing (`FacilityPlan.areaId`) | Deleted with Area — subsumed by named plans. | 104, 106 |
 | permit coordinate (`latitude`/`longitude`) | **Deleted**, with its URL parser. | 105 |
-| `Worker.role` | **Deleted.** `PermitWorker.roleOnPermit` (template + free entry) is the surviving concept. | 103 |
+| `Worker.role` | **Deleted from the API** (2026-09-11). `PermitWorker.roleOnPermit` (template + free entry, permit-type filtered) is the surviving concept — `EWorkerRole` survives as its template list. Existing values were copied onto that worker's `PermitWorker.roleOnPermit` rows where empty, never overwriting; a worker with no `PermitWorker` rows lost the value (3 of 13 in dev — see `smart-work-permit-api/progress.md`). The contractor app still sends/reads a worker-level `role` until 103's contractor half lands (Elysia strips it meanwhile — the field is silently ignored, not rejected); the safety app never read it. | 103 |
 | `Gas Testing` (`ECertType`) | Dropped — `certType` becomes 1:1 with `PermitType`. | 096 |
 
 ---
@@ -249,9 +249,12 @@ What each frontend must know:
   `nameKey`, never on `name`. Clients never send `nameKey`.
 - **The worker's QR card encodes the `workerId`.** An offline scanner has nothing to resolve a
   name against; this is why the identity moved onto the card.
-- **`Worker.role` is who a person is; `PermitWorker.roleOnPermit` is what they do on one permit.**
-  Different fields, different vocabularies, and `Certificate.role` was dropped — it only ever
-  copied the person's role onto every card.
+- **A worker is a name. `PermitWorker.roleOnPermit` is what they do on one permit** — the only
+  role field left after wayfinder 103 deleted `Worker.role` (which used to be "who a person is",
+  asked once at registration). `Certificate.role` was dropped earlier (059/060) for the same
+  reason: it only ever copied the person's role onto every card. `EWorkerRole` survives as
+  `roleOnPermit`'s template list (template + free entry, permit-type filtered) — free text,
+  validated against nothing server-side, same as before.
 - **Retirement is `deletedAt`.** A worker referenced by a permit is never hard-deleted.
 - **Contractors read and write their own workers; safety officers and inspectors read all.** The
   same branch `GET /certificates` already applies.
