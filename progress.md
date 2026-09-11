@@ -4197,3 +4197,11 @@ Root `AGENTS.md`/`CLAUDE.md` (symlinked) updated: the `permit` module row's prov
 and its in-wizard link are gone; a new `Removed 2026-09-11 (wayfinder 121)` paragraph follows the
 "State of the codebase" narrative, per this repo's own convention of marking history rather than
 silently deleting it.
+
+## 2026-09-11 — wayfinder 120, contractor half: four PPE checklist error codes
+
+`PPE_ITEM_NOT_DECLARED`, `PPE_GAP_ALREADY_DECLARED`, `PPE_GAP_REQUIRES_CORRECTIVE_ACTION`,
+`PPE_CHECKLIST_EMPTY` declared with EN + TH strings. Raised only on the inspector's visit submit,
+which this app never calls — declared so the errorCode set stays closed across both frontends
+(contract-sync). openapi + CONTEXT.md copies taken current to api `cde78be`. `EPpeItem` here was
+already the api's seven; nothing else changes on this side.

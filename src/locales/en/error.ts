@@ -15,6 +15,10 @@ const error = {
   CERT_EXPIRED: 'A registered worker has an expired certificate. This cannot be overridden.',
   CERT_LICENCE_OR_ATTACHMENT_REQUIRED: 'A certificate needs either a licence number or an attached image — at least one.',
   PPE_REQUIRED: 'This permit needs its PPE declared before it can be submitted.',
+  PPE_ITEM_NOT_DECLARED: 'That PPE item was not declared on this permit.',
+  PPE_GAP_ALREADY_DECLARED: 'That PPE item is already declared on this permit, so it cannot be flagged as missing.',
+  PPE_GAP_REQUIRES_CORRECTIVE_ACTION: 'Flagging undeclared PPE needs a corrective action, emergency or incident note.',
+  PPE_CHECKLIST_EMPTY: 'The PPE checklist was sent empty. Refresh the page and try again.',
 
   // Worker register
   WORKER_ALREADY_EXISTS: 'You have already registered a worker with this name.',

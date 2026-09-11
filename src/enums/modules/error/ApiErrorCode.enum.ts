@@ -25,6 +25,12 @@ export enum EApiErrorCode {
   CERT_EXPIRED = 'CERT_EXPIRED',
   CERT_LICENCE_OR_ATTACHMENT_REQUIRED = 'CERT_LICENCE_OR_ATTACHMENT_REQUIRED',
   PPE_REQUIRED = 'PPE_REQUIRED',
+  // Inspector visit PPE checklist — wayfinder 120. Raised only on the inspector's submit, which this
+  // app never calls; declared so the shared errorCode set stays closed across both frontends.
+  PPE_ITEM_NOT_DECLARED = 'PPE_ITEM_NOT_DECLARED',
+  PPE_GAP_ALREADY_DECLARED = 'PPE_GAP_ALREADY_DECLARED',
+  PPE_GAP_REQUIRES_CORRECTIVE_ACTION = 'PPE_GAP_REQUIRES_CORRECTIVE_ACTION',
+  PPE_CHECKLIST_EMPTY = 'PPE_CHECKLIST_EMPTY',
 
   // Worker register (contractor) — wayfinder 060. Not a failure the user must recover from:
   // the response carries `workerId`, so an inline "Create worker …" selects the existing

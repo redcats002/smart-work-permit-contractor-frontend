@@ -170,7 +170,8 @@ deliberately, not marketing approximations, so a rule change in the API is a lan
 `FILE_TYPE_NOT_ALLOWED`, `FILE_TOO_LARGE`, `UPLOAD_FOLDER_NOT_ALLOWED`, `STORAGE_UNAVAILABLE`,
 `ACCOUNT_DEACTIVATED`, `LAST_SAFETY_OFFICER`, `PERMIT_POSITION_REQUIRED`,
 `CLOSURE_REASON_REQUIRED`, `PERMIT_UPDATE_EMPTY`, `AREA_NOT_APPROVED`, `AREA_NOT_PENDING`,
-`AREA_REQUIRED`.
+`AREA_REQUIRED`, `PPE_ITEM_NOT_DECLARED`, `PPE_GAP_ALREADY_DECLARED`,
+`PPE_GAP_REQUIRES_CORRECTIVE_ACTION`, `PPE_CHECKLIST_EMPTY`.
 
 > `FILE_*` / `UPLOAD_*` / `STORAGE_UNAVAILABLE` were added by the backend on 2026-08-19 (upload
 > hardening, `REVIEW-2026-08-19.md` S1–S3/C1). `ACCOUNT_DEACTIVATED` and `LAST_SAFETY_OFFICER` were
@@ -192,6 +193,21 @@ deliberately, not marketing approximations, so a rule change in the API is a lan
 > answer.
 > `RATE_LIMITED` is unchanged but is now emitted by the four public auth routes as well as the QR
 > scan route.
+
+> `PPE_ITEM_NOT_DECLARED`, `PPE_GAP_ALREADY_DECLARED`, `PPE_GAP_REQUIRES_CORRECTIVE_ACTION` and
+> `PPE_CHECKLIST_EMPTY` were added 2026-09-11 (wayfinder 120, one PPE vocabulary on the inspector
+> visit checklist) on `POST /permits/:id/inspector-visits/:visitId/submit`. An unrecognised PPE
+> item inside `worn`/`undeclaredGaps` is still a plain request-validation 400 with no `errorCode`
+> (each is a closed-enum array element, rejected per item at the wire, same as `ppeDeclared`) —
+> these four codes are for the business-logic verdicts a schema cannot express: a `worn` item the
+> permit never declared, an `undeclaredGaps` item that IS declared, an undeclared gap flagged with
+> no `CORRECTIVE_ACTION`-or-more-severe note to carry it through the existing `CORRECTIVE_ACTION`
+> routing, and a `ppeChecklist` present but carrying none of `worn`/`undeclaredGaps`/`note` — the
+> shape a pre-120 client's now-unrecognised flat body strips down to, which would otherwise record
+> a silent "nothing checked" success. **Not yet propagated to the contractor or safety/inspector
+> app** — this is the api-only half of a three-repo ticket; see progress.md for the propagation
+> this leaves for the frontends, and for the deploy-ordering note `PPE_CHECKLIST_EMPTY` exists to
+> make loud rather than silent.
 
 > `WORKER_ALREADY_EXISTS` was added 2026-09-09 with the Worker entity (wayfinder 059/060, see
 > section 3). It is a `409` carrying `workerId` — the id of the worker the caller already
