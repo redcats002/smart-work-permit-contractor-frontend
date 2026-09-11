@@ -124,7 +124,7 @@ describe('AddCertificateModal — the certType Select actually reaches the wire 
 
     const picker = wrapper.findComponent(WorkerPicker)
     picker.vm.$emit('update:modelValue', 761)
-    picker.vm.$emit('worker-selected', { id: 761, name: 'Somchai', role: 'Entrant' })
+    picker.vm.$emit('worker-selected', { id: 761, name: 'Somchai' })
     await flushPromises()
 
     await pickCertType('Confined Space Entry')
@@ -144,28 +144,26 @@ describe('AddCertificateModal — the certType Select actually reaches the wire 
     expect(payload.workerId).toBe(761)
   })
 
-  it('filters the Select down to the selected worker\'s role, and stays usable for an unknown role', async (): Promise<void> => {
+  /**
+   * wayfinder 103 — `Worker.role` is removed, so `CertTypeSelect` no longer receives a `role` at
+   * all from this form (see `AddCertificateModal.vue`'s `onWorkerSelected` note history — the
+   * assignment this test used to exercise is gone). This replaces the old "filters by the
+   * selected worker's role" test: there is no role left to filter by, for ANY worker, so the
+   * Select must always show the full vocabulary now — proving 096 already made `certType`
+   * independent of the worker (this ticket's whole precondition for being safe to do).
+   */
+  it('always shows the full certType vocabulary — there is no worker role left to filter by', async (): Promise<void> => {
     const wrapper = await mountModal()
 
     const picker = wrapper.findComponent(WorkerPicker)
-    picker.vm.$emit('worker-selected', { id: 5, name: 'Niran', role: 'Entrant' })
-    await flushPromises()
-
-    // Entrant only fits Confined Space Entry (ROLE_ALLOWED_CERT_TYPES) — the Select should not
-    // still be offering Hot Work / Working at Heights.
-    await openCertTypeSelect()
-    expect(certTypeOptionLabels()).toEqual(['Confined Space Entry'])
-    expect(document.body.textContent).not.toContain('Showing every certificate type')
-    await openCertTypeSelect() // toggles it closed again
-
-    // Real production data (050's audit): a role outside the vocabulary must not make the worker
-    // uncertifiable — the Select falls back to the full list rather than an empty one.
-    picker.vm.$emit('worker-selected', { id: 6, name: 'Somjai', role: 'Welder' })
+    picker.vm.$emit('worker-selected', { id: 5, name: 'Niran' })
     await flushPromises()
 
     await openCertTypeSelect()
     expect(certTypeOptionLabels()).toEqual(['Hot Work', 'Confined Space Entry', 'Working at Heights'])
-    expect(document.body.textContent).toContain('Showing every certificate type')
+    // The "this worker's role isn't in our list" note went with the role filter — with no role
+    // passed it would claim that about every worker.
+    expect(document.body.textContent).not.toContain('Showing every certificate type')
   })
 })
 
@@ -189,7 +187,7 @@ describe('AddCertificateModal — the one-of rule (licence number or attachment)
 
     const picker = wrapper.findComponent(WorkerPicker)
     picker.vm.$emit('update:modelValue', 761)
-    picker.vm.$emit('worker-selected', { id: 761, name: 'Somchai', role: 'Entrant' })
+    picker.vm.$emit('worker-selected', { id: 761, name: 'Somchai' })
     await flushPromises()
 
     await pickCertType('Confined Space Entry')
@@ -216,7 +214,7 @@ describe('AddCertificateModal — the one-of rule (licence number or attachment)
 
     const picker = wrapper.findComponent(WorkerPicker)
     picker.vm.$emit('update:modelValue', 761)
-    picker.vm.$emit('worker-selected', { id: 761, name: 'Somchai', role: 'Entrant' })
+    picker.vm.$emit('worker-selected', { id: 761, name: 'Somchai' })
     await flushPromises()
 
     await pickCertType('Confined Space Entry')
@@ -249,7 +247,7 @@ describe('AddCertificateModal — workerId reaches the resolver (wayfinder 117)'
 
     const picker = wrapper.findComponent(WorkerPicker)
     picker.vm.$emit('update:modelValue', 761)
-    picker.vm.$emit('worker-selected', { id: 761, name: 'Somchai', role: 'Entrant' })
+    picker.vm.$emit('worker-selected', { id: 761, name: 'Somchai' })
     await flushPromises()
 
     await pickCertType('Confined Space Entry')
@@ -280,7 +278,7 @@ describe('AddCertificateModal — workerId reaches the resolver (wayfinder 117)'
 
     const picker = wrapper.findComponent(WorkerPicker)
     picker.vm.$emit('update:modelValue', 761)
-    picker.vm.$emit('worker-selected', { id: 761, name: 'Somchai', role: 'Entrant' })
+    picker.vm.$emit('worker-selected', { id: 761, name: 'Somchai' })
     await flushPromises()
 
     await pickCertType('Confined Space Entry')

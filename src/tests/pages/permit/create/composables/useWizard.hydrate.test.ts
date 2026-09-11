@@ -137,6 +137,27 @@ describe('useWizard.hydrate', () => {
     ])
   })
 
+  /**
+   * wayfinder 103 — `roleOnPermit` is free text (no enum). A value outside `EWorkerRole`'s
+   * template list must round-trip through hydrate exactly as stored, never silently dropped or
+   * reset to some fallback — `toFormWorkers` must not assume the value is one of the template's
+   * known strings.
+   */
+  it('round-trips a free-text roleOnPermit value that is not in the EWorkerRole template list', () => {
+    setLocale('en')
+    const wizard = useWizard()
+
+    const permit = basePermit({
+      workers: [{ workerId: 761, workerName: 'Somchai', roleOnPermit: 'Riser Watchman' }]
+    })
+
+    wizard.hydrate(permit)
+
+    expect(wizard.formData.value.workers).toEqual([
+      { workerId: 761, workerName: 'Somchai', roleOnPermit: 'Riser Watchman' }
+    ])
+  })
+
   it('primes lastPersistedReading so the copied/unchanged reading is never resent as a new row', async () => {
     setLocale('en')
     const PermitProvider = (await import('@/resources/provider/permit/Permit.provider')).default

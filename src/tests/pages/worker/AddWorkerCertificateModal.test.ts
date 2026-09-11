@@ -37,7 +37,7 @@ function stubMatchMedia (): void {
 }
 
 function buildWorker (overrides: Partial<IWorker> = {}): IWorker {
-  return { id: 42, name: 'Somchai', role: 'Entrant', ...overrides }
+  return { id: 42, name: 'Somchai', ...overrides }
 }
 
 function buildCertificate (overrides: Partial<ICertificate> = {}): ICertificate {

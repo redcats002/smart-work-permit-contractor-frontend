@@ -15,13 +15,12 @@
       <template #option="{ option }">
         <div class="flex min-w-0 flex-col">
           <span class="truncate text-sm text-text-primary">{{ option.name }}</span>
-          <span class="truncate text-xs text-text-tertiary">
-            {{ option.role }}
-            <template v-if="certificateBadge(option)">
-              · <span :class="CERTIFICATE_BADGE_CLASS[certificateBadge(option) as ECertificateStatus]">
-                {{ t(`certificate.status.${certificateBadge(option)}`) }}
-              </span>
-            </template>
+          <span
+            v-if="certificateBadge(option)"
+            class="truncate text-xs text-text-tertiary">
+            <span :class="CERTIFICATE_BADGE_CLASS[certificateBadge(option) as ECertificateStatus]">
+              {{ t(`certificate.status.${certificateBadge(option)}`) }}
+            </span>
           </span>
         </div>
       </template>
@@ -39,14 +38,9 @@
       <p class="text-xs text-text-secondary">
         {{ t('worker.picker.createHint', { name: typed }) }}
       </p>
-      <InputText
-        v-model="newRole"
-        :placeholder="t('worker.picker.rolePlaceholder')"
-        class="h-9"
-        fluid />
       <div class="flex gap-2">
         <Button
-          :disabled="creating || !newRole.trim()"
+          :disabled="creating"
           class="h-9 rounded-lg! text-sm!"
           data-test="worker-picker-create"
           type="button"
@@ -83,7 +77,6 @@
 import { computed, ref, watch, type ComputedRef, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AutoComplete from '@/volt/AutoComplete.vue'
-import InputText from '@/volt/InputText.vue'
 import Button from '@/volt/Button.vue'
 import { useApiError } from '@/composables/useApiError'
 import { EApiErrorCode } from '@/enums/modules/error/ApiErrorCode.enum'
@@ -132,7 +125,6 @@ const suggestions = ref<IWorker[]>([]) as Ref<IWorker[]>
 const selected = ref<IWorker | null>(null)
 const showCreate = ref(false)
 const creating = ref(false)
-const newRole = ref('')
 const createError = ref<string | undefined>(undefined)
 
 // Only seeds; after that the field is the user's. A watcher that kept syncing would fight typing.
@@ -192,16 +184,15 @@ async function onCreate (): Promise<void> {
   creating.value = true
   createError.value = undefined
   try {
-    const response = await WorkerService.create({ name: typed.value.trim(), role: newRole.value.trim() })
+    const response = await WorkerService.create({ name: typed.value.trim() })
     onSelect(response.data)
-    newRole.value = ''
   } catch (error: unknown) {
     const mapped = mapError(error)
     // A duplicate name is the normal outcome of two forms racing, not a user error. The 409
     // carries the existing workerId, so adopt it and carry on rather than showing a conflict.
     const existingId = (error as { response?: { data?: { workerId?: number } } })?.response?.data?.workerId
     if (mapped.code === EApiErrorCode.WORKER_ALREADY_EXISTS && typeof existingId === 'number') {
-      selected.value = { id: existingId, name: typed.value.trim(), role: newRole.value.trim() }
+      selected.value = { id: existingId, name: typed.value.trim() }
       showCreate.value = false
       emit('update:modelValue', existingId)
       emit('worker-selected', selected.value)

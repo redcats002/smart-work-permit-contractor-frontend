@@ -17,7 +17,6 @@ function buildWorkerDetail (overrides: Partial<IWorkerDetail> = {}): IWorkerDeta
   return {
     id: 761,
     name: 'Somchai',
-    role: 'Operator',
     idCardNo: null,
     phone: null,
     employerId: 'u-1',
@@ -141,6 +140,33 @@ describe('WorkerDetailPage', () => {
     const wrapper = await mountPage()
 
     expect(wrapper.text()).toContain('Could not load this worker')
+  })
+
+  /**
+   * wayfinder 103 — `Worker.role` is removed. `PATCH /workers/:id` no longer declares it, so a
+   * client still sending the key would be silently discarded server-side (harmless) but is proof
+   * the form itself lost the field, not just its own display of it.
+   */
+  it('saves without a role in the PATCH payload — Worker.role is gone (wayfinder 103)', async (): Promise<void> => {
+    vi.spyOn(WorkerProvider.prototype, 'getById').mockResolvedValue({
+      message: 'success',
+      data: buildWorkerDetail()
+    })
+    const update = vi.spyOn(WorkerProvider.prototype, 'update').mockResolvedValue({
+      message: 'success',
+      data: buildWorkerDetail({ name: 'Somchai Updated' })
+    })
+
+    const wrapper = await mountPage()
+
+    await wrapper.find('input[name="name"]').setValue('Somchai Updated')
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+
+    expect(update).toHaveBeenCalledTimes(1)
+    const payload = update.mock.calls[0][1] as Record<string, unknown>
+    expect(payload).not.toHaveProperty('role')
+    expect(payload.name).toBe('Somchai Updated')
   })
 
   it('hides the retire button once a worker is already retired', async (): Promise<void> => {

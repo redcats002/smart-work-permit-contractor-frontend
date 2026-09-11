@@ -1,10 +1,14 @@
 /**
- * Shared domain shape for the `worker` module (wayfinder 060).
+ * Shared domain shape for the `worker` module (wayfinder 060, `role` removed by wayfinder 103).
  *
  * A worker is a RECORD, not a name. Before 060 a worker existed only as free text on each
  * certificate and each permit row, which is how the same person ended up spelled three ways and
- * holding certificates the gate could not join. `role` lives here now — it describes the person,
- * not the card, so it is no longer a certificate field.
+ * holding certificates the gate could not join.
+ *
+ * wayfinder 103 — "a worker is a name; the role belongs to the job". `role` (the person's own job
+ * title, asked once at registration) is REMOVED entirely: what a worker does is scoped to the
+ * permit they are on (`IPermitWorker.roleOnPermit`), never to the person. This reverses 060's own
+ * addition of `role` here.
  *
  * camelCase on the wire, no conversion in transport (API-002) — these names must match
  * docs/api/openapi.json exactly.
@@ -12,7 +16,6 @@
 export interface IWorker {
   id: number
   name: string
-  role: string
   idCardNo?: string | null
   phone?: string | null
   employerId?: string

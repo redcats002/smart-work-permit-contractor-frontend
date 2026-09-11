@@ -4294,3 +4294,111 @@ declaration like every other new draft. No module harness item existed for wayfi
 `docs/modules/permit/feature_list.json` to update (it is a cross-cutting wayfinder ticket, not a
 numbered `PMT-*` item), so none was invented, per this session's own instruction not to invent a
 harness item structure from scratch.
+
+---
+
+## 2026-09-11 — wayfinder 103: `Worker.role` removed; `roleOnPermit` is template + free entry
+
+**Contractor half of wayfinder 103** ("a worker is a name; the role belongs to the job"), blocked
+on 096 (already landed per the api's own note in the ticket) — the api side shipped alone
+(`89482f3`/`4addcc3`, 331 → 336 tests): `Worker.role` dropped from the wire, a migration copied it
+onto each worker's empty `PermitWorker.roleOnPermit` rows first (dev: 13 workers had a role, 0
+rows filled, 3 lost it — no `PermitWorker` rows to copy onto), then dropped the column.
+`roleOnPermit` was already free text server-side (`minLength: 1`, no enum); `EWorkerRole` survives
+as a permit-type-filtered TEMPLATE list, never a backend-enforced set.
+
+**`Worker.role` removed from every contractor-app surface:**
+- `IWorker`/`IWorkerDetail` (`Worker.model.ts`), `ICreateWorkerPayload`/`IUpdateWorkerPayload`
+  (`WorkerReq.model.ts`) — the field and its doc comments are gone, not left dormant.
+- `WorkerIdentitySchema`/`RegisterWorkerSchema` — the `role` field + its `roleRequired` validation
+  message dropped from both zod schemas and their initial-values helpers.
+- `WorkerDetailPage.vue` (the edit form's role `Select`), `RegisterWorkerModal.vue` (the create
+  form's role `Select`) — field removed, `EWorkerRole`/`roleOptions` no longer imported, `role`
+  dropped from the `update`/`create` payload calls.
+- `WorkerListPage.vue` — the role column dropped from the header and each row's grid template
+  (`grid-cols-[1fr_170px_170px_90px]` → `grid-cols-[1fr_170px_90px]`).
+- `WorkerPicker.vue` (the shared worker AutoComplete used by Step 4 and all three certificate
+  entry points) — the suggestion item no longer shows `option.role`; its inline "create a new
+  worker" flow dropped the role `InputText` and the `role` it used to send on `WorkerService.create`
+  and on the 409-adopt path.
+- Four certificate-form entry points read `worker.role` to filter `CertTypeSelect`'s options
+  (`selectedWorkerRole` in `AddCertificateModal.vue`/`CreateCertificateModal.vue`/
+  `CertificateEditPage.vue`, and a direct `:role="worker.role"` in
+  `AddWorkerCertificateModal.vue`) — all four now pass nothing, so `CertTypeSelect` always falls
+  back to its full vocabulary. `CertTypeSelect.vue`'s own `role` prop and `CertType.enum.ts`'s
+  `ROLE_ALLOWED_CERT_TYPES` map are left in place, unreferenced by any real caller now — the same
+  declared-but-dormant convention this repo already uses for retired error codes, not touched
+  further because the ticket did not ask for `CertType.enum.ts` changes.
+- Every test fixture that built an `IWorker`/`IWorkerDetail`/`ICreateWorkerPayload` literal with a
+  `role` key was updated to drop it (`WorkerListPage.test.ts`, `WorkerDetailPage.test.ts`,
+  `AddWorkerCertificateModal.test.ts`, `CreateCertificateModal.test.ts` (permit wizard),
+  `AddCertificateModal.test.ts` (certificate module, 7 sites), `CertificateListPage.filters.test.ts`).
+  `AddCertificateModal.test.ts`'s own "filters the Select down to the selected worker's role" test
+  was rewritten to assert the new invariant instead: the Select shows the full vocabulary for
+  every worker now, since there is no role left to filter by — this is the regression test that
+  096 really did decouple `certType` from `Worker.role` (the ticket's own precondition for being
+  safe to land).
+
+**No prefill of `roleOnPermit` from `Worker.role` was found anywhere.** Grepped every
+`onWorkerSelected`/`worker-selected` handler across the wizard and all three worker-picker call
+sites: none of them ever wrote `worker.role` into `IPermitWorker.roleOnPermit` — 060's original
+split already kept the two fields independent, so there was nothing to un-wire here. The only
+`worker.role` reads in the whole app were the certType-filter sites listed above, which are a
+different mechanism (they feed `CertTypeSelect`'s options, never `roleOnPermit`).
+
+**`roleOnPermit` is now an editable AutoComplete, not a fixed chip-button set.** `Step4PpeWorkers.vue`'s
+worker table used to render one button per `WORKER_ROLES_BY_TYPE[permitType]` value — a closed
+set that could never hold what `roleOnPermit` has always accepted on the wire
+(`minLength: 1`, no enum). Replaced with a Volt `AutoComplete` (`dropdown="true"`,
+`force-selection="false"`, bound directly via `model-value`/`update:model-value` — the same shape
+`Step4PpeWorkers.vue`'s own doc comment already establishes for this step: it has no
+`<Form>`/zodResolver at all, validating the whole worker slice via `Step4PpeWorkersSchema.safeParse`
+instead, so there is no per-field resolver registration trap here (`form-patterns.md`'s ticket-117
+warning applies to a step that uses `<Form>`; this one deliberately does not, and adding one would
+be an unrelated architecture change outside this ticket's scope). The dropdown button shows the
+full `EWorkerRole` template list for the selected permit type (unchanged filtering); typing
+narrows it and can narrow to nothing, which is fine — whatever text is typed still lands in
+`roleOnPermit` on every keystroke via PrimeVue's own `onInput`→`updateModel`, `force-selection`
+false. `IPermitWorker.roleOnPermit` widened from `TWorkerRole` (a closed union) to `string`.
+EN + TH placeholder added (`permit.create.steps.ppeWorkers.placeholder.role`); the existing
+`permit.create.steps.ppeWorkers.role.<slug>` EN+TH labels (already there for the old chip buttons)
+are reused for the dropdown's own suggestion labels. The detail page's `PermitWorkersSection.vue`
+already rendered a free-text `roleOnPermit` correctly before this change (`roleLabel` falls back to
+the raw stored string when no `permit.create.steps.ppeWorkers.role.<slug>` translation exists) —
+verified with a new test rather than touched, since its logic needed no change.
+
+**Tests added**: `RegisterWorkerModal.test.ts` (new — a created worker's payload has no `role` key,
+and the modal renders no role field at all), a new assertion in `WorkerDetailPage.test.ts` (a saved
+worker's PATCH payload has no `role` key), `Step4PpeWorkers.roleOnPermit.test.ts` (new — picking a
+template `EWorkerRole` value reaches `formData.workers[].roleOnPermit`; typing a value outside the
+template list does too), a new case in `useWizard.hydrate.test.ts` (a free-text `roleOnPermit` value
+round-trips through hydrate unchanged), a new case in `PermitDetailSections.test.ts` (a free-text
+`roleOnPermit` renders as typed, not as some unknown-role fallback), and the rewritten
+`AddCertificateModal.test.ts` case described above.
+
+**Node script gates** (run from the workspace root, `../scripts/`): both green —
+`check-worker-vocabulary-sync.mjs` (`ECertType`/`EWorkerRole`/`EPpeItem` all in sync with the api
+and the safety app) and `check-contract-sync.mjs` (openapi + glue docs in sync, 36 error codes
+declared in both frontends, `/api/v1` prefix present). Neither flagged anything for this repo to
+fix; `EWorkerRole` itself was never touched, per the ticket's explicit instruction not to delete it.
+
+**Verification**: `bunx eslint` on every touched file — clean (no errors; one pre-existing
+unrelated warning pair in `useNotificationPolling.test.ts`, not touched by this change).
+`bunx vue-tsc --noEmit` — clean. `./init.sh`: typecheck PASS, lint PASS, **tests 81 files / 635
+PASS**, contrast PASS, icons PASS, smoke SKIP (no API reachable on this machine — the provider/model
+changes here are therefore unverified against a live backend, only against this app's own types).
+
+**Deviations / open questions**: none on scope. The exact EN/TH wording for the new
+`ppeWorkers.placeholder.role` copy ("Choose from the list or type a role" /
+"เลือกจากรายการ หรือพิมพ์ตำแหน่งเอง") and the trimmed `worker.picker.createHint` (dropped its old
+"What is their role?" question, since the inline-create flow no longer asks) were not pinned down
+anywhere else in the repo and were chosen fresh — flagging in case the product owner wants
+different phrasing.
+
+**Follow-up in the same commit (reviewer):** the agent left `CertTypeSelect`'s `role` prop,
+`buildCertTypeOptions`'s role filter and `ROLE_ALLOWED_CERT_TYPES` in place as "dormant". They were
+not dormant: with no role ever passed, `roleRecognized` was always false, so **every certificate form
+showed "Showing every certificate type — this worker's role isn't in our list"** — a false claim
+about every worker. And the rewritten `AddCertificateModal` test **asserted that note appears**,
+enshrining it. Removed the prop, the filter, the map (the api dropped its copy in 096) and the
+locale key; the test now asserts the note is absent and fails against the old component.

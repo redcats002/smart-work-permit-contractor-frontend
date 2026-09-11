@@ -93,7 +93,7 @@ describe('CreateCertificateModal — workerId reaches the resolver (wayfinder 11
 
     const picker = wrapper.findComponent(WorkerPicker)
     picker.vm.$emit('update:modelValue', 761)
-    picker.vm.$emit('worker-selected', { id: 761, name: 'Somchai', role: 'Entrant' })
+    picker.vm.$emit('worker-selected', { id: 761, name: 'Somchai' })
     await flushPromises()
 
     // Every other required field must also be valid — the resolver's `values` collapse to
@@ -124,7 +124,7 @@ describe('CreateCertificateModal — workerId reaches the resolver (wayfinder 11
 
     const picker = wrapper.findComponent(WorkerPicker)
     picker.vm.$emit('update:modelValue', 761)
-    picker.vm.$emit('worker-selected', { id: 761, name: 'Somchai', role: 'Entrant' })
+    picker.vm.$emit('worker-selected', { id: 761, name: 'Somchai' })
     await flushPromises()
 
     await pickCertType('Confined Space Entry')

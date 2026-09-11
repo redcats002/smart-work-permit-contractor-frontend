@@ -74,7 +74,6 @@ const certificate: typeof certificateEn = {
       role: 'ตำแหน่ง',
       certType: 'ชนิดบัตร',
       certTypePlaceholder: 'เลือกชนิดบัตร',
-      certTypeUnknownRoleNote: 'แสดงชนิดบัตรทั้งหมด เนื่องจากตำแหน่งของพนักงานคนนี้ไม่อยู่ในรายการที่กำหนด',
       certTypeLegacyLabel: '{value} (ไม่อยู่ในรายการมาตรฐาน)',
       issuedDate: 'วันที่ออก',
       expiryDate: 'วันหมดอายุ',

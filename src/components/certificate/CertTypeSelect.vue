@@ -11,11 +11,6 @@
       class="w-full"
       fluid
       @update:model-value="emit('update:modelValue', $event)" />
-    <p
-      v-if="!roleRecognized"
-      class="text-xs text-text-tertiary">
-      {{ t('certificate.form.field.certTypeUnknownRoleNote') }}
-    </p>
   </div>
 </template>
 
@@ -24,10 +19,10 @@ import { computed, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Select from '@/volt/Select.vue'
 import { certTypeSlug } from '@/enums/modules/certificate/CertType.enum'
-import { buildCertTypeOptions, type ICertTypeOption, type ICertTypeOptionsResult } from '@/utils/CertType'
+import { buildCertTypeOptions, type ICertTypeOption } from '@/utils/CertType'
 
 /**
- * Wayfinder 086 — the certType Select, filtered by the selected worker's role.
+ * Wayfinder 086 — the certType Select. (Its filter by the worker's role went with `Worker.role` in 103.)
  *
  * Shared across all four `AddCertificate.schema.ts` entry points (the standalone add/edit forms,
  * the in-wizard modal, and the worker detail page's modal) the same way `WorkerPicker.vue` is
@@ -54,11 +49,6 @@ import { buildCertTypeOptions, type ICertTypeOption, type ICertTypeOptionsResult
  */
 interface IProps {
   modelValue: string | undefined
-  /** The selected worker's role (`IWorker.role`), or undefined when no worker is selected yet /
-   * its role could not be resolved. Free text — a real facility role may not be in the vocabulary
-   * (050's data audit: `Welder`, `ช่างซ่อมบำรุง`), which is exactly the case this component must
-   * keep certifiable rather than lock out. */
-  role?: string
   name?: string
   invalid?: boolean
 }
@@ -71,11 +61,6 @@ const props = defineProps<IProps>()
 const emit = defineEmits<IEmits>()
 const { t } = useI18n()
 
-const result: ComputedRef<ICertTypeOptionsResult> = computed(
-  (): ICertTypeOptionsResult => buildCertTypeOptions(props.role, props.modelValue)
-)
-
-const roleRecognized: ComputedRef<boolean> = computed((): boolean => result.value.roleRecognized)
 
 /**
  * `legacy` options (`ICertTypeOption.legacy`) are, by `buildCertTypeOptions`'s contract, values
@@ -84,7 +69,7 @@ const roleRecognized: ComputedRef<boolean> = computed((): boolean => result.valu
  * standard list, rather than a lookup that would only ever miss.
  */
 const options: ComputedRef<Array<ICertTypeOption & { label: string }>> = computed(
-  (): Array<ICertTypeOption & { label: string }> => result.value.options.map(
+  (): Array<ICertTypeOption & { label: string }> => buildCertTypeOptions(props.modelValue).map(
     (option: ICertTypeOption): ICertTypeOption & { label: string } => ({
       ...option,
       label: option.legacy

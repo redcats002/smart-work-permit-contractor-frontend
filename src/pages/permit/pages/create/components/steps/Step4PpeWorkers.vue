@@ -170,19 +170,28 @@
                   @worker-selected="onWorkerSelected(row.index, $event)" />
               </td>
               <td class="px-3 py-3">
-                <div class="flex flex-wrap gap-1.5">
-                  <button
-                    v-for="role in roleOptions"
-                    :key="role"
-                    :class="row.worker.roleOnPermit === role
-                      ? 'bg-shell-sidebar text-white'
-                      : 'bg-surface-subtle text-text-secondary'"
-                    class="rounded-md px-2.5 py-1 text-[11.5px] font-semibold whitespace-nowrap"
-                    type="button"
-                    @click="patchWorker(row.index, { roleOnPermit: role })">
-                    {{ t(`permit.create.steps.ppeWorkers.role.${workerRoleSlug(role)}`) }}
-                  </button>
-                </div>
+                <!--
+                  wayfinder 103 — `roleOnPermit` is free text on the wire (`minLength: 1`, no
+                  enum); `EWorkerRole` is a curated template list, still filtered by permit type,
+                  not a closed set. An editable AutoComplete (dropdown button shows the whole
+                  template list; typing filters it; any non-empty text the user types is kept
+                  as-is, `force-selection` false) replaces the old fixed chip-button set, which
+                  could only ever emit one of `WORKER_ROLES_BY_TYPE`'s values.
+                -->
+                <AutoComplete
+                  :dropdown="true"
+                  :force-selection="false"
+                  :model-value="row.worker.roleOnPermit"
+                  :placeholder="t('permit.create.steps.ppeWorkers.placeholder.role')"
+                  :suggestions="roleSuggestions"
+                  class="min-w-[9rem]"
+                  fluid
+                  @complete="onRoleComplete($event.query)"
+                  @update:model-value="patchWorker(row.index, { roleOnPermit: $event ?? '' })">
+                  <template #option="{ option }">
+                    {{ t(`permit.create.steps.ppeWorkers.role.${workerRoleSlug(option)}`) }}
+                  </template>
+                </AutoComplete>
               </td>
               <td class="px-3 py-3">
                 <span
@@ -309,7 +318,7 @@ import type { IWorker } from '@/models/modules/worker/Worker.model'
 import { PPE_ITEMS, ppeItemSlug } from '@/enums/modules/permit/PpeItem.enum'
 import type { EPpeItem } from '@/enums/modules/permit/PpeItem.enum'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
-import { type EWorkerRole, type TWorkerRole, WORKER_ROLES_BY_TYPE } from '@/enums/modules/permit/WorkerRole.enum'
+import { type EWorkerRole, WORKER_ROLES_BY_TYPE } from '@/enums/modules/permit/WorkerRole.enum'
 
 import { EVIDENCE_SLOTS, findPhoto, type IEvidenceSlot, upsertPhoto } from '../../constants/PhotoEvidence'
 import type { ISubmitCertificateFailure } from '../../constants/SubmitErrorRouting'
@@ -416,6 +425,22 @@ const roleOptions: ComputedRef<EWorkerRole[]> = computed(
 )
 
 /**
+ * wayfinder 103 — the `roleOnPermit` AutoComplete's suggestion list. The dropdown button fires
+ * `@complete` with an empty query (shows the whole template list); typing narrows it, and can
+ * narrow to nothing — that is fine, `force-selection: false` means whatever was typed still
+ * lands in `roleOnPermit` on blur/select regardless of whether it matched a suggestion. The
+ * template is a set of suggestions, never a closed set the field can refuse.
+ */
+const roleSuggestions: Ref<EWorkerRole[]> = ref([])
+
+function onRoleComplete (query: string): void {
+  const needle = query.trim().toLowerCase()
+  roleSuggestions.value = needle
+    ? roleOptions.value.filter((role: EWorkerRole): boolean => role.toLowerCase().includes(needle))
+    : roleOptions.value
+}
+
+/**
  * Workers the SERVER refused on the last submit (`certificateFailures[]` on the 400 body). The
  * client cannot see certificate validity while typing, so this is the only place the wizard
  * learns which specific workers are blocked — and its verdict overrides anything shown locally.
@@ -500,7 +525,7 @@ function addWorker (): void {
     // has no Worker picked yet — `WorkerPicker` resolves one via `onWorkerSelected`, and
     // `workerRowComplete` (this step's schema + Next gate) blocks until it does. This placeholder
     // is never sent to the wire as-is.
-    { workerId: undefined, workerName: '', roleOnPermit: (roleOptions.value[0] ?? '') as TWorkerRole } as unknown as IPermitWorker
+    { workerId: undefined, workerName: '', roleOnPermit: roleOptions.value[0] ?? '' } as unknown as IPermitWorker
   ])
 }
 

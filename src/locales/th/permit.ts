@@ -298,6 +298,7 @@ const permit: typeof permitEn = {
         },
         placeholder: {
           worker: 'ชื่อ-นามสกุล',
+          role: 'เลือกจากรายการ หรือพิมพ์ตำแหน่งเอง',
           bloodPressure: '120/80',
           alcohol: '0.00'
         },

@@ -25,7 +25,7 @@ import type { IWizardStepProps } from '@/pages/permit/pages/create/wizard/Wizard
  * acceptance criterion 4 ("free text stays legal") is void per 059 ruling 11 / 063's own text.
  */
 function worker (overrides: Partial<IWorker> = {}): IWorker {
-  return { id: 761, name: 'Somchai', role: 'Operator', ...overrides }
+  return { id: 761, name: 'Somchai', ...overrides }
 }
 
 function baseFormData (): IUpdatePermitDraftPayload {

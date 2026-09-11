@@ -44,8 +44,7 @@
           <WorkerPicker
             v-model="formData.workerId"
             :initial-name="formData.workerName"
-            :invalid="invalid"
-            @worker-selected="onWorkerSelected($event)" />
+            :invalid="invalid" />
         </LabelField>
         <LabelField
           v-slot="{ invalid }"
@@ -54,15 +53,12 @@
           name="certType"
           tag="div"
           required>
-          <!-- wayfinder 086 — role is unknown until the user re-picks the worker (the page seeds
-               only the NAME for display, per 060; it never fetches the full worker to learn the
-               role). CertTypeSelect's own "unknown role" fallback covers this: the full
-               vocabulary shows, including whatever certType this record already carries, so the
-               page never renders blank and never rewrites an unrecognised stored value on load. -->
+          <!-- wayfinder 103 — `Worker.role` is removed; `CertTypeSelect` always falls back to its
+               full vocabulary now, including whatever certType this record already carries, so
+               the page never renders blank and never rewrites an unrecognised stored value. -->
           <CertTypeSelect
             v-model="formData.certType"
             :invalid="invalid"
-            :role="selectedWorkerRole"
             name="certType" />
         </LabelField>
         <LabelField
@@ -212,7 +208,6 @@ import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import LabelField from '@/components/input/LabelField.vue'
 import WorkerPicker from '@/components/worker/WorkerPicker.vue'
 import CertTypeSelect from '@/components/certificate/CertTypeSelect.vue'
-import type { IWorker } from '@/models/modules/worker/Worker.model'
 import type { IFormInstanceWithRegister } from '@/models/Form.model'
 import { dayjs } from '@/plugins/dayjs.plugin'
 import { toast } from '@/plugins/toast'
@@ -248,13 +243,6 @@ const submitErrorMessage = ref<string | undefined>(undefined)
 // established for areaId). Compared against formData.licenceNo, never re-derived from it.
 const existingLicenceNo = ref('')
 const existingDescription = ref('')
-// wayfinder 086 — filters CertTypeSelect's options; undefined (full vocabulary) until the user
-// re-picks the worker through WorkerPicker's suggestion list.
-const selectedWorkerRole = ref<string | undefined>(undefined)
-
-function onWorkerSelected (worker: IWorker | undefined): void {
-  selectedWorkerRole.value = worker?.role
-}
 
 /**
  * wayfinder 117 — see `AddCertificateModal.vue`'s identical pair of watchers for the full

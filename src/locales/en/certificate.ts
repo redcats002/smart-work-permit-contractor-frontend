@@ -73,7 +73,6 @@ const certificate = {
       role: 'Role',
       certType: 'Certificate type',
       certTypePlaceholder: 'Select a certificate type',
-      certTypeUnknownRoleNote: 'Showing every certificate type — this worker\'s role isn\'t in our list.',
       certTypeLegacyLabel: '{value} (not in the standard list)',
       issuedDate: 'Issued date',
       expiryDate: 'Expiry date',

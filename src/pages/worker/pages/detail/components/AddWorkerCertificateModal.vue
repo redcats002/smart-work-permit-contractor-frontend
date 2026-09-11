@@ -24,12 +24,11 @@
           name="certType"
           tag="div"
           required>
-          <!-- wayfinder 086 — the worker is already known (this is THEIR detail page), so the
-               role is available immediately, unlike the other three entry points. -->
+          <!-- wayfinder 103 — `Worker.role` is removed; `CertTypeSelect` falls back to its full
+               vocabulary with no role to filter by, same as every other entry point now. -->
           <CertTypeSelect
             v-model="formData.certType"
             :invalid="invalid"
-            :role="worker.role"
             name="certType" />
         </LabelField>
         <LabelField

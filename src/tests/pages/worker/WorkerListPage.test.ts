@@ -17,7 +17,6 @@ function buildWorker (overrides: Partial<IWorker> = {}): IWorker {
   return {
     id: 1,
     name: 'Somchai',
-    role: 'Operator',
     certificateCount: 0,
     permitCount: 0,
     latestExpiryDate: null,

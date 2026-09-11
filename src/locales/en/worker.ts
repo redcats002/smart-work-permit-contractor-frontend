@@ -4,8 +4,7 @@ const worker = {
     placeholder: 'Search a worker by name',
     noMatch: 'No worker matches. You can add them below.',
     addNew: 'Add "{name}" as a new worker',
-    createHint: 'Registering "{name}" as a new worker. What is their role?',
-    rolePlaceholder: 'Role (e.g. Welder)',
+    createHint: 'Registering "{name}" as a new worker.',
     createButton: 'Add worker',
     creating: 'Adding…'
   },
@@ -19,7 +18,6 @@ const worker = {
     searchPlaceholder: 'Search by name',
     column: {
       name: 'Name',
-      role: 'Role',
       certificate: 'Certificate',
       permits: 'Permits'
     },
@@ -43,7 +41,6 @@ const worker = {
     retiredBadge: 'Retired',
     sectionIdentity: 'Identity',
     fieldName: 'Name',
-    fieldRole: 'Role',
     fieldIdCardNo: 'ID card number',
     fieldPhone: 'Phone',
     savedToast: 'Worker details saved',
@@ -71,13 +68,11 @@ const worker = {
   form: {
     createTitle: 'Register a worker',
     fieldName: 'Name',
-    fieldRole: 'Role',
     fieldIdCardNo: 'ID card number',
     fieldPhone: 'Phone',
     submit: 'Register',
     validation: {
-      nameRequired: 'Please enter a name',
-      roleRequired: 'Please choose a role'
+      nameRequired: 'Please enter a name'
     }
   }
 }

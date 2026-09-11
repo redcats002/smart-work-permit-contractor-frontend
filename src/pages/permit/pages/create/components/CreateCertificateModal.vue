@@ -11,8 +11,8 @@
         class="grid grid-cols-1 gap-4"
         @submit="onSubmit($event, close)">
         <!-- wayfinder 060/061: a worker is a record, so this is a picker over GET /workers with
-             inline create, not two free-text fields. `role` is gone entirely - it describes the
-             person and lives on the Worker now. -->
+             inline create, not two free-text fields. `role` is gone entirely (wayfinder 103) —
+             it never belongs to the worker as a person, only to the permit they are on. -->
         <LabelField
           v-slot="{ invalid }"
           :form="$form"
@@ -23,8 +23,7 @@
           <WorkerPicker
             v-model="formData.workerId"
             :initial-name="formData.workerName"
-            :invalid="invalid"
-            @worker-selected="onWorkerSelected($event)" />
+            :invalid="invalid" />
         </LabelField>
         <LabelField
           v-slot="{ invalid }"
@@ -36,7 +35,6 @@
           <CertTypeSelect
             v-model="formData.certType"
             :invalid="invalid"
-            :role="selectedWorkerRole"
             name="certType" />
         </LabelField>
         <LabelField
@@ -158,7 +156,6 @@ import CertTypeSelect from '@/components/certificate/CertTypeSelect.vue'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import { dayjs } from '@/plugins/dayjs.plugin'
 import type { ICertificate } from '@/models/modules/certificate/Certificate.model'
-import type { IWorker } from '@/models/modules/worker/Worker.model'
 import type { IFormInstanceWithRegister } from '@/models/Form.model'
 import CertificateProvider, { type ICertificateProvider } from '@/resources/provider/certificate/Certificate.provider'
 import {
@@ -194,8 +191,6 @@ const visible = defineModel<boolean>({ default: false })
 const resolver = zodResolver(AddCertificateSchema)
 const formData: Ref<IAddCertificateFormState> = ref(useAddCertificateInitialValues())
 const submitErrorMessage: Ref<string | undefined> = ref(undefined)
-// wayfinder 086 — filters CertTypeSelect's options; undefined (full vocabulary) until picked.
-const selectedWorkerRole: Ref<string | undefined> = ref(undefined)
 
 /**
  * wayfinder 117 — see `AddCertificateModal.vue`'s identical pair of watchers for the full
@@ -219,11 +214,6 @@ watch((): number | undefined => formData.value.workerId, (workerId: number | und
 function resetForm (): void {
   formData.value = useAddCertificateInitialValues()
   submitErrorMessage.value = undefined
-  selectedWorkerRole.value = undefined
-}
-
-function onWorkerSelected (worker: IWorker | undefined): void {
-  selectedWorkerRole.value = worker?.role
 }
 
 function onFileChange (event: Event): void {

@@ -206,6 +206,22 @@ describe('PermitDetailPage sections (PMT-013)', () => {
     expect(wrapper.find('[data-test="worker-row-1"]').text()).toContain('Blood pressure outside the safe range')
   })
 
+  /**
+   * wayfinder 103 — `roleOnPermit` is free text (no enum); `EWorkerRole` is a template, not a
+   * closed set. `PermitWorkersSection.roleLabel` translates a KNOWN template value via
+   * `permit.create.steps.ppeWorkers.role.<slug>` but must fall back to the raw stored string for
+   * anything outside that list — never an "unknown role" placeholder, and never blank.
+   */
+  it('renders a free-text roleOnPermit value as typed, not as some unknown-role fallback', async () => {
+    const wrapper = await mountPage(buildPermit({
+      workers: [
+        { id: 1, workerId: 1, workerName: 'Anan K.', roleOnPermit: 'Riser Watchman' as TWorkerRole }
+      ]
+    }))
+
+    expect(wrapper.find('[data-test="worker-row-0"]').text()).toContain('Riser Watchman')
+  })
+
   it('renders photos by slotKey and marks a required slot that was never filled', async () => {
     const wrapper = await mountPage(buildPermit({
       photos: [

@@ -33,7 +33,7 @@ function stubMatchMedia (): void {
 }
 
 function buildWorker (id: number, name: string): IWorker {
-  return { id, name, role: 'Operator' }
+  return { id, name }
 }
 
 function emptyCertificates (): { message: 'success', data: ICertificate[], count: number, page: number, limit: number, totalPage: number } {

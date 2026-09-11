@@ -302,6 +302,7 @@ const permit = {
         },
         placeholder: {
           worker: 'Full name',
+          role: 'Choose from the list or type a role',
           bloodPressure: '120/80',
           alcohol: '0.00'
         },

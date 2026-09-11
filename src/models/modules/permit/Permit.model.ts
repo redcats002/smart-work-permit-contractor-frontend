@@ -2,7 +2,6 @@ import type { TJsaPhase } from '@/enums/modules/permit/JsaPhase.enum'
 import type { EPpeItem } from '@/enums/modules/permit/PpeItem.enum'
 import type { TPermitStatus } from '@/enums/modules/permit/PermitStatus.enum'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
-import type { TWorkerRole } from '@/enums/modules/permit/WorkerRole.enum'
 
 /**
  * Shared domain shapes for the `permit` module, matching the wire contract exactly
@@ -128,7 +127,13 @@ export interface IPermitWorker {
    */
   workerId: number
   workerName: string
-  roleOnPermit: TWorkerRole
+  /**
+   * wayfinder 103 — free text, `minLength: 1` on the wire (no enum). `EWorkerRole` supplies a
+   * template list of suggestions filtered by permit type, but any non-empty string is legal —
+   * this is what the worker does on THIS job, never a property of the worker record itself
+   * (`IWorker` has no `role` any more).
+   */
+  roleOnPermit: string
   /** Confined Space only — pre-work BP + alcohol reading per Thai ministerial regulation. */
   bloodPressure?: string | null
   alcoholReading?: string | null

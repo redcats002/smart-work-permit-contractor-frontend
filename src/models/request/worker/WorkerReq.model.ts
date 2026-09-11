@@ -8,10 +8,9 @@ export interface IGetWorkerListQuery extends IBasePaginationRequest {
   includeRetired?: boolean
 }
 
-/** POST /workers */
+/** POST /workers — `role` removed by wayfinder 103 (a worker is a name, not a job title). */
 export interface ICreateWorkerPayload {
   name: string
-  role: string
   idCardNo?: string
   phone?: string
 }
@@ -19,11 +18,11 @@ export interface ICreateWorkerPayload {
 /**
  * PATCH /workers/:id — wayfinder 062. Every field optional (only sent keys change); `idCardNo`/
  * `phone` accept an explicit `null` to clear them, same three-state contract as
- * `ICertificate`'s `filePath`. `restore` un-retires a soft-deleted worker.
+ * `ICertificate`'s `filePath`. `restore` un-retires a soft-deleted worker. `role` removed by
+ * wayfinder 103.
  */
 export interface IUpdateWorkerPayload {
   name?: string
-  role?: string
   idCardNo?: string | null
   phone?: string | null
   restore?: boolean

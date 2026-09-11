@@ -6,8 +6,7 @@ const worker: typeof workerEn = {
     placeholder: 'ค้นหาชื่อผู้ปฏิบัติงาน',
     noMatch: 'ไม่พบผู้ปฏิบัติงานที่ตรงกัน เพิ่มใหม่ได้ด้านล่าง',
     addNew: 'เพิ่ม "{name}" เป็นผู้ปฏิบัติงานใหม่',
-    createHint: 'กำลังเพิ่ม "{name}" เป็นผู้ปฏิบัติงานใหม่ ตำแหน่งคืออะไร',
-    rolePlaceholder: 'ตำแหน่ง เช่น ช่างเชื่อม',
+    createHint: 'กำลังเพิ่ม "{name}" เป็นผู้ปฏิบัติงานใหม่',
     createButton: 'เพิ่มผู้ปฏิบัติงาน',
     creating: 'กำลังเพิ่ม…'
   },
@@ -21,7 +20,6 @@ const worker: typeof workerEn = {
     searchPlaceholder: 'ค้นหาด้วยชื่อ',
     column: {
       name: 'ชื่อ',
-      role: 'ตำแหน่ง',
       certificate: 'ใบรับรอง',
       permits: 'ใบอนุญาต'
     },
@@ -45,7 +43,6 @@ const worker: typeof workerEn = {
     retiredBadge: 'ปลดประจำการแล้ว',
     sectionIdentity: 'ข้อมูลประจำตัว',
     fieldName: 'ชื่อ',
-    fieldRole: 'ตำแหน่ง',
     fieldIdCardNo: 'เลขบัตรประชาชน',
     fieldPhone: 'เบอร์โทรศัพท์',
     savedToast: 'บันทึกข้อมูลผู้ปฏิบัติงานแล้ว',
@@ -73,13 +70,11 @@ const worker: typeof workerEn = {
   form: {
     createTitle: 'ลงทะเบียนผู้ปฏิบัติงาน',
     fieldName: 'ชื่อ',
-    fieldRole: 'ตำแหน่ง',
     fieldIdCardNo: 'เลขบัตรประชาชน',
     fieldPhone: 'เบอร์โทรศัพท์',
     submit: 'ลงทะเบียน',
     validation: {
-      nameRequired: 'กรุณากรอกชื่อ',
-      roleRequired: 'กรุณาเลือกตำแหน่ง'
+      nameRequired: 'กรุณากรอกชื่อ'
     }
   }
 }

@@ -62,23 +62,6 @@
                 name="name"
                 required />
               <LabelField
-                v-slot="{ invalid }"
-                :form="$form"
-                :label="t('worker.detail.fieldRole')"
-                name="role"
-                tag="div"
-                required>
-                <Select
-                  v-model="formData.role"
-                  :disabled="Boolean(worker.deletedAt)"
-                  :invalid="invalid"
-                  :option-label="'label'"
-                  :option-value="'value'"
-                  :options="roleOptions"
-                  class="h-10.5 w-full"
-                  name="role" />
-              </LabelField>
-              <LabelField
                 v-model="formData.idCardNo"
                 :disabled="Boolean(worker.deletedAt)"
                 :form="$form"
@@ -146,7 +129,6 @@ import { toast } from '@/plugins/toast'
 import { useApiError } from '@/composables/useApiError'
 import { scrollToFirstError } from '@/utils/HandleSubmit'
 import { handleLoading } from '@/utils/HandleLoading'
-import { EWorkerRole } from '@/enums/modules/permit/WorkerRole.enum'
 import LabelField from '@/components/input/LabelField.vue'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
 import DeleteModal from '@/components/modal/DeleteModal.vue'
@@ -183,17 +165,12 @@ const retireOpen: Ref<boolean> = ref(false)
 const workerId: ComputedRef<number> = computed((): number => Number(route.params.id))
 
 const resolver = zodResolver(WorkerIdentitySchema)
-const formData: Ref<TWorkerIdentityFormValues> = ref({ name: '', role: '', idCardNo: '', phone: '' })
-
-const roleOptions: { label: string, value: string }[] = Object.values(EWorkerRole).map(
-  (role: EWorkerRole): { label: string, value: string } => ({ label: role, value: role })
-)
+const formData: Ref<TWorkerIdentityFormValues> = ref({ name: '', idCardNo: '', phone: '' })
 
 function hydrate (detail: IWorkerDetail): void {
   worker.value = detail
   formData.value = {
     name: detail.name,
-    role: detail.role,
     idCardNo: detail.idCardNo ?? '',
     phone: detail.phone ?? ''
   }
@@ -217,7 +194,6 @@ async function fetchDetail (): Promise<void> {
 async function useUpdate (values: TWorkerIdentityFormValues): Promise<void> {
   const response = await WorkerService.update(workerId.value, {
     name: values.name,
-    role: values.role,
     idCardNo: values.idCardNo || null,
     phone: values.phone || null
   })

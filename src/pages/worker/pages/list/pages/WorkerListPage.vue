@@ -47,10 +47,9 @@
           data-test="worker-table">
           <div class="min-w-[560px]">
             <div
-              class="grid grid-cols-[1fr_170px_170px_90px] gap-2 bg-surface-subtle px-3.5 py-2.5
+              class="grid grid-cols-[1fr_170px_90px] gap-2 bg-surface-subtle px-3.5 py-2.5
               text-[10.5px] font-semibold tracking-wide text-text-secondary">
               <div>{{ t('worker.list.column.name') }}</div>
-              <div>{{ t('worker.list.column.role') }}</div>
               <div>{{ t('worker.list.column.certificate') }}</div>
               <div>{{ t('worker.list.column.permits') }}</div>
             </div>
@@ -60,10 +59,9 @@
               :key="item.id"
               :data-test="`worker-row-${item.id}`"
               :to="{ name: 'WorkerDetailPage', params: { id: item.id } }"
-              class="grid w-full grid-cols-[1fr_170px_170px_90px] items-center gap-2 border-t border-border
+              class="grid w-full grid-cols-[1fr_170px_90px] items-center gap-2 border-t border-border
                 px-3.5 py-3 text-left text-[13px] transition-colors hover:bg-surface-app">
               <span class="truncate font-semibold text-text-primary">{{ item.name }}</span>
-              <span class="truncate text-text-secondary">{{ item.role }}</span>
               <span>
                 <span
                   v-if="certificateStatusFor(item)"
