@@ -31,6 +31,8 @@ export enum EApiErrorCode {
   PPE_GAP_ALREADY_DECLARED = 'PPE_GAP_ALREADY_DECLARED',
   PPE_GAP_REQUIRES_CORRECTIVE_ACTION = 'PPE_GAP_REQUIRES_CORRECTIVE_ACTION',
   PPE_CHECKLIST_EMPTY = 'PPE_CHECKLIST_EMPTY',
+  // Inspector visit from history — wayfinder 101. Never raised for this app; declared so the set stays closed.
+  SCAN_WINDOW_EXPIRED = 'SCAN_WINDOW_EXPIRED',
 
   // Worker register (contractor) — wayfinder 060. Not a failure the user must recover from:
   // the response carries `workerId`, so an inline "Create worker …" selects the existing

@@ -171,7 +171,13 @@ deliberately, not marketing approximations, so a rule change in the API is a lan
 `ACCOUNT_DEACTIVATED`, `LAST_SAFETY_OFFICER`, `PERMIT_POSITION_REQUIRED`,
 `CLOSURE_REASON_REQUIRED`, `PERMIT_UPDATE_EMPTY`, `AREA_NOT_APPROVED`, `AREA_NOT_PENDING`,
 `AREA_REQUIRED`, `PPE_ITEM_NOT_DECLARED`, `PPE_GAP_ALREADY_DECLARED`,
-`PPE_GAP_REQUIRES_CORRECTIVE_ACTION`, `PPE_CHECKLIST_EMPTY`.
+`PPE_GAP_REQUIRES_CORRECTIVE_ACTION`, `PPE_CHECKLIST_EMPTY`, `SCAN_WINDOW_EXPIRED`.
+
+> `SCAN_WINDOW_EXPIRED` (403) was added 2026-09-11 (wayfinder 101, ruling 15) on
+> `POST /permits/:id/inspector-visits` with `source: "history"`: this inspector has no server-recorded
+> `PermitScan` of the permit, or its last one is past `min(scannedAt + 12h, workWindowEndInstant)`.
+> A scan is recorded on `GET /qr/:token` for a signed-in inspector **unless `?viaHistory=true`** — a
+> reopen from history must send it, or it would refresh the window forever.
 
 > `FILE_*` / `UPLOAD_*` / `STORAGE_UNAVAILABLE` were added by the backend on 2026-08-19 (upload
 > hardening, `REVIEW-2026-08-19.md` S1–S3/C1). `ACCOUNT_DEACTIVATED` and `LAST_SAFETY_OFFICER` were

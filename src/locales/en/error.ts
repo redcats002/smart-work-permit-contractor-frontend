@@ -19,6 +19,7 @@ const error = {
   PPE_GAP_ALREADY_DECLARED: 'That PPE item is already declared on this permit, so it cannot be flagged as missing.',
   PPE_GAP_REQUIRES_CORRECTIVE_ACTION: 'Flagging undeclared PPE needs a corrective action, emergency or incident note.',
   PPE_CHECKLIST_EMPTY: 'The PPE checklist was sent empty. Refresh the page and try again.',
+  SCAN_WINDOW_EXPIRED: 'Your last scan of this permit is too old to start a visit from history. Scan the permit\'s QR code again.',
 
   // Worker register
   WORKER_ALREADY_EXISTS: 'You have already registered a worker with this name.',
