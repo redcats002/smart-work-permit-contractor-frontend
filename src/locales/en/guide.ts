@@ -63,7 +63,10 @@ const guide = {
   permitDetail: {
     title: 'Permit detail, and closing the work',
     p1: 'The detail page is where a permit lives out its life: the status banner, its own information, the safety readings, the workers and their PPE, the JSA, the QR panel, and the audit timeline.',
-    p2: 'A Confined Space or Working at Heights permit closes directly from Active through the closure checklist. Hot Work must pass through a Fire Watch first — Mark complete moves it to Fire Monitor and starts the server-side countdown, then the closure checklist runs once the watch has elapsed.'
+    // wayfinder 098 (reopened 2026-09-11) — closure moved to Safety. This used to say a
+    // contractor closes the permit themselves through a checklist; they now REQUEST closure and
+    // a Safety Officer reviews and closes it (or comes back with anything outstanding).
+    p2: 'Closing is the Safety Officer\'s action, not yours — from Active or Fire Monitor, request closure and add an optional note on why. Hot Work still passes through a Fire Watch first: Mark complete moves it to Fire Monitor and starts the server-side countdown, but you can request closure at any point during that countdown — Safety just cannot act on it until the watch elapses.'
   },
   history: {
     title: 'History',

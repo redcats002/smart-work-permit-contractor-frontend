@@ -577,15 +577,13 @@ const permit = {
       }
     },
     closure: {
-      // Design lines 574-611.
+      // Design lines 574-611. `start` is Hot Work's "Mark Work Complete" trigger only now — the
+      // sibling "Close Permit" trigger moved to `requestClose.start` below (wayfinder 098). `item`
+      // is still read by `PermitClosureSection.vue` to label the checklist Safety recorded at
+      // close; the rest of this block (title/subtitle/answerYes/answerNo/cancel/confirm/
+      // submitting/signature/blocked) belonged only to the retired contractor-side
+      // `ClosureChecklistModal` and is gone with it.
       start: 'Mark Work Complete →',
-      title: 'Closure Checklist',
-      subtitle: 'Confirm all items before closing. Foreman e-signature required (FM-SF-04 §D).',
-      answerYes: 'Yes',
-      answerNo: 'No',
-      cancel: 'Cancel',
-      confirm: 'Confirm & Close Permit',
-      submitting: 'Closing…',
       item: {
         entrantsExited: 'ผู้ปฏิบัติงานทุกคนออกจากพื้นที่แล้ว / All entrants safely exited',
         worksiteRestored: 'พื้นที่ทำงานกลับสู่สภาพปกติ / Worksite restored to normal',
@@ -596,22 +594,24 @@ const permit = {
         scaffoldingSecured: 'นั่งร้านรักษาความปลอดภัยหรือรื้อถอน / Scaffolding secured or removed',
         areaBelowCleared: 'พื้นที่ด้านล่างเปิดใหม่ / Area below cleared & re-opened',
         documentationCompleted: 'บันทึกเสร็จสมบูรณ์ / Documentation completed'
-      },
-      signature: {
-        title: 'Engineer / Foreman e-Signature',
-        tap: 'Tap to sign as Foreman',
-        signed: 'Signed — {who}',
-        pending: 'Not signed yet'
-      },
-      blocked: {
-        entrants: 'Closure blocked — {count} entrant(s) still inside',
-        // The backend reports the entrant count and names only inside its English `message`, which
-        // is never rendered. No contractor-readable endpoint exposes them — docs/api/GAPS.md row I.
-        entrantsDetail: 'The backend returns 403 until every entrant checks out via the Inspector app.',
-        fireWatch: 'Closure blocked — Fire Watch still running',
-        fireWatchDetail: 'The 30-minute Fire Watch is server-side. {remaining} remaining.',
-        generic: 'Closure was refused'
       }
+    },
+    // wayfinder 098 (reopened 2026-09-11) — replaces the retired ClosureChecklistModal. The
+    // contractor no longer closes a permit; this raises a request for the Safety Officer, who
+    // reviews and closes it (or comes back with what is still outstanding).
+    requestClose: {
+      start: 'Request Closure →',
+      again: 'Update Request',
+      title: 'Request Closure',
+      subtitle: 'Let the Safety Officer know this permit is ready to close. They will review it and close it, or come back to you if anything is still outstanding.',
+      alreadyRequested: 'A closure request is already awaiting the Safety Officer. Sending again refreshes it with whatever you enter here.',
+      field: {
+        reason: 'Reason (optional)',
+        reasonPlaceholder: 'e.g. Work is finished, the area is restored and cold'
+      },
+      cancel: 'Cancel',
+      confirm: 'Send Request',
+      submitting: 'Sending…'
     },
     pendingEditWarning: {
       // wayfinder 012 — the contractor half. The warning fires BEFORE the resume route is opened,
@@ -637,8 +637,11 @@ const permit = {
       heading: 'FIRE MONITORING ACTIVE',
       remaining: 'remaining',
       warning: 'Fire Watcher must remain on-site. Timer is server-side and cannot be bypassed or reset from any client.',
-      locked: 'Close Permit — locked until {remaining}',
-      close: 'Close Permit ✓'
+      // wayfinder 098 — this used to be a locked "Close Permit" button until the countdown ended,
+      // because it used to close the permit directly. It now opens the request-closure modal,
+      // which the api accepts at any point in FIRE_MONITOR — see FireMonitorPanel.vue's comment.
+      close: 'Request Closure ✓',
+      requestWhileRunning: 'You can request closure now — Safety cannot close the permit until the {remaining} Fire Watch countdown ends.'
     },
     qr: {
       title: 'Approved permit QR',
@@ -719,6 +722,9 @@ const permit = {
     // landed on the next page, not at the moment the action actually happened.
     submitted: 'Permit submitted for review',
     closed: 'Permit closed',
+    // wayfinder 098 — replaces the retired "closed" toast for the contractor's own action; the
+    // permit itself is unchanged, so no status-chip update accompanies this one.
+    closeRequested: 'Closure requested — the Safety Officer has been notified',
     duplicated: 'Permit duplicated — continue editing the new draft'
   }
 }

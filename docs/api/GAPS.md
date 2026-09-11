@@ -141,7 +141,18 @@ Regenerated `openapi.json` in all three repos; `node scripts/check-contract-sync
 
 | # | Was | Now served | What this repo can do |
 |---|---|---|---|
-| H | `POST /permits/:id/close` was guarded `auth: ['safety_officer']`, so a contractor session answered `403 FORBIDDEN_ROLE` before any closure rule was evaluated — `PMT-011`'s built-and-wired modal could never succeed | **`contractor` is admitted on the route, scoped to their own permit** (product-owner ruling, `../main/PROMPT-LOG.md` 2026-08-22). A contractor closing a permit they did **not** create is refused with a `403` carrying **no** `errorCode` — the standard ownership refusal, checked before any status/fire-watch/entrant rule. `safety_officer` keeps access to every permit; `inspector` is still `403 FORBIDDEN_ROLE`. Nothing else about closure is relaxed: `403 ENTRANTS_STILL_INSIDE` and `403 FIRE_WATCH_NOT_ELAPSED` fire identically for a contractor actor, with no override, and the `PERMIT_CLOSED` audit row is still written | `PMT-011`'s closure modal now works end to end for the Foreman. Keep rendering the server's verdict — the ownership refusal has no `errorCode`, so it falls back like a 404 or a validation 400 |
+| H | `POST /permits/:id/close` was guarded `auth: ['safety_officer']`, so a contractor session answered `403 FORBIDDEN_ROLE` before any closure rule was evaluated — `PMT-011`'s built-and-wired modal could never succeed | ~~**`contractor` is admitted on the route, scoped to their own permit** (product-owner ruling, `../main/PROMPT-LOG.md` 2026-08-22). A contractor closing a permit they did **not** create is refused with a `403` carrying **no** `errorCode` — the standard ownership refusal, checked before any status/fire-watch/entrant rule. `safety_officer` keeps access to every permit; `inspector` is still `403 FORBIDDEN_ROLE`. Nothing else about closure is relaxed: `403 ENTRANTS_STILL_INSIDE` and `403 FIRE_WATCH_NOT_ELAPSED` fire identically for a contractor actor, with no override, and the `PERMIT_CLOSED` audit row is still written~~ **Reversed by wayfinder 098 (CR round 4, 2026-09-11) — see the note below the table.** | ~~`PMT-011`'s closure modal now works end to end for the Foreman. Keep rendering the server's verdict — the ownership refusal has no `errorCode`, so it falls back like a 404 or a validation 400~~ **Superseded — see below.** |
+
+> **Row H reversed (wayfinder 098, CR round 4, 2026-09-11).** Closure moved from the contractor to
+> Safety, knowingly reversing the ruling this row recorded (`../main/PROMPT-LOG.md` session 13):
+> `POST /permits/:id/close` is `auth: ['safety_officer']` only again, `reason` unconditionally
+> required. A contractor (own permit only) or an inspector no longer closes a permit — they call
+> the new `POST /permits/:id/close-request` instead, which sets `closeRequestedAt`/`By`/`Role`/
+> `Reason` on the permit (a flag on its existing status, not a new one) and leaves it exactly as it
+> was, ACTIVE or FIRE_MONITOR, for a Safety Officer to review. `PMT-011`'s old closure checklist
+> modal is retired; `RequestCloseModal.vue` replaces it, and `PermitProvider.close()` is gone from
+> this app entirely — `requestClose()` is the only closure-adjacent call a contractor session can
+> make. Gap fully resolved: the contractor requests, Safety closes.
 
 > Also landed in the same pass (no row here — it is a Safety/Inspector-app concern, mirrored as row
 > V5 in `../../../smart-work-permit-frontend/docs/api/GAPS.md`): **`POST /permits/:id/reject` now

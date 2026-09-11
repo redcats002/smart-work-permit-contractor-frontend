@@ -4463,3 +4463,78 @@ never fire on a foreign permit).
 `./init.sh`: typecheck PASS, lint PASS, **tests 84 files / 666 PASS**, contrast PASS, icons PASS,
 smoke SKIP (no API reachable on this machine — the three new providers are therefore unverified
 against a live backend, only against this app's own types and the api's read source directly).
+
+## 2026-09-11 — wayfinder 098 reopened: the contractor requests close, it no longer calls `/close`
+
+Field break, top of the queue: production's round-4 api guards `POST /permits/:id/close` with
+`auth: ['safety_officer']` now, and `PMT-011`'s closure checklist ("Mark Work Complete →" /
+"Close Permit ✓") was still calling it — every contractor close was answering 403 `FORBIDDEN_ROLE`
+with no caller anywhere for the api's already-live `POST /permits/:id/close-request`. Read
+directly out of `../smart-work-permit-api/src/modules/permit/commands/{close,close-request}`
+rather than assumed:
+
+- `close-request` body is `{ reason?: string }` — optional, no min-length gate on the wire (the
+  reason the *safety officer* owes on actual `close` is a separate, unconditionally-required
+  field on a different route).
+- Accepted only while the permit is `ACTIVE` or `FIRE_MONITOR`; otherwise `403 PERMIT_NOT_ACTIVE`
+  — an error code this app already declares and localizes, so no `ApiErrorCode.enum.ts` or locale
+  addition was needed, and `check-contract-sync.mjs`'s error-code comparison stays green on that
+  count untouched.
+- **Idempotent by design, not locked**: a second `close-request` call overwrites
+  `closeRequestedAt`/`ById`/`By`/`Role` and `closeRequestReason` (note: no "ed" — `Reason`, not
+  `RequestedReason`) rather than answering a conflict. Read as "a signal to safety, not a lock,"
+  so the UI does not hide the action after the first send.
+- **No elapsed-Fire-Watch gate.** `close` itself needs `FIRE_WATCH_NOT_ELAPSED` to pass before it
+  will succeed; `close-request` has no such check — a contractor mid-Fire-Watch can still ask.
+  `FireMonitorPanel.vue`'s client-side lock on the trigger during Fire Watch was therefore
+  *removed*, not added to — inventing a restriction the api does not have would have been worse
+  than the bug this ticket exists to fix.
+
+**Built**: `RequestCloseModal.vue` + `RequestClose.schema.ts` (`@primevue/forms` + `zodResolver`,
+this repo's mandatory form pattern — a bare `<textarea>` would silently never register, per
+`form-patterns.md`'s 117 lesson) replace the deleted `ClosureChecklistModal.vue` in
+`PermitDetailPage.vue`. The old yes/no checklist items and e-signature are **not** carried
+forward — neither has a field on `close-request`'s wire body, so keeping them client-side would
+misrepresent data that is never actually sent; a single optional reason textarea replaces both.
+Once a request exists, the same trigger relabels "Update Request" and pre-fills the existing
+reason rather than disappearing — matching the api's own idempotent-overwrite behaviour rather
+than inventing a one-shot UI the backend does not enforce. `PermitProvider.close()` and
+`IClosePermitPayload`/`TClosePermitResponse` are deleted entirely, along with the stale comment
+calling `close` "a deliberate exception" (`feat-020`'s admission, now reversed) —
+`PermitProvider.requestClose()` (`POST /permits/:id/close-request`) is the only closure-adjacent
+call a contractor session can make. `docs/api/GAPS.md` row H is marked reversed with a note below
+the table rather than rewritten in place, so the `feat-020` history stays legible. `guide.ts`'s
+`permitDetail.p2` (EN + TH) no longer describes the contractor closing a permit themselves.
+
+**Deviations, flagged rather than silently decided:**
+- No new `errorCode` was needed — `PERMIT_NOT_ACTIVE` already existed in both the enum and both
+  locale files from an earlier pass, so this fix touches zero rows in `ApiErrorCode.enum.ts`.
+- Old checklist items dropped outright (see above) rather than kept as client-only "pre-request
+  confirmation" — the wire body has nothing to receive them, and a checklist that visually implies
+  it was recorded but isn't would be worse than no checklist.
+- Did not touch `docs/modules/permit/feature_list.json` — this fix is a wayfinder-ticket field
+  break, not a module-harness item, and no feature dir maps to permit-closure specifically.
+
+**Files**: `src/resources/provider/permit/Permit.provider.ts`,
+`src/models/{request,response}/permit/Permit{Req,Res}.model.ts`,
+`src/pages/permit/pages/detail/components/RequestCloseModal.vue` (new, replaces
+`ClosureChecklistModal.vue`, deleted), `src/pages/permit/pages/detail/schema/RequestClose.schema.ts`
+(new), `src/pages/permit/pages/detail/pages/PermitDetailPage.vue`,
+`src/pages/permit/pages/detail/components/FireMonitorPanel.vue`,
+`src/locales/{en,th}/{guide,permit}.ts`, `docs/api/GAPS.md`, `AGENTS.md` (superseded-history note).
+Tests: `src/tests/pages/permit/detail/RequestCloseModal.test.ts` (new, replaces the deleted
+`ClosureChecklistModal.test.ts`), `src/tests/pages/permit/detail/FireWatch.test.ts`,
+`src/tests/provider/Permit.provider.test.ts` — cover reason going to `close-request` never
+`/close`, the provider having no `close()`, the requested state rendering with timestamp+reason,
+the trigger relabeling rather than vanishing after a request, the localized error path, and
+Fire-Watch-unlocked behaviour.
+
+**Verification**: `bunx eslint` on every touched file — clean. `bunx vue-tsc --noEmit` — clean.
+`./init.sh`: typecheck PASS, lint PASS, **tests 84 files / 663 tests PASS**, contrast PASS, icons
+PASS, smoke SKIP (no API reachable on this machine). `node ../scripts/check-contract-sync.mjs`:
+the `PROMPT-LOG.md`/`CONTEXT.md`/error-code checks are green; the `openapi.json` triple-copy hash
+check is **red**, but pre-existing and out of scope here — the api repo's live copy has already
+moved ahead of both frontends' checked-in copies (ticket 109's in-flight api work), this change
+added zero new error codes/routes/payloads, and `docs/api/openapi.json` is root-owned and not
+editable from this repo per this session's constraints. Both frontend copies still match each
+other byte for byte.

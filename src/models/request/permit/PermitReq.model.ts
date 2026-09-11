@@ -81,15 +81,19 @@ export interface ISubmitPermitPayload {}
 export interface IMarkPermitCompletePayload {}
 
 /**
- * POST /permits/:id/close — both fields are REQUIRED by the backend.
+ * POST /permits/:id/close-request — wayfinder 098 (CR round 4). Reverses ticket 020: closure
+ * moved to safety, so a contractor (own permit only) or inspector now REQUESTS closure instead
+ * of calling `POST /permits/:id/close` directly — that route is `safety_officer`-only now and
+ * `IClosePermitPayload`/`PermitProvider.close()` are retired with it.
  *
- * `checklist` is free-form (`patternProperties: { '^(.*)$': {} }` in openapi.json) and is stored
- * verbatim as `closureChecklist`. That is exactly why the transport does no case conversion
- * (`API-002`): camelizing would rewrite the caller's own item keys.
+ * `reason` is optional on the wire — only the safety officer who actually closes owes one
+ * (`CLOSURE_REASON_REQUIRED`); the requester's reason is a courtesy note, not a gate. Accepted
+ * only while the permit is `ACTIVE`/`FIRE_MONITOR` (403 `PERMIT_NOT_ACTIVE` otherwise), and
+ * idempotent — a second call just overwrites who/when/why rather than conflicting, so the UI may
+ * let the contractor re-send with an updated reason instead of hiding the action after the first.
  */
-export interface IClosePermitPayload {
-  checklist: Record<string, 'yes' | 'no'>
-  signature: string
+export interface IRequestClosePermitPayload {
+  reason?: string | null
 }
 
 /**

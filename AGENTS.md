@@ -151,6 +151,28 @@ Two sibling apps exist in **other repos** and are **out of scope here**: the Saf
 > `ENTRANTS_STILL_INSIDE` uses — because the api can never emit them again but nothing is gained by
 > churning the localization tables to remove codes that will simply never arrive over the wire.
 
+> **Reversed 2026-09-11 (wayfinder 098, reopened — the "Two earlier holes are closed" paragraph
+> above's row-H claim is now WRONG, read it only as history):** closure moved to safety
+> (`../main/PROMPT-LOG.md` session 13, CR round 4), reversing `feat-020`'s admission that let a
+> contractor call `POST /permits/:id/close` directly. That route is `auth: ['safety_officer']`
+> only again. `PMT-011`'s old closure checklist modal (`ClosureChecklistModal.vue`) is deleted;
+> `RequestCloseModal.vue` replaces it, calling the new `POST /permits/:id/close-request`
+> (`contractor`, own permit only, or `inspector`) instead — a flag (`closeRequestedAt`/`By`/
+> `Role`/`Reason`), not a new `PermitStatus`, left exactly on the permit's existing `ACTIVE`/
+> `FIRE_MONITOR` status. `PermitProvider.close()` is gone from this app entirely;
+> `PermitProvider.requestClose()` is the only closure-adjacent call a contractor session can make.
+> The old checklist's yes/no items and e-signature are NOT carried over — neither has a field on
+> `close-request`'s wire body (`{ reason?: string }` only) — a single optional reason textarea
+> replaces them, `@primevue/forms` + `zodResolver` per this repo's mandatory form pattern.
+> `FireMonitorPanel.vue`'s trigger is no longer locked until the Fire Watch countdown elapses:
+> `close-request` accepts `ACTIVE` or `FIRE_MONITOR` unconditionally (no `FIRE_WATCH_NOT_ELAPSED`-
+> style gate), so locking it client-side would invent a restriction the api does not have. The
+> request is idempotent server-side ("a signal to safety, not a lock"), so the button/modal stays
+> available and relabels to "Update Request" once one is already pending, pre-filled with the
+> existing reason, rather than being hidden after the first send. `docs/api/GAPS.md` row H is
+> updated to record this reversal. `guide.ts`'s `permitDetail.p2` (EN + TH) no longer describes the
+> contractor closing a permit themselves.
+
 ## Commands
 
 Package manager is **bun** — do not invoke `npm`/`yarn`/`pnpm`.

@@ -175,26 +175,32 @@ describe('Fire Watch (PMT-012)', () => {
     expect(wrapper.find('[data-test="fire-monitor-panel"]').exists()).toBe(true)
   })
 
-  it('locks the close button while the server says the watch is running', () => {
+  it('offers the closure-request trigger even while the server says the watch is still running (wayfinder 098 — no invented restriction)', async () => {
     const wrapper = mount(FireMonitorPanel, {
       props: { fireWatch: fireWatch(451) },
       global: { plugins: [i18n, [PrimeVue, { unstyled: true }]] }
     })
 
     expect(wrapper.find('[data-test="fire-monitor-countdown"]').text()).toBe('07:31')
-    expect(wrapper.find('[data-test="fire-monitor-locked"]').exists()).toBe(true)
-    expect(wrapper.find('[data-test="fire-monitor-locked"]').text()).toContain('07:31')
-    expect(wrapper.find('[data-test="fire-monitor-close"]').exists()).toBe(false)
+    // POST /permits/:id/close-request has no FIRE_WATCH_NOT_ELAPSED-style gate — it accepts
+    // ACTIVE or FIRE_MONITOR unconditionally, so this button is never locked any more.
+    const button = wrapper.find('[data-test="fire-monitor-close"]')
+    expect(button.exists()).toBe(true)
+    expect(button.attributes('disabled')).toBeUndefined()
+    expect(wrapper.find('[data-test="fire-monitor-request-note"]').text()).toContain('07:31')
+
+    await button.trigger('click')
+    expect(wrapper.emitted('close')).toHaveLength(1)
   })
 
-  it('unlocks closure at zero and hands off to the closure modal', async () => {
+  it('drops the "not yet" note once the watch has elapsed, and still hands off to the request modal', async () => {
     const wrapper = mount(FireMonitorPanel, {
       props: { fireWatch: fireWatch(0) },
       global: { plugins: [i18n, [PrimeVue, { unstyled: true }]] }
     })
 
     expect(wrapper.find('[data-test="fire-monitor-countdown"]').text()).toBe('00:00')
-    expect(wrapper.find('[data-test="fire-monitor-locked"]').exists()).toBe(false)
+    expect(wrapper.find('[data-test="fire-monitor-request-note"]').exists()).toBe(false)
 
     await wrapper.find('[data-test="fire-monitor-close"]').trigger('click')
     expect(wrapper.emitted('close')).toHaveLength(1)

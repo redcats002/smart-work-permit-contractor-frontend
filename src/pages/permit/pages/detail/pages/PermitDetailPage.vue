@@ -53,8 +53,8 @@
               font-bold whitespace-nowrap text-white hover:bg-status-active-fg-emphasis"
             data-test="start-closure"
             type="button"
-            @click="showClosure = true">
-            {{ t('permit.detail.closure.start') }}
+            @click="showRequestClose = true">
+            {{ isCloseRequestedAwaitingSafety ? t('permit.detail.requestClose.again') : t('permit.detail.requestClose.start') }}
           </button>
         </template>
       </PermitStatusBanner>
@@ -194,7 +194,7 @@
       <FireMonitorPanel
         v-if="permit.status === 'FIRE_MONITOR'"
         :fire-watch="permit.fireWatch"
-        @close="showClosure = true" />
+        @close="showRequestClose = true" />
     </template>
 
     <MarkCompleteConfirmModal
@@ -203,12 +203,11 @@
       :permit-id="permit.id"
       @completed="onPermitUpdated($event)" />
 
-    <ClosureChecklistModal
+    <RequestCloseModal
       v-if="permit"
-      v-model="showClosure"
-      :fire-watch-remaining="fireWatchRemaining"
+      v-model="showRequestClose"
       :permit="permit"
-      @closed="onPermitUpdated($event)" />
+      @requested="onPermitUpdated($event)" />
   </div>
 </template>
 
@@ -223,7 +222,6 @@ import type { IPermitAuditEntry, IPermitFireWatch } from '@/models/modules/permi
 import type { IPermitDetail } from '@/models/response/permit/PermitRes.model'
 import PermitStatusGlyph from '@/components/chip/PermitStatusGlyph.vue'
 import useTabItems, { type ITabItemComponent, type IUseTabItems } from '@/composables/useTabItems'
-import ClosureChecklistModal from '@/pages/permit/pages/detail/components/ClosureChecklistModal.vue'
 import FireMonitorPanel from '@/pages/permit/pages/detail/components/FireMonitorPanel.vue'
 import MarkCompleteConfirmModal from '@/pages/permit/pages/detail/components/MarkCompleteConfirmModal.vue'
 import PermitAuditTimeline from '@/pages/permit/pages/detail/components/PermitAuditTimeline.vue'
@@ -237,6 +235,7 @@ import PermitSafetySection from '@/pages/permit/pages/detail/components/PermitSa
 import PermitStatusBanner from '@/pages/permit/pages/detail/components/PermitStatusBanner.vue'
 import PermitUrgentSection from '@/pages/permit/pages/detail/components/PermitUrgentSection.vue'
 import PermitWorkersSection from '@/pages/permit/pages/detail/components/PermitWorkersSection.vue'
+import RequestCloseModal from '@/pages/permit/pages/detail/components/RequestCloseModal.vue'
 import useFireWatch from '@/pages/permit/pages/detail/composables/useFireWatch'
 import usePermitDetail from '@/pages/permit/pages/detail/composables/usePermitDetail'
 
@@ -254,7 +253,7 @@ const permitId: string = String(route.params.id ?? '')
 
 const { permit, audit, qrToken, loading, loadError, fetchDetail, applyPermit } = usePermitDetail(permitId)
 
-const showClosure: Ref<boolean> = ref(false)
+const showRequestClose: Ref<boolean> = ref(false)
 const showMarkComplete: Ref<boolean> = ref(false)
 
 const fireWatch: ComputedRef<IPermitFireWatch | null> = computed((): IPermitFireWatch | null => permit.value?.fireWatch ?? null)
@@ -349,8 +348,19 @@ const canRunClosure: ComputedRef<boolean> = computed((): boolean =>
 const canMarkComplete: ComputedRef<boolean> = computed((): boolean =>
   permit.value?.status === 'ACTIVE' && permit.value.type === 'hot')
 
+/**
+ * wayfinder 098 (reopened 2026-09-11) — same "awaiting Safety" gate `PermitUrgentSection.vue`
+ * uses: `closeRequestedAt` is set once and never cleared, so it only still means something while
+ * the permit is ACTIVE/FIRE_MONITOR. Drives the request button's label between "Request Closure"
+ * and "Update Request" — re-sending is a deliberate, idempotent no-op on the api side, not a
+ * conflict, so there is no "already requested" lockout here.
+ */
+const isCloseRequestedAwaitingSafety: ComputedRef<boolean> = computed((): boolean =>
+  Boolean(permit.value?.closeRequestedAt)
+  && (permit.value?.status === 'ACTIVE' || permit.value?.status === 'FIRE_MONITOR'))
+
 async function onPermitUpdated (updated: IPermitDetail): Promise<void> {
-  showClosure.value = false
+  showRequestClose.value = false
   showMarkComplete.value = false
   await applyPermit(updated)
 }

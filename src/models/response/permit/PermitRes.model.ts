@@ -71,8 +71,12 @@ export type TUpdatePermitDraftResponse = IBaseSuccessResponse<IPermitDetail>
 export type TSubmitPermitResponse = IBaseSuccessResponse<IPermitDetail>
 export type TMarkPermitCompleteResponse = IBaseSuccessResponse<IPermitDetail>
 
-/** POST /permits/:id/close — 403 ENTRANTS_STILL_INSIDE / FIRE_WATCH_NOT_ELAPSED / PERMIT_NOT_CLOSABLE. */
-export type TClosePermitResponse = IBaseSuccessResponse<IPermitDetail>
+/**
+ * POST /permits/:id/close-request — wayfinder 098. Raises the flag only; does not close the
+ * permit. 403 PERMIT_NOT_ACTIVE if the permit is not ACTIVE/FIRE_MONITOR. Idempotent overwrite,
+ * not a conflict, so a repeat call answers 200 with the refreshed closeRequested* fields.
+ */
+export type TRequestClosePermitResponse = IBaseSuccessResponse<IPermitDetail>
 
 /** GET /permits/:id/qr — ACTIVE / FIRE_MONITOR only, else 403 PERMIT_NOT_ACTIVE */
 export type TGetPermitQrResponse = IBaseSuccessResponse<IPermitQr>

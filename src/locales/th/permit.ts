@@ -568,15 +568,11 @@ const permit: typeof permitEn = {
         CERT_BLOCKED: 'ห้ามเข้าพื้นที่ — ใบรับรองไม่ถูกต้อง'
       }
     },
+    // wayfinder 098 (2026-09-11) — `title`/`subtitle`/`answerYes`/`answerNo`/`cancel`/`confirm`/
+    // `submitting`/`signature`/`blocked` belonged only to the retired contractor-side closure
+    // checklist modal and are gone with it; `item` is still read by PermitClosureSection.vue.
     closure: {
       start: 'แจ้งงานเสร็จ →',
-      title: 'รายการตรวจสอบก่อนปิด',
-      subtitle: 'ยืนยันทุกข้อก่อนปิด ต้องมีลายเซ็นอิเล็กทรอนิกส์ของผู้ควบคุมงาน (FM-SF-04 §D)',
-      answerYes: 'ใช่',
-      answerNo: 'ไม่ใช่',
-      cancel: 'ยกเลิก',
-      confirm: 'ยืนยันและปิดใบอนุญาต',
-      submitting: 'กำลังปิด…',
       item: {
         entrantsExited: 'ผู้ปฏิบัติงานทุกคนออกจากพื้นที่แล้ว',
         worksiteRestored: 'พื้นที่ทำงานกลับสู่สภาพปกติ',
@@ -587,20 +583,23 @@ const permit: typeof permitEn = {
         scaffoldingSecured: 'นั่งร้านรักษาความปลอดภัยหรือรื้อถอน',
         areaBelowCleared: 'พื้นที่ด้านล่างเปิดใหม่',
         documentationCompleted: 'บันทึกเสร็จสมบูรณ์'
-      },
-      signature: {
-        title: 'ลายเซ็นอิเล็กทรอนิกส์ วิศวกร / ผู้ควบคุมงาน',
-        tap: 'แตะเพื่อลงลายเซ็นในฐานะผู้ควบคุมงาน',
-        signed: 'ลงลายเซ็นแล้ว — {who}',
-        pending: 'ยังไม่ได้ลงลายเซ็น'
-      },
-      blocked: {
-        entrants: 'ปิดใบอนุญาตไม่ได้ — ยังมีผู้ปฏิบัติงาน {count} คนอยู่ในพื้นที่',
-        entrantsDetail: 'ระบบจะตอบ 403 จนกว่าผู้ปฏิบัติงานทุกคนจะเช็คเอาท์ผ่านแอปผู้ตรวจสอบ',
-        fireWatch: 'ปิดใบอนุญาตไม่ได้ — ยังอยู่ระหว่างการตรวจตราไฟ',
-        fireWatchDetail: 'การตรวจตราไฟ 30 นาทีนับจากฝั่งเซิร์ฟเวอร์ เหลืออีก {remaining}',
-        generic: 'ไม่สามารถปิดใบอนุญาตได้'
       }
+    },
+    // wayfinder 098 — replaces the retired closure checklist. The contractor requests closure;
+    // the Safety Officer reviews and closes it.
+    requestClose: {
+      start: 'ขอปิดใบอนุญาต →',
+      again: 'ส่งคำขออีกครั้ง',
+      title: 'ขอปิดใบอนุญาต',
+      subtitle: 'แจ้งเจ้าหน้าที่ความปลอดภัย (จป.) ว่าใบอนุญาตนี้พร้อมปิดแล้ว เจ้าหน้าที่จะตรวจสอบและปิดให้ หรือแจ้งกลับมาหากยังมีสิ่งที่ต้องดำเนินการ',
+      alreadyRequested: 'มีคำขอปิดใบอนุญาตที่รอเจ้าหน้าที่ความปลอดภัยอยู่แล้ว การส่งอีกครั้งจะอัปเดตคำขอด้วยข้อมูลที่กรอกที่นี่',
+      field: {
+        reason: 'เหตุผล (ไม่บังคับ)',
+        reasonPlaceholder: 'เช่น งานเสร็จแล้ว พื้นที่กลับสู่สภาพปกติและปลอดภัยแล้ว'
+      },
+      cancel: 'ยกเลิก',
+      confirm: 'ส่งคำขอ',
+      submitting: 'กำลังส่ง…'
     },
     pendingEditWarning: {
       title: 'แก้ไขใบอนุญาตที่รอตรวจสอบนี้หรือไม่',
@@ -620,8 +619,10 @@ const permit: typeof permitEn = {
       heading: 'กำลังตรวจตราไฟ',
       remaining: 'เหลืออีก',
       warning: 'ผู้เฝ้าระวังไฟต้องอยู่ที่หน้างาน ตัวจับเวลาทำงานที่ฝั่งเซิร์ฟเวอร์ ไม่สามารถข้ามหรือรีเซ็ตจากเครื่องผู้ใช้ได้',
-      locked: 'ปิดใบอนุญาต — ล็อกจนถึง {remaining}',
-      close: 'ปิดใบอนุญาต ✓'
+      // wayfinder 098 — เดิมล็อกปุ่มนี้จนกว่าจะครบเวลา เพราะเดิมกดแล้วปิดใบอนุญาตทันที ตอนนี้กดแล้ว
+      // เปิดหน้าต่างขอปิดใบอนุญาตแทน ซึ่งฝั่ง api รับคำขอได้ตลอดช่วง FIRE_MONITOR อยู่แล้ว
+      close: 'ขอปิดใบอนุญาต ✓',
+      requestWhileRunning: 'คุณขอปิดใบอนุญาตได้ตอนนี้ — แต่เจ้าหน้าที่ความปลอดภัยจะปิดไม่ได้จนกว่าจะครบเวลาตรวจตราไฟอีก {remaining}'
     },
     qr: {
       title: 'QR ใบอนุญาตที่อนุมัติแล้ว',
@@ -696,6 +697,7 @@ const permit: typeof permitEn = {
   toast: {
     submitted: 'ส่งใบอนุญาตเพื่อตรวจสอบแล้ว',
     closed: 'ปิดใบอนุญาตแล้ว',
+    closeRequested: 'ส่งคำขอปิดใบอนุญาตแล้ว — แจ้งเจ้าหน้าที่ความปลอดภัยเรียบร้อย',
     duplicated: 'ทำสำเนาใบอนุญาตแล้ว — แก้ไขฉบับร่างใหม่ต่อได้เลย'
   }
 }

@@ -28,21 +28,18 @@
     </p>
 
     <button
-      v-if="running"
-      class="h-12 w-full cursor-not-allowed rounded-[10px] bg-black/25 text-[14.5px] font-bold text-white/50"
-      data-test="fire-monitor-locked"
-      type="button"
-      disabled>
-      {{ t('permit.detail.fireMonitor.locked', { remaining }) }}
-    </button>
-    <button
-      v-else
       class="h-12.5 w-full cursor-pointer rounded-[10px] bg-status-active-fg text-[15px] font-bold text-white hover:bg-status-active-fg-emphasis"
       data-test="fire-monitor-close"
       type="button"
       @click="emits('close')">
       {{ t('permit.detail.fireMonitor.close') }}
     </button>
+    <p
+      v-if="running"
+      class="mt-2.5 text-center text-[12px] leading-snug opacity-80"
+      data-test="fire-monitor-request-note">
+      {{ t('permit.detail.fireMonitor.requestWhileRunning', { remaining }) }}
+    </p>
   </section>
 </template>
 
@@ -58,6 +55,7 @@ interface IProps {
 }
 
 interface IEmits {
+  /** Opens `RequestCloseModal`, not an actual close — see wayfinder 098's note below. */
   close: []
 }
 
@@ -71,6 +69,14 @@ const fireWatch: ComputedRef<IPermitFireWatch | null> = computed((): IPermitFire
 /**
  * Design lines 560-570. The GPS-tagged-photo sub-flow the design puts between "timer ends" and
  * "Close Permit" is deliberately absent — no endpoint models it (PMT-012 scope note).
+ *
+ * wayfinder 098 (reopened 2026-09-11) — the button below used to LOCK until `running` went
+ * false, because it used to trigger an actual `POST /permits/:id/close`, which Hot Work answers
+ * `403 FIRE_WATCH_NOT_ELAPSED` for until the countdown ends. It now opens `RequestCloseModal`
+ * instead, and `POST /permits/:id/close-request` (close-request.service.ts on the api side) has
+ * no such gate — it accepts ACTIVE *or* FIRE_MONITOR unconditionally. Locking the button here
+ * would invent a restriction the api does not have, so it stays clickable for the whole
+ * countdown; the note below only sets the expectation that Safety still cannot act on it yet.
  */
 const { remaining, elapsedPercent, running } = useFireWatch(fireWatch)
 </script>
