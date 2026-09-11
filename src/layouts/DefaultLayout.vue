@@ -40,13 +40,17 @@ import AppDrawer from '@/components/app/AppDrawer.vue'
 import AppTopbar from '@/components/app/AppTopbar.vue'
 import { useAppDrawer } from '@/composables/useAppDrawer'
 import { useNotificationPolling } from '@/composables/useNotificationPolling'
+import { useRealtimeSocket } from '@/composables/useRealtimeSocket'
 
 const notificationStore = useNotificationStore()
 const { isOpen, close, toggle } = useAppDrawer()
 
-// PLT-007: the initial fetch below primes the badge immediately on mount; useNotificationPolling
-// owns the recurring interval and stops it the moment the contractor is unauthenticated.
+// PLT-007: the initial fetch below primes the notification list immediately on mount;
+// useNotificationPolling owns the recurring list refresh and stops it the moment the contractor
+// is unauthenticated. wayfinder 109: useRealtimeSocket owns the badge count instead — live over
+// the socket while connected, `GET /v1/badges` on an interval as the fallback while it is not.
 useNotificationPolling()
+useRealtimeSocket()
 
 onMounted(async (): Promise<void> => {
   await notificationStore.initialize()

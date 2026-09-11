@@ -4538,3 +4538,73 @@ moved ahead of both frontends' checked-in copies (ticket 109's in-flight api wor
 added zero new error codes/routes/payloads, and `docs/api/openapi.json` is root-owned and not
 editable from this repo per this session's constraints. Both frontend copies still match each
 other byte for byte.
+
+## 2026-09-11 — wayfinder 109 (contractor half): live badge + notification socket, polling kept as fallback
+
+The api half (`ab28f98`+`39ba7b7`) shipped `GET /api/v1/realtime` (a Bun-native `.ws()`, no
+dependency — cookie-authenticated exactly like every other guarded HTTP route) and the polling
+fallback `GET /api/v1/badges`, both answering the same `{ unreadNotifications, pendingReview? }`
+shape (`pendingReview` officers-only, so this app never sees it). This is the deferred contractor
+frontend half: one composable that owns both transports, so the UI never has to know which one
+delivered a count.
+
+**Built**: `src/composables/useRealtimeSocket.ts` — first-party `WebSocket` only (no socket.io),
+module-level singleton state so every mount of `DefaultLayout` shares one connection. Connects
+once `useAuthStore().isAuthenticated` flips true, derives the socket URL from the same
+`VITE_APP_API_URL` the HTTP client already uses (`http`→`ws`, `https`→`wss`,
+`/api/v1/realtime`), and tears the connection down on sign-out. An unexpected close reconnects
+with capped exponential backoff + jitter (`RECONNECT_BASE_DELAY_MS` 1s → `RECONNECT_MAX_DELAY_MS`
+30s cap); a `4001` close (`ACCOUNT_DEACTIVATED`) is instead treated exactly like the HTTP
+interceptor's 401 branch — `authStore.logout()` + a hard redirect to `/auth/login`, no reconnect
+attempt. **Polling is not removed, per the ticket's own "this matters more than the socket"
+framing**: whenever the socket is not open (connecting, dropped, or signed out), `GET /v1/badges`
+is polled on a new named constant, `BADGE_POLL_INTERVAL_MS` (30s, same convention as
+`NOTIFICATION_POLL_INTERVAL_MS`), paused on `visibilitychange` while the tab is hidden and resumed
+immediately (not waiting for the next tick) when it becomes visible again — but only if the socket
+is still not carrying live updates.
+
+`stores/Notification.ts`'s `unreadCount` changed from a `computed` derived off the loaded
+notification page (max 50 rows, so it could under-count) to a plain `Ref` set by whichever
+transport last reported the real server-side number (`setUnreadCount()`), plus a new `prepend()`
+for a live `notification.created` row. `AppTopbar.vue` needed no change — it already read
+`unreadCount`/`notifications` through `storeToRefs`, and both keep the same shape. A live
+`notification.created` frame prepends into the list (server ordering is already unread-first) and
+toasts — `toast.info(notification.title, …)`, the exact string the bell panel already renders, per
+ticket 007's "not visible on screen" rule and never the backend's raw `message` field. New
+`src/resources/provider/badge/Badge.provider.ts` (`GET /api/v1/badges`) and
+`src/models/{modules/realtime/Realtime,response/badge/BadgeRes}.model.ts` back the poll.
+`DefaultLayout.vue` mounts `useRealtimeSocket()` alongside the existing `useNotificationPolling()`
+(unchanged — it still owns the full notification-list refresh, a separate concern from the badge
+count).
+
+**Deviations, flagged rather than silently decided:**
+- `dismiss()` now also optimistically decrements `unreadCount` locally (clamped at 0), not just
+  the list item's `read` flag — without it the badge would sit stale until the server's own
+  `badge.counts` push (live) or the next 30s poll (fallback) caught up. Not explicitly asked for,
+  but a direct consequence of making `unreadCount` transport-driven rather than list-derived.
+- `VITE_APP_WEBSOCKET` (an existing but unreferenced `.env`/`.env.prod` variable, `http(s)://`
+  scheme, never `ws(s)://`) is left untouched and unused — the ticket is explicit that the URL is
+  derived from the same API base as the HTTP client, and this variable was dead template leftover
+  with the wrong scheme for that purpose.
+- Live end-to-end socket verification (real browser, two hostnames) is the api half's own gate,
+  already done in its session. This session instead confirmed `GET /api/v1/badges` against a
+  running `bun run dev` API with a real contractor session cookie —
+  `{"message":"success","data":{"unreadNotifications":1}}`, matching `BadgeRes.model.ts` exactly.
+
+**Files**: `src/composables/useRealtimeSocket.ts` (new),
+`src/resources/provider/badge/Badge.provider.ts` (new),
+`src/models/modules/realtime/Realtime.model.ts` (new),
+`src/models/response/badge/BadgeRes.model.ts` (new), `src/stores/Notification.ts`,
+`src/layouts/DefaultLayout.vue`. Tests: `src/tests/composables/useRealtimeSocket.test.ts` (new,
+fake `WebSocket` + fake timers) — connects after sign-in with the correct `ws://` URL, no
+connection while signed out, `badge.counts` updates the store, `notification.created` prepends +
+toasts off `notification.title`, the socket closing falls back to a `GET /v1/badges` poll
+delivering the same count, capped-exponential-backoff reconnect, and a `4001` close signing the
+user out with no reconnect attempt.
+
+**Verification**: `bunx eslint` on every touched/new file — clean (0 errors; two pre-existing-style
+`vue/one-component-per-file` warnings on the new test file, same as `useNotificationPolling.test.ts`).
+`bunx vue-tsc --noEmit` — clean. `./init.sh`: typecheck PASS, lint PASS, **tests 85 files / 671
+tests PASS**, contrast PASS, icons PASS, smoke PASS (ran against a live
+`cd ../smart-work-permit-api && bun run dev`, all contract checks passed, including the pre-existing
+`GET /notifications` pagination check).
