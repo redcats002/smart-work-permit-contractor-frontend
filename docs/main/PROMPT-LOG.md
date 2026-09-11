@@ -924,9 +924,11 @@ states beats a limitation the header states.
 
 **Change requirement round 4**, approved by the owner on 2026-09-11 after a nineteen-question
 grilling. Map: `docs/wayfinder/map-round-4-pins-closure-and-the-inspector-menu.md`. Report and the
-full 33-item table: `docs/wayfinder/assets/field-report-2026-09-11.md`. Tickets 094-114.
+full 33-item table: `docs/wayfinder/assets/field-report-2026-09-11.md`. Tickets 094-114 charted;
+115-127 opened during implementation (each names what found it).
 
-**Twelve items reverse a prior ruling, five of them shipped on 2026-09-10.** Those are recorded here
+**Twelve of the report's items reverse or amend a prior decision** (the field report's own count), recorded
+below as ten entries where items share a predecessor; five had shipped on 2026-09-10. Those are recorded here
 because they are the ones a later agent would otherwise "fix" back.
 
 ### Reverses a previous ruling

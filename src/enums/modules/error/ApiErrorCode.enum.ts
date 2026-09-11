@@ -33,6 +33,10 @@ export enum EApiErrorCode {
   PPE_CHECKLIST_EMPTY = 'PPE_CHECKLIST_EMPTY',
   // Inspector visit from history — wayfinder 101. Never raised for this app; declared so the set stays closed.
   SCAN_WINDOW_EXPIRED = 'SCAN_WINDOW_EXPIRED',
+  // Inspector offline replay — wayfinder 126. Never raised for this app; declared so the set stays closed.
+  OCCURRED_AT_IN_FUTURE = 'OCCURRED_AT_IN_FUTURE',
+  OCCURRED_AT_TOO_OLD = 'OCCURRED_AT_TOO_OLD',
+  OCCURRED_AT_BEFORE_ACTIVE = 'OCCURRED_AT_BEFORE_ACTIVE',
 
   // Worker register (contractor) — wayfinder 060. Not a failure the user must recover from:
   // the response carries `workerId`, so an inline "Create worker …" selects the existing

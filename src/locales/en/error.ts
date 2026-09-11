@@ -20,6 +20,9 @@ const error = {
   PPE_GAP_REQUIRES_CORRECTIVE_ACTION: 'Flagging undeclared PPE needs a corrective action, emergency or incident note.',
   PPE_CHECKLIST_EMPTY: 'The PPE checklist was sent empty. Refresh the page and try again.',
   SCAN_WINDOW_EXPIRED: 'Your last scan of this permit is too old to start a visit from history. Scan the permit\'s QR code again.',
+  OCCURRED_AT_IN_FUTURE: 'This saved action is timestamped in the future — check this device\'s clock. It was not recorded.',
+  OCCURRED_AT_TOO_OLD: 'This saved action is more than 24 hours old and can no longer be recorded.',
+  OCCURRED_AT_BEFORE_ACTIVE: 'This saved action is timestamped before the permit became active, so it was not recorded.',
 
   // Worker register
   WORKER_ALREADY_EXISTS: 'You have already registered a worker with this name.',

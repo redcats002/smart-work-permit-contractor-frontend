@@ -172,7 +172,15 @@ deliberately, not marketing approximations, so a rule change in the API is a lan
 `CLOSURE_REASON_REQUIRED`, `PERMIT_UPDATE_EMPTY`, `AREA_NOT_APPROVED`, `AREA_NOT_PENDING`,
 `AREA_REQUIRED`, `PPE_ITEM_NOT_DECLARED`, `PPE_GAP_ALREADY_DECLARED`,
 `PPE_GAP_REQUIRES_CORRECTIVE_ACTION`, `PPE_CHECKLIST_EMPTY`, `SCAN_WINDOW_EXPIRED`, `PPE_REQUIRED`,
-`CERT_LICENCE_OR_ATTACHMENT_REQUIRED`.
+`CERT_LICENCE_OR_ATTACHMENT_REQUIRED`, `OCCURRED_AT_IN_FUTURE`, `OCCURRED_AT_TOO_OLD`,
+`OCCURRED_AT_BEFORE_ACTIVE`.
+
+> The three `OCCURRED_AT_*` codes (wayfinder 126) are **per-item verdicts inside `POST /sync/batch`**:
+> a replayed action's `occurredAt` more than 2 min in the future (`SYNC_CLOCK_SKEW_ALLOWANCE_MINUTES`),
+> older than 24 h (`SYNC_MAX_QUEUE_AGE_HOURS`), or before the permit became active. Never clamped. An
+> item with no `occurredAt` is recorded at sync time and its audit payload says
+> `timeSource: 'unknown-stamped-at-sync'`. The status gate still judges the permit **at sync time**
+> — there is no `expiredAt` to reconstruct it from.
 
 > `SCAN_WINDOW_EXPIRED` (403) was added 2026-09-11 (wayfinder 101, ruling 15) on
 > `POST /permits/:id/inspector-visits` with `source: "history"`: this inspector has no server-recorded
