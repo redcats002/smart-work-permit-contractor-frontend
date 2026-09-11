@@ -78,15 +78,15 @@ per group (wayfinder 084, `docs/api/GAPS.md` row X1).
 
 Approved 2026-09-11; tickets 094-114 are in flight. Listed so nobody invents a competing name while
 they land, and **so nobody keeps using the terms being removed**. Rulings: `PROMPT-LOG.md` session
-13. Map: `docs/wayfinder/map-round-4-pins-closure-and-the-inspector-menu.md`. **098's and 099's API
-halves are the exception — built 2026-09-11**, marked below; both frontend halves and every other
-row in this table remain not-yet-built.
+13. Map: `docs/wayfinder/map-round-4-pins-closure-and-the-inspector-menu.md`. **098's, 099's, 104's,
+105's and 106's API halves are the exception — built 2026-09-11**, marked below; both frontend
+halves and every other row in this table remain not-yet-built.
 
 | Term | What it will mean | Ticket |
 |---|---|---|
-| `Pin` | A named position on a `FacilityPlan`, **placed by safety**. Names editable, **positions frozen**, deactivated never deleted. The contractor selects one; they no longer place their own. | 104 |
-| `FacilityPlan` (revised) | A flat set of **named places** with **immutable images** — not a version chain. A new scan is a new plan; the old one is deactivated. | 104 |
-| `pinId` on `Permit` | Replaces `planId`/`planX`/`planY`. One reference instead of five columns; the pin knows its plan. | 105 |
+| `Pin` — **API built** | A named position on a `FacilityPlan`, **placed by safety**. Names editable, **positions frozen**, deactivated never deleted. The contractor selects one; they no longer place their own. | 104 |
+| `FacilityPlan` (revised) — **API built** | A flat set of **named places** with **immutable images** — not a version chain. A new scan is a new plan; the old one is deactivated. | 104 |
+| `pinId` on `Permit` — **API built** | Replaces `planId`/`planX`/`planY`. One reference instead of five columns; the pin knows its plan. | 105 |
 | requested-close — **API built** | A permit whose closure has been **requested** by a contractor or inspector, awaiting safety. Safety may also close directly, with a reason. **Not a new `PermitStatus`** — a flag (`closeRequestedAt`/`By`/`Role`/`Reason`) on whatever status the permit already holds (ACTIVE or FIRE_MONITOR), decided and recorded in `close-request.service.ts`'s header comment; every status-keyed query (dashboard counts, area occupancy, expiry sweep) needed no change. `GET /permits?closeRequested=true` is the queue this flag doesn't get for free from a status filter. | 098 |
 | `'system'` scan provenance — **API built** | A third value beside [017](docs/wayfinder/tickets/017-audit-log-scan-provenance.md)'s `scan`/`manual`, written only by `close.service.ts`'s auto-checkout (below), never client-asserted. | 098 |
 | worker "not available" — **API built** | A worker on the permit who is **not on site** (didn't show, sent home, unfit, reassigned), with a required note. Lives on `PermitWorker` (`notAvailable`/`notAvailableNote`/`notAvailableAt`/`notAvailableById`/`notAvailableBy`), **not** an `EntrantEvent` — the entry log answers "who was inside", and a third `direction` value would invert that for every reader. `POST /permits/:id/entrants/not-available` (`inspector`, ACTIVE/FIRE_MONITOR only). A worker marked not-available can still check in later — `POST /permits/:id/entrants/scan` direction `IN` clears the flag. | 099 |
@@ -98,7 +98,7 @@ row in this table remain not-yet-built.
 
 | Term | Fate | Ticket |
 |---|---|---|
-| `Area`, `AreaGrant`, `AREA_VISIBILITY_SCOPED` | **Deleted.** `Pin` carries what it carried; the overlap warning re-keys to `pinId` and survives. | 106 |
+| `Area`, `AreaGrant`, `AREA_VISIBILITY_SCOPED` | **Deleted from the API** (2026-09-11). `Pin` carries what it carried; the overlap warning re-keys to `pinId` and survives — proven with a test both before and after removal. `PERMIT_AREA_REQUIRED` and its `AREA_REQUIRED` gate are deleted with it. Both frontends still reference `Area` — that removal is a later ticket. | 106 |
 | area drawing (`FacilityPlan.areaId`) | Deleted with Area — subsumed by named plans. | 104, 106 |
 | permit coordinate (`latitude`/`longitude`) | **Deleted**, with its URL parser. | 105 |
 | `Worker.role` | **Deleted.** `PermitWorker.roleOnPermit` (template + free entry) is the surviving concept. | 103 |
@@ -177,11 +177,15 @@ deliberately, not marketing approximations, so a rule change in the API is a lan
 > so a switched-off account must not read as "wrong password" at sign-in or as "wrong role" on a
 > request. `PERMIT_POSITION_REQUIRED` was added 2026-08-24 with the facility plan + permit position
 > feature (`feat-023`): once an active facility plan exists, `POST /permits/:id/submit` refuses a
-> permit with no `planId`/`planX`/`planY` set. `AREA_NOT_APPROVED`, `AREA_NOT_PENDING` and
-> `AREA_REQUIRED` were added 2026-09-01 with the Area entity (ticket 036, see section 3): a permit
-> may reference only an approved area, `AREA_NOT_PENDING` is the approve/reject race guard shared
-> with permits, and `AREA_REQUIRED` is the `PERMIT_AREA_REQUIRED`-flag submit gate. All are
-> declared with EN/TH strings in both apps. **Do not quote a count here.** This line said 33 while the
+> permit with no `planId`/`planX`/`planY` set (that gate is now keyed on `pinId` — see
+> `pinId` on `Permit` in section 1; `planId`/`planX`/`planY` no longer exist). `AREA_NOT_APPROVED`,
+> `AREA_NOT_PENDING` and `AREA_REQUIRED` were added 2026-09-01 with the Area entity (ticket 036).
+> **All three are now dormant** (ticket 106, 2026-09-11, deleted `Area` and every gate that could
+> throw them — same "declared-but-unemitted code is legal" convention this section already
+> established for `ENTRANTS_STILL_INSIDE`). They stay listed and declared with EN/TH strings in
+> both apps rather than being stripped out, since nothing is gained by churning two frontends'
+> localization tables to remove a code that will simply never arrive over the wire again.
+> **Do not quote a count here.** This line said 33 while the
 > script reported 34, because the vocabulary grows and a number written into prose does not. Run
 > `node scripts/check-contract-sync.mjs` — it prints the current count and is the only trustworthy
 > answer.
@@ -278,7 +282,11 @@ always authoritative and the client must surface the server's verdict when the t
   exception, since it exists to show live status (including "this permit is closed") rather than
   to perform an action.
 - Expired/missing certificate blocks submission **and** field entry. No field override.
-- **Facility plan + permit position** (`feat-023`, 2026-08-24). A **facility plan** is the
+- **Facility plan + permit position** (`feat-023`, 2026-08-24). **Superseded 2026-09-11 by
+  wayfinder 105/106: `planId`/`planX`/`planY` described below no longer exist on `Permit`,
+  replaced by a single `pinId` (see section 1's `pinId` on `Permit` row) — this bullet is left
+  below unedited as a historical description of the feature `pinId` replaced, not a current
+  claim.** A **facility plan** is the
   uploaded, cropped floor-plan **raster image** (PNG/JPEG/WebP only — the map draws it with a plain
   `<img>`, so PDF and HEIC are refused at the plan upload route even though the generic upload
   route accepts them; 2026-08-31); a **plan version** is immutable and retained forever —
@@ -300,79 +308,43 @@ always authoritative and the client must surface the server's verdict when the t
   cannot target the `facility-plans` prefix even if asked (defense in depth at both the schema
   and the service layer — see `upload.service.ts`). Cropping happens only before activation; once
   a version is activated its frame is frozen (there is no edit route at all, by design).
-- **Area** (`smart-work-permit-api` ticket 036, 2026-09-01; decided by wayfinder ticket 034). An
-  **Area** is a named place in the facility a permit's work is located in — flat, no
-  `Plant → Unit → Equipment` nesting (depth arrives later, if ever, via a nullable `parentId`
-  that never touches an existing permit reference). A **contractor proposes** an area
-  (`POST /v1/areas`, status `PENDING`); it is unusable by any permit until a **safety officer
-  approves** it (`POST /v1/areas/:id/approve`, status `APPROVED`) or **rejects** it with a
-  required reason (`POST /v1/areas/:id/reject`, status `REJECTED` — no revise-in-place, a
-  corrected proposal is a fresh `POST`). Approve/reject share the same atomic `updateMany`-with-
-  expected-status guard as permit approve/reject, and each writes an append-only, hash-chained
-  audit row (`AREA_APPROVED` / `AREA_REJECTED`) — an approved area is a safety artefact, not a
-  settings row. An area may carry an optional default position (`planId`/`planX`/`planY`, same
-  shape and convention as a permit's own position) so picking an approved area pre-drops the
-  contractor's pin, which they may still nudge — the pin and the area are independent fields, on
-  purpose. `Permit.areaId` is nullable and may reference only an `APPROVED` area
-  (`400 AREA_NOT_APPROVED` otherwise); it is optional at submit until a deployment opts in with
-  `PERMIT_AREA_REQUIRED=TRUE` (`400 AREA_REQUIRED` when required and unset) — unset is the
-  permissive default, deliberately the opposite of a security flag, so this cannot repeat
-  `PERMIT_POSITION_REQUIRED`'s lock-every-contractor-out hazard. Existing permits are
-  grandfathered with no area: no backfill, no invented values. `Permit.location` is **demoted, not retired**: it is now a nullable free-text note nothing
-  queries, kept for backward compatibility (both frontends previously sent it as required) while
-  they migrate their pickers onto `Area` in a later ticket — `Area` is the structured,
-  query/audit-able answer to "where is the work" now.
-- **Overlapping-permit warning** (`smart-work-permit-api` ticket 038, 2026-09-01; API half only —
-  decided by wayfinder 034's resolution 6). Every permit-detail response (detail, create, update,
-  submit, approve, reject, mark-complete, close) carries `overlappingPermits: { checked: boolean,
-  permits: OverlappingPermit[] }`: other permits on the **same approved area** whose work window
-  overlaps this one's. **Advisory only — it never gates submit or approve**, and adds no new
-  `errorCode`; two crews sharing an area is a thing a human reviewer may legitimately accept, per
-  this map's standing no-silent-block rule. `checked: false` means this permit has no `areaId`
-  (most permits, during the `PERMIT_AREA_REQUIRED` grandfather period above) — nothing was
-  compared — and is structurally distinct from `checked: true, permits: []` ("compared, nothing
-  overlaps"), so a client cannot render one reassuring empty state for both. **Which statuses
-  occupy an area**: `PENDING`, `ACTIVE`, `FIRE_MONITOR` — the last deliberately, because a Fire
-  Watch is by definition the period *after* hot work stops during which the area is still
-  hazardous (the "hot permit's safety obligation always outlives its work window" rule two bullets
-  up), so excluding it would tell a second crew an area is clear while someone is still standing
-  watch over it. `DRAFT`/`REJECTED`/`CLOSED`/`EXPIRED` do not occupy — never submitted, dead,
-  proven clear by closure's own guards, or past their (graced) window respectively. **Overlap is a
-  closed interval on **two axes** since wayfinder 067 made the window multi-day: the **date ranges**
-  must intersect (`a.startDate <= b.endDate && a.endDate >= b.startDate`) **and** the **daily windows**
-  must intersect (`a.dailyStart <= b.dailyEnd && a.dailyEnd >= b.dailyStart`). Both are closed, so
-  two permits touching only at a shared endpoint DO count — the wider, safer reading, deliberate for
-  an advisory-only check. Two permits on the same area on overlapping dates but **disjoint daily
-  windows** (a day shift and a night shift) do **not** warn, which is the whole reason the second axis
-  exists. Served by `Permit @@index([areaId, startDate, endDate])` — the index covers the **date**
-  range and the daily-window comparison is a further `WHERE` the planner applies on its result set,
-  declared rather than left for a reader to infer. Excludes the permit itself and soft-deleted rows. **The safety frontend's consumption of this
-  field is a separate, not-yet-landed half of ticket 038.**
-- **Per-contractor area visibility** (`smart-work-permit-api` ticket 044, 2026-09-08; API half
-  only — reverses 034's "revisit only if someone asks", by owner ruling). A new `AreaGrant`
-  join table (`areaId`, `userId`, `grantedById`, `grantedBy`, `grantedAt`, unique on
-  `(areaId, userId)`) makes one area visible to one contractor who did not propose it. `Area`
-  itself is unchanged — it gains a virtual back-relation and no column. The officer grants and
-  revokes with `POST /v1/areas/:id/grants` `{ userId }`, `DELETE /v1/areas/:id/grants/:userId`
-  and `GET /v1/areas/:id/grants`, all three `safety_officer`-only; grant is an idempotent
-  upsert, revoke is an idempotent hard delete, and neither adds an `errorCode`. Grants are
-  deliberately **not** written to the audit chain: unlike approve/reject they decide nothing
-  about hazard, so a new action string in both frontends' label maps would buy nothing —
-  `grantedById`/`grantedBy` on the row keep it attributable. Scoping is gated behind
-  `AREA_VISIBILITY_SCOPED=TRUE`, **off by default**, parsed exactly like
-  `PERMIT_AREA_REQUIRED` and for the same reason — a narrowing rule must never switch itself
-  on, per the `PERMIT_POSITION_REQUIRED` lockout. Unset means the previous behaviour: every
-  role reads the full area list. With it set, a **contractor's** `GET /v1/areas` returns
-  `status = APPROVED AND createdById = me` UNION areas granted to them; it composes with the
-  existing `status` query param rather than replacing it. **It narrows that one query and
-  nothing else** — `safety_officer` and `inspector` lists are untouched, ticket 038's overlap
-  query still reads every occupying `PENDING`/`ACTIVE`/`FIRE_MONITOR` permit whoever proposed
-  the area, `GET /v1/areas/:id` stays unscoped so a permit can always show its own area, and
-  the `AREA_NOT_APPROVED` guard tests an area's **status, never its visibility**, so a permit
-  referencing an area its contractor was not granted still saves and still autosaves. A
-  contractor not seeing an area is a convenience; an officer not seeing a conflict is a hazard.
-  **Both frontend halves — the contractor picker's read-only stale-area display and the
-  officer's grant/revoke screen — are separate, not-yet-landed halves of ticket 044.**
+- **Area is deleted from the API** (wayfinder 106, 2026-09-11) — this section no longer carries an
+  `Area` entry because there is no surviving rule to describe: no propose/approve flow, no
+  `AreaGrant`, no `Permit.areaId`, no `PERMIT_AREA_REQUIRED`/`AREA_VISIBILITY_SCOPED` flag. See
+  section 1's "being removed" table for the fate of the term and section 2 for the three
+  now-dormant error codes it leaves behind. `Permit.location` remains the nullable free-text note
+  it was demoted to when `Area` was introduced (ticket 036) — it is not restored to a required
+  field by Area's removal.
+- **Overlapping-permit warning** (`smart-work-permit-api` ticket 038, 2026-09-01, decided by
+  wayfinder 034's resolution 6; **re-keyed from `areaId` to `pinId` by wayfinder 105, ruling 7, and
+  proven still working before wayfinder 106 deleted `Area`**). Every permit-detail response
+  (detail, create, update, submit, approve, reject, mark-complete, close) carries
+  `overlappingPermits: { checked: boolean, permits: OverlappingPermit[] }`: other permits on the
+  **same pin** whose work window overlaps this one's, each row naming the other permit, its
+  colliding date/time, and the **pin by name** (`pinName`). **Advisory only — it never gates
+  submit or approve**, and adds no new `errorCode`; two crews sharing a pin is a thing a human
+  reviewer may legitimately accept, per this map's standing no-silent-block rule. `checked: false`
+  means this permit has no `pinId` (most permits, since a pin is set only once safety has placed
+  one and the contractor has selected it) — nothing was compared — and is structurally distinct
+  from `checked: true, permits: []` ("compared, nothing overlaps"), so a client cannot render one
+  reassuring empty state for both. **Which statuses occupy a pin**: `PENDING`, `ACTIVE`,
+  `FIRE_MONITOR` — the last deliberately, because a Fire Watch is by definition the period *after*
+  hot work stops during which the area around the pin is still hazardous (the "hot permit's safety
+  obligation always outlives its work window" rule two bullets up), so excluding it would tell a
+  second crew a pin is clear while someone is still standing watch over it.
+  `DRAFT`/`REJECTED`/`CLOSED`/`EXPIRED` do not occupy — never submitted, dead, proven clear by
+  closure's own guards, or past their (graced) window respectively. **Overlap is a closed interval
+  on two axes** since wayfinder 067 made the window multi-day: the **date ranges** must intersect
+  (`a.startDate <= b.endDate && a.endDate >= b.startDate`) **and** the **daily windows** must
+  intersect (`a.dailyStart <= b.dailyEnd && a.dailyEnd >= b.dailyStart`). Both are closed, so two
+  permits touching only at a shared endpoint DO count — the wider, safer reading, deliberate for an
+  advisory-only check. Two permits on the same pin on overlapping dates but **disjoint daily
+  windows** (a day shift and a night shift) do **not** warn, which is the whole reason the second
+  axis exists. Served by `Permit @@index([pinId, startDate, endDate])` — the index covers the
+  **date** range and the daily-window comparison is a further `WHERE` the planner applies on its
+  result set, declared rather than left for a reader to infer. Excludes the permit itself and
+  soft-deleted rows. **The safety frontend's consumption of this field is a separate,
+  not-yet-landed half of ticket 038.**
 - Audit log is append-only with a server-signed hash chain. Never expose an edit or delete path.
 - Timestamps stored UTC; displayed `Asia/Bangkok`. Default UI locale is **Thai**; every string is
   translated EN + TH.
