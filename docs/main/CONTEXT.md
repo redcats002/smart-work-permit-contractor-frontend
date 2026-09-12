@@ -114,8 +114,17 @@ It is generated from a live boot of the backend by `smart-work-permit-api/script
 
 Both frontends keep a byte-identical copy at `docs/api/openapi.json`, plus prose derived from it:
 
-- `smart-work-permit-frontend/docs/api/CONTRACT.md` — the target contract, prose form.
-- `smart-work-permit-contractor-frontend/docs/main/dev-handoff/04-api-contract.md` — same, contractor scope.
+- `smart-work-permit-frontend/docs/api/CONTRACT.md` — the target contract, prose form, safety scope.
+- `docs/main/dev-handoff/04-api-contract.md` — same, contractor scope. **Lives only at the workspace
+  root** (wayfinder 092): the api and contractor repos each carried their own copy of this file, both
+  had drifted from this one and from each other (the api repo's copy was missing whole sections —
+  Workers, Areas, the gas-reading interval — that this one has; the contractor repo's copy had grown
+  real content of its own — the multi-value `status` filter, the submit-failure body's `failures[]`/
+  `certificateFailures[]` arrays — that never made it back here), and nothing checked any of it. Both
+  repo copies are deleted; the api and contractor repos' `AGENTS.md` point here instead
+  (`../smart-work-permit-docs/docs/main/dev-handoff/04-api-contract.md`, siblings on disk). Content
+  found only in a deleted copy and not superseded by then-later tickets is not carried forward here —
+  `docs/api/openapi.json` remains the actual authority regardless of what the prose says.
 - both repos' `docs/api/GAPS.md` — where the app and the API still disagree, each row tagged
   `frontend-adapts` (that repo fixes it) or `api-adds` / `open` (the **backend** must fix it).
 
@@ -123,7 +132,8 @@ Both frontends keep a byte-identical copy at `docs/api/openapi.json`, plus prose
 
 1. `cd smart-work-permit-api && ./scripts/dump-openapi.sh` — regenerate `docs/openapi.json`.
 2. Copy it over **both** frontends' `docs/api/openapi.json`.
-3. Update the affected `CONTRACT.md` / `04-api-contract.md` prose and close the matching `GAPS.md` row.
+3. Update `smart-work-permit-frontend/docs/api/CONTRACT.md` and the workspace root's
+   `docs/main/dev-handoff/04-api-contract.md`, and close the matching `GAPS.md` row.
 4. Run `node scripts/check-contract-sync.mjs` from the workspace root (see §5).
 
 Never hand-edit a frontend's `openapi.json`. A frontend that needs a shape the API does not serve

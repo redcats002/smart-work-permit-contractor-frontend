@@ -48,7 +48,8 @@ Two sibling apps exist in **other repos** and are **out of scope here**: the Saf
 > Built: `PermitCreatePage` — the 6-step wizard is **complete** (`PMT-004`–`PMT-009`). Every step has a real zod schema that gates Next; there are no `z.object({})` placeholders left. Submit really calls `POST /permits/:id/submit` and navigates to `/permits/:id?submitted=1` (that query param is what triggers the detail page's one-shot "submitted" banner — nothing else sets it). On a 400 the wizard drives off the backend's `failures[]` / `certificateFailures[]` arrays and highlights **every** failing reading on step 3 and every refused worker on step 4, localized off `errorCode` — the server's verdict wins over any client-side gate. Two step-3 shapes have no wire field and are deliberately not persisted: the Yes/No/N-A checklist (`GAPS.md` row J) and `so2` (row K).
 > Built 2026-08-22: `PermitDetailPage` (`PMT-010`–`PMT-013`) — per-status banners, info card, read-only audit
 > timeline, QR panel (`ACTIVE`/`FIRE_MONITOR` only), the closure checklist modal and the Hot Work Fire Watch
-> countdown, plus all six sections of `docs/main/dev-handoff/05-permit-detail-sections.md`. The step-2 location
+> countdown, plus all six sections of `../smart-work-permit-docs/docs/main/dev-handoff/05-permit-detail-sections.md`
+> (deleted from this repo, wayfinder 092 — it lives only at the workspace root now). The step-2 location
 > zone picker mirrors the Safety app's zone vocabulary and writes **canonical English** into the free-text
 > `location` — a Thai value splits the pin across the two apps.
 >
@@ -102,7 +103,14 @@ Two sibling apps exist in **other repos** and are **out of scope here**: the Saf
 > `getUTCHours`/`setUTCHours`. Ticket 045's `areaIdIsUserChoice` invariant is unchanged by this move
 > and must keep holding regardless of which steps mount.
 >
-> Before changing anything under `src/resources/` or `src/models/`, read `docs/main/dev-handoff/04-api-contract.md` — and treat `docs/api/openapi.json` (generated from a live boot, never hand-edited) as the authority over it. `01-backend-elysia-tasks.md` is the older *plan*; where the two disagree, the contract wins.
+> Before changing anything under `src/resources/` or `src/models/`, read
+> `../smart-work-permit-docs/docs/main/dev-handoff/04-api-contract.md` — **not** a copy in this
+> repo. This repo used to carry its own copy of that file; it had drifted from the root's and never
+> got the multi-value `status` filter or the submit-failure `failures[]`/`certificateFailures[]`
+> arrays back into the root, and nothing checked either direction, so it was deleted rather than
+> re-synced (wayfinder 092). Treat `docs/api/openapi.json` (generated from a live boot, never
+> hand-edited) as the authority over the contract prose. `01-backend-elysia-tasks.md` is the older
+> *plan*; where the two disagree, the contract wins.
 
 > **Superseded 2026-09-11 (wayfinder 107):** the paragraph above's description of "Where & when"
 > carrying "pin + geo coordinate", `AreaPicker` "pre-dropping the pin", and `usePlanPosition` is
