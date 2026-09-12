@@ -566,6 +566,13 @@ const permit = {
       // The log is an append-only, server-signed hash chain — this app never offers edit or delete.
       readOnly: 'Read-only — the audit log is append-only and cannot be edited or deleted.',
       unknownActor: 'System',
+      // 2026-09-12 owner-filed issue 1 — the complete closed set `writeAuditLog` actually writes
+      // for a permit-scoped row (`smart-work-permit-api`'s permit module). `USER_CREATED` /
+      // `USER_UPDATED` / `USER_DEACTIVATED` / `USER_REACTIVATED` are deliberately absent: those
+      // are user-scoped rows with `permitId: null`, and `PermitAuditService.execute` filters
+      // `findMany({ where: { permitId } })`, so they can never reach this timeline. `DEMO_LOGIN`
+      // is a retired feature (wayfinder 042) but the log is append-only, so an old row can still
+      // carry it — it gets a label rather than falling back to the raw enum forever.
       action: {
         PERMIT_SUBMITTED: 'Permit submitted',
         PERMIT_APPROVED: 'Permit approved',
@@ -573,7 +580,14 @@ const permit = {
         PERMIT_WITHDRAWN_FOR_EDIT: 'Withdrawn from review for editing — returned to Draft',
         PERMIT_MARKED_COMPLETE: 'Work marked complete — Fire Watch started',
         PERMIT_CLOSED: 'Permit closed',
-        CERT_BLOCKED: 'Entry blocked — certificate invalid'
+        PERMIT_CLOSE_REQUESTED: 'Closure requested',
+        PERMIT_EXPIRED: 'Permit expired',
+        ENTRANT_CHECKED_IN: 'Worker checked in',
+        ENTRANT_CHECKED_OUT: 'Worker checked out',
+        GAS_LOG_RECORDED: 'Gas reading recorded',
+        CERT_BLOCKED: 'Entry blocked — certificate invalid',
+        WORKER_MARKED_NOT_AVAILABLE: 'Worker marked not available',
+        DEMO_LOGIN: 'Demo login (retired)'
       }
     },
     closure: {
@@ -713,6 +727,44 @@ const permit = {
         // Judgement call, documented in the implementation report: sourced from the permit's own
         // declared PPE rather than the most recent inspector visit's checklist.
         ppeTitle: 'Final PPE state (as declared on the permit)'
+      }
+    },
+    // 2026-09-12 owner-filed issue 2 — the full-permit print/export (PermitPrintLayout.vue).
+    // Distinct from `report` above, which is the Report tab's own partial print (visits/gaps/
+    // closure only). Header/footer copy is shared with the Safety app's identical spec.
+    print: {
+      button: 'Print / Export PDF',
+      header: {
+        subtitle: 'Work Permit Management System'
+      },
+      footer: {
+        printedVia: 'Printed via e-safework — {when}'
+      },
+      preWork: {
+        title: 'Pre-work safety checklist',
+        empty: 'No pre-work checklist was recorded for this permit.'
+      },
+      entrants: {
+        title: 'Entrant register (IN / OUT log)',
+        empty: 'No entrant activity has been recorded for this permit.',
+        columnWorker: 'Worker',
+        columnDirection: 'Direction',
+        columnWhen: 'When',
+        directionIn: 'IN',
+        directionOut: 'OUT'
+      },
+      gasLog: {
+        title: 'Gas log entries',
+        empty: 'No gas log entries have been recorded for this permit.',
+        columnWhen: 'Recorded',
+        columnTester: 'Tester'
+      },
+      visits: {
+        title: 'Inspector visit history',
+        empty: 'No inspector visits have been recorded for this permit.'
+      },
+      approval: {
+        title: 'Approval / rejection / closure'
       }
     }
   },

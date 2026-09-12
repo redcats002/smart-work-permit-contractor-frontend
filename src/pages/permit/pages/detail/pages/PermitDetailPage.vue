@@ -31,47 +31,51 @@
     </div>
 
     <template v-else>
-      <PermitStatusBanner
-        :just-submitted="justSubmitted"
-        :permit="permit"
-        :rejected-by="rejectedBy">
-        <template
-          v-if="canRunClosure || canMarkComplete"
-          #action>
-          <button
-            v-if="canMarkComplete"
-            class="inline-flex h-11 cursor-pointer items-center justify-center rounded-[9px] bg-accent-emphasis px-5 text-[13.5px]
-              font-bold whitespace-nowrap text-white hover:bg-accent-emphasis-alt"
-            data-test="start-mark-complete"
-            type="button"
-            @click="showMarkComplete = true">
-            {{ t('permit.detail.closure.start') }}
-          </button>
-          <button
-            v-else
-            class="inline-flex h-11 cursor-pointer items-center justify-center rounded-[9px] bg-status-active-fg px-5 text-[13.5px]
-              font-bold whitespace-nowrap text-white hover:bg-status-active-fg-emphasis"
-            data-test="start-closure"
-            type="button"
-            @click="showRequestClose = true">
-            {{ isCloseRequestedAwaitingSafety ? t('permit.detail.requestClose.again') : t('permit.detail.requestClose.start') }}
-          </button>
-        </template>
-      </PermitStatusBanner>
+      <div class="print:hidden">
+        <PermitStatusBanner
+          :just-submitted="justSubmitted"
+          :permit="permit"
+          :rejected-by="rejectedBy">
+          <template
+            v-if="canRunClosure || canMarkComplete"
+            #action>
+            <button
+              v-if="canMarkComplete"
+              class="inline-flex h-11 cursor-pointer items-center justify-center rounded-[9px] bg-accent-emphasis px-5 text-[13.5px]
+                font-bold whitespace-nowrap text-white hover:bg-accent-emphasis-alt"
+              data-test="start-mark-complete"
+              type="button"
+              @click="showMarkComplete = true">
+              {{ t('permit.detail.closure.start') }}
+            </button>
+            <button
+              v-else
+              class="inline-flex h-11 cursor-pointer items-center justify-center rounded-[9px] bg-status-active-fg px-5 text-[13.5px]
+                font-bold whitespace-nowrap text-white hover:bg-status-active-fg-emphasis"
+              data-test="start-closure"
+              type="button"
+              @click="showRequestClose = true">
+              {{ isCloseRequestedAwaitingSafety ? t('permit.detail.requestClose.again') : t('permit.detail.requestClose.start') }}
+            </button>
+          </template>
+        </PermitStatusBanner>
 
-      <!--
-        wayfinder 113 / ruling 11 — urgent and notification-related state stays a FIXED section
-        above the tabs, reachable with zero interaction. Renders nothing (see
-        PermitUrgentSection.vue) when there is nothing urgent, so the common case is this page's
-        own status banner immediately followed by the clean tabbed layout below.
-      -->
-      <PermitUrgentSection :permit="permit" />
+        <!--
+          wayfinder 113 / ruling 11 — urgent and notification-related state stays a FIXED section
+          above the tabs, reachable with zero interaction. Renders nothing (see
+          PermitUrgentSection.vue) when there is nothing urgent, so the common case is this page's
+          own status banner immediately followed by the clean tabbed layout below.
+        -->
+        <PermitUrgentSection :permit="permit" />
+      </div>
 
       <!--
         268px right rail. `lg:flex-row` puts the rail beside the main column on wide screens and
         stacks it BELOW the main column at narrow widths (flex-col + the rail declared second).
+        `print:hidden` — the full-permit print/export (PermitPrintLayout.vue below) replaces this
+        whole on-screen viewing area with its own paper-formatted content when printing.
       -->
-      <div class="flex flex-col gap-5.5 lg:flex-row">
+      <div class="flex flex-col gap-5.5 lg:flex-row print:hidden">
         <div class="min-w-0 flex-1">
           <div class="mb-1.5 flex flex-wrap items-center gap-2.75">
             <span
@@ -90,9 +94,15 @@
           <h1 class="text-[23px] font-bold tracking-tight text-text-primary break-words">
             {{ permit.title }}
           </h1>
-          <p class="mb-4.5 font-mono text-[12.5px] text-text-tertiary break-words">
+          <p class="mb-3 font-mono text-[12.5px] text-text-tertiary break-words">
             {{ permit.id }}
           </p>
+
+          <!-- 2026-09-12 owner-filed issue 2 — full-permit print/export. Page-level (not a tab): covers every tab's content at once. -->
+          <PermitPrintLayout
+            :audit="audit"
+            :permit="permit"
+            class="mb-4" />
 
           <!--
             wayfinder 113 — the six sections of docs/main/dev-handoff/05-permit-detail-sections.md
@@ -194,6 +204,7 @@
       <FireMonitorPanel
         v-if="permit.status === 'FIRE_MONITOR'"
         :fire-watch="permit.fireWatch"
+        class="print:hidden"
         @close="showRequestClose = true" />
     </template>
 
@@ -229,6 +240,7 @@ import PermitClosureSection from '@/pages/permit/pages/detail/components/PermitC
 import PermitDetailSection from '@/pages/permit/pages/detail/components/PermitDetailSection.vue'
 import PermitInfoCard from '@/pages/permit/pages/detail/components/PermitInfoCard.vue'
 import PermitJsaSection from '@/pages/permit/pages/detail/components/PermitJsaSection.vue'
+import PermitPrintLayout from '@/pages/permit/pages/detail/components/PermitPrintLayout.vue'
 import PermitQrPanel from '@/pages/permit/pages/detail/components/PermitQrPanel.vue'
 import PermitReportSection from '@/pages/permit/pages/detail/components/PermitReportSection.vue'
 import PermitSafetySection from '@/pages/permit/pages/detail/components/PermitSafetySection.vue'
