@@ -1,13 +1,18 @@
 const platform = {
-  appName: 'e-safework',
+  appName: 'e-safework Contractor',
   appTagline: 'ELECTRONIC SAFE WORK PERMIT · v3.0',
   accountType: 'Contractor account',
   sidebarSection: 'CONTRACTOR',
   nav: {
     permits: 'My Permits',
+    // wayfinder 110 — no longer a drawer entry (folded into Permits as a view mode); kept because
+    // src/tests/plugins/I18n.plugin.test.ts asserts this value.
     newPermit: 'New Permit',
     history: 'History',
-    certificates: 'Certificates'
+    personnel: 'Personnel',
+    certificates: 'Certificates',
+    workers: 'Workers',
+    gettingStarted: 'Getting started'
   },
   localeSwitcher: {
     en: 'EN',
@@ -23,6 +28,12 @@ const platform = {
   auth: {
     title: 'Log in',
     subtitle: 'Enter your email and password to log in.',
+    demo: {
+      button: 'Demo',
+      contractor: 'Contractor'
+    },
+    welcome: 'Welcome.',
+    welcomeBody: 'Request, track and close your work permits. Every safety check is verified by the server before a permit goes live.',
     email: 'Email',
     password: 'Password',
     submit: 'Log in',

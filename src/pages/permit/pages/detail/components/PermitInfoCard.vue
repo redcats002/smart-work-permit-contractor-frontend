@@ -90,12 +90,22 @@ const props = defineProps<IProps>()
 const { t, d } = useI18n()
 
 /**
- * `workDate` comes back as a full ISO timestamp even though it is sent as `YYYY-MM-DD`; the
+ * `startDate` comes back as a full ISO timestamp even though it is sent as `YYYY-MM-DD`; the
  * i18n datetime formats pin the display timezone to Asia/Bangkok. Never round-trip this value.
+ * wayfinder 067 — a multi-day permit's END date is shown alongside it in `workDate` below when
+ * it differs; single-day (still the common case, and every migrated permit) shows one date.
  */
-const workDate: ComputedRef<string> = computed((): string => d(new Date(props.permit.workDate), 'short'))
+const workDate: ComputedRef<string> = computed((): string => {
+  const start = d(new Date(props.permit.startDate), 'short')
+  if (props.permit.endDate === props.permit.startDate) return start
+  return `${start} – ${d(new Date(props.permit.endDate), 'short')}`
+})
 
-/** Work times are full ISO datetimes on the wire (not 'HH:mm') — render the Bangkok wall clock. */
+/**
+ * `dailyStart`/`dailyEnd` are full ISO datetimes on the wire, unchanged in FORMAT from the old
+ * `workTimeStart`/`workTimeEnd` this replaces (wayfinder 067) — this rendering function is
+ * untouched on purpose, preserving whatever convention it already had.
+ */
 function clock (value: string): string {
   const parsed = new Date(value)
   if (Number.isNaN(parsed.getTime())) return value
@@ -104,7 +114,7 @@ function clock (value: string): string {
   }).format(parsed)
 }
 
-const workTime: ComputedRef<string> = computed((): string => `${clock(props.permit.workTimeStart)}–${clock(props.permit.workTimeEnd)}`)
+const workTime: ComputedRef<string> = computed((): string => `${clock(props.permit.dailyStart)}–${clock(props.permit.dailyEnd)}`)
 
 /** Stored UTC, displayed Asia/Bangkok through the shared `long` datetime format. */
 function stamp (value: string | null): string {

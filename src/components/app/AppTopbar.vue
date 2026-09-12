@@ -1,6 +1,6 @@
 <template>
   <header
-    class="sticky top-0 z-50 flex h-[54px] shrink-0 items-center gap-[18px] border-b-2 border-(--color-accent-500)
+    class="sticky top-0 z-50 flex h-[54px] shrink-0 items-center gap-[18px] border-b-2 border-(--color-primary-500)
       bg-(--color-shell-topbar) px-[18px]">
     <button
       :aria-label="t('platform.menu')"
@@ -14,13 +14,17 @@
     </button>
 
     <div class="flex min-w-0 items-center gap-[10px]">
+      <!-- Primary red, not accent orange: the accent ramp is the SAFETY app's brand primary, so
+           painting this app's chrome with it made the two indistinguishable (wayfinder 058). White
+           on #c81e2c is 5.71:1; the old dark-on-orange was 6.06:1 and dark-on-red would be 3.23:1,
+           so the text colour flips with the background rather than staying put. -->
       <div
-        class="flex size-[30px] shrink-0 items-center justify-center rounded-[6px] bg-(--color-accent-500)
-          text-base font-bold text-(--color-shell-topbar)">
+        class="flex size-[30px] shrink-0 items-center justify-center rounded-[6px] bg-(--color-primary-500)
+          text-base font-bold text-white">
         e
       </div>
       <div class="min-w-0 leading-[1.05]">
-        <div class="truncate text-sm font-bold tracking-[0.3px] text-white">
+        <div class="truncate text-sm font-semibold tracking-[0.3px] text-white">
           {{ t('platform.appName') }}
         </div>
         <div class="truncate font-mono text-[10px] text-(--color-text-tertiary)">
@@ -29,9 +33,20 @@
       </div>
     </div>
 
+    <!-- wayfinder 110 — "Getting started" moved out of the drawer into the app bar. -->
+    <RouterLink
+      :aria-label="t('platform.nav.gettingStarted')"
+      :to="{ name: 'GettingStartedPage' }"
+      class="ml-auto flex size-9 shrink-0 items-center justify-center rounded text-(--color-shell-sidebar-fg)
+        transition-colors hover:bg-(--color-shell-sidebar-hover)">
+      <Icon
+        class="size-5"
+        icon="mdi:help-circle-outline" />
+    </RouterLink>
+
     <div
       ref="panelRootRef"
-      class="relative ml-auto shrink-0">
+      class="relative shrink-0">
       <button
         :aria-label="t('platform.notifications.title')"
         class="relative flex size-9 items-center justify-center rounded text-(--color-shell-sidebar-fg)
@@ -97,13 +112,21 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, type Ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import Icon from '@/components/base/AppIcon.vue'
-import { useDayjs } from '@/utils/Dayjs'
+import { RouterLink } from 'vue-router'
+
 import { toast } from '@/plugins/toast'
-import { useApiError } from '@/composables/useApiError'
+
 import { useNotificationStore } from '@/stores/Notification'
+
+import { useDayjs } from '@/utils/Dayjs'
+
+import Icon from '@/components/base/AppIcon.vue'
+
+import { useApiError } from '@/composables/useApiError'
+
 import { storeToRefs } from 'pinia'
+import { useI18n } from 'vue-i18n'
+
 import LocaleSwitcher from './LocaleSwitcher.vue'
 
 interface IEmits {

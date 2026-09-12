@@ -2865,3 +2865,1766 @@ Every new assertion was falsified before being trusted — reverted the fix, wat
 
 One existing assertion was inverted rather than deleted: `PermitDetailSections.test.ts`'s closure
 case runs on a **confined** fixture and pinned the `No Fire Watch has been started` empty state.
+
+## 2026-09-09 — CRT-005 / CRT-006: certificate detail and edit pages
+
+The contractor half of wayfinder 056/057. `GAPS.md` row G is now closed on both sides.
+
+**The reported bug was a missing feature.** The report was that the list page drops files out of
+its pagination. It never did — `CertificateCard.vue:44` rendered `t('certificate.card.noFile')`
+**unconditionally**. It was a hardcoded string, not a field read coming back empty, because until
+the backend's `feat-024` there was no `filePath` on the wire at all.
+
+Added:
+
+- `/certificates/:id` and `/certificates/:id/edit`, following `Permit.router.ts`'s `:id` /
+  `:id/edit` convention.
+- `CertificateCard` is now a `RouterLink`. It had **no click handler and no link** before this —
+  there was no existing navigation to repurpose, which is why the module had a list and nothing else.
+- The card's attachment row reads `filePath` instead of always claiming there is none.
+- `CertificateProvider.detail()` / `.update()`, and `IUpdateCertificatePayload`.
+
+The detail page reuses `certificateStatus()` and the server's `expired` flag rather than computing
+expiry — `Certificate.model.ts` says why, and a test asserts it by handing the page a far-future
+expiry date with `expired: true` and requiring "Expired".
+
+The attachment opens through `Upload.provider.getFileUrl()` **at click time**, never resolved on
+mount: the presigned handle dies 60 seconds after issue, so a URL fetched on mount would be dead
+before anyone clicked it. A test asserts nothing is fetched until the click.
+
+**The edit form's file input has three states, not two**, matching what the PATCH body can express:
+omitted keeps the current attachment, a picked file replaces it, and an explicit `null` detaches
+it. Removal is a separate toggle rather than "an empty input means clear" — an empty input is
+overwhelmingly "I am not touching the file", and making that mean deletion would silently lose an
+attachment on every unrelated edit. Three tests cover it, and they are mutation-checked: making
+`buildPayload` always send `filePath` turns two of them red.
+
+**Removed `certificate.form.attachmentNotStored` and `fileNotStoredHint`.** They warned the user
+their file was discarded, which is now false. Note there were **two** copies, not one —
+`AddCertificateModal` and the permit wizard's `CreateCertificateModal` — and the ticket only
+mentioned the first.
+
+Also corrected two stale header comments while in the files: `Certificate.router.ts` and
+`History.router.ts` both claimed they were "NOT yet registered in src/router/index.ts". Both have
+been registered for a long time, and both mislead anyone reading the module cold.
+
+Verified: `./init.sh` All checks passed — typecheck, lint (0 errors), vitest 66 files / 563 tests,
+contrast, icons, and the live API smoke against a running backend.
+
+## 2026-09-09 — wayfinder 058: app identity, and a WCAG failure the gate was blind to
+
+This app now says `e-safework Contractor` in the tab and ships a red favicon; the safety app says
+`e-safework Safety` and ships an orange one. They were byte-identical before, which starts to
+matter now that wayfinder 055 makes both being signed in at once the expected case.
+
+**The chrome was painted in the other app's brand colour.** `--color-accent-500` is `#F26B1D` —
+exactly the safety app's `--color-primary-500`. The topbar border, the topbar logo square, the
+sidebar active marker and the login header all used it. They use `--color-primary-500` (red) now.
+The logo square's text flipped with the background: dark-on-orange was 6.06:1, dark-on-red is
+3.23:1, so it is white-on-red at 5.71:1.
+
+**A real AA failure, found while doing something else — the third time in this repo.** White on
+`--color-accent-500` is **3.05:1**. It renders on `FireMonitorPanel`, `AuthHeader`, both
+permit-detail modals and the detail page CTA. `scripts/check-contrast.mjs` never caught it because
+every pair in its list is a status, permit-type or body-text pair — white-on-brand was a blind
+spot, exactly as 026 and 027 were.
+
+Fixed with two token edits rather than component churn: `--color-accent` → `accent-700`
+(#ae4609, 5.71:1) and `--color-accent-emphasis` → `accent-800` (8.29:1). The 500 stays the
+decorative fill, where it carries dark text at 6.06:1. Fire Monitor stays orange — it is orange
+because fire is, and that should not have become red.
+
+The gate gained three white-on-brand rows, and **was proven to fail first**: pointing the new row
+at `accent-500` (what the code actually rendered) turned it red at 3.05:1, then the fix turned it
+green. A gate never seen failing is not known to work.
+
+Verified: `./init.sh` All checks passed — typecheck, lint, 563 tests, contrast (29 pairs, 21 ΔE),
+icons, live API smoke.
+
+## 2026-09-09 — CRT-007: repoint the certificate write paths at worker identity
+
+wayfinder 060 landed backend-first in another session and broke every certificate **write** path
+here. This repoints them; it is not 061-063.
+
+`workerName` is gone from the wire as an input. A worker is a record now, so `ICertificate` carries
+`workerId`, and `role` is gone from the certificate entirely — it describes the person, not the
+card. `byWorker` takes an id and hits `/certificates/worker/{workerId}`; the name-keyed route it
+replaces was not contractor-scoped, which was a cross-tenant read.
+
+New: `Worker` model, `Worker.provider`, and `src/components/worker/WorkerPicker.vue` — search,
+select, inline create, and adopt the `workerId` a `409 WORKER_ALREADY_EXISTS` carries rather than
+showing a conflict. Deliberately standalone so wayfinder 063's Step 4 reuses it instead of building
+a second worker autocomplete.
+
+**`useCertificatePreflight` now checks only rows that carry a `workerId`.** Step 4 still collects a
+typed name (that is 063), and the name-keyed lookup no longer exists — so a name-only row is not
+checkable and reports `unknown`, which does not block. Guessing would be worse than not knowing,
+and this composable's existing rule is that an unknown answer is neither a pass nor a fail.
+
+Two things worth knowing before touching these forms again:
+
+- `WorkerPicker` is a component, not an `<input>`, so `@primevue/forms` never sees its value. The
+  form needs a hidden input registering `workerId` or **submit silently no-ops** — no error, no
+  request.
+- Build the payload from `formData`, not the Form's emitted `values`. Mixing the two sources is how
+  this sent `undefined` for every field once the picker landed.
+
+**The gate was green while the app was broken.** `scripts/smoke-api.mjs` passed against the live API
+before any of this, because it exercises read paths and responses still echo `workerName` — one of
+its assertions was literally "a certificate row uses workerName, not name". The other session has
+since added a `workerId` assertion. Treat a green smoke as evidence about reads only.
+
+The type system, by contrast, found the entire blast radius: 16 errors across 8 source and 6 test
+files, matching the surface enumerated before starting.
+
+Verified: `./init.sh` All checks passed — typecheck, lint, 563 tests, contrast, icons, live smoke.
+
+## 2026-09-09 — PLT-014: split sign-in screen
+
+Form left, gradient brand panel right, on the owner's reference layout. The layout comes from the
+reference; the colour comes from this app's own brand ramp rather than the mockup's navy, because a
+navy sign-in on a red-branded app fights both the design system and the contrast gate.
+
+The mesh is four overlapping CSS radial gradients, not an image — this app is first-party only and
+runs inside an industrial facility, so a decorative background must not cost a fetch or a binary.
+Below `lg` the panel is dropped entirely; it is `aria-hidden` and non-interactive, so nothing is
+lost on a phone, and a squeezed two-column layout at 375px would be worse than one column.
+
+**The scrim is load-bearing, not decoration.** White clears AA against the panel base at 15:1 but
+sits at 3.44:1 over the lightest mesh stop, and a gradient has no single background colour for a
+contrast gate to check. The scrim gives the copy a known floor and the new gate row asserts that
+floor — the only version of this that can be verified rather than eyeballed. Remove the scrim and
+the row stops describing what renders; remove the row with it.
+
+Verified: `./init.sh` All checks passed — 563 tests, contrast 30 pairs, live API smoke.
+
+## 2026-09-10 — wayfinder 071: neither field-reported defect reproduces on `dev`
+
+Two reports, both traced to ground before touching anything (`/debug-mantra`). Neither needed a
+code change.
+
+**Defect A — "pinned it and it still said I didn't pin, can't submit."** The ticket named three
+candidates for `usePlanPosition.stateFor` returning `'fail'` against a visibly-drawn pin, and
+flagged the third — `renderedPlan` still `undefined` at click time, so `onFrameClick` emits
+`position.planId: undefined` while a pin renders anyway — as the one matching the report. It does
+not reproduce: `onFrameClick` guards on `!renderedPlan.value` and returns early, and the clickable
+frame (`v-else-if="imageUrl"`) does not exist in the DOM until `loadPlanImage` has already set
+`renderedPlan.value` (that assignment happens before the `imageUrl`-setting await, not after) — so
+a click is never physically possible while `renderedPlan` is still unset. Proved with a scratch
+repro first (frame absent while the image fetch is held open forever), then folded into
+`Step7Position.pin.test.ts`, which also falsifies the other two candidates: the build has emitted
+all three position fields since the step's first commit (`078e749a`), and `onAreaChange` only
+forwards a `position` key when the newly-picked area actually carries a default one, so picking one
+that doesn't never overwrites an existing pin. No commit fixed this because the guard has been
+correct since the feature was born — there is nothing to name.
+
+One real but unrelated latent bug found in the same read: `usePlanPosition.stateFor`'s
+`position.planId && …` is a truthiness check, not a `typeof === 'number'` one, so a plan with
+`id === 0` would wrongly read as unpinned. `FacilityPlan.id` is `@default(autoincrement())` in the
+API schema, so no plan can have id 0 — this cannot be the field report, and per PROMPT-LOG's
+scope-discipline rule it is recorded here rather than "fixed" for a defect it does not cause.
+
+**Defect B — "shows only 4 pins, more or less than it actually has."** Ticket's own leading
+candidate (`AreaPicker`'s server-page-size truncation) was already ruled out by the ticket's own
+math (4 ≠ 10) and confirmed absent in code: `AreaPicker.fetchApprovedAreas` has passed
+`limit: 9999` since the picker's first commit (`2cb1d995`), the provider forwards it verbatim
+(`HttpRequest.get`), and the response envelope unwraps to a plain array with no pagination wrapper
+surviving into `approvedAreas`. What the picker counts is APPROVED areas visible to the signed-in
+contractor (`AREA_VISIBILITY_SCOPED`, wayfinder 044) — a status-and-visibility filter, not a page
+size. "4" is very plausibly the true count of approved-and-visible areas for that account. This is
+the same read the round-3 fact-check already recorded in
+`docs/wayfinder/assets/field-report-2026-09-10.md`: a UI-clarity gap in an existing, correct design,
+not a client defect. No code change made.
+
+The pre-flight gate (`usePlanPosition`'s `'none'`/`'loading'` states) was not touched.
+
+New test: `src/tests/pages/permit/create/components/steps/Step7Position.pin.test.ts` (3 cases).
+
+Verified: `./init.sh` — typecheck PASS, lint PASS (2 pre-existing warnings, unrelated), **67 files /
+566 tests PASS**, contrast PASS (30 pairs), icons PASS, smoke SKIP (no local API running).
+
+## 2026-09-10 — wayfinder 063 + 062: Step 4 picks a Worker and stops gating, and the worker directory
+
+Field report in the owner's words: "when add worker in permit already it doesn't show/add on
+permit detail and make inspector unable to find worker qr and id" — "it must have worker modules
+on contractor and permit to see the qr of that worker in that permit."
+
+**063 — Step 4 binds a Worker, and Next never gates on a certificate.**
+
+1. `Step4PpeWorkers.vue`'s worker column is now `WorkerPicker` (wayfinder 060/061's shared
+   component), not a free-text AutoComplete over the certificate list. Selecting/creating a worker
+   emits a new `worker-selected` event off `WorkerPicker` (additive — every existing caller that
+   only listens for `update:modelValue` is unaffected) carrying the full record, so the row can
+   write `workerId` **and** `workerName` in one patch. `IPermitWorker.workerId` and
+   `TWorkerDraft`'s are keyed off it; `workerRowComplete` now requires a `workerId`, not just a
+   name and role.
+2. `useWizard.ts`'s `isNextBlocked` no longer gates the PPE & Workers step on a confirmed
+   certificate `fail` — that was stricter than the server (059 ruling 5 / this ticket, reversing
+   003's 2026-08-31 amendment). `canSubmit` is untouched and still mirrors the server 1:1 by
+   staying `false` on a confirmed `fail`.
+
+**The wiring bug that was actually causing "doesn't show on permit detail".** `useWizard.
+toFormWorkers` (hydrate) and `useDuplicatePermit.toWireWorkers` both dropped `workerId` when
+building the wire payload from an already-hydrated permit. With `workerId` now required, that is
+not a silent trap any more — resuming a draft for edit, or duplicating a permit, would rebuild
+every worker row with no id and 422 on the next save. Both now carry `workerId` through. This is
+likely the actual mechanism behind the field report's first half: Step 4 used to collect a typed
+name only, so `PATCH /permits/:id` 422'd on `workers[].workerId` (`required` per the openapi
+contract) the moment a contractor tried to save a worker onto a permit — the workers never reached
+the server at all, hence "doesn't show/add on permit detail". `PermitWorkersSection.vue` (the
+detail page) already reads `permit.workers` correctly; there was nothing to fix there.
+
+**Verified false in the tickets, not just assumed:** 061/063's claim that Step 4 needs "a hidden
+input registering `workerId`" for `@primevue/forms` does not apply to `Step4PpeWorkers.vue` — that
+component was never wrapped in a `<Form>` (`isNextBlocked` gates off a plain `schema.safeParse`
+against `formData`, not a PrimeVue Form/resolver). The hidden-input trap is real and already fixed
+in `CreateCertificateModal.vue`/`AddCertificateModal.vue`, which do use `<Form>` — but restating it
+as a per-line trap for Step 4 specifically was incorrect, checked against
+`Step4PpeWorkers.vue`/`useWizard.ts` directly.
+
+**Deleted, not adjusted:** `useWorkerCertificateSuggestions.ts`, `WorkerCertificateSuggestionOption.
+vue`, and the entire `Step4PpeWorkers.workerAutocomplete.test.ts` file (only its "accepts free
+text" case was named in the ticket, but every other case in that file exercised the AutoComplete-
+over-certificates control this ticket removes wholesale — there was nothing left to adjust).
+Replaced by `Step4PpeWorkers.workerPicker.test.ts` (binds `workerId`+`workerName`, clears both
+together, triggers the pre-flight recheck, keeps 048's `min-w`) and a rewritten `useWizard.
+certificatePreflight.test.ts` (the four pinned cases now assert `isNextBlocked` stays `false`
+throughout, inverting their pre-063 assertions per the ticket).
+
+**062 — the worker directory, with the QR card.**
+
+New `/workers` module: `WorkerListPage` (paginated + debounced search, per-row certificate status
+reusing `CertificateStatus.ts`'s vocabulary — no second one — and permit count) and
+`WorkerDetailPage` (editable identity via `@primevue/forms`, certificates section linking to
+`CertificateDetailPage`, permits section linking to `PermitDetailPage`, and the QR card). Registered
+in `AppDrawer.vue`'s nav and `src/router/index.ts`.
+
+**The QR payload is the bare worker id as a string, nothing else** (`String(worker.id)`, no prefix,
+no JSON envelope) — `WorkerQrCard.vue` follows `PermitQrPanel.vue`'s exact approach (`QRCode.
+create()`'s raw module matrix rendered as `<rect>`s, since `toCanvas`/`toDataURL` need a canvas
+jsdom does not implement). `qrcode@1.5.4` was already a dependency; nothing new installed. The id
+is also printed as large monospace text next to the QR, per the ticket's "clearly enough that a
+field inspector can scan/read it off a phone screen" — a scan failure must not dead-end.
+
+`Worker.provider.ts` gained `getById`/`update`/`retire` (the delete method is named `retire`, not
+`delete` — `HttpRequest.delete`'s own signature is `(endPoint, ...)`, and there is no hard delete on
+the wire anyway). `GET /workers/:id` returns certificates/permits embedded, which is what
+`WorkerDetail`/`WorkerCertificatesSection`/`WorkerPermitsSection` consume — no separate
+`byWorker`/list-with-`workerId`-filter calls needed, even though the certificate list endpoint does
+also accept a `workerId` query param (`docs/api/openapi.json`); the embedded response is simpler
+and is what the endpoint's own description says it is for.
+
+"Add certificate" from the worker detail page is its own small `AddWorkerCertificateModal.vue`
+(worker page module) rather than importing `certificate`'s `AddCertificateModal.vue` — mirrors
+`CreateCertificateModal.vue`'s precedent of not crossing the parallel-tree module boundary for a
+page-level component, while still sharing `AddCertificate.schema.ts` (061's "one schema, three
+forms" — now four).
+
+Registering a worker from the list uses its own `RegisterWorkerModal.vue` (name + a `Select` over
+the full 10-value `EWorkerRole` set, per 059 ruling 6 — distinct from `roleOnPermit`'s
+type-filtered set) rather than `WorkerPicker`'s inline create, which only asks for role and has no
+id-card/phone fields.
+
+New tests: `WorkerListPage.test.ts` (valid / expiring-soon / no-certificate rows, empty state, row
+links) and `WorkerDetailPage.test.ts` (QR card + human-readable id present, certificates/permits
+render with status, empty states, load-failure state, retired-worker read-only state).
+
+**Deviation:** the ticket only asked to delete one named test case from
+`Step4PpeWorkers.workerAutocomplete.test.ts`; the whole file was deleted instead (see above) because
+the control under test no longer exists. Noted rather than silently deviating.
+
+**Not done, out of scope for this session:** wayfinder tickets 064 (safety app worker detail) and
+065 (entrant scan on worker id) live in the OTHER frontend repo. `certType`'s closed-set Select
+(050) is untouched.
+
+Verified: `./init.sh` — typecheck PASS, lint PASS (2 pre-existing warnings, unrelated),
+**67 files / 566 tests PASS**, contrast PASS (30 pairs), icons PASS, smoke SKIP (no local API
+running — another session owns the API repo this round; provider/model changes here are therefore
+unverified against a live backend per this repo's own "green vitest alone only proves the app
+agrees with its own types" caveat).
+
+---
+
+**wayfinder 070 — "Where & when" becomes one wizard step, at position 3 (2026-09-10).**
+
+The field report's headline complaint: *"how area and riskmap working together — I didn't see the
+relevance and operation between them"*, plus *"make it as in one of stepper in permit creation to
+reduce complicated process about area, riskmap"*. Order is now
+`1 Type → 2 Basic info → 3 Where & when → 4 Safety checks → 5 PPE & Workers → 6 JSA → 7 Review`.
+Review is always last — the old `Step7Position` sat AFTER Review, which is the whole reason the pin
+read as bolted on.
+
+**The pieces, in order, inside the new step:** area picker (`AreaPicker.vue`, reused verbatim) →
+the pin (copied from the retired `Step7Position.vue`, unchanged logic) → a geo coordinate (paste a
+map URL or type `lat, lng` — wayfinder 068) → dates (`startDate`/`endDate`/`dailyStart`/`dailyEnd` —
+wayfinder 067, replacing the single-day `workDate`/`workTimeStart`/`workTimeEnd`) → a schedule note.
+Selecting an area still drops the pin immediately in the SAME `updateFormData` patch as `areaId`
+(`onAreaChange` — unchanged from `Step7Position`), which is the entire answer to "I don't see the
+relevance": the two writes can never land as separate calls that race.
+
+**The step now ALWAYS renders.** `useWizard.steps` no longer filters `Step7Position`'s old
+`position` key out when no facility plan is active — `steps` is just `registry`, unfiltered. Only
+the pin SURFACE inside `Step3WhereWhen.vue` swaps for a "no plan active" line when
+`positionState === 'none'`; area, geo, dates and note are always there. Ticket 045's invariant
+(`areaIdIsUserChoice`, tracked in `updateFormData` where patches ARRIVE, not where the picker
+SPEAKS) is unchanged and still holds now that the picker always mounts — kept deliberately rather
+than relaxed, since a step always mounting today is not a promise it always will.
+
+**The 067 UTC trap, read before touching this again:** `dailyStart`/`dailyEnd` are `1970-01-01`
+`@db.Time`-anchored on the wire; only the UTC clock time survives. The migration backfill preserves
+every existing permit's instant only while the client renders these through the SAME local-time
+conversion the old `workTimeStart` used (`Date#getHours`/`Date#setHours`, copied verbatim from
+Step2BasicInfo into `Step3WhereWhen.vue`) — never `getUTCHours`/`setUTCHours`.
+
+**Geo coordinate (wayfinder 068).** No map library, no tiles, no third-party runtime request — a
+pasted URL or typed `lat, lng` is parsed client-side (`src/utils/ParseMapCoordinate.ts`, a
+regex-for-regex mirror of the api's `parse-map-coordinate.util.ts`, purely for instant feedback) and
+sent as the raw `mapUrl` string on the wire — the SERVER's parse is authoritative
+(`resolvePermitCoordinateInput`), never the client's. Unparseable input is a Step3WhereWhenSchema
+`.refine` failure — a form error, never a silent no-op. Clearing the field sends an explicit
+`{ latitude: null, longitude: null }` (`mapUrl` cannot represent "clear" — the wire requires
+`minLength: 1`).
+
+**Models updated end to end:** `IPermitBase`/`ICreatePermitDraftPayload`/`IUpdatePermitDraftPayload`
+now carry `startDate`/`endDate`/`dailyStart`/`dailyEnd`/`scheduleNote`/`latitude`/`longitude`/
+`mapUrl`; `location` is nullable on the wire (070's openapi refresh dropped it from POST's
+`required` list) but this wizard still requires it client-side, unchanged. Every consumer of the
+old field names was updated to compile AND render correctly against the live contract:
+`PermitCard.vue`, `PermitInfoCard.vue`, `HistoryTable.vue`, `HistoryDetailDrawer.vue`,
+`useHistory.ts`, `useDuplicatePermit.ts`.
+
+**Review (Step6Review.vue).** Shows all five Where & when groups (area, pin, geo, date/time,
+schedule note) as summary fields. The standalone "Position" preflight row is gone — submit gating
+is unaffected, `useWizard.canSubmit` still reads `positionState` directly.
+
+**A ticket claim verified false, reported rather than silently worked around:** none of 070's own
+claims were false on inspection — `AreaPicker.vue`'s pin-drop-on-select behaviour and
+`Step7Position.vue`'s pin logic were exactly as the ticket described, and both were reused
+unmodified inside the new step. What the ticket did NOT anticipate (found while implementing, not
+stated in the ticket) is the size of the model blast radius: `IPermitBase`'s old field names were
+still load-bearing across the detail page, history, and duplicate flow, none of which 070 named —
+all were updated in this same change to keep the app compiling and correct against the contract
+067/068 already shipped in the api.
+
+**Deviations / decisions not specified by the ticket:**
+- Component/schema FILENAMES for the safety/PPE/JSA/review steps keep their OLD numbers
+  (`Step3SafetyChecks.vue` is step 4 now) — not renamed, since the ticket's scope is the order and
+  content of the steps, not their filenames. `WizardSteps.ts`'s `labelKey` is what actually drives
+  on-screen numbering.
+- The area/pin i18n namespace stays `permit.create.steps.position.*` (unchanged) rather than being
+  renamed to `whereWhen.*` — `AreaPicker.vue`/`CreateAreaModal.vue` needed zero locale-key changes
+  this way. Only the genuinely new parts (dates, geo, note, the step's own subtitle) got a new
+  `permit.create.steps.whereWhen.*` namespace.
+- Review's "Area" row shows the raw `areaId` (a number), not a resolved area name — resolving the
+  name would need a second network call inside Review that the ticket did not ask for and 044/037
+  already gate area *identity* off the id, not the display name.
+- The Review "Geo Coordinate" row re-parses `formData.mapUrl` client-side purely for display —
+  never sent as a second source of truth back to the server.
+- `Textarea`'s `auto-resize` was deliberately NOT used on the schedule-note field — it requires
+  `ResizeObserver`, which jsdom does not implement, and no other screen in this repo uses it yet
+  (would have needed a fresh test-environment polyfill for one field).
+
+**Tests:** new `Step3WhereWhen.pin.test.ts` (renamed from `Step7Position.pin.test.ts`, wayfinder
+071's three falsified candidates, unchanged) plus three new describe blocks — the step renders in
+all three plan states (no plan / active site plan / an area's own drawing, wayfinder 069) and the
+daily window survives a no-op edit (067 UTC trap, symmetric get/set proof). New
+`Step3WhereWhen.schema.test.ts` (moved + expanded date-window cases, plus every geo-parse
+acceptance/rejection case). New `useWizard.persistence.test.ts` cases: area-drop-pin-rides-one-patch,
+a later nudge survives autosave, and a hydrated multi-day window is unchanged through an unrelated
+autosave. Every existing test that hardcoded the old 6-step order or the old field names was updated
+(`PermitCreatePage.{jsaSteps,saveDraft,submit,walk}.test.ts`, `PermitEditPage.test.ts`,
+`PermitDuplicatePage.test.ts`, `useWizard.test.ts`, `I18n.plugin.test.ts`, and the `IPermitDetail`/
+`IPermitListItem` fixtures in the detail-page test suite).
+
+**Pre-existing bug found, not fixed (out of scope):** `formatDuration()` (`useHistory.ts`) expects
+`'HH:mm'` strings but was already being called with full ISO datetimes (`workTimeStart`/
+`workTimeEnd`, now `dailyStart`/`dailyEnd`) both before and after this change — `"08:00:00.000Z".
+split(':')` was never a valid duration parse. Renamed the call site to the new field names only;
+did not fix the underlying format mismatch, which predates this ticket.
+
+**Correction made mid-implementation, worth recording.** The first pass resolved "the area's own
+drawing" by reusing `IArea.planId` (the area's historical DEFAULT POSITION, `AreaDefaultPlan`
+relation) as if it were the live drawing reference, and fetching it via `getById` when it differed
+from `activePlan`. Reading the api's own `prisma/models/area.prisma` comment caught this: the area's
+OWN drawing is a SEPARATE Prisma relation (`FacilityPlan.areaId`, "AreaDrawing"), and the correct
+resolution is `GET /facility-plans/active?areaId=<picked area>` — already shipped in the api
+(`active.service.ts`'s `FacilityPlanActiveService.execute`, which does the site-plan fallback
+SERVER-SIDE) and already in this repo's openapi copy. Fixed: `FacilityPlanProvider.getActive` now
+takes an optional `areaId`; `usePlanPosition.fetchActive` threads it through; `useWizard` watches
+`formData.areaId` (registered inside `onMounted`, not at setup time — a bare `watch()` fired a real
+network call from every composable-level test that touches `areaId`, tripping the 401 interceptor
+into a Pinia-outside-a-store error the same way `useCertificatePreflight`'s doc comment already
+warns about) and re-fetches `activePlan` scoped to the current area on every change — a pick, a
+clear, or hydrate. `Step3WhereWhen.vue` itself needed NO change for this: it only ever renders
+whatever `activePlan` prop it is handed, and the stale-pin/`getById` logic it already had (for a
+permit frozen against an older plan version) still does its own separate, correct job untouched.
+
+Verified: `./init.sh` — typecheck PASS, lint PASS (2 pre-existing warnings, unrelated), **69 files /
+589 tests PASS**, contrast PASS (30 pairs), icons PASS, **smoke PASS** (16/16 contract checks
+against a live API — the model/provider changes here ARE verified against the real backend, not
+only against this repo's own types).
+
+## 2026-09-10 — wayfinder 082 + 077: `formatDuration`'s never-matched shape, and Getting started
+
+**082.** `formatDuration()` (`src/pages/history/pages/list/composables/useHistory.ts`) parsed
+`start.split(':')` against a full ISO datetime (`dailyStart`/`dailyEnd`, `1970-01-01`-anchored per
+the "067 UTC trap") — confirmed by running the function verbatim: it has always rendered the
+literal string `"NaNh NaNm"`. Fixed by reading local wall-clock `getHours()`/`getMinutes()` off a
+`new Date(iso)`, the same conversion `PermitCard.vue`'s `clock()` uses — never `getUTCHours`.
+`formatDuration`'s signature grew two params (`startDate`, `endDate`) so it can also decide whether
+the permit is multi-day (wayfinder 067): same-day still returns the bare `"6h 30m"`; a multi-day
+permit now also states the day count, `"6h 30m/day · 5 day(s)"`, via a new
+`history.duration.perDay` locale key (EN + TH). Every call site updated together
+(`useHistory.exportCsv`, `HistoryTable.vue`'s two rows, `HistoryDetailDrawer.vue`'s duration row).
+Also fixed, same file, same defect class: `HistoryDetailDrawer.vue` printed
+`{{ detail.dailyStart }}–{{ detail.dailyEnd }}` as the raw ISO string with zero formatting — added
+a local `clock()` helper (duplicated from `PermitCard.vue` on purpose, matching that file's own
+established pattern, not extracted into a shared util). New test:
+`src/tests/pages/history/list/composables/useHistory.test.ts` — a same-day case that would have
+caught the historical `NaNh NaNm` bug, a multi-day case, and a TZ-stability case (the local-time
+conversion shifts both legs of the pair by the same offset, so the diff itself never moves).
+
+**077 (contractor half only).** No guided tour (ruling 10, declined). Built:
+
+- `docs/guide/using-contractor-app.md` + its Thai twin updated first, to the shipped reality:
+  seven-step order (`Type → Basic info → Where & when → Safety checks → PPE & Workers → JSA →
+  Review`), Review always last, no "position step is filtered out" caveat — Where & when always
+  renders, only its pin surface falls back to a "no plan active" line. Added the missing `Workers`
+  module row and a new "What is an area for?" subsection answering the field report's verbatim
+  question (034/070's existing ruling, restated — not a new design decision). Thai is a translation
+  of the reviewed English, per this doc's own stated trap about `check-docs-i18n.mjs`.
+- New in-app page, `GettingStartedPage` (`src/pages/guide/pages/GettingStartedPage.vue`), route
+  `/getting-started` (`src/router/modules/Guide.router.ts`), reached from a new drawer entry
+  (`AppDrawer.vue`). Content ported from (not transcluded from) the corrected guide doc, into a new
+  `guide` locale namespace (`src/locales/{en,th}/guide.ts`). Deep-linkable via route hash
+  (`#area`, `#overview`, `#wizard`, `#permit-detail`, `#history`, `#certificates`, `#workers`,
+  `#profile`) — every section carries a matching `id`, scrolled-to and briefly highlighted on
+  mount AND on an in-page hash change (a `watch(() => route.hash, …)`, since navigating between two
+  hashes on the same route name does not remount the page). `Step3WhereWhen.vue` gained a small
+  `RouterLink` ("what is this for?") next to the area picker, targeting `{ name:
+  'GettingStartedPage', hash: '#area' }`.
+- First-run checklist (`src/pages/permit/pages/list/composables/useOnboardingChecklist.ts` +
+  `.../components/OnboardingChecklist.vue`), rendered at the top of `PermitListPage` — the app's
+  real home page (`HomePage.vue` only ever `router.replace`s through it). Three rows: register
+  workers, upload certificates, create first permit. The permit row is wired off the SAME fetch
+  `useMyPermits` already runs (the default `'all'`-filter count, captured once right after the
+  page's own `fetchPermits()` resolves, not re-derived reactively off a later filter change — a
+  `'pending'` filter later returning zero rows must not read back as "no permits ever created").
+  Workers and certificates are genuinely separate, lightweight `limit: 1` count-only requests —
+  neither is otherwise fetched on this page. Dismissal is per-user, namespaced by
+  `useAuthStore().user.id` in `localStorage` (no existing per-user-dismissible-UI convention was
+  found to reuse; this mirrors `I18n.plugin.ts`'s own best-effort-never-throws `localStorage`
+  pattern, the closest precedent in the repo).
+
+**Test-harness fix, not a feature change.** Adding `Step3WhereWhen.vue`'s new `RouterLink` broke
+nine existing test files that mount the wizard or the permit detail page with their own local
+`createRouter` and did not know about the new `GettingStartedPage` route name (vue-router 5 throws
+on an unresolved route name inside a rendered `RouterLink`, per this repo's own documented trap).
+Registered the route (an inert `{ template: '<div />' }`) in each of those routers' route arrays —
+no test assertions changed.
+
+Verified: `./init.sh` — typecheck PASS, lint PASS (2 pre-existing warnings, unrelated), **70 files /
+592 tests PASS**, contrast PASS, icons PASS, **smoke PASS** (16/16 contract checks against a live
+API). Workspace-level `node scripts/check-docs-i18n.mjs` — green (7/7 mirrored pages). Workspace-level
+`node scripts/check-contract-sync.mjs` — OK (unaffected by this change, run for completeness since
+this session touched `src/router/index.ts`).
+
+## 2026-09-10 — Wayfinder 086 (contractor half): certType becomes a role-filtered Select
+
+The field report complaint that started the certType thread: *"ตรงหน้าใบ cer. ช่องชนิดบัตรแอบงงว่า
+ต้องกรอกอะไร"* — the free-text `ชนิดบัตร` box asked a question it never explained. 050's amendment
+(ruling 7) kept `certType` rather than deleting it and moving to `Worker.role`, because `certType`
+is the only field able to say a card is specifically a *hot work* card; this ticket ships the form
+half of that ruling — a `Select` over a compiled-in `ECertType`, filtered by the selected worker's
+role.
+
+**New:**
+- `src/enums/modules/certificate/CertType.enum.ts` — `ECertType` (four values: Hot Work, Confined
+  Space Entry, Working at Heights, Gas Testing) and `ROLE_ALLOWED_CERT_TYPES`, mirrored verbatim
+  from the api's `src/libs/config/worker-vocabulary.const.ts` (read there, not edited — the api
+  owns `ECertType`; this repo's `EWorkerRole.enum.ts` is unchanged and confirmed to still be the
+  api's own mirror source, byte-for-byte, all ten values).
+- `src/utils/CertType.ts` — `buildCertTypeOptions(role, currentValue)`, the pure function deciding
+  what the Select offers: a recognised role narrows to its allowed types; an unrecognised role
+  (undefined, or a real-but-uncatalogued value like `Welder`/`ช่างซ่อมบำรุง` from 050's data audit)
+  falls back to the FULL vocabulary with a visible note, rather than an empty or gated Select — a
+  worker outside the vocabulary must stay certifiable. The certificate's current value is always
+  present in the result even when role-filtering would exclude it, flagged `legacy` only when it
+  matches no `ECertType` at all.
+- `src/components/certificate/CertTypeSelect.vue` — the shared control, reused across all four
+  `AddCertificate.schema.ts` entry points the same way `WorkerPicker.vue` is shared for `workerId`:
+  the standalone add modal, the standalone edit page, the in-wizard `CreateCertificateModal.vue`,
+  and the worker detail page's `AddWorkerCertificateModal.vue`.
+
+**A ticket claim checked against the code and found false.** 050/061 both describe the
+unrecognised-legacy-value requirement as "renders it as a disabled option". Verified against
+`node_modules/primevue/select/index.mjs`: `findSelectedOptionIndex` → `isValidSelectedOption` →
+`isValidOption` explicitly excludes a `option-disabled` item from ever being resolved as the
+current selection, so the Select's displayed label falls back to the placeholder — BLANK — for
+exactly the certificate this requirement exists to protect. That claim holds for a native
+`<option disabled>`, not for this component. Built instead: the legacy value stays a normal,
+selectable option, labelled with `certificate.form.field.certTypeLegacyLabel` ("{value} (not in
+the standard list)" / Thai twin) rather than disabled — same outcome (never blank, never silently
+dropped, visibly distinct), achieved the way that is actually true of the library in this repo.
+
+**A second, undocumented bug this ticket's own no-op-trap test caught.** `AddCertificateModal.vue`,
+`CreateCertificateModal.vue`, and `AddWorkerCertificateModal.vue` all built their create payload
+from the `<Form>`'s emitted `event.values`, not `formData` — unlike `CertificateEditPage.vue`,
+which 061 already fixed onto `formData` for exactly this reason. Once `CertTypeSelect` joined
+`WorkerPicker` as a second (or, for the worker-detail modal, first) non-native field with a
+registered `name`, `event.values` came back `undefined` ENTIRELY — the same failure 061 described
+for `WorkerPicker` alone, just never triggered here because nothing exercised these three forms'
+submit path with more than one such field until this ticket's test did. All three now read every
+field from `formData` (dates via `dayjs(...).format('YYYY-MM-DD')`, matching
+`CertificateEditPage.vue`'s established pattern) — this was a real, latent defect on the exact
+field this ticket touches, not scope creep.
+
+**Tests** (`src/tests/utils/CertType.test.ts`, `src/tests/pages/certificate/AddCertificateModal.test.ts`,
+additions to `src/tests/pages/certificate/CertificateEditPage.test.ts`): role filtering narrows the
+list; an unrecognised role (`Welder`, `ช่างซ่อมบำรุง`, undefined) falls back to the full vocabulary
+and stays certifiable; a legacy stored value (`hot-work`) is preserved on submit untouched unless a
+human changes it; a real `ECertType` merely excluded by role filtering is offered (not flagged
+legacy); and the no-op-trap regression — the Select's chosen value actually reaches
+`CertificateService.create`'s payload, driven through PrimeVue's real click-to-open,
+mousedown/mouseup/click-to-select overlay (teleported to `document.body`, queried via a
+`DOMWrapper` since `wrapper.find` cannot see teleported content), not a shortcut around it.
+
+**Not done, reported rather than silently skipped:** the `ชนิดบัตร` "hint that restates its own
+label" the ticket describes was not found in the current code (no `description`/hint prop is set
+on the certType `LabelField` in any of the four forms — only a validation message, now reworded to
+"Please select a certificate type" / "กรุณาเลือกชนิดบัตร"). Likely already fixed by 061's rewrite of
+these forms; nothing left to remove.
+
+Verified: `./init.sh` — typecheck PASS, lint PASS (2 pre-existing warnings, unrelated), **72 files /
+605 tests PASS**, contrast PASS, icons PASS, **smoke PASS** (14/14 contract checks against a live
+API — API was reachable this session).
+
+## 2026-09-10 — wayfinder 088: certificate badges follow the worker id, not the name
+
+`Step4PpeWorkers.vue` held two display-only lookups matched on a worker's **name**, so two workers
+sharing one name got each other's certificate badge — on the screen where a contractor decides
+whether to add them. Display-only, so nothing wrong reached the wire; the submit gate has always run
+server-side on `workerId`. That is the worst arrangement of the two: the authoritative path was
+correct and the *displayed* one was not, so a reader had no reason to distrust the badge.
+
+Both are now keyed on `workerId`, and neither source needed an API change:
+
+- **`ICertificateProblem` gained `workerId`.** `useCertificatePreflight` already *had* it — it is
+  what `CertificateService.byWorker` is called with — and was throwing it away to store the name.
+- **`ISubmitCertificateFailure` gained `workerId`.** The server has always sent it alongside the
+  name (`submit.service.ts`'s `certFailures`); this repo's parser dropped it. So the fix was reading
+  a field that was already on the wire.
+
+A rejection arriving **without** a `workerId` is now dropped from the per-row highlight rather than
+name-matched as a guess. Attributing an unattributable rejection to a namesake is worse than not
+highlighting a row: the submit still fails server-side either way, so the contractor loses a wrong
+red badge and nothing else.
+
+New test: `src/tests/pages/permit/create/composables/certificateBadgeIdentity.test.ts` — **two
+workers, one name, different certificate status.** That fixture is the whole test. Every existing
+test had one worker per name, which is exactly why the defect survived: a single-worker case passes
+whether the lookup keys on the id or the name. **Mutation-checked** — reverting the rule to the
+name-keyed version turns it red, restoring it turns it green.
+
+Four existing fixtures needed `workerId` added (`SubmitErrorRouting.test.ts`,
+`PermitCreatePage.submit.test.ts`, `useWizard.certificatePreflight.test.ts`). Worth noting that the
+`PermitCreatePage.submit` fixture failing was itself informative: without ids the rejection banner
+stopped rendering, which is the new stricter filter doing its job.
+
+`./init.sh`: 73 files / 610 tests PASS, typecheck PASS, lint PASS, contrast PASS, icons PASS,
+smoke PASS.
+
+## 2026-09-10 — wayfinder 093: the fake location map on Step 2 is gone
+
+Removed from `Step2BasicInfo.vue`: the zone-chip row, the grey placeholder "facility plan"
+rectangle, and the pin positioned by `mapLocationToPosition()`. Deleted
+`constants/LocationZones.ts` and its test, and the orphaned `basicInfo.map.*` locale keys in EN
+and TH. **The `location` text field stays**, unchanged on the wire.
+
+The owner's report was *"always not show real floor plan and fill gray bg and random the pin
+everytime, also the chip … is no use at all in real case"*. All three are literal descriptions of
+what the code did: the background was a hardcoded placeholder, the chips only wrote the free-text
+`location`, and the "random" pin was `mapLocationToPosition()`'s deterministic hash — the fallback
+for any text outside an eight-zone vocabulary.
+
+**The Safety app deleted this exact mechanism on 2026-08-24** and left a HISTORY note in
+`LocationPosition.ts` saying it must not come back — *"behind a real facility plan the identical pin
+reads as a claim about where hot work is physically happening, and an officer could dispatch to the
+wrong part of the plant"*, per PROMPT-LOG session 8's *"never draw a pin in a position the system
+cannot vouch for"*. The contractor half outlived it by three weeks. `LocationZones.ts` even carried
+a ⚠ MIRROR warning that its percentages must stay byte-identical to that file — a warning protecting
+a counterpart that had already been deleted.
+
+It also competed with the real answer: wayfinder 070's step 3 has an approved Area, a pin on an
+actual plan raster, and a parsed map coordinate. Two "where" UIs in one wizard is the confusion the
+2026-09-10 field report opened with. `location` returns to what wayfinder 034 demoted it to — free
+text nothing queries, for "north corner, near the loading dock".
+
+New test `src/tests/pages/permit/create/components/Step2BasicInfo.location.test.ts` asserts the
+plan, the pin and the chips are absent and that `location` still round-trips — the contractor half
+of the Safety app's HISTORY note, in a form that fails rather than being read.
+
+`./init.sh`: 72 files / 607 tests PASS (LocationZones.test.ts's 6 cases removed, 3 added),
+typecheck, lint, contrast, icons, smoke all PASS.
+
+## 2026-09-11 — wayfinder 110: the contractor menu shrinks — Personnel group, Permits gains real pagination/search/filter, History folds in as a view mode
+
+`docs/wayfinder/tickets/110-the-menus-shrink.md`'s contractor half only (the safety/inspector half
+is a different repo, a different agent). Verified every claim the ticket made about this repo
+before acting on it, per the workspace's own rule that a ticket's factual claims are load-bearing.
+
+**"Create permit already has a create button on PermitListPage" — true**, verified at
+`PermitListPage.vue`'s header (the `+ New Permit` button, unconditional, always rendered). Cutting
+its drawer entry (`PermitCreatePage`) leaves no dead end; the wizard is still one click away.
+
+**"History duplicates Permits" — false**, and worth stating plainly since the ticket's own word was
+"duplicates." Before this change `HistoryListPage` had six things `PermitListPage` did not: a
+search box wired to `GET /permits`' `search` param, a type filter, a status filter narrowed to the
+two terminal states (CLOSED/EXPIRED), a date-from/date-to range, a CSV export (re-querying every
+page at `limit: 9999`, narrowed to the archive set — the fix for a real 2026-08-19 defect,
+CT-HISTORY-009), and a table layout with a distinct mobile card fallback, opening a row into an
+inline read-only drawer instead of navigating to `/permits/:id`. `PermitListPage` itself had none
+of pagination, search, or a real pager — just four filter chips over an unpaginated `limit: 50`
+fetch. Neither page was a subset of the other; "duplicates" undersold what was actually being cut.
+Resolution: moved (not rebuilt) `HistoryListPage`'s body — `HistoryTable.vue`,
+`HistoryDetailDrawer.vue`, `composables/useHistory.ts` — under `src/pages/permit/pages/list/` as
+`components/PermitHistoryView.vue`, and gave `PermitListPage` a "Permits"/"History" tab toggle.
+Every one of the six capabilities above survives verbatim; `PermitListPage.history.test.ts`
+(renamed from `HistoryListPage.test.ts`) keeps the exact archive-narrowing and CSV-export
+assertions that caught CT-HISTORY-009, now asserting against the new mount. `/history` itself
+stays registered as a bare redirect to `/permits?view=history` rather than being deleted, so an old
+bookmark or an external link still lands somewhere.
+
+**"Certificates and Workers move under a new Personnel parent" — built as a non-navigable group
+header** (no `/personnel` route invented) with the two former top-level drawer links indented
+beneath it, same active/registered-route rules as before. `AppDrawer.vue`'s `navItems` is now a
+discriminated union (`kind: 'link' | 'group'`) rather than one flat array.
+
+**Permission check, recorded rather than assumed** (the ticket's own instruction): grepped
+`permitRole|permission|NotPermittedPage` across `src/`. This app has no per-item permission or role
+gate anywhere outside the login guard's plain `meta.auth` check — `NotPermittedPage` exists as a
+route but nothing routes to it, and `permitRole` only appears in the profile display and the
+`PATCH /users/me` privilege-boundary test. The contractor app is single-role. Moving Certificates
+and Workers under Personnel therefore cannot orphan either — there is no permission for the parent
+to fail to grant.
+
+**A defect this pass found and fixed while it was in the neighborhood, not asked for by the
+ticket but required by it**: `useMyPermits.ts`'s grouped filter chips ("Active" = ACTIVE +
+FIRE_MONITOR, "Closed" = CLOSED + REJECTED) fetched unfiltered and narrowed the page client-side,
+a comment explicitly blaming "the backend cannot express this in one call." That has been false
+since feat-009 (`GET /permits`'s `status` param now accepts an array — confirmed in
+`smart-work-permit-api/src/modules/permit/queries/list/list.model.ts` and already reflected in
+this repo's own `docs/api/openapi.json`). Under the OLD `limit: 50` no-visible-pager page this was
+invisible; adding a real `Paginate` component on top of client-side narrowing would have shipped a
+short last page — the same truncation-defect class this map has now hit three times (`AreaPicker`'s
+`limit: 9999` note). Fixed by sending the whole status array server-side instead, matching what
+`useHistory.ts` already did correctly for its own archive-status narrowing pattern. `useHistory.ts`
+itself keeps its `narrowToArchive()` client-side step — that one narrows to a hardcoded 2-value
+subset for the whole *unfiltered* result, not a variable-sized page, so it does not have the same
+failure mode and was left alone.
+
+**Certificates gained pagination, search and a filter** (`useCertificates.ts`,
+`CertificateListPage.vue`) — real `Paginate` (limit 10), `search` (server-side, fuzzy worker-name
+match, `list.service.ts`'s own `query.search` branch), and a worker filter via the exact-match
+`workerId` param, because the endpoint has no validity-status filter to build one against. The
+worker Select's own options are fetched with `limit: 9999` — the AreaPicker lesson, checked before
+writing the call rather than after: `/workers` defaults to a page size of 10
+(`CommonPaginationModel`) same as every other list endpoint on this map.
+
+**Getting started** moved out of the drawer into `AppTopbar.vue` — a `?`-icon `RouterLink` next to
+the notification bell, reusing the same route (`GettingStartedPage`) and label key
+(`platform.nav.gettingStarted`) the drawer entry used, so nothing about the page itself changed.
+
+Stale prose fixed in the same pass (the workspace's cross-repo-consistency obligation applied
+in-repo): `guide.ts`'s (en+th) "the drawer on the left has five destinations" intro, and the
+`newPermit`/`history`/`certificates`/`workers` module blurbs describing a flat six-item drawer that
+no longer exists. `AGENTS.md`'s Modules table, main-flow diagram, and test-examples line updated to
+match; `history`'s root/module `feature_list.json` entries now point at where the capability lives
+instead of describing a module that no longer has a route.
+
+**False ticket claim to flag**: none found in the contractor half of 110 itself — both listed
+verification items ("create button is the only path", "check what History actually shows") turned
+out to be correctly flagged as needing a check, and the check surfaced real, non-trivial findings
+(above) rather than confirming a lazy assumption either way.
+
+Out of scope, left alone: the notification badge (blocked on ticket 109's socket service, unbuilt)
+and the tab refactor (ticket 113). `src/pages/auth/pages/login/constants/DemoAccounts.ts` untouched
+per instruction. `docs/api/openapi.json` is currently diverged from the api repo's copy
+(`node scripts/check-contract-sync.mjs` from the workspace root reports 1 problem) — not this
+session's doing (git status on that file is clean) and not touched, since another agent is mid-flight
+on that repo; flagging rather than silently living with a failing check.
+
+`./init.sh`: typecheck PASS, lint PASS (0 errors, 2 pre-existing warnings unrelated to this change),
+76 files / 618 tests PASS (up from 73/608 — new: `AppDrawer.test.ts`,
+`PermitListPage.permits.test.ts`, `PermitListPage.history.test.ts`,
+`CertificateListPage.filters.test.ts`), contrast PASS, icons PASS, smoke 15/15 PASS against a live
+backend on `localhost:3000` (another agent's `bun run dev`, already running — not started by this
+session).
+
+## 2026-09-11 — wayfinder 115: licence number + description on all four certificate entry points, `Gas Testing` dropped
+
+**Asked:** the contractor halves of 095 (`licenceNo`/`description` + the one-of rule) and 096
+(drop `Gas Testing` from `ECertType`) — both API halves shipped the same day (`c06d810`), and this
+repo's `check-worker-vocabulary-sync.mjs` was left deliberately reporting `ECertType DRIFTED` as
+the propagation signal.
+
+**Built:**
+- `licenceNo`/`description` added to `ICertificate`, `ICreateCertificatePayload`,
+  `IUpdateCertificatePayload` (both optional; no `null` variant for either on the wire, unlike
+  `filePath` — confirmed against `docs/api/openapi.json`'s PATCH schema).
+- Both fields on all four entry points 086 established: the list's `AddCertificateModal.vue`, the
+  wizard's `CreateCertificateModal.vue`, worker detail's `AddWorkerCertificateModal.vue` (all three
+  CREATE, reading `formData` per 086's own fix), and `CertificateEditPage.vue` (EDIT). EN + TH via
+  new `certificate.form.field.{licenceNo,licenceNoPlaceholder,description,descriptionPlaceholder,
+  licenceOrAttachmentHint}` keys.
+- `ECertType` drops `GAS_TESTING`; `ROLE_ALLOWED_CERT_TYPES[GAS_TESTER]` narrowed to
+  `[CONFINED_SPACE_ENTRY]` (the array can no longer reference the removed member); the
+  `certificate.type['gas-testing']` locale key removed both languages.
+  `node scripts/check-worker-vocabulary-sync.mjs` (from the workspace root) now reports both
+  `ECertType` (3 values) and `EWorkerRole` (10 values) in sync.
+- **The "omit untouched fields" discipline** (045's `areaId` precedent, restated by this ticket for
+  `licenceNo`/`filePath`) is what `CertificateEditPage.vue`'s `buildPayload()` already did for
+  `filePath`; extended here to `licenceNo` and `description`, compared against
+  `existingLicenceNo`/`existingDescription` (trimmed once at hydrate, not per comparison) rather
+  than a fixed default — a key is sent only when the loaded value and the current form value
+  differ.
+
+**The one-of rule (`CERT_LICENCE_OR_ATTACHMENT_REQUIRED`) is mirrored, but NOT as a zod
+`.refine()`** — every earlier draft of this ticket's work used one, and it does not work, for a
+reason worth recording precisely because it silently does nothing rather than failing loudly:
+
+**A false claim in 061/086, found while building the mirror and confirmed against
+`@primevue/forms`'s own source.** Both tickets' comments read *"Without [the hidden `<input
+type="hidden" name="workerId">`] the resolver never sees workerId... submit silently no-ops"* —
+true of the FIRST half, false of the implication in the second. `node_modules/@primevue/forms/form/
+index.mjs` exposes `register` via `provide('$pcForm')`; only a PrimeVue form-aware component (a
+`Select`, `DatePicker`, `InputText` — anything using `useFormField`) ever calls it via `inject`. A
+bare native `<input type="hidden">` never does, with or without a `:value` binding. Traced through
+`node_modules/@primevue/forms/useform/index.mjs`: the resolver's `values` are built from
+`_states` (`Object.entries(_states).reduce(...)`), and `_states` only gains a `workerId` entry
+via `register()` — so `workerId` is ABSENT from every resolver call, `z.number()` fails the
+schema's base object parse every time regardless of what `formData.workerId` holds, and zod does
+not run `.refine()` chains past a failed base parse. `event.valid` is unaffected only because
+`valid = Object.values(_states).every(f => !f.invalid)` — and `workerId`, never having a `_states`
+entry, cannot drag that aggregate down either. Net effect: TWO defects that exactly cancel out and
+hide each other — `event.valid` reads `true` regardless of any schema-level violation, and nothing
+downstream of `workerId` in field declaration order (`expiryAfterIssued` included — also dead code,
+pre-existing, not introduced by this ticket) ever gets evaluated. Confirmed empirically: a
+temporary `console.error(JSON.stringify(event))` inside `AddCertificateModal.vue`'s `onSubmit`,
+run against the ALREADY-PASSING (unmodified) "no-op trap" test from 086, printed
+`{"valid":true,"errors":{"workerId":[...]}}` — a passing test asserting on the eventual
+`create()` payload (read from `formData`, never `event.values`/validated output — 086's own fix)
+had been masking this the whole time. **Not fixed here** — the blast radius (every WorkerPicker-
+based form across the app) is well outside 115's scope; recorded so the next session does not
+"fix" a schema refine back in believing it works.
+
+**The actual mirror**: an explicit `violatesLicenceOrAttachmentRule()` in each entry point's own
+`onSubmit`/`buildPayload`, independent of `event.valid`/the schema entirely — exactly the shape
+`CertificateEditPage.vue` already needed regardless (its version is condition-on-touched-fields;
+the three create forms' version is unconditional, since creation has no existing attachment to
+fall back on). Surfaced through whatever each file already used for its own API-failure path:
+`toast.error` in `AddCertificateModal.vue` (no inline paragraph there), `submitErrorMessage` in
+the other two — all three call `useApiError().mapError({ code: 400, errorCode:
+EApiErrorCode.CERT_LICENCE_OR_ATTACHMENT_REQUIRED })` so the client-mirrored copy is byte-identical
+to what a real 400 from the server would render.
+
+**Tests** (`src/tests/pages/certificate/{AddCertificateModal,CertificateEditPage}.test.ts`):
+- Creating with neither surfaces the localized error via `toast.error` and never calls
+  `CertificateService.create`; a licence number alone (no attachment) is enough to submit.
+- Editing a pre-095 certificate's (`licenceNo: null`, `filePath: null`) expiry date alone sends
+  neither `licenceNo` nor `filePath` nor `description`, and does not error.
+- Clearing the only licence number on a certificate with no attachment (a real "touches the gate"
+  case) surfaces the localized error and does not call `update`.
+- A licence number already on file is left alone (still omitted) by an unrelated edit.
+- One pre-existing test (`sends an explicit null once the attachment is marked for removal`) was
+  editing a fixture that, post-115, would legitimately violate the one-of rule (attachment-only,
+  no licence, both removed) — given a `licenceNo` in its fixture instead, since that test is about
+  `filePath`'s null semantics, not this rule.
+
+**A second, unrelated latent bug found and fixed in the same test file**: `AddCertificateModal.test.ts`
+mounts every test with `attachTo: document.body` and none had ever unmounted — harmless while the
+file had two tests (the first always closed its own dialog on a successful submit, and nothing ran
+after the second), but the moment a third test needed the DOM to be clean, `document.querySelector`/
+`body()` lookups started resolving to a PREVIOUS test's still-open dialog. Added `afterEach(() => {
+document.body.innerHTML = ''; vi.restoreAllMocks() })`.
+
+**Verified against a live API** (this session's own `bun run dev`, started and stopped by this
+session; no other `smart-work-permit-api` process was listening on `:3000` beforehand):
+
+```
+=== Verification Summary ===
+All checks passed.
+```
+typecheck PASS, lint PASS (2 pre-existing warnings, unrelated), 76 files / 623 tests PASS (up from
+618), contrast PASS, icons PASS, smoke 15/15 PASS against a live backend.
+
+`node scripts/check-worker-vocabulary-sync.mjs` (workspace root) — `ECertType in sync (3 values)`,
+`EWorkerRole in sync (10 values)`.
+
+Out of scope, left alone per the ticket: `Area`/`Worker.role`/the permit coordinate/`Gas Testing`
+on the safety/inspector app (ticket 096's other half already shipped, api-side); the `EWorkerRole`/
+`ROLE_ALLOWED_CERT_TYPES` role-filtering behaviour itself (103's job, not 115's); `CONTEXT.md`/
+`PROMPT-LOG.md` still list `CERT_LICENCE_OR_ATTACHMENT_REQUIRED` under "queued, not yet built" —
+correcting that requires editing the workspace-root copy and re-running the cross-repo copy loop,
+which is out of scope for a single-repo session and left for whoever closes the ticket.
+`src/pages/auth/pages/login/constants/DemoAccounts.ts` untouched per instruction.
+
+## 2026-09-11 — wayfinder 113 (contractor half): PermitDetailPage tabbed, ruling 11's urgent strip
+
+Absorbs 052/053 for this repo (not closed here — that is the tracker's job, not this repo's).
+Safety half shipped first (`7608c8a8`); its resolution said three of 113's body claims were false
+for that app, and the same rigor was applied here rather than assuming the ticket's premises hold.
+
+**Survey — `find src/pages -name "*.vue" | xargs wc -l` sorted** — only ONE page qualifies as a
+genuine multi-section detail page, matching 052's own scope note ("the contractor app's own permit
+detail" is the only contractor-app page it names):
+
+| Page | Lines | Verdict |
+|---|---|---|
+| `PermitDetailPage.vue` | 282 | **Qualifies** — 6 sections, all already extracted components |
+| `WorkerDetailPage.vue` | 264 | Excluded — 3 sections, one an inline (unextracted) identity form; not named by 052 |
+| `CertificateEditPage.vue` | 412 | Excluded — one `Form`, not a stacked-section detail page |
+| `CertificateDetailPage.vue` | 253 | Excluded — 2 small cards |
+| `ProfileDetailPage.vue` | 231 | Excluded — one `Form` spanning two `<section>`s, same submit |
+| `PermitCreatePage.vue` (wizard) | 124 (+step files) | Excluded — a stepper, not a detail page |
+| List pages (`PermitListPage`, `CertificateListPage`, `WorkerListPage`) | — | Excluded — lists |
+
+**Tab primitive.** No Volt Tab family existed in this repo (`ls src/volt \| grep -i tab` → only
+`DataTable.vue`) — built `src/volt/{Tabs,TabList,Tab,TabPanels,TabPanel}.vue`, PrimeVue's unstyled
+Tabs wrapped in PT (same shape as the safety app's, independently re-implemented with THIS repo's
+own design tokens — see below — never a shared file/import, per the ticket's own warning about
+093's dead-code mirror). `src/components/base/{BaseTab,BaseTabWindow}.vue` and
+`src/composables/useTabItems.ts` were, exactly like the safety app, dead lending-era code with zero
+importers — confirmed by reading them, not assumed from the ticket. `BaseTab.vue` is a styled
+`<div @click>` (no `role="tab"`, no keyboard support) whose handler does
+`router.replace({ query: { tab: value } })`, dropping every other query param a page holds
+(this page's own `?submitted=1` included) — the exact defect 052 names. `BaseTabWindow.vue` mounts
+only the active tab's component (`defineAsyncComponent` + a `v-else-if`), which would defer a
+section's first fetch until its tab opens — a mount-timing change "behaviour must not change"
+forbids. **Verified empirically, not assumed**: converted the whole page to Volt `TabPanel` (which
+keeps every panel mounted, `v-show` toggling — see `TabPanel.vue`'s comment) and ran the
+**unmodified** `PermitDetailPage.test.ts` / `PermitDetailSections.test.ts` / `FireWatch.test.ts` /
+`PermitClosureFireWatch.test.ts` suites — all 37 tests pass, including the zero-interaction
+assertion on the LAST tab (audit trail, `findAll('ol li')` length 3 with no click). `useTabItems`
+**is** used (for `tab`/`tabItems`, seeding `?tab=` and no more — not for rendering), so it is no
+longer dead code either; a `watch` writes the active tab back with `{ ...route.query, tab: value }`,
+never replacing the query object whole.
+
+**Deliberate token deviation.** The generic instruction to keep text `surface-800` or darker does
+not apply literally here: this repo defines no numeric `--color-surface-*` scale (only semantic
+`--color-surface-{app,subtle,muted,card}`), unlike the rest of `src/volt/` which references
+`bg-surface-800` etc. as inert, unmigrated lending-template scaffold that resolves to nothing.
+The new Tab family uses this repo's real tokens instead — `text-text-secondary`/`text-text-primary`/
+`border-border`/`primary`/`primary-emphasis` — the ones `scripts/check-contrast.mjs` already
+asserts pairs for. No new token was added.
+
+**Urgent strip (`PermitUrgentSection.vue`), ruling 11.** Decided from what this app can actually
+show, not the illustrative list verbatim:
+
+- **Rejection reason** — deliberately NOT duplicated into a new box. `PermitStatusBanner`'s
+  `rejected` variant already renders it unconditionally, above where the tabs sit — a second red
+  box repeating the same sentence is exactly the duplication this ticket exists to remove.
+- **Inspector `CORRECTIVE_ACTION`/`EMERGENCY`/`INCIDENT` note** — **not buildable from this repo**.
+  `GET /permits/:id/inspector-visits` is `auth: ['inspector', 'safety_officer']` in
+  `smart-work-permit-api/src/modules/permit/queries/inspector-visit-list/inspector-visit-list.http.controller.ts`,
+  and that controller's own comment says the contractor exclusion is deliberate. Wayfinder 083 (the
+  ticket deciding whether a contractor may read this) closed unresolved 2026-09-10. `PROMPT-LOG.md`
+  session 13 narrates the owner choosing full visibility, but the API itself was not updated to add
+  `contractor` to that auth array — this is a decided-but-not-yet-built gap, not a contradiction,
+  and it is out of scope to fix from this repo. Recommend a split-out ticket once the API opens the
+  route, the same shape as 116 on the safety side.
+- **Close request awaiting Safety** — buildable and built. `POST /permits/:id/close-request` is
+  already `auth: ['contractor', 'inspector']` (wayfinder 098, API built 2026-09-11), and the wire
+  Permit entity already carries `closeRequestedAt`/`closeRequestedById`/`closeRequestedBy`/
+  `closeRequestedRole`/`closeRequestReason` (`permit.model.ts`). Added the four rendered fields to
+  `IPermitListItem` as **optional** (`closureChecklist`'s existing pattern) — several fixture
+  builders across this test tree construct full `IPermitDetail` literals, so a required addition
+  would have broken files this change has no business touching. Gate is
+  `closeRequestedAt` set AND status is `ACTIVE`/`FIRE_MONITOR` — NOT `!== 'CLOSED'`, because the
+  flag is never cleared (even after the permit closes, per the API's own comment) and an EXPIRED
+  permit's request is equally moot. **Nothing in this app raises a close request yet** — that UI is
+  098's own frontend half, explicitly out of scope here (would mean changing
+  `ClosureChecklistModal`'s close→close-request behaviour, forbidden by "behaviour must not
+  change"). The state is real and reachable today regardless: an inspector can raise one from the
+  other app.
+
+**Test infra gap found and fixed, needed by the change itself (not a drive-by).** This repo had no
+shared jsdom test setup file. PrimeVue's unstyled `TabList` calls `ResizeObserver` unconditionally
+from `mounted()` (ink-bar sizing, regardless of the PT class that hides the ink bar) — jsdom has no
+`ResizeObserver`, so every test mounting `PermitDetailPage.vue` threw and corrupted later assertions
+in the same file with a cascading `Cannot read properties of null (reading '$')`. Added
+`src/tests/setup.ts` (one `ResizeObserver` stub, same fix the safety app's own
+`src/tests/setup.ts` already carries for its table pager) and wired it via `vitest.config.ts`'s new
+`setupFiles`. This is infrastructure the new Tab family requires to be testable at all, not a
+scope-creep refactor.
+
+**New tests** (`PermitDetailPage.test.ts`): the two pre-existing zero-interaction tests
+("fetches the permit…", "renders the audit timeline…") gained a `[role="tablist"]` assertion — on a
+now-tabbed page, "reachable without a click" is meaningless without proving tabs exist at all,
+exactly the strengthening the safety half made for the same reason. Three new tests: a REJECTED
+permit's reason is reachable with zero interaction alongside `role="tablist"`; the close-request
+strip renders with the requester/time/reason when `closeRequestedAt` is set on an ACTIVE permit;
+the strip is **absent from the DOM** (`.exists() === false`, not merely hidden) both on a plain
+ACTIVE permit and on a CLOSED permit whose (never-cleared) `closeRequestedAt` is still set.
+
+**Line counts, honest.** `PermitDetailPage.vue` 282 → 352 (+70) — tab scaffolding, the urgent
+section wiring, and the doc comments recording ruling 11 and the `BaseTabWindow` rejection. All six
+sections were already their own components (`PermitInfoCard`, `PermitSafetySection`,
+`PermitWorkersSection`, `PermitJsaSection`, `PermitClosureSection`, `PermitAuditTimeline`) before
+this session — there was no extraction left to do, so the page grew, matching the safety half's own
+honest result rather than manufacturing a smaller number. New: `PermitUrgentSection.vue` (88 lines),
+five Volt Tab files (205 lines total), `src/tests/setup.ts` (20 lines).
+
+**`./init.sh`**: typecheck PASS, lint PASS (2 pre-existing warnings, unrelated —
+`useNotificationPolling.test.ts`), tests PASS — 76 files / 626 tests, contrast PASS, icons PASS,
+smoke SKIP ("no API reachable at http://localhost:3000" — another agent holds the api repo this
+session, so this was not run against a live backend; the model change to `IPermitListItem` is
+therefore **unverified against the live wire shape** per AGENTS.md's own rule that a green vitest
+run alone only proves the app agrees with its own types).
+
+**Not done, and why**: 052/053 are NOT closed and `map.md`/`map-round-4-*.md` are NOT edited — the
+tracker's own rule, not this repo's call. `DemoAccounts.ts` untouched. `ClosureChecklistModal.vue`
+untouched — migrating contractor close→close-request is wayfinder 098's frontend half, a separate
+ticket. `WorkerDetailPage.vue` and every other excluded page in the survey table above untouched.
+
+## 2026-09-11 — wayfinder 117: workerId never reached the certificate forms' resolvers, and the audit that fix forces
+
+**Asked:** fix `workerId`'s registration in all four certificate entry points, then audit — in one
+deliberate pass — every cross-field `.refine()` that starts firing once it does, prove each one
+correct or remove it, and correct the false comment 061/086 left behind. Split out of
+[115](docs/wayfinder/tickets/115-the-certificate-form-gains-licence-number-and-detail.md), whose
+own resolution traced the root cause and deliberately did not fix it there.
+
+**Verified the trace myself before touching anything** (the ticket's own instruction), against
+`node_modules/@primevue/core/baseeditableholder/index.mjs` and
+`node_modules/@primevue/forms/{form,useform}/index.mjs`: a component extending `BaseEditableHolder`
+(`InputText`, `Select`, `DatePicker`, …) self-registers via an `immediate` watcher that calls
+`this.$pcForm.register(name, formControl)` itself. A bare native `<input>` never runs that watcher
+and never calls `register()` — so 061's `<input type="hidden" name="workerId">` (and 086's copies
+of it) did not do what its own comment claimed. `workerId` was absent from the Form's `_states`
+(and the resolver's `values`) both before and after that hidden input existed; `z.number()` failed
+the schema's base object parse on every submit; `event.valid` read `true` regardless, because it
+is computed only over registered `_states` entries. 115 was right about all of this — confirmed,
+not just repeated.
+
+**Enumerated every rule that comes alive: exactly one.** `AddCertificate.schema.ts` had a single
+cross-field `.refine()` chained onto the base object — `expiryAfterIssued`. The other apparent
+"rule" (`licenceNo` OR an attachment) was never a schema `.refine()` at all (115 deliberately kept
+it as a plain JS check, for an unrelated reason — `file`'s own `<input type="file">` is equally
+unregistered, and a refine would only ever see it as `undefined`), so fixing `workerId` does not
+revive it; nothing to audit there.
+
+**`expiryAfterIssued` — removed, not revived.** Checked against the api
+(`smart-work-permit-api/src/modules/certificate/commands/{create,update}/{create,update}.model.ts`
+and `.service.ts`): there is no ordering check on `issuedDate`/`expiryDate` server-side, in either
+direction. Reviving this as a submission-blocking `.refine()` would refuse a PATCH/POST the server
+accepts outright — the exact shape the standing invariant forbids ("the server's verdict stays
+authoritative... never gate beyond it"). Reported as a finding rather than shipped: if this
+ordering should be enforced, it belongs in the api first. Its now-orphaned locale key
+(`certificate.form.validation.expiryAfterIssued`, both languages) was removed with it.
+
+**The fix, in all four entry points** (`AddCertificateModal.vue`, `CertificateEditPage.vue`,
+`CreateCertificateModal.vue`, `AddWorkerCertificateModal.vue`): `WorkerPicker` is a plain Vue
+component, not a `BaseEditableHolder`-based one, so nothing calls `register()` on its behalf.
+Fixed by calling the `<Form ref>` instance's own public `register('workerId')` once (a
+`watch(formRef, …, { immediate: true })`, matching how a conditionally-mounted template ref is
+meant to be observed) and keeping it in sync via the same instance's `setFieldValue('workerId', …)`
+on every `formData.workerId` change — both are part of the real, exposed `FormInstance` API
+(verified in `node_modules/@primevue/forms/form/index.mjs`'s own `setup()` return), not a native
+DOM event, which could only ever hand the resolver a string. `register` itself is missing from the
+library's own `.d.ts` despite being exposed at runtime — added `IFormInstanceWithRegister` to
+`src/models/Form.model.ts` (same precedent as the file's pre-existing `IFormType`) rather than
+`as any`-casting it. The old hidden `<input type="hidden">` stays in the DOM in all four files,
+now carrying no data at all — kept only as a `[name="workerId"]` anchor for
+`scrollToFirstError`'s `document.querySelector`, since a validation error on `workerId` is no
+longer silently impossible.
+
+**The false comment, corrected in all four `.vue` files plus the schema.** 061/086's copy-pasted
+line — *"Without this the resolver never sees workerId... submit silently no-ops"* — is replaced
+with the real explanation and a pointer at `AddCertificate.schema.ts`'s own (also rewritten) top
+comment, which carries the full trace once rather than four half-copies of it.
+
+**A genuine, if minor, UX bug fixed as a side effect**: `workerId`'s `LabelField` has always read
+`$form.workerId?.invalid` to decide whether to show an inline error — but `$form.workerId` never
+existed, so a submit with no worker picked showed no inline error under the field at all (only
+`event.valid` staying permanently `true` masked this further). Registration now makes that
+red/inline-error state real.
+
+**Tests** (the ticket's own required evidence — resolver `values`, not payload correctness, which
+proves nothing about this specific defect since every entry point already builds its payload from
+`formData` and would look correct regardless):
+- `src/tests/pages/certificate/schema/AddCertificate.schema.test.ts` (new) — `AddCertificateSchema`
+  parses when `workerId` is a real number; still fails its base parse when `workerId` is missing OR
+  a string; does NOT reject an expiry date before (or equal to) the issued date, proving
+  `expiryAfterIssued`'s removal took effect at the schema level.
+- `AddCertificateModal.test.ts` (extended) — the picked `workerId` is present in the Form's own
+  `validate()` output as a number, once every other required field is also valid (the resolver
+  collapses `values` to `undefined` for the WHOLE object on any base-parse failure — a test that
+  leaves other fields empty "passes" for the wrong reason); clearing the picked worker back out
+  surfaces a `workerId`-specific error from `validate()`, not a generic whole-object failure.
+- `CertificateEditPage.test.ts` (extended) — the same proof for the async-hydrated path: the
+  `<Form v-else>` only mounts once `fetchDetail()` resolves, and `watch(formRef, …)` (not
+  `onMounted`, which would run too early) is what catches that.
+- `CreateCertificateModal.test.ts` (new) and `AddWorkerCertificateModal.test.ts` (new) — the same
+  resolver-level proof for the two entry points that had no test coverage at all before this
+  ticket, checked independently rather than assumed from the other two's identical fix. Writing
+  `AddWorkerCertificateModal`'s test surfaced a real lifecycle detail worth recording: its
+  `resetForm()` (the only place `workerId` gets seeded) runs off a `watch(visible, …)` that only
+  fires on a **false→true transition** — mounting a test wrapper already `modelValue: true` skips
+  it entirely and is a test artifact, not a modal bug; `WorkerDetailPage.vue` always opens this
+  modal from closed, so production is unaffected.
+
+**`./init.sh`**, run twice (machine was not under load; both runs agreed):
+```
+=== Verification Summary ===
+All checks passed.
+```
+typecheck PASS, lint PASS (2 pre-existing warnings, unrelated — `useNotificationPolling.test.ts`),
+**79 files / 638 tests PASS** (up from 76/623), contrast PASS, icons PASS, smoke SKIP ("no API
+reachable at http://localhost:3000" — another agent holds the api repo this session, so this is
+**not verified against a live backend**; nothing here touches a provider, model, or the wire shape
+of any request, only client-side form registration and a client-only schema rule, so the risk that
+carries is low, but it is still unverified per AGENTS.md's own rule).
+
+**Ticket claims checked against the code, one found imprecise**: 117 itself says *"in all four
+certificate entry points"* — confirmed by grep, exactly four files import `AddCertificateSchema`.
+115's resolution quotes the false 061/086 comment verbatim and traces it correctly. No false claim
+found in either ticket beyond the comment they were already both flagging as wrong on purpose.
+
+**Checked `Step4PpeWorkers.schema.ts` before writing this session off as "one rule, one schema"
+rather than assuming it** — it also has a `WorkerPicker`, a `.superRefine()`, and a `workerId`
+field, so it looked like the exact same shape at first glance. It is not: `useWizard.ts` gates
+every step via a raw `schema.safeParse(formData.value)` (`useWizard.ts:258,418,566`), never
+`<Form>` + `zodResolver` + per-field `register()` at all — so its `workerId` (also `.optional()`
+there, unlike this schema's required `z.number()`) was never subject to 117's defect class in the
+first place; there was nothing dead to revive. Confirmed rather than left as "presumably fine."
+
+**Also re-read every file `grep -l issuedDate` in the api returned**, including
+`certificate/lib/certificate.model.ts` (the response entity — not previously opened this session),
+`create.service.ts` and `update.service.ts` in full (not just the grepped lines): no ordering
+check on `issuedDate`/`expiryDate` anywhere in the certificate module, which is the one fact
+`expiryAfterIssued`'s removal rests on.
+
+**Docs cross-check, one real hit.** `grep -rn "after issued\|หลังวันที่ออก"` across both `docs/`
+trees found no VitePress guide asserting this rule (061's own "both guides updated" claim holds).
+It DID find `docs/testing/suites/CT-CERTS.md` (CT-CERTS-007) asserting, as an *expected* manual-QA
+result, that "Step 4 and step 5 both fail — expiry must be strictly after issued" — directly
+falsified by this change. Corrected that one line (and the "steps 2–6 block" summary above it) to
+state the new, correct expectation (steps 4/5 now submit successfully, matching the server) with
+the wayfinder 117 citation. Did not touch the rest of that test case or file, which is independently
+stale for unrelated pre-existing reasons (still lists `workerName`/`role` as form fields, gone
+since 060/061; still lists GIF as an accepted file type, dropped by 050/061's own file allowlist) —
+a separate, larger audit outside this ticket's scope.
+
+**Removed the four `<input name="workerId" tabindex="-1" type="hidden">` "DOM anchor" elements**
+added in an earlier pass of this same session, after review caught that the anchor comment was
+itself wrong: a `type="hidden"` input has no layout box, so `scrollIntoView()`/`.focus()` are both
+no-ops on it, and worse — `scrollToFirstError`'s `document.querySelector('[name="a"],[name="b"]')`
+returns the FIRST DOM match, so this inert element (sitting above `certType`/the date fields in
+markup order) would have silently swallowed a real scroll+focus that should have landed on a
+different, actually-focusable field whenever both errored together. Shipping a new comment that
+overstated what an inert element does, in the same four files whose false comment is this ticket's
+subject, would have been exactly the failure mode this ticket exists to stop. No test queried
+`[name="workerId"]` (checked before removing), and `LabelField` already renders workerId's inline
+error for real now that it is registered — nothing relied on the anchor.
+
+**Verified `worker.validation.required` (the message on `workerId`'s `z.number()`, now reachable
+for the first time — before this fix `event.valid` could never go `false`, and `$form.workerId`
+never existed for `LabelField` to render) exists EN + TH**: `src/locales/{en,th}/worker.ts`,
+`picker.validation.required`, and the TH file is typed `typeof workerEn` so a missing key there is
+already a compile error, not just a locale gap. No action needed; recorded as checked.
+
+**A finding worth flagging even though it is out of scope to fix**:
+`.agents/skills/project-conventions/reference/form-patterns.md` states *"No `name` attribute is
+required on inner inputs (selection/date components) — the resolver validates via reactive
+`initial-values`."* That is false against the exact source this ticket traced —
+`node_modules/@primevue/forms/useform/index.mjs`'s `_states` (what the resolver actually reads) is
+populated only by `register()`, and `initialValues` is read once, at registration time, to seed a
+field that already exists in `_states`; it is never a live source the resolver re-reads. This is
+the documented belief that produced 117's whole defect. Not edited (skill-file changes are outside
+this ticket), but recorded here so the next session does not trust it either.
+
+Out of scope, left alone per the ticket: `Area`, the permit coordinate, `Worker.role`, `Gas
+Testing` — no new code written against any of them (`WorkerPicker.vue`'s existing display of
+`option.role` and `CertTypeSelect.vue`'s existing `role`-filtering are untouched, pre-existing
+code, not touched by this ticket). `WorkerPicker.vue` and `Step4PpeWorkers.vue` (the other
+`WorkerPicker` consumer, on a different schema, and NOT subject to this defect class — see above)
+untouched — 117's own scope is the four `AddCertificate.schema.ts` entry points, not "every
+WorkerPicker-based form" the ticket's own "do not fix it inside another ticket" section warns is a
+much larger blast radius.
+`src/pages/auth/pages/login/constants/DemoAccounts.ts` untouched. Wayfinder tickets not closed and
+`map*.md` not edited, per the tracker's own rule.
+
+**`./init.sh` re-run clean after the hidden-input removal**: typecheck PASS, lint PASS (same 2
+pre-existing warnings), 79 files / 638 tests PASS, contrast PASS, icons PASS, smoke SKIP (no API
+reachable).
+
+## 2026-09-11 — wayfinder 107: the location section picks a pin, safety-placed; general info loses its location
+
+Contractor half of the ticket (blocked_by 105, API built as `9996a46`; the safety half is a
+separate session's work, not touched here). Two reversals landed in one pass: 070's click-to-place
+pin/nudge and 068's geo coordinate field are both gone, superseded by the api's own 104/105.
+
+**`Permit.location` is unchanged on the wire — confirmed, not assumed.** Verified against
+`smart-work-permit-api/docs/openapi.json` before touching anything: `location` is still `anyOf:
+[string, null]`, still nullable, on both POST and PATCH `/permits`. Step 3's new "location detail"
+field (`Step3WhereWhen.vue`) is that exact field under a new label ("Location Detail"/
+"รายละเอียดสถานที่") — moved verbatim from Step 2, same formData key, same wire field, not a
+second free-text column. Step 2 (`Step2BasicInfo.vue`/`.schema.ts`) is title + foreman only now.
+
+**Pin picking replaces pin placing.** New `PinPicker.vue`
+(`src/pages/permit/pages/create/components/`), modeled closely on `AreaPicker.vue`'s
+self-contained-fetch/own-local-state/emit-a-`change`-payload shape: fetches active facility plans
+(`FacilityPlanService.list({ active: true, limit: 9999 })`) for a plan `Select` (local-only —
+never sent to the wire), then active pins on the chosen plan
+(`PinService.list({ planId, active: true, limit: 9999 })`) for a pin `Select`. On mount, a
+`props.pinId` resolves via `PinService.getById` (any status) so a deactivated pin — or one on a
+deactivated plan — still resolves and displays (name + a read-only `data-testid="pin-current-
+retired"` panel + its marker on the image), while staying absent from the active pin `Select`'s
+own options (ruling 8). A `getById` failure shows a "could not be found" note and emits
+`{ pinId: undefined }`, mirroring `AreaPicker.resolveStaleArea`. The image renders a **read-only**
+marker only (`percentToPoint` from `@/utils/PlanPosition`, which is NOT deleted — still used) —
+no click handler, no cursor-crosshair, no placing, no nudging. Zero plans/zero pins renders a
+"no facility plans have been added yet" note, never throws.
+
+**`pinId` inherits ticket 045's invariant exactly.** `pinIdIsUserChoice` in `useWizard.ts`, set in
+`updateFormData` (`'pinId' in patch` → `patch.pinId !== undefined`), stripped in `doPersist`
+(`if (!pinIdIsUserChoice) delete payload.pinId`), never set by `hydrate` (seeds `pinId` for
+display only). Five new cases in `useWizard.persistence.test.ts` mirror the `areaId` block
+one-for-one, including the HEADLINE case: hydrate a permit carrying `pinId: 77` into a
+single-step registry (`PinPicker` provably never mounts), make an unrelated edit, assert
+`Object.keys(patch)` does NOT contain `'pinId'` — not `toEqual`/`toMatchObject`. Checked red by
+temporarily commenting out the strip line and re-running: `AssertionError: expected [ 'type',
+'title', 'location', …(11) ] to not include 'pinId'` — then restored and re-verified green.
+
+**Area and pin are now fully independent.** `Step3WhereWhen.onAreaChange` forwards only
+`{ areaId: payload.areaId }` — `Permit` has no `position` field left for an area's default
+position to drop into (105 removed it). `AreaPicker.vue` itself is **completely untouched**: it
+still computes/emits a `position` for its own unrelated feature (`IArea.planId`/`planX`/`planY`,
+a different Prisma relation, still live until wayfinder 106 removes `Area`); `onAreaChange` simply
+ignores that key now. This is the natural consequence of 105's removal, not a partial removal of
+Area — confirmed nothing else under `Area`/`AreaGrant`/`Worker.role`/`Gas Testing` was touched.
+
+**The position gate is decoupled from any one plan.** `usePlanPosition.ts` → renamed
+`usePinPreflight.ts` (old file `git rm`'d, not left dormant): drops `activePlan`/`fetchActive
+(areaId?)` and the `formData.areaId` watch in `useWizard.ts`'s `onMounted` entirely — nothing
+needs it now that the gate is "does an active pin on an active plan exist anywhere" (105's own
+framing), not "does the currently-picked-area's plan have one". Exposes `loaded`, `required`
+(from one `PinService.list({ page: 1, limit: 1, active: true })` probe, `required = count > 0`,
+called once via `fetchRequired()`), `stateFor(pinId)`. `activePlan` removed from `IUseWizard`,
+`IWizardStepProps` (`WizardSteps.ts`), and both bindings/destructures in `PermitCreatePage.vue`/
+`PermitEditPage.vue` — everything else in those two files is byte-identical.
+
+**Geo fully removed.** `src/utils/ParseMapCoordinate.ts` deleted (`git rm`; no dedicated test file
+existed for it — checked `src/tests/` first, per the ticket's own instruction, before concluding
+that). Every reference gone: `Step3WhereWhen.vue`'s whole geo block/script state, `Step3WhereWhen.
+schema.ts`'s `mapUrl` field (replaced by `location`+`pinId`), `Step6Review.vue`'s `geoSummary`/geo
+row/its import, `IPermitBase`'s `latitude`/`longitude`, `ICreatePermitDraftPayload`/
+`IUpdatePermitDraftPayload`'s `mapUrl`/`latitude`/`longitude`/`position` (the latter's `Omit<...,
+'latitude'|'longitude'>` override simplified away entirely), `IPermitListItem`'s `planId`/`planX`/
+`planY` → `pinId`. Post-change repo-wide grep for `ParseMapCoordinate`/`mapUrl`/`latitude`/
+`longitude`/`planX`/`planY`/`activePlan`/`usePlanPosition` turned up only doc-comment history and
+`IArea`'s own still-live `planId`/`planX`/`planY` (a different relation, out of scope) — nothing
+live left dangling.
+
+**`IPermitPosition` kept, doc comment rewritten** — it is `Area`'s own default-position shape now
+(`ICreateAreaPayload.position`, `AreaPicker.vue`), not a `Permit` field; 105 removed `Permit.
+position` entirely.
+
+**New models/provider, mirroring `Area`'s exact shape/style**: `src/models/modules/pin/Pin.model.
+ts` (`IPin`), `src/models/request/pin/PinReq.model.ts` (`IGetPinListQuery`), `src/models/response/
+pin/PinRes.model.ts`, `src/resources/provider/pin/Pin.provider.ts` (`IPinProvider` —
+`list`/`getById` only; place/rename/deactivate are safety_officer-only, same reasoning
+`IAreaProvider`'s own comment gives for omitting approve/reject). `FacilityPlan.model.ts` gained
+`name`/`deactivatedAt`, doc comment rewritten (flat named set, immutable images, no version chain,
+no area scoping). `FacilityPlanRes.model.ts`'s `TGetActiveFacilityPlanResponse` replaced by
+`TGetFacilityPlanListResponse` (paginated); new `FacilityPlanReq.model.ts`
+(`IGetFacilityPlanListQuery`). `FacilityPlanProvider.getActive(areaId?)` replaced by `list(query)`.
+
+**API schema differed from the ticket's paraphrase in one place worth recording**: the real
+`POST`/`PATCH /permits` bodies and detail response already carry `description`, `ppeDeclared`,
+`ppeNote` (wayfinder 097/098-adjacent fields) and the detail response also carries
+`gasReadingStatus` and `closeRequestedById` (vs. this repo's existing `closeRequestedBy` object) —
+none of that is wayfinder 107's concern and none of it was touched; recorded here only because the
+task explicitly asked to flag any place the real schema outran the ticket's own description.
+
+**Test files removed, not salvaged, because their premise is gone**: `Step3WhereWhen.pin.test.ts`
+(click-to-place — the whole surface it tested no longer exists), `PermitCreatePage.
+whereWhenPlan.test.ts` (proved `activePlan` re-scoped by `formData.areaId`, a mechanism this ticket
+deletes), `Step2BasicInfo.location.test.ts` (asserted Step 2 owns `location`; it no longer does).
+Replaced by `PinPicker.test.ts` (fetch contract, zero-plan/zero-pin rendering, the ruling-8
+deactivated-pin case, the getById-failure case) and `Step3WhereWhen.test.ts` (zero-plan/zero-pin
+rendering at the step level, `onAreaChange` no longer forwarding `position`, the 067 UTC-trap
+round-trip preserved verbatim from the deleted file). `useWizard.persistence.test.ts`'s own
+"area-drop pin and a later nudge (wayfinder 070)" block is gone the same way — it tested the
+co-write of a field (`formData.position`) that no longer exists; replaced by the pinId-invariant
+block described above. Fixture updates only (no behavior change) in every other `IPermitDetail`/
+`IPermitListItem` literal across `src/tests/pages/permit/{detail,list}/**` and
+`PermitCreatePage.{walk,saveDraft,jsaSteps,submit}.test.ts`/`PermitEditPage.test.ts` (`latitude`/
+`longitude`/`planId`/`planX`/`planY` removed, `pinId` added; `FacilityPlanProvider.getActive` mocks
+replaced by `PinProvider.list` mocks, since every mounted wizard now runs `usePinPreflight`'s probe
+instead of a plan lookup).
+
+**One genuine (desirable) behavior change surfaced by the refactor, not by design intent**:
+`PermitEditPage.test.ts`'s "hydrates the wizard and lands on the first step that does not
+validate" test expected `currentStepIndex === 2` under the old code. Root cause: its `draftPermit()`
+fixture never set the old `planId`/`planX`/`planY` fields, so pre-107 `hydrate.toFormPosition`'s
+`=== null` check missed `undefined`, and `formData.position` was seeded as `{ planId: undefined,
+planX: undefined, planY: undefined }` — an object that matched NEITHER branch of the old schema's
+`position` union, spuriously failing `whereWhen` (index 2) instead of the intended failure at
+`safetyChecks` (index 3, missing wind for `heights`). `pinId: undefined` has no such quirk
+(`z.number().optional()` accepts it cleanly), so `whereWhen` now passes and the real failure
+surfaces one step later, as the test's own comment already claimed it should. Updated the
+assertion to `3` and documented the root cause inline so the next reader does not "fix" it back.
+
+**Docs**: `docs/api/openapi.json` copied verbatim from `smart-work-permit-api/docs/openapi.json`
+(md5 now matches; the safety app's copy is still divergent — confirmed pre-existing, not this
+ticket's). `docs/main/dev-handoff/04-api-contract.md` gained a `pinId` PATCH-body note and a new
+"Facility Plans & Pins" route table (flagged, in the same edit, that the surrounding `workDate`/
+`workTimeStart`/`workTimeEnd` example predates wayfinder 067 and was not otherwise touched — a
+separate staleness, not this ticket's to fix). `docs/api/GAPS.md`'s feat-023 "Facility plan +
+permit position" entry got an appended `Superseded 2026-09-11` paragraph (not rewritten, per this
+repo's own convention). This repo's `AGENTS.md` gained a `Superseded 2026-09-11 (wayfinder 107)`
+paragraph after 070's block, and its permit module row's provider list and Built column were
+updated (`facility-plan` now `list`/`getById` not `getActive`/`getById`; new `pin` provider).
+`docs/modules/permit/feature_list.json` is the older `PMT-XXX`-numbered registry and has no clean
+match for this ticket — checked, left alone rather than forcing one, per the harness note.
+
+Not touched, confirmed by grep before finishing: `Area`/`AreaGrant`/`AREA_VISIBILITY_SCOPED`
+beyond the two named points (`onAreaChange` no longer forwarding `position`; `AreaPicker.vue`
+itself untouched), `Worker.role`, `Gas Testing`, `src/pages/auth/pages/login/constants/
+DemoAccounts.ts`, any ticket file's `status`/`Resolution`, any `map*.md`. Ticket 107 itself is left
+`status: open` per this session's own instruction — closing it, if warranted, is for whoever
+reviews this.
+
+**Verification**: `./init.sh` — typecheck PASS, lint PASS (2 pre-existing `vue/one-component-per-
+file` warnings, unrelated), **78 files / 637 tests PASS**, contrast PASS, icons PASS, smoke SKIP
+(no API reachable on this machine). `node scripts/check-contract-sync.mjs` before this session:
+2 problems (all three `openapi.json` copies diverged; safety app missing `PPE_REQUIRED`). After:
+1 problem remains — the safety app's `openapi.json` copy and its missing `PPE_REQUIRED` are both
+confirmed pre-existing and out of scope for this ticket; this repo's copy now byte-matches the
+api's. This machine showed transient memory-pressure flakiness once during this session (a
+`Step3WhereWhen.test.ts` timeout inside the full suite that passed cleanly both in isolation and
+on a full-suite re-run) — the exact pattern `CONTEXT.md`'s "Running the test suites" section
+already documents; re-run rather than trusted on the first red.
+
+**Post-review fix (same day)**: a self-review caught that `PinPicker.vue`'s `markerPoint` computed
+read `frameRef.value.getBoundingClientRect()` directly inside the computed — not a reactive
+dependency, so the marker was only ever positioned against whatever ~0x0 rect existed the instant
+the frame `<div>` mounted, *before* the `<img>` had painted, and then never updated once the image
+actually loaded and took on its real rendered size. The old click-to-place code happened to avoid
+this because `onFrameClick` recomputed the rect fresh on every click, after layout — a coincidence
+of the deleted code, not a property of the computed itself, and the fetch-driven picker has no such
+event to lean on. Fixed by capturing `{width, height}` into a new `frameRect` ref on the image's
+own `@load` event (reset on plan change / image reload) and reading that ref from `markerPoint`
+instead of calling `getBoundingClientRect()` inline. Added an assertion to `PinPicker.test.ts`'s
+ruling-8 case that the marker span is absent before `load` fires and present after — jsdom's
+`getBoundingClientRect()` is always 0x0, so exact pixel placement (a non-trivial x/y landing in the
+correct quadrant of the image) could not be asserted in this suite and was checked by hand in a
+real browser instead. Re-ran full suite after the fix: 78 files / 637 tests PASS.
+
+One deliberate loose end, noted rather than fixed: `onPlanChange` clears `pins`/`imageUrl`/
+`frameRect` but leaves `referencedPin`/`pinResolveFailed` alone, so browsing to a different plan
+than the permit's currently-referenced pin can leave the "current pin, retired" panel visible while
+looking at an unrelated plan's image. Defensible — the panel is still describing what the permit
+actually references, not stale data — but flagged here rather than silently decided.
+
+## 2026-09-11 — wayfinder 121: remove Area from the contractor app
+
+The api half shipped alone in wayfinder 106 (`abea5dd`) — `Area`, `AreaGrant`, `Permit.areaId` and
+every area route are gone server-side. This is the deferred contractor half, deliberately split out
+so `AreaPicker.vue`'s removal (left byte-identical by 107) would be one act rather than a side
+effect of another ticket.
+
+**Deleted outright**: `AreaPicker.vue`, `CreateAreaModal.vue`, `CreateArea.schema.ts`, the `area`
+provider/models/enum (`Area.provider.ts`, `Area.model.ts`, `AreaReq.model.ts`, `AreaRes.model.ts`,
+`AreaStatus.enum.ts`), and `AreaPicker.test.ts`. `IPermitPosition` (`Permit.model.ts`) went with
+them — it existed solely as `IArea`'s own optional default-position shape (`IArea.planId`/`planX`/
+`planY`, `ICreateAreaPayload.position`), unrelated to `Permit.pinId`, and had no other caller.
+
+**In one direction, per the ticket's own constraint**: `areaId` is gone from
+`ICreatePermitDraftPayload`, `IUpdatePermitDraftPayload` (inherits it via `Partial<>`) and
+`IPermitListItem` — the api dropped `Permit.areaId` from the wire in 106, so this response field was
+already describing a column that no longer exists. `useWizard`'s `areaIdIsUserChoice` (045's
+invariant, written for `areaId`) is deleted along with `buildCreatePayload`'s `areaId` key and
+`doPersist`'s `if (!areaIdIsUserChoice) delete payload.areaId` strip. **`pinId`'s own copy of the
+same invariant (`pinIdIsUserChoice`) is untouched** and its
+`useWizard.persistence.test.ts` describe block, including the HEADLINE 107 case (a hydrated `pinId`
+in a wizard whose single-step registry provably never mounts `PinPicker`, asserted on the outgoing
+PATCH's key list, not `toEqual`/`toMatchObject`), still passes — 5/5 tests green, unchanged by this
+diff.
+
+`Step3WhereWhen.vue` lost the area picker block, its "what is this for?" link into the guide page,
+and `onAreaChange`; `PinPicker` and the pin-required banner are otherwise unchanged. `Step6Review.vue`
+lost `areaSummary` and its review row. `Step3WhereWhen.schema.ts` lost `areaId` from
+`Step3WhereWhenFieldsSchema` (it was never required — area never gated Next/Submit — so this is a
+pure deletion, no gating logic to preserve). Locale keys removed: `permit.create.steps.position.area.*`
+(the whole `position` key, which existed only for this), `whereWhen.areaHelpLink`,
+`review.field.area`, `review.areaNotSet`, and the guide page's `guide.area.*` block plus its `#area`
+`<section>` in `GettingStartedPage.vue` — EN and TH both.
+
+**Kept, by explicit instruction**: `AREA_NOT_APPROVED`, `AREA_NOT_PENDING`, `AREA_REQUIRED` stay
+declared in `ApiErrorCode.enum.ts` and both `error.ts` locale files, and routed in
+`SubmitErrorRouting.ts`'s `SUBMIT_ERROR_STEP_KEY` — same declared-but-dormant convention
+`ENTRANTS_STILL_INSIDE` already uses. Added a comment at each site saying so, since a reader
+scanning the diff would otherwise reasonably read them as dead code that should have gone with the
+rest.
+
+**Comment hygiene, not scope creep**: several doc comments elsewhere in this app cited `AreaPicker`
+as the origin of the `limit: 9999` unpaginated-fetch convention (`useMyPermits.ts`,
+`useCertificates.ts`, `PinReq.model.ts`, `FacilityPlanReq.model.ts`,
+`CertificateListPage.filters.test.ts`) or `IAreaProvider` as a design precedent (`Pin.provider.ts`).
+Those citations pointed at files this same change deletes, so they were reworded to describe the
+convention directly rather than name a component that no longer exists — this is fixing a reference
+this diff itself broke, not an unrelated cleanup.
+
+**False/stale claims found, not fixed** (out of scope — noted per the parent task's instruction):
+`src/locales/en/guide.ts`'s header comment says the "Getting started" page is "ported from and kept
+in step with `../../../docs/guide/using-contractor-app.md`" — that file does not exist anywhere in
+this repo (`find docs -iname "*using-contractor*"` — no match). Unrelated to this ticket's own
+claims, which all checked out: 106's resolution ("API half shipped in `abea5dd`") is confirmed —
+`docs/api/openapi.json` has zero occurrences of `areaId` or `/areas`; 107's resolution ("AreaPicker
+left byte-identical") is confirmed by `git log` on the file between the two tickets' commits.
+
+**Verification**: `./init.sh` — typecheck PASS, lint PASS (2 pre-existing `vue/one-component-per-
+file` warnings in `useNotificationPolling.test.ts`, unrelated to this change), **77 files / 620
+tests PASS**, contrast PASS, icons PASS, smoke SKIP (no API reachable on this machine — stated
+plainly, not implied as passing). `node scripts/check-contract-sync.mjs` (workspace root): OK — 32
+backend error codes all declared in both frontends.
+
+Root `AGENTS.md`/`CLAUDE.md` (symlinked) updated: the `permit` module row's provider list drops
+`area`, gains a wayfinder-121 note; the `guide` module row's Built column notes the `#area` section
+and its in-wizard link are gone; a new `Removed 2026-09-11 (wayfinder 121)` paragraph follows the
+"State of the codebase" narrative, per this repo's own convention of marking history rather than
+silently deleting it.
+
+## 2026-09-11 — wayfinder 120, contractor half: four PPE checklist error codes
+
+`PPE_ITEM_NOT_DECLARED`, `PPE_GAP_ALREADY_DECLARED`, `PPE_GAP_REQUIRES_CORRECTIVE_ACTION`,
+`PPE_CHECKLIST_EMPTY` declared with EN + TH strings. Raised only on the inspector's visit submit,
+which this app never calls — declared so the errorCode set stays closed across both frontends
+(contract-sync). openapi + CONTEXT.md copies taken current to api `cde78be`. `EPpeItem` here was
+already the api's seven; nothing else changes on this side.
+
+## 2026-09-11 — wayfinder 097, the deferred contractor half: PPE declaration on the permit
+
+That progress note above was wrong on one point: `EPpeItem` was **not** already on this side —
+`PPE_REQUIRED` (the errorCode) existed, but no `EPpeItem` enum, no `ppeDeclared`/`ppeNote` field
+anywhere, and no PPE UI. Ticket 097's own "Correction (2026-09-11)" section explains why: the
+ticket was closed in a commit message and a map, never in the ticket file itself, so the frontier
+never re-surfaced the owed contractor half. This item is that half.
+
+Built:
+- `src/enums/modules/permit/PpeItem.enum.ts` — `EPpeItem`, mirrored verbatim from the api's
+  `ppe-vocabulary.const.ts`, same provisional-list caveat carried over (the report's `image.png`
+  was never read against the transcribed seven items). `check-worker-vocabulary-sync.mjs` already
+  expected this exact path/name (it has printed `EPpeItem NOT FOUND in the contractor app` since
+  `b03d5de` per the ticket's correction) — no changes needed to the script itself; it now reports
+  `EPpeItem in sync (7 values)` and `EPpeItem in sync with the safety app (7 values)`.
+- `IPermitBase.ppeDeclared`/`ppeNote` (`Permit.model.ts`) — always-present on GET, typed
+  non-optional to match the api. `ICreatePermitDraftPayload.ppeDeclared?`/`ppeNote?`
+  (`PermitReq.model.ts`) — optional, whole-value replace on PATCH like `location`/`title`, not a
+  collection; `IUpdatePermitDraftPayload` inherits both via `Partial<>` with no re-declaration.
+- `Step4PpeWorkers.vue` (the `ppeWorkers` wizard step — confirmed the correct home: it is
+  literally titled "PPE & Workers" and had zero PPE content before this) gained a "PPE Worn"
+  section between the photo-evidence grid and the health-check regulation banner: the seven items
+  as Volt `Checkbox`es bound to a `WritableComputedRef<EPpeItem[]>` array, plus an optional
+  `Textarea` note — both wired the same way every other field on this step already is
+  (`emit('update:formData', patch)`, mirroring `Step3WhereWhen`'s own `scheduleNoteModel`
+  get/set pattern). This step has no `<Form>`/zodResolver at all — its schema validates the whole
+  `formData` slice via `safeParse`, not a registered field — so `form-patterns.md`'s "bare native
+  input the resolver can't see" trap (wayfinder 117) does not apply here; the correction's
+  instruction to wire PPE "the same way every other field in this wizard is wired" is satisfied by
+  the same live-`formData`-plus-emit pattern the rest of this step already uses. No client
+  `.min(1)` gate was added — optional to submit, per the ticket's own ruling.
+- `useWizard.ts` — `buildCreatePayload` now forwards `ppeDeclared`/`ppeNote` into the first
+  `POST /permits`; the PATCH leg needed no change at all, since `doPersist`'s existing
+  `{ ...rest }` spread of `formData` already carries any field once it exists on
+  `IUpdatePermitDraftPayload` (no special-casing, exactly as scoped). `hydrate` seeds both fields
+  from the fetched permit into `formData` for the resume/duplicate routes' first render.
+- `SubmitErrorRouting.ts` — `PPE_REQUIRED` routes to `'ppeWorkers'` in `SUBMIT_ERROR_STEP_KEY`,
+  next to the two certificate codes it now shares a step with.
+- `PermitWorkersSection.vue` (the detail page's "3. Workers & PPE" section — its title already
+  named this ticket's home, settling the "workers vs safety section" question without needing to
+  read `PermitSafetySection.vue` at all) gained a "PPE declared" block between the worker roster
+  and the photo-evidence grid: every declared item by its localized label as a pill, the note text
+  below when present, and a "none declared" empty state matching the voice of the sibling
+  `workers.empty`/`photosEmpty` messages already on this page.
+- EN + TH locale keys under `permit.create.steps.ppeWorkers.ppe.*` (title, optional hint, the
+  seven item labels, note label/placeholder) and `permit.detail.sections.workers.ppeTitle`/
+  `ppeEmpty`.
+
+Tests added: `useWizard.ppe.test.ts` (create payload carries exact `EPpeItem` strings; a later
+PATCH does too; `hydrate` restores both fields, including the empty-declaration/no-note case as
+`[]`/`undefined` rather than a stray truthy default), a `PPE_REQUIRED` case in
+`SubmitErrorRouting.test.ts`, and `PermitWorkersSection.test.ts` (declared items render by label,
+the note renders, the empty state renders, no note element when `ppeNote` is `null`). Making
+`ppeDeclared`/`ppeNote` non-optional on `IPermitDetail` broke 9 existing test fixtures that build a
+full `IPermitDetail`/`IPermitListItem` literal (`useWizard.hydrate.test.ts`,
+`useWizard.persistence.test.ts`, `ClosureChecklistModal.test.ts`, `FireWatch.test.ts`,
+`PermitClosureFireWatch.test.ts`, `PermitDetailPage.test.ts`, `PermitDetailSections.test.ts`,
+`HistoryTable.responsive.test.ts`, `PermitListPage.history.test.ts`) — each gained
+`ppeDeclared: []`/`ppeNote: null` alongside their existing `outdoorWork: false` line, no other
+change.
+
+**Verification**: `bunx eslint` on every touched file — clean. `bunx vue-tsc --noEmit` — clean.
+`bunx vitest run` — **79 files / 628 tests PASS** (one run surfaced an unrelated flaky
+`HTMLElement is not defined` PrimeVue Tablist teardown error inside
+`PermitDetailSections.test.ts`'s environment teardown, the same class of floating-promise-after-
+teardown flake `useWizard.hydrate.test.ts`'s own header comment documents; a second full run was
+clean with zero unhandled errors). `./init.sh`: typecheck PASS, lint PASS, tests 79/628 PASS,
+contrast PASS, icons PASS, smoke SKIP (no API reachable on this machine). Live API smoke was not
+run — no local backend was up this session, so the new `ppeDeclared`/`ppeNote` wire fields on
+`create`/`update` are unverified against a live server, only against this app's own types (see
+AGENTS.md's own caveat on this).
+
+**Deviation, not caused by this change**: `node ../scripts/check-contract-sync.mjs` (workspace
+root) is currently RED — `openapi.json` and `CONTEXT.md` have diverged between this repo/the api
+and the safety app/workspace root respectively. Confirmed pre-existing: it was already red before
+this session touched anything (the sibling safety-app agent working concurrently in
+`../smart-work-permit-frontend`, per this task's own instructions, is the likely source — this
+session did not touch that repo or the workspace-root glue docs). Not fixed here: fixing it would
+mean editing files this session was told not to touch (the safety app) or files with no way to
+tell which concurrent agent's version is current (`CONTEXT.md`).
+
+**Not done, out of this ticket's scope**: `useDuplicatePermit.ts`'s client-side clone does not copy
+`ppeDeclared`/`ppeNote` onto the new draft — the spec's task list did not mention the duplicate
+flow, and PPE is optional to submit either way, so a duplicated permit simply starts with an empty
+declaration like every other new draft. No module harness item existed for wayfinder 097 in
+`docs/modules/permit/feature_list.json` to update (it is a cross-cutting wayfinder ticket, not a
+numbered `PMT-*` item), so none was invented, per this session's own instruction not to invent a
+harness item structure from scratch.
+
+---
+
+## 2026-09-11 — wayfinder 103: `Worker.role` removed; `roleOnPermit` is template + free entry
+
+**Contractor half of wayfinder 103** ("a worker is a name; the role belongs to the job"), blocked
+on 096 (already landed per the api's own note in the ticket) — the api side shipped alone
+(`89482f3`/`4addcc3`, 331 → 336 tests): `Worker.role` dropped from the wire, a migration copied it
+onto each worker's empty `PermitWorker.roleOnPermit` rows first (dev: 13 workers had a role, 0
+rows filled, 3 lost it — no `PermitWorker` rows to copy onto), then dropped the column.
+`roleOnPermit` was already free text server-side (`minLength: 1`, no enum); `EWorkerRole` survives
+as a permit-type-filtered TEMPLATE list, never a backend-enforced set.
+
+**`Worker.role` removed from every contractor-app surface:**
+- `IWorker`/`IWorkerDetail` (`Worker.model.ts`), `ICreateWorkerPayload`/`IUpdateWorkerPayload`
+  (`WorkerReq.model.ts`) — the field and its doc comments are gone, not left dormant.
+- `WorkerIdentitySchema`/`RegisterWorkerSchema` — the `role` field + its `roleRequired` validation
+  message dropped from both zod schemas and their initial-values helpers.
+- `WorkerDetailPage.vue` (the edit form's role `Select`), `RegisterWorkerModal.vue` (the create
+  form's role `Select`) — field removed, `EWorkerRole`/`roleOptions` no longer imported, `role`
+  dropped from the `update`/`create` payload calls.
+- `WorkerListPage.vue` — the role column dropped from the header and each row's grid template
+  (`grid-cols-[1fr_170px_170px_90px]` → `grid-cols-[1fr_170px_90px]`).
+- `WorkerPicker.vue` (the shared worker AutoComplete used by Step 4 and all three certificate
+  entry points) — the suggestion item no longer shows `option.role`; its inline "create a new
+  worker" flow dropped the role `InputText` and the `role` it used to send on `WorkerService.create`
+  and on the 409-adopt path.
+- Four certificate-form entry points read `worker.role` to filter `CertTypeSelect`'s options
+  (`selectedWorkerRole` in `AddCertificateModal.vue`/`CreateCertificateModal.vue`/
+  `CertificateEditPage.vue`, and a direct `:role="worker.role"` in
+  `AddWorkerCertificateModal.vue`) — all four now pass nothing, so `CertTypeSelect` always falls
+  back to its full vocabulary. `CertTypeSelect.vue`'s own `role` prop and `CertType.enum.ts`'s
+  `ROLE_ALLOWED_CERT_TYPES` map are left in place, unreferenced by any real caller now — the same
+  declared-but-dormant convention this repo already uses for retired error codes, not touched
+  further because the ticket did not ask for `CertType.enum.ts` changes.
+- Every test fixture that built an `IWorker`/`IWorkerDetail`/`ICreateWorkerPayload` literal with a
+  `role` key was updated to drop it (`WorkerListPage.test.ts`, `WorkerDetailPage.test.ts`,
+  `AddWorkerCertificateModal.test.ts`, `CreateCertificateModal.test.ts` (permit wizard),
+  `AddCertificateModal.test.ts` (certificate module, 7 sites), `CertificateListPage.filters.test.ts`).
+  `AddCertificateModal.test.ts`'s own "filters the Select down to the selected worker's role" test
+  was rewritten to assert the new invariant instead: the Select shows the full vocabulary for
+  every worker now, since there is no role left to filter by — this is the regression test that
+  096 really did decouple `certType` from `Worker.role` (the ticket's own precondition for being
+  safe to land).
+
+**No prefill of `roleOnPermit` from `Worker.role` was found anywhere.** Grepped every
+`onWorkerSelected`/`worker-selected` handler across the wizard and all three worker-picker call
+sites: none of them ever wrote `worker.role` into `IPermitWorker.roleOnPermit` — 060's original
+split already kept the two fields independent, so there was nothing to un-wire here. The only
+`worker.role` reads in the whole app were the certType-filter sites listed above, which are a
+different mechanism (they feed `CertTypeSelect`'s options, never `roleOnPermit`).
+
+**`roleOnPermit` is now an editable AutoComplete, not a fixed chip-button set.** `Step4PpeWorkers.vue`'s
+worker table used to render one button per `WORKER_ROLES_BY_TYPE[permitType]` value — a closed
+set that could never hold what `roleOnPermit` has always accepted on the wire
+(`minLength: 1`, no enum). Replaced with a Volt `AutoComplete` (`dropdown="true"`,
+`force-selection="false"`, bound directly via `model-value`/`update:model-value` — the same shape
+`Step4PpeWorkers.vue`'s own doc comment already establishes for this step: it has no
+`<Form>`/zodResolver at all, validating the whole worker slice via `Step4PpeWorkersSchema.safeParse`
+instead, so there is no per-field resolver registration trap here (`form-patterns.md`'s ticket-117
+warning applies to a step that uses `<Form>`; this one deliberately does not, and adding one would
+be an unrelated architecture change outside this ticket's scope). The dropdown button shows the
+full `EWorkerRole` template list for the selected permit type (unchanged filtering); typing
+narrows it and can narrow to nothing, which is fine — whatever text is typed still lands in
+`roleOnPermit` on every keystroke via PrimeVue's own `onInput`→`updateModel`, `force-selection`
+false. `IPermitWorker.roleOnPermit` widened from `TWorkerRole` (a closed union) to `string`.
+EN + TH placeholder added (`permit.create.steps.ppeWorkers.placeholder.role`); the existing
+`permit.create.steps.ppeWorkers.role.<slug>` EN+TH labels (already there for the old chip buttons)
+are reused for the dropdown's own suggestion labels. The detail page's `PermitWorkersSection.vue`
+already rendered a free-text `roleOnPermit` correctly before this change (`roleLabel` falls back to
+the raw stored string when no `permit.create.steps.ppeWorkers.role.<slug>` translation exists) —
+verified with a new test rather than touched, since its logic needed no change.
+
+**Tests added**: `RegisterWorkerModal.test.ts` (new — a created worker's payload has no `role` key,
+and the modal renders no role field at all), a new assertion in `WorkerDetailPage.test.ts` (a saved
+worker's PATCH payload has no `role` key), `Step4PpeWorkers.roleOnPermit.test.ts` (new — picking a
+template `EWorkerRole` value reaches `formData.workers[].roleOnPermit`; typing a value outside the
+template list does too), a new case in `useWizard.hydrate.test.ts` (a free-text `roleOnPermit` value
+round-trips through hydrate unchanged), a new case in `PermitDetailSections.test.ts` (a free-text
+`roleOnPermit` renders as typed, not as some unknown-role fallback), and the rewritten
+`AddCertificateModal.test.ts` case described above.
+
+**Node script gates** (run from the workspace root, `../scripts/`): both green —
+`check-worker-vocabulary-sync.mjs` (`ECertType`/`EWorkerRole`/`EPpeItem` all in sync with the api
+and the safety app) and `check-contract-sync.mjs` (openapi + glue docs in sync, 36 error codes
+declared in both frontends, `/api/v1` prefix present). Neither flagged anything for this repo to
+fix; `EWorkerRole` itself was never touched, per the ticket's explicit instruction not to delete it.
+
+**Verification**: `bunx eslint` on every touched file — clean (no errors; one pre-existing
+unrelated warning pair in `useNotificationPolling.test.ts`, not touched by this change).
+`bunx vue-tsc --noEmit` — clean. `./init.sh`: typecheck PASS, lint PASS, **tests 81 files / 635
+PASS**, contrast PASS, icons PASS, smoke SKIP (no API reachable on this machine — the provider/model
+changes here are therefore unverified against a live backend, only against this app's own types).
+
+**Deviations / open questions**: none on scope. The exact EN/TH wording for the new
+`ppeWorkers.placeholder.role` copy ("Choose from the list or type a role" /
+"เลือกจากรายการ หรือพิมพ์ตำแหน่งเอง") and the trimmed `worker.picker.createHint` (dropped its old
+"What is their role?" question, since the inline-create flow no longer asks) were not pinned down
+anywhere else in the repo and were chosen fresh — flagging in case the product owner wants
+different phrasing.
+
+**Follow-up in the same commit (reviewer):** the agent left `CertTypeSelect`'s `role` prop,
+`buildCertTypeOptions`'s role filter and `ROLE_ALLOWED_CERT_TYPES` in place as "dormant". They were
+not dormant: with no role ever passed, `roleRecognized` was always false, so **every certificate form
+showed "Showing every certificate type — this worker's role isn't in our list"** — a false claim
+about every worker. And the rewritten `AddCertificateModal` test **asserted that note appears**,
+enshrining it. Removed the prop, the filter, the map (the api dropped its copy in 096) and the
+locale key; the test now asserts the note is absent and fails against the old component.
+
+## 2026-09-11 — wayfinder 112: the permit report (visits, gaps, closure, printable)
+
+Resolves ticket 083 (via map ruling 18, unblocked by the api's wayfinder-119 auth fix, `GET
+/permits/:id/inspector-visits` now open to the owning contractor). Added a seventh detail-page tab,
+"Report" — `PermitReportSection.vue`, self-contained: fetches its own data through a new
+`usePermitReport.ts` composable and three new read-only providers (`inspector-visit`, `entrant`,
+`gas-log`, all mirroring the safety app's class/interface/method names for parity — ruling 18 has
+the safety app building a near-identical copy next), taking `permit`/`audit` as props rather than
+re-fetching either (`audit` is already fetched by the page's own `usePermitDetail`).
+
+**A — visits view**: per visit — who (`permitAuthorName(visit.inspector)`), when (`startedAt`/
+`submittedAt`, `d()`), entrant activity and gas readings correlated to the visit's own window
+(read-time association, no stored join — same convention the api's own doc comment describes),
+PPE (all three shapes: none/new/legacy, via a ported `src/utils/InspectorVisitPpe.ts`, unit-tested
+17/17 including a legacy row rendering honestly as "recorded on an earlier checklist" without
+crashing), notes with `noteType` (color-coded, full content — ruling 18's substance), photos (reuses
+the existing `FileAttachment.vue`/`Upload.provider` pattern). Two gaps, both derived purely
+client-side in `src/utils/PermitReportGaps.ts` (13 unit tests, positive+negative for each): a
+calendar day (Asia/Bangkok) with zero visits, and a gas-log entry whose server-given `dueAt` passed
+with no reading after it.
+
+**B — closure summary**: rendered only once `permit.status === 'CLOSED'` — terms, who closed + why
+(`PERMIT_CLOSED`'s `payload.reason`), final entrant state (the closure's own auto-checkout audit
+rows, `payload.closedPermit === true`), final PPE state.
+
+**Print**: a Print button (`window.print()`) plus a global `@media print` rule in `main.css` (hides
+`[role="tablist"]` and every `button`) and `print:hidden` on `AppTopbar`/`AppDrawer` in
+`DefaultLayout.vue` — no PDF library, per the standing first-party rule.
+
+**Deviations, flagged rather than silently decided:**
+- The ticket's spec text says "entrants in/out"; `GET /permits/:id/entrants` actually returns only
+  CURRENTLY-INSIDE workers (`getCurrentlyInsideWorkers`), never a history. The report derives the
+  actual in/out history from the audit trail (`ENTRANT_CHECKED_IN`/`ENTRANT_CHECKED_OUT`) instead,
+  and uses the entrants endpoint only for "who is inside right now" — verified against the live api
+  source, not assumed.
+- "Final PPE state" (closure summary) is sourced from the permit's own `ppeDeclared`/`ppeNote`
+  rather than the most recent inspector visit's `ppeChecklist` — the spec left this as a judgement
+  call; the label in the UI says which source it is.
+- Ticket 119 names an "inspector-facing notice that notes are contractor-visible" as also carried
+  by 112. That notice belongs on the inspector's getting-started page and beside the note field —
+  both live in the safety app, out of scope for this repo. Not built here.
+- The safety app's actual `payload.autoCheckedOutWorkerIds` shape named in the ticket text does not
+  match the live api (`close.service.ts` writes one `ENTRANT_CHECKED_OUT` audit row per worker with
+  `payload.closedPermit: true`, not one row with an array) — implemented against the real code.
+
+New files: `src/enums/modules/inspector-visit/InspectorVisitNoteType.enum.ts`,
+`src/models/response/{inspector-visit,entrant,gas-log}/*.model.ts`,
+`src/resources/provider/{inspector-visit,entrant,gas-log}/*.provider.ts`,
+`src/utils/{InspectorVisitPpe,PermitReportGaps}.ts`,
+`src/pages/permit/pages/detail/composables/usePermitReport.ts`,
+`src/pages/permit/pages/detail/components/PermitReport{Section,GapList,VisitCard,ClosureSummary}.vue`.
+Edited: `PermitDetailPage.vue` (7th tab), `src/locales/{en,th}/permit.ts`, `DefaultLayout.vue`,
+`src/assets/css/main.css`, plus the existing `PermitDetailSections.test.ts` (six sections → seven)
+and `PermitDetailPage.test.ts` (extended the existing 403 test to prove the report's own fetches
+never fire on a foreign permit).
+
+**Verification**: `bunx eslint` on every touched file — clean. `bunx vue-tsc --noEmit` — clean.
+`./init.sh`: typecheck PASS, lint PASS, **tests 84 files / 666 PASS**, contrast PASS, icons PASS,
+smoke SKIP (no API reachable on this machine — the three new providers are therefore unverified
+against a live backend, only against this app's own types and the api's read source directly).
+
+## 2026-09-11 — wayfinder 098 reopened: the contractor requests close, it no longer calls `/close`
+
+Field break, top of the queue: production's round-4 api guards `POST /permits/:id/close` with
+`auth: ['safety_officer']` now, and `PMT-011`'s closure checklist ("Mark Work Complete →" /
+"Close Permit ✓") was still calling it — every contractor close was answering 403 `FORBIDDEN_ROLE`
+with no caller anywhere for the api's already-live `POST /permits/:id/close-request`. Read
+directly out of `../smart-work-permit-api/src/modules/permit/commands/{close,close-request}`
+rather than assumed:
+
+- `close-request` body is `{ reason?: string }` — optional, no min-length gate on the wire (the
+  reason the *safety officer* owes on actual `close` is a separate, unconditionally-required
+  field on a different route).
+- Accepted only while the permit is `ACTIVE` or `FIRE_MONITOR`; otherwise `403 PERMIT_NOT_ACTIVE`
+  — an error code this app already declares and localizes, so no `ApiErrorCode.enum.ts` or locale
+  addition was needed, and `check-contract-sync.mjs`'s error-code comparison stays green on that
+  count untouched.
+- **Idempotent by design, not locked**: a second `close-request` call overwrites
+  `closeRequestedAt`/`ById`/`By`/`Role` and `closeRequestReason` (note: no "ed" — `Reason`, not
+  `RequestedReason`) rather than answering a conflict. Read as "a signal to safety, not a lock,"
+  so the UI does not hide the action after the first send.
+- **No elapsed-Fire-Watch gate.** `close` itself needs `FIRE_WATCH_NOT_ELAPSED` to pass before it
+  will succeed; `close-request` has no such check — a contractor mid-Fire-Watch can still ask.
+  `FireMonitorPanel.vue`'s client-side lock on the trigger during Fire Watch was therefore
+  *removed*, not added to — inventing a restriction the api does not have would have been worse
+  than the bug this ticket exists to fix.
+
+**Built**: `RequestCloseModal.vue` + `RequestClose.schema.ts` (`@primevue/forms` + `zodResolver`,
+this repo's mandatory form pattern — a bare `<textarea>` would silently never register, per
+`form-patterns.md`'s 117 lesson) replace the deleted `ClosureChecklistModal.vue` in
+`PermitDetailPage.vue`. The old yes/no checklist items and e-signature are **not** carried
+forward — neither has a field on `close-request`'s wire body, so keeping them client-side would
+misrepresent data that is never actually sent; a single optional reason textarea replaces both.
+Once a request exists, the same trigger relabels "Update Request" and pre-fills the existing
+reason rather than disappearing — matching the api's own idempotent-overwrite behaviour rather
+than inventing a one-shot UI the backend does not enforce. `PermitProvider.close()` and
+`IClosePermitPayload`/`TClosePermitResponse` are deleted entirely, along with the stale comment
+calling `close` "a deliberate exception" (`feat-020`'s admission, now reversed) —
+`PermitProvider.requestClose()` (`POST /permits/:id/close-request`) is the only closure-adjacent
+call a contractor session can make. `docs/api/GAPS.md` row H is marked reversed with a note below
+the table rather than rewritten in place, so the `feat-020` history stays legible. `guide.ts`'s
+`permitDetail.p2` (EN + TH) no longer describes the contractor closing a permit themselves.
+
+**Deviations, flagged rather than silently decided:**
+- No new `errorCode` was needed — `PERMIT_NOT_ACTIVE` already existed in both the enum and both
+  locale files from an earlier pass, so this fix touches zero rows in `ApiErrorCode.enum.ts`.
+- Old checklist items dropped outright (see above) rather than kept as client-only "pre-request
+  confirmation" — the wire body has nothing to receive them, and a checklist that visually implies
+  it was recorded but isn't would be worse than no checklist.
+- Did not touch `docs/modules/permit/feature_list.json` — this fix is a wayfinder-ticket field
+  break, not a module-harness item, and no feature dir maps to permit-closure specifically.
+
+**Files**: `src/resources/provider/permit/Permit.provider.ts`,
+`src/models/{request,response}/permit/Permit{Req,Res}.model.ts`,
+`src/pages/permit/pages/detail/components/RequestCloseModal.vue` (new, replaces
+`ClosureChecklistModal.vue`, deleted), `src/pages/permit/pages/detail/schema/RequestClose.schema.ts`
+(new), `src/pages/permit/pages/detail/pages/PermitDetailPage.vue`,
+`src/pages/permit/pages/detail/components/FireMonitorPanel.vue`,
+`src/locales/{en,th}/{guide,permit}.ts`, `docs/api/GAPS.md`, `AGENTS.md` (superseded-history note).
+Tests: `src/tests/pages/permit/detail/RequestCloseModal.test.ts` (new, replaces the deleted
+`ClosureChecklistModal.test.ts`), `src/tests/pages/permit/detail/FireWatch.test.ts`,
+`src/tests/provider/Permit.provider.test.ts` — cover reason going to `close-request` never
+`/close`, the provider having no `close()`, the requested state rendering with timestamp+reason,
+the trigger relabeling rather than vanishing after a request, the localized error path, and
+Fire-Watch-unlocked behaviour.
+
+**Verification**: `bunx eslint` on every touched file — clean. `bunx vue-tsc --noEmit` — clean.
+`./init.sh`: typecheck PASS, lint PASS, **tests 84 files / 663 tests PASS**, contrast PASS, icons
+PASS, smoke SKIP (no API reachable on this machine). `node ../scripts/check-contract-sync.mjs`:
+the `PROMPT-LOG.md`/`CONTEXT.md`/error-code checks are green; the `openapi.json` triple-copy hash
+check is **red**, but pre-existing and out of scope here — the api repo's live copy has already
+moved ahead of both frontends' checked-in copies (ticket 109's in-flight api work), this change
+added zero new error codes/routes/payloads, and `docs/api/openapi.json` is root-owned and not
+editable from this repo per this session's constraints. Both frontend copies still match each
+other byte for byte.
+
+## 2026-09-11 — wayfinder 109 (contractor half): live badge + notification socket, polling kept as fallback
+
+The api half (`ab28f98`+`39ba7b7`) shipped `GET /api/v1/realtime` (a Bun-native `.ws()`, no
+dependency — cookie-authenticated exactly like every other guarded HTTP route) and the polling
+fallback `GET /api/v1/badges`, both answering the same `{ unreadNotifications, pendingReview? }`
+shape (`pendingReview` officers-only, so this app never sees it). This is the deferred contractor
+frontend half: one composable that owns both transports, so the UI never has to know which one
+delivered a count.
+
+**Built**: `src/composables/useRealtimeSocket.ts` — first-party `WebSocket` only (no socket.io),
+module-level singleton state so every mount of `DefaultLayout` shares one connection. Connects
+once `useAuthStore().isAuthenticated` flips true, derives the socket URL from the same
+`VITE_APP_API_URL` the HTTP client already uses (`http`→`ws`, `https`→`wss`,
+`/api/v1/realtime`), and tears the connection down on sign-out. An unexpected close reconnects
+with capped exponential backoff + jitter (`RECONNECT_BASE_DELAY_MS` 1s → `RECONNECT_MAX_DELAY_MS`
+30s cap); a `4001` close (`ACCOUNT_DEACTIVATED`) is instead treated exactly like the HTTP
+interceptor's 401 branch — `authStore.logout()` + a hard redirect to `/auth/login`, no reconnect
+attempt. **Polling is not removed, per the ticket's own "this matters more than the socket"
+framing**: whenever the socket is not open (connecting, dropped, or signed out), `GET /v1/badges`
+is polled on a new named constant, `BADGE_POLL_INTERVAL_MS` (30s, same convention as
+`NOTIFICATION_POLL_INTERVAL_MS`), paused on `visibilitychange` while the tab is hidden and resumed
+immediately (not waiting for the next tick) when it becomes visible again — but only if the socket
+is still not carrying live updates.
+
+`stores/Notification.ts`'s `unreadCount` changed from a `computed` derived off the loaded
+notification page (max 50 rows, so it could under-count) to a plain `Ref` set by whichever
+transport last reported the real server-side number (`setUnreadCount()`), plus a new `prepend()`
+for a live `notification.created` row. `AppTopbar.vue` needed no change — it already read
+`unreadCount`/`notifications` through `storeToRefs`, and both keep the same shape. A live
+`notification.created` frame prepends into the list (server ordering is already unread-first) and
+toasts — `toast.info(notification.title, …)`, the exact string the bell panel already renders, per
+ticket 007's "not visible on screen" rule and never the backend's raw `message` field. New
+`src/resources/provider/badge/Badge.provider.ts` (`GET /api/v1/badges`) and
+`src/models/{modules/realtime/Realtime,response/badge/BadgeRes}.model.ts` back the poll.
+`DefaultLayout.vue` mounts `useRealtimeSocket()` alongside the existing `useNotificationPolling()`
+(unchanged — it still owns the full notification-list refresh, a separate concern from the badge
+count).
+
+**Deviations, flagged rather than silently decided:**
+- `dismiss()` now also optimistically decrements `unreadCount` locally (clamped at 0), not just
+  the list item's `read` flag — without it the badge would sit stale until the server's own
+  `badge.counts` push (live) or the next 30s poll (fallback) caught up. Not explicitly asked for,
+  but a direct consequence of making `unreadCount` transport-driven rather than list-derived.
+- `VITE_APP_WEBSOCKET` (an existing but unreferenced `.env`/`.env.prod` variable, `http(s)://`
+  scheme, never `ws(s)://`) is left untouched and unused — the ticket is explicit that the URL is
+  derived from the same API base as the HTTP client, and this variable was dead template leftover
+  with the wrong scheme for that purpose.
+- Live end-to-end socket verification (real browser, two hostnames) is the api half's own gate,
+  already done in its session. This session instead confirmed `GET /api/v1/badges` against a
+  running `bun run dev` API with a real contractor session cookie —
+  `{"message":"success","data":{"unreadNotifications":1}}`, matching `BadgeRes.model.ts` exactly.
+
+**Files**: `src/composables/useRealtimeSocket.ts` (new),
+`src/resources/provider/badge/Badge.provider.ts` (new),
+`src/models/modules/realtime/Realtime.model.ts` (new),
+`src/models/response/badge/BadgeRes.model.ts` (new), `src/stores/Notification.ts`,
+`src/layouts/DefaultLayout.vue`. Tests: `src/tests/composables/useRealtimeSocket.test.ts` (new,
+fake `WebSocket` + fake timers) — connects after sign-in with the correct `ws://` URL, no
+connection while signed out, `badge.counts` updates the store, `notification.created` prepends +
+toasts off `notification.title`, the socket closing falls back to a `GET /v1/badges` poll
+delivering the same count, capped-exponential-backoff reconnect, and a `4001` close signing the
+user out with no reconnect attempt.
+
+**Verification**: `bunx eslint` on every touched/new file — clean (0 errors; two pre-existing-style
+`vue/one-component-per-file` warnings on the new test file, same as `useNotificationPolling.test.ts`).
+`bunx vue-tsc --noEmit` — clean. `./init.sh`: typecheck PASS, lint PASS, **tests 85 files / 671
+tests PASS**, contrast PASS, icons PASS, smoke PASS (ran against a live
+`cd ../smart-work-permit-api && bun run dev`, all contract checks passed, including the pre-existing
+`GET /notifications` pagination check).
+
+---
+
+## 2026-09-11 — PAUSED by the owner. Where the contractor app stands, and what is left
+
+Round 4 paused at the owner's request; resume from
+`../docs/wayfinder/map-round-4-pins-closure-and-the-inspector-menu.md` → "Paused here".
+
+**Shipped on `dev` this round** (not deployed): pin picker (107), Area removed (121), certificate
+licence/description (115), form resolvers see `workerId` (117), tabs (113), menus (110 contractor
+half), PPE declared on the permit (097), worker is a name + role per permit (103), the permit
+report tab (112), **request close replaces the broken close** (098), live notifications with
+polling fallback (109). `./init.sh` 671 pass at `e2c50975`.
+
+**Open items for this app:**
+- **127** — in-app text still describing round 3: `guide.ts` beyond the closure paragraph,
+  `docs/api/GAPS.md` other rows; landing copy (separate repo) says the contractor closes.
+- **Owner questions**: "final PPE" on the report shows *declared*, not *observed* (112); the old
+  closure checklist's e-signature is gone and the api has no field for one (098).
+- The six round-4 Thai strings and guide pages still want a native read.

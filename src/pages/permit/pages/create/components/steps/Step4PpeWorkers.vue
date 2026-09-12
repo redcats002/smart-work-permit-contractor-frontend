@@ -32,6 +32,38 @@
       </div>
     </section>
 
+    <section class="flex flex-col gap-2.5">
+      <div class="flex flex-col gap-1">
+        <h3 class="text-[13px] font-semibold text-text-primary">
+          {{ t('permit.create.steps.ppeWorkers.ppe.title') }}
+        </h3>
+        <p class="text-xs text-text-tertiary">
+          {{ t('permit.create.steps.ppeWorkers.ppe.optionalHint') }}
+        </p>
+      </div>
+      <div class="grid grid-cols-2 gap-x-4 gap-y-2.5 sm:grid-cols-3 lg:grid-cols-4">
+        <label
+          v-for="item in PPE_ITEMS"
+          :key="item"
+          class="flex cursor-pointer items-center gap-2 text-[13px] text-text-primary">
+          <Checkbox
+            v-model="ppeDeclaredModel"
+            :value="item" />
+          {{ t(`permit.create.steps.ppeWorkers.ppe.item.${ppeItemSlug(item)}`) }}
+        </label>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-[12px] font-medium text-text-secondary">
+          {{ t('permit.create.steps.ppeWorkers.ppe.noteLabel') }}
+        </label>
+        <Textarea
+          v-model="ppeNoteModel"
+          :placeholder="t('permit.create.steps.ppeWorkers.ppe.notePlaceholder')"
+          rows="2"
+          fluid />
+      </div>
+    </section>
+
     <section class="rounded-lg border border-status-pending-border bg-status-pending-bg px-3.5 py-3">
       <p class="text-[12.5px] font-bold text-status-pending-fg">
         <span aria-hidden="true">⚕</span> {{ t('permit.create.steps.ppeWorkers.regulation.title') }}
@@ -131,40 +163,35 @@
                   for it — PrimeVue sizes the overlay's `min-width` from the input's rendered
                   width, so a narrow input produced a narrow list.
                 -->
-                <AutoComplete
-                  :force-selection="false"
-                  :model-value="row.worker.workerName"
-                  :placeholder="t('permit.create.steps.ppeWorkers.placeholder.worker')"
-                  :suggestions="workerSuggestions"
-                  class="h-9 w-full min-w-[13.75rem]"
-                  option-label="workerName"
-                  fluid
-                  @blur="scheduleWorkerNameCommit()"
-                  @complete="onWorkerNameComplete($event.query)"
-                  @option-select="scheduleWorkerNameCommit()"
-                  @update:model-value="onWorkerNameUpdate(row.index, $event)">
-                  <template #option="{ option }">
-                    <WorkerCertificateSuggestionOption :certificate="option" />
-                  </template>
-                  <template #empty>
-                    {{ t('permit.create.steps.ppeWorkers.suggestion.empty') }}
-                  </template>
-                </AutoComplete>
+                <WorkerPicker
+                  :initial-name="row.worker.workerName"
+                  :model-value="row.worker.workerId"
+                  class="min-w-[13.75rem]"
+                  @worker-selected="onWorkerSelected(row.index, $event)" />
               </td>
               <td class="px-3 py-3">
-                <div class="flex flex-wrap gap-1.5">
-                  <button
-                    v-for="role in roleOptions"
-                    :key="role"
-                    :class="row.worker.roleOnPermit === role
-                      ? 'bg-shell-sidebar text-white'
-                      : 'bg-surface-subtle text-text-secondary'"
-                    class="rounded-md px-2.5 py-1 text-[11.5px] font-semibold whitespace-nowrap"
-                    type="button"
-                    @click="patchWorker(row.index, { roleOnPermit: role })">
-                    {{ t(`permit.create.steps.ppeWorkers.role.${workerRoleSlug(role)}`) }}
-                  </button>
-                </div>
+                <!--
+                  wayfinder 103 — `roleOnPermit` is free text on the wire (`minLength: 1`, no
+                  enum); `EWorkerRole` is a curated template list, still filtered by permit type,
+                  not a closed set. An editable AutoComplete (dropdown button shows the whole
+                  template list; typing filters it; any non-empty text the user types is kept
+                  as-is, `force-selection` false) replaces the old fixed chip-button set, which
+                  could only ever emit one of `WORKER_ROLES_BY_TYPE`'s values.
+                -->
+                <AutoComplete
+                  :dropdown="true"
+                  :force-selection="false"
+                  :model-value="row.worker.roleOnPermit"
+                  :placeholder="t('permit.create.steps.ppeWorkers.placeholder.role')"
+                  :suggestions="roleSuggestions"
+                  class="min-w-[9rem]"
+                  fluid
+                  @complete="onRoleComplete($event.query)"
+                  @update:model-value="patchWorker(row.index, { roleOnPermit: $event ?? '' })">
+                  <template #option="{ option }">
+                    {{ t(`permit.create.steps.ppeWorkers.role.${workerRoleSlug(option)}`) }}
+                  </template>
+                </AutoComplete>
               </td>
               <td class="px-3 py-3">
                 <span
@@ -276,30 +303,36 @@
 
     <CreateCertificateModal
       v-model="createCertificateOpen"
-      @created="onCertificateCreated($event)" />
+      @created="onCertificateCreated()" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, type ComputedRef, type Ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import DeleteModal from '@/components/modal/DeleteModal.vue'
-import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
-import { WORKER_ROLES_BY_TYPE, type EWorkerRole, type TWorkerRole } from '@/enums/modules/permit/WorkerRole.enum'
-import type { ICertificate } from '@/models/modules/certificate/Certificate.model'
-import type { IPermitPhoto, IPermitWorker } from '@/models/modules/permit/Permit.model'
-import AutoComplete from '@/volt/AutoComplete.vue'
-import PhotoSlot from '../PhotoSlot.vue'
-import CreateCertificateModal from '../CreateCertificateModal.vue'
-import WorkerCertificateSuggestionOption from '../WorkerCertificateSuggestionOption.vue'
-import { EVIDENCE_SLOTS, findPhoto, upsertPhoto, type IEvidenceSlot } from '../../constants/PhotoEvidence'
 import {
-  requiresHealthCheck, workerHealthIssues, workerRoleSlug, workerRowComplete
-} from '../../constants/WorkerHealth'
-import type { ICertificateProblem } from '../../composables/useCertificatePreflight'
-import { useWorkerCertificateSuggestions } from '../../composables/useWorkerCertificateSuggestions'
+  computed, type ComputedRef, ref, type Ref, type WritableComputedRef
+} from 'vue'
+
+import type { IPermitPhoto, IPermitWorker } from '@/models/modules/permit/Permit.model'
+import type { IWorker } from '@/models/modules/worker/Worker.model'
+
+import { PPE_ITEMS, ppeItemSlug } from '@/enums/modules/permit/PpeItem.enum'
+import type { EPpeItem } from '@/enums/modules/permit/PpeItem.enum'
+import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
+import { type EWorkerRole, WORKER_ROLES_BY_TYPE } from '@/enums/modules/permit/WorkerRole.enum'
+
+import { EVIDENCE_SLOTS, findPhoto, type IEvidenceSlot, upsertPhoto } from '../../constants/PhotoEvidence'
 import type { ISubmitCertificateFailure } from '../../constants/SubmitErrorRouting'
+import { requiresHealthCheck, workerHealthIssues, workerRoleSlug, workerRowComplete } from '../../constants/WorkerHealth'
+
+import DeleteModal from '@/components/modal/DeleteModal.vue'
+import WorkerPicker from '@/components/worker/WorkerPicker.vue'
+
+import { useI18n } from 'vue-i18n'
+
+import type { ICertificateProblem } from '../../composables/useCertificatePreflight'
 import type { IWizardStepEmits, IWizardStepProps } from '../../wizard/WizardSteps'
+import CreateCertificateModal from '../CreateCertificateModal.vue'
+import PhotoSlot from '../PhotoSlot.vue'
 
 /**
  * PMT-007 / CRT-004 — step 4, PPE / photo evidence / workers.
@@ -344,86 +377,19 @@ const pendingIndex: Ref<number | undefined> = ref(undefined)
 const createCertificateOpen: Ref<boolean> = ref(false)
 
 /**
- * wayfinder ticket 004 — worker-name AutoComplete suggestion source. Fetched once on mount and
- * filtered client-side (`GET /api/v1/certificates/` has no server-side search param, ticket 003).
- * `workerSuggestions` holds whatever the last `@complete` query matched; free text that matches
- * nothing stays a legal `workerName` regardless — `force-selection="false"` on the AutoComplete
- * below is what keeps that true.
+ * wayfinder 063 — the worker field binds a Worker record via the shared `WorkerPicker`
+ * (search over the contractor's own `GET /api/v1/workers`, inline "Create worker …" asking role
+ * only, `WORKER_ALREADY_EXISTS` 409-adopt). Selection is atomic — there is no keystroke-driven
+ * pre-flight to debounce any more, unlike the old free-text AutoComplete this replaces: the
+ * certificate check now fires once, right after a worker actually resolves to an id.
  */
-const {
-  filter: filterCertificates,
-  add: addSuggestedCertificate,
-  fetch: fetchCertificateSuggestions
-} = useWorkerCertificateSuggestions()
-const workerSuggestions: Ref<ICertificate[]> = ref([])
-/** Last worker-name list handed to the pre-flight — see `commitWorkerNames` below. */
-let lastCommittedNames = ''
-let commitTimer: ReturnType<typeof setTimeout> | undefined
-
-onMounted((): void => {
-  void fetchCertificateSuggestions()
-})
-
-function onWorkerNameComplete (query: string): void {
-  workerSuggestions.value = filterCertificates(query)
-}
-
-/**
- * Fires on every keystroke (a plain string) AND on selecting a suggestion — PrimeVue's
- * AutoComplete emits the whole selected option object in that case, not its label, so this is
- * the one place that normalizes either shape back down to the plain `workerName` string
- * `IPermitWorker` actually wants.
- */
-function onWorkerNameUpdate (index: number, value: string | ICertificate | null): void {
-  if (value === null) {
-    patchWorker(index, { workerName: '' })
-    return
-  }
-  patchWorker(index, { workerName: typeof value === 'string' ? value : value.workerName })
-}
-
-/**
- * The certificate pre-flight deliberately does NOT run while a name is being typed. Its verdict
- * mounts (and clears) the `certificateProblems` banner below this table, and that reflow closes
- * PrimeVue's open suggestion overlay — AutoComplete binds a scroll listener on its scrollable
- * ancestors (this table is `overflow-x-auto`) and a window resize listener whenever the overlay
- * is up, and both call `hide()`. So the check fires here instead, on the events that actually
- * settle a name: picking a suggestion, and leaving the field.
- *
- * Deferred by a macrotask, and that timing is load-bearing rather than incidental. Clicking a
- * suggestion blurs the input on `mousedown`, BEFORE the `click` that selects it. Running the
- * check synchronously there would clear `problems` (the pre-flight empties it before its first
- * await), unmount the banner, shorten the page, and hide the overlay out from under the click —
- * reinstating the reported bug at the exact moment the user is trying to pick a name. `nextTick`
- * would not help: it is a microtask, and drains before `mouseup`. A `setTimeout` lands after the
- * whole click sequence, so selection completes first — and by then the parent's `formData`
- * write-back has rendered, so the guard below hashes the settled list and the blur that follows a
- * selection is a no-op rather than a second lookup.
- */
-function commitWorkerNames (): void {
-  const names = workers.value.map((worker: IPermitWorker): string => worker.workerName.trim()).join('\u0000')
-  if (names === lastCommittedNames) return
-  lastCommittedNames = names
+function onWorkerSelected (index: number, worker: IWorker | undefined): void {
+  patchWorker(index, { workerId: worker?.id, workerName: worker?.name ?? '' })
   emit('recheck-certificates')
 }
 
-function scheduleWorkerNameCommit (): void {
-  if (commitTimer !== undefined) clearTimeout(commitTimer)
-  commitTimer = setTimeout((): void => {
-    commitTimer = undefined
-    commitWorkerNames()
-  }, 0)
-}
-
-// A pending commit must not emit into a torn-down parent — the user can leave the wizard within
-// the same tick as a blur (clicking the browser back button blurs the field first).
-onBeforeUnmount((): void => {
-  if (commitTimer !== undefined) clearTimeout(commitTimer)
-})
-
-/** wayfinder ticket 004 — a certificate created in-wizard suggests immediately, no refetch. */
-function onCertificateCreated (certificate: ICertificate): void {
-  addSuggestedCertificate(certificate)
+/** A certificate created in-wizard (for a worker already on this permit) invalidates the pre-flight. */
+function onCertificateCreated (): void {
   emit('recheck-certificates')
 }
 
@@ -433,12 +399,46 @@ const permitType: ComputedRef<TPermitType | undefined> = computed(
 const workers: ComputedRef<IPermitWorker[]> = computed((): IPermitWorker[] => props.formData.workers ?? [])
 const healthRequired: ComputedRef<boolean> = computed((): boolean => requiresHealthCheck(permitType.value))
 
+/**
+ * Wayfinder 097. Bound directly to `formData` and emitted the same way every other field on this
+ * step is (`patchWorker`/`emitWorkers` above) — this step has no `<Form>`/zodResolver at all (see
+ * `Step4PpeWorkersSchema`, which validates the whole slice via `safeParse`, not a registered
+ * field), so there is no "bare native input the resolver can't see" trap here; a Volt `Checkbox`
+ * bound to a `WritableComputedRef` array is the same live-state pattern `Step3WhereWhen`'s
+ * `scheduleNoteModel` uses for its own free-text field. Optional to submit — no client gate.
+ */
+const ppeDeclaredModel: WritableComputedRef<EPpeItem[]> = computed<EPpeItem[]>({
+  get: (): EPpeItem[] => props.formData.ppeDeclared ?? [],
+  set: (value: EPpeItem[]): void => emit('update:formData', { ppeDeclared: value })
+})
+
+const ppeNoteModel: WritableComputedRef<string> = computed<string>({
+  get: (): string => props.formData.ppeNote ?? '',
+  set: (value: string): void => emit('update:formData', { ppeNote: value || undefined })
+})
+
 const evidenceSlots: ComputedRef<IEvidenceSlot[]> = computed(
   (): IEvidenceSlot[] => (permitType.value ? EVIDENCE_SLOTS[permitType.value] ?? [] : [])
 )
 const roleOptions: ComputedRef<EWorkerRole[]> = computed(
   (): EWorkerRole[] => (permitType.value ? WORKER_ROLES_BY_TYPE[permitType.value] ?? [] : [])
 )
+
+/**
+ * wayfinder 103 — the `roleOnPermit` AutoComplete's suggestion list. The dropdown button fires
+ * `@complete` with an empty query (shows the whole template list); typing narrows it, and can
+ * narrow to nothing — that is fine, `force-selection: false` means whatever was typed still
+ * lands in `roleOnPermit` on blur/select regardless of whether it matched a suggestion. The
+ * template is a set of suggestions, never a closed set the field can refuse.
+ */
+const roleSuggestions: Ref<EWorkerRole[]> = ref([])
+
+function onRoleComplete (query: string): void {
+  const needle = query.trim().toLowerCase()
+  roleSuggestions.value = needle
+    ? roleOptions.value.filter((role: EWorkerRole): boolean => role.toLowerCase().includes(needle))
+    : roleOptions.value
+}
 
 /**
  * Workers the SERVER refused on the last submit (`certificateFailures[]` on the 400 body). The
@@ -457,9 +457,12 @@ const certificateProblems: ComputedRef<ICertificateProblem[]> = computed(
   (): ICertificateProblem[] => props.certificateProblems
 )
 
-function certificateProblemFor (workerName: string): ICertificateProblem['reason'] | undefined {
+// wayfinder 088: keyed on `workerId`, never the name. A row with no id yet (a freshly added,
+// unpicked row) has no problem to show rather than borrowing a same-named worker's.
+function certificateProblemFor (workerId: number | undefined): ICertificateProblem['reason'] | undefined {
+  if (typeof workerId !== 'number') return undefined
   return certificateProblems.value.find(
-    (problem: ICertificateProblem): boolean => problem.workerName === workerName
+    (problem: ICertificateProblem): boolean => problem.workerId === workerId
   )?.reason
 }
 
@@ -485,10 +488,10 @@ const workerRows: ComputedRef<IWorkerRow[]> = computed((): IWorkerRow[] =>
       healthPassed: issues.length === 0,
       bloodPressureFailed: issues.includes('BLOOD_PRESSURE'),
       alcoholFailed: issues.includes('ALCOHOL'),
-      certificateRejected: serverRejectedCertificates.value.some(
-        (failure: ISubmitCertificateFailure): boolean => failure.workerName === worker.workerName
+      certificateRejected: typeof worker.workerId === 'number' && serverRejectedCertificates.value.some(
+        (failure: ISubmitCertificateFailure): boolean => failure.workerId === worker.workerId
       ),
-      certificateProblem: certificateProblemFor(worker.workerName)
+      certificateProblem: certificateProblemFor(worker.workerId)
     }
   })
 )
@@ -518,7 +521,11 @@ function patchWorker (index: number, patch: Partial<IPermitWorker>): void {
 function addWorker (): void {
   emitWorkers([
     ...workers.value,
-    { workerName: '', roleOnPermit: (roleOptions.value[0] ?? '') as TWorkerRole }
+    // wayfinder 063: `IPermitWorker.workerId` is `NOT NULL` on the wire, but a freshly added row
+    // has no Worker picked yet — `WorkerPicker` resolves one via `onWorkerSelected`, and
+    // `workerRowComplete` (this step's schema + Next gate) blocks until it does. This placeholder
+    // is never sent to the wire as-is.
+    { workerId: undefined, workerName: '', roleOnPermit: roleOptions.value[0] ?? '' } as unknown as IPermitWorker
   ])
 }
 
@@ -532,7 +539,6 @@ function confirmRemove (): void {
   if (index === undefined) return
   emitWorkers(workers.value.filter((_worker: IPermitWorker, position: number): boolean => position !== index))
   pendingIndex.value = undefined
-  lastCommittedNames = ''
   emit('recheck-certificates')
 }
 

@@ -5,43 +5,28 @@ function validDraft (overrides: Partial<Record<string, unknown>> = {}): Record<s
   return {
     title: 'Warehouse repaint',
     foreman: 'Somchai',
-    location: 'Zone 3',
-    workDate: '2026-08-20',
-    workTimeStart: '2026-08-20T01:00:00.000Z',
-    workTimeEnd: '2026-08-20T09:00:00.000Z',
     ...overrides
   }
 }
 
+/**
+ * wayfinder 070 moved the date/time fields to Step3WhereWhen.schema.ts — see its own test file.
+ * wayfinder 107 moved `location` there too (the "location detail" field, same wire field, under
+ * a new label) — this step now only asserts title + foreman.
+ */
 describe('Step2BasicInfoSchema', () => {
-  it('accepts a complete, well-ordered draft', () => {
+  it('accepts a complete draft', () => {
     expect(Step2BasicInfoSchema.safeParse(validDraft()).success).toBe(true)
   })
 
-  it.each(['title', 'foreman', 'location', 'workDate', 'workTimeStart', 'workTimeEnd'])(
+  it.each(['title', 'foreman'])(
     'rejects when %s is missing — matches hasCreatableDraft (useWizard.ts)', (field: string) => {
       const draft = validDraft({ [field]: '' })
       expect(Step2BasicInfoSchema.safeParse(draft).success).toBe(false)
     }
   )
 
-  it('rejects when end time is not after start time', () => {
-    const result = Step2BasicInfoSchema.safeParse(validDraft({
-      workTimeStart: '2026-08-20T09:00:00.000Z',
-      workTimeEnd: '2026-08-20T09:00:00.000Z'
-    }))
-    expect(result.success).toBe(false)
-  })
-
-  it('rejects when end time is before start time', () => {
-    const result = Step2BasicInfoSchema.safeParse(validDraft({
-      workTimeStart: '2026-08-20T09:00:00.000Z',
-      workTimeEnd: '2026-08-20T01:00:00.000Z'
-    }))
-    expect(result.success).toBe(false)
-  })
-
-  it('ignores unrelated keys on the accumulated wizard formData (e.g. type, jsaSteps)', () => {
-    expect(Step2BasicInfoSchema.safeParse(validDraft({ type: 'hot', jsaSteps: [] })).success).toBe(true)
+  it('ignores unrelated keys on the accumulated wizard formData (e.g. type, jsaSteps, startDate)', () => {
+    expect(Step2BasicInfoSchema.safeParse(validDraft({ type: 'hot', jsaSteps: [], startDate: '2026-08-20' })).success).toBe(true)
   })
 })

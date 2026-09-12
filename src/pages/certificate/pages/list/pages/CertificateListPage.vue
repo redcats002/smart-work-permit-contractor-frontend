@@ -21,6 +21,22 @@
     </div>
 
     <div class="px-4 py-6 md:px-8">
+      <div class="mb-3.5 flex flex-wrap items-center gap-2.5">
+        <InputText
+          v-model="search"
+          :placeholder="t('certificate.list.searchPlaceholder')"
+          class="min-w-45 flex-1" />
+        <Select
+          v-model="workerId"
+          :options="workerOptions"
+          :placeholder="t('certificate.list.filterByWorker.placeholder')"
+          class="min-w-45"
+          data-test="certificate-worker-filter"
+          option-label="label"
+          option-value="value"
+          show-clear />
+      </div>
+
       <div
         v-if="loading"
         class="grid grid-cols-1 gap-3.5 md:grid-cols-2">
@@ -36,14 +52,20 @@
         :description="t('certificate.list.empty.description')"
         :title="t('certificate.list.empty.title')" />
 
-      <div
-        v-else
-        class="grid grid-cols-1 gap-3.5 md:grid-cols-2">
-        <CertificateCard
-          v-for="certificate in items"
-          :key="certificate.id"
-          :certificate="certificate" />
-      </div>
+      <template v-else>
+        <div class="grid grid-cols-1 gap-3.5 md:grid-cols-2">
+          <CertificateCard
+            v-for="certificate in items"
+            :key="certificate.id"
+            :certificate="certificate" />
+        </div>
+
+        <div class="mt-4 flex justify-end">
+          <Paginate
+            v-model:pagination="pagination"
+            @update="fetch()" />
+        </div>
+      </template>
     </div>
 
     <AddCertificateModal
@@ -53,18 +75,29 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, type Ref } from 'vue'
+import { computed, onMounted, ref, type ComputedRef, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Empty from '@/components/display/Empty.vue'
+import Paginate from '@/components/table/Paginate.vue'
+import type { IWorker } from '@/models/modules/worker/Worker.model'
 import { useCertificates } from '../composables/useCertificates'
 import CertificateCard from '../components/CertificateCard.vue'
 import AddCertificateModal from '../components/AddCertificateModal.vue'
 
+interface IWorkerOption {
+  label: string
+  value: number
+}
+
 const { t } = useI18n()
 
-const { items, loading, isEmpty, fetch } = useCertificates()
+const { items, loading, search, workerId, workers, pagination, isEmpty, fetch, fetchWorkers } = useCertificates()
 
 const showAddModal: Ref<boolean> = ref(false)
+
+const workerOptions: ComputedRef<IWorkerOption[]> = computed((): IWorkerOption[] => (
+  workers.value.map((worker: IWorker): IWorkerOption => ({ label: worker.name, value: worker.id }))
+))
 
 function onCertificateCreated (): void {
   void fetch()
@@ -72,6 +105,7 @@ function onCertificateCreated (): void {
 
 onMounted((): void => {
   void fetch()
+  void fetchWorkers()
 })
 </script>
 

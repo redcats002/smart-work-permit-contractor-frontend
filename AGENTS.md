@@ -48,7 +48,8 @@ Two sibling apps exist in **other repos** and are **out of scope here**: the Saf
 > Built: `PermitCreatePage` — the 6-step wizard is **complete** (`PMT-004`–`PMT-009`). Every step has a real zod schema that gates Next; there are no `z.object({})` placeholders left. Submit really calls `POST /permits/:id/submit` and navigates to `/permits/:id?submitted=1` (that query param is what triggers the detail page's one-shot "submitted" banner — nothing else sets it). On a 400 the wizard drives off the backend's `failures[]` / `certificateFailures[]` arrays and highlights **every** failing reading on step 3 and every refused worker on step 4, localized off `errorCode` — the server's verdict wins over any client-side gate. Two step-3 shapes have no wire field and are deliberately not persisted: the Yes/No/N-A checklist (`GAPS.md` row J) and `so2` (row K).
 > Built 2026-08-22: `PermitDetailPage` (`PMT-010`–`PMT-013`) — per-status banners, info card, read-only audit
 > timeline, QR panel (`ACTIVE`/`FIRE_MONITOR` only), the closure checklist modal and the Hot Work Fire Watch
-> countdown, plus all six sections of `docs/main/dev-handoff/05-permit-detail-sections.md`. The step-2 location
+> countdown, plus all six sections of `../smart-work-permit-docs/docs/main/dev-handoff/05-permit-detail-sections.md`
+> (deleted from this repo, wayfinder 092 — it lives only at the workspace root now). The step-2 location
 > zone picker mirrors the Safety app's zone vocabulary and writes **canonical English** into the free-text
 > `location` — a Thai value splits the pin across the two apps.
 >
@@ -86,7 +87,99 @@ Two sibling apps exist in **other repos** and are **out of scope here**: the Saf
 >
 > **The providers are live against the real backend** (`feat-005`, 2026-08-17). Every `USE_STUB_DATA` flag and both `*.mock.ts` files are gone; `VITE_APP_API_URL` points at the API and auth is a **better-auth session cookie**, not a bearer token.
 >
-> Before changing anything under `src/resources/` or `src/models/`, read `docs/main/dev-handoff/04-api-contract.md` — and treat `docs/api/openapi.json` (generated from a live boot, never hand-edited) as the authority over it. `01-backend-elysia-tasks.md` is the older *plan*; where the two disagree, the contract wins.
+> **Superseded 2026-09-10 (wayfinder 070):** the paragraph above describing the `position` step as
+> 7th, between JSA and Review, filtered out whenever no facility plan is active, is **no longer
+> current** — read it only as history. "Where & when" (area picker + pin + geo coordinate +
+> multi-day window + schedule note) is now step 3, and it **always renders**: `useWizard.steps` no
+> longer filters any step out. `Step7Position.vue`/`.schema.ts` were retired into
+> `Step3WhereWhen.vue`/`.schema.ts`; the pin/area logic inside is otherwise unchanged (`AreaPicker`
+> still pre-drops the pin on area selection, `usePlanPosition` still gates only a CONFIRMED
+> `'fail'`). The single-day `workDate`/`workTimeStart`/`workTimeEnd` model is gone from the wire —
+> replaced by `startDate`/`endDate`/`dailyStart`/`dailyEnd`/`scheduleNote` (wayfinder 067) — and
+> `latitude`/`longitude`, parsed from a pasted `mapUrl` or set directly, replace the old
+> map-placeholder location pin (wayfinder 068). `IPermitBase`'s doc comment carries the "067 UTC
+> trap" — `dailyStart`/`dailyEnd` are `1970-01-01`-anchored and must be read/written through the
+> SAME local-time (`getHours`/`setHours`) conversion the old `workTimeStart` handling used, never
+> `getUTCHours`/`setUTCHours`. Ticket 045's `areaIdIsUserChoice` invariant is unchanged by this move
+> and must keep holding regardless of which steps mount.
+>
+> Before changing anything under `src/resources/` or `src/models/`, read
+> `../smart-work-permit-docs/docs/main/dev-handoff/04-api-contract.md` — **not** a copy in this
+> repo. This repo used to carry its own copy of that file; it had drifted from the root's and never
+> got the multi-value `status` filter or the submit-failure `failures[]`/`certificateFailures[]`
+> arrays back into the root, and nothing checked either direction, so it was deleted rather than
+> re-synced (wayfinder 092). Treat `docs/api/openapi.json` (generated from a live boot, never
+> hand-edited) as the authority over the contract prose. `01-backend-elysia-tasks.md` is the older
+> *plan*; where the two disagree, the contract wins.
+
+> **Superseded 2026-09-11 (wayfinder 107):** the paragraph above's description of "Where & when"
+> carrying "pin + geo coordinate", `AreaPicker` "pre-dropping the pin", and `usePlanPosition` is
+> **no longer current**. The api's wayfinder 104/105 removed `Permit.position`/`planId`/`planX`/
+> `planY`/`latitude`/`longitude` from the wire entirely, replacing them with one reference,
+> `pinId`, to a `Pin` a safety officer places, names and retires (`Pin`/`FacilityPlan` are now a
+> flat named set, not a version chain). The contractor no longer places or nudges a pin — a new
+> `PinPicker.vue` (self-contained fetch, modeled on `AreaPicker.vue`'s own shape) lets them select
+> one of safety's active pins, read-only marker only. `usePlanPosition` is renamed
+> `usePinPreflight` and no longer tracks one specific plan object — it is a plain
+> `PinService.list({ page: 1, limit: 1, active: true })` existence probe, `required = count > 0`;
+> `IUseWizard`/`IWizardStepProps` lost `activePlan` entirely. The geo coordinate field (068) is
+> gone — `src/utils/ParseMapCoordinate.ts` is deleted, not left dormant. **`Permit.location` is
+> unaffected by any of this** — it is the same wire field, just moved from step 2 to step 3 under
+> a new label ("location detail"), alongside the pin picker rather than the free-text field it
+> used to share a step with. `Step2BasicInfo` is title + foreman only now. `areaId` and `pinId`
+> are fully independent fields: picking an area no longer forwards a `position` patch (there is
+> none left to forward), even though `AreaPicker` itself is untouched and still computes one for
+> its own unrelated default-position feature — `Step3WhereWhen.onAreaChange` simply ignores it.
+> `pinId` inherits ticket 045's `areaIdIsUserChoice` invariant exactly (`pinIdIsUserChoice`, same
+> three spellings, same reasoning) — see `useWizard.persistence.test.ts`.
+
+> **Built 2026-09-10 (wayfinder 082 + 077):** `formatDuration()` (`useHistory.ts`) was fixed — it
+> parsed `HH:mm` but has always received `dailyStart`/`dailyEnd`'s full ISO shape, rendering
+> `"NaNh NaNm"` for every permit; it now reads local wall-clock hours/minutes the same way
+> `PermitCard.vue`'s `clock()` does, and states the day count for a multi-day permit
+> (`"6h 30m/day · 5 day(s)"`). Also new: a static, deep-linkable "Getting started" page
+> (`/getting-started`, `guide` module — see the Modules table) reached from the drawer, and a
+> per-user dismissible first-run checklist at the top of `PermitListPage` (the app's real home
+> page), ticked off real worker/certificate/permit data. No guided tour — ruling 10 declined that
+> explicitly.
+
+> **Removed 2026-09-11 (wayfinder 121):** `Area` is gone from this app entirely — the api half
+> shipped alone in wayfinder 106 (`abea5dd`), and this is the deferred contractor half. Deleted:
+> `AreaPicker.vue`, `CreateAreaModal.vue`, `CreateArea.schema.ts`, the `area` provider/models/enum
+> (`Area.provider.ts`, `Area.model.ts`, `AreaReq.model.ts`, `AreaRes.model.ts`,
+> `AreaStatus.enum.ts`), `IPermitPosition` (it existed solely as `IArea`'s own default-position
+> shape), `areaId` from the wizard's `formData`/payload (`ICreatePermitDraftPayload`,
+> `IUpdatePermitDraftPayload`, `IPermitListItem` — the api dropped `Permit.areaId` from the wire in
+> 106, so this field was already dead weight), `areaIdIsUserChoice` (ticket 045's invariant,
+> `pinId`'s own copy — `pinIdIsUserChoice` — is unaffected and still holds), the
+> `permit.create.steps.position.area.*`/`whereWhen.areaHelpLink`/`review.field.area`/
+> `review.areaNotSet` locale keys, and the guide page's `#area` section + `guide.area.*` keys.
+> `AREA_NOT_APPROVED`/`AREA_NOT_PENDING`/`AREA_REQUIRED` are kept declared-but-dormant in
+> `ApiErrorCode.enum.ts` and both locale files by deliberate decision — the same convention
+> `ENTRANTS_STILL_INSIDE` uses — because the api can never emit them again but nothing is gained by
+> churning the localization tables to remove codes that will simply never arrive over the wire.
+
+> **Reversed 2026-09-11 (wayfinder 098, reopened — the "Two earlier holes are closed" paragraph
+> above's row-H claim is now WRONG, read it only as history):** closure moved to safety
+> (`../main/PROMPT-LOG.md` session 13, CR round 4), reversing `feat-020`'s admission that let a
+> contractor call `POST /permits/:id/close` directly. That route is `auth: ['safety_officer']`
+> only again. `PMT-011`'s old closure checklist modal (`ClosureChecklistModal.vue`) is deleted;
+> `RequestCloseModal.vue` replaces it, calling the new `POST /permits/:id/close-request`
+> (`contractor`, own permit only, or `inspector`) instead — a flag (`closeRequestedAt`/`By`/
+> `Role`/`Reason`), not a new `PermitStatus`, left exactly on the permit's existing `ACTIVE`/
+> `FIRE_MONITOR` status. `PermitProvider.close()` is gone from this app entirely;
+> `PermitProvider.requestClose()` is the only closure-adjacent call a contractor session can make.
+> The old checklist's yes/no items and e-signature are NOT carried over — neither has a field on
+> `close-request`'s wire body (`{ reason?: string }` only) — a single optional reason textarea
+> replaces them, `@primevue/forms` + `zodResolver` per this repo's mandatory form pattern.
+> `FireMonitorPanel.vue`'s trigger is no longer locked until the Fire Watch countdown elapses:
+> `close-request` accepts `ACTIVE` or `FIRE_MONITOR` unconditionally (no `FIRE_WATCH_NOT_ELAPSED`-
+> style gate), so locking it client-side would invent a restriction the api does not have. The
+> request is idempotent server-side ("a signal to safety, not a lock"), so the button/modal stays
+> available and relabels to "Update Request" once one is already pending, pre-filled with the
+> existing reason, rather than being hidden after the first send. `docs/api/GAPS.md` row H is
+> updated to record this reversal. `guide.ts`'s `permitDetail.p2` (EN + TH) no longer describes the
+> contractor closing a permit themselves.
 
 ## Commands
 
@@ -128,18 +221,21 @@ Each module owns parallel trees: routes (`src/router/modules/<Mod>.router.ts` or
 | Module | Prefix | Pages (`src/pages/<mod>/pages/`) | Providers | Harness | Built? |
 |---|---|---|---|---|---|
 | `platform` | `/auth` | `auth/login` ✅, `auth/reset-password` ✅, layout shell, i18n, API errors | `auth/public`, `auth/private`, `notification` | `docs/modules/platform/` | shell + i18n + errors + contractor auth/route guard (`PLT-005`) ✅ · notification polling `PLT-007` ✅ |
-| `permit` | `/permits` | `list` ✅, `create` (7-step wizard) ✅, `detail` ✅ | `permit`, `facility-plan` (read-only — `getActive`/`getById`, no upload/create/activate), `area` (list/getById/create — no approve/reject, safety-officer only) | `docs/modules/permit/` | provider + list ✅ · wizard complete, all seven steps real (`PMT-004`–`PMT-009`, `feat-023`) · detail built (`PMT-010`–`PMT-012`: banners, QR, audit timeline, closure modal, Fire Watch countdown) · area picker + propose-inline (wayfinder 037), read-only display of an area outside the contractor's scoped list (wayfinder 044) |
-| `history` | `/history` | `list` ✅ | `permit` (reused — no own provider dir) | `docs/modules/history/` | ✅ |
-| `certificate` | `/certificates` | `list` ✅ | `certificate` | `docs/modules/certificate/` | ✅ |
+| `permit` | `/permits` | `list` ✅ (now two view modes, see below), `create` (7-step wizard) ✅, `detail` ✅ | `permit`, `facility-plan` (read-only — `list`/`getById`, no upload/create/activate/deactivate), `pin` (read-only — `list`/`getById`, no place/rename/deactivate), `inspector-visit`/`entrant`/`gas-log` (all three read-only — `list()` only, wayfinder 112) | `docs/modules/permit/` | provider + list ✅ · wizard complete, all seven steps real (`PMT-004`–`PMT-009`, `feat-023`) · detail built (`PMT-010`–`PMT-012`: banners, QR, audit timeline, closure modal, Fire Watch countdown) · wayfinder 070 (2026-09-10): "Where & when" is step 3, ALWAYS rendered; Review is always last · **wayfinder 107 (2026-09-11), superseding 070's pin/geo shape:** the contractor selects a safety-placed `Pin` via the new read-only `PinPicker.vue` (no click-to-place, no nudging) instead of dropping/moving one on the raster; the geo coordinate field (068) is gone with `ParseMapCoordinate.ts`; `location` moved off step 2 onto step 3 as a "location detail" field, same wire field, new label — Step 2 is title + foreman only now · wayfinder 110 (2026-09-11): `list` gained real server-side pagination/search/filter (was an unpaginated `limit: 50` fetch with no search box) and a "History" view mode that absorbed the whole former `history` module — see below · wayfinder 113 (2026-09-11): `detail`'s six sections are tabbed (new `src/volt/{Tabs,TabList,Tab,TabPanels,TabPanel}.vue` — no Tab family existed in this repo before), with a fixed `PermitUrgentSection` above the tabs, absent from the DOM unless a close request is awaiting Safety (wayfinder 098's read side; raising a request is still out of scope) · **wayfinder 121 (2026-09-11):** `Area` is fully removed from this app — `AreaPicker.vue`/`CreateAreaModal.vue`, the `area` provider/models/enum, and the wizard's `areaId` form field and payload key are all deleted; the `area` provider dependency above is gone with them. `pinId` never depended on `areaId` (107 already made them independent), so nothing replaces the removed picker. `AREA_NOT_APPROVED`/`AREA_NOT_PENDING`/`AREA_REQUIRED` stay declared-but-dormant in `ApiErrorCode.enum.ts` and both locale files — same convention `ENTRANTS_STILL_INSIDE` uses — because the api (wayfinder 106) can never emit them again but nothing is gained by churning the localization tables to remove codes that will simply never arrive over the wire. · **wayfinder 112 (2026-09-11), resolving 083 via ruling 18 (contractor reads full inspector-visit content, notes included, on their own permits) once 119 opened the route on the api:** `detail` gains a SEVENTH tab, "Report" (`PermitReportSection.vue`), self-contained — fetches its own data via a new `usePermitReport.ts` composable and the three new providers above, taking `permit`/`audit` as props rather than re-fetching either. Visits view: who/when/entrant activity/PPE (three shapes via ported `src/utils/InspectorVisitPpe.ts`)/gas readings/notes/photos per visit, plus two client-derived gaps (`src/utils/PermitReportGaps.ts`, unit-tested) — a calendar day with no visit and a gas reading whose server-given `dueAt` passed with nothing after it. Entrant in/out is derived from the audit trail (`ENTRANT_CHECKED_IN`/`OUT`), not `GET /:id/entrants`, which only answers "who is inside right now". Closure summary renders once `CLOSED`. A global print stylesheet (`src/assets/css/main.css` + `print:hidden` on `AppTopbar`/`AppDrawer` in `DefaultLayout.vue`) hides app chrome for the browser's own print/Save-as-PDF — no PDF library, first-party rule. |
+| `certificate` | `/certificates` | `list` ✅, `detail` ✅, `edit` ✅ | `certificate`, `upload` (reused — `getFileUrl` for the attachment) | `docs/modules/certificate/` | ✅ list/add · detail + edit + real attachment display (`CRT-005`/`CRT-006`, wayfinder 057) · `certType` is a `Select` (`CertTypeSelect.vue`), compiled-in vocabulary (`src/enums/modules/certificate/CertType.enum.ts`, mirrored from the api's `worker-vocabulary.const.ts` — a known interim copy, per 050's amendment, until the api exposes a route), across all four entry points (standalone add/edit, in-wizard modal, worker-detail modal) (wayfinder 086) · **wayfinder 103 (2026-09-11):** the role-filter this cell used to describe is gone — `Worker.role` no longer exists, so all four entry points always show the full vocabulary now; `CertTypeSelect.vue`'s own `role` prop and `ROLE_ALLOWED_CERT_TYPES` are unreferenced dead weight, kept rather than churned, same convention as a retired error code · wayfinder 110: `list` gained real pagination, server-side search (worker-name fuzzy match), and a filter — by worker (`workerId`), not by validity status, because the endpoint has no status filter (`list.service.ts` in the api takes only `search`/`workerName`/`workerId`) |
+| `worker` | `/workers` | `list` ✅, `detail` ✅ | `worker` | none yet — wayfinder 062 | ✅ paginated/searchable list with certificate status + permit count, editable identity, certificates/permits sections, QR card (`worker.id` as the bare payload string) |
+| `guide` | `/getting-started` | `GettingStartedPage` ✅ (no `pages/list`/`detail` split — one static page) | none — no own provider, static content | none yet — wayfinder 077 | ✅ EN+TH, deep-linkable by route hash (`#overview`, `#wizard`, …), linked from the app bar (moved out of the drawer, wayfinder 110). **wayfinder 121 (2026-09-11):** the `#area` section and its in-wizard "what is this for?" link (from `Step3WhereWhen.vue`'s area picker) are both gone with `Area` itself |
 | `api-integration` | — (cross-cutting) | — | every provider + the transport | `docs/modules/api-integration/` | ✅ transport, auth, errors, permit/certificate/notification/upload |
 
-Registered in `src/router/index.ts`: `AuthRouter`, `PermitRouter`, `HistoryRouter`, `CertificateRouter` — all four nav destinations now exist. `AppDrawer`'s `isRegistered()` guard is **still in the file** (`AppDrawer.vue:44`, `:136`) and now guards nothing; removing it is safe but nobody has, so do not describe it as gone.
+**`history` was folded into `permit` (wayfinder 110, 2026-09-11) — it is no longer a module with its own route.** `/history` (`src/router/modules/History.router.ts`) is now a bare redirect to `PermitListPage` with `?view=history`, so an old bookmark or external link still lands somewhere rather than 404ing. Its former pages/composables/tests moved under `src/pages/permit/pages/list/` (`components/PermitHistoryView.vue`, `HistoryTable.vue`, `HistoryDetailDrawer.vue`, `composables/useHistory.ts`) and `src/tests/pages/permit/list/`. `PermitListPage.vue` now renders a "Permits"/"History" tab toggle — "Permits" is the enhanced card-grid list (search/filter/pagination, feat-002's original scope); "History" is the former `HistoryListPage.vue`'s body verbatim (search, type/status/date filters, the archive-status table with its own mobile card layout, CSV export, the row detail drawer) with no header of its own — the shared page header supplies the title/subtitle/primary action per tab. The `history` locale namespace (`src/locales/{en,th}/history.ts`) is unchanged and still what the "History" tab reads from.
+
+Registered in `src/router/index.ts`: `AuthRouter`, `PermitRouter`, `HistoryRouter` (redirect-only, see above), `CertificateRouter`, `WorkerRouter`, `ProfileRouter`, `GuideRouter`. `AppDrawer`'s `isRegistered()` guard is **still in the file** and now guards nothing; removing it is safe but nobody has, so do not describe it as gone. **The drawer's shape changed under wayfinder 110**: it now holds two top-level items — `PermitListPage` (link) and a non-navigable "Personnel" group header whose two children (`CertificateListPage`, `WorkerListPage`) render indented beneath it, same active/registered rules as a top-level link. `PermitCreatePage` and `HistoryListPage` have no drawer entry any more (the former was always reachable from `PermitListPage`'s own + button; the latter is the "History" tab described above). `GettingStartedPage` moved out of the drawer into `AppTopbar.vue` (a `?`-icon `RouterLink` next to the notification bell) — the account card at the bottom is still the only route to `/profile`.
+
+`PermitListPage` (the app's real home page — `/` `router.replace`s through it) now also renders a per-user dismissible first-run checklist (`src/pages/permit/pages/list/components/OnboardingChecklist.vue` + `.../composables/useOnboardingChecklist.ts`, wayfinder 077) above the permit grid, ticked off real `WorkerProvider`/`CertificateProvider`/`PermitProvider` data — never a client-side flag alone. It only fires on the "Permits" tab (lazily, the first time that tab is actually shown), never on "History".
 
 **Modules without a top-level router entry:**
 
 - `common` — `not-found`, `not-permitted`, `not-available` at `src/pages/common/pages/`. Routes declared inline in `src/router/index.ts`, all `meta.layout: 'blank'`.
-
-**Why `history` is its own module:** it owns a route prefix and a pages tree but reuses the `permit` provider. Split for context-budget reasons — its filters/CSV/table work is independent of the wizard.
 
 ### Main flow (permit lifecycle)
 
@@ -162,14 +258,15 @@ DRAFT ──submit──> PENDING ──reject──> REJECTED ──(revise)─
 Contractor-app journey across that machine:
 
 ```
-/permits (list)
-  → /permits/create  (7-step wizard: Type → Basic Info → Safety Checks → PPE & Workers → JSA → Plan Position → Review)
+/permits (list — "Permits" tab: search/filter/pagination; "History" tab: the former /history)
+  → /permits/create  (7-step wizard: Type → Basic Info → Where & When → Safety Checks → PPE & Workers → JSA → Review)
     → submit                                   [DRAFT → PENDING]
       → /permits/:id  (status banner, QR when ACTIVE/FIRE_MONITOR, audit timeline)
         → mark-complete (hot work)             [ACTIVE → FIRE_MONITOR]
         → closure checklist modal + e-signature [→ CLOSED]
-/history  → filters + CSV export → drill in to /permits/:id
-/certificates → cert validity gates permit submission
+  → "History" tab → filters + CSV export → row click opens an inline detail drawer (not /permits/:id)
+/history  → redirects to /permits?view=history (wayfinder 110 — no longer its own page)
+/certificates → cert validity gates permit submission; now searchable/filterable/paginated too
 ```
 
 Cross-cutting on this path: `stores/Auth.ts` (token), `stores/Notification.ts` (polling), `resources/Interceptors.ts` (401 → logout), the i18n locale store, and the safety-range constants. A change to any of those is a main-flow change — re-read this section and update it if the flow moved.
@@ -334,7 +431,7 @@ so a test written next to the page it covers silently never runs — put it unde
 Page-level tests mount the real page with `@vue/test-utils` and spy on the provider prototype
 (`vi.spyOn(PermitProvider.prototype, 'list')`); there is no mock gateway in this repo (deleted in
 `feat-005`). Three worked examples to copy: `src/tests/pages/auth/login/LoginPage.test.ts`,
-`src/tests/pages/history/list/HistoryListPage.test.ts`, `src/tests/pages/permit/detail/PermitDetailPage.test.ts`.
+`src/tests/pages/permit/list/PermitListPage.history.test.ts` (moved from `HistoryListPage.test.ts`, wayfinder 110), `src/tests/pages/permit/detail/PermitDetailPage.test.ts`.
 Three things bite every time:
 
 - **Mount `@/plugins/I18n.plugin` itself and call `setLocale('en')`** — not a fresh `createI18n`.

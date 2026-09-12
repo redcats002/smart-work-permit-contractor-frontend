@@ -34,6 +34,11 @@ const history: typeof historyEn = {
       status: 'สถานะ'
     }
   },
+  // wayfinder 067/082 — translation of the reviewed English (en/history.ts): when the permit
+  // spans more than one day, the per-day duration is shown alongside the day count.
+  duration: {
+    perDay: '{duration}/วัน · {count} วัน'
+  },
   // TODO: TH copy — design binds `histResultCount` without any static copy string
   // (English or Thai) to source this phrasing from.
   resultCount: '{count} permits found',

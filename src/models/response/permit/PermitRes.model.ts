@@ -31,21 +31,25 @@ export interface IPermitListItem extends IPermitBase {
   /** Server-computed remainder — render it, never recompute a verdict from it. `null` unless FIRE_MONITOR. */
   fireWatch: IPermitFireWatch | null
   /**
-   * feat-023. Flattened here (not nested `position`) because that is what GET actually returns —
-   * PATCH/POST accept the nested `{ planId, planX, planY }` shape instead (see
-   * `IUpdatePermitDraftPayload.position`). All three are `null` together or set together; a
-   * permit created before any plan existed, or one never pinned, has all three `null`.
+   * wayfinder 105/107. Replaces the old flattened `planId`/`planX`/`planY` (feat-023) — the pin
+   * knows its own plan, so one reference is all the entity carries. `null` for a permit created
+   * before any plan/pin existed, or one never pinned (105's own migration note: the nine
+   * pre-105 positioned permits were dropped, not migrated — ruling 10 — so they render unplaced).
    */
-  planId: number | null
-  planX: number | null
-  planY: number | null
+  pinId: number | null
   /**
-   * wayfinder ticket 037. The structured place this permit's work is in — nullable, and not
-   * necessarily `APPROVED` any more by the time this is read back (an area's approval can be
-   * revoked after a permit already references it). Render whatever this resolves to; never
-   * assume it is still approved.
+   * wayfinder 098 (API built 2026-09-11; this app's read-only awareness lands with wayfinder 113).
+   * Set once by `POST /permits/:id/close-request` (inspector or the owning contractor) and **never
+   * cleared**, even after the permit actually closes — so "awaiting safety" is `closeRequestedAt`
+   * set AND the permit is still `ACTIVE`/`FIRE_MONITOR`, never just "is it set". Optional because
+   * every fixture in this module predates the field and constructs a full literal — see
+   * `closureChecklist` above for the same reason. Wire name is `closeRequestReason`, not
+   * `closeRequestedReason`.
    */
-  areaId: number | null
+  closeRequestedAt?: string | null
+  closeRequestedBy?: IPermitAuthor | null
+  closeRequestedRole?: string | null
+  closeRequestReason?: string | null
 }
 
 /** GET /permits/:id — the entity plus its collections. */
@@ -67,8 +71,12 @@ export type TUpdatePermitDraftResponse = IBaseSuccessResponse<IPermitDetail>
 export type TSubmitPermitResponse = IBaseSuccessResponse<IPermitDetail>
 export type TMarkPermitCompleteResponse = IBaseSuccessResponse<IPermitDetail>
 
-/** POST /permits/:id/close — 403 ENTRANTS_STILL_INSIDE / FIRE_WATCH_NOT_ELAPSED / PERMIT_NOT_CLOSABLE. */
-export type TClosePermitResponse = IBaseSuccessResponse<IPermitDetail>
+/**
+ * POST /permits/:id/close-request — wayfinder 098. Raises the flag only; does not close the
+ * permit. 403 PERMIT_NOT_ACTIVE if the permit is not ACTIVE/FIRE_MONITOR. Idempotent overwrite,
+ * not a conflict, so a repeat call answers 200 with the refreshed closeRequested* fields.
+ */
+export type TRequestClosePermitResponse = IBaseSuccessResponse<IPermitDetail>
 
 /** GET /permits/:id/qr — ACTIVE / FIRE_MONITOR only, else 403 PERMIT_NOT_ACTIVE */
 export type TGetPermitQrResponse = IBaseSuccessResponse<IPermitQr>

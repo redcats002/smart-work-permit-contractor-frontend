@@ -1,14 +1,16 @@
 <template>
-  <div
+  <RouterLink
+    :aria-label="`${certificate.workerName} — ${t('certificate.card.viewHint')}`"
     :class="style.border"
-    class="min-w-0 rounded-[10px] border-[1.5px] bg-surface-card p-4 md:px-[18px]">
+    :to="{ name: 'CertificateDetailPage', params: { id: certificate.id } }"
+    class="block min-w-0 rounded-[10px] border-[1.5px] bg-surface-card p-4 transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--p-primary-color) md:px-[18px]">
     <div class="mb-2.5 flex items-start justify-between gap-2.5">
       <div class="min-w-0">
         <p class="truncate text-[15px] font-semibold text-text-primary">
           {{ certificate.workerName }}
         </p>
-        <p class="mt-0.5 truncate text-xs text-text-tertiary">
-          {{ certificate.role }}
+        <p class="mt-0.5 truncate font-mono text-[11px] text-text-tertiary">
+          {{ certificate.certType }}
         </p>
       </div>
       <span
@@ -37,18 +39,26 @@
       </div>
     </div>
 
+    <!-- Reads `filePath` since wayfinder 056/057. This row was a hardcoded "No file attached"
+         for every certificate, which read as a bug in the list when it was really a missing
+         column: nothing was ever stored to display. Opening the file happens on the detail
+         page, not here — a link inside a link is not a thing, and the presigned URL has to be
+         fetched at click time anyway. -->
     <div
-      :class="style.fileBorder"
-      class="mt-2.5 flex h-[34px] items-center justify-center gap-1 rounded-[7px] border-[1.5px] border-dashed text-[11.5px] text-text-tertiary">
+      :class="[style.fileBorder, certificate.filePath ? 'text-text-secondary' : 'text-text-tertiary']"
+      class="mt-2.5 flex h-[34px] items-center justify-center gap-1 rounded-[7px] border-[1.5px] border-dashed text-[11.5px]">
       <span aria-hidden="true">📎</span>
-      <span class="truncate">{{ t('certificate.card.noFile') }}</span>
+      <span class="truncate">
+        {{ certificate.filePath ? t('certificate.card.hasFile') : t('certificate.card.noFile') }}
+      </span>
     </div>
-  </div>
+  </RouterLink>
 </template>
 
 <script setup lang="ts">
 import { computed, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { RouterLink } from 'vue-router'
 import { dayjs } from '@/plugins/dayjs.plugin'
 import { ECertificateStatus } from '@/enums/modules/certificate/CertificateStatus.enum'
 import type { ICertificate } from '@/models/modules/certificate/Certificate.model'

@@ -29,10 +29,14 @@ function buildPermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail {
     title: 'Clean tank T-101',
     foreman: 'Somchai P.',
     location: 'Zone C — Tank farm',
-    workDate: '2026-08-10T00:00:00.000Z',
-    workTimeStart: '2026-08-10T01:00:00.000Z',
-    workTimeEnd: '2026-08-10T10:00:00.000Z',
+    startDate: '2026-08-10T00:00:00.000Z',
+    endDate: '2026-08-10T00:00:00.000Z',
+    dailyStart: '2026-08-10T01:00:00.000Z',
+    dailyEnd: '2026-08-10T10:00:00.000Z',
+    scheduleNote: null,
     outdoorWork: false,
+    ppeDeclared: [],
+    ppeNote: null,
     createdById: 'u-1',
     createdBy: { id: 'u-1', email: 'foreman@example.com', firstName: 'Somchai', lastName: 'P.' },
     createdAt: '2026-08-09T01:00:00.000Z',
@@ -50,10 +54,7 @@ function buildPermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail {
     qrIssuedAt: null,
     entrantCount: 0,
     fireWatch: null,
-    planId: null,
-    planX: null,
-    planY: null,
-    areaId: null,
+    pinId: null,
     jsaSteps: [],
     workers: [],
     photos: [],
@@ -76,6 +77,7 @@ function buildRouter (): Router {
     routes: [
       { path: '/permits', name: 'PermitListPage', component: { template: '<div />' } },
       { path: '/permits/create', name: 'PermitCreatePage', component: { template: '<div />' } },
+      { path: '/getting-started', name: 'GettingStartedPage', component: { template: '<div />' } },
       { path: '/permits/:id', name: 'PermitDetailPage', component: PermitDetailPage }
     ]
   })
@@ -114,7 +116,7 @@ describe('PermitDetailPage sections (PMT-013)', () => {
     vi.restoreAllMocks()
   })
 
-  it('renders all six sections in contract order', async () => {
+  it('renders all seven sections in contract order (wayfinder 112 added the report tab as the 7th)', async () => {
     const wrapper = await mountPage(buildPermit())
 
     const order = wrapper.findAll('[data-test^="section-"]')
@@ -127,7 +129,8 @@ describe('PermitDetailPage sections (PMT-013)', () => {
       'section-workers',
       'section-jsa',
       'section-closure',
-      'section-audit'
+      'section-audit',
+      'section-report'
     ])
   })
 
@@ -193,8 +196,8 @@ describe('PermitDetailPage sections (PMT-013)', () => {
   it('shows the Confined Space worker health badge and lists why a worker failed', async () => {
     const wrapper = await mountPage(buildPermit({
       workers: [
-        { id: 1, workerName: 'Anan K.', roleOnPermit: 'Entrant' as TWorkerRole, bloodPressure: '120/80', alcoholReading: '0' },
-        { id: 2, workerName: 'Wichai T.', roleOnPermit: 'Attendant' as TWorkerRole, bloodPressure: '170/110', alcoholReading: '0' }
+        { id: 1, workerId: 1, workerName: 'Anan K.', roleOnPermit: 'Entrant' as TWorkerRole, bloodPressure: '120/80', alcoholReading: '0' },
+        { id: 2, workerId: 2, workerName: 'Wichai T.', roleOnPermit: 'Attendant' as TWorkerRole, bloodPressure: '170/110', alcoholReading: '0' }
       ]
     }))
 
@@ -202,6 +205,22 @@ describe('PermitDetailPage sections (PMT-013)', () => {
     const failed = wrapper.find('[data-test="worker-health-1"]')
     expect(failed.text()).toContain('Fail')
     expect(wrapper.find('[data-test="worker-row-1"]').text()).toContain('Blood pressure outside the safe range')
+  })
+
+  /**
+   * wayfinder 103 — `roleOnPermit` is free text (no enum); `EWorkerRole` is a template, not a
+   * closed set. `PermitWorkersSection.roleLabel` translates a KNOWN template value via
+   * `permit.create.steps.ppeWorkers.role.<slug>` but must fall back to the raw stored string for
+   * anything outside that list — never an "unknown role" placeholder, and never blank.
+   */
+  it('renders a free-text roleOnPermit value as typed, not as some unknown-role fallback', async () => {
+    const wrapper = await mountPage(buildPermit({
+      workers: [
+        { id: 1, workerId: 1, workerName: 'Anan K.', roleOnPermit: 'Riser Watchman' as TWorkerRole }
+      ]
+    }))
+
+    expect(wrapper.find('[data-test="worker-row-0"]').text()).toContain('Riser Watchman')
   })
 
   it('renders photos by slotKey and marks a required slot that was never filled', async () => {

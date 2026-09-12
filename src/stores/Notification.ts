@@ -1,4 +1,4 @@
-import { computed, type ComputedRef, ref, type Ref } from 'vue'
+import { ref, type Ref } from 'vue'
 import { defineStore } from 'pinia'
 import type { INotification } from '@/models/response/notification/NotificationRes.model'
 import NotificationProvider, { type INotificationProvider } from '@/resources/provider/notification/Notification.provider'
@@ -6,11 +6,13 @@ import { useAuthStore } from './Auth'
 
 interface IUseNotification {
   notifications: Ref<INotification[]>
-  unreadCount: ComputedRef<number>
+  unreadCount: Ref<number>
   fetch(): Promise<void>
   dismiss(id: number): Promise<void>
   initialize(): Promise<void>
   destroy(): void
+  prepend(notification: INotification): void
+  setUnreadCount(count: number): void
 }
 
 /**
@@ -19,16 +21,19 @@ interface IUseNotification {
  * notification feed, scoped server-side to the signed-in account's role.
  *
  * Polling is deliberately NOT here: `PLT-007` owns the interval and its lifecycle.
+ *
+ * wayfinder 109 — `unreadCount` used to be a `computed` derived from the loaded `notifications`
+ * page (max 50 rows). It is now a plain `Ref` set by whichever transport last reported the true
+ * server-side count — `useRealtimeSocket`'s `badge.counts` event or its `GET /v1/badges` polling
+ * fallback — so the badge in `AppTopbar` never depends on the notification list actually being
+ * loaded, and the UI never has to know which transport delivered the number.
  */
 export const useNotificationStore = defineStore(
   'Notification', (): IUseNotification => {
     const NotificationService: INotificationProvider = new NotificationProvider()
 
     const notifications = ref<INotification[]>([])
-
-    const unreadCount: ComputedRef<number> = computed(
-      (): number => notifications.value.filter((notification: INotification): boolean => !notification.read).length
-    )
+    const unreadCount = ref<number>(0)
 
     // (feat-011c) GET /notifications is now really paginated (page/limit, same envelope shape as
     // certificates) — `response.data` is still the row array, so this store's own shape is
@@ -40,12 +45,15 @@ export const useNotificationStore = defineStore(
     }
 
     // The endpoint answers { message: 'success' } with no body, so the local copy is marked read
-    // here rather than replaced with a server row.
+    // here rather than replaced with a server row. The server pushes a corrected `badge.counts`
+    // after the dismiss commits (live or on the next poll); the decrement here is an optimistic
+    // update so the badge does not sit stale until that arrives.
     async function dismiss (id: number): Promise<void> {
       await NotificationService.dismiss(id)
       const index = notifications.value.findIndex((notification: INotification): boolean => notification.id === id)
       if (index === -1) return
       notifications.value.splice(index, 1, { ...notifications.value[index], read: true })
+      if (unreadCount.value > 0) unreadCount.value -= 1
     }
 
     // Swallows its own failure on purpose: DefaultLayout awaits this on mount, and a 401 or a
@@ -62,8 +70,19 @@ export const useNotificationStore = defineStore(
 
     function destroy (): void {
       notifications.value = []
+      unreadCount.value = 0
     }
 
-    return { notifications, unreadCount, fetch, dismiss, initialize, destroy }
+    // A live `notification.created` push — prepended so the newest row is always first, matching
+    // the server's own unread-first ordering (see the model's doc comment).
+    function prepend (notification: INotification): void {
+      notifications.value = [notification, ...notifications.value]
+    }
+
+    function setUnreadCount (count: number): void {
+      unreadCount.value = count
+    }
+
+    return { notifications, unreadCount, fetch, dismiss, initialize, destroy, prepend, setUnreadCount }
   }, { persist: false }
 )

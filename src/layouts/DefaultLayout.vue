@@ -2,17 +2,24 @@
   <div
     id="app"
     class="flex h-screen flex-col overflow-hidden">
-    <AppTopbar @toggle-menu="toggle()" />
+    <!--
+      wayfinder 112 — the permit report's print stylesheet hides app chrome so a printed/saved-as-PDF
+      report shows only the active report content. `print:hidden` is scoped to the chrome elements
+      themselves rather than a page-specific override, so every page prints clean, not only the report.
+    -->
+    <AppTopbar
+      class="print:hidden"
+      @toggle-menu="toggle()" />
 
     <div class="flex flex-1 overflow-hidden">
       <!-- ── Sidebar ─────────────────────────────────────────────── -->
-      <AppDrawer />
+      <AppDrawer class="print:hidden" />
 
       <!-- ── Backdrop (mobile only) ──────────────────────────────── -->
       <Transition name="drawer-backdrop">
         <div
           v-if="isOpen"
-          class="fixed inset-0 z-40 bg-black/40 min-[900px]:hidden"
+          class="fixed inset-0 z-40 bg-black/40 min-[900px]:hidden print:hidden"
           @click="close()" />
       </Transition>
 
@@ -33,13 +40,17 @@ import AppDrawer from '@/components/app/AppDrawer.vue'
 import AppTopbar from '@/components/app/AppTopbar.vue'
 import { useAppDrawer } from '@/composables/useAppDrawer'
 import { useNotificationPolling } from '@/composables/useNotificationPolling'
+import { useRealtimeSocket } from '@/composables/useRealtimeSocket'
 
 const notificationStore = useNotificationStore()
 const { isOpen, close, toggle } = useAppDrawer()
 
-// PLT-007: the initial fetch below primes the badge immediately on mount; useNotificationPolling
-// owns the recurring interval and stops it the moment the contractor is unauthenticated.
+// PLT-007: the initial fetch below primes the notification list immediately on mount;
+// useNotificationPolling owns the recurring list refresh and stops it the moment the contractor
+// is unauthenticated. wayfinder 109: useRealtimeSocket owns the badge count instead — live over
+// the socket while connected, `GET /v1/badges` on an interval as the fallback while it is not.
 useNotificationPolling()
+useRealtimeSocket()
 
 onMounted(async (): Promise<void> => {
   await notificationStore.initialize()

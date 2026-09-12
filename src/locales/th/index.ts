@@ -2,10 +2,12 @@ import type en from '@/locales/en'
 import certificate from '@/locales/th/certificate'
 import common from '@/locales/th/common'
 import error from '@/locales/th/error'
+import guide from '@/locales/th/guide'
 import history from '@/locales/th/history'
 import permit from '@/locales/th/permit'
 import platform from '@/locales/th/platform'
 import profile from '@/locales/th/profile'
+import worker from '@/locales/th/worker'
 
 /**
  * Thai locale — the app default.
@@ -21,7 +23,9 @@ const th: typeof en = {
   certificate,
   common,
   error,
-  profile
+  profile,
+  worker,
+  guide
 }
 
 export default th

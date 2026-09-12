@@ -17,10 +17,10 @@ const permit = {
     step: {
       1: 'Select Permit Type',
       2: 'Basic Information',
-      3: 'Safety Checks',
-      4: 'PPE & Workers',
-      5: 'Job Safety Analysis',
-      6: 'Plan Position',
+      3: 'Where & When',
+      4: 'Safety Checks',
+      5: 'PPE & Workers',
+      6: 'Job Safety Analysis',
       7: 'Review & Submit'
     },
     stepOf: 'Step {current} of {total}',
@@ -45,6 +45,13 @@ const permit = {
     title: 'My Permits',
     subtitle: 'Track, draft and submit work permit requests',
     newPermit: 'New Permit',
+    searchPlaceholder: 'Search ID, title, location',
+    // wayfinder 110 — History was cut from the menu; its table/filters/CSV export now live here
+    // as the "History" view mode, so the same page answers both "what's live" and "what's closed".
+    viewMode: {
+      permits: 'Permits',
+      history: 'History'
+    },
     filter: {
       all: 'All'
     },
@@ -57,6 +64,15 @@ const permit = {
     },
     error: {
       loadFailed: 'Could not load your permits. Please try again.'
+    },
+    // wayfinder 077 — the first-run checklist, per-user dismissible. Ticked state derives from
+    // real data (workers/certificates/permit list), never a client-side flag alone.
+    checklist: {
+      title: 'Getting started',
+      dismiss: 'Dismiss',
+      registerWorkers: 'Register your workers',
+      uploadCertificates: 'Upload their certificates',
+      createFirstPermit: 'Create your first permit'
     }
   },
   create: {
@@ -83,31 +99,43 @@ const permit = {
         field: {
           title: 'Project',
           contractor: 'Contractor',
-          foreman: 'Foreman',
-          workDate: 'Date',
-          workTimeStart: 'Start Time',
-          workTimeEnd: 'End Time',
-          location: 'Location'
+          foreman: 'Foreman'
+        }
+      },
+      // wayfinder 107/121 — "Where & when" (step 3): the safety-placed pin, the location detail
+      // (moved from Basic Info), dates, schedule note. Geo coordinate (070) is gone — 105 removed
+      // Permit.latitude/longitude from the wire; the area picker is gone — 121 removed Area.
+      whereWhen: {
+        subtitle: 'Where this work happens, and when — select the pin safety placed for it.',
+        field: {
+          startDate: 'Start Date',
+          endDate: 'End Date',
+          dailyStart: 'Daily Start Time',
+          dailyEnd: 'Daily End Time',
+          locationDetail: 'Location Detail',
+          scheduleNote: 'Schedule / Location Note'
         },
-        map: {
-          title: 'Location on map',
-          placeholderNote: 'Placeholder facility plan — no real floor-plan asset ships yet',
-          empty: 'Pick a zone or type a location to drop the pin',
-          matchedZone: 'Matches the zone the safety officer sees on the risk map',
-          customLocation: 'Location outside the zone list — the pin uses a stable position derived from the text',
-          zone: {
-            zone1: 'Zone 1',
-            zone2: 'Zone 2',
-            zone3: 'Zone 3',
-            building2: 'Building 2',
-            tankFarm: 'Tank Farm',
-            processArea: 'Process Area',
-            adminBuilding: 'Admin Building',
-            utilityYard: 'Utility Yard'
-          }
+        scheduleNote: {
+          placeholder: 'Exceptions the dates above cannot express — e.g. "Not working Sat/Sun"'
+        },
+        pin: {
+          planLabel: 'Facility Plan',
+          planPlaceholder: 'Select a facility plan',
+          noPlans: 'No facility plans have been added yet.',
+          pinLabel: 'Pin',
+          pinPlaceholder: 'Select a pin safety has placed',
+          noPins: 'No active pins on this plan yet.',
+          retiredLabel: 'Current pin (retired)',
+          retiredNote: 'This permit already uses this pin. It is no longer active, or its plan has been retired, so it is not in the selectable list.',
+          missingNote: 'This permit referenced a pin that could not be found.',
+          imageLoadFailed: 'The facility plan image could not be loaded. Try again in a moment.',
+          retry: 'Retry',
+          alt: 'Facility plan with the selected pin marked',
+          required: 'A pin is required before this permit can be submitted.'
         },
         validation: {
-          endAfterStart: 'End time must be after start time'
+          endDateNotBeforeStart: 'End date cannot be before start date',
+          endAfterStart: 'Daily end time must be after daily start time'
         }
       },
       safetyChecks: {
@@ -231,6 +259,23 @@ const permit = {
           'anemometer': 'Anemometer display',
           'worksite': 'Worksite overview'
         },
+        // wayfinder 097 — the PPE checklist + note. Optional to submit (no client gate beyond
+        // the server's own `PPE_REQUIRED` flag, off by default and not modelled by this app).
+        ppe: {
+          title: 'PPE Worn',
+          optionalHint: 'Optional — check off what will be worn on this job. The server may require this if the facility turns on mandatory PPE declaration.',
+          item: {
+            'safety-glasses': 'Safety Glasses',
+            'hardhat': 'Hardhat',
+            'respiratory-protection': 'Respiratory Protection',
+            'earmuffs': 'Earmuffs',
+            'construction-vest': 'Construction Vest',
+            'gloves': 'Gloves',
+            'protective-boots': 'Protective Boots'
+          },
+          noteLabel: 'Note (optional)',
+          notePlaceholder: 'Anything else about the PPE for this job'
+        },
         regulation: {
           title: 'Pre-Work Health Check (Required)',
           body: 'ตามกฎกระทรวงการบริหาร จัดการ และดำเนินการด้านความปลอดภัย อาชีวอนามัย และสภาพแวดล้อมในการทำงานเกี่ยวกับปัจจัยเสี่ยง กำหนดให้ตรวจวัดความดันโลหิตและระดับแอลกอฮอล์ในเลือดก่อนอนุญาตเข้าปฏิบัติงานทุกครั้ง — ห้ามผู้มีระดับแอลกอฮอล์เกิน 0 มก.% หรือความดันผิดปกติเข้าปฏิบัติงาน'
@@ -257,6 +302,7 @@ const permit = {
         },
         placeholder: {
           worker: 'Full name',
+          role: 'Choose from the list or type a role',
           bloodPressure: '120/80',
           alcohol: '0.00'
         },
@@ -331,50 +377,17 @@ const permit = {
           confirm: 'Yes, remove'
         }
       },
-      position: {
-        subtitle: 'Tap the plan where this work is happening.',
-        loading: 'Checking for an active facility plan…',
-        noActivePlan: 'No facility plan has been activated yet — this step does not apply to your permit.',
-        olderVersion: 'This permit was placed on an earlier plan version. The plan has since been updated, but the pin stays where it was set.',
-        instruction: 'Tap or click the plan to place your pin.',
-        pinSet: 'Pin placed. Tap the plan again to move it.',
-        required: 'A position is required before this permit can be submitted.',
-        imageLoadFailed: 'The facility plan image could not be loaded. Try again in a moment.',
-        retry: 'Retry',
-        area: {
-          label: 'Work Area',
-          placeholder: 'Select an approved area (optional)',
-          empty: 'No approved areas yet — propose one below.',
-          propose: 'Propose new area',
-          proposedNote: 'Awaiting approval',
-          // wayfinder 044. Shown when the permit's area is still APPROVED but outside the list
-          // this contractor can pick from. Deliberately NOT phrased as a problem — nothing is
-          // wrong with the permit, and `staleNote` below (which tells them to choose another
-          // one) would be wrong advice here.
-          currentLabel: 'Current area',
-          currentNote: 'This permit already uses this area. It is not in your selectable list, and it stays as it is unless you choose another one.',
-          staleNote: '“{name}” is no longer an approved area. Choose another one.',
-          missingNote: 'This permit referenced an area that could not be found. Choose another one.',
-          proposeModal: {
-            title: 'Propose Area',
-            field: {
-              name: 'Area name'
-            },
-            submit: 'Submit for approval',
-            validation: {
-              nameRequired: 'Please enter the area name'
-            }
-          }
-        }
-      },
       review: {
         subtitle: 'Confirm every detail. Submitting notifies the Safety Officer for review.',
         idPending: 'ID pending',
         field: {
           dateTime: 'Date / Time',
+          pin: 'Pin',
+          scheduleNote: 'Schedule / Location Note',
           workers: 'Workers',
           jsaSteps: 'JSA Steps'
         },
+        pinNotSet: 'Not selected',
         workersCount: '{count} registered',
         jsaCount: '{count} defined',
         check: {
@@ -388,12 +401,6 @@ const permit = {
             pass: 'Worker certificates are valid and not expired',
             fail: 'Certificate missing or expired for: {workers}',
             unknown: 'Worker certificates could not be checked — the server decides at submit'
-          },
-          position: {
-            loading: 'Checking the facility plan…',
-            pass: 'Position set on the facility plan',
-            fail: 'No position set — go back to Plan Position',
-            none: 'No active facility plan — a position is not required'
           }
         }
       }
@@ -404,6 +411,21 @@ const permit = {
     back: 'My Permits',
     loadFailed: 'Could not load this permit',
     notFound: 'This permit is not available',
+    // wayfinder 113 / ruling 11 — the fixed strip above the tabs. Absent from the DOM entirely
+    // when nothing is urgent; see PermitUrgentSection.vue for what puts an entry here.
+    urgent: {
+      closeRequested: {
+        title: 'Closure requested — awaiting Safety Officer',
+        body: 'Requested by {who} on {when}.',
+        reasonPrefix: 'Reason: ',
+        role: {
+          contractor: 'you',
+          inspector: 'the inspector',
+          safety_officer: 'the Safety Officer',
+          unknown: 'someone on this permit'
+        }
+      }
+    },
     // PMT-013 — the six sections of docs/main/dev-handoff/05-permit-detail-sections.md §2, in order.
     sections: {
       overview: {
@@ -447,6 +469,9 @@ const permit = {
         healthFail: '✗ Fail',
         healthIssueBloodPressure: 'Blood pressure outside the safe range',
         healthIssueAlcohol: 'Alcohol reading missing or above 0 mg%',
+        // wayfinder 097 — declared PPE, rendered next to the roster it belongs with.
+        ppeTitle: 'PPE declared',
+        ppeEmpty: 'No PPE has been declared on this permit.',
         photosTitle: 'Photo evidence',
         photosEmpty: 'No photo evidence has been attached to this permit.',
         photoMissing: 'Required — not attached',
@@ -485,6 +510,11 @@ const permit = {
       },
       audit: {
         title: '6. Audit trail'
+      },
+      // wayfinder 112 — the seventh tab. Map ruling 18: a contractor reads the FULL content on
+      // their own permits, inspector notes included.
+      report: {
+        title: '7. Report'
       }
     },
     banner: {
@@ -547,15 +577,13 @@ const permit = {
       }
     },
     closure: {
-      // Design lines 574-611.
+      // Design lines 574-611. `start` is Hot Work's "Mark Work Complete" trigger only now — the
+      // sibling "Close Permit" trigger moved to `requestClose.start` below (wayfinder 098). `item`
+      // is still read by `PermitClosureSection.vue` to label the checklist Safety recorded at
+      // close; the rest of this block (title/subtitle/answerYes/answerNo/cancel/confirm/
+      // submitting/signature/blocked) belonged only to the retired contractor-side
+      // `ClosureChecklistModal` and is gone with it.
       start: 'Mark Work Complete →',
-      title: 'Closure Checklist',
-      subtitle: 'Confirm all items before closing. Foreman e-signature required (FM-SF-04 §D).',
-      answerYes: 'Yes',
-      answerNo: 'No',
-      cancel: 'Cancel',
-      confirm: 'Confirm & Close Permit',
-      submitting: 'Closing…',
       item: {
         entrantsExited: 'ผู้ปฏิบัติงานทุกคนออกจากพื้นที่แล้ว / All entrants safely exited',
         worksiteRestored: 'พื้นที่ทำงานกลับสู่สภาพปกติ / Worksite restored to normal',
@@ -566,22 +594,24 @@ const permit = {
         scaffoldingSecured: 'นั่งร้านรักษาความปลอดภัยหรือรื้อถอน / Scaffolding secured or removed',
         areaBelowCleared: 'พื้นที่ด้านล่างเปิดใหม่ / Area below cleared & re-opened',
         documentationCompleted: 'บันทึกเสร็จสมบูรณ์ / Documentation completed'
-      },
-      signature: {
-        title: 'Engineer / Foreman e-Signature',
-        tap: 'Tap to sign as Foreman',
-        signed: 'Signed — {who}',
-        pending: 'Not signed yet'
-      },
-      blocked: {
-        entrants: 'Closure blocked — {count} entrant(s) still inside',
-        // The backend reports the entrant count and names only inside its English `message`, which
-        // is never rendered. No contractor-readable endpoint exposes them — docs/api/GAPS.md row I.
-        entrantsDetail: 'The backend returns 403 until every entrant checks out via the Inspector app.',
-        fireWatch: 'Closure blocked — Fire Watch still running',
-        fireWatchDetail: 'The 30-minute Fire Watch is server-side. {remaining} remaining.',
-        generic: 'Closure was refused'
       }
+    },
+    // wayfinder 098 (reopened 2026-09-11) — replaces the retired ClosureChecklistModal. The
+    // contractor no longer closes a permit; this raises a request for the Safety Officer, who
+    // reviews and closes it (or comes back with what is still outstanding).
+    requestClose: {
+      start: 'Request Closure →',
+      again: 'Update Request',
+      title: 'Request Closure',
+      subtitle: 'Let the Safety Officer know this permit is ready to close. They will review it and close it, or come back to you if anything is still outstanding.',
+      alreadyRequested: 'A closure request is already awaiting the Safety Officer. Sending again refreshes it with whatever you enter here.',
+      field: {
+        reason: 'Reason (optional)',
+        reasonPlaceholder: 'e.g. Work is finished, the area is restored and cold'
+      },
+      cancel: 'Cancel',
+      confirm: 'Send Request',
+      submitting: 'Sending…'
     },
     pendingEditWarning: {
       // wayfinder 012 — the contractor half. The warning fires BEFORE the resume route is opened,
@@ -607,8 +637,11 @@ const permit = {
       heading: 'FIRE MONITORING ACTIVE',
       remaining: 'remaining',
       warning: 'Fire Watcher must remain on-site. Timer is server-side and cannot be bypassed or reset from any client.',
-      locked: 'Close Permit — locked until {remaining}',
-      close: 'Close Permit ✓'
+      // wayfinder 098 — this used to be a locked "Close Permit" button until the countdown ended,
+      // because it used to close the permit directly. It now opens the request-closure modal,
+      // which the api accepts at any point in FIRE_MONITOR — see FireMonitorPanel.vue's comment.
+      close: 'Request Closure ✓',
+      requestWhileRunning: 'You can request closure now — Safety cannot close the permit until the {remaining} Fire Watch countdown ends.'
     },
     qr: {
       title: 'Approved permit QR',
@@ -619,6 +652,68 @@ const permit = {
         title: 'QR pending approval',
         description: 'Your QR code is generated automatically once the Safety Officer approves this permit.'
       }
+    },
+    // wayfinder 112 — the permit report tab. Full content, notes included, per map ruling 18.
+    report: {
+      printHint: 'Downloadable — use your browser\'s print dialog and choose "Save as PDF".',
+      printButton: 'Print / Save as PDF',
+      gapsTitle: 'Gaps',
+      gaps: {
+        none: 'No gaps found — every day has a visit and every reading was retested on time.',
+        noVisitTitle: 'Day(s) with no inspector visit ({count})',
+        overdueTitle: 'Overdue gas reading(s) — nobody took a retest in time ({count})',
+        overdueRow: 'A retest was due by {dueAt} and none was recorded before the next reading (or before now).'
+      },
+      currentlyInside: 'Currently inside (live count): {count}',
+      visitsTitle: 'Inspector visits',
+      loading: 'Loading the report…',
+      visitsEmpty: 'No inspector visits have been recorded for this permit yet.',
+      visit: {
+        started: 'Started {when}',
+        submitted: 'submitted {when}',
+        notSubmitted: 'not yet submitted',
+        entrantsTitle: 'Entrant activity during this visit',
+        ppeTitle: 'PPE',
+        gasTitle: 'Gas readings during this visit',
+        notesTitle: 'Notes',
+        photosTitle: 'Photos'
+      },
+      source: {
+        scan: 'Scan',
+        manual: 'Manual',
+        system: 'System'
+      },
+      entrant: {
+        IN: '{who} checked in — {when}',
+        OUT: '{who} checked out — {when}'
+      },
+      ppe: {
+        none: 'No PPE was recorded on this visit.',
+        gapsTitle: 'Undeclared gap flagged:',
+        legacy: 'Recorded on an earlier checklist — shown as originally written, not mapped onto this app\'s PPE list.'
+      },
+      // Matches src/enums/modules/inspector-visit/InspectorVisitNoteType.enum.ts exactly.
+      noteType: {
+        GENERAL: 'General',
+        WARNING: 'Warning',
+        CORRECTIVE_ACTION: 'Corrective action',
+        EMERGENCY: 'Emergency',
+        INCIDENT: 'Incident'
+      },
+      closure: {
+        title: 'Closure report',
+        type: 'Type',
+        window: 'Work window',
+        location: 'Location',
+        reasonTitle: 'Reason for closure',
+        noReason: 'No reason was recorded.',
+        entrantsTitle: 'Final entrant state',
+        entrantsClear: 'No workers were auto-checked-out at closure.',
+        autoCheckedOutRow: '{who} was auto-checked-out at closure — {when}',
+        // Judgement call, documented in the implementation report: sourced from the permit's own
+        // declared PPE rather than the most recent inspector visit's checklist.
+        ppeTitle: 'Final PPE state (as declared on the permit)'
+      }
     }
   },
   toast: {
@@ -627,6 +722,9 @@ const permit = {
     // landed on the next page, not at the moment the action actually happened.
     submitted: 'Permit submitted for review',
     closed: 'Permit closed',
+    // wayfinder 098 — replaces the retired "closed" toast for the contractor's own action; the
+    // permit itself is unchanged, so no status-chip update accompanies this one.
+    closeRequested: 'Closure requested — the Safety Officer has been notified',
     duplicated: 'Permit duplicated — continue editing the new draft'
   }
 }

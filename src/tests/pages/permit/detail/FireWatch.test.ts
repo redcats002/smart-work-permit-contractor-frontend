@@ -31,10 +31,14 @@ function buildPermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail {
     title: 'Weld the pipe rack',
     foreman: 'Somchai P.',
     location: 'Zone A',
-    workDate: '2026-08-10T00:00:00.000Z',
-    workTimeStart: '2026-08-10T01:00:00.000Z',
-    workTimeEnd: '2026-08-10T10:00:00.000Z',
+    startDate: '2026-08-10T00:00:00.000Z',
+    endDate: '2026-08-10T00:00:00.000Z',
+    dailyStart: '2026-08-10T01:00:00.000Z',
+    dailyEnd: '2026-08-10T10:00:00.000Z',
+    scheduleNote: null,
     outdoorWork: false,
+    ppeDeclared: [],
+    ppeNote: null,
     createdById: 'u-1',
     createdBy: null,
     createdAt: '2026-08-09T01:00:00.000Z',
@@ -52,10 +56,7 @@ function buildPermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail {
     qrIssuedAt: null,
     entrantCount: 0,
     fireWatch: null,
-    planId: null,
-    planX: null,
-    planY: null,
-    areaId: null,
+    pinId: null,
     jsaSteps: [],
     workers: [],
     photos: [],
@@ -87,6 +88,7 @@ function buildRouter (): Router {
     routes: [
       { path: '/permits', name: 'PermitListPage', component: { template: '<div />' } },
       { path: '/permits/create', name: 'PermitCreatePage', component: { template: '<div />' } },
+      { path: '/getting-started', name: 'GettingStartedPage', component: { template: '<div />' } },
       { path: '/permits/:id', name: 'PermitDetailPage', component: PermitDetailPage }
     ]
   })
@@ -173,26 +175,32 @@ describe('Fire Watch (PMT-012)', () => {
     expect(wrapper.find('[data-test="fire-monitor-panel"]').exists()).toBe(true)
   })
 
-  it('locks the close button while the server says the watch is running', () => {
+  it('offers the closure-request trigger even while the server says the watch is still running (wayfinder 098 — no invented restriction)', async () => {
     const wrapper = mount(FireMonitorPanel, {
       props: { fireWatch: fireWatch(451) },
       global: { plugins: [i18n, [PrimeVue, { unstyled: true }]] }
     })
 
     expect(wrapper.find('[data-test="fire-monitor-countdown"]').text()).toBe('07:31')
-    expect(wrapper.find('[data-test="fire-monitor-locked"]').exists()).toBe(true)
-    expect(wrapper.find('[data-test="fire-monitor-locked"]').text()).toContain('07:31')
-    expect(wrapper.find('[data-test="fire-monitor-close"]').exists()).toBe(false)
+    // POST /permits/:id/close-request has no FIRE_WATCH_NOT_ELAPSED-style gate — it accepts
+    // ACTIVE or FIRE_MONITOR unconditionally, so this button is never locked any more.
+    const button = wrapper.find('[data-test="fire-monitor-close"]')
+    expect(button.exists()).toBe(true)
+    expect(button.attributes('disabled')).toBeUndefined()
+    expect(wrapper.find('[data-test="fire-monitor-request-note"]').text()).toContain('07:31')
+
+    await button.trigger('click')
+    expect(wrapper.emitted('close')).toHaveLength(1)
   })
 
-  it('unlocks closure at zero and hands off to the closure modal', async () => {
+  it('drops the "not yet" note once the watch has elapsed, and still hands off to the request modal', async () => {
     const wrapper = mount(FireMonitorPanel, {
       props: { fireWatch: fireWatch(0) },
       global: { plugins: [i18n, [PrimeVue, { unstyled: true }]] }
     })
 
     expect(wrapper.find('[data-test="fire-monitor-countdown"]').text()).toBe('00:00')
-    expect(wrapper.find('[data-test="fire-monitor-locked"]').exists()).toBe(false)
+    expect(wrapper.find('[data-test="fire-monitor-request-note"]').exists()).toBe(false)
 
     await wrapper.find('[data-test="fire-monitor-close"]').trigger('click')
     expect(wrapper.emitted('close')).toHaveLength(1)

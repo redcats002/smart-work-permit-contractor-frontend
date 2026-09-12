@@ -18,6 +18,13 @@ import CertificateProvider, { type ICertificateProvider } from '@/resources/prov
 export type TCertificatePreflightState = 'idle' | 'loading' | 'pass' | 'fail' | 'unknown'
 
 export interface ICertificateProblem {
+  /**
+   * wayfinder 088 — the identity, not the label. This composable already has `worker.workerId`
+   * (it is what `CertificateService.byWorker` is called with), and used to throw it away and key
+   * the problem on the name — so two workers sharing a name swapped certificate badges. The name
+   * stays for display only.
+   */
+  workerId: number
   workerName: string
   reason: 'MISSING' | 'EXPIRED'
 }
@@ -49,7 +56,12 @@ export function useCertificatePreflight (loadingUnit?: Ref<boolean>): IUseCertif
 
   async function check (workers: IPermitWorker[]): Promise<void> {
     const token = ++sequence
-    const named = workers.filter((worker: IPermitWorker): boolean => Boolean(worker.workerName?.trim()))
+    // wayfinder 060: the lookup is by worker id, so a row that only has a typed name cannot be
+    // checked at all until Step 4 collects an id (wayfinder 063). Such rows are left OUT rather
+    // than looked up by name — the name-keyed route is gone, and guessing would be worse than
+    // not knowing. With none checkable the state stays 'unknown', which does not block: this
+    // composable's existing rule is that an unknown answer is not a pass, and equally not a fail.
+    const named = workers.filter((worker: IPermitWorker): boolean => typeof worker.workerId === 'number')
 
     if (named.length === 0) {
       if (token !== sequence) return
@@ -65,10 +77,11 @@ export function useCertificatePreflight (loadingUnit?: Ref<boolean>): IUseCertif
     const completed = await handleLoading(
       async (): Promise<boolean> => {
         for (const worker of named) {
-          const { data } = await CertificateService.byWorker(worker.workerName)
+          const { data } = await CertificateService.byWorker(worker.workerId as number)
           const certificate: ICertificate | null = data
-          if (!certificate) found.push({ workerName: worker.workerName, reason: 'MISSING' })
-          else if (certificate.expired) found.push({ workerName: worker.workerName, reason: 'EXPIRED' })
+          const workerId = worker.workerId as number
+          if (!certificate) found.push({ workerId, workerName: worker.workerName, reason: 'MISSING' })
+          else if (certificate.expired) found.push({ workerId, workerName: worker.workerName, reason: 'EXPIRED' })
         }
         return true
       }, { loadingUnit }, (error: unknown): void => {

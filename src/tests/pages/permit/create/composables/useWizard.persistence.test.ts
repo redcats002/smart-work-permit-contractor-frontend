@@ -37,16 +37,17 @@ function creatableDraft (): Record<string, unknown> {
     title: 'Warehouse repaint',
     location: 'Zone 3',
     foreman: 'Somchai',
-    workDate: '2026-08-20',
-    workTimeStart: '2026-08-20T01:00:00.000Z',
-    workTimeEnd: '2026-08-20T09:00:00.000Z'
+    startDate: '2026-08-20',
+    endDate: '2026-08-20',
+    dailyStart: '2026-08-20T01:00:00.000Z',
+    dailyEnd: '2026-08-20T09:00:00.000Z'
   }
 }
 
 /**
- * wayfinder ticket 045 — a permit as `GET /permits/:id` returns it, for the hydrate path. Only
- * `areaId` varies across the cases below; everything else is a valid, complete draft so
- * `hydrate`'s own conversions (workDate, workers, position) have real input to work on.
+ * wayfinder tickets 045/107 — a permit as `GET /permits/:id` returns it, for the hydrate path.
+ * Only `pinId` varies across the cases below; everything else is a valid, complete draft so
+ * `hydrate`'s own conversions (workDate, workers) have real input to work on.
  */
 function hydratedPermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail {
   return {
@@ -56,10 +57,14 @@ function hydratedPermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail 
     title: 'Roof repair',
     foreman: 'Somchai',
     location: 'Zone 3',
-    workDate: '2026-08-20T00:00:00.000Z',
-    workTimeStart: '2026-08-20T01:00:00.000Z',
-    workTimeEnd: '2026-08-20T09:00:00.000Z',
+    startDate: '2026-08-20T00:00:00.000Z',
+    endDate: '2026-08-20T00:00:00.000Z',
+    dailyStart: '2026-08-20T01:00:00.000Z',
+    dailyEnd: '2026-08-20T09:00:00.000Z',
+    scheduleNote: null,
     outdoorWork: false,
+    ppeDeclared: [],
+    ppeNote: null,
     createdById: 'u1',
     createdBy: null,
     createdAt: '2026-08-19T00:00:00.000Z',
@@ -77,10 +82,7 @@ function hydratedPermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail 
     qrIssuedAt: null,
     entrantCount: 0,
     fireWatch: null,
-    planId: null,
-    planX: null,
-    planY: null,
-    areaId: null,
+    pinId: null,
     jsaSteps: [],
     workers: [],
     photos: [],
@@ -198,18 +200,13 @@ describe('useWizard — safetyReading append guard', () => {
 })
 
 /**
- * wayfinder ticket 044 (building on 037) — "a permit that already references an area must never
- * become unsaveable because a visibility flag was switched on."
- *
- * Once the deployment sets `AREA_VISIBILITY_SCOPED=TRUE`, `GET /v1/areas` stops listing areas this
- * contractor neither proposed nor was granted. `AreaPicker` answers by emitting
- * `{ areaId: undefined }`, and `updateFormData`'s spread copies that key rather than removing it —
- * so `doPersist` is the only place that can guarantee it never reaches the wire. The server's
- * `AREA_NOT_APPROVED` guard fires on the key's PRESENCE, so one leaked key would 400 every
- * autosave for the rest of the session; `null`, meanwhile, is a real destructive clear and must
- * still get through when a human actually asked for it. Both spellings are pinned here.
+ * wayfinder ticket 107 — `pinId` inherits ticket 045's `areaId` invariant exactly, same three
+ * spellings, same reasoning: a reference reaches the wire only when a human set it this session.
+ * `PinPicker` mirrors `AreaPicker.resolveStaleArea`'s `{ pinId: undefined }` emit for a broken
+ * reference; `doPersist` is what actually guarantees a hydrated-but-untouched `pinId` never rides
+ * an unrelated autosave, regardless of which wizard steps mounted.
  */
-describe('useWizard — areaId omission on autosave (wayfinder tickets 037 + 044 + 045)', () => {
+describe('useWizard — pinId omission on autosave (wayfinder ticket 107)', () => {
   beforeEach((): void => {
     vi.useFakeTimers()
   })
@@ -235,64 +232,58 @@ describe('useWizard — areaId omission on autosave (wayfinder tickets 037 + 044
     return (updateSpy.mock.calls.at(-1) as [string, Record<string, unknown>])[1]
   }
 
-  it('HEADLINE — a permit whose area is scoped out of the list still autosaves, with no areaId key at all', async () => {
+  it('HEADLINE — a permit whose pin could not be resolved still autosaves, with no pinId key at all', async () => {
     vi.mocked(toast.error).mockClear()
     const { wizard, updateSpy } = await bootDraft()
 
-    // The permit was hydrated against area 77; AreaPicker could not find 77 in the scoped list and
-    // stripped it. `undefined`, deliberately — see AreaPicker.resolveStaleArea.
-    wizard.updateFormData({ areaId: 77 })
-    wizard.updateFormData({ areaId: undefined })
+    // PinPicker resolved 77 as broken (deleted, or otherwise unreachable) and stripped it.
+    // `undefined`, deliberately — see PinPicker.resolveReferencedPin's failure branch.
+    wizard.updateFormData({ pinId: 77 })
+    wizard.updateFormData({ pinId: undefined })
     await vi.advanceTimersByTimeAsync(1600)
 
     // The permit is still saveable: a PATCH really went out...
     expect(updateSpy).toHaveBeenCalled()
-    // ...and it carries no `areaId` key whatsoever. `toEqual`/`toMatchObject` would pass here even
-    // if the key were present holding `undefined`, so assert on the key itself — that presence is
-    // exactly what the server's guard tests.
-    expect(Object.keys(lastPatchBody(updateSpy))).not.toContain('areaId')
-    expect(lastPatchBody(updateSpy)).not.toHaveProperty('areaId')
+    // ...and it carries no `pinId` key whatsoever. `toEqual`/`toMatchObject` would pass here even
+    // if the key were present holding `undefined`, so assert on the key itself.
+    expect(Object.keys(lastPatchBody(updateSpy))).not.toContain('pinId')
+    expect(lastPatchBody(updateSpy)).not.toHaveProperty('pinId')
     expect(toast.error).not.toHaveBeenCalled()
 
     // Every later autosave stays clean too — the strip is not a one-shot that a subsequent edit
     // re-dirties.
     wizard.updateFormData({ title: 'Warehouse repaint — revised' })
     await vi.advanceTimersByTimeAsync(1600)
-    expect(Object.keys(lastPatchBody(updateSpy))).not.toContain('areaId')
+    expect(Object.keys(lastPatchBody(updateSpy))).not.toContain('pinId')
   })
 
-  it('still sends areaId: null for a user’s deliberate clear — the strip must not swallow that', async () => {
+  it('still sends pinId: null for a user’s deliberate clear — the strip must not swallow that', async () => {
     const { wizard, updateSpy } = await bootDraft()
 
-    wizard.updateFormData({ areaId: 5 })
+    wizard.updateFormData({ pinId: 5 })
     await vi.advanceTimersByTimeAsync(1600)
-    wizard.updateFormData({ areaId: null })
+    wizard.updateFormData({ pinId: null })
     await vi.advanceTimersByTimeAsync(1600)
 
-    expect(lastPatchBody(updateSpy)).toHaveProperty('areaId', null)
+    expect(lastPatchBody(updateSpy)).toHaveProperty('pinId', null)
   })
 
-  it('sends a real areaId untouched — an approved area the contractor CAN see still saves', async () => {
+  it('sends a real pinId untouched — an active pin the contractor picked still saves', async () => {
     const { wizard, updateSpy } = await bootDraft()
 
-    wizard.updateFormData({ areaId: 12 })
+    wizard.updateFormData({ pinId: 12 })
     await vi.advanceTimersByTimeAsync(1600)
 
-    expect(lastPatchBody(updateSpy)).toHaveProperty('areaId', 12)
+    expect(lastPatchBody(updateSpy)).toHaveProperty('pinId', 12)
   })
 
   /**
-   * wayfinder ticket 045 — the hole 044's fix left. Its strip only ran when `AreaPicker` emitted
-   * `areaId: undefined`, which needs `AreaPicker` to MOUNT. It lives inside `Step7Position`, and
-   * `steps` filters that step out entirely when no facility plan is active — which is production
-   * today (ticket 014: no plan version was ever activated).
-   *
-   * So a hydrated permit whose `areaId` names a genuinely non-APPROVED area re-sent that id on
-   * every autosave, the server's presence-based `AREA_NOT_APPROVED` guard 400'd every one, and no
-   * UI existed that could clear it. This is that permit, saving with no picker anywhere: the
-   * wizard is built on a single-step registry, so `Step7Position` provably never mounts.
+   * The headline case from the ticket itself: hydrate a permit carrying `pinId: 77` into a wizard
+   * whose registry never mounts `PinPicker` (the single-step `makeSteps()` fixture), make an
+   * unrelated edit, and assert the outgoing PATCH's key list does NOT contain `pinId` — not
+   * `toEqual`/`toMatchObject`, which ignore undefined-valued keys and would pass either way.
    */
-  it('HEADLINE 045 — a hydrated areaId is never echoed back, even with no AreaPicker in the wizard', async () => {
+  it('HEADLINE 107 — a hydrated pinId is never echoed back, even with no PinPicker in the wizard', async () => {
     vi.mocked(toast.error).mockClear()
     const updateSpy = vi.spyOn(PermitProvider.prototype, 'update')
       .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
@@ -300,10 +291,10 @@ describe('useWizard — areaId omission on autosave (wayfinder tickets 037 + 044
       .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
 
     const wizard = useWizard(makeSteps())
-    wizard.hydrate(hydratedPermit({ areaId: 77 }))
+    wizard.hydrate(hydratedPermit({ pinId: 77 }))
 
-    // Seeded for display — the picker, when it exists, needs it to resolve and show the area.
-    expect(wizard.formData.value.areaId).toBe(77)
+    // Seeded for display — the picker, when it exists, needs it to resolve and show the pin.
+    expect(wizard.formData.value.pinId).toBe(77)
 
     // An ordinary edit somewhere else in the wizard triggers the autosave.
     wizard.updateFormData({ title: 'Roof repair — revised' })
@@ -311,16 +302,14 @@ describe('useWizard — areaId omission on autosave (wayfinder tickets 037 + 044
 
     expect(createSpy).not.toHaveBeenCalled()
     expect(updateSpy).toHaveBeenCalled()
-    // Assert on the KEY LIST. `toEqual` and `toMatchObject` both ignore undefined-valued
-    // properties, so either would pass whether or not the key was stripped — 044 hit exactly
-    // that trap, and the server's guard tests presence, not value.
-    expect(Object.keys(lastPatchBody(updateSpy))).not.toContain('areaId')
+    // Assert on the KEY LIST — see the HEADLINE 045 test's own comment for why this matters.
+    expect(Object.keys(lastPatchBody(updateSpy))).not.toContain('pinId')
     expect(toast.error).not.toHaveBeenCalled()
 
     // Still clean on every later autosave, not just the first.
     wizard.updateFormData({ foreman: 'Wichai' })
     await vi.advanceTimersByTimeAsync(1600)
-    expect(Object.keys(lastPatchBody(updateSpy))).not.toContain('areaId')
+    expect(Object.keys(lastPatchBody(updateSpy))).not.toContain('pinId')
   })
 
   it('sends a user’s pick made AFTER a hydrate — seeding is not choosing, but choosing is', async () => {
@@ -330,17 +319,17 @@ describe('useWizard — areaId omission on autosave (wayfinder tickets 037 + 044
       .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
 
     const wizard = useWizard(makeSteps())
-    wizard.hydrate(hydratedPermit({ areaId: 77 }))
+    wizard.hydrate(hydratedPermit({ pinId: 77 }))
 
-    wizard.updateFormData({ areaId: 91 })
+    wizard.updateFormData({ pinId: 91 })
     await vi.advanceTimersByTimeAsync(1600)
-    expect(lastPatchBody(updateSpy)).toHaveProperty('areaId', 91)
+    expect(lastPatchBody(updateSpy)).toHaveProperty('pinId', 91)
 
     // …and a deliberate clear after a hydrate still reaches the server as a real `null`, which is
-    // the case a blanket "always delete areaId" fix would silently destroy.
-    wizard.updateFormData({ areaId: null })
+    // the case a blanket "always delete pinId" fix would silently destroy.
+    wizard.updateFormData({ pinId: null })
     await vi.advanceTimersByTimeAsync(1600)
-    expect(lastPatchBody(updateSpy)).toHaveProperty('areaId', null)
+    expect(lastPatchBody(updateSpy)).toHaveProperty('pinId', null)
   })
 })
 
@@ -476,5 +465,60 @@ describe('useWizard — JSA row filtering at serialization (wayfinder ticket 001
       { phase: 'pre', step: 'First', hazard: 'H1', control: 'C1', sortOrder: 0 },
       { phase: 'pre', step: 'Third', hazard: 'H3', control: 'C3', sortOrder: 1 }
     ])
+  })
+})
+
+/**
+ * wayfinder 107 — 070's "area drops the pin, pin rides in the same patch" describe block used to
+ * live here. It tested the co-write of `Permit.position`, which 105 removed from the wire
+ * entirely: area and pin became fully independent fields (ticket 107 note 3) — picking an area no
+ * longer touched `formData.pinId` at all. There was nothing left here to race, so the block was
+ * removed rather than rewritten to test a field that no longer existed. Wayfinder 121 has since
+ * removed `Area`/`AreaPicker`/`areaId` from this app entirely, so the comparison itself is now
+ * purely historical.
+ */
+
+/**
+ * wayfinder 067/070 — the multi-day work window. `dailyStart`/`dailyEnd` are `1970-01-01`-anchored
+ * on the wire; only the UTC clock time survives a round trip. This proves a HYDRATED window comes
+ * back out through `buildCreatePayload`/`doPersist` unchanged when nothing touched it — the "067
+ * UTC trap" the ticket names: switching either leg of this round trip from local-time methods
+ * (`getHours`/`setHours`) to UTC ones would shift every migrated permit by the deployment's
+ * offset, silently, with no test failing UNLESS it asserts on the actual wire value like this one.
+ */
+describe('useWizard — multi-day window round-trips without a timezone shift (wayfinder 067)', () => {
+  beforeEach((): void => {
+    vi.useFakeTimers()
+  })
+
+  afterEach((): void => {
+    vi.useRealTimers()
+    vi.restoreAllMocks()
+  })
+
+  it('a hydrated multi-day window is unchanged after an unrelated autosave', async () => {
+    vi.spyOn(PermitProvider.prototype, 'update')
+      .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
+
+    const wizard = useWizard(makeSteps())
+    wizard.hydrate(hydratedPermit({
+      startDate: '2026-08-20T00:00:00.000Z',
+      endDate: '2026-08-22T00:00:00.000Z',
+      dailyStart: '1970-01-01T01:00:00.000Z',
+      dailyEnd: '1970-01-01T09:00:00.000Z'
+    }))
+
+    expect(wizard.formData.value.startDate).toBe('2026-08-20')
+    expect(wizard.formData.value.endDate).toBe('2026-08-22')
+
+    // An unrelated edit forces an autosave that re-sends the whole accumulated formData, including
+    // the untouched daily window — this is what would drift under the UTC trap.
+    wizard.updateFormData({ title: 'Roof repair — revised' })
+    await vi.advanceTimersByTimeAsync(1600)
+
+    const updateSpy = vi.mocked(PermitProvider.prototype.update)
+    const lastCall = updateSpy.mock.calls.at(-1) as [string, Record<string, unknown>]
+    expect(lastCall[1].dailyStart).toBe('1970-01-01T01:00:00.000Z')
+    expect(lastCall[1].dailyEnd).toBe('1970-01-01T09:00:00.000Z')
   })
 })

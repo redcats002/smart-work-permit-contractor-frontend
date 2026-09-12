@@ -23,10 +23,14 @@ function basePermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail {
     location: 'Zone 3',
     // Full ISO timestamp, exactly what GET /permits/:id returns — hydrate must convert this to
     // YYYY-MM-DD, never round-trip it as-is.
-    workDate: '2026-08-20T00:00:00.000Z',
-    workTimeStart: '2026-08-20T01:00:00.000Z',
-    workTimeEnd: '2026-08-20T09:00:00.000Z',
+    startDate: '2026-08-20T00:00:00.000Z',
+    endDate: '2026-08-20T00:00:00.000Z',
+    dailyStart: '2026-08-20T01:00:00.000Z',
+    dailyEnd: '2026-08-20T09:00:00.000Z',
+    scheduleNote: null,
     outdoorWork: false,
+    ppeDeclared: [],
+    ppeNote: null,
     createdById: 'u1',
     createdBy: null,
     createdAt: '2026-08-19T00:00:00.000Z',
@@ -44,10 +48,7 @@ function basePermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail {
     qrIssuedAt: null,
     entrantCount: 0,
     fireWatch: null,
-    planId: null,
-    planX: null,
-    planY: null,
-    areaId: null,
+    pinId: null,
     jsaSteps: [],
     workers: [],
     photos: [],
@@ -92,7 +93,7 @@ describe('useWizard.hydrate', () => {
     wizard.hydrate(permit)
 
     expect(wizard.draftId.value).toBe('WP-HT-20260820-001')
-    expect(wizard.formData.value.workDate).toBe('2026-08-20')
+    expect(wizard.formData.value.startDate).toBe('2026-08-20')
     expect(wizard.formData.value.safetyReading).toEqual({ wind: 10 })
     expect(wizard.formData.value.workers).toEqual([])
     expect(wizard.formData.value.jsaSteps).toEqual([])
@@ -102,30 +103,12 @@ describe('useWizard.hydrate', () => {
     expect(wizard.maxUnlockedStepIndex.value).toBe(1)
   })
 
-  // wayfinder ticket 037 — the resume/edit surface must seed the permit's existing area
-  // reference, or a resumed permit that HAS one renders an empty picker (looks like data loss).
-  it('seeds formData.areaId from the permit (wayfinder ticket 037)', () => {
-    setLocale('en')
-    const wizard = useWizard()
-
-    wizard.hydrate(basePermit({ areaId: 7 }))
-    expect(wizard.formData.value.areaId).toBe(7)
-  })
-
-  it('seeds formData.areaId as undefined, never null, for an unplaced permit', () => {
-    setLocale('en')
-    const wizard = useWizard()
-
-    wizard.hydrate(basePermit({ areaId: null }))
-    expect(wizard.formData.value.areaId).toBeUndefined()
-  })
-
   it('lands on the last step (Review) when every step already validates', () => {
     setLocale('en')
     const wizard = useWizard()
 
     const permit = basePermit({
-      workers: [{ workerName: 'Somchai', roleOnPermit: 'Worker' }],
+      workers: [{ workerId: 761, workerName: 'Somchai', roleOnPermit: 'Worker' }],
       jsaSteps: [{ phase: 'pre', step: 'Inspect harness', hazard: 'Fall', control: 'Wear harness', sortOrder: 0 }]
     })
 
@@ -141,16 +124,37 @@ describe('useWizard.hydrate', () => {
 
     const permit = basePermit({
       workers: [
-        { workerName: 'Somchai', roleOnPermit: 'Worker', bloodPressure: null, alcoholReading: null },
-        { workerName: 'Anan', roleOnPermit: 'Worker', bloodPressure: '120/80', alcoholReading: '0.00' }
+        { workerId: 761, workerName: 'Somchai', roleOnPermit: 'Worker', bloodPressure: null, alcoholReading: null },
+        { workerId: 762, workerName: 'Anan', roleOnPermit: 'Worker', bloodPressure: '120/80', alcoholReading: '0.00' }
       ]
     })
 
     wizard.hydrate(permit)
 
     expect(wizard.formData.value.workers).toEqual([
-      { workerName: 'Somchai', roleOnPermit: 'Worker' },
-      { workerName: 'Anan', roleOnPermit: 'Worker', bloodPressure: '120/80', alcoholReading: '0.00' }
+      { workerId: 761, workerName: 'Somchai', roleOnPermit: 'Worker' },
+      { workerId: 762, workerName: 'Anan', roleOnPermit: 'Worker', bloodPressure: '120/80', alcoholReading: '0.00' }
+    ])
+  })
+
+  /**
+   * wayfinder 103 — `roleOnPermit` is free text (no enum). A value outside `EWorkerRole`'s
+   * template list must round-trip through hydrate exactly as stored, never silently dropped or
+   * reset to some fallback — `toFormWorkers` must not assume the value is one of the template's
+   * known strings.
+   */
+  it('round-trips a free-text roleOnPermit value that is not in the EWorkerRole template list', () => {
+    setLocale('en')
+    const wizard = useWizard()
+
+    const permit = basePermit({
+      workers: [{ workerId: 761, workerName: 'Somchai', roleOnPermit: 'Riser Watchman' }]
+    })
+
+    wizard.hydrate(permit)
+
+    expect(wizard.formData.value.workers).toEqual([
+      { workerId: 761, workerName: 'Somchai', roleOnPermit: 'Riser Watchman' }
     ])
   })
 
@@ -164,7 +168,7 @@ describe('useWizard.hydrate', () => {
     vi.useFakeTimers()
     const wizard = useWizard()
     const permit = basePermit({
-      workers: [{ workerName: 'Somchai', roleOnPermit: 'Worker' }],
+      workers: [{ workerId: 761, workerName: 'Somchai', roleOnPermit: 'Worker' }],
       jsaSteps: [{ phase: 'pre', step: 'Inspect harness', hazard: 'Fall', control: 'Wear harness', sortOrder: 0 }]
     })
     wizard.hydrate(permit)

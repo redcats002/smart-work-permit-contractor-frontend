@@ -26,6 +26,12 @@ export interface ISubmitReadingFailure {
 }
 
 export interface ISubmitCertificateFailure {
+  /**
+   * wayfinder 088 — the server has always sent this alongside the name
+   * (`submit.service.ts`'s `certFailures`), and this parser dropped it, leaving the wizard to
+   * match rejections by name. Two workers with one name got each other's rejection.
+   */
+  workerId: number
   workerName: string
   errorCode: string
 }
@@ -40,14 +46,18 @@ export const EMPTY_SUBMIT_FAILURES: ISubmitFailures = { readings: [], certificat
 /**
  * Every reading code lands on the Safety Checks step and both certificate codes on PPE &
  * Workers — not just the two named in PMT-009's acceptance, because `LEL_MISSING` and
- * `GAS_OUT_OF_RANGE` need the same fix in the same place. `PERMIT_POSITION_REQUIRED` (feat-023)
- * lands on the Position step.
+ * `GAS_OUT_OF_RANGE` need the same fix in the same place. `PERMIT_POSITION_REQUIRED` (feat-023,
+ * re-keyed to `pinId` by wayfinder 105) and `AREA_REQUIRED`/`AREA_NOT_APPROVED` (wayfinder 037)
+ * all land on `whereWhen` (wayfinder 070 — the step formerly named `position`, now step 3;
+ * wayfinder 107 replaced its click-to-place pin + geo coordinate with a pin picker + a location
+ * detail field). `AREA_REQUIRED`/`AREA_NOT_APPROVED` are declared-but-dormant since wayfinder 121
+ * removed `Area` (and the picker that could provoke them) from this app entirely — kept routed
+ * here rather than deleted, the same "declared-but-unemitted code is legal" convention
+ * `ENTRANTS_STILL_INSIDE` already established, so the routing table stays truthful if either code
+ * is ever revived rather than silently going stale.
  *
- * Keyed by `IWizardStepDef.key`, NOT a hardcoded index: the Position step only exists in
- * `useWizard`'s `steps` when an active facility plan is present, so a fixed index would be wrong
- * whenever that step is absent (every permit before the first plan is ever activated). The
- * caller (`useWizard.submitDraft`) resolves the key to an index against its OWN current `steps`
- * array via `findIndex` — see `usePlanPosition`.
+ * Keyed by `IWizardStepDef.key`, NOT a hardcoded index — `useWizard.submitDraft` resolves the key
+ * to an index against its OWN current `steps` array via `findIndex`.
  */
 export const SUBMIT_ERROR_STEP_KEY: Partial<Record<EApiErrorCode, string>> = {
   [EApiErrorCode.LEL_MISSING]: 'safetyChecks',
@@ -58,11 +68,14 @@ export const SUBMIT_ERROR_STEP_KEY: Partial<Record<EApiErrorCode, string>> = {
   [EApiErrorCode.WIND_OUT_OF_RANGE]: 'safetyChecks',
   [EApiErrorCode.CERT_MISSING]: 'ppeWorkers',
   [EApiErrorCode.CERT_EXPIRED]: 'ppeWorkers',
-  [EApiErrorCode.PERMIT_POSITION_REQUIRED]: 'position',
-  // wayfinder ticket 037 — the `PERMIT_AREA_REQUIRED` deployment flag's submit gate, off by
-  // default today. Lands on the same step as the position picker, which now also carries the
-  // area picker (`AreaPicker.vue`).
-  [EApiErrorCode.AREA_REQUIRED]: 'position'
+  // wayfinder 097 — the api-side `PPE_REQUIRED` deployment flag's submit gate (off by default,
+  // like `CERT_TYPE_REQUIRED`) lands on the same step that now carries the PPE checklist.
+  [EApiErrorCode.PPE_REQUIRED]: 'ppeWorkers',
+  [EApiErrorCode.PERMIT_POSITION_REQUIRED]: 'whereWhen',
+  // wayfinder ticket 037 — the `PERMIT_AREA_REQUIRED` deployment flag's submit gate, dormant since
+  // wayfinder 121 removed `Area` (and the picker that lived on this same step) from this app.
+  [EApiErrorCode.AREA_REQUIRED]: 'whereWhen',
+  [EApiErrorCode.AREA_NOT_APPROVED]: 'whereWhen'
 }
 
 /** `undefined` = stay on the review step; nothing earlier can fix this code. */
@@ -111,8 +124,14 @@ export function extractSubmitFailures (error: unknown): ISubmitFailures {
 
   const certificates: ISubmitCertificateFailure[] = Array.isArray(body.certificateFailures)
     ? body.certificateFailures
-      .filter((entry: unknown): boolean => isRecord(entry) && typeof entry.workerName === 'string')
+      // `workerId` is required here, not optional-with-a-fallback: a rejection that cannot be
+      // attributed to a specific worker must not be attributed to the wrong one. An entry without
+      // it is dropped from the per-row highlight rather than name-matched as a guess.
+      .filter((entry: unknown): boolean => isRecord(entry)
+        && typeof entry.workerName === 'string'
+        && typeof entry.workerId === 'number')
       .map((entry: unknown): ISubmitCertificateFailure => ({
+        workerId: (entry as Record<string, unknown>).workerId as number,
         workerName: (entry as Record<string, unknown>).workerName as string,
         errorCode: String((entry as Record<string, unknown>).errorCode ?? '')
       }))

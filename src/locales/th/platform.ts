@@ -1,7 +1,7 @@
 import type platformEn from '@/locales/en/platform'
 
 const platform: typeof platformEn = {
-  appName: 'e-safework',
+  appName: 'e-safework ผู้รับเหมา',
   appTagline: 'ELECTRONIC SAFE WORK PERMIT · v3.0',
   accountType: 'บัญชีผู้รับเหมา',
   sidebarSection: 'ผู้รับเหมา',
@@ -9,7 +9,10 @@ const platform: typeof platformEn = {
     permits: 'ใบอนุญาตของฉัน',
     newPermit: 'สร้างใหม่',
     history: 'ประวัติ',
-    certificates: 'ใบรับรองการทำงาน'
+    personnel: 'บุคลากร',
+    certificates: 'ใบรับรองการทำงาน',
+    workers: 'ผู้ปฏิบัติงาน',
+    gettingStarted: 'เริ่มต้นใช้งาน'
   },
   localeSwitcher: {
     en: 'EN',
@@ -25,6 +28,12 @@ const platform: typeof platformEn = {
   auth: {
     title: 'เข้าสู่ระบบ',
     subtitle: 'กรอกอีเมลและรหัสผ่านของคุณเพื่อเข้าสู่ระบบ',
+    demo: {
+      button: 'ทดลองใช้',
+      contractor: 'ผู้รับเหมา'
+    },
+    welcome: 'ยินดีต้อนรับ',
+    welcomeBody: 'ขอ ติดตาม และปิดใบอนุญาตทำงานของคุณ ทุกการตรวจสอบความปลอดภัยจะถูกยืนยันที่ฝั่งเซิร์ฟเวอร์ก่อนใบอนุญาตจะมีผล',
     email: 'อีเมล',
     password: 'รหัสผ่าน',
     submit: 'เข้าสู่ระบบ',

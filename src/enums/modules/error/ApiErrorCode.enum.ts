@@ -23,6 +23,25 @@ export enum EApiErrorCode {
   // Certificate gate (contractor)
   CERT_MISSING = 'CERT_MISSING',
   CERT_EXPIRED = 'CERT_EXPIRED',
+  CERT_LICENCE_OR_ATTACHMENT_REQUIRED = 'CERT_LICENCE_OR_ATTACHMENT_REQUIRED',
+  PPE_REQUIRED = 'PPE_REQUIRED',
+  // Inspector visit PPE checklist — wayfinder 120. Raised only on the inspector's submit, which this
+  // app never calls; declared so the shared errorCode set stays closed across both frontends.
+  PPE_ITEM_NOT_DECLARED = 'PPE_ITEM_NOT_DECLARED',
+  PPE_GAP_ALREADY_DECLARED = 'PPE_GAP_ALREADY_DECLARED',
+  PPE_GAP_REQUIRES_CORRECTIVE_ACTION = 'PPE_GAP_REQUIRES_CORRECTIVE_ACTION',
+  PPE_CHECKLIST_EMPTY = 'PPE_CHECKLIST_EMPTY',
+  // Inspector visit from history — wayfinder 101. Never raised for this app; declared so the set stays closed.
+  SCAN_WINDOW_EXPIRED = 'SCAN_WINDOW_EXPIRED',
+  // Inspector offline replay — wayfinder 126. Never raised for this app; declared so the set stays closed.
+  OCCURRED_AT_IN_FUTURE = 'OCCURRED_AT_IN_FUTURE',
+  OCCURRED_AT_TOO_OLD = 'OCCURRED_AT_TOO_OLD',
+  OCCURRED_AT_BEFORE_ACTIVE = 'OCCURRED_AT_BEFORE_ACTIVE',
+
+  // Worker register (contractor) — wayfinder 060. Not a failure the user must recover from:
+  // the response carries `workerId`, so an inline "Create worker …" selects the existing
+  // worker instead of showing this at all. The string exists for the paths that cannot.
+  WORKER_ALREADY_EXISTS = 'WORKER_ALREADY_EXISTS',
 
   // Permit state machine (contractor)
   PERMIT_NOT_EDITABLE = 'PERMIT_NOT_EDITABLE',
@@ -32,8 +51,9 @@ export enum EApiErrorCode {
   // wayfinder 022 — PATCH /permits/:id refuses a body with no editable field at all, so an
   // empty-body PATCH can never withdraw a PENDING permit by accident (e.g. an editability probe).
   PERMIT_UPDATE_EMPTY = 'PERMIT_UPDATE_EMPTY',
-  // feat-023 — position on the facility plan. Submit refuses with this once an active plan
-  // exists and the permit has no planId/planX/planY set.
+  // feat-023 — a pin on a facility plan. Submit refuses with this once an active pin on an
+  // active plan exists and the permit has no `pinId` set (re-keyed from `planId`/`planX`/`planY`
+  // by wayfinder 105 — the pin knows its own plan now).
   PERMIT_POSITION_REQUIRED = 'PERMIT_POSITION_REQUIRED',
 
   // Closure guards — safety-officer actions, surfaced here because a contractor watching a permit
@@ -66,12 +86,16 @@ export enum EApiErrorCode {
   UPLOAD_FOLDER_NOT_ALLOWED = 'UPLOAD_FOLDER_NOT_ALLOWED',
   STORAGE_UNAVAILABLE = 'STORAGE_UNAVAILABLE',
 
-  // Area (wayfinder 034/036) — a contractor proposes an area (POST /areas) and it is unusable by
-  // any permit until a safety officer approves it. AREA_NOT_APPROVED is a contractor-visible 400
-  // from POST/PATCH /permits when the referenced area is still PENDING or was REJECTED.
-  // AREA_NOT_PENDING is the officer-only approve/reject race guard, surfaced here only so a
-  // contractor UI polling area status never renders the backend's raw message. AREA_REQUIRED is
+  // Area (wayfinder 034/036) — a contractor proposed an area (POST /areas) and it was unusable by
+  // any permit until a safety officer approved it. AREA_NOT_APPROVED was a contractor-visible 400
+  // from POST/PATCH /permits when the referenced area was still PENDING or was REJECTED.
+  // AREA_NOT_PENDING was the officer-only approve/reject race guard, surfaced here only so a
+  // contractor UI polling area status never rendered the backend's raw message. AREA_REQUIRED was
   // the PERMIT_AREA_REQUIRED-flag submit gate, off by default.
+  //
+  // wayfinder 106/121 — `Area` is deleted, server-side and in both frontends; none of these three
+  // can be emitted any more. **Declared-but-dormant by decision, not dead code** — the same
+  // convention `ENTRANTS_STILL_INSIDE` uses — so they stay in this enum and in both locale files.
   AREA_NOT_APPROVED = 'AREA_NOT_APPROVED',
   AREA_NOT_PENDING = 'AREA_NOT_PENDING',
   AREA_REQUIRED = 'AREA_REQUIRED'

@@ -20,7 +20,6 @@
     <div class="w-full min-h-90 rounded-xl border border-border bg-surface-card p-5 md:p-7">
       <component
         :is="currentStep.component"
-        :active-plan="activePlan"
         :certificate-problems="certificateProblems"
         :certificate-state="certificateState"
         :checklist-answers="checklistAnswers"
@@ -55,10 +54,13 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+
 import StepperHeader from '../components/StepperHeader.vue'
 import WizardFooter from '../components/WizardFooter.vue'
+
+import { useI18n } from 'vue-i18n'
+
 import { useWizard } from '../composables/useWizard'
 
 const { t } = useI18n()
@@ -78,7 +80,6 @@ const {
   certificateProblems,
   recheckCertificates,
   positionState,
-  activePlan,
   isFirstStep,
   isLastStep,
   isNextBlocked,

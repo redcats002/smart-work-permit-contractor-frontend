@@ -51,7 +51,9 @@
 
 <script setup lang="ts">
 import { ref, type Ref } from 'vue'
+
 import { useI18n } from 'vue-i18n'
+
 import SaveDraftConfirmModal from './SaveDraftConfirmModal.vue'
 
 interface IProps {

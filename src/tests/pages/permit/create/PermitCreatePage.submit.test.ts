@@ -9,7 +9,7 @@ import i18n, { setLocale } from '@/plugins/I18n.plugin'
 import { toast } from '@/plugins/toast'
 import { EApiErrorCode } from '@/enums/modules/error/ApiErrorCode.enum'
 import CertificateProvider from '@/resources/provider/certificate/Certificate.provider'
-import FacilityPlanProvider from '@/resources/provider/facility-plan/FacilityPlan.provider'
+import PinProvider from '@/resources/provider/pin/Pin.provider'
 import PermitProvider from '@/resources/provider/permit/Permit.provider'
 import PermitCreatePage from '@/pages/permit/pages/create/pages/PermitCreatePage.vue'
 import WizardFooter from '@/pages/permit/pages/create/components/WizardFooter.vue'
@@ -62,11 +62,12 @@ function completeDraft (): Record<string, unknown> {
     title: 'Warehouse repaint',
     location: 'Zone 3',
     foreman: 'Somchai',
-    workDate: '2026-08-20',
-    workTimeStart: '2026-08-20T01:00:00.000Z',
-    workTimeEnd: '2026-08-20T09:00:00.000Z',
+    startDate: '2026-08-20',
+    endDate: '2026-08-20',
+    dailyStart: '2026-08-20T01:00:00.000Z',
+    dailyEnd: '2026-08-20T09:00:00.000Z',
     safetyReading: { lel: 0, o2: 20.9 },
-    workers: [{ workerName: 'Somchai', roleOnPermit: 'Operator' }],
+    workers: [{ workerId: 761, workerName: 'Somchai', roleOnPermit: 'Operator' }],
     jsaSteps: [{ phase: 'pre', step: 'Isolate', hazard: 'Pressure', control: 'LOTO' }]
   }
 }
@@ -77,6 +78,7 @@ function buildRouter (): Router {
     routes: [
       { path: '/permits', name: 'PermitListPage', component: { template: '<div />' } },
       { path: '/permits/create', name: 'PermitCreatePage', component: PermitCreatePage },
+      { path: '/getting-started', name: 'GettingStartedPage', component: { template: '<div />' } },
       { path: '/permits/:id', name: 'PermitDetailPage', component: { template: '<div />' } }
     ]
   })
@@ -100,8 +102,11 @@ async function mountAtReview (): Promise<{ wrapper: VueWrapper, router: Router }
   await vi.advanceTimersByTimeAsync(1600)
   await flushPromises()
 
+  // wayfinder 070 — order is now type -> basicInfo -> whereWhen -> safetyChecks -> ppeWorkers ->
+  // jsa -> review: 6 forward moves from step 0 lands on review (index 6), one more than before
+  // 070 inserted "Where & when" ahead of safetyChecks.
   const footer = wrapper.findComponent(WizardFooter)
-  for (let step = 0; step < 5; step++) {
+  for (let step = 0; step < 6; step++) {
     footer.vm.$emit('next')
     await flushPromises()
   }
@@ -120,7 +125,9 @@ describe('PermitCreatePage — submit (PMT-009)', () => {
       .mockResolvedValue({ message: 'success', data: { id: 'WP-HOT-20260820-001' } } as never)
     // feat-023. No facility plan mounted in this suite — useWizard now fetches
     // GET /facility-plans/active on mount.
-    vi.spyOn(FacilityPlanProvider.prototype, 'getActive').mockResolvedValue({ message: 'success', data: null } as never)
+    vi.spyOn(PinProvider.prototype, 'list').mockResolvedValue({
+      message: 'success', data: [], page: 1, limit: 1, totalPage: 0, count: 0
+    } as never)
     vi.spyOn(CertificateProvider.prototype, 'byWorker')
       .mockResolvedValue({ message: 'success', data: { id: 1, workerName: 'Somchai', role: 'Operator', certType: 'hot-work', issuedDate: '2026-01-01', expiryDate: '2027-01-01', expired: false } } as never)
   })
@@ -232,9 +239,13 @@ describe('PermitCreatePage — submit (PMT-009)', () => {
       code: 400,
       message: 'certificate expired for Somchai; certificate missing for Krit',
       errorCode: EApiErrorCode.CERT_EXPIRED,
+      // wayfinder 088: `workerId` is required for a rejection to be attributed to a row — 761 is
+      // the worker this draft actually carries (see the fixture above), and 762 is a second worker
+      // the server named. A rejection without an id is deliberately dropped rather than matched by
+      // name, so this fixture would fail to render the banner without them.
       certificateFailures: [
-        { workerName: 'Somchai', errorCode: 'CERT_EXPIRED', message: 'certificate expired for Somchai' },
-        { workerName: 'Krit', errorCode: 'CERT_MISSING', message: 'certificate missing for Krit' }
+        { workerId: 761, workerName: 'Somchai', errorCode: 'CERT_EXPIRED', message: 'certificate expired for Somchai' },
+        { workerId: 762, workerName: 'Krit', errorCode: 'CERT_MISSING', message: 'certificate missing for Krit' }
       ]
     })
 

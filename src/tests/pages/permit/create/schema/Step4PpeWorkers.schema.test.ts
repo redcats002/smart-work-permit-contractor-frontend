@@ -18,7 +18,7 @@ describe('Step4PpeWorkersSchema', () => {
     const result = Step4PpeWorkersSchema.safeParse({
       type: EPermitType.HOT,
       photos: [],
-      workers: [{ workerName: 'Somchai', roleOnPermit: 'Operator' }]
+      workers: [{ workerId: 761, workerName: 'Somchai', roleOnPermit: 'Operator' }]
     })
     expect(result.success).toBe(true)
   })
@@ -26,12 +26,21 @@ describe('Step4PpeWorkersSchema', () => {
   it('blocks Next on a half-filled row — both fields are minLength: 1 on the wire', () => {
     expect(Step4PpeWorkersSchema.safeParse({
       type: EPermitType.HOT,
-      workers: [{ workerName: 'Somchai', roleOnPermit: '' }]
+      workers: [{ workerId: 761, workerName: 'Somchai', roleOnPermit: '' }]
     }).success).toBe(false)
 
     expect(Step4PpeWorkersSchema.safeParse({
       type: EPermitType.HOT,
-      workers: [{ workerName: '', roleOnPermit: 'Operator' }]
+      workers: [{ workerId: 100, workerName: '', roleOnPermit: 'Operator' }]
+    }).success).toBe(false)
+  })
+
+  // wayfinder 063 — `PermitWorker.workerId` is `NOT NULL`; a typed name with no Worker picked
+  // yet is a half-filled row, exactly like a missing role.
+  it('blocks Next on a row with a name and role but no workerId', () => {
+    expect(Step4PpeWorkersSchema.safeParse({
+      type: EPermitType.HOT,
+      workers: [{ workerName: 'Somchai', roleOnPermit: 'Operator' }]
     }).success).toBe(false)
   })
 
@@ -39,8 +48,8 @@ describe('Step4PpeWorkersSchema', () => {
     const result = Step4PpeWorkersSchema.safeParse({
       type: EPermitType.CONFINED,
       workers: [
-        { workerName: 'Somchai', roleOnPermit: 'Entrant', ...HEALTHY },
-        { workerName: 'Krit', roleOnPermit: 'Attendant', bloodPressure: '119/78', alcoholReading: '0.03' }
+        { workerId: 761, workerName: 'Somchai', roleOnPermit: 'Entrant', ...HEALTHY },
+        { workerId: 633, workerName: 'Krit', roleOnPermit: 'Attendant', bloodPressure: '119/78', alcoholReading: '0.03' }
       ]
     })
     expect(result.success).toBe(false)
@@ -53,8 +62,8 @@ describe('Step4PpeWorkersSchema', () => {
     const result = Step4PpeWorkersSchema.safeParse({
       type: EPermitType.CONFINED,
       workers: [
-        { workerName: 'Somchai', roleOnPermit: 'Entrant', ...HEALTHY },
-        { workerName: 'Krit', roleOnPermit: 'Attendant', ...HEALTHY }
+        { workerId: 761, workerName: 'Somchai', roleOnPermit: 'Entrant', ...HEALTHY },
+        { workerId: 633, workerName: 'Krit', roleOnPermit: 'Attendant', ...HEALTHY }
       ]
     })
     expect(result.success).toBe(true)
@@ -64,7 +73,7 @@ describe('Step4PpeWorkersSchema', () => {
     for (const type of [EPermitType.HOT, EPermitType.HEIGHTS]) {
       const result = Step4PpeWorkersSchema.safeParse({
         type,
-        workers: [{ workerName: 'Somchai', roleOnPermit: 'Operator' }]
+        workers: [{ workerId: 761, workerName: 'Somchai', roleOnPermit: 'Operator' }]
       })
       expect(result.success).toBe(true)
     }

@@ -6,6 +6,9 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import PrimeVue from 'primevue/config'
 import i18n, { setLocale } from '@/plugins/I18n.plugin'
+import EntrantProvider from '@/resources/provider/entrant/Entrant.provider'
+import GasLogProvider from '@/resources/provider/gas-log/GasLog.provider'
+import InspectorVisitProvider from '@/resources/provider/inspector-visit/InspectorVisit.provider'
 import PermitProvider from '@/resources/provider/permit/Permit.provider'
 import PermitDetailPage from '@/pages/permit/pages/detail/pages/PermitDetailPage.vue'
 import type { TPermitStatus } from '@/enums/modules/permit/PermitStatus.enum'
@@ -29,10 +32,14 @@ function buildPermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail {
     title: 'Weld the pipe rack',
     foreman: 'Somchai P.',
     location: 'Zone A — Pipe rack 3',
-    workDate: '2026-08-10T00:00:00.000Z',
-    workTimeStart: '2026-08-10T01:00:00.000Z',
-    workTimeEnd: '2026-08-10T10:00:00.000Z',
+    startDate: '2026-08-10T00:00:00.000Z',
+    endDate: '2026-08-10T00:00:00.000Z',
+    dailyStart: '2026-08-10T01:00:00.000Z',
+    dailyEnd: '2026-08-10T10:00:00.000Z',
+    scheduleNote: null,
     outdoorWork: false,
+    ppeDeclared: [],
+    ppeNote: null,
     createdById: 'u-1',
     createdBy: null,
     createdAt: '2026-08-09T01:00:00.000Z',
@@ -50,10 +57,7 @@ function buildPermit (overrides: Partial<IPermitDetail> = {}): IPermitDetail {
     qrIssuedAt: null,
     entrantCount: 0,
     fireWatch: null,
-    planId: null,
-    planX: null,
-    planY: null,
-    areaId: null,
+    pinId: null,
     jsaSteps: [],
     workers: [],
     photos: [],
@@ -94,6 +98,7 @@ function buildRouter (): Router {
     routes: [
       { path: '/permits', name: 'PermitListPage', component: { template: '<div />' } },
       { path: '/permits/create', name: 'PermitCreatePage', component: { template: '<div />' } },
+      { path: '/getting-started', name: 'GettingStartedPage', component: { template: '<div />' } },
       { path: '/permits/:id/edit', name: 'PermitEditPage', component: { template: '<div />' } },
       { path: '/permits/:id/duplicate', name: 'PermitDuplicatePage', component: { template: '<div />' } },
       { path: '/permits/:id', name: 'PermitDetailPage', component: PermitDetailPage }
@@ -141,6 +146,9 @@ describe('PermitDetailPage (PMT-010)', () => {
 
     expect(detailSpy).toHaveBeenCalledWith(PERMIT_ID)
     expect(auditSpy).toHaveBeenCalledWith(PERMIT_ID)
+    // wayfinder 113 — the sections are tabbed now; this assertion is what keeps the test below
+    // from passing vacuously whether or not tabs exist at all.
+    expect(wrapper.find('[role="tablist"]').exists()).toBe(true)
     expect(wrapper.text()).toContain(PERMIT_ID)
     expect(wrapper.text()).toContain('Weld the pipe rack')
     expect(wrapper.text()).toContain('Zone A — Pipe rack 3')
@@ -212,6 +220,9 @@ describe('PermitDetailPage (PMT-010)', () => {
 
     const wrapper = await mountPage()
 
+    // Reachable with zero interaction — the rejection reason lives in the status banner, above
+    // the tab strip, never behind a click.
+    expect(wrapper.find('[role="tablist"]').exists()).toBe(true)
     const banner = wrapper.find('[data-test="banner-rejected"]')
     expect(banner.exists()).toBe(true)
     expect(banner.text()).toContain('Gas reading missing for the confined area')
@@ -281,6 +292,11 @@ describe('PermitDetailPage (PMT-010)', () => {
 
     const wrapper = await mountPage()
 
+    // wayfinder 113 — the audit trail is the LAST of the six tabs. This assertion is only
+    // meaningful because the strip below proves tabs exist at all: on a lazily-mounted primitive
+    // (the dead src/components/base/BaseTabWindow.vue) this would find nothing until the audit
+    // tab is clicked, and the count assertion would fail rather than pass vacuously.
+    expect(wrapper.find('[role="tablist"]').exists()).toBe(true)
     expect(wrapper.findAll('ol li')).toHaveLength(3)
     expect(wrapper.text()).toContain('Permit approved')
     expect(wrapper.text()).toContain('append-only')
@@ -288,6 +304,50 @@ describe('PermitDetailPage (PMT-010)', () => {
     const controls = wrapper.findAll('button, a')
       .map((node: { text: () => string }): string => node.text().toLowerCase())
     expect(controls.some((label: string): boolean => label.includes('edit') || label.includes('delete'))).toBe(false)
+  })
+
+  it('pins a close-request notice above the tabs, reachable with zero interaction, when Safety has not acted yet (wayfinder 113 / ruling 11)', async () => {
+    vi.spyOn(PermitProvider.prototype, 'audit').mockResolvedValue(auditResponse([]))
+    vi.spyOn(PermitProvider.prototype, 'qr').mockResolvedValue(qrResponse('tok'))
+    vi.spyOn(PermitProvider.prototype, 'detail').mockResolvedValue(detailResponse(buildPermit({
+      status: 'ACTIVE',
+      closeRequestedAt: '2026-08-10T05:00:00.000Z',
+      closeRequestedRole: 'inspector',
+      closeRequestReason: 'Work finished early, area is cold'
+    })))
+
+    const wrapper = await mountPage()
+
+    const strip = wrapper.find('[data-test="urgent-close-requested"]')
+    expect(strip.exists()).toBe(true)
+    expect(strip.text()).toContain('the inspector')
+    expect(strip.text()).toContain('Work finished early, area is cold')
+    // Above the tabs, not inside a panel — no tab click needed to see it.
+    expect(wrapper.find('[role="tablist"]').exists()).toBe(true)
+  })
+
+  it('renders no close-request strip at all — not merely a hidden one — when nothing is awaiting Safety', async () => {
+    vi.spyOn(PermitProvider.prototype, 'audit').mockResolvedValue(auditResponse([]))
+    vi.spyOn(PermitProvider.prototype, 'qr').mockResolvedValue(qrResponse('tok'))
+    vi.spyOn(PermitProvider.prototype, 'detail').mockResolvedValue(detailResponse(buildPermit({ status: 'ACTIVE' })))
+
+    const wrapper = await mountPage()
+
+    expect(wrapper.find('[data-test="urgent-close-requested"]').exists()).toBe(false)
+  })
+
+  it('drops the close-request notice once the permit is actually CLOSED — the flag is never cleared, so the gate is the status', async () => {
+    vi.spyOn(PermitProvider.prototype, 'audit').mockResolvedValue(auditResponse([]))
+    vi.spyOn(PermitProvider.prototype, 'detail').mockResolvedValue(detailResponse(buildPermit({
+      status: 'CLOSED',
+      closedAt: '2026-08-10T06:00:00.000Z',
+      closeRequestedAt: '2026-08-10T05:00:00.000Z',
+      closeRequestedRole: 'contractor'
+    })))
+
+    const wrapper = await mountPage()
+
+    expect(wrapper.find('[data-test="urgent-close-requested"]').exists()).toBe(false)
   })
 
   it('never renders the backend message on a failed load — the localized string is shown instead', async () => {
@@ -305,5 +365,26 @@ describe('PermitDetailPage (PMT-010)', () => {
     expect(wrapper.text()).toContain('This permit is not available')
     // The audit call is only made once the permit itself resolved — a failed detail short-circuits it.
     expect(auditSpy).not.toHaveBeenCalled()
+  })
+
+  // wayfinder 112 — the Report tab's own sub-fetches (inspector-visits/entrants/gas-log) must
+  // never fire on a foreign permit either. The existing inline "not available" block above IS the
+  // app's forbidden state for this page; the Report tab does not get a second one, because it can
+  // never mount without a resolved `permit` — see PermitReportSection.vue's props.
+  it('never fetches the report data on a foreign permit — the same forbidden state covers the report tab', async () => {
+    vi.spyOn(PermitProvider.prototype, 'detail').mockRejectedValue({
+      code: 403,
+      message: 'Forbidden: permit belongs to another contractor'
+    })
+    const visitsSpy = vi.spyOn(InspectorVisitProvider.prototype, 'list')
+    const entrantsSpy = vi.spyOn(EntrantProvider.prototype, 'list')
+    const gasLogSpy = vi.spyOn(GasLogProvider.prototype, 'list')
+
+    const wrapper = await mountPage()
+
+    expect(wrapper.find('[data-test="detail-error"]').exists()).toBe(true)
+    expect(visitsSpy).not.toHaveBeenCalled()
+    expect(entrantsSpy).not.toHaveBeenCalled()
+    expect(gasLogSpy).not.toHaveBeenCalled()
   })
 })

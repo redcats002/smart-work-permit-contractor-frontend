@@ -25,7 +25,7 @@
       "id": "CRT-002",
       "type": "feature",
       "name": "Certificate list",
-      "description": "The /certificates page: card grid of personnel certificates with validity badges.",
+      "description": "The /certificates page: card grid of personnel certificates with validity badges, server-side search, a worker filter, and real pagination (wayfinder 110).",
       "acceptance": [
         "src/router/modules/Certificate.router.ts with prefix '/certificates', lazy-loaded, meta.auth set; registered in src/router/index.ts and reflected in the AGENTS.md Modules table",
         "2-column card grid; card border tint, badge, and expiry-date color all derive from certificateStatus()",
@@ -33,14 +33,19 @@
         "Dashed attachment row per card",
         "Empty state when the contractor has no certificates",
         "Single column below md",
-        "./init.sh green"
+        "./init.sh green",
+        "wayfinder 110: search box drives GET /certificates' search param (fuzzy worker-name match server-side), debounced 400ms",
+        "wayfinder 110: a worker Select filters via the server-side workerId param — not a validity-status filter, because the endpoint has none (list.service.ts in the api takes only search/workerName/workerId)",
+        "wayfinder 110: the worker Select's own options are fetched with limit: 9999 (server default page size is 10 — see AreaPicker's identical note) so the dropdown is never silently truncated",
+        "wayfinder 110: real Paginate component (limit 10 default) replaces the old unpaginated limit: 50 fetch",
+        "moved under the drawer's new \"Personnel\" group (with Workers) — no route change, /certificates is unchanged"
       ],
-      "notes": "DONE. STUB ACTIVE: USE_STUB_DATA=true in Certificate.provider.ts; real HTTP already wired to /api/v1/certificates on every method. TO GO LIVE: flip that boolean and delete Certificate.mock.ts (nothing else imports it). Card border/badge/expiry-color/attachment-border all key off ONE STATUS_STYLE map — no new design token was needed, existing --color-status-active/pending/rejected-* matched the design exactly.",
+      "notes": "DONE. STUB ACTIVE: USE_STUB_DATA=true in Certificate.provider.ts; real HTTP already wired to /api/v1/certificates on every method. TO GO LIVE: flip that boolean and delete Certificate.mock.ts (nothing else imports it). Card border/badge/expiry-color/attachment-border all key off ONE STATUS_STYLE map — no new design token was needed, existing --color-status-active/pending/rejected-* matched the design exactly. || wayfinder 110 (2026-09-11): added search + workerId filter + real pagination (useCertificates.ts, CertificateListPage.vue). The USE_STUB_DATA/Certificate.mock.ts note above is stale history (feat-005 deleted both, 2026-08-17) — left here only because it long predates this session and this pass did not audit older notes beyond what wayfinder 110 touched.",
       "dependencies": [
         "CRT-001"
       ],
       "status": "done",
-      "evidence": "./init.sh — typecheck PASS, lint PASS, tests PASS (278 tests). Live Playwright probe: page renders with shell chrome, no pageerror, no horizontal overflow at 375/768/1280. /certificates renders 929 chars of card content."
+      "evidence": "./init.sh — typecheck PASS, lint PASS, tests PASS (278 tests). Live Playwright probe: page renders with shell chrome, no pageerror, no horizontal overflow at 375/768/1280. /certificates renders 929 chars of card content. || 2026-09-11 (wayfinder 110): ./init.sh green — typecheck PASS, lint PASS, vitest 76 files / 618 tests PASS (new: CertificateListPage.filters.test.ts), contrast PASS, icons PASS, smoke 15/15 PASS against a running backend."
     },
     {
       "id": "CRT-003",
@@ -56,12 +61,12 @@
         "Success refreshes the list; the API error is surfaced via the PLT-006 code map",
         "./init.sh green"
       ],
-      "notes": "DONE. @primevue/forms + zodResolver, cross-field expiry-after-issued via .refine. Upload goes through useUpload()/Upload.provider. zod validates the file MIME type only — schema.media was unusable because it requires a non-empty url that a freshly-picked file does not have yet.",
+      "notes": "DONE. @primevue/forms + zodResolver. Upload goes through useUpload()/Upload.provider. zod validates the file MIME type only — schema.media was unusable because it requires a non-empty url that a freshly-picked file does not have yet. || wayfinder 095/115 (2026-09-11, contractor half): licenceNo + description added to all four certificate entry points (this modal, the edit page, the wizard inline modal, worker-detail modal), with the CERT_LICENCE_OR_ATTACHMENT_REQUIRED one-of rule mirrored via an explicit onSubmit/buildPayload check rather than a zod refine — see AddCertificate.schema.ts for why a cross-field refine on this schema never actually runs (workerId never registers with @primevue/forms via its hidden-input trick). ECertType dropped Gas Testing, mirroring the api. || wayfinder 117 (2026-09-11): the acceptance line above, 'Expiry must be after issued date — enforced in the schema', was NEVER TRUE — traced to source (node_modules/@primevue/forms) and confirmed: workerId's hidden-input registration never worked (with or without it), so the schema's base object parse always failed and the expiryAfterIssued .refine() chained after it never ran, in either direction, since this form existed. Fixed workerId's registration for real (Form instance's own register()/setFieldValue(), all four entry points) and then had to decide expiryAfterIssued's fate now that it would actually start firing: REMOVED rather than revived — checked the api (certificate create/update .model.ts and .service.ts) and it enforces no ordering between issuedDate/expiryDate at all, so shipping this client-side would refuse a PATCH/POST the server accepts, violating the standing 'never gate beyond the server' rule. If this ordering should be enforced, it needs to start in the api.",
       "dependencies": [
         "CRT-002"
       ],
       "status": "done",
-      "evidence": "./init.sh — typecheck PASS, lint PASS, tests PASS (278 tests). Live Playwright probe: page renders with shell chrome, no pageerror, no horizontal overflow at 375/768/1280.\n\n2026-08-19 fix pass (C2). CONFIRMED BUG, client half fixed, feature still broken end to end. AddCertificateModal assigned the upload's presigned `fileUrl` (60-second TTL, REVIEW-2026-08-19 S4) as `fileRef` while `path` sat unused. It now sends the storage `filePath`, drops an empty path (useUpload fabricates a placeholder on a failed upload), and the payload field is renamed fileRef -> filePath. The file-type allowlist in AddCertificate.schema.ts was realigned to the backend's server-side list (GAPS.md V3): image/gif removed, image/webp + image/heic added. NOT FIXED and not fixable here: POST /certificates declares no attachment field at all and Elysia strips unknown keys, so nothing is persisted - filed as docs/api/GAPS.md row G (api-adds). Until the backend lands it, the form no longer implies success: a hint under the file picker and a warning toast after save both state the attachment was not stored. ./init.sh 2026-08-19: typecheck PASS, lint PASS, vitest 31 files / 336 tests PASS, live smoke 16/16 PASS against a running backend. node ../scripts/check-contract-sync.mjs -> 'contract-sync: OK - openapi in sync, 25 backend error codes all declared, /api/v1 prefix present.'"
+      "evidence": "./init.sh — typecheck PASS, lint PASS, tests PASS (278 tests). Live Playwright probe: page renders with shell chrome, no pageerror, no horizontal overflow at 375/768/1280.\n\n2026-08-19 fix pass (C2). CONFIRMED BUG, client half fixed, feature still broken end to end. AddCertificateModal assigned the upload's presigned `fileUrl` (60-second TTL, REVIEW-2026-08-19 S4) as `fileRef` while `path` sat unused. It now sends the storage `filePath`, drops an empty path (useUpload fabricates a placeholder on a failed upload), and the payload field is renamed fileRef -> filePath. The file-type allowlist in AddCertificate.schema.ts was realigned to the backend's server-side list (GAPS.md V3): image/gif removed, image/webp + image/heic added. NOT FIXED and not fixable here: POST /certificates declares no attachment field at all and Elysia strips unknown keys, so nothing is persisted - filed as docs/api/GAPS.md row G (api-adds). Until the backend lands it, the form no longer implies success: a hint under the file picker and a warning toast after save both state the attachment was not stored. ./init.sh 2026-08-19: typecheck PASS, lint PASS, vitest 31 files / 336 tests PASS, live smoke 16/16 PASS against a running backend. node ../scripts/check-contract-sync.mjs -> 'contract-sync: OK - openapi in sync, 25 backend error codes all declared, /api/v1 prefix present.'\n\n|| 2026-09-11 (wayfinder 095/115): ./init.sh — typecheck PASS, lint PASS, vitest 76 files / 623 tests PASS, contrast PASS, icons PASS, smoke 15/15 PASS against a live backend. node scripts/check-worker-vocabulary-sync.mjs — ECertType and EWorkerRole both report in sync (ECertType now 3 values, matching the api).\n\n|| 2026-09-11 (wayfinder 117): ./init.sh run twice, both agreeing — typecheck PASS, lint PASS, 79 files / 638 tests PASS (up from 76/623: new AddCertificate.schema.test.ts, CreateCertificateModal.test.ts, AddWorkerCertificateModal.test.ts, plus extended AddCertificateModal.test.ts / CertificateEditPage.test.ts), contrast PASS, icons PASS, smoke SKIP (no API reachable this session — another agent held the api repo; not verified against a live backend, though nothing here changes a wire shape)."
     },
     {
       "id": "CRT-004",
@@ -86,6 +91,74 @@
       ],
       "status": "done",
       "evidence": "2026-08-23. Bullets 3/4 were ALREADY SATISFIED by prior work and are unchanged here: PMT-009's `useCertificatePreflight` (Step6Review.vue) already drove the real 'Worker certificates valid & not expired' row off GET /certificates/worker/:name, and the backend's feat-010 pass already had submitDraft() extract `certificateFailures[]` off a rejected POST /permits/:id/submit (SubmitErrorRouting.ts) and route back to step 4 with the offending worker highlighted (Step4PpeWorkers.vue's `serverRejectedCertificates`) — the server's verdict already won over any client guess. Bullets 1/2 (a live client-side gate on step 4/6, before submit) were NOT built and are what this item added: `useCertificatePreflight` gained a debounce-safe sequence token so a stale (superseded) lookup can never overwrite a newer one's verdict — the exact JSA-dead-end failure class PROMPT-LOG warns against; `useWizard` hoisted ONE shared instance (debounced on the `workers` array reference, immediate on mount, local `certificateChecking` loading flag so it never drives the global spinner) so step 4's gate and step 6's row can never disagree; `isNextBlocked`/`canSubmit` now also gate on a CONFIRMED `certificateState === 'fail'` only — never 'loading'/'unknown', so an unresolved lookup can never be stricter than the server; Step4PpeWorkers.vue got a per-worker certificate badge column plus a named-worker blocking list (mirrors the existing server-rejected list); Step6Review.vue now reads `certificateState`/`certificateProblems` as props instead of owning its own instance (same behavior, one source of truth). Bullet 5 is a negative acceptance (Inspector-side CERT_BLOCKED denial) — out of scope by design, not built, nothing to verify. New test: src/tests/pages/permit/create/composables/useWizard.certificatePreflight.test.ts (4 tests) — blocks Next + names the worker on a missing cert, unblocks on a valid cert, never blocks on an unresolved lookup, and proves the staleness guard (a stale 'missing' resolving after a newer 'pass' does not flip Next back to blocked). ./init.sh: ALL GREEN — typecheck PASS, lint PASS, vitest 48 files / 450 tests PASS, live smoke 16/16 PASS against localhost:3000. node ../scripts/check-contract-sync.mjs: OK — openapi in sync, 25 backend error codes all declared, /api/v1 prefix present. bunx eslint / bunx vue-tsc --noEmit clean on every touched file."
+    },
+    {
+      "id": "CRT-005",
+      "type": "feature",
+      "name": "Certificate detail page",
+      "description": "A page at /certificates/:id showing one certificate, reachable by making CertificateCard navigable. Renders the server's `expired` verdict via the existing certificateStatus() helper, and the attachment as a link resolved through GET /file at click time.",
+      "acceptance": [
+        "/certificates/:id renders worker name, role, cert type, issued and expiry dates, and the status badge",
+        "The badge comes from certificateStatus()/ECertificateStatus — no second expiry calculation anywhere on the page",
+        "`expired` is read from the server's per-row flag; the client only layers the advisory expiring-soon window on top",
+        "CertificateCard becomes navigable to this page; it has no click handler or RouterLink today",
+        "A certificate WITH filePath shows a link that opens the file through GET /file with the path URL-encoded (storage keys contain slashes — GAPS row 21)",
+        "A certificate WITHOUT filePath keeps today's dashed 'No file attached' placeholder, with no broken link and no empty anchor",
+        "A directly-typed /certificates/:id belonging to another contractor is refused by the API and the page handles it — list scoping does not protect a typed URL",
+        "./init.sh green"
+      ],
+      "notes": "Blocked on wayfinder 056: GET /certificates/:id and the filePath column do not exist yet. Building against the unshipped shape is how the fileRef mismatch in docs/api/GAPS.md row 18 happened. Follow Permit.router.ts's `:id` path convention.",
+      "dependencies": [
+        "CRT-002",
+        "CRT-001"
+      ],
+      "status": "done",
+      "evidence": "2026-09-09. ./init.sh All checks passed — typecheck PASS, lint PASS (0 errors), vitest 66 files / 563 tests PASS, contrast PASS, icons PASS, live API smoke PASS against a running backend. Tests: src/tests/pages/certificate/{CertificateDetailPage,CertificateEditPage}.test.ts, 11 tests. The edit page's three attachment cases were mutation-checked — making buildPayload always send filePath turns 2 of them red, so 'absent means keep' is genuinely asserted rather than incidentally true."
+    },
+    {
+      "id": "CRT-006",
+      "type": "feature",
+      "name": "Certificate edit page",
+      "description": "A page at /certificates/:id/edit saving through PATCH /certificates/:id. Plain overwrite — certificates are reference data, deletedAt stays the retirement path, no field is locked.",
+      "acceptance": [
+        "/certificates/:id/edit saves through PATCH and returns to the detail page",
+        "Reuses AddCertificate.schema.ts rather than a second schema — identical fields, and two schemas for one shape drift apart",
+        "An empty file input means KEEP the existing attachment, never clear it; verified by reading the row back, not by trusting the form",
+        "Replacing the file uploads a new one and the detail page resolves the new path",
+        "Editing workerName or expiryDate is allowed — a mistyped expiry has no remedy today, and the submit gate re-runs server-side",
+        "certificate.form.attachmentNotStored is REMOVED from AddCertificateModal — after wayfinder 056 it falsely tells the user their saved file was discarded",
+        "No delete button — no endpoint exposes soft delete, and who may retire a certificate is not decided",
+        "./init.sh green"
+      ],
+      "notes": "Blocked on wayfinder 056 (PATCH /certificates/:id does not exist). certType stays free text here — giving it a vocabulary is wayfinder 050 and must not be smuggled in.",
+      "dependencies": [
+        "CRT-005",
+        "CRT-003"
+      ],
+      "status": "done",
+      "evidence": "2026-09-09. ./init.sh All checks passed — typecheck PASS, lint PASS (0 errors), vitest 66 files / 563 tests PASS, contrast PASS, icons PASS, live API smoke PASS against a running backend. Tests: src/tests/pages/certificate/{CertificateDetailPage,CertificateEditPage}.test.ts, 11 tests. The edit page's three attachment cases were mutation-checked — making buildPayload always send filePath turns 2 of them red, so 'absent means keep' is genuinely asserted rather than incidentally true."
+    },
+    {
+      "id": "CRT-007",
+      "type": "fix",
+      "name": "Repoint the certificate write paths at worker identity",
+      "description": "wayfinder 060 landed backend-first and broke every certificate WRITE path in this app. Repoints them at `workerId`: ICertificate (+workerId, −role), both payload models, Certificate.provider including byWorker → /worker/{workerId}, AddCertificate.schema, the three certificate forms, and the two display sites that rendered `certificate.role`. Adds the worker model, provider and a shared WorkerPicker. NOT wayfinder 061-063 — no worker directory, and Step 4 is untouched.",
+      "acceptance": [
+        "ICertificate carries workerId; `role` is gone (it describes the person and moved to Worker)",
+        "Create and update payloads send workerId; neither accepts workerName or role",
+        "byWorker takes a number and hits /certificates/worker/{workerId} — the name-keyed route was an unscoped cross-tenant read",
+        "src/components/worker/WorkerPicker.vue: search, select, inline create, and adopt the workerId carried by a 409 WORKER_ALREADY_EXISTS",
+        "All three certificate forms use the picker; none has a role field",
+        "useCertificatePreflight checks only rows that carry a workerId, and reports 'unknown' for the rest rather than claiming a pass",
+        "./init.sh green"
+      ],
+      "notes": "Two traps for whoever takes 063. (1) WorkerPicker is a component, not an <input>, so @primevue/forms never sees its value — the form needs a hidden input registering `workerId` or submit silently no-ops. (2) Build the payload from `formData`, not from the Form's emitted `values`: mixing the two sources is how this sent `undefined` after the picker landed. Reuse WorkerPicker rather than writing a second autocomplete; per the other session, 063 also needs inline-create-asking-role-only, which it already does.",
+      "dependencies": [
+        "CRT-005",
+        "CRT-006"
+      ],
+      "status": "done",
+      "evidence": "2026-09-09. ./init.sh All checks passed — typecheck PASS (0 errors, from 16), lint PASS, vitest 66 files / 563 tests PASS, contrast PASS, icons PASS, live API smoke PASS. The type system found the whole blast radius: 16 errors across 8 source files and 6 test files, which is exactly the surface enumerated before starting. Note the smoke gate passed BEFORE this fix too — it exercises read paths only and responses still echo workerName, so it was green while every write path was broken; the other session has since added a workerId assertion to it."
     }
   ]
 }

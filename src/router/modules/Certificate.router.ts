@@ -2,8 +2,9 @@ import type { ComponentOptions } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
 
 /**
- * NOT yet registered in src/router/index.ts — that file is owned by another agent
- * during this wave (see CRT-002 task notes). Wire this module in there once available.
+ * Registered in src/router/index.ts. (The comment that used to sit here claimed the opposite,
+ * left over from the CRT-002 wave; History.router.ts carried the identical stale claim. Both
+ * were wired long ago — wayfinder 057.)
  */
 const prefix = '/certificates'
 
@@ -25,6 +26,24 @@ export default {
       component: (): ComponentOptions => import('@/pages/certificate/pages/list/pages/CertificateListPage.vue'),
       meta: {
         title: 'ใบรับรองการทำงาน'
+      }
+    },
+    {
+      // `:id` and `:id/edit`, matching Permit.router.ts. The list card links here; before
+      // wayfinder 057 the card had no click handler at all and there was no detail route.
+      path: ':id',
+      name: 'CertificateDetailPage',
+      component: (): ComponentOptions => import('@/pages/certificate/pages/detail/pages/CertificateDetailPage.vue'),
+      meta: {
+        title: 'รายละเอียดใบรับรอง'
+      }
+    },
+    {
+      path: ':id/edit',
+      name: 'CertificateEditPage',
+      component: (): ComponentOptions => import('@/pages/certificate/pages/edit/pages/CertificateEditPage.vue'),
+      meta: {
+        title: 'แก้ไขใบรับรอง'
       }
     }
   ]

@@ -40,7 +40,7 @@ describe('workerHealthIssues — alcohol', () => {
   })
 
   it('so a freshly added worker reads as failing until their test is entered', () => {
-    expect(workerHealthPassed({ workerName: 'Somchai', roleOnPermit: 'Entrant' })).toBe(false)
+    expect(workerHealthPassed({ workerId: 761, workerName: 'Somchai', roleOnPermit: 'Entrant' })).toBe(false)
   })
 })
 
@@ -53,9 +53,15 @@ describe('health-check scope and row completeness', () => {
   })
 
   it('requires both fields PATCH declares minLength: 1 on', () => {
-    expect(workerRowComplete({ workerName: 'Somchai', roleOnPermit: 'Entrant' })).toBe(true)
-    expect(workerRowComplete({ workerName: '   ', roleOnPermit: 'Entrant' })).toBe(false)
-    expect(workerRowComplete({ workerName: 'Somchai', roleOnPermit: '' })).toBe(false)
+    expect(workerRowComplete({ workerId: 761, workerName: 'Somchai', roleOnPermit: 'Entrant' })).toBe(true)
+    expect(workerRowComplete({ workerId: 596, workerName: '   ', roleOnPermit: 'Entrant' })).toBe(false)
+    expect(workerRowComplete({ workerId: 761, workerName: 'Somchai', roleOnPermit: '' })).toBe(false)
+  })
+
+  // wayfinder 063 — `PermitWorker.workerId` is `NOT NULL`; a row with a name typed but no Worker
+  // picked yet (WorkerPicker hasn't resolved one) is incomplete, same as a missing role.
+  it('is incomplete with no workerId, even with a name and role filled', () => {
+    expect(workerRowComplete({ workerName: 'Somchai', roleOnPermit: 'Entrant' })).toBe(false)
   })
 
   it('slugs a role into a safe locale key', () => {

@@ -1,0 +1,93 @@
+/**
+ * wayfinder 077 — the "Getting started" page. Ported from and kept in step with
+ * ../../../../docs/guide/using-contractor-app.md, not a second, drifting copy of it (that source
+ * doc is the one to update first — this file follows).
+ */
+const guide = {
+  meta: {
+    title: 'Getting started'
+  },
+  header: {
+    title: 'Getting started',
+    subtitle: 'What each part of this app is for, and how the seven-step wizard fits together.'
+  },
+  overview: {
+    title: 'The modules',
+    // wayfinder 110 — "Create permit" and "History" were cut from the drawer (the New Permit
+    // wizard was always reachable from Permits' own + button; History became a view mode on that
+    // same page) and "Personnel" replaced the two top-level Certificates/Workers destinations.
+    // "Getting started" itself moved out of the drawer into the app bar the same round.
+    intro: 'The drawer on the left has two destinations — Permits, and Personnel, which opens into Certificates and Workers. Getting started lives in the app bar, and your own profile is one tap away from the account card at the bottom.',
+    modules: {
+      permits: { title: 'My Permits', desc: 'Every permit you own, in any status. Open one to see its detail, edit it, or duplicate it into a new draft.' },
+      newPermit: { title: 'New Permit', desc: 'The seven-step request wizard, reached from the + button on Permits — see below.' },
+      history: { title: 'History', desc: 'Permits that have finished (Closed or Expired) — a read-only record with search, filters and a CSV export, reached as the "History" tab on Permits.' },
+      certificates: { title: 'Certificates', desc: 'The safety cards held by the workers you send, under Personnel. A card that has expired blocks that worker at step 5 of the wizard.' },
+      workers: { title: 'Workers', desc: 'The people you send, under Personnel — their certificate status and which permits they appear on, in one place.' }
+    }
+  },
+  wizard: {
+    title: 'The seven-step wizard',
+    intro: 'Always seven steps, in this order, and Review is always last — no step is filtered out, and none moves depending on what has or has not been set up elsewhere in the app.',
+    steps: {
+      type: {
+        title: '1. Type',
+        desc: 'Hot Work, Confined Space, or Working at Heights. This choice drives everything after it — which safety checks appear, whether a Fire Watch is required, and which certificate the workers need.'
+      },
+      basicInfo: {
+        title: '2. Basic info',
+        desc: 'Title and foreman.'
+      },
+      whereWhen: {
+        title: '3. Where & when',
+        desc: 'The pin safety placed for you to select, a location detail, the work window, and any schedule exceptions. Always renders.'
+      },
+      safetyChecks: {
+        title: '4. Safety checks',
+        desc: 'The atmosphere/wind readings your permit type requires. Out-of-range blocks Next, with no override — the server checks again at submit regardless of what the browser allowed.'
+      },
+      ppeWorkers: {
+        title: '5. PPE & workers',
+        desc: 'The PPE list, then each worker on the job. Each one is checked against a certificate that has not expired.'
+      },
+      jsa: {
+        title: '6. JSA',
+        desc: 'The job safety analysis — one row per step: phase, the step itself, the hazard, and the control.'
+      },
+      review: {
+        title: '7. Review',
+        desc: 'Everything on one screen before it leaves your hands. Saving keeps it a Draft; submitting moves it to Pending, in the safety officer\'s queue.'
+      }
+    }
+  },
+  permitDetail: {
+    title: 'Permit detail, and closing the work',
+    // wayfinder 112 — a seventh "Report" tab was added: inspector visits, any gaps, and (once
+    // closed) a printable closure summary. This paragraph used to stop at the audit timeline.
+    p1: 'The detail page is where a permit lives out its life: the status banner, its own information, the safety readings, the workers and their PPE, the JSA, the QR panel, the audit timeline, and a Report tab with every inspector visit, any gaps found, and — once the permit is closed — a closure summary you can print.',
+    // wayfinder 098 (reopened 2026-09-11) — closure moved to Safety. This used to say a
+    // contractor closes the permit themselves through a checklist; they now REQUEST closure and
+    // a Safety Officer reviews and closes it (or comes back with anything outstanding).
+    p2: 'Closing is the Safety Officer\'s action, not yours — from Active or Fire Monitor, request closure and add an optional note on why. Hot Work still passes through a Fire Watch first: Mark complete moves it to Fire Monitor and starts the server-side countdown, but you can request closure at any point during that countdown — Safety just cannot act on it until the watch elapses.'
+  },
+  history: {
+    title: 'History',
+    p1: 'Finished permits only — Closed and Expired. Anything still in play lives under My Permits. Read-only, deliberately: the record of a closed permit is part of the audit trail, and the audit trail has no edit or delete path anywhere in the system.'
+  },
+  certificates: {
+    title: 'Certificates',
+    // wayfinder 115 — licence number and description fields were added, and a certificate now
+    // needs a licence number OR an attachment (at least one), not an attachment alone.
+    p1: 'Add a certificate from a worker you pick or register inline, then the type and the issued/expiry dates. You need a licence number, an attached file, or both — at least one — plus an optional description. An already-expired date is not rejected — the record is the truth, and the card simply shows as expired until it is renewed.'
+  },
+  workers: {
+    title: 'Workers',
+    p1: 'The people you send, with their certificate status and which permits they appear on. A worker is a record of their own — correcting a name here corrects it everywhere that worker appears, rather than on one certificate or permit at a time.'
+  },
+  profile: {
+    title: 'Profile',
+    p1: 'Your own account details, reached from the account card at the bottom of the drawer. Name and phone are editable; email, role and the company record are read-only.'
+  }
+}
+
+export default guide

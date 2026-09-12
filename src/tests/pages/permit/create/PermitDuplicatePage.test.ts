@@ -30,9 +30,11 @@ function rejectedPermit (): Record<string, unknown> {
     title: 'Roof repair',
     foreman: 'Somchai',
     location: 'Zone 3',
-    workDate: '2026-08-10T00:00:00.000Z',
-    workTimeStart: '2026-08-10T01:00:00.000Z',
-    workTimeEnd: '2026-08-10T09:00:00.000Z',
+    startDate: '2026-08-10T00:00:00.000Z',
+    endDate: '2026-08-10T00:00:00.000Z',
+    dailyStart: '2026-08-10T01:00:00.000Z',
+    dailyEnd: '2026-08-10T09:00:00.000Z',
+    scheduleNote: null,
     outdoorWork: false,
     createdById: 'u1',
     createdBy: null,
@@ -53,7 +55,7 @@ function rejectedPermit (): Record<string, unknown> {
     fireWatch: null,
     latestSafetyReading: { lel: null, o2: null, co: null, so2: null, wind: 12, height: null, recordedAt: '2026-08-09T01:00:00.000Z' },
     jsaSteps: [{ id: 9, phase: 'pre', step: 'Inspect harness', hazard: 'Fall', control: 'Wear harness', sortOrder: 0 }],
-    workers: [{ id: 5, workerName: 'Somchai', roleOnPermit: 'Worker', bloodPressure: null, alcoholReading: null }],
+    workers: [{ id: 5, workerId: 761, workerName: 'Somchai', roleOnPermit: 'Worker', bloodPressure: null, alcoholReading: null }],
     photos: [{ slotKey: 'site', fileRef: 'uploads/site.jpg' }]
   }
 }
@@ -105,7 +107,8 @@ describe('PermitDuplicatePage', () => {
     expect(createPayload).not.toHaveProperty('rejectedAt')
     expect(createPayload).not.toHaveProperty('approvedAt')
     expect(createPayload).not.toHaveProperty('closedAt')
-    expect(createPayload.workDate).toBe('2026-08-10')
+    expect(createPayload.startDate).toBe('2026-08-10')
+    expect(createPayload.endDate).toBe('2026-08-10')
 
     expect(updateSpy).toHaveBeenCalledTimes(1)
     const [updatedId, updatePayload] = updateSpy.mock.calls[0] as [string, Record<string, unknown>]
@@ -114,7 +117,7 @@ describe('PermitDuplicatePage', () => {
     expect(updatePayload.jsaSteps).toEqual([{ phase: 'pre', step: 'Inspect harness', hazard: 'Fall', control: 'Wear harness', sortOrder: 0 }])
     // bloodPressure/alcoholReading are `string` on the wire, never `null` — the source worker's
     // null health fields (this fixture isn't Confined Space) must be omitted, not round-tripped.
-    expect(updatePayload.workers).toEqual([{ workerName: 'Somchai', roleOnPermit: 'Worker' }])
+    expect(updatePayload.workers).toEqual([{ workerId: 761, workerName: 'Somchai', roleOnPermit: 'Worker' }])
 
     expect(router.currentRoute.value.name).toBe('PermitEditPage')
     expect(router.currentRoute.value.params.id).toBe('WP-HT-20260823-009')

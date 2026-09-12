@@ -5,9 +5,11 @@ import { useAuthStore } from '@/stores/Auth'
 import { updateFromRoute } from '@/utils/RouterHeader'
 import AuthRouter from './modules/Auth.router'
 import CertificateRouter from './modules/Certificate.router'
+import GuideRouter from './modules/Guide.router'
 import HistoryRouter from './modules/History.router'
 import PermitRouter from './modules/Permit.router'
 import ProfileRouter from './modules/Profile.router'
+import WorkerRouter from './modules/Worker.router'
 
 export interface IRouteRedirect {
   name: string
@@ -43,7 +45,9 @@ export const routes: RouteRecordRaw[] = [
   PermitRouter,
   HistoryRouter,
   CertificateRouter,
+  WorkerRouter,
   ProfileRouter,
+  GuideRouter,
   {
     // Catch-all route for 404
     path: '/:pathMatch(.*)*', // Matches any path
@@ -61,7 +65,9 @@ const router: Router = createRouter({
   routes
 })
 
-const DEFAULT_TITLE: string = 'e-safework'
+// Suffixed so the two apps are tellable apart in the tab strip. Wayfinder 055 gives them
+// independent sessions, so both being open at once is now the expected case, not an edge one.
+const DEFAULT_TITLE: string = 'e-safework Contractor'
 
 export let previousRoutePath: string | null = null
 

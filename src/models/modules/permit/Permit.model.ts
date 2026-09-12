@@ -1,7 +1,7 @@
 import type { TJsaPhase } from '@/enums/modules/permit/JsaPhase.enum'
+import type { EPpeItem } from '@/enums/modules/permit/PpeItem.enum'
 import type { TPermitStatus } from '@/enums/modules/permit/PermitStatus.enum'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
-import type { TWorkerRole } from '@/enums/modules/permit/WorkerRole.enum'
 
 /**
  * Shared domain shapes for the `permit` module, matching the wire contract exactly
@@ -28,31 +28,44 @@ export function permitAuthorName (author?: IPermitAuthor | null): string {
 }
 
 /**
- * feat-023 — the contractor's pin on the active facility plan. `planX`/`planY` are 0-100,
- * PERCENTAGES of the rendered plan frame — NOT pixels (docs/main/PROMPT-LOG.md session 11).
- * Sent on PATCH/POST as `position: IPermitPosition | null`; read back flattened as
- * `planId`/`planX`/`planY` on the permit entity (see IPermitListItem) — two different shapes for
- * the same data because that is what the two directions of the wire contract actually declare.
+ * wayfinder 067. Replaces the single-day `workDate` + `workTimeStart`/`workTimeEnd` — a permit's
+ * work window is now a daily window (`dailyStart`/`dailyEnd`) repeating every day between
+ * `startDate` and `endDate`. `scheduleNote` is free text for what the window cannot express
+ * ("not working Sat/Sun") — nothing queries it.
+ *
+ * ⚠ THE 067 UTC TRAP. `dailyStart`/`dailyEnd` are Postgres `@db.Time` columns with no date part —
+ * on the wire they are full ISO datetimes anchored to `1970-01-01`, and only the UTC clock time
+ * is meaningful; the date part is discarded server-side. The migration backfill took each
+ * existing permit's `workTimeStart::time` (its UTC time-of-day) and `combineDateAndTime` reads it
+ * back in UTC, so a migrated permit keeps the exact instant it always had **only while the client
+ * renders these through the SAME local-time conversion `workTimeStart` used** — `Date#getHours`/
+ * `Date#setHours` (browser-local), never `getUTCHours`/`setUTCHours`. Render as a UTC wall clock
+ * and every migrated permit shifts by the deployment's offset with nothing failing. See
+ * `Step3WhereWhen.vue`'s `extractTimeOfDay`/`composeDateTime`, copied verbatim from the old
+ * Step2BasicInfo for this reason.
  */
-export interface IPermitPosition {
-  planId: number
-  planX: number
-  planY: number
-}
-
 export interface IPermitBase {
   id: string
   type: TPermitType
   status: TPermitStatus
   title: string
   foreman: string
-  location: string
-  /** Sent as `YYYY-MM-DD`, returned as a full ISO timestamp. Format for display; never round-trip. */
-  workDate: string
-  /** Full ISO datetimes in both directions — not `'HH:mm'`. */
-  workTimeStart: string
-  workTimeEnd: string
+  location: string | null
+  /** `YYYY-MM-DD` in both directions. */
+  startDate: string
+  endDate: string
+  /** Full ISO datetime, `1970-01-01` anchored on read — see the UTC-trap note above. */
+  dailyStart: string
+  dailyEnd: string
+  scheduleNote: string | null
   outdoorWork: boolean
+  /**
+   * Wayfinder 097. Always present on GET — `[]`/`null`, never `undefined` — the api's `Permit`
+   * model declares both as required (`t.Array`/`t.Nullable`, not `t.Optional`). `create`/`update`
+   * bodies keep them optional (see `ICreatePermitDraftPayload`); only the read side is guaranteed.
+   */
+  ppeDeclared: EPpeItem[]
+  ppeNote: string | null
 }
 
 /**
@@ -107,8 +120,20 @@ export interface IJsaStep {
  */
 export interface IPermitWorker {
   id?: number
+  /**
+   * wayfinder 060/063 — `PermitWorker.workerId` is `NOT NULL` on the wire. Step 4 collects a real
+   * Worker record via `WorkerPicker` (wayfinder 063), so this is required, not a display echo of
+   * a typed name — `workerName` is now the echo.
+   */
+  workerId: number
   workerName: string
-  roleOnPermit: TWorkerRole
+  /**
+   * wayfinder 103 — free text, `minLength: 1` on the wire (no enum). `EWorkerRole` supplies a
+   * template list of suggestions filtered by permit type, but any non-empty string is legal —
+   * this is what the worker does on THIS job, never a property of the worker record itself
+   * (`IWorker` has no `role` any more).
+   */
+  roleOnPermit: string
   /** Confined Space only — pre-work BP + alcohol reading per Thai ministerial regulation. */
   bloodPressure?: string | null
   alcoholReading?: string | null

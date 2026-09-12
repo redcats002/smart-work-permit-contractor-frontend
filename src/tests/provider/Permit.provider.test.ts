@@ -40,9 +40,10 @@ describe('PermitProvider — wire contract (API-006)', () => {
       title: 'Weld repair',
       location: 'Zone 3',
       foreman: 'Somchai',
-      workDate: '2026-08-18',
-      workTimeStart: '2026-08-18T01:00:00.000Z',
-      workTimeEnd: '2026-08-18T09:00:00.000Z'
+      startDate: '2026-08-18',
+      endDate: '2026-08-18',
+      dailyStart: '2026-08-18T01:00:00.000Z',
+      dailyEnd: '2026-08-18T09:00:00.000Z'
     })
 
     expect(spies.post).toHaveBeenCalledWith('/api/v1/permits', expect.objectContaining({ title: 'Weld repair' }), undefined)
@@ -84,21 +85,21 @@ describe('PermitProvider — wire contract (API-006)', () => {
     expect(spies.post).toHaveBeenCalledWith('/api/v1/permits/WP-1/mark-complete', undefined, undefined)
   })
 
-  it('close posts the checklist and signature verbatim — the keys inside checklist are user data', async () => {
-    await service.close('WP-1', { checklist: { entrantsExited: 'yes', worksiteRestored: 'no' }, signature: 'Somchai P.' })
+  it('requestClose posts to close-request, not close — wayfinder 098', async () => {
+    await service.requestClose('WP-1', { reason: 'Work finished, area cold' })
 
-    const body = { checklist: { entrantsExited: 'yes', worksiteRestored: 'no' }, signature: 'Somchai P.' }
-    expect(spies.post).toHaveBeenCalledWith('/api/v1/permits/WP-1/close', body, undefined)
+    expect(spies.post).toHaveBeenCalledWith('/api/v1/permits/WP-1/close-request', { reason: 'Work finished, area cold' }, undefined)
   })
 
-  it('exposes no approve/reject — those are safety_officer actions with no contractor-facing flow', () => {
+  it('exposes no approve/reject/close — all three are safety_officer-only with no contractor-facing flow', () => {
     const surface = service as unknown as Record<string, unknown>
 
     expect(surface.approve).toBeUndefined()
     expect(surface.reject).toBeUndefined()
-    // `close` IS present on purpose: the closure flow must attempt the call and render the
-    // server's verdict rather than pre-empt it, even though the route is officer-guarded today
-    // (docs/api/GAPS.md row H).
-    expect(typeof surface.close).toBe('function')
+    // wayfinder 098 (CR round 4) reverses the earlier deliberate `close` exception this test used
+    // to pin (docs/api/GAPS.md row H, now reversed) — closure moved to safety, and `requestClose`
+    // is the only closure-adjacent call a contractor session can make now.
+    expect(surface.close).toBeUndefined()
+    expect(typeof surface.requestClose).toBe('function')
   })
 })

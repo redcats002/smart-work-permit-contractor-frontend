@@ -1,5 +1,5 @@
 {
-  "project": "e-safework \u2014 Contractor Web App",
+  "project": "e-safework — Contractor Web App",
   "spec": "docs/main/dev-handoff/02-contractor-web-vue-tasks.md",
   "sharedContext": "docs/main/dev-handoff/00-SHARED-CONTEXT.md",
   "design": "docs/main/SmartWorkPermit-v3.dc.html",
@@ -32,12 +32,12 @@
       "module": "history",
       "harness": "docs/modules/history/",
       "name": "History",
-      "description": "Searchable, filterable, paginated permit history with CSV export and drill-in to permit detail. Reuses the permit provider from feat-002.",
+      "description": "Searchable, filterable, paginated permit history with CSV export and a row detail drawer. wayfinder 110 (2026-09-11): folded into feat-002's PermitListPage as a \"History\" view mode (its own menu entry and /history route were cut as a duplicate door); /history now redirects to /permits?view=history. Still reuses the permit provider.",
       "dependencies": [
         "feat-002"
       ],
       "status": "done",
-      "evidence": ""
+      "evidence": "2026-09-11 (wayfinder 110): merged into feat-002. ./init.sh green — typecheck PASS, lint PASS, vitest 76 files / 618 tests PASS, smoke 15/15 PASS against a running backend. See docs/modules/permit/feature_list.json PMT-003 for the current evidence."
     },
     {
       "id": "feat-004",
@@ -61,12 +61,12 @@
         "feat-001"
       ],
       "status": "done",
-      "evidence": "2026-08-17: all 10 API-* items done. ./init.sh green \u2014 typecheck PASS, lint PASS, vitest 26 files / 309 tests PASS, live smoke 16/16 PASS against a running backend. The baseline was RED before this module (a drifting stub fixture, documented in API-001) and is now green. Both *.mock.ts files and every USE_STUB_DATA flag are gone; the app talks to the real API. See docs/modules/api-integration/ and docs/api/GAPS.md."
+      "evidence": "2026-08-17: all 10 API-* items done. ./init.sh green — typecheck PASS, lint PASS, vitest 26 files / 309 tests PASS, live smoke 16/16 PASS against a running backend. The baseline was RED before this module (a drifting stub fixture, documented in API-001) and is now green. Both *.mock.ts files and every USE_STUB_DATA flag are gone; the app talks to the real API. See docs/modules/api-integration/ and docs/api/GAPS.md."
     },
     {
       "id": "feat-006",
       "name": "Manual E2E Test Pass",
-      "description": "Human-executed end-to-end testing of every contractor screen against a real backend. Suites in docs/testing/suites/, dated results in docs/testing/runs/, master plan in ../../docs/e2e/E2E-TEST-PLAN.md. Blocked in full on E2E-000 \u2014 no contractor account exists, so the app cannot currently be logged into. Harness: docs/modules/e2e-manual/",
+      "description": "Human-executed end-to-end testing of every contractor screen against a real backend. Suites in docs/testing/suites/, dated results in docs/testing/runs/, master plan in ../../docs/e2e/E2E-TEST-PLAN.md. Blocked in full on E2E-000 — no contractor account exists, so the app cannot currently be logged into. Harness: docs/modules/e2e-manual/",
       "dependencies": [],
       "status": "not-started",
       "evidence": "Plan and harness written 2026-08-19, awaiting review. Nothing executed."

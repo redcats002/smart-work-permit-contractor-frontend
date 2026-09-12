@@ -4,29 +4,39 @@
     :label="t('certificate.form.title')">
     <template #default="{ close }">
       <Form
+        ref="formRef"
         v-slot="$form"
         :initial-values="formData"
         :resolver="resolver"
         class="grid grid-cols-1 gap-4"
         @submit="onSubmit($event, close)">
+        <!-- wayfinder 060/061: a worker is a record, so this is a picker over GET /workers with
+             inline create, not two free-text fields. `role` is gone entirely (wayfinder 103) —
+             it never belongs to the worker as a person, only to the permit they are on. -->
         <LabelField
-          v-model="formData.workerName"
+          v-slot="{ invalid }"
           :form="$form"
-          :label="t('certificate.form.field.workerName')"
-          name="workerName"
-          required />
+          :label="t('worker.picker.label')"
+          name="workerId"
+          tag="div"
+          required>
+          <WorkerPicker
+            v-model="formData.workerId"
+            :initial-name="formData.workerName"
+            :invalid="invalid" />
+        </LabelField>
         <LabelField
-          v-model="formData.role"
-          :form="$form"
-          :label="t('certificate.form.field.role')"
-          name="role"
-          required />
-        <LabelField
-          v-model="formData.certType"
+          v-slot="{ invalid }"
           :form="$form"
           :label="t('certificate.form.field.certType')"
           name="certType"
-          required />
+          tag="div"
+          required>
+          <CertTypeSelect
+            v-model="formData.certType"
+            :invalid="invalid"
+            name="certType" />
+        </LabelField>
         <LabelField
           v-slot="{ invalid }"
           :form="$form"
@@ -57,6 +67,37 @@
             fluid
             show-icon />
         </LabelField>
+        <!-- wayfinder 095/115 — a certificate needs a licence number OR an attachment, at least
+             one. The hint states the rule; `onSubmit` mirrors it explicitly before calling the
+             API (not a schema refine — see AddCertificate.schema.ts's own comment on why a
+             cross-field refine here would never run), and the server's verdict stays
+             authoritative regardless. -->
+        <LabelField
+          v-slot="{ invalid }"
+          :description="t('certificate.form.field.licenceOrAttachmentHint')"
+          :form="$form"
+          :label="t('certificate.form.field.licenceNo')"
+          name="licenceNo"
+          tag="div">
+          <InputText
+            v-model="formData.licenceNo"
+            :invalid="invalid"
+            :placeholder="t('certificate.form.field.licenceNoPlaceholder')"
+            name="licenceNo"
+            fluid />
+        </LabelField>
+        <LabelField
+          :form="$form"
+          :label="t('certificate.form.field.description')"
+          name="description"
+          tag="div">
+          <Textarea
+            v-model="formData.description"
+            :placeholder="t('certificate.form.field.descriptionPlaceholder')"
+            name="description"
+            rows="3"
+            fluid />
+        </LabelField>
         <LabelField
           :form="$form"
           :label="t('certificate.form.field.file')"
@@ -74,9 +115,6 @@
               type="file"
               @change="onFileChange($event)">
           </label>
-          <p class="mt-1 text-xs text-text-tertiary">
-            {{ t('certificate.form.field.fileNotStoredHint') }}
-          </p>
         </LabelField>
 
         <!--
@@ -102,7 +140,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, type Ref } from 'vue'
+import { ref, useTemplateRef, watch, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
@@ -113,15 +151,19 @@ import { useApiError } from '@/composables/useApiError'
 import useUpload from '@/composables/useUpload'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import LabelField from '@/components/input/LabelField.vue'
+import WorkerPicker from '@/components/worker/WorkerPicker.vue'
+import CertTypeSelect from '@/components/certificate/CertTypeSelect.vue'
 import ConfirmButton from '@/components/button/ConfirmButton.vue'
+import { dayjs } from '@/plugins/dayjs.plugin'
 import type { ICertificate } from '@/models/modules/certificate/Certificate.model'
+import type { IFormInstanceWithRegister } from '@/models/Form.model'
 import CertificateProvider, { type ICertificateProvider } from '@/resources/provider/certificate/Certificate.provider'
 import {
   AddCertificateSchema,
   useAddCertificateInitialValues,
-  type IAddCertificateFormState,
-  type TAddCertificateFormValues
+  type IAddCertificateFormState
 } from '@/pages/certificate/schema/AddCertificate.schema'
+import { EApiErrorCode } from '@/enums/modules/error/ApiErrorCode.enum'
 
 /**
  * wayfinder ticket 004 — "create a certificate without leaving the wizard". Patterned on
@@ -150,6 +192,25 @@ const resolver = zodResolver(AddCertificateSchema)
 const formData: Ref<IAddCertificateFormState> = ref(useAddCertificateInitialValues())
 const submitErrorMessage: Ref<string | undefined> = ref(undefined)
 
+/**
+ * wayfinder 117 — see `AddCertificateModal.vue`'s identical pair of watchers for the full
+ * explanation: `WorkerPicker` is a plain Vue component, so nothing calls `$pcForm.register()`
+ * for it, and only the `<Form>` instance's own public `register`/`setFieldValue` (typed as
+ * `IFormInstanceWithRegister` from `@/models/Form.model` — `register` is not on the library's
+ * own declared `FormInstance` even though the runtime exposes it) can get `workerId` into the
+ * resolver's values.
+ */
+const formRef = useTemplateRef<IFormInstanceWithRegister | null>('formRef')
+
+watch(formRef, (instance: IFormInstanceWithRegister | null): void => {
+  if (!instance) return
+  instance.register('workerId')
+}, { immediate: true })
+
+watch((): number | undefined => formData.value.workerId, (workerId: number | undefined): void => {
+  formRef.value?.setFieldValue('workerId', workerId)
+})
+
 function resetForm (): void {
   formData.value = useAddCertificateInitialValues()
   submitErrorMessage.value = undefined
@@ -163,13 +224,16 @@ function onFileChange (event: Event): void {
 
 /**
  * Same shape as `AddCertificateModal.vue`'s `useCreate` — the attachment is sent as the storage
- * **path**, never the presigned `fileUrl` (dies 60s after upload), and `POST /certificates` does
- * not persist `filePath` yet (docs/api/GAPS.md row G), so a picked file still earns the
- * "not stored" caveat even on success.
+ * **path**, never the presigned `fileUrl`, which dies 60s after upload. The API persists it since
+ * wayfinder 056, so there is no "not stored" caveat any more.
+ *
+ * wayfinder 086 — reads every field from `formData`, never the Form's emitted `event.values`, for
+ * the same reason as `AddCertificateModal.vue`: with `CertTypeSelect` joining `WorkerPicker` as a
+ * second non-native field in this `<Form>`, `event.values` comes back `undefined` entirely (061's
+ * recorded trap).
  */
-async function useCreate (values: TAddCertificateFormValues): Promise<{ certificate: ICertificate, hadAttachment: boolean }> {
+async function useCreate (): Promise<{ certificate: ICertificate }> {
   let filePath: string | undefined
-  const hasAttachment = Boolean(formData.value.file)
 
   if (formData.value.file) {
     const file = formData.value.file
@@ -185,15 +249,27 @@ async function useCreate (values: TAddCertificateFormValues): Promise<{ certific
   }
 
   const response = await CertificateService.create({
-    workerName: values.workerName,
-    role: values.role,
-    certType: values.certType,
-    issuedDate: values.issuedDate,
-    expiryDate: values.expiryDate,
+    workerId: formData.value.workerId as number,
+    certType: formData.value.certType,
+    issuedDate: dayjs(formData.value.issuedDate).format('YYYY-MM-DD'),
+    expiryDate: dayjs(formData.value.expiryDate).format('YYYY-MM-DD'),
+    licenceNo: formData.value.licenceNo.trim() || undefined,
+    description: formData.value.description.trim() || undefined,
     filePath
   })
 
-  return { certificate: response.data, hadAttachment: hasAttachment }
+  return { certificate: response.data }
+}
+
+/**
+ * wayfinder 095/115 — mirrors the server's one-of rule for feedback, never beyond it: at creation
+ * there is no existing attachment to fall back on, so "a licence number, or a picked file" is the
+ * whole rule, unconditionally. Checked explicitly here rather than in the zod schema — see
+ * AddCertificate.schema.ts's own comment on why a cross-field `.refine()` on this schema never
+ * actually runs in any of these forms.
+ */
+function violatesLicenceOrAttachmentRule (): boolean {
+  return !formData.value.licenceNo.trim() && !formData.value.file
 }
 
 function onSubmit (event: FormSubmitEvent, close: () => void): void {
@@ -202,8 +278,12 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
     return
   }
   submitErrorMessage.value = undefined
+  if (violatesLicenceOrAttachmentRule()) {
+    submitErrorMessage.value = mapError({ code: 400, errorCode: EApiErrorCode.CERT_LICENCE_OR_ATTACHMENT_REQUIRED }).message
+    return
+  }
   handleLoading(async (): Promise<void> => {
-    const { certificate, hadAttachment } = await useCreate(event.values as TAddCertificateFormValues)
+    const { certificate } = await useCreate()
     emits('created', certificate)
     resetForm()
     close()
@@ -211,8 +291,6 @@ function onSubmit (event: FormSubmitEvent, close: () => void): void {
     // the new row is not visible anywhere on screen once the modal closes, unlike the certificate
     // list page, which just re-renders with it.
     toast.success(t('certificate.form.submit'))
-    // Do not let the closing modal imply the file was kept: the API drops `filePath` today.
-    if (hadAttachment) toast.warn(t('certificate.form.attachmentNotStored'))
   }, {}, (error: unknown): void => {
     // INLINE, never a toast — this covers the four upload refusal codes
     // (FILE_TYPE_NOT_ALLOWED / FILE_TOO_LARGE / UPLOAD_FOLDER_NOT_ALLOWED / STORAGE_UNAVAILABLE)

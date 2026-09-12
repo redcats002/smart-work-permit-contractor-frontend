@@ -31,9 +31,11 @@ describe('extractSubmitFailures', () => {
     const failures = extractSubmitFailures({
       code: 400,
       errorCode: EApiErrorCode.CERT_EXPIRED,
-      certificateFailures: [{ workerName: 'Somchai', errorCode: 'CERT_EXPIRED', message: 'expired' }]
+      // wayfinder 088: `workerId` is what the row highlight keys on now. The server has always
+      // sent it (submit.service.ts's certFailures); this parser used to drop it.
+      certificateFailures: [{ workerId: 7, workerName: 'Somchai', errorCode: 'CERT_EXPIRED', message: 'expired' }]
     })
-    expect(failures.certificates).toEqual([{ workerName: 'Somchai', errorCode: 'CERT_EXPIRED' }])
+    expect(failures.certificates).toEqual([{ workerId: 7, workerName: 'Somchai', errorCode: 'CERT_EXPIRED' }])
   })
 
   it('never carries the backend-authored per-item message through', () => {
@@ -60,14 +62,25 @@ describe('step routing', () => {
     expect(stepKeyForSubmitError('CERT_EXPIRED')).toBe('ppeWorkers')
   })
 
-  it('sends PERMIT_POSITION_REQUIRED to the Position step', () => {
-    expect(stepKeyForSubmitError('PERMIT_POSITION_REQUIRED')).toBe('position')
+  it('sends PERMIT_POSITION_REQUIRED to the Where & when step', () => {
+    expect(stepKeyForSubmitError('PERMIT_POSITION_REQUIRED')).toBe('whereWhen')
+  })
+
+  // wayfinder 097 — the api's `PPE_REQUIRED` deployment flag routes to the same step as the
+  // certificate codes, since that step now also carries the PPE checklist.
+  it('sends PPE_REQUIRED to the PPE & Workers step', () => {
+    expect(stepKeyForSubmitError('PPE_REQUIRED')).toBe('ppeWorkers')
   })
 
   // wayfinder ticket 037 — the `PERMIT_AREA_REQUIRED` deployment flag's submit gate lands on the
   // same step as the position picker, which now also carries the area picker.
-  it('sends AREA_REQUIRED to the Position step', () => {
-    expect(stepKeyForSubmitError('AREA_REQUIRED')).toBe('position')
+  it('sends AREA_REQUIRED to the Where & when step', () => {
+    expect(stepKeyForSubmitError('AREA_REQUIRED')).toBe('whereWhen')
+  })
+
+  // wayfinder 070 — `AREA_NOT_APPROVED` lands here too now, since the area picker moved.
+  it('sends AREA_NOT_APPROVED to the Where & when step', () => {
+    expect(stepKeyForSubmitError('AREA_NOT_APPROVED')).toBe('whereWhen')
   })
 
   it('stays on Review for a code no earlier step can fix', () => {
@@ -79,12 +92,12 @@ describe('step routing', () => {
     // The envelope says CERT_EXPIRED, but readings also failed — readings is the earlier fix.
     expect(stepKeyForSubmitFailure('CERT_EXPIRED', {
       readings: [{ field: 'lel', errorCode: 'GAS_OUT_OF_RANGE' }],
-      certificates: [{ workerName: 'Somchai', errorCode: 'CERT_EXPIRED' }]
+      certificates: [{ workerId: 1, workerName: 'Somchai', errorCode: 'CERT_EXPIRED' }]
     })).toBe('safetyChecks')
 
     expect(stepKeyForSubmitFailure('PERMIT_NOT_SUBMITTABLE', {
       readings: [],
-      certificates: [{ workerName: 'Somchai', errorCode: 'CERT_MISSING' }]
+      certificates: [{ workerId: 1, workerName: 'Somchai', errorCode: 'CERT_MISSING' }]
     })).toBe('ppeWorkers')
 
     expect(stepKeyForSubmitFailure('GAS_OUT_OF_RANGE', EMPTY_SUBMIT_FAILURES)).toBe('safetyChecks')

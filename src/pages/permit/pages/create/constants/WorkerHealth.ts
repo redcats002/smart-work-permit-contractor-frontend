@@ -35,6 +35,8 @@ export type TWorkerHealthIssue = 'BLOOD_PRESSURE' | 'ALCOHOL'
  */
 export interface TWorkerDraft {
   id?: number
+  /** wayfinder 060/063 — Step 4 collects a real Worker record; `IPermitWorker` requires this too. */
+  workerId?: number
   workerName?: string
   roleOnPermit?: string
   bloodPressure?: string | null
@@ -76,9 +78,12 @@ export function workerHealthPassed (worker: TWorkerDraft): boolean {
   return workerHealthIssues(worker).length === 0
 }
 
-/** A row is complete when the two fields PATCH declares `minLength: 1` on are both filled. */
+/**
+ * A row is complete once it resolves to a real Worker (wayfinder 063 — `PermitWorker.workerId` is
+ * `NOT NULL`) and carries the role fields the PATCH also requires.
+ */
 export function workerRowComplete (worker: TWorkerDraft): boolean {
-  return Boolean(worker.workerName?.trim()) && Boolean(worker.roleOnPermit)
+  return typeof worker.workerId === 'number' && Boolean(worker.workerName?.trim()) && Boolean(worker.roleOnPermit)
 }
 
 /**

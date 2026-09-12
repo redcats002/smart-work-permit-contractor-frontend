@@ -39,7 +39,7 @@ change this repo cannot make. The sibling Safety/Inspector app made the same mig
 | # | Gap | Impact here |
 |---|---|---|
 | F | ~~The permit has no free-text description field.~~ **Backend half fixed 2026-08-23 (feat-011a):** `Permit.description` is now a nullable `text` column, on `POST /permits` and `PATCH /permits/:id` bodies, and on every permit-detail/list response. The frontend half is still open. | `PMT-005` may now send `description` on create/update, and the detail/review/wizard screens may render it — none of that is wired yet, and this row stays open until a frontend item does |
-| G | **`POST /certificates` accepts no attachment field at all.** The request body declares only `workerName, role, certType, issuedDate, expiryDate`; there is no `filePath`/`fileRef` property, no such column on the `Certificate` model, and Elysia strips unknown keys — so the field is discarded silently, with a 200. Row 18 closed the *response* side of this under `API-007` and missed the request side. | **Certificate attachment is non-functional end to end.** The client now uploads the file and sends the correct `filePath` (never the 60-second presigned `fileUrl` — REVIEW-2026-08-19 S4), but nothing is persisted: the file sits in object storage unreferenced and `CertificateCard` renders "No file attached" forever. Until the backend adds the column and the body field, the Add Certificate form warns the user that the attachment was not stored (`certificate.form.attachmentNotStored`). Needed: `filePath?: string` on `CertificateCreateModel.body`, a nullable column on `Certificate`, and the path echoed back on the certificate read shape. |
+| G | ~~**`POST /certificates` accepts no attachment field at all.**~~ **Closed 2026-09-09 (wayfinder 056).** `Certificate.filePath` is a nullable column, `filePath?: string` is on the create body, `GET /certificates/:id` and `PATCH /certificates/:id` now exist, and the path is echoed on every certificate read shape. The reported symptom was that the list endpoint dropped files out of its pagination — it never did; there was simply no column to return. | **Frontend half still open (wayfinder 057).** `CertificateCard`'s "No file attached" is still a hardcoded string rather than a read of `filePath`, there is still no certificate detail or edit page, and `certificate.form.attachmentNotStored` still warns the user their attachment was discarded — which is now false and must be removed. Files uploaded before this date remain orphaned in object storage; they were never referenced by any row. |
 | J | **The permit has no field for step 3's Yes/No/N-A safety checklist.** `PATCH /permits/:id` declares only `title, location, foreman, workDate, workTimeStart, workTimeEnd, outdoorWork, jsaSteps, workers, safetyReading, photos`, and Elysia strips unknown keys. There is no `checklist` column on the permit model either (the only checklist on the wire is `closureChecklist`, written at close). | `PMT-006` renders the 17/13/14-row checklist the design specifies (design lines 300-311) but **cannot save it**: the answers live in `useWizard`'s own state and are lost on reload, and the Safety Officer never sees them. Deliberately kept out of `formData` so nothing type-lies about the payload. The step says so on screen (`permit.create.steps.safetyChecks.checklistNotStored`) rather than implying it was stored. Needed: a `checklist`/`preWorkChecklist` array of `{ itemKey, answer }` on the PATCH body and a column to hold it — same shape as `closureChecklist`. |
 | K | **`safetyReading` has no `so2` field.** The PATCH body declares `{ lel, o2, co, wind, height }` only, while `IPermitSafetyReading` (and `SAFETY_RANGES.requiredByType.confined`) carry SO2, and the design shows an SO2 card on every Confined Space permit (design line ~273). Unknown keys are stripped, so an SO2 value 200s and vanishes. | `PMT-006` renders and validates the SO2 input but `useWizard.toWireReading()` strips it before the PATCH, so the app never claims to have stored it. Harmless to the verdict — SO2 is `blocking: false` (advisory guidance only, per `docs/modules/permit/context.md`), so it can never change a pass/fail. Needed: `so2` on the `safetyReading` PATCH body and on the `SafetyReading` model, echoed back in `latestSafetyReading`. |
 | I | **Entrant NAMES are not readable by the permit owner.** (The count is served — row A closed it as `entrantCount`.) `403 ENTRANTS_STILL_INSIDE` carries them only inside the backend-authored English `message`, which clients must never render. `GET /permits/:id/entrants` exists but is inspector-facing, and the public `GET /permits/qr/:token` needs an issued token. | `PMT-011`'s blocked banner can say *that* entrants are still inside and what to do about it, and how many (from the payload's `entrantCount`), but **not** the names the design shows (design line 590). Needed: entrant names on the contractor-readable detail payload, or structured `details` on the 403 body. |
@@ -105,6 +105,20 @@ uploaded a plan yet.
 a pin-drop step against `GET /v1/facility-plans/active` while DRAFT, and the create/update forms
 must be ready for `400 PERMIT_POSITION_REQUIRED` on submit once a plan exists.
 
+**Superseded 2026-09-11 (wayfinder 104/105/107).** Everything above this line describes the
+feat-023 shape — `GET /v1/facility-plans/active`, `Permit.planId`/`planX`/`planY`, and
+`position: { planId, planX, planY } | null` on `POST`/`PATCH /permits`. None of that exists on
+the wire any more. Wayfinder 104 replaced `GET /v1/facility-plans/active` with a flat, paginated
+`GET /v1/facility-plans/` (`?active=`) and introduced `Pin` (`GET /v1/pins/`, `GET /v1/pins/:id`,
+all safety-officer-only to write) — named positions, placed by safety, on a plan; wayfinder 105
+collapsed the permit's five position columns into one reference, `Permit.pinId`, and removed
+`position`/`planId`/`planX`/`planY` from `Permit` entirely. Wayfinder 107 is the contractor-app
+half: the wizard's click-to-place pin surface is gone, replaced by a read-only picker
+(`PinPicker.vue`) over safety-placed pins — see this repo's `progress.md` and
+`04-api-contract.md`'s "Facility Plans & Pins" section for the current shape. `PERMIT_POSITION_REQUIRED`
+is unchanged as an `errorCode` but now keys on "an active pin on an active plan exists", not "an
+active plan exists".
+
 ## Closed by a product ruling on 2026-08-23 (feat-022)
 
 | Row | Was | Resolution |
@@ -127,7 +141,18 @@ Regenerated `openapi.json` in all three repos; `node scripts/check-contract-sync
 
 | # | Was | Now served | What this repo can do |
 |---|---|---|---|
-| H | `POST /permits/:id/close` was guarded `auth: ['safety_officer']`, so a contractor session answered `403 FORBIDDEN_ROLE` before any closure rule was evaluated — `PMT-011`'s built-and-wired modal could never succeed | **`contractor` is admitted on the route, scoped to their own permit** (product-owner ruling, `../main/PROMPT-LOG.md` 2026-08-22). A contractor closing a permit they did **not** create is refused with a `403` carrying **no** `errorCode` — the standard ownership refusal, checked before any status/fire-watch/entrant rule. `safety_officer` keeps access to every permit; `inspector` is still `403 FORBIDDEN_ROLE`. Nothing else about closure is relaxed: `403 ENTRANTS_STILL_INSIDE` and `403 FIRE_WATCH_NOT_ELAPSED` fire identically for a contractor actor, with no override, and the `PERMIT_CLOSED` audit row is still written | `PMT-011`'s closure modal now works end to end for the Foreman. Keep rendering the server's verdict — the ownership refusal has no `errorCode`, so it falls back like a 404 or a validation 400 |
+| H | `POST /permits/:id/close` was guarded `auth: ['safety_officer']`, so a contractor session answered `403 FORBIDDEN_ROLE` before any closure rule was evaluated — `PMT-011`'s built-and-wired modal could never succeed | ~~**`contractor` is admitted on the route, scoped to their own permit** (product-owner ruling, `../main/PROMPT-LOG.md` 2026-08-22). A contractor closing a permit they did **not** create is refused with a `403` carrying **no** `errorCode` — the standard ownership refusal, checked before any status/fire-watch/entrant rule. `safety_officer` keeps access to every permit; `inspector` is still `403 FORBIDDEN_ROLE`. Nothing else about closure is relaxed: `403 ENTRANTS_STILL_INSIDE` and `403 FIRE_WATCH_NOT_ELAPSED` fire identically for a contractor actor, with no override, and the `PERMIT_CLOSED` audit row is still written~~ **Reversed by wayfinder 098 (CR round 4, 2026-09-11) — see the note below the table.** | ~~`PMT-011`'s closure modal now works end to end for the Foreman. Keep rendering the server's verdict — the ownership refusal has no `errorCode`, so it falls back like a 404 or a validation 400~~ **Superseded — see below.** |
+
+> **Row H reversed (wayfinder 098, CR round 4, 2026-09-11).** Closure moved from the contractor to
+> Safety, knowingly reversing the ruling this row recorded (`../main/PROMPT-LOG.md` session 13):
+> `POST /permits/:id/close` is `auth: ['safety_officer']` only again, `reason` unconditionally
+> required. A contractor (own permit only) or an inspector no longer closes a permit — they call
+> the new `POST /permits/:id/close-request` instead, which sets `closeRequestedAt`/`By`/`Role`/
+> `Reason` on the permit (a flag on its existing status, not a new one) and leaves it exactly as it
+> was, ACTIVE or FIRE_MONITOR, for a Safety Officer to review. `PMT-011`'s old closure checklist
+> modal is retired; `RequestCloseModal.vue` replaces it, and `PermitProvider.close()` is gone from
+> this app entirely — `requestClose()` is the only closure-adjacent call a contractor session can
+> make. Gap fully resolved: the contractor requests, Safety closes.
 
 > Also landed in the same pass (no row here — it is a Safety/Inspector-app concern, mirrored as row
 > V5 in `../../../smart-work-permit-frontend/docs/api/GAPS.md`): **`POST /permits/:id/reject` now
