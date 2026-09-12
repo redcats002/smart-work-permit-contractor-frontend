@@ -85,7 +85,7 @@
     <div
       v-else-if="imageUrl"
       ref="frameRef"
-      class="relative w-full overflow-hidden rounded-xl border border-border select-none">
+      class="relative w-full max-h-[60vh] overflow-y-auto overflow-x-hidden rounded-xl border border-border select-none">
       <img
         :alt="t('permit.create.steps.whereWhen.pin.alt')"
         :src="imageUrl"
