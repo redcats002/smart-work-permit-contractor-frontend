@@ -192,7 +192,7 @@
           {{ t('permit.create.steps.safetyChecks.section.checklist') }}
         </h3>
         <p class="text-xs text-text-tertiary">
-          {{ t('permit.create.steps.safetyChecks.checklistNotStored') }}
+          {{ t('permit.create.steps.safetyChecks.checklistSavedWithDraft') }}
         </p>
         <ul class="flex list-none flex-col overflow-hidden rounded-xl border border-border p-0">
           <li

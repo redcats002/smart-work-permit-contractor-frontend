@@ -1,5 +1,5 @@
 import type {
-  IJsaStep, IPermitPhoto, IPermitSafetyReading, IPermitWorker
+  IJsaStep, IPermitPhoto, IPermitSafetyReading, IPermitWorker, IPreWorkChecklistAnswer
 } from '@/models/modules/permit/Permit.model'
 import type { EPpeItem } from '@/enums/modules/permit/PpeItem.enum'
 import type { TPermitStatus } from '@/enums/modules/permit/PermitStatus.enum'
@@ -61,6 +61,10 @@ export interface ICreatePermitDraftPayload {
  *   a partial list silently deletes the rest.
  * - `safetyReading` (singular) **APPENDS** a new reading row.
  * - `photos` **UPSERT per `slotKey`**.
+ * - `preWorkChecklist` follows the same "presence vs value" convention as `jsaSteps`/`photos`:
+ *   omitting the key leaves the stored checklist untouched; sending an array replaces it wholesale
+ *   (same shape as `closureChecklist`); an explicit `null` clears it. This field exists ONLY on
+ *   PATCH — there is no create-time equivalent (closes `docs/api/GAPS.md` row J).
  *
  * wayfinder 105/107 — the `Omit<..., 'latitude' | 'longitude'>` override this interface used to
  * need is gone with those fields: `pinId` is a plain scalar reference, so
@@ -72,6 +76,7 @@ export interface IUpdatePermitDraftPayload extends Partial<ICreatePermitDraftPay
   jsaSteps?: IJsaStep[]
   workers?: IPermitWorker[]
   photos?: IPermitPhoto[]
+  preWorkChecklist?: IPreWorkChecklistAnswer[] | null
 }
 
 /** POST /permits/:id/submit — no body. Answers 400 with the first failing validation code. */

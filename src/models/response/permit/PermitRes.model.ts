@@ -1,6 +1,6 @@
 import type {
   IJsaStep, IPermitAuditEntry, IPermitAuthor, IPermitBase, IPermitFireWatch, IPermitPhoto, IPermitQr, IPermitSafetyReading,
-  IPermitValidationSummary, IPermitWorker
+  IPermitValidationSummary, IPermitWorker, IPreWorkChecklistAnswer
 } from '@/models/modules/permit/Permit.model'
 import type { IBasePaginationResponse, IBaseSuccessResponse } from '../Response.model'
 
@@ -50,6 +50,14 @@ export interface IPermitListItem extends IPermitBase {
   closeRequestedBy?: IPermitAuthor | null
   closeRequestedRole?: string | null
   closeRequestReason?: string | null
+  /**
+   * Closes `docs/api/GAPS.md` row J. Present on both `GET /permits` and `GET /permits/:id` —
+   * declared here (not only on `IPermitDetail`) for that reason. Optional because every fixture
+   * in this module predates the field and constructs a full literal — see `closeRequestedAt`
+   * above for the same reason. `null` for a permit created before this field existed, or one
+   * whose contractor never answered any row.
+   */
+  preWorkChecklist?: IPreWorkChecklistAnswer[] | null
 }
 
 /** GET /permits/:id — the entity plus its collections. */
