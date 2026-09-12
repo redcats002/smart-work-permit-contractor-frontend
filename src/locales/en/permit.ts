@@ -185,7 +185,7 @@ const permit = {
           no: 'No',
           na: 'N/A'
         },
-        checklistNotStored: 'A pre-work aid only — the permit API has no field for these answers, so they are not saved with the draft.',
+        checklistSavedWithDraft: 'A pre-work reference aid — saved automatically with your draft, but it does not affect whether you can submit.',
         photo: {
           instrument: 'Instrument photo',
           uploading: 'Uploading…',

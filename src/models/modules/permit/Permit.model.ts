@@ -153,6 +153,18 @@ export interface IClosureChecklistAnswer {
 }
 
 /**
+ * Step 3's pre-work Yes/No/N-A checklist, on the wire since the backend closed `docs/api/GAPS.md`
+ * row J. Same shape as `IClosureChecklistAnswer` above (a different, safety-officer-owned
+ * checklist written at close) — declared separately rather than reused because the two are
+ * unrelated features that happen to share a shape. `itemKey` is `<type>-<number>` (e.g. `hot-3`),
+ * matching `checklistKey()` in `src/pages/permit/pages/create/constants/SafetyChecklist.ts`.
+ */
+export interface IPreWorkChecklistAnswer {
+  itemKey: string
+  answer: 'yes' | 'no' | 'na'
+}
+
+/**
  * Server-computed Fire Watch state, present on every permit list row and detail payload since the
  * backend's 2026-08-21 pass (docs/api/GAPS.md row A). `null` unless `status === 'FIRE_MONITOR'`.
  *
