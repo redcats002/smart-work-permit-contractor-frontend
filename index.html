@@ -19,6 +19,18 @@
     -->
     <meta name="description" content="e-safework — contractor work permit portal. Draft, submit and track work permits for a Thai industrial facility." />
     <meta name="robots" content="noindex, nofollow" />
+    <!--
+      Open Graph fallback. src/utils/SeoHead.ts overwrites these three per route (today, only the
+      '/' LandingPage route sets real og:title/og:description content via route meta) and reverts
+      them to this same fallback on every other route — see that file's own comment for why there
+      is no per-route <head> library here and why the noindex meta tag above stays static (it is
+      one HTML shell for every route; a per-route static value is not possible without SSR).
+    -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="e-safework" />
+    <meta property="og:title" content="e-safework Contractor" />
+    <meta property="og:description" content="e-safework — contractor work permit portal. Draft, submit and track work permits for a Thai industrial facility." />
+    <meta property="og:url" content="https://app.e-safework.com/" />
     <title>e-safework Contractor</title>
   </head>
   <body>
