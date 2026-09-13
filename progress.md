@@ -4690,11 +4690,20 @@ plus six block components under `official-form/` (info-grid, checkbox-row, worke
 checklist-grid, signature-lines, footer-note).
 
 Real gaps, left honestly blank/placeholder rather than guessed (see the implementation report for
-the full list): Hot Work/Height's section 2/3/4 checklist ITEM TEXT was never transcribed (only
-item counts were) — these print as numbered placeholder rows ("Check item N") with the correct
-structure; the sibling-repo transcription's item text should be re-supplied before this ships to
-real print. Confined Space's 11-item safety-measures checklist has NO confident index
+the full list): Confined Space's 11-item safety-measures checklist has NO confident index
 correspondence to this app's own 13-item `preWorkChecklist` (checked item-by-item — no match) so
 prints entirely blank. Confined Space's 8-item PPE list maps only Hardhat → "hard hat"; every
 other row (including the ambiguous "Respiratory Protection") is blank. `./init.sh` is green
 (716 tests, typecheck/lint/contrast/icons all PASS).
+
+**2026-09-13, later same day** — Hot Work/Height's section 2/3/4 checklist item text (originally a
+numbered "Check item N" placeholder, since the first transcription pass only gave item counts) is
+now verbatim from the owner's reference paper form images, re-read directly:
+`buildNumberedPlaceholderItems` replaced with `buildRealChecklistItems` +
+`HOT_SECTION2_ITEM_KEYS`/`HEIGHTS_SECTION2_ITEM_KEYS`/`SHARED_SECTION3_ITEM_KEYS`/
+`HOT_SECTION4_ITEM_KEYS`/`HEIGHTS_SECTION4_ITEM_KEYS` in `OfficialFormConfig.ts`, matching keys
+added to both `src/locales/en/permit.ts` and `th/permit.ts`. `bunx eslint`/`vue-tsc --noEmit`/
+`bunx vitest run src/tests/pages/permit/detail` all green (12 files, 88 tests). Confined Space's
+11-item safety-measures section remains blank — the source image's small text was not confidently
+legible for verbatim regulatory copy; needs a clearer image or the owner's own transcription
+before it can be filled in the same way.
