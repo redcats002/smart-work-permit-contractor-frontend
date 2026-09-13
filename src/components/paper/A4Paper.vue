@@ -45,8 +45,15 @@ $height: 297mm;
 		@top-center {
 			content: '';
 		}
+		// 2026-09-12 owner-filed issue 2 (permit full-print/export). CSS Paged Media margin-box
+		// `content` is not rendered by Chromium/Firefox print today, so this is a best-effort
+		// fallback only for an engine that does support it — the mechanism the ticket names, kept
+		// deliberately generic/static (no per-permit data, which margin boxes cannot carry
+		// dynamically from Vue anyway). The page's ACTUAL header/footer — brand mark, permit id,
+		// printed-at timestamp — is a `position: fixed` block inside the printed content itself
+		// (see PermitPrintLayout.vue), which does repeat per page in the browsers this app targets.
 		@bottom-center {
-			content: '';
+			content: counter(page) ' / ' counter(pages);
 			font-size: 10px;
 		}
 	}

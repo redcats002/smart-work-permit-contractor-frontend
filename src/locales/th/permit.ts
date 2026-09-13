@@ -565,7 +565,14 @@ const permit: typeof permitEn = {
         PERMIT_WITHDRAWN_FOR_EDIT: 'ถอนออกจากการตรวจสอบเพื่อแก้ไข — กลับไปเป็นใบร่าง',
         PERMIT_MARKED_COMPLETE: 'แจ้งงานเสร็จ — เริ่มตรวจตราไฟ',
         PERMIT_CLOSED: 'ปิดใบอนุญาต',
-        CERT_BLOCKED: 'ห้ามเข้าพื้นที่ — ใบรับรองไม่ถูกต้อง'
+        PERMIT_CLOSE_REQUESTED: 'ขอปิดใบอนุญาต',
+        PERMIT_EXPIRED: 'ใบอนุญาตหมดอายุ',
+        ENTRANT_CHECKED_IN: 'ผู้ปฏิบัติงานลงชื่อเข้า',
+        ENTRANT_CHECKED_OUT: 'ผู้ปฏิบัติงานลงชื่อออก',
+        GAS_LOG_RECORDED: 'บันทึกผลตรวจวัดแก๊ส',
+        CERT_BLOCKED: 'ห้ามเข้าพื้นที่ — ใบรับรองไม่ถูกต้อง',
+        WORKER_MARKED_NOT_AVAILABLE: 'ทำเครื่องหมายผู้ปฏิบัติงานว่าไม่พร้อม',
+        DEMO_LOGIN: 'เข้าสู่ระบบสาธิต (เลิกใช้แล้ว)'
       }
     },
     // wayfinder 098 (2026-09-11) — `title`/`subtitle`/`answerYes`/`answerNo`/`cancel`/`confirm`/
@@ -691,6 +698,41 @@ const permit: typeof permitEn = {
         entrantsClear: 'ไม่มีผู้ปฏิบัติงานที่ถูกเช็คเอาท์อัตโนมัติเมื่อปิดงาน',
         autoCheckedOutRow: '{who} ถูกเช็คเอาท์อัตโนมัติเมื่อปิดงาน — {when}',
         ppeTitle: 'สถานะ PPE สุดท้าย (ตามที่แจ้งไว้ในใบอนุญาต)'
+      }
+    },
+    print: {
+      button: 'พิมพ์ / บันทึกเป็น PDF',
+      header: {
+        subtitle: 'ระบบจัดการใบอนุญาตทำงาน'
+      },
+      footer: {
+        printedVia: 'พิมพ์ผ่าน e-safework — {when}'
+      },
+      preWork: {
+        title: 'รายการตรวจสอบความปลอดภัยก่อนเริ่มงาน',
+        empty: 'ไม่มีการบันทึกรายการตรวจสอบก่อนเริ่มงานสำหรับใบอนุญาตนี้'
+      },
+      entrants: {
+        title: 'ทะเบียนผู้เข้า-ออก',
+        empty: 'ไม่มีการบันทึกกิจกรรมเข้า-ออกสำหรับใบอนุญาตนี้',
+        columnWorker: 'ผู้ปฏิบัติงาน',
+        columnDirection: 'สถานะ',
+        columnWhen: 'เวลา',
+        directionIn: 'เข้า',
+        directionOut: 'ออก'
+      },
+      gasLog: {
+        title: 'บันทึกผลตรวจวัดแก๊ส',
+        empty: 'ไม่มีการบันทึกผลตรวจวัดแก๊สสำหรับใบอนุญาตนี้',
+        columnWhen: 'เวลาบันทึก',
+        columnTester: 'ผู้ตรวจวัด'
+      },
+      visits: {
+        title: 'ประวัติการเข้าตรวจของผู้ตรวจสอบ',
+        empty: 'ไม่มีการบันทึกการเข้าตรวจสำหรับใบอนุญาตนี้'
+      },
+      approval: {
+        title: 'การอนุมัติ / ปฏิเสธ / ปิดงาน'
       }
     }
   },

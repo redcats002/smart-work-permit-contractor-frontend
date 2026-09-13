@@ -91,7 +91,7 @@ are owed (098, reopened).
 | PPE vocabulary | Seven items, **one shared constant** across the API and both frontends. The contractor declares; the inspector checks the declared subset and may flag an undeclared gap. | 097 |
 | `PPE_REQUIRED` | New `errorCode` (400, wayfinder 097): a permit submitted with no PPE declared, **only when the `PPE_REQUIRED` flag is on** — off by default, like `CERT_TYPE_REQUIRED`. `EPpeItem` is a **closed** wire enum (unlike `certType`, it has no legacy data to tolerate), so an unrecognised item is a 400 at the model layer, not a silent strip. | 097 |
 | `CERT_LICENCE_OR_ATTACHMENT_REQUIRED` | New `errorCode` (400): a certificate create or update whose **final** state has neither a licence number nor an attachment. The server re-checks only when the patch touches `licenceNo` or `filePath`, so pre-095 rows with neither stay editable for unrelated fields. **A form that round-trips its whole model — sending `licenceNo: ''` or `filePath: null` for untouched fields — will trip this on every pre-095 certificate.** Omit untouched fields. | 095 |
-| `PermitScan` | Append-only (inspector, permit, when), written on `GET /qr/:token` unless `?viaHistory=true`. What lets a visit start from history: within `min(scan + 12 h, workWindowEndInstant)` (ruling 15). The flag is client-asserted — the window bounds an honest client, like 017's `source`. | 101 |
+| `PermitScan` | Append-only (inspector, permit, when), written on `GET /qr/:token` unless `?viaHistory=true`. What lets a visit start from history: **any** prior scan by that inspector of that permit, no matter its age — ruling 15's `min(scan + 12h, workWindowEndInstant)` time bound was **reversed by an owner decision on 2026-09-12** (on `dev`, not yet merged as of this writing) after it kept forcing a re-scan on permits that were still perfectly `ACTIVE`. Ruling 16 is unchanged and still the real gate: only `ACTIVE`/`FIRE_MONITOR` permits can ever start a visit, from a scan or from history; `CLOSED`/`EXPIRED` stay read-only always. The flag is still client-asserted, like 017's `source` — the server checks only that a `PermitScan` row exists at all, never its age. | 101 |
 | `attention` | On `GET /permits` list items only: `{ gasOverdue, criticalNote, overlap }`, always present, server-computed — what marks a pin on the risk map. | 108 |
 | `licenceNo` | A certificate's licence number. **A certificate needs a licence number OR an attachment** — at least one. | 095 |
 
@@ -104,6 +104,27 @@ are owed (098, reopened).
 | permit coordinate (`latitude`/`longitude`) | **Deleted**, with its URL parser. | 105 |
 | `Worker.role` | **Deleted from the API** (2026-09-11). `PermitWorker.roleOnPermit` (template + free entry, permit-type filtered) is the surviving concept — `EWorkerRole` survives as its template list. Existing values were copied onto that worker's `PermitWorker.roleOnPermit` rows where empty, never overwriting; a worker with no `PermitWorker` rows lost the value (3 of 13 in dev — see `smart-work-permit-api/progress.md`). Both frontends are off it: contractor `319411c3`; the safety app never read it. | 103 |
 | `Gas Testing` (`ECertType`) | Dropped — `certType` becomes 1:1 with `PermitType`. | 096 |
+
+### Owner-filed fixes, outside any CR round (2026-09-12/13) — on `dev`, not yet merged
+
+Not a formal grilling round — the owner tested the deployed app directly and filed a batch of
+issues; each was grilled individually before implementation. Recorded here because two of them
+change a term or rule this file already documents elsewhere.
+
+| Term | What changed | Where |
+|---|---|---|
+| `preWorkChecklist` | New nullable `Permit` column: `Array<{ itemKey, answer: 'yes'\|'no'\|'na' }>`. The contractor's Step 3 "Safety Checks" wizard answers (13-17 items/permit-type, key `<type>-<index>`), previously frontend-only and explicitly never saved. Accepted on `PATCH /permits/:id`, returned on every permit read. **No gating** — submit/approve is unaffected by the answers, same as any other draft field — and **no audit-log row**. Read-only on the Safety/Inspector app (a review-detail tab); question text lives only in the contractor repo's locale files, ported into the safety app's own catalog for display. Distinct from `closureChecklist` (close-time, safety-officer-only) — do not conflate the two. | `smart-work-permit-api` PR #12 |
+| history-start time bound (ruling 15) | **Reversed.** See the `PermitScan` row above and `SCAN_WINDOW_EXPIRED`'s entry in §2's error-code notes below — both updated in place rather than duplicated here. | `smart-work-permit-api` PR #13 |
+
+Also shipped this batch, none of them changing a term this file tracks: inspector visit-stepper
+button colors, `/inspector/scan`'s irrelevant quick-links removed, a disabled "start visit" state
+for a non-`ACTIVE`/`FIRE_MONITOR` permit (new shared `PermitStartable.ts` in the safety/inspector
+repo), on-device scan-history retention no longer dropping `EXPIRED`/`CLOSED`/`REJECTED` (still
+capped at 7 days — a dated reversal of ticket 016's original ruling), the risk map's height/legend/
+pulse, the review-queue notification becoming clickable (marks read + filters to unread), a raw-enum
+audit-action label gap in the contractor app, its pin-picker's height, and a full-permit print/
+export in **both** frontends sharing one A4 header/footer spec (`smart-work-permit-frontend` PR #8,
+`smart-work-permit-contractor-frontend` PR #7).
 
 ---
 
@@ -193,10 +214,13 @@ deliberately, not marketing approximations, so a rule change in the API is a lan
 > — there is no `expiredAt` to reconstruct it from.
 
 > `SCAN_WINDOW_EXPIRED` (403) was added 2026-09-11 (wayfinder 101, ruling 15) on
-> `POST /permits/:id/inspector-visits` with `source: "history"`: this inspector has no server-recorded
-> `PermitScan` of the permit, or its last one is past `min(scannedAt + 12h, workWindowEndInstant)`.
-> A scan is recorded on `GET /qr/:token` for a signed-in inspector **unless `?viaHistory=true`** — a
-> reopen from history must send it, or it would refresh the window forever.
+> `POST /permits/:id/inspector-visits` with `source: "history"`. **Narrowed by the 2026-09-12 owner
+> decision** (on `dev`, not yet merged): the time-window half of the check is gone, so this
+> errorCode now means exactly one thing — this inspector has **no** server-recorded `PermitScan` of
+> the permit at all, ever, regardless of age. The permit-not-`ACTIVE`/`FIRE_MONITOR` case is a
+> separate, unchanged `PERMIT_NOT_ACTIVE` (checked first, before `source` is even read). A scan is
+> still recorded on `GET /qr/:token` for a signed-in inspector **unless `?viaHistory=true`** — a
+> reopen from history must send it, or every history view would itself count as proof of a scan.
 
 > `FILE_*` / `UPLOAD_*` / `STORAGE_UNAVAILABLE` were added by the backend on 2026-08-19 (upload
 > hardening, `REVIEW-2026-08-19.md` S1–S3/C1). `ACCOUNT_DEACTIVATED` and `LAST_SAFETY_OFFICER` were

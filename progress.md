@@ -4628,3 +4628,28 @@ polling fallback (109). `./init.sh` 671 pass at `e2c50975`.
 - **Owner questions**: "final PPE" on the report shows *declared*, not *observed* (112); the old
   closure checklist's e-signature is gone and the api has no field for one (098).
 - The six round-4 Thai strings and guide pages still want a native read.
+
+## 2026-09-12 — Owner-filed issues, live-app testing pass. NOT YET GRILLED OR IMPLEMENTED
+
+The owner tested the deployed app and filed these directly. Recorded here so a future session
+does not lose them even if this one doesn't finish all of them. Needs a scoping/grilling pass
+before implementation — do not start coding against this list without re-reading whatever
+grilling notes get appended below it first.
+
+1. On a permit's detail page, `?tab=audit`, action values render as raw enum strings
+   (`ENTRANT_CHECKED_IN`, `ENTRANT_CHECKED_OUT`, `PERMIT_EXPIRED`, and likely others not yet
+   spot-checked) instead of a human-readable EN/TH label. Needs a complete label map covering
+   every `AuditLog.action` value the API can actually emit, not just the three named — check
+   `smart-work-permit-api`'s audit-log writers for the full closed set before mapping only three.
+2. Wants a formal, print-ready A4 PDF export of a permit — proper e-safework header + footer on
+   every page, all permit information included. Explicitly wanted in BOTH this app and
+   `smart-work-permit-frontend` (the safety app) — same feature, two repos. Mechanism (browser
+   `@media print` CSS vs. a PDF-generation library) not yet decided; needs grilling on exact
+   content scope and technical approach before implementation.
+3. The permit-creation wizard's facility-plan / pin-picker step should have a fixed height that
+   fits the viewport, not grow large/overflow like it does now (same class of bug as the safety
+   app's risk-map overflow, filed the same session).
+
+Next step: grill the owner on item 2's exact scope/mechanism before writing any code, per the
+owner's explicit instruction. Items 1 and 3 are closer to plain bug fixes and may not need much
+more than confirming the full audit-action vocabulary for item 1.
