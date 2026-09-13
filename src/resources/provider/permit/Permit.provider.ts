@@ -1,5 +1,6 @@
 import type {
   ICreatePermitDraftPayload,
+  IExtendPermitPayload,
   IGetPermitListQuery,
   IMarkPermitCompletePayload,
   IRequestClosePermitPayload,
@@ -8,6 +9,7 @@ import type {
 } from '@/models/request/permit/PermitReq.model'
 import type {
   TCreatePermitDraftResponse,
+  TExtendPermitResponse,
   TGetPermitAuditResponse,
   TGetPermitDetailResponse,
   TGetPermitListResponse,
@@ -44,6 +46,7 @@ export interface IPermitProvider {
   qr (id: string): Promise<TGetPermitQrResponse>
   audit (id: string): Promise<TGetPermitAuditResponse>
   requestClose (id: string, payload: IRequestClosePermitPayload): Promise<TRequestClosePermitResponse>
+  extend (id: string, payload: IExtendPermitPayload): Promise<TExtendPermitResponse>
 }
 
 class PermitProvider extends HttpRequest implements IPermitProvider {
@@ -100,6 +103,16 @@ class PermitProvider extends HttpRequest implements IPermitProvider {
    */
   public async requestClose (id: string, payload: IRequestClosePermitPayload): Promise<TRequestClosePermitResponse> {
     const response = await this.post(`${this.urlPrefix}/${id}/close-request`, payload)
+    return response
+  }
+
+  /**
+   * Extends the work window — ACTIVE/FIRE_MONITOR/EXPIRED only (403 `PERMIT_NOT_EXTENDABLE`
+   * otherwise); a successful extend on an EXPIRED permit reactivates it to ACTIVE. A new end
+   * instant before now, or before the permit's own start, is a plain 400 with no errorCode.
+   */
+  public async extend (id: string, payload: IExtendPermitPayload): Promise<TExtendPermitResponse> {
+    const response = await this.post(`${this.urlPrefix}/${id}/extend`, payload)
     return response
   }
 }

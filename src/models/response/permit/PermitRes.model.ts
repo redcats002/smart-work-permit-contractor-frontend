@@ -86,6 +86,9 @@ export type TMarkPermitCompleteResponse = IBaseSuccessResponse<IPermitDetail>
  */
 export type TRequestClosePermitResponse = IBaseSuccessResponse<IPermitDetail>
 
+/** POST /permits/:id/extend — ACTIVE/FIRE_MONITOR/EXPIRED only; reactivates an EXPIRED permit to ACTIVE. */
+export type TExtendPermitResponse = IBaseSuccessResponse<IPermitDetail>
+
 /** GET /permits/:id/qr — ACTIVE / FIRE_MONITOR only, else 403 PERMIT_NOT_ACTIVE */
 export type TGetPermitQrResponse = IBaseSuccessResponse<IPermitQr>
 

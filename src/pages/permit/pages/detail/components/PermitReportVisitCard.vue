@@ -38,8 +38,9 @@
           :key="index"
           class="text-[11.5px] text-text-primary">
           {{ t(`permit.detail.report.entrant.${event.direction}`, {
-            who: event.workerName ?? t('permit.detail.sections.overview.none'),
-            when: stamp(event.createdAt)
+            reason: event.reason ?? t('permit.detail.report.entrant.noReason'),
+            when: stamp(event.createdAt),
+            who: event.workerName ?? t('permit.detail.sections.overview.none')
           }) }}
         </li>
       </ul>

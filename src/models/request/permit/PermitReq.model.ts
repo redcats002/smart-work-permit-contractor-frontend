@@ -102,6 +102,22 @@ export interface IRequestClosePermitPayload {
 }
 
 /**
+ * POST /permits/:id/extend — extends the work window when it is about to end or has already
+ * ended. `contractor` (own permit only) or `safety_officer`. Accepted only while the permit is
+ * `ACTIVE`/`FIRE_MONITOR`/`EXPIRED` (403 `PERMIT_NOT_EXTENDABLE` otherwise); a successful extend
+ * on an `EXPIRED` permit reactivates it to `ACTIVE`. The new end instant (`endDate` + `dailyEnd`
+ * combined, same UTC-trap convention as `ICreatePermitDraftPayload`) must be after now and not
+ * before the permit's own start — a plain 400 with NO errorCode, mirrored client-side by
+ * `ExtendPermit.schema.ts` but never gated beyond what the server itself checks.
+ */
+export interface IExtendPermitPayload {
+  /** `YYYY-MM-DD` */
+  endDate: string
+  /** Full ISO datetime, `1970-01-01`-anchored — same convention as `dailyEnd` above. */
+  dailyEnd: string
+}
+
+/**
  * GET /permits. A contractor is scoped to their own permits automatically — `contractorId` is
  * ignored for contractor accounts, so it is not modelled here.
  *

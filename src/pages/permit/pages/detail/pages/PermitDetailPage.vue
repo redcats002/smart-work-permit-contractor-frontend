@@ -66,7 +66,10 @@
           PermitUrgentSection.vue) when there is nothing urgent, so the common case is this page's
           own status banner immediately followed by the clean tabbed layout below.
         -->
-        <PermitUrgentSection :permit="permit" />
+        <PermitUrgentSection
+          :permit="permit"
+          @extended="onPermitUpdated($event)"
+          @request-closure="showRequestClose = true" />
       </div>
 
       <!--

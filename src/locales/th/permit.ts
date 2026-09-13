@@ -418,6 +418,15 @@ const permit: typeof permitEn = {
           safety_officer: 'เจ้าหน้าที่ความปลอดภัย (จป.)',
           unknown: 'ผู้เกี่ยวข้องกับใบอนุญาตนี้'
         }
+      },
+      timeoutWarning: {
+        title: 'ใกล้ครบกำหนดช่วงเวลาทำงานแล้ว',
+        body: 'เหลืออีก {remaining} ก่อนช่วงเวลาทำงานของใบอนุญาตนี้จะสิ้นสุด',
+        dismiss: 'ปิดข้อความนี้'
+      },
+      timeoutExpired: {
+        title: 'ช่วงเวลาทำงานสิ้นสุดแล้ว — ใบอนุญาตหมดอายุ',
+        body: 'ช่วงเวลาทำงานของใบอนุญาตนี้สิ้นสุดแล้ว และระบบได้เปลี่ยนสถานะเป็นหมดอายุโดยอัตโนมัติ'
       }
     },
     // PMT-013 — หกส่วนตาม docs/main/dev-handoff/05-permit-detail-sections.md §2 ตามลำดับ
@@ -608,6 +617,22 @@ const permit: typeof permitEn = {
       confirm: 'ส่งคำขอ',
       submitting: 'กำลังส่ง…'
     },
+    extend: {
+      start: 'ขยายเวลา →',
+      title: 'ขยายช่วงเวลาทำงาน',
+      subtitle: 'เลือกวันที่สิ้นสุดใหม่และเวลาสิ้นสุดของแต่ละวันเพื่อขยายช่วงเวลาทำงานของใบอนุญาตนี้',
+      field: {
+        endDate: 'วันที่สิ้นสุดใหม่',
+        dailyEnd: 'เวลาสิ้นสุดของแต่ละวันใหม่'
+      },
+      cancel: 'ยกเลิก',
+      confirm: 'ขยายเวลา',
+      submitting: 'กำลังขยายเวลา…',
+      validation: {
+        endInFuture: 'เวลาสิ้นสุดใหม่ต้องอยู่หลังเวลาปัจจุบัน',
+        notBeforeStart: 'เวลาสิ้นสุดใหม่ต้องไม่ก่อนวันเริ่มต้นของใบอนุญาตนี้'
+      }
+    },
     pendingEditWarning: {
       title: 'แก้ไขใบอนุญาตที่รอตรวจสอบนี้หรือไม่',
       body: 'ใบอนุญาตนี้กำลังรอเจ้าหน้าที่ความปลอดภัย (จป.) ตรวจสอบ หากแก้ไขตอนนี้ ใบอนุญาตจะถูกถอนออกจากการตรวจสอบและกลับไปเป็นใบร่าง คุณจะต้องส่งคำขอใหม่อีกครั้งหลังแก้ไขเสร็จ',
@@ -673,7 +698,9 @@ const permit: typeof permitEn = {
       },
       entrant: {
         IN: '{who} เข้าพื้นที่ — {when}',
-        OUT: '{who} ออกจากพื้นที่ — {when}'
+        OUT: '{who} ออกจากพื้นที่ — {when}',
+        NOT_AVAILABLE: '{who} ถูกทำเครื่องหมายว่าไม่พร้อม — {when} ({reason})',
+        noReason: 'ไม่ได้ระบุเหตุผล'
       },
       ppe: {
         none: 'ไม่มีการบันทึก PPE ในการเข้าตรวจนี้',
@@ -702,11 +729,112 @@ const permit: typeof permitEn = {
     },
     print: {
       button: 'พิมพ์ / บันทึกเป็น PDF',
+      // 2026-09-13 owner-filed task — official per-type printed permit forms. The print trigger
+      // now opens a small menu (`PermitPrintLayout.vue`'s `Menu`) rather than printing directly.
+      menu: {
+        fullReport: 'รายงานฉบับสมบูรณ์ / Full report',
+        officialForm: 'แบบฟอร์มใบอนุญาตทางการ / Official permit form'
+      },
       header: {
         subtitle: 'ระบบจัดการใบอนุญาตทำงาน'
       },
       footer: {
         printedVia: 'พิมพ์ผ่าน e-safework — {when}'
+      },
+      // 2026-09-13 owner-filed task — official per-type printed permit forms
+      // (`OfficialPermitFormLayout.vue`, `OfficialFormConfig.ts`). This form is a Thai regulatory
+      // paper form the facility already uses on site — it shows Thai + English TOGETHER on the
+      // physical page regardless of the app's own active UI locale, so every string below is
+      // deliberately the SAME bilingual "ไทย / English" composite as `src/locales/en/permit.ts`,
+      // unlike the rest of this file where the two locales differ.
+      official: {
+        hot: { formTitle: 'ใบอนุญาตทำงานที่ก่อให้เกิดความร้อนหรือประกายไฟ / Hot Work Permit' },
+        heights: { formTitle: 'ใบอนุญาตทำงานบนที่สูง / Working at Height Permit' },
+        confined: { formTitle: 'ใบขออนุญาตทำงานในที่อับอากาศ / Confined Space Permit' },
+        answer: {
+          yes: 'ใช่ / Yes',
+          no: 'ไม่ใช่ / No',
+          na: 'ไม่เกี่ยวข้อง / N/A'
+        },
+        field: {
+          section1: 'ส่วนที่ 1 — รายละเอียดการขออนุญาต / Section 1 — Request Details',
+          section2: 'ส่วนที่ 2 — ตรวจสอบก่อนเริ่มงาน / Section 2 — Pre-Work Check',
+          section3: 'ส่วนที่ 3 — ตรวจสอบระหว่างทำงาน / Section 3 — During-Work Check',
+          section4: 'ส่วนที่ 4 — ตรวจสอบหลังเสร็จงาน / Section 4 — Post-Work Check',
+          workDate: 'วันที่ทำงาน / Work Date',
+          workTime: 'เวลาทำงาน / Time',
+          location: 'สถานที่ / Location',
+          worker1: 'ผู้ปฏิบัติงาน 1 / Worker 1',
+          worker2: 'ผู้ปฏิบัติงาน 2 / Worker 2',
+          workersOverflow: 'ผู้ปฏิบัติงานเพิ่มเติมอีก {n} คน (ดูแท็บผู้ปฏิบัติงาน) / +{n} more worker(s) not shown (see Workers tab)',
+          requester: 'ผู้ขออนุญาต / Requested By',
+          contractorCheckbox: 'ผู้รับเหมา / Contractor',
+          companyName: 'ชื่อบริษัท / Company Name',
+          department: 'แผนก / Department',
+          phone: 'โทรศัพท์ / Phone',
+          workDescription: 'รายละเอียดงาน / Work Description',
+          ppePrepared: 'อุปกรณ์ป้องกันส่วนบุคคลที่จัดเตรียม / PPE Prepared',
+          equipmentPrep: {
+            fireExtinguisherCount: 'ถังดับเพลิง (ถัง) / Fire Extinguishers (units)',
+            fireproofClothCount: 'ผ้าคลุมกันไฟ (ผืน) / Fireproof Cloth (sheets)',
+            scaffoldFloors: 'นั่งร้าน (ชั้น) / Scaffold (floors)',
+            steelLadderFloors: 'บันไดเหล็ก (ชั้น) / Steel Ladder (floors)',
+            woodenLadderMeters: 'บันไดไม้ (เมตร) / Wooden Ladder (meters)',
+            warningSigns: 'ป้ายเตือน / Warning Signs',
+            otherHazardEquip: 'อุปกรณ์พื้นที่อันตรายอื่นๆ / Other Hazard-Area Equipment',
+            otherRow: 'อื่นๆ (ระบุ) / Other (specify)'
+          },
+          typeOfWork: {
+            welding: 'งานเชื่อม / Welding',
+            grinding: 'งานเจียร / Grinding',
+            electricWeld: 'งานเชื่อมไฟฟ้า / Electric Welding',
+            cutting: 'งานตัด / Cutting',
+            arcWeld: 'งานเชื่อมอาร์ก / Arc Welding',
+            other: 'อื่นๆ / Other'
+          },
+          checklistPlaceholderItem: 'รายการตรวจสอบที่ {n} / Check item {n}',
+          checklistItem: 'รายการตรวจสอบ / Item',
+          checklistDate: 'วันที่ / Date',
+          signatureSafetyOfficer: 'เจ้าหน้าที่ความปลอดภัย / Safety Officer',
+          signatureAreaOwnerInspector: 'ผู้ตรวจสอบเจ้าของพื้นที่ / Area-Owner Inspector',
+          signatureAreaSupervisor: 'หัวหน้างานเจ้าของงาน / Area Supervisor',
+          signatureDatePlaceholder: 'วันที่ / Date',
+          approvalDateRange: 'อนุมัติช่วงวันที่ / Approved Date Range',
+          approvingManager: 'ผู้จัดการผู้อนุมัติ / Approving Manager',
+          validityNote: 'ใบอนุญาตนี้มีผลไม่เกิน {days} วันต่อการออกใบอนุญาตหนึ่งครั้ง — ขอใหม่เมื่อหมดอายุ / '
+            + 'This permit is valid at most {days} days per issuance — re-request on expiry.',
+          requestDate: 'วันที่ขออนุญาต / Request Date',
+          permitNumber: 'หมายเลขใบอนุญาต / Permit No.',
+          teamExternal: 'ผู้รับเหมาภายนอก / External Contractor',
+          workerName: 'ชื่อผู้ปฏิบัติงาน / Worker Name',
+          workerRole: 'หน้าที่ / Role',
+          workerBloodPressure: 'ความดันโลหิต / Blood Pressure',
+          workerAlcohol: 'ผลตรวจแอลกอฮอล์ / Alcohol Reading',
+          supervisor: 'หัวหน้างาน / Supervisor',
+          rescueStandby: 'ผู้ประจำจุดกู้ภัย / Rescue Standby',
+          safetyMeasureItem: 'มาตรการความปลอดภัยที่ {n} / Safety measure {n}',
+          confinedPpe: {
+            breathingApparatus: 'เครื่องช่วยหายใจ / Breathing Apparatus',
+            hardHat: 'หมวกนิรภัย / Hard Hat',
+            safetyHarness: 'สายรัดนิรภัย / Safety Harness',
+            wireRopeCarabiner: 'เชือกลวดสลิง / คาราไบเนอร์ / Wire Rope / Carabiner',
+            gasMask: 'หน้ากากป้องกันแก๊ส / Gas Mask',
+            lifeSafetyRope: 'เชือกช่วยชีวิต / Life-Safety Rope',
+            oxygenMaskCpr: 'หน้ากากออกซิเจน / ชุดกู้ชีพ / Oxygen Mask / CPR Set',
+            other: 'อื่นๆ / Other'
+          },
+          atmosphereO2: 'ออกซิเจน O2 (%) / Oxygen O2 (%)',
+          atmosphereLel: 'แก๊สไวไฟ LEL (%) / Flammable Gas LEL (%)',
+          atmosphereToxic1: 'ก๊าซพิษ CO (ppm) / Toxic Gas CO (ppm)',
+          atmosphereToxic2: 'ก๊าซพิษ SO2 (ppm) / Toxic Gas SO2 (ppm)',
+          signatureRequester: 'ผู้ขออนุญาต / Requester',
+          signatureSupervisor: 'หัวหน้างาน / Supervisor',
+          signatureApprover: 'ผู้อนุมัติ / Approver',
+          entryScopeNote: 'ใบอนุญาตนี้อนุญาตให้เข้าปฏิบัติงานเฉพาะผู้ปฏิบัติงานที่มีชื่อระบุไว้เท่านั้น / '
+            + 'This permit authorises entry only for the workers explicitly named on it.',
+          restoredNote: 'เมื่อเสร็จสิ้นงาน ต้องคืนสภาพพื้นที่อับอากาศให้ปลอดภัยตามปกติ / '
+            + 'On completion, the confined space must be restored to a normal, non-hazardous condition.'
+        }
       },
       preWork: {
         title: 'รายการตรวจสอบความปลอดภัยก่อนเริ่มงาน',
@@ -719,7 +847,9 @@ const permit: typeof permitEn = {
         columnDirection: 'สถานะ',
         columnWhen: 'เวลา',
         directionIn: 'เข้า',
-        directionOut: 'ออก'
+        directionOut: 'ออก',
+        directionNotAvailable: 'ไม่พร้อม',
+        directionNotAvailableWithReason: 'ไม่พร้อม ({reason})'
       },
       gasLog: {
         title: 'บันทึกผลตรวจวัดแก๊ส',
@@ -740,7 +870,8 @@ const permit: typeof permitEn = {
     submitted: 'ส่งใบอนุญาตเพื่อตรวจสอบแล้ว',
     closed: 'ปิดใบอนุญาตแล้ว',
     closeRequested: 'ส่งคำขอปิดใบอนุญาตแล้ว — แจ้งเจ้าหน้าที่ความปลอดภัยเรียบร้อย',
-    duplicated: 'ทำสำเนาใบอนุญาตแล้ว — แก้ไขฉบับร่างใหม่ต่อได้เลย'
+    duplicated: 'ทำสำเนาใบอนุญาตแล้ว — แก้ไขฉบับร่างใหม่ต่อได้เลย',
+    extended: 'ขยายเวลาใบอนุญาตแล้ว — ปรับปรุงช่วงเวลาทำงานเรียบร้อย'
   }
 }
 
