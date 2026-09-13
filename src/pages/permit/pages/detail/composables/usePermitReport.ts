@@ -24,10 +24,12 @@ const GasLogService: IGasLogProvider = new GasLogProvider()
 export interface IEntrantAuditEvent {
   workerId: number | null
   workerName: string | null
-  direction: 'IN' | 'OUT'
+  direction: 'IN' | 'OUT' | 'NOT_AVAILABLE'
   source: string | null
   /** `true` on the auto-checkout rows a closure writes (`payload.closedPermit === true`). */
   closedByClosure: boolean
+  /** `WORKER_MARKED_NOT_AVAILABLE`'s own `payload.note` — the absence reason. `null` otherwise. */
+  reason: string | null
   createdAt: string
 }
 
@@ -71,15 +73,21 @@ export function usePermitReport (
   const loading = ref(false)
 
   const entrantEvents: ComputedRef<IEntrantAuditEvent[]> = computed((): IEntrantAuditEvent[] => audit.value
-    .filter((entry: IPermitAuditEntry): boolean => entry.action === 'ENTRANT_CHECKED_IN' || entry.action === 'ENTRANT_CHECKED_OUT')
+    .filter((entry: IPermitAuditEntry): boolean => entry.action === 'ENTRANT_CHECKED_IN'
+      || entry.action === 'ENTRANT_CHECKED_OUT' || entry.action === 'WORKER_MARKED_NOT_AVAILABLE')
     .map((entry: IPermitAuditEntry): IEntrantAuditEvent => {
       const payload = entry.payload && typeof entry.payload === 'object' ? entry.payload as Record<string, unknown> : {}
+      const direction = entry.action === 'ENTRANT_CHECKED_IN'
+        ? 'IN'
+        : entry.action === 'ENTRANT_CHECKED_OUT' ? 'OUT' : 'NOT_AVAILABLE'
       return {
         workerId: typeof payload.workerId === 'number' ? payload.workerId : null,
         workerName: typeof payload.workerName === 'string' ? payload.workerName : null,
-        direction: entry.action === 'ENTRANT_CHECKED_IN' ? 'IN' : 'OUT',
+        direction,
         source: typeof payload.source === 'string' ? payload.source : null,
         closedByClosure: payload.closedPermit === true,
+        // `record-entrant-not-available.ts` writes the reason at `payload.note`, not `payload.reason`.
+        reason: typeof payload.note === 'string' && payload.note.trim() ? payload.note : null,
         createdAt: entry.createdAt
       }
     })

@@ -1,11 +1,12 @@
 import type { VueWrapper } from '@vue/test-utils'
-import { flushPromises, mount } from '@vue/test-utils'
+import { DOMWrapper, flushPromises, mount } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import i18n, { setLocale } from '@/plugins/I18n.plugin'
 import EntrantProvider from '@/resources/provider/entrant/Entrant.provider'
 import GasLogProvider from '@/resources/provider/gas-log/GasLog.provider'
 import InspectorVisitProvider from '@/resources/provider/inspector-visit/InspectorVisit.provider'
+import UserProvider from '@/resources/provider/user/User.provider'
 import PermitPrintLayout from '@/pages/permit/pages/detail/components/PermitPrintLayout.vue'
 import type { TPermitStatus } from '@/enums/modules/permit/PermitStatus.enum'
 import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
@@ -100,6 +101,25 @@ async function mountLayout (permit: IPermitDetail, audit: IPermitAuditEntry[]): 
   return wrapper
 }
 
+/**
+ * 2026-09-13 owner-filed task — official per-type printed permit forms. The print trigger now
+ * opens a `Menu` (Volt's PrimeVue wrapper) instead of printing directly. PrimeVue's popup `Menu`
+ * teleports its item list straight onto the real `document.body` (verified: it is NOT inside
+ * `wrapper`'s own DOM tree at all), so menu items are found/clicked via a `DOMWrapper` over
+ * `document.body` rather than `wrapper.find()`. Item labels are the SAME bilingual "ไทย /
+ * English" composite string regardless of active locale (see `permit.detail.print.menu.*`), so
+ * matching by the English half is stable under both `setLocale('en')` and `'th'`.
+ */
+async function clickPrintMenuItem (wrapper: VueWrapper, labelSubstring: string): Promise<void> {
+  await wrapper.find('[data-test="print-trigger"]').trigger('click')
+  const body = new DOMWrapper(document.body)
+  const items = body.findAll('[data-pc-section="itemlink"]')
+  const target = items.find((item: DOMWrapper<Element>): boolean => item.text().includes(labelSubstring))
+  if (!target) throw new Error(`print menu item containing "${labelSubstring}" not found`)
+  await target.trigger('click')
+  await flushPromises()
+}
+
 describe('PermitPrintLayout (2026-09-12 owner-filed issue 2)', () => {
   beforeEach(() => {
     setLocale('en')
@@ -140,8 +160,7 @@ describe('PermitPrintLayout (2026-09-12 owner-filed issue 2)', () => {
     ]
     const wrapper = await mountLayout(buildPermit(), audit)
 
-    await wrapper.find('[data-test="print-trigger"]').trigger('click')
-    await flushPromises()
+    await clickPrintMenuItem(wrapper, 'Full report')
 
     const root = wrapper.find('[data-test="print-root"]')
     expect(root.exists()).toBe(true)
@@ -173,11 +192,43 @@ describe('PermitPrintLayout (2026-09-12 owner-filed issue 2)', () => {
   it('omits the entrant/gas-log sections for a non-confined-space permit type', async () => {
     const wrapper = await mountLayout(buildPermit({ type: 'hot' as TPermitType }), [])
 
-    await wrapper.find('[data-test="print-trigger"]').trigger('click')
-    await flushPromises()
+    await clickPrintMenuItem(wrapper, 'Full report')
 
     const root = wrapper.find('[data-test="print-root"]')
     expect(root.find('[data-test="print-section-entrants"]').exists()).toBe(false)
     expect(root.find('[data-test="print-section-gas-log"]').exists()).toBe(false)
+  })
+
+  /**
+   * 2026-09-13 owner-filed task — official per-type printed permit forms. The menu's second
+   * option, and the existing full-report option must both stay independently available/mutually
+   * exclusive in the DOM (never both mounted from one click).
+   */
+  it('mounts the official permit form (not the full report) when that menu option is chosen, and vice versa', async () => {
+    vi.spyOn(UserProvider.prototype, 'me').mockResolvedValue({
+      message: 'success',
+      data: {
+        id: 'u-1',
+        email: 'somchai@example.com',
+        firstName: 'Somchai',
+        lastName: 'P.',
+        phoneNumberPrefix: null,
+        phoneNumber: null,
+        phoneNumberExtend: null,
+        permitRole: 'contractor',
+        active: true,
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+        contractorProfile: { firmName: 'Acme Fabrication Co.', taxId: null, address: null, contactPerson: null, contractStart: null, contractEnd: null }
+      }
+    })
+
+    const wrapper = await mountLayout(buildPermit({ type: 'hot' as TPermitType }), [])
+
+    await clickPrintMenuItem(wrapper, 'Official permit form')
+
+    expect(wrapper.find('[data-test="official-form-root"]').exists()).toBe(true)
+    expect(wrapper.find('[data-test="print-root"]').exists()).toBe(false)
+    expect(wrapper.find('[data-test="official-form-root"]').text()).toContain('Acme Fabrication Co.')
   })
 })

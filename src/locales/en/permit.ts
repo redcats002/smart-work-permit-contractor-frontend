@@ -424,6 +424,18 @@ const permit = {
           safety_officer: 'the Safety Officer',
           unknown: 'someone on this permit'
         }
+      },
+      // The permit-timeout warning. `usePermitCountdown.ts` derives both states client-side from
+      // `endDate`/`dailyEnd` — the server is still authoritative for the actual EXPIRED transition
+      // and for POST /permits/:id/extend's own gate; this banner only warns and offers a shortcut.
+      timeoutWarning: {
+        title: 'Work window ending soon',
+        body: '{remaining} remaining before this permit\'s work window ends.',
+        dismiss: 'Dismiss'
+      },
+      timeoutExpired: {
+        title: 'Work window ended — permit expired',
+        body: 'This permit\'s work window ended and it was automatically marked Expired.'
       }
     },
     // PMT-013 — the six sections of docs/main/dev-handoff/05-permit-detail-sections.md §2, in order.
@@ -627,6 +639,24 @@ const permit = {
       confirm: 'Send Request',
       submitting: 'Sending…'
     },
+    // The permit-timeout warning's "Extend" action — POST /permits/:id/extend. Offered from both
+    // the warning and expired banners in PermitUrgentSection.vue.
+    extend: {
+      start: 'Extend →',
+      title: 'Extend Work Window',
+      subtitle: 'Choose a new end date and daily end time to extend this permit\'s work window.',
+      field: {
+        endDate: 'New end date',
+        dailyEnd: 'New daily end time'
+      },
+      cancel: 'Cancel',
+      confirm: 'Extend',
+      submitting: 'Extending…',
+      validation: {
+        endInFuture: 'The new end must be after the current time.',
+        notBeforeStart: 'The new end cannot be before this permit\'s start.'
+      }
+    },
     pendingEditWarning: {
       // wayfinder 012 — the contractor half. The warning fires BEFORE the resume route is opened,
       // because the wizard's own debounced save handler is what withdraws the permit server-side
@@ -699,7 +729,9 @@ const permit = {
       },
       entrant: {
         IN: '{who} checked in — {when}',
-        OUT: '{who} checked out — {when}'
+        OUT: '{who} checked out — {when}',
+        NOT_AVAILABLE: '{who} marked not available — {when} ({reason})',
+        noReason: 'no reason given'
       },
       ppe: {
         none: 'No PPE was recorded on this visit.',
@@ -734,11 +766,135 @@ const permit = {
     // closure only). Header/footer copy is shared with the Safety app's identical spec.
     print: {
       button: 'Print / Export PDF',
+      // 2026-09-13 owner-filed task — official per-type printed permit forms. The print trigger
+      // now opens a small menu (`PermitPrintLayout.vue`'s `Menu`) rather than printing directly.
+      menu: {
+        fullReport: 'รายงานฉบับสมบูรณ์ / Full report',
+        officialForm: 'แบบฟอร์มใบอนุญาตทางการ / Official permit form'
+      },
       header: {
         subtitle: 'Work Permit Management System'
       },
       footer: {
         printedVia: 'Printed via e-safework — {when}'
+      },
+      // 2026-09-13 owner-filed task — official per-type printed permit forms
+      // (`OfficialPermitFormLayout.vue`, `OfficialFormConfig.ts`). This form is a Thai regulatory
+      // paper form the facility already uses on site — it shows Thai + English TOGETHER on the
+      // physical page regardless of the app's own active UI locale, so every string below is
+      // deliberately the SAME bilingual "ไทย / English" composite in both this file and
+      // `src/locales/th/permit.ts`, unlike the rest of this file where the two locales differ.
+      official: {
+        hot: { formTitle: 'ใบอนุญาตทำงานที่ก่อให้เกิดความร้อนหรือประกายไฟ / Hot Work Permit' },
+        heights: { formTitle: 'ใบอนุญาตทำงานบนที่สูง / Working at Height Permit' },
+        confined: { formTitle: 'ใบขออนุญาตทำงานในที่อับอากาศ / Confined Space Permit' },
+        answer: {
+          yes: 'ใช่ / Yes',
+          no: 'ไม่ใช่ / No',
+          na: 'ไม่เกี่ยวข้อง / N/A'
+        },
+        field: {
+          section1: 'ส่วนที่ 1 — รายละเอียดการขออนุญาต / Section 1 — Request Details',
+          section2: 'ส่วนที่ 2 — ตรวจสอบก่อนเริ่มงาน / Section 2 — Pre-Work Check',
+          section3: 'ส่วนที่ 3 — ตรวจสอบระหว่างทำงาน / Section 3 — During-Work Check',
+          section4: 'ส่วนที่ 4 — ตรวจสอบหลังเสร็จงาน / Section 4 — Post-Work Check',
+          workDate: 'วันที่ทำงาน / Work Date',
+          workTime: 'เวลาทำงาน / Time',
+          location: 'สถานที่ / Location',
+          worker1: 'ผู้ปฏิบัติงาน 1 / Worker 1',
+          worker2: 'ผู้ปฏิบัติงาน 2 / Worker 2',
+          workersOverflow: 'ผู้ปฏิบัติงานเพิ่มเติมอีก {n} คน (ดูแท็บผู้ปฏิบัติงาน) / +{n} more worker(s) not shown (see Workers tab)',
+          requester: 'ผู้ขออนุญาต / Requested By',
+          contractorCheckbox: 'ผู้รับเหมา / Contractor',
+          companyName: 'ชื่อบริษัท / Company Name',
+          department: 'แผนก / Department',
+          phone: 'โทรศัพท์ / Phone',
+          workDescription: 'รายละเอียดงาน / Work Description',
+          ppePrepared: 'อุปกรณ์ป้องกันส่วนบุคคลที่จัดเตรียม / PPE Prepared',
+          equipmentPrep: {
+            fireExtinguisherCount: 'ถังดับเพลิง (ถัง) / Fire Extinguishers (units)',
+            fireproofClothCount: 'ผ้าคลุมกันไฟ (ผืน) / Fireproof Cloth (sheets)',
+            scaffoldFloors: 'นั่งร้าน (ชั้น) / Scaffold (floors)',
+            steelLadderFloors: 'บันไดเหล็ก (ชั้น) / Steel Ladder (floors)',
+            woodenLadderMeters: 'บันไดไม้ (เมตร) / Wooden Ladder (meters)',
+            warningSigns: 'ป้ายเตือน / Warning Signs',
+            otherHazardEquip: 'อุปกรณ์พื้นที่อันตรายอื่นๆ / Other Hazard-Area Equipment',
+            otherRow: 'อื่นๆ (ระบุ) / Other (specify)'
+          },
+          typeOfWork: {
+            welding: 'งานเชื่อม / Welding',
+            grinding: 'งานเจียร / Grinding',
+            electricWeld: 'งานเชื่อมไฟฟ้า / Electric Welding',
+            cutting: 'งานตัด / Cutting',
+            arcWeld: 'งานเชื่อมอาร์ก / Arc Welding',
+            other: 'อื่นๆ / Other'
+          },
+          // Verbatim from the owner's reference paper form images, re-read directly 2026-09-13
+          // (supersedes the earlier "Check item N" structural placeholder — see
+          // OfficialFormConfig.ts's buildRealChecklistItems).
+          hotSection2Item1: 'ได้ทำความสะอาดอุปกรณ์และบริเวณใกล้เคียง จนปราศจากน้ำมัน สารเคมี และวัตถุติดไฟได้ง่าย / Equipment and the surrounding area have been cleaned until free of oil, chemicals and easily flammable material',
+          hotSection2Item2: 'ช่องเปิด ท่อ ที่สะเก็ดไฟอาจกระเด็นตกลงไปได้ ได้ทำการปิดด้วยวัสดุที่ไม่ติดไฟเรียบร้อยแล้ว / Openings or pipes through which sparks could fall have been properly sealed with non-combustible material',
+          hotSection2Item3: 'มีอุปกรณ์ดับเพลิงอยู่ในบริเวณที่ปฏิบัติงาน หรือในระยะไม่เกิน 5 เมตร / Firefighting equipment is present at the work site, or within 5 metres of it',
+          hotSection2Item4: 'ในบริเวณรัศมี 5 เมตร ต้องปราศจากวัสดุหรือสารไวไฟ / Within a 5-metre radius, the area is free of flammable materials or substances',
+          hotSection2Item5: 'วัสดุหรือสารไวไฟที่ไม่อาจเคลื่อนย้ายได้ ได้มีการปิดกั้นด้วยวัสดุที่ไม่ติดไฟเรียบร้อยแล้ว / Flammable materials or substances that cannot be moved have been properly covered with non-combustible material',
+          hotSection2Item6: 'มีการติดตั้งป้ายสัญญาณเตือนหรือกั้นเขตให้รู้ระวังอันตรายจากการปฏิบัติงาน / Warning signs or barriers have been installed to alert of the hazard from this work',
+          hotSection2Item7: 'อุปกรณ์ที่นำมาใช้ในการปฏิบัติงานทุกชิ้น เช่น อุปกรณ์เครื่องเชื่อม ต้องอยู่ในสภาพที่เรียบร้อยและปลอดภัย / Every piece of equipment used for the work (e.g. welding equipment) is in good, safe condition',
+          hotSection2Item8: 'ได้จัดเตรียมอุปกรณ์ป้องกันอันตรายส่วนบุคคลไว้ให้ใช้งานอย่างครบถ้วนเหมาะสม ตามสภาพงาน / Personal protective equipment has been fully and appropriately prepared for use, according to the work',
+          heightsSection2Item1: 'ได้ทำความสะอาดอุปกรณ์และบริเวณใกล้เคียง จนปราศจากน้ำมัน สารเคมี และวัตถุติดไฟได้ง่าย / Equipment and the surrounding area have been cleaned until free of oil, chemicals and easily flammable material',
+          heightsSection2Item2: 'ช่องเปิด หรือช่องต่างๆ ได้จัดทำราวกันตกความสูงไม่น้อยกว่า 90 ซม. ล้อมรอบเพื่อป้องกันการตกหล่น / Openings or gaps have railings at least 90 cm high, fully enclosed to prevent falling',
+          heightsSection2Item3: 'บันได นั่งร้าน หรืออุปกรณ์ที่ใช้ยืนปฏิบัติงาน มีสภาพปลอดภัยไว้เรียบร้อยแล้ว / Ladders, stands or scaffolding used for the work have been prepared and are in safe condition',
+          heightsSection2Item4: 'มีการติดตั้งป้ายสัญญาณเตือนหรือกั้นเขตให้รู้ระวังอันตรายจากการปฏิบัติงาน / Warning signs or barriers have been installed to alert of the hazard from this work',
+          heightsSection2Item5: 'อุปกรณ์ที่นำมาใช้ในการปฏิบัติงานทุกชิ้น ต้องอยู่ในสภาพที่เรียบร้อยและปลอดภัย / Every piece of equipment used for the work is in good, safe condition',
+          heightsSection2Item6: 'ได้จัดเตรียมอุปกรณ์ป้องกันอันตรายส่วนบุคคลไว้ให้ใช้งานอย่างครบถ้วนเหมาะสม ตามสภาพงาน (หมวกนิรภัย เข็มขัดนิรภัย สายช่วยชีวิต รองเท้านิรภัย ถุงมือหนัง อื่นๆ) / Personal protective equipment has been fully and appropriately prepared for use, according to the work (hard hat, safety belt, lifeline, safety shoes, leather gloves, other)',
+          sharedSection3Item1: 'ได้มีการจัดสถานที่ทำงานให้มีความปลอดภัย ตามที่ตรวจสอบในส่วนที่ 2 / The work site has been kept safe per the measures checked in Section 2',
+          sharedSection3Item2: 'พนักงานมีการปฏิบัติงานอย่างปลอดภัย มีการสวมใส่ PPE ตามที่กำหนดไว้ / Workers are performing the work safely and wearing PPE as required',
+          hotSection4Item1: 'ต้องทำความสะอาดสถานที่ทำงานให้สะอาดเรียบร้อย ปราศจากฝุ่นตกค้าง และเก็บอุปกรณ์ดับเพลิงเข้าที่เรียบร้อย / The work site has been cleaned thoroughly, free of leftover dust, and firefighting equipment stored away properly',
+          hotSection4Item2: 'ได้ตรวจสอบบริเวณโดยรอบที่ปฏิบัติงานแล้วว่าไม่มีอันตรายใด ๆ ที่เกิดจากการปฏิบัติงาน โดยเฉพาะการเกิดเพลิงไหม้จากสะเก็ดไฟ / The surrounding area has been inspected and confirmed free of any hazard from the work, especially fire caused by sparks',
+          heightsSection4Item1: 'ต้องทำความสะอาดสถานที่ทำงานให้สะอาดเรียบร้อย ปราศจากฝุ่นตกค้าง / The work site has been cleaned thoroughly, free of leftover dust',
+          heightsSection4Item2: 'ได้ตรวจสอบบริเวณโดยรอบที่ปฏิบัติงานแล้วว่าไม่มีอันตรายใด ๆ ที่เกิดจากการปฏิบัติงาน / The surrounding area has been inspected and confirmed free of any hazard from the work',
+          heightsSection4ToolsStored: 'เก็บอุปกรณ์ต่างๆ เข้าที่เรียบร้อย / Tools and equipment have been stored away properly',
+          checklistItem: 'รายการตรวจสอบ / Item',
+          checklistDate: 'วันที่ / Date',
+          signatureSafetyOfficer: 'เจ้าหน้าที่ความปลอดภัย / Safety Officer',
+          signatureAreaOwnerInspector: 'ผู้ตรวจสอบเจ้าของพื้นที่ / Area-Owner Inspector',
+          signatureAreaSupervisor: 'หัวหน้างานเจ้าของงาน / Area Supervisor',
+          signatureDatePlaceholder: 'วันที่ / Date',
+          approvalDateRange: 'อนุมัติช่วงวันที่ / Approved Date Range',
+          approvingManager: 'ผู้จัดการผู้อนุมัติ / Approving Manager',
+          validityNote: 'ใบอนุญาตนี้มีผลไม่เกิน {days} วันต่อการออกใบอนุญาตหนึ่งครั้ง — ขอใหม่เมื่อหมดอายุ / '
+            + 'This permit is valid at most {days} days per issuance — re-request on expiry.',
+          requestDate: 'วันที่ขออนุญาต / Request Date',
+          permitNumber: 'หมายเลขใบอนุญาต / Permit No.',
+          teamExternal: 'ผู้รับเหมาภายนอก / External Contractor',
+          workerName: 'ชื่อผู้ปฏิบัติงาน / Worker Name',
+          workerRole: 'หน้าที่ / Role',
+          workerBloodPressure: 'ความดันโลหิต / Blood Pressure',
+          workerAlcohol: 'ผลตรวจแอลกอฮอล์ / Alcohol Reading',
+          supervisor: 'หัวหน้างาน / Supervisor',
+          rescueStandby: 'ผู้ประจำจุดกู้ภัย / Rescue Standby',
+          safetyMeasureItem: 'มาตรการความปลอดภัยที่ {n} / Safety measure {n}',
+          confinedPpe: {
+            breathingApparatus: 'เครื่องช่วยหายใจ / Breathing Apparatus',
+            hardHat: 'หมวกนิรภัย / Hard Hat',
+            safetyHarness: 'สายรัดนิรภัย / Safety Harness',
+            wireRopeCarabiner: 'เชือกลวดสลิง / คาราไบเนอร์ / Wire Rope / Carabiner',
+            gasMask: 'หน้ากากป้องกันแก๊ส / Gas Mask',
+            lifeSafetyRope: 'เชือกช่วยชีวิต / Life-Safety Rope',
+            oxygenMaskCpr: 'หน้ากากออกซิเจน / ชุดกู้ชีพ / Oxygen Mask / CPR Set',
+            other: 'อื่นๆ / Other'
+          },
+          atmosphereO2: 'ออกซิเจน O2 (%) / Oxygen O2 (%)',
+          atmosphereLel: 'แก๊สไวไฟ LEL (%) / Flammable Gas LEL (%)',
+          atmosphereToxic1: 'ก๊าซพิษ CO (ppm) / Toxic Gas CO (ppm)',
+          atmosphereToxic2: 'ก๊าซพิษ SO2 (ppm) / Toxic Gas SO2 (ppm)',
+          signatureRequester: 'ผู้ขออนุญาต / Requester',
+          signatureSupervisor: 'หัวหน้างาน / Supervisor',
+          signatureApprover: 'ผู้อนุมัติ / Approver',
+          entryScopeNote: 'ใบอนุญาตนี้อนุญาตให้เข้าปฏิบัติงานเฉพาะผู้ปฏิบัติงานที่มีชื่อระบุไว้เท่านั้น / '
+            + 'This permit authorises entry only for the workers explicitly named on it.',
+          restoredNote: 'เมื่อเสร็จสิ้นงาน ต้องคืนสภาพพื้นที่อับอากาศให้ปลอดภัยตามปกติ / '
+            + 'On completion, the confined space must be restored to a normal, non-hazardous condition.'
+        }
       },
       preWork: {
         title: 'Pre-work safety checklist',
@@ -751,7 +907,9 @@ const permit = {
         columnDirection: 'Direction',
         columnWhen: 'When',
         directionIn: 'IN',
-        directionOut: 'OUT'
+        directionOut: 'OUT',
+        directionNotAvailable: 'NOT AVAILABLE',
+        directionNotAvailableWithReason: 'NOT AVAILABLE ({reason})'
       },
       gasLog: {
         title: 'Gas log entries',
@@ -777,7 +935,8 @@ const permit = {
     // wayfinder 098 — replaces the retired "closed" toast for the contractor's own action; the
     // permit itself is unchanged, so no status-chip update accompanies this one.
     closeRequested: 'Closure requested — the Safety Officer has been notified',
-    duplicated: 'Permit duplicated — continue editing the new draft'
+    duplicated: 'Permit duplicated — continue editing the new draft',
+    extended: 'Permit extended — the work window has been updated'
   }
 }
 

@@ -1,13 +1,29 @@
 <template>
   <div>
+    <!--
+      2026-09-13 owner-filed task — official per-type printed permit forms. Same trigger button,
+      now opening a small menu of two print options rather than printing directly: the existing
+      full-permit report (unchanged) and the new official regulatory-form print. Both stay
+      available per the task's own instruction not to remove the existing print.
+    -->
     <button
-      class="inline-flex h-10 cursor-pointer items-center justify-center rounded-[9px] border border-border bg-surface-card
+      class="inline-flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-[9px] border border-border bg-surface-card
         px-4 text-[12.5px] font-semibold text-text-primary hover:bg-surface-muted print:hidden"
       data-test="print-trigger"
       type="button"
-      @click="onTriggerPrint()">
+      @click="printMenu?.toggle($event)">
       {{ t('permit.detail.print.button') }}
+      <Icon icon="mdi:chevron-down" />
     </button>
+    <Menu
+      ref="printMenu"
+      :model="printMenuItems"
+      data-test="print-menu"
+      popup />
+    <OfficialPermitFormLayout
+      v-if="officialFormReady"
+      :config="officialFormConfig"
+      :permit="permit" />
 
     <!--
       2026-09-12 owner-filed issue 2 — the full-permit print/export, separate from the Report tab's
@@ -196,7 +212,7 @@
                     {{ event.workerName ?? t('permit.detail.sections.overview.none') }}
                   </td>
                   <td class="py-1 pr-3">
-                    {{ event.direction === 'IN' ? t('permit.detail.print.entrants.directionIn') : t('permit.detail.print.entrants.directionOut') }}
+                    {{ directionLabel(event) }}
                   </td>
                   <td class="py-1 font-mono">
                     {{ stamp(event.createdAt) }}
@@ -313,18 +329,23 @@
 <script setup lang="ts">
 import { computed, ref, toRef, type ComputedRef, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { MenuItem } from 'primevue/menuitem'
 import { permitAuthorName, type IPermitAuditEntry, type IPreWorkChecklistAnswer } from '@/models/modules/permit/Permit.model'
 import { EPermitType } from '@/enums/modules/permit/PermitType.enum'
 import type { IPermitDetail } from '@/models/response/permit/PermitRes.model'
 import A4Paper from '@/components/paper/A4Paper.vue'
+import Icon from '@/components/base/AppIcon.vue'
+import Menu from '@/volt/Menu.vue'
 import usePrint, { type IUsePrint } from '@/composables/usePrint'
+import OfficialPermitFormLayout from '@/pages/permit/pages/detail/components/OfficialPermitFormLayout.vue'
 import PermitAuditTimeline from '@/pages/permit/pages/detail/components/PermitAuditTimeline.vue'
 import PermitClosureSection from '@/pages/permit/pages/detail/components/PermitClosureSection.vue'
 import PermitJsaSection from '@/pages/permit/pages/detail/components/PermitJsaSection.vue'
 import PermitReportVisitCard from '@/pages/permit/pages/detail/components/PermitReportVisitCard.vue'
 import PermitSafetySection from '@/pages/permit/pages/detail/components/PermitSafetySection.vue'
 import PermitWorkersSection from '@/pages/permit/pages/detail/components/PermitWorkersSection.vue'
-import usePermitReport, { type IUsePermitReport } from '@/pages/permit/pages/detail/composables/usePermitReport'
+import useOfficialPermitForm, { type IUseOfficialPermitForm } from '@/pages/permit/pages/detail/composables/useOfficialPermitForm'
+import usePermitReport, { type IEntrantAuditEvent, type IUsePermitReport } from '@/pages/permit/pages/detail/composables/usePermitReport'
 
 /**
  * 2026-09-12 owner-filed issue 2 — the full-permit print/export. Every section fetched or already
@@ -379,6 +400,21 @@ function stamp (value: string | null): string {
   return d(parsed, 'long')
 }
 
+function directionLabel (event: IEntrantAuditEvent): string {
+  switch (event.direction) {
+    case 'IN':
+      return t('permit.detail.print.entrants.directionIn')
+    case 'OUT':
+      return t('permit.detail.print.entrants.directionOut')
+    case 'NOT_AVAILABLE':
+      return event.reason
+        ? t('permit.detail.print.entrants.directionNotAvailableWithReason', { reason: event.reason })
+        : t('permit.detail.print.entrants.directionNotAvailable')
+    default:
+      return event.direction
+  }
+}
+
 /**
  * `itemKey` is `${type}-${number}` (`checklistKey()`, `SafetyChecklist.ts`) — the permit type
  * segment never itself contains a hyphen, so a single split is exact, not a heuristic.
@@ -414,6 +450,34 @@ async function onTriggerPrint (): Promise<void> {
   await fetchReport()
   await onPrint()
 }
+
+/**
+ * 2026-09-13 owner-filed task — official per-type printed permit forms. `useOfficialPermitForm`
+ * mirrors `usePermitReport`'s own lazy-fetch shape above — nothing is fetched until this specific
+ * menu item is chosen.
+ */
+const officialFormReady: Ref<boolean> = ref(false)
+const { config: officialFormConfig, fetchOfficialForm }: IUseOfficialPermitForm = useOfficialPermitForm(
+  props.permit.id, toRef(props, 'permit'))
+
+async function onTriggerOfficialPrint (): Promise<void> {
+  officialFormReady.value = true
+  await fetchOfficialForm()
+  await onPrint()
+}
+
+const printMenu: Ref<InstanceType<typeof Menu> | null> = ref(null)
+
+const printMenuItems: ComputedRef<MenuItem[]> = computed((): MenuItem[] => [
+  {
+    label: t('permit.detail.print.menu.fullReport'),
+    command: (): void => { void onTriggerPrint() }
+  },
+  {
+    label: t('permit.detail.print.menu.officialForm'),
+    command: (): void => { void onTriggerOfficialPrint() }
+  }
+])
 </script>
 
 <style scoped>

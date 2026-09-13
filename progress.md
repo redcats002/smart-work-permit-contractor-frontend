@@ -4653,3 +4653,57 @@ grilling notes get appended below it first.
 Next step: grill the owner on item 2's exact scope/mechanism before writing any code, per the
 owner's explicit instruction. Items 1 and 3 are closer to plain bug fixes and may not need much
 more than confirming the full audit-action vocabulary for item 1.
+
+## 2026-09-13 — Owner-filed task: official per-type printed permit forms. GRILLED AND IMPLEMENTED
+
+Needed in BOTH this app and `smart-work-permit-frontend` (the safety app) — see that repo's
+`progress.md`, same date, for the full transcription of the three reference forms' field structure
+(Hot Work / Working at Height / Confined Space), since the owner supplied images that won't survive
+to a future session. Distinct from the generic full-permit A4 print/export already shipped
+(`PermitPrintLayout.vue`, PR #7) — this is the actual regulatory paper form per permit type,
+pre-filled with permit data, "normalized properly" per the owner's wording (a shared
+config-driven template vs three near-duplicate components — undecided, needs grilling).
+
+Central open question, same in both repos: several sections on these paper forms (equipment-prep
+quantities, and a THREE-STAGE physical sign-off by three separately-named individuals across
+possibly three different dates under one permit) have no counterpart anywhere in this app's or the
+API's data model. Do not assume "print what data exists, blank the rest" without confirming that
+is actually the intent.
+
+**Grilling ruling (same session): blank sign-off, no new data capture.** Sections 2/3/4's
+three-stage checks and Confined Space's signature block print entirely blank for on-site
+pen-and-paper completion — no new backend field or recording UI. Confined Space's atmosphere
+readings pull the single most recent `gas_log_entries` row only (blank section if none exists).
+Architecture: one generic, config-driven renderer (`OfficialFormConfig.ts` builds a plain data
+structure — sections of reusable blocks; `official-form/` holds the block-kind renderers), with
+Hot Work/Height sharing one builder (`buildHotWorkHeightConfig`) and Confined Space getting its
+own (`buildConfinedSpaceConfig`), both built on the same six block kinds. UI: the existing
+Print/Export button (`PermitPrintLayout.vue`) is now a `Menu` offering "Full report" (unchanged)
+vs "Official permit form" (new, `OfficialPermitFormLayout.vue`).
+
+Files added: `src/pages/permit/pages/detail/constants/OfficialFormBlocks.model.ts` (block/section/
+config types), `OfficialFormConfig.ts` (pure builder functions — unit tested, 22 cases), `src/
+pages/permit/pages/detail/composables/useOfficialPermitForm.ts` (lazy-fetches the permit's pin
+name via `PinProvider.getById`, `ContractorProfile.firmName` via `UserProvider.me()`, and the
+latest gas-log entry, mirroring `usePermitReport`'s own lazy-fetch shape), `OfficialPermitFormLayout.vue`
+plus six block components under `official-form/` (info-grid, checkbox-row, worker-table,
+checklist-grid, signature-lines, footer-note).
+
+Real gaps, left honestly blank/placeholder rather than guessed (see the implementation report for
+the full list): Confined Space's 11-item safety-measures checklist has NO confident index
+correspondence to this app's own 13-item `preWorkChecklist` (checked item-by-item — no match) so
+prints entirely blank. Confined Space's 8-item PPE list maps only Hardhat → "hard hat"; every
+other row (including the ambiguous "Respiratory Protection") is blank. `./init.sh` is green
+(716 tests, typecheck/lint/contrast/icons all PASS).
+
+**2026-09-13, later same day** — Hot Work/Height's section 2/3/4 checklist item text (originally a
+numbered "Check item N" placeholder, since the first transcription pass only gave item counts) is
+now verbatim from the owner's reference paper form images, re-read directly:
+`buildNumberedPlaceholderItems` replaced with `buildRealChecklistItems` +
+`HOT_SECTION2_ITEM_KEYS`/`HEIGHTS_SECTION2_ITEM_KEYS`/`SHARED_SECTION3_ITEM_KEYS`/
+`HOT_SECTION4_ITEM_KEYS`/`HEIGHTS_SECTION4_ITEM_KEYS` in `OfficialFormConfig.ts`, matching keys
+added to both `src/locales/en/permit.ts` and `th/permit.ts`. `bunx eslint`/`vue-tsc --noEmit`/
+`bunx vitest run src/tests/pages/permit/detail` all green (12 files, 88 tests). Confined Space's
+11-item safety-measures section remains blank — the source image's small text was not confidently
+legible for verbatim regulatory copy; needs a clearer image or the owner's own transcription
+before it can be filled in the same way.
