@@ -81,24 +81,46 @@
       </button>
     </p>
 
-    <!-- Read-only marker only — no click handler, no cursor-crosshair, no placing, no nudging. -->
+    <!--
+      Container/image layout mirrors the Safety app's `PlanPinOverlay.vue` exactly (aspect-locked,
+      object-contain letterboxing) so a stored x/y percentage lands in the same spot in both apps.
+      Every active pin on the plan renders — gray by default, the currently selected one
+      highlighted — and is itself clickable to select it, kept in sync with the Select above. A
+      click on blank image space does nothing: this app never creates or nudges a pin, only
+      safety does (wayfinder 107).
+    -->
     <div
       v-else-if="imageUrl"
-      ref="frameRef"
-      class="relative w-full max-h-[60vh] overflow-y-auto overflow-x-hidden rounded-xl border border-border select-none">
+      class="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-border select-none">
       <img
         :alt="t('permit.create.steps.whereWhen.pin.alt')"
         :src="imageUrl"
-        class="block w-full"
+        class="pointer-events-none absolute inset-0 size-full object-contain"
         draggable="false"
-        @error="onImageError()"
-        @load="onImageLoad()">
+        @error="onImageError()">
+      <button
+        v-for="pinOption in pins"
+        :key="pinOption.id"
+        :aria-label="pinOption.name"
+        :class="pinOption.id === selectedPinId ? 'bg-primary-500' : 'bg-surface-500 opacity-60'"
+        :style="{ left: `${pinOption.x}%`, top: `${pinOption.y}%` }"
+        class="absolute flex min-h-8 min-w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-surface-0 shadow-md"
+        type="button"
+        @click="onPinChange(pinOption.id)">
+        <Icon
+          class="size-4 text-white"
+          icon="solar:point-on-map-bold" />
+      </button>
+      <!-- Ruling 8 — a retired pin (or one on a retired plan) is absent from `pins` above, but
+           still resolves and displays its own marker, muted, never clickable/selectable. -->
       <span
-        v-if="markerPoint"
-        :style="{ left: `${markerPoint.left}px`, top: `${markerPoint.top}px` }"
+        v-if="pinIsRetired && displayedPin"
+        :style="{ left: `${displayedPin.x}%`, top: `${displayedPin.y}%` }"
         aria-hidden="true"
-        class="absolute -translate-x-1/2 -translate-y-full text-2xl text-primary drop-shadow">
-        📍
+        class="absolute flex min-h-8 min-w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-surface-0 bg-surface-500 opacity-60 shadow-md">
+        <Icon
+          class="size-4 text-white"
+          icon="solar:point-on-map-bold" />
       </span>
     </div>
   </div>
@@ -110,9 +132,9 @@ import {
 } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useApiError } from '@/composables/useApiError'
+import Icon from '@/components/base/AppIcon.vue'
 import type { IFacilityPlan } from '@/models/modules/facility-plan/FacilityPlan.model'
 import type { IPin } from '@/models/modules/pin/Pin.model'
-import { percentToPoint } from '@/utils/PlanPosition'
 import FacilityPlanProvider, { type IFacilityPlanProvider } from '@/resources/provider/facility-plan/FacilityPlan.provider'
 import PinProvider, { type IPinProvider } from '@/resources/provider/pin/Pin.provider'
 import UploadProvider, { type IUploadProvider } from '@/resources/provider/Upload.provider'
@@ -174,19 +196,8 @@ const loadingPins: Ref<boolean> = ref(false)
 const referencedPin: Ref<IPin | undefined> = ref(undefined)
 const pinResolveFailed: Ref<boolean> = ref(false)
 
-const frameRef: Ref<HTMLDivElement | undefined> = ref(undefined)
 const imageUrl: Ref<string | undefined> = ref(undefined)
 const imageFailed: Ref<boolean> = ref(false)
-
-/**
- * `frameRef.getBoundingClientRect()` is not itself a reactive dependency — reading it inside a
- * computed does not make that computed re-run when the image finishes loading and the frame
- * actually takes on its rendered size. Without this, the marker below is computed against the
- * ~0x0 rect that exists the instant the frame `<div>` mounts (before the `<img>` has painted) and
- * then never updates, permanently pinning it to the top-left corner. Captured explicitly on the
- * image's `load` event instead, so `markerPoint` has a real reactive dependency to key off.
- */
-const frameRect: Ref<{ width: number, height: number } | undefined> = ref(undefined)
 
 /**
  * Bound to the pin Select ONLY while `props.pinId` names a pin actually present in the currently
@@ -210,24 +221,6 @@ const pinIsRetired: ComputedRef<boolean> = computed(
 const displayedPin: ComputedRef<IPin | undefined> = computed(
   (): IPin | undefined => referencedPin.value ?? pins.value.find((pin: IPin): boolean => pin.id === props.pinId)
 )
-
-const markerPoint: ComputedRef<{ left: number, top: number } | undefined> = computed(
-  (): { left: number, top: number } | undefined => {
-    const pin = displayedPin.value
-    const rect = frameRect.value
-    // Only draw the marker over the image it actually belongs to — a pin on a different plan than
-    // the one currently loaded would otherwise render on top of the wrong picture.
-    if (!pin || pin.planId !== selectedPlanId.value || !rect) return undefined
-    return percentToPoint({ x: pin.x, y: pin.y }, rect as DOMRect)
-  }
-)
-
-/** Captures the frame's real rendered size once the image has actually painted — see `frameRect`. */
-function onImageLoad (): void {
-  if (!frameRef.value) return
-  const rect = frameRef.value.getBoundingClientRect()
-  frameRect.value = { width: rect.width, height: rect.height }
-}
 
 async function fetchPlans (): Promise<void> {
   loadingPlans.value = true
@@ -260,7 +253,6 @@ async function fetchPins (planId: number): Promise<void> {
 async function loadPlanImage (planId: number): Promise<void> {
   imageFailed.value = false
   imageUrl.value = undefined
-  frameRect.value = undefined
   try {
     // The plan may not be in the active `plans` list at all (a retired pin's own plan can be
     // deactivated too — ruling 8) — resolve it directly rather than assuming it is there.
@@ -312,7 +304,6 @@ function onPlanChange (value: number | undefined): void {
   pins.value = []
   imageUrl.value = undefined
   imageFailed.value = false
-  frameRect.value = undefined
   if (value === undefined) return
   void fetchPins(value)
   void loadPlanImage(value)

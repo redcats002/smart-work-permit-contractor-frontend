@@ -133,7 +133,7 @@ describe('PinPicker (wayfinder ticket 107)', () => {
     expect(wrapper.findAllComponents(Select)).toHaveLength(2)
   })
 
-  it('selecting a pin emits pinId — no click handler, no cursor-crosshair, no placing', async () => {
+  it('selecting a pin via the dropdown emits pinId — the image frame itself has no click handler', async () => {
     vi.spyOn(FacilityPlanProvider.prototype, 'list').mockResolvedValue({
       message: 'success', data: [plan({ id: 5 })], page: 1, limit: 9999, totalPage: 1, count: 1
     } as never)
@@ -153,8 +153,46 @@ describe('PinPicker (wayfinder ticket 107)', () => {
     await flushPromises()
 
     expect(wrapper.emitted('change')?.at(-1)?.[0]).toEqual({ pinId: 3 })
-    // Read-only marker only — never a clickable frame.
+    // No crosshair cursor anywhere — this component never places or nudges a pin.
     expect(wrapper.find('.cursor-crosshair').exists()).toBe(false)
+  })
+
+  /**
+   * Every active pin on the plan renders as a clickable marker on the image (gray by default),
+   * kept in sync with the Select above in both directions.
+   */
+  it('renders every active pin on the image, and clicking a gray one selects it like the dropdown would', async () => {
+    vi.spyOn(FacilityPlanProvider.prototype, 'list').mockResolvedValue({
+      message: 'success', data: [plan({ id: 5 })], page: 1, limit: 9999, totalPage: 1, count: 1
+    } as never)
+    vi.spyOn(PinProvider.prototype, 'list').mockResolvedValue({
+      message: 'success',
+      data: [pin({ id: 3, name: 'Reactor Bay' }), pin({ id: 4, name: 'Pump House' })],
+      page: 1,
+      limit: 9999,
+      totalPage: 1,
+      count: 2
+    } as never)
+    vi.spyOn(UploadProvider.prototype, 'getFileUrl').mockResolvedValue({
+      message: 'success', data: { url: 'https://example.test/plan.png' }
+    } as never)
+
+    const wrapper = mountPicker()
+    await flushPromises()
+    await wrapper.findAllComponents(Select)[0].vm.$emit('update:modelValue', 5)
+    await flushPromises()
+
+    const pinButtons = wrapper.findAll('button[aria-label="Reactor Bay"], button[aria-label="Pump House"]')
+    expect(pinButtons).toHaveLength(2)
+    // Neither is selected yet — both render gray.
+    for (const button of pinButtons) {
+      expect(button.classes()).toContain('bg-surface-500')
+    }
+
+    await wrapper.find('button[aria-label="Pump House"]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.emitted('change')?.at(-1)?.[0]).toEqual({ pinId: 4 })
   })
 
   it('clearing the pin selection emits pinId: null — a deliberate unset', async () => {
@@ -212,15 +250,14 @@ describe('PinPicker (wayfinder ticket 107)', () => {
     // Never selectable — the pin Select's own model stays unbound to it.
     expect(wrapper.findAllComponents(Select)[1].props('modelValue')).toBeUndefined()
 
-    // + its marker on the image (ruling 8's third requirement). jsdom's getBoundingClientRect is
-    // always 0x0, so exact pixel placement can't be asserted here — only checked by hand in a
-    // real browser against a non-trivial x/y — but the marker's presence, keyed off the image's
-    // own `load` event (not just the frame mounting), is.
+    // + its own marker on the image (ruling 8's third requirement), muted and non-interactive —
+    // positioned by plain CSS percent, so it renders as soon as the pin resolves, with no
+    // dependency on the image's own `load` event.
     expect(wrapper.find('img').exists()).toBe(true)
-    expect(wrapper.find('span[aria-hidden="true"].absolute').exists()).toBe(false)
-    await wrapper.find('img').trigger('load')
-    await flushPromises()
-    expect(wrapper.find('span[aria-hidden="true"].absolute').exists()).toBe(true)
+    const retiredMarker = wrapper.find('span[aria-hidden="true"].absolute')
+    expect(retiredMarker.exists()).toBe(true)
+    expect(retiredMarker.attributes('style')).toContain('left: 40%')
+    expect(retiredMarker.attributes('style')).toContain('top: 60%')
   })
 
   it('a referenced pin that cannot be resolved shows a "could not be found" note and strips the reference', async () => {
