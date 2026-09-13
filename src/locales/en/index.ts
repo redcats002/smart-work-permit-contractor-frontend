@@ -3,6 +3,7 @@ import common from '@/locales/en/common'
 import error from '@/locales/en/error'
 import guide from '@/locales/en/guide'
 import history from '@/locales/en/history'
+import landing from '@/locales/en/landing'
 import permit from '@/locales/en/permit'
 import platform from '@/locales/en/platform'
 import profile from '@/locales/en/profile'
@@ -23,7 +24,8 @@ const en = {
   error,
   profile,
   worker,
-  guide
+  guide,
+  landing
 }
 
 export default en

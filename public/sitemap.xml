@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  This app has exactly one indexable URL — the LandingPage rendered at '/' for an unauthenticated
+  visitor (see src/pages/HomePage.vue, src/pages/LandingPage.vue, and public/robots.txt's
+  `Allow: /$` / `Disallow: /`). APP_URL matches
+  ../../smart-work-permit-landing/src/site.ts's APP_URL constant.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://app.e-safework.com/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
