@@ -333,8 +333,8 @@ describe('useWizard — pinId omission on autosave (wayfinder ticket 107)', () =
   })
 })
 
-describe('useWizard — step 3 checklist state', () => {
-  it('keeps checklist answers out of formData entirely (no wire field — GAPS row J)', () => {
+describe('useWizard — step 3 checklist state (docs/api/GAPS.md row J, closed 2026-09-12)', () => {
+  it('keeps checklist answers outside formData — mapped to the wire shape only inside doPersist', () => {
     const wizard = useWizard(makeSteps())
 
     wizard.updateChecklistAnswers({ 'hot-1': 'yes' })
@@ -342,6 +342,77 @@ describe('useWizard — step 3 checklist state', () => {
 
     expect(wizard.checklistAnswers.value).toEqual({ 'hot-1': 'yes', 'hot-2': 'na' })
     expect(wizard.formData.value).not.toHaveProperty('checklistAnswers')
+  })
+
+  describe('autosave', () => {
+    beforeEach((): void => {
+      vi.useFakeTimers()
+    })
+
+    afterEach((): void => {
+      vi.useRealTimers()
+      vi.restoreAllMocks()
+    })
+
+    async function bootDraft (): Promise<{ wizard: ReturnType<typeof useWizard>, updateSpy: ReturnType<typeof vi.spyOn> }> {
+      vi.spyOn(PermitProvider.prototype, 'create')
+        .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
+      const updateSpy = vi.spyOn(PermitProvider.prototype, 'update')
+        .mockResolvedValue({ message: 'success', data: { id: 'WP-TEST-1' } } as never)
+
+      const wizard = useWizard(makeSteps())
+      wizard.updateFormData(creatableDraft()) // type: 'hot'
+      await vi.advanceTimersByTimeAsync(1600) // POST /permits
+      return { wizard, updateSpy }
+    }
+
+    function lastPatchBody (updateSpy: ReturnType<typeof vi.spyOn>): Record<string, unknown> {
+      return (updateSpy.mock.calls.at(-1) as [string, Record<string, unknown>])[1]
+    }
+
+    it('maps checklistAnswers onto the PATCH body as {itemKey, answer} once something is answered', async () => {
+      const { wizard, updateSpy } = await bootDraft()
+
+      wizard.updateChecklistAnswers({ 'hot-1': 'yes', 'hot-2': 'na' })
+      await vi.advanceTimersByTimeAsync(1600)
+
+      expect(lastPatchBody(updateSpy).preWorkChecklist).toEqual([
+        { itemKey: 'hot-1', answer: 'yes' },
+        { itemKey: 'hot-2', answer: 'na' }
+      ])
+    })
+
+    it('omits preWorkChecklist entirely while nothing has been answered yet', async () => {
+      const { wizard, updateSpy } = await bootDraft()
+
+      wizard.updateFormData({ title: 'Warehouse repaint — revised' })
+      await vi.advanceTimersByTimeAsync(1600)
+
+      expect(lastPatchBody(updateSpy)).not.toHaveProperty('preWorkChecklist')
+    })
+  })
+
+  describe('hydrate', () => {
+    it('rehydrates checklistAnswers from a loaded draft’s preWorkChecklist', () => {
+      const wizard = useWizard(makeSteps())
+
+      wizard.hydrate(hydratedPermit({
+        preWorkChecklist: [
+          { itemKey: 'heights-1', answer: 'yes' },
+          { itemKey: 'heights-2', answer: 'no' }
+        ]
+      }))
+
+      expect(wizard.checklistAnswers.value).toEqual({ 'heights-1': 'yes', 'heights-2': 'no' })
+    })
+
+    it('starts with an empty checklist when the loaded draft has none yet', () => {
+      const wizard = useWizard(makeSteps())
+
+      wizard.hydrate(hydratedPermit({ preWorkChecklist: null }))
+
+      expect(wizard.checklistAnswers.value).toEqual({})
+    })
   })
 })
 

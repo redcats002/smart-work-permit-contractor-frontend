@@ -48,6 +48,7 @@ export const ALLOWED_ICONS = [
   'solar:alarm-turn-off-broken',
   'solar:bill-list-bold',
   'solar:inbox-line-outline',
+  'solar:point-on-map-bold',
   'solar:shield-star-bold',
   'solar:user-bold',
   'solar:user-check-bold',

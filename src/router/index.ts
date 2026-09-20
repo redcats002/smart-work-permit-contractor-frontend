@@ -3,6 +3,7 @@ import type { NavigationFailure, RouteLocationNormalized, Router, RouteRecordRaw
 import { createRouter, createWebHistory, isNavigationFailure } from 'vue-router'
 import { useAuthStore } from '@/stores/Auth'
 import { updateFromRoute } from '@/utils/RouterHeader'
+import { applyRouteSeo } from '@/utils/SeoHead'
 import AuthRouter from './modules/Auth.router'
 import CertificateRouter from './modules/Certificate.router'
 import GuideRouter from './modules/Guide.router'
@@ -19,7 +20,17 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'HomePage',
-    component: (): ComponentOptions => import('@/pages/HomePage.vue')
+    component: (): ComponentOptions => import('@/pages/HomePage.vue'),
+    meta: {
+      // 'blank' so an unauthenticated visit renders LandingPage without ever mounting
+      // DefaultLayout's authenticated app chrome (topbar/drawer, notification polling, the
+      // realtime socket) — none of that is meant to run for a signed-out visitor.
+      layout: 'blank',
+      title: 'ยื่นและติดตามใบอนุญาตทำงานออนไลน์',
+      description: 'e-safework คือระบบใบอนุญาตทำงาน (Permit to Work) สำหรับโรงงานอุตสาหกรรมในไทย ผู้รับเหมาร่าง ยื่น และติดตามใบอนุญาตของตัวเองได้ ทุกเกณฑ์ความปลอดภัยถูกตรวจซ้ำที่เซิร์ฟเวอร์ ไม่มีปุ่มข้าม',
+      ogUrl: 'https://app.e-safework.com/',
+      robots: 'index, follow'
+    }
   },
   {
     path: '/not-permitted',
@@ -74,6 +85,7 @@ export let previousRoutePath: string | null = null
 router.afterEach((to: RouteLocationNormalized, from: RouteLocationNormalized, failure: NavigationFailure | void | undefined): void => {
   if (isNavigationFailure(failure)) return
   document.title = to?.meta?.title ? `${DEFAULT_TITLE} | ${to.meta.title}` : DEFAULT_TITLE
+  applyRouteSeo(to)
   void updateFromRoute(to)
   previousRoutePath = from.fullPath
 })

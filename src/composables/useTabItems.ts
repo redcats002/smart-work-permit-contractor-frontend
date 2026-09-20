@@ -1,7 +1,12 @@
 import { type Component, computed, type ComputedRef, defineAsyncComponent, markRaw, ref, type Ref } from 'vue'
 import { type RouteLocationRaw, useRoute } from 'vue-router'
-import type { ITabItem } from '@/components/base/BaseTab.vue'
 import ComponentLoader from '@/components/loader/ComponentLoader.vue'
+
+export interface ITabItem {
+  label: string
+  value: string
+  [key: string]: any
+}
 
 export interface IUseTabItems {
   tab: Ref<string>

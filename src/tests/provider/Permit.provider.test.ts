@@ -91,6 +91,14 @@ describe('PermitProvider — wire contract (API-006)', () => {
     expect(spies.post).toHaveBeenCalledWith('/api/v1/permits/WP-1/close-request', { reason: 'Work finished, area cold' }, undefined)
   })
 
+  it('extend posts to the extend route with endDate and dailyEnd', async () => {
+    await service.extend('WP-1', { endDate: '2026-08-20', dailyEnd: '1970-01-01T10:00:00.000Z' })
+
+    expect(spies.post).toHaveBeenCalledWith(
+      '/api/v1/permits/WP-1/extend', { endDate: '2026-08-20', dailyEnd: '1970-01-01T10:00:00.000Z' }, undefined
+    )
+  })
+
   it('exposes no approve/reject/close — all three are safety_officer-only with no contractor-facing flow', () => {
     const surface = service as unknown as Record<string, unknown>
 

@@ -55,6 +55,10 @@ export enum EApiErrorCode {
   // active plan exists and the permit has no `pinId` set (re-keyed from `planId`/`planX`/`planY`
   // by wayfinder 105 — the pin knows its own plan now).
   PERMIT_POSITION_REQUIRED = 'PERMIT_POSITION_REQUIRED',
+  // POST /permits/:id/extend — 403 when the permit is not ACTIVE/FIRE_MONITOR/EXPIRED. A new end
+  // instant before now, or before the permit's own start, is a plain 400 with NO errorCode (the
+  // server's own contract), so that failure falls back to the generic unknown-error string here.
+  PERMIT_NOT_EXTENDABLE = 'PERMIT_NOT_EXTENDABLE',
 
   // Closure guards — safety-officer actions, surfaced here because a contractor watching a permit
   // needs to understand why it has not closed.

@@ -34,6 +34,9 @@ const error = {
   NOT_HOT_WORK: 'Fire Watch applies to Hot Work permits only.',
   PERMIT_POSITION_REQUIRED: 'Select a pin on the facility plan before submitting this permit.',
   PERMIT_UPDATE_EMPTY: 'No changes were made to this permit.',
+  // Extending the work window (POST /permits/:id/extend). A new end before now, or before the
+  // permit's own start, is a plain 400 with no errorCode — that falls back to `unknown` below.
+  PERMIT_NOT_EXTENDABLE: 'This permit cannot be extended in its current state.',
 
   // Closure guards
   ENTRANTS_STILL_INSIDE: 'Closure blocked — one or more entrants are still checked in.',

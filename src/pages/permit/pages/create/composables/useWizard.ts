@@ -10,7 +10,7 @@ import type { TPermitType } from '@/enums/modules/permit/PermitType.enum'
 import type { ICreatePermitDraftPayload, IUpdatePermitDraftPayload } from '@/models/request/permit/PermitReq.model'
 import type { IPermitSafetyReading, IPermitWorker } from '@/models/modules/permit/Permit.model'
 import type { IPermitDetail } from '@/models/response/permit/PermitRes.model'
-import type { TChecklistAnswer } from '../constants/SafetyChecklist'
+import { toChecklistAnswerMap, toPreWorkChecklistPayload, type TChecklistAnswer } from '../constants/SafetyChecklist'
 import {
   EMPTY_SUBMIT_FAILURES, extractSubmitFailures, stepKeyForSubmitFailure, type ISubmitFailures
 } from '../constants/SubmitErrorRouting'
@@ -347,6 +347,15 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
     const shouldAppendReading = serialized !== undefined && serialized !== lastPersistedReading
     if (shouldAppendReading) payload.safetyReading = wireReading
 
+    // Closes docs/api/GAPS.md row J. `checklistAnswers` lives outside `formData` (see
+    // WizardSteps.ts's IWizardStepProps doc) — mapped to the wire array here, on every autosave,
+    // rather than round-tripped through formData itself. Omitted entirely while nothing has been
+    // answered yet for the CURRENT permit type, so an untouched checklist never overwrites an
+    // already-persisted one with an empty array — the PATCH key's presence is what the server
+    // reads as "replace this", same convention as jsaSteps/photos.
+    const wireChecklist = toPreWorkChecklistPayload(formData.value.type as TPermitType, checklistAnswers.value)
+    if (wireChecklist.length > 0) payload.preWorkChecklist = wireChecklist
+
     await PermitService.update(draftId.value, payload)
     if (shouldAppendReading) lastPersistedReading = serialized
   }
@@ -452,6 +461,10 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
     }
 
     formData.value = hydrated
+    // Closes docs/api/GAPS.md row J — a resumed draft rehydrates its checklist answers instead of
+    // landing back on 17/13/14 blank rows. `preWorkChecklist`'s itemKeys already match this app's
+    // own `checklistKey()` output, so this is a plain re-key, not a translation.
+    checklistAnswers.value = toChecklistAnswerMap(permit.preWorkChecklist)
     pinIdIsUserChoice = false
     draftId.value = permit.id
     submitError.value = undefined
@@ -492,11 +505,15 @@ export function useWizard (registry: IWizardStepDef[] = WIZARD_STEPS): IUseWizar
   }
 
   /**
-   * Step 3's checklist. Never persisted and never gates Next — see
-   * ../constants/SafetyChecklist.ts and docs/api/GAPS.md row J.
+   * Step 3's checklist. Persisted via `doPersist`'s own mapping (see ../constants/SafetyChecklist.ts
+   * and docs/api/GAPS.md row J, closed) but never gates Next — this is a pre-work reference aid,
+   * not a safety gate. Same creatable-draft gate as `updateFormData`: nothing autosaves before the
+   * first POST /permits can fire.
    */
   function updateChecklistAnswers (patch: Record<string, TChecklistAnswer>): void {
     checklistAnswers.value = { ...checklistAnswers.value, ...patch }
+    if (!draftId.value && !hasCreatableDraft(formData.value)) return
+    debouncedPersist()
   }
 
   function next (): void {

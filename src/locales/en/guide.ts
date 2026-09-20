@@ -62,7 +62,9 @@ const guide = {
   },
   permitDetail: {
     title: 'Permit detail, and closing the work',
-    p1: 'The detail page is where a permit lives out its life: the status banner, its own information, the safety readings, the workers and their PPE, the JSA, the QR panel, and the audit timeline.',
+    // wayfinder 112 — a seventh "Report" tab was added: inspector visits, any gaps, and (once
+    // closed) a printable closure summary. This paragraph used to stop at the audit timeline.
+    p1: 'The detail page is where a permit lives out its life: the status banner, its own information, the safety readings, the workers and their PPE, the JSA, the QR panel, the audit timeline, and a Report tab with every inspector visit, any gaps found, and — once the permit is closed — a closure summary you can print.',
     // wayfinder 098 (reopened 2026-09-11) — closure moved to Safety. This used to say a
     // contractor closes the permit themselves through a checklist; they now REQUEST closure and
     // a Safety Officer reviews and closes it (or comes back with anything outstanding).
@@ -74,7 +76,9 @@ const guide = {
   },
   certificates: {
     title: 'Certificates',
-    p1: 'Add a certificate from a worker you pick or register inline, then the type and the issued/expiry dates, with an optional attachment. An already-expired date is not rejected — the record is the truth, and the card simply shows as expired until it is renewed.'
+    // wayfinder 115 — licence number and description fields were added, and a certificate now
+    // needs a licence number OR an attachment (at least one), not an attachment alone.
+    p1: 'Add a certificate from a worker you pick or register inline, then the type and the issued/expiry dates. You need a licence number, an attached file, or both — at least one — plus an optional description. An already-expired date is not rejected — the record is the truth, and the card simply shows as expired until it is renewed.'
   },
   workers: {
     title: 'Workers',

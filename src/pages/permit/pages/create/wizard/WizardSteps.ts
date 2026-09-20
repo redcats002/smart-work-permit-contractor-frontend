@@ -31,10 +31,11 @@ export interface IWizardStepProps {
   title: string
   formData: IUpdatePermitDraftPayload
   /**
-   * Step 3's Yes/No/N-A checklist answers, keyed `<type>-<number>`. Held OUTSIDE `formData`
-   * because the permit wire contract has no field for them (docs/api/GAPS.md row J) — putting
-   * them in `formData` would type-lie about the payload and ride along on every PATCH only to be
-   * stripped server-side. Steps other than 3 ignore it.
+   * Step 3's Yes/No/N-A checklist answers, keyed `<type>-<number>`. Held OUTSIDE `formData` even
+   * though `preWorkChecklist` is now a real PATCH field (`docs/api/GAPS.md` row J closed) — that
+   * split predates the fix and is kept rather than restructuring every step component's contract;
+   * `useWizard.doPersist` maps this ref to the wire shape via `SafetyChecklist.ts`'s
+   * `toPreWorkChecklistPayload` on every autosave. Steps other than 3 ignore it.
    */
   checklistAnswers: Record<string, TChecklistAnswer>
   /**

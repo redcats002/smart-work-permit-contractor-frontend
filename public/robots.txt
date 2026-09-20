@@ -1,7 +1,19 @@
-# wayfinder ticket 030. This is an authenticated internal tool (contractor work-permit
-# management) — every route is behind a login and holds permit/worker data, so it is
-# deliberately non-indexable. The per-page <meta name="robots" content="noindex, nofollow">
-# in index.html is the primary mechanism (works even for a crawler that ignores robots.txt);
-# this file is the standard belt-and-suspenders companion.
+# This app is mostly an authenticated internal tool (contractor work-permit management) — every
+# route besides the root is behind a login and holds permit/worker data, so it stays
+# deliberately non-indexable. `/` is the one exception: HomePage.vue now renders a public
+# LandingPage there for an unauthenticated visitor (see src/pages/HomePage.vue,
+# src/pages/LandingPage.vue), so it is the one URL this file allows.
+#
+# `Allow: /$` matches the exact root path only ($ anchors end-of-URL); everything else falls
+# under the blanket `Disallow: /` below it. This is the pattern Google's own robots.txt guide
+# documents for "allow only the homepage" and is more robust to future routes than enumerating
+# every authenticated prefix by hand.
+#
+# This is belt-and-suspenders, not the only mechanism: the per-page
+# <meta name="robots" content="noindex, nofollow"> in index.html is static across every route
+# (one HTML shell, no SSR) and is what a crawler that does not execute JavaScript actually sees
+# even on '/' — src/utils/SeoHead.ts overwrites it at runtime for a JS-executing crawler only.
+# See that file's own comment for the full explanation of that gap.
 User-agent: *
+Allow: /$
 Disallow: /
